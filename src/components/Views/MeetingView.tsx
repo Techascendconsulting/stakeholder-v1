@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import VoiceInputModal from '../VoiceInputModal'
+import { stakeholderAI } from '../../lib/stakeholderAI'
 import { 
   ArrowLeft, 
   Mic, 
@@ -24,7 +25,6 @@ import {
 } from 'lucide-react'
 import { isAudioRecordingSupported } from '../../lib/whisper'
 import { azureTTS, isAzureTTSAvailable, playBrowserTTS } from '../../lib/azureTTS'
-import { stakeholderAI } from '../../lib/stakeholderAI'
 import { Message, Meeting } from '../../types'
 
 interface AudioPlaybackState {
@@ -261,11 +261,15 @@ const MeetingView: React.FC = () => {
   const sendMessage = async () => {
     if (!inputMessage.trim() || !currentMeeting) return
 
+    // Don't send if AI is already responding
+    if (respondingStakeholder !== null) return
+
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       speaker: 'user',
       content: inputMessage.trim(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      stakeholderName: 'Business Analyst'
     }
 
     const updatedMessages = [...messages, userMessage]
@@ -277,12 +281,70 @@ const MeetingView: React.FC = () => {
       updateMeeting(currentMeeting.id, { transcript: updatedMessages })
     }
 
-    // Generate AI stakeholder responses with natural conversation flow
-    generateStakeholderResponses(userMessage, updatedMessages)
+    // Generate AI stakeholder response using new logic
+    await handleAIResponse(userMessage.content, updatedMessages)
   }
 
-  const generateStakeholderResponses = async (userMessage: Message, currentMessages: Message[]) => {
-    const conversationContext = {
+  const handleAIResponse = async (userMessageText: string, currentMessages: Message[]) => {
+    if (!selectedProject || selectedStakeholders.length === 0) return
+
+    // Set loading state to show "Stakeholder is typing..." indicator
+    setRespondingStakeholder('system') // Use 'system' to indicate general loading
+
+    try {
+      // Call the AI to get the stakeholder's response
+      const aiResponseMessage = await stakeholderAI.generateGroupResponse(
+        {
+          projectId: selectedProject.id,
+          stakeholderIds: selectedStakeholders.map(s => s.id),
+          messages: currentMessages,
+          meetingType: selectedStakeholders.length > 1 ? 'group' : 'individual'
+        },
+        selectedProject,
+        selectedStakeholders,
+        userMessageText
+      )
+
+      // Add the AI's response to the chat history
+      const newMessages = [...currentMessages, aiResponseMessage]
+      setMessages(newMessages)
+
+      // Update meeting with new message
+      if (currentMeeting) {
+        updateMeeting(currentMeeting.id, { transcript: newMessages })
+      }
+
+      // Auto-play audio if enabled
+      if (globalAudioEnabled && aiResponseMessage.speaker !== 'user') {
+        setTimeout(() => {
+          playMessageAudio(aiResponseMessage)
+        }, 300)
+      }
+
+    } catch (error) {
+      console.error('Error generating AI response:', error)
+      
+      // Fallback response if AI fails
+      const fallbackMessage: Message = {
+        id: `msg-${Date.now()}-fallback`,
+        speaker: selectedStakeholders[0]?.id || 'system',
+        content: "I'm sorry, I seem to have encountered a technical issue. Could you please try asking that again?",
+        timestamp: new Date().toISOString(),
+        stakeholderName: selectedStakeholders[0]?.name || 'System',
+        stakeholderRole: selectedStakeholders[0]?.role || 'System'
+      }
+      
+      const newMessages = [...currentMessages, fallbackMessage]
+      setMessages(newMessages)
+      
+      if (currentMeeting) {
+        updateMeeting(currentMeeting.id, { transcript: newMessages })
+      }
+    } finally {
+      // Clear loading state
+      setRespondingStakeholder(null)
+    }
+  }
       projectId: selectedProject!.id,
       stakeholderIds: selectedStakeholders.map(s => s.id),
       messages: currentMessages,
@@ -296,236 +358,6 @@ const MeetingView: React.FC = () => {
     await processStakeholdersSequentially(relevantStakeholders, userMessage, conversationContext)
   }
 
-  const processStakeholdersSequentially = async (
-    stakeholders: Stakeholder[], 
-    userMessage: Message, 
-    conversationContext: any
-  ) => {
-    const isIntroductionPhase = conversationContext.messages.length <= 2 && (
-      userMessage.content.toLowerCase().includes('hi') ||
-      userMessage.content.toLowerCase().includes('hello') ||
-      userMessage.content.toLowerCase().includes('introduce') ||
-      userMessage.content.toLowerCase().includes('good morning') ||
-      userMessage.content.toLowerCase().includes('good afternoon')
-    )
-
-    for (let i = 0; i < stakeholders.length; i++) {
-      const stakeholder = stakeholders[i]
-      
-      try {
-        // Show that this stakeholder is responding
-        setRespondingStakeholder(stakeholder.id)
-        
-        // Small delay before first response for realism
-        if (i === 0) {
-          await new Promise(resolve => setTimeout(resolve, 1200))
-        }
-        
-        // Generate AI response using OpenAI
-        const response = await stakeholderAI.generateResponse(
-          stakeholder.id,
-          userMessage.content,
-          conversationContext,
-          selectedProject!,
-          stakeholder,
-          isIntroductionPhase && i > 0 // Flag for follow-up introductions
-        )
-        
-        const stakeholderMessage: Message = {
-          id: `msg-${Date.now()}-${stakeholder.id}`,
-          speaker: stakeholder.id,
-          content: response,
-          timestamp: new Date().toISOString(),
-          stakeholderName: stakeholder.name,
-          stakeholderRole: stakeholder.role
-        }
-
-        // Add the message to the conversation
-        setMessages(prev => {
-          const newMessages = [...prev, stakeholderMessage]
-          
-          // Update meeting transcript
-          if (currentMeeting) {
-            updateMeeting(currentMeeting.id, { transcript: newMessages })
-          }
-          
-          return newMessages
-        })
-
-        // Auto-play audio if enabled
-        if (globalAudioEnabled) {
-          setTimeout(() => {
-            playMessageAudio(stakeholderMessage)
-          }, 300)
-        }
-
-        // Wait for this stakeholder to "finish speaking" before next one starts
-        if (i < stakeholders.length - 1) {
-          const wordCount = response.split(' ').length
-          const speakingTime = Math.max(1500, (wordCount / 190) * 60 * 1000) // Slightly slower: 190 words per minute
-          const pauseTime = 600 // Even shorter pause between speakers
-          
-          await new Promise(resolve => setTimeout(resolve, speakingTime + pauseTime))
-        }
-        
-      } catch (error) {
-        console.error(`Error generating response for ${stakeholder.name}:`, error)
-        
-        // Fallback response if OpenAI fails
-        const fallbackMessage: Message = {
-          id: `msg-${Date.now()}-${stakeholder.id}-fallback`,
-          speaker: stakeholder.id,
-          content: `I need a moment to gather my thoughts on that question. Could you rephrase it or ask about a specific aspect of our ${stakeholder.department} processes?`,
-          timestamp: new Date().toISOString(),
-          stakeholderName: stakeholder.name,
-          stakeholderRole: stakeholder.role
-        }
-        
-        setMessages(prev => {
-          const newMessages = [...prev, fallbackMessage]
-          if (currentMeeting) {
-            updateMeeting(currentMeeting.id, { transcript: newMessages })
-          }
-          return newMessages
-        })
-        
-        // Short delay even for fallback
-        if (i < stakeholders.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1500))
-        }
-      }
-    }
-    
-    // Clear responding indicator when all stakeholders are done
-    setRespondingStakeholder(null)
-  }
-
-  // Determine which stakeholders should respond based on question content
-  const determineRelevantStakeholders = (question: string, allStakeholders: Stakeholder[]) => {
-    const lowerQuestion = question.toLowerCase()
-    
-    // Check if a specific stakeholder is mentioned by name
-    const mentionedStakeholder = allStakeholders.find(stakeholder => 
-      lowerQuestion.includes(stakeholder.name.toLowerCase()) ||
-      lowerQuestion.includes(stakeholder.name.split(' ')[0].toLowerCase()) ||
-      lowerQuestion.includes(stakeholder.name.split(' ')[1]?.toLowerCase() || '') // Last name too
-    )
-    
-    if (mentionedStakeholder) {
-      return [mentionedStakeholder]
-    }
-    
-    // For initial greetings, start with the most senior stakeholder
-    if (messages.length === 0 || 
-        lowerQuestion.includes('hi') || 
-        lowerQuestion.includes('hello') || 
-        lowerQuestion.includes('good morning') ||
-        lowerQuestion.includes('good afternoon')) {
-      
-      // If this is the very first message, only the senior stakeholder responds
-      if (messages.length === 0) {
-        const seniorStakeholder = allStakeholders.find(s => s.role.includes('Head')) || allStakeholders[0]
-        return seniorStakeholder ? [seniorStakeholder] : []
-      }
-      
-      // If there's already been one introduction, include all stakeholders for natural flow
-      const hasIntroductions = messages.some(msg => 
-        msg.speaker !== 'user' && 
-        (msg.content.toLowerCase().includes('hello') || 
-         msg.content.toLowerCase().includes('hi') || 
-         msg.content.toLowerCase().includes('glad'))
-      )
-      
-      if (hasIntroductions) {
-        // Return remaining stakeholders who haven't introduced themselves yet
-        const introducedStakeholders = new Set(
-          messages
-            .filter(msg => msg.speaker !== 'user')
-            .map(msg => msg.speaker)
-        )
-        
-        return allStakeholders.filter(s => !introducedStakeholders.has(s.id))
-      }
-      
-      // Fallback to senior stakeholder
-      const seniorStakeholder = allStakeholders.find(s => s.role.includes('Head')) || allStakeholders[0]
-      return seniorStakeholder ? [seniorStakeholder] : []
-    }
-    
-    // If asking everyone to introduce themselves
-    if (lowerQuestion.includes('everyone') || 
-        (lowerQuestion.includes('introduce') && lowerQuestion.includes('yourself'))) {
-      // Return all stakeholders in seniority order
-      return [...allStakeholders].sort((a, b) => {
-        const seniorityOrder = ['Head', 'Manager', 'Lead', 'Partner']
-        const aLevel = seniorityOrder.findIndex(level => a.role.includes(level))
-        const bLevel = seniorityOrder.findIndex(level => b.role.includes(level))
-        return aLevel - bLevel
-      })
-    }
-    
-    // Domain-specific keywords to determine relevance
-    const domainKeywords = {
-      'operations': ['process', 'workflow', 'efficiency', 'operations', 'coordination', 'resource', 'timeline'],
-      'customer service': ['customer', 'service', 'support', 'satisfaction', 'experience', 'communication'],
-      'it': ['technical', 'system', 'integration', 'security', 'technology', 'data', 'infrastructure'],
-      'hr': ['training', 'employee', 'change', 'adoption', 'people', 'organizational', 'staff'],
-      'compliance': ['compliance', 'risk', 'audit', 'regulation', 'policy', 'governance', 'legal']
-    }
-    
-    const relevantStakeholders: Stakeholder[] = []
-    
-    // Check each stakeholder's domain relevance
-    allStakeholders.forEach(stakeholder => {
-      const department = stakeholder.department.toLowerCase()
-      const role = stakeholder.role.toLowerCase()
-      
-      // Check if question contains keywords relevant to this stakeholder
-      let isRelevant = false
-      
-      if (department.includes('operations') || role.includes('operations')) {
-        isRelevant = domainKeywords.operations.some(keyword => lowerQuestion.includes(keyword))
-      }
-      if (department.includes('customer') || role.includes('customer')) {
-        isRelevant = isRelevant || domainKeywords['customer service'].some(keyword => lowerQuestion.includes(keyword))
-      }
-      if (department.includes('technology') || department.includes('it') || role.includes('it')) {
-        isRelevant = isRelevant || domainKeywords.it.some(keyword => lowerQuestion.includes(keyword))
-      }
-      if (department.includes('human') || department.includes('hr') || role.includes('hr')) {
-        isRelevant = isRelevant || domainKeywords.hr.some(keyword => lowerQuestion.includes(keyword))
-      }
-      if (department.includes('risk') || department.includes('compliance') || role.includes('compliance')) {
-        isRelevant = isRelevant || domainKeywords.compliance.some(keyword => lowerQuestion.includes(keyword))
-      }
-      
-      if (isRelevant) {
-        relevantStakeholders.push(stakeholder)
-      }
-    })
-    
-    // If no stakeholders are deemed relevant and it's a broad business question, 
-    // include the most senior stakeholder (Head of Operations)
-    if (relevantStakeholders.length === 0 && (
-      lowerQuestion.includes('requirement') || 
-      lowerQuestion.includes('need') || 
-      lowerQuestion.includes('challenge') ||
-      lowerQuestion.includes('goal') ||
-      lowerQuestion.includes('objective') ||
-      lowerQuestion.includes('process') ||
-      lowerQuestion.includes('what') ||
-      lowerQuestion.includes('how') ||
-      lowerQuestion.includes('why') ||
-      lowerQuestion.includes('tell me')
-    )) {
-      const seniorStakeholder = allStakeholders.find(s => s.role.includes('Head')) || allStakeholders[0]
-      if (seniorStakeholder) {
-        relevantStakeholders.push(seniorStakeholder)
-      }
-    }
-    
-    return relevantStakeholders
-  }
 
   const endMeeting = () => {
     // Stop any playing audio
