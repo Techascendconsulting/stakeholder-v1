@@ -966,6 +966,13 @@ const MeetingView: React.FC = () => {
                 )}
                 <button
                   onClick={sendMessage}
+                  disabled={!inputMessage.trim() || respondingStakeholder !== null}
+                  className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  title="Send message"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
           </div>
         </div>
       </div>
