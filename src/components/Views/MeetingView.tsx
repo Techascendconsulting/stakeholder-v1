@@ -1,13 +1,7 @@
-// Filename: src/components/MeetingView.tsx
-//
-// You can copy this entire block of code and replace the contents of your file.
-// I have fixed the logic to correctly use the new StakeholderAI.
-
 import React, { useState, useRef, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import VoiceInputModal from '../VoiceInputModal'
-// FIX: Make sure this import path points to the new StakeholderAI.ts file you created.
 import { stakeholderAI } from '../../lib/stakeholderAI'
 import { 
   ArrowLeft, Mic, Send, Volume2, VolumeX, Users, Clock, Settings, Loader2, Video, VideoOff, Phone, MoreHorizontal, MessageSquare, FileText, Play, Pause, AlertCircle
@@ -35,7 +29,6 @@ const MeetingView: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
-  // FIX: Changed this state to be a boolean. It's simpler. We just need to know IF the AI is thinking.
   const [isAiResponding, setIsAiResponding] = useState<boolean>(false)
   const [meetingStartTime] = useState(new Date())
   const [audioPlayback, setAudioPlayback] = useState<AudioPlaybackState | null>(null)
@@ -88,18 +81,12 @@ const MeetingView: React.FC = () => {
     )
   }
 
-  // FIX: This function is now removed. Its logic has been moved directly into `sendMessage`
-  // to prevent state-related bugs where the AI gets an old list of messages.
-  // const handleAIResponse = async (userMessageText: string, currentMessages: Message[]) => { ... }
-
   const sendMessage = async () => {
-    // FIX: Check against the new boolean state `isAiResponding`.
     if (!inputMessage.trim() || isAiResponding) return
 
     const userMessageText = inputMessage.trim();
     setInputMessage('');
 
-    // 1. Create the user's message object.
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       speaker: 'user',
@@ -108,26 +95,18 @@ const MeetingView: React.FC = () => {
       stakeholderName: 'Business Analyst'
     }
 
-    // 2. Add the user's message to the state and get the updated list of messages.
-    // We use the functional form of setMessages to guarantee we have the latest state.
     const updatedMessagesWithUser = [...messages, userMessage];
     setMessages(updatedMessagesWithUser);
-
-    // 3. Set the loading state to true.
     setIsAiResponding(true);
 
-    // 4. Prepare the context for the AI.
-    // THIS IS THE CRITICAL FIX: We use `updatedMessagesWithUser` which is guaranteed to be up-to-date.
     const conversationContext = {
       projectId: selectedProject.id,
       stakeholderIds: selectedStakeholders.map(s => s.id),
-      messages: updatedMessagesWithUser, // Use the most recent message list
+      messages: updatedMessagesWithUser,
       meetingType: selectedStakeholders.length > 1 ? 'group' as const : 'individual' as const
     };
 
     try {
-      // 5. Call the AI "Director" to get the next response.
-      // This single function call is what makes the magic happen.
       const aiResponseMessage = await stakeholderAI.generateGroupResponse(
         conversationContext,
         selectedProject,
@@ -135,10 +114,8 @@ const MeetingView: React.FC = () => {
         userMessageText
       );
 
-      // 6. Add the AI's response to the chat history.
       setMessages(prevMessages => [...prevMessages, aiResponseMessage]);
 
-      // 7. Auto-play audio if enabled.
       if (globalAudioEnabled && aiResponseMessage.speaker !== 'user') {
         setTimeout(() => playMessageAudio(aiResponseMessage), 300);
       }
@@ -155,18 +132,15 @@ const MeetingView: React.FC = () => {
       };
       setMessages(prevMessages => [...prevMessages, fallbackMessage]);
     } finally {
-      // 8. Set loading state to false.
       setIsAiResponding(false);
     }
   }
   
-  // FIX: This useEffect will now correctly save the full transcript whenever messages change.
   useEffect(() => {
     if (currentMeeting && messages.length > currentMeeting.transcript.length) {
       updateMeeting(currentMeeting.id, { transcript: messages });
     }
   }, [messages, currentMeeting, updateMeeting]);
-
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -224,7 +198,7 @@ const MeetingView: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Meeting Header (No changes here) */}
+      {/* Meeting Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -254,39 +228,3 @@ const MeetingView: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center space-x-3 mt-4">
-          {selectedStakeholders.map((stakeholder) => (
-            <div key={stakeholder.id} className="flex items-center space-x-2">
-              <img src={stakeholder.photo} alt={stakeholder.name} className="w-8 h-8 rounded-full object-cover" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">{stakeholder.name}</p>
-                <p className="text-xs text-gray-600">{stakeholder.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Messages Area (No changes here) */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.map((message) => {
-          const stakeholder = message.speaker !== 'user' && message.speaker !== 'system' ? getStakeholderById(message.speaker) : null
-          return (
-            <div key={message.id} className={`flex items-start space-x-3 ${message.speaker === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-              <div className="flex-shrink-0">
-                {message.speaker === 'user' ? (<div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center"><span className="text-white font-medium text-sm">BA</span></div>)
-                : message.speaker === 'system' ? (<div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"><MessageSquare className="w-5 h-5 text-white" /></div>)
-                : stakeholder ? (<img src={stakeholder.photo} alt={stakeholder.name} className="w-10 h-10 rounded-full object-cover" />)
-                : (<div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"><span className="text-white font-medium text-sm">?</span></div>)}
-              </div>
-              <div className={`flex-1 max-w-3xl ${message.speaker === 'user' ? 'text-right' : ''}`}>
-                <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm font-medium text-gray-900">{message.speaker === 'user' ? 'You' : message.stakeholderName || 'System'}</span>
-                  {message.stakeholderRole && (<span className="text-xs text-blue-600 font-medium">{message.stakeholderRole}</span>)}
-                  <span className="text-xs text-gray-500">{new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                  {message.speaker !== 'user' && message.speaker !== 'system' && stakeholder && (
-                    <button onClick={() => playMessageAudio(message)} disabled={audioPlayback?.messageId === message.id && audioPlayback.isLoading} className="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Play audio">
-                      {audioPlayback?.messageId === message.id ? (audioPlayback.isLoading ? (<Loader2 className="w-4 h-4 animate-spin" />) : audioPlayback.isPlaying ? (<Pause className="w-4 h-4" />) : (<Play className="w-4 h-4" />)) : (<Volume2 className="w-4 h-4" />)}
-                    </button>
-                  )}
-                </div>
-                <div className={`inline-block p-3 rounded-lg ${message.speaker === '
