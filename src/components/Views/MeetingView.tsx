@@ -41,14 +41,14 @@ const MeetingView: React.FC = () => {
     if (!selectedProject || selectedStakeholders.length === 0) return
 
     const conversationContext = {
-      projectId: selectedProject!.id,
+      projectId: selectedProject.id,
       stakeholderIds: selectedStakeholders.map(s => s.id),
       messages: currentMessages,
       meetingType: selectedStakeholders.length > 1 ? 'group' as const : 'individual' as const
-    }
+    };
 
     // Set loading state to show "Stakeholder is typing..." indicator
-    setRespondingStakeholder('system') // Use 'system' to indicate general loading
+    setRespondingStakeholder('system'); // Use 'system' to indicate general loading
 
     try {
       // Call the AI to get the stakeholder's response
@@ -57,26 +57,26 @@ const MeetingView: React.FC = () => {
         selectedProject,
         selectedStakeholders,
         userMessageText
-      )
+      );
 
       // Add the AI's response to the chat history
-      const newMessages = [...currentMessages, aiResponseMessage]
-      setMessages(newMessages)
+      const newMessages = [...currentMessages, aiResponseMessage];
+      setMessages(newMessages);
 
       // Update meeting with new message
       if (currentMeeting) {
-        updateMeeting(currentMeeting.id, { transcript: newMessages })
+        updateMeeting(currentMeeting.id, { transcript: newMessages });
       }
 
       // Auto-play audio if enabled
       if (globalAudioEnabled && aiResponseMessage.speaker !== 'user') {
         setTimeout(() => {
-          playMessageAudio(aiResponseMessage)
-        }, 300)
+          playMessageAudio(aiResponseMessage);
+        }, 300);
       }
 
     } catch (error) {
-      console.error('Error generating AI response:', error)
+      console.error('Error generating AI response:', error);
       
       // Fallback response if AI fails
       const fallbackMessage: Message = {
@@ -86,19 +86,19 @@ const MeetingView: React.FC = () => {
         timestamp: new Date().toISOString(),
         stakeholderName: selectedStakeholders[0]?.name || 'System',
         stakeholderRole: selectedStakeholders[0]?.role || 'System'
-      }
+      };
       
-      const newMessages = [...currentMessages, fallbackMessage]
-      setMessages(newMessages)
+      const newMessages = [...currentMessages, fallbackMessage];
+      setMessages(newMessages);
       
       if (currentMeeting) {
-        updateMeeting(currentMeeting.id, { transcript: newMessages })
+        updateMeeting(currentMeeting.id, { transcript: newMessages });
       }
     } finally {
       // Clear loading state
-      setRespondingStakeholder(null)
+      setRespondingStakeholder(null);
     }
-  }
+  };
 
   // ... rest of the component code ...
 }
