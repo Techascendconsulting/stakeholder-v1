@@ -101,44 +101,7 @@ const MeetingView: React.FC = () => {
 
     const conversationContext = {
       projectId: selectedProject.id,
-      stakeholderIds: selectedStakeholders.map(s => s.id),
-      messages: updatedMessagesWithUser,
-      meetingType: selectedStakeholders.length > 1 ? 'group' as const : 'individual' as const
-    };
-
-    try {
-      const aiResponseMessage = await stakeholderAI.generateGroupResponse(
-        conversationContext,
-        selectedProject,
-        selectedStakeholders,
-        userMessageText
-      );
-
-      setMessages(prevMessages => [...prevMessages, aiResponseMessage]);
-
-      if (globalAudioEnabled && aiResponseMessage.speaker !== 'user') {
-        setTimeout(() => playMessageAudio(aiResponseMessage), 300);
-      }
-
-    } catch (error) {
-      console.error('Error generating AI response:', error);
-      const fallbackMessage: Message = {
-        id: `msg-${Date.now()}-fallback`,
-        speaker: 'system',
-        content: "I'm sorry, I seem to have encountered a technical issue. Could you please try asking that again?",
-        timestamp: new Date().toISOString(),
-        stakeholderName: 'System',
-        stakeholderRole: 'Error'
-      };
-      setMessages(prevMessages => [...prevMessages, fallbackMessage]);
-    } finally {
-      setIsAiResponding(false);
-    }
-  }
-  
-  useEffect(() => {
-    if (currentMeeting && messages.length > currentMeeting.transcript.length) {
-      updateMeeting(currentMeeting.id, { transcript: messages });
+      stakeholderIds: selectedStake { transcript: messages });
     }
   }, [messages, currentMeeting, updateMeeting]);
 
@@ -227,4 +190,62 @@ const MeetingView: React.FC = () => {
             </button>
           </div>
         </div>
+        {/* Stakeholder Avatars */}
         <div className="flex items-center space-x-3 mt-4">
+          {selectedStakeholders.map((stakeholder) => (
+            <div key={stakeholder.id} className="flex items-center space-x-2">
+              <img src={stakeholder.photo} alt={stakeholder.name} className="w-8 h-8 rounded-full object-cover" />
+              <div>
+                <p className="text-sm font-medium text-gray-900">{stakeholder.name}</p>
+                <p className="text-xs text-gray-600">{stakeholder.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {messages.map((message) => {
+          const stakeholder = message.speaker !== 'user' && message.speaker !== 'system' ? getStakeholderById(message.speaker) : null;
+          return (
+            <div key={message.id} className={`flex items-start space-x-3 ${message.speaker === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+              <div className="flex-shrink-0">
+                {message.speaker === 'user' ? (
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-sm">BA</span>
+                  </div>
+                ) : message.speaker === 'system' ? (
+                  <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                ) : stakeholder ? (
+                  <img src={stakeholder.photo} alt={stakeholder.name} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-sm">?</span>
+                  </div>
+                )}
+              </div>
+              <div className={`flex-1 max-w-3xl ${message.speaker === 'user' ? 'text-right' : ''}`}>
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="text-sm font-medium text-gray-900">{message.speaker === 'user' ? 'You' : message.stakeholderName || 'System'}</span>
+                  {message.stakeholderRole && (
+                    <span className="text-xs text-blue-600 font-medium">{message.stakeholderRole}</span>
+                  )}
+                  <span className="text-xs text-gray-500">{new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                  {message.speaker !== 'user' && message.speaker !== 'system' && stakeholder && (
+                    <button onClick={() => playMessageAudio(message)} disabled={audioPlayback?.messageId === message.id && audioPlayback.isLoading} className="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Play audio">
+                      {audioPlayback?.messageId === message.id ? (audioPlayback.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : audioPlayback.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />) : <Volume2 className="w-4 h-4" />}
+                    </button>
+                  )}
+                </div>
+                <div className={`inline-block p-3 rounded-lg ${message.speaker === 'user' ? 'bg-blue-600 text-white' : message.speaker === 'system' ? 'bg-gray-100 text-gray-700' : 'bg-white border border-gray-200 text-gray-900'}`}>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {/* Typing Indicator */}
+        
