@@ -59,6 +59,7 @@ const MeetingView: React.FC = () => {
   const [meetingStartTime] = useState(new Date())
   const [audioPlaybackStates, setAudioPlaybackStates] = useState<Map<string, AudioPlaybackState>>(new Map())
   const [showVoiceModal, setShowVoiceModal] = useState(false)
+  const [isInputTranscribing, setIsInputTranscribing] = useState(false)
 
   // Add state for tracking which stakeholder is currently responding
   const [respondingStakeholder, setRespondingStakeholder] = useState<string | null>(null)
@@ -944,7 +945,7 @@ const MeetingView: React.FC = () => {
                     }
                   }}
                 />
-                {isTranscribing && (
+                {isInputTranscribing && (
                   <div className="flex items-center space-x-2 mt-2 text-blue-600">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-sm">Transcribing your question...</span>
@@ -983,6 +984,7 @@ const MeetingView: React.FC = () => {
         isOpen={showVoiceModal}
         onClose={() => setShowVoiceModal(false)}
         onSave={handleVoiceTranscription}
+        onTranscribingChange={setIsInputTranscribing}
         initialText={inputMessage}
       />
     </div>

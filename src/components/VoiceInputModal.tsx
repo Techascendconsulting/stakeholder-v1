@@ -16,6 +16,7 @@ interface VoiceInputModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (transcription: string) => void
+  onTranscribingChange?: (isTranscribing: boolean) => void
   initialText?: string
 }
 
@@ -23,6 +24,7 @@ const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onTranscribingChange,
   initialText = ''
 }) => {
   const [isRecording, setIsRecording] = useState(false)
@@ -152,6 +154,7 @@ const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
     }
 
     setIsTranscribing(true)
+    onTranscribingChange?.(true)
     try {
       const newTranscription = await transcribeAudio(audioBlob)
       
@@ -171,6 +174,7 @@ const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
       setError(error instanceof Error ? error.message : 'Transcription failed')
     } finally {
       setIsTranscribing(false)
+      onTranscribingChange?.(false)
     }
   }
 
