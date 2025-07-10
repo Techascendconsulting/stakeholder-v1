@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
+import VoiceInputModal from '../VoiceInputModal'
 import { 
   ArrowLeft, 
   Mic, 
-  MicOff, 
   Send, 
   Volume2, 
   VolumeX, 
@@ -22,7 +22,7 @@ import {
   Pause,
   AlertCircle
 } from 'lucide-react'
-import { transcribeAudio, isAudioRecordingSupported, isWhisperAvailable } from '../../lib/whisper'
+import { isAudioRecordingSupported } from '../../lib/whisper'
 import { azureTTS, isAzureTTSAvailable, playBrowserTTS } from '../../lib/azureTTS'
 import { stakeholderAI } from '../../lib/stakeholderAI'
 import { Message, Meeting } from '../../types'
@@ -54,20 +54,15 @@ const MeetingView: React.FC = () => {
 
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
-  const [isRecording, setIsRecording] = useState(false)
-  const [isTranscribing, setIsTranscribing] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [videoEnabled, setVideoEnabled] = useState(false)
   const [meetingStartTime] = useState(new Date())
   const [audioPlaybackStates, setAudioPlaybackStates] = useState<Map<string, AudioPlaybackState>>(new Map())
+  const [showVoiceModal, setShowVoiceModal] = useState(false)
 
   // Add state for tracking which stakeholder is currently responding
   const [respondingStakeholder, setRespondingStakeholder] = useState<string | null>(null)
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const currentAudioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -98,79 +93,21 @@ const MeetingView: React.FC = () => {
     }
   }, [selectedProject, selectedStakeholders, currentMeeting, setCurrentView, setCurrentMeeting, addMeeting])
 
-  const startRecording = async () => {
-    if (!isAudioRecordingSupported()) {
-      alert('Audio recording is not supported in your browser')
-      return
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mediaRecorder = new MediaRecorder(stream)
-      mediaRecorderRef.current = mediaRecorder
-      audioChunksRef.current = []
-
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data)
-      }
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        await handleAudioTranscription(audioBlob)
-        stream.getTracks().forEach(track => track.stop())
-      }
-
-      mediaRecorder.start()
-      setIsRecording(true)
-      setRecordingTime(0)
-
-      recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1)
-      }, 1000)
-    } catch (error) {
-      console.error('Error starting recording:', error)
-      alert('Could not access microphone. Please check permissions.')
-    }
+  const handleVoiceInput = () => {
+    setShowVoiceModal(true)
   }
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current)
-      }
-    }
-  }
-
-  const handleAudioTranscription = async (audioBlob: Blob) => {
-    if (!isWhisperAvailable()) {
-      const fallbackText = prompt('Audio transcription not available. Please type your message:')
-      if (fallbackText) {
-        setInputMessage(fallbackText)
-      }
-      return
-    }
-
-    setIsTranscribing(true)
-    try {
-      const transcription = await transcribeAudio(audioBlob)
-      setInputMessage(transcription)
-    } catch (error) {
-      console.error('Transcription error:', error)
-      const fallbackText = prompt('Transcription failed. Please type your message:')
-      if (fallbackText) {
-        setInputMessage(fallbackText)
-      }
-    } finally {
-      setIsTranscribing(false)
-    }
-  }
-
-  const formatRecordingTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+  const handleVoiceTranscription = (transcription: string) => {
+    // Append to existing input message with proper spacing
+    setInputMessage(prev => {
+      const trimmedPrev = prev.trim()
+      const trimmedNew = transcription.trim()
+      
+      if (!trimmedPrev) return trimmedNew
+      if (!trimmedNew) return trimmedPrev
+      
+      return `${trimmedPrev} ${trimmedNew}`
+    })
   }
 
   const formatMeetingDuration = () => {
@@ -1018,38 +955,28 @@ const MeetingView: React.FC = () => {
               <div className="flex flex-col space-y-2">
                 {isAudioRecordingSupported() && (
                   <button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isTranscribing}
+                    onClick={handleVoiceInput}
                     className={`p-3 rounded-xl transition-colors ${
-                      isRecording
-                        ? 'bg-red-600 text-white hover:bg-red-700'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    title="Voice input"
                   >
-                    {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                    <Mic className="w-5 h-5" />
                   </button>
                 )}
                 <button
                   onClick={sendMessage}
-                  disabled={!inputMessage.trim() || isTranscribing}
-                  className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            
-            {isRecording && (
-              <div className="flex items-center justify-center mt-4 text-red-600">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
-                  <span className="font-medium">Recording: {formatRecordingTime(recordingTime)}</span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Voice Input Modal */}
+      <VoiceInputModal
+        isOpen={showVoiceModal}
+        onClose={() => setShowVoiceModal(false)}
+        onSave={handleVoiceTranscription}
+        initialText={inputMessage}
+      />
     </div>
   )
 }
