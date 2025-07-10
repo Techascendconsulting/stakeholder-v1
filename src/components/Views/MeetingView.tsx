@@ -1,3 +1,7 @@
+// Filename: src/components/Views/MeetingView.tsx
+//
+// FINAL CORRECTED VERSION: This file fixes the "Unexpected token" syntax error and ensures all logic is correct.
+
 import React, { useState, useRef, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
@@ -68,6 +72,13 @@ const MeetingView: React.FC = () => {
     }
   }, [selectedProject, selectedStakeholders, currentMeeting, addMeeting, setCurrentMeeting])
 
+  // This useEffect hook is responsible for saving the transcript whenever the messages array changes.
+  useEffect(() => {
+    if (currentMeeting && messages.length > currentMeeting.transcript.length) {
+      updateMeeting(currentMeeting.id, { transcript: messages });
+    }
+  }, [messages, currentMeeting, updateMeeting]);
+
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
       <div className="p-8 text-center">
@@ -101,9 +112,40 @@ const MeetingView: React.FC = () => {
 
     const conversationContext = {
       projectId: selectedProject.id,
-      stakeholderIds: selectedStake { transcript: messages });
+      stakeholderIds: selectedStakeholders.map(s => s.id),
+      messages: updatedMessagesWithUser,
+      meetingType: selectedStakeholders.length > 1 ? 'group' as const : 'individual' as const
+    };
+
+    try {
+      const aiResponseMessage = await stakeholderAI.generateGroupResponse(
+        conversationContext,
+        selectedProject,
+        selectedStakeholders,
+        userMessageText
+      );
+
+      setMessages(prevMessages => [...prevMessages, aiResponseMessage]);
+
+      if (globalAudioEnabled && aiResponseMessage.speaker !== 'user') {
+        setTimeout(() => playMessageAudio(aiResponseMessage), 300);
+      }
+
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+      const fallbackMessage: Message = {
+        id: `msg-${Date.now()}-fallback`,
+        speaker: 'system',
+        content: "I'm sorry, I seem to have encountered a technical issue. Could you please try asking that again?",
+        timestamp: new Date().toISOString(),
+        stakeholderName: 'System',
+        stakeholderRole: 'Error'
+      };
+      setMessages(prevMessages => [...prevMessages, fallbackMessage]);
+    } finally {
+      setIsAiResponding(false);
     }
-  }, [messages, currentMeeting, updateMeeting]);
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -248,4 +290,48 @@ const MeetingView: React.FC = () => {
           );
         })}
         {/* Typing Indicator */}
-        
+        {isAiResponding && (
+          <div className="flex items-start space-x-3">
+            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+              <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-3">
+              <p className="text-sm text-gray-600 italic">Stakeholder is thinking...</p>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="bg-white border-t border-gray-200 p-4">
+        <div className="flex items-end space-x-3">
+          <div className="flex-1">
+            <div className="relative">
+              <input ref={inputRef} type="text" value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={handleKeyPress} placeholder="Type your question or message..." disabled={isAiResponding || isTranscribing} className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed" />
+              {isAudioRecordingSupported() && (
+                <button onClick={() => setIsVoiceModalOpen(true)} disabled={isAiResponding} className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Voice input">
+                  <Mic className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          </div>
+          <button onClick={sendMessage} disabled={!inputMessage.trim() || isAiResponding} className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+        {isTranscribing && (
+          <div className="mt-2 flex items-center space-x-2 text-blue-600">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Transcribing audio...</span>
+          </div>
+        )}
+      </div>
+
+      {/* Voice Input Modal */}
+      <VoiceInputModal isOpen={isVoiceModalOpen} onClose={() => setIsVoiceModalOpen(false)} onSave={handleVoiceInput} onTranscribingChange={setIsTranscribing} />
+    </div>
+  );
+}
+
+export default MeetingView;
