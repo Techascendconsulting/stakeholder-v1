@@ -1,217 +1,165 @@
+// Filename: src/lib/StakeholderAI.ts
+//
+// You can copy this entire block of code and paste it into the file.
+// This file contains all the logic for making the AI stakeholders talk.
+
 import OpenAI from 'openai'
+// Make sure you have defined these types somewhere in your project, likely in a 'types.ts' file.
 import { Stakeholder, Project, Message } from '../types'
 
+// This defines the information the AI needs about the current meeting state.
 interface ConversationContext {
   projectId: string
   stakeholderIds: string[]
-  messages: Message[]
+  messages: Message[] // This is the single, unified history of the meeting
   meetingType: 'individual' | 'group'
 }
 
-// Initialize OpenAI client
+// Initialize the OpenAI client with your API key.
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
 })
 
+/**
+ * This class is the "brain" for your AI stakeholders.
+ * It decides who should talk in a group and what they should say.
+ */
 class StakeholderAI {
-  private conversationHistory: Map<string, Message[]> = new Map()
-  private stakeholderContext: Map<string, any> = new Map()
 
-  constructor() {
-    // Initialize conversation tracking for each stakeholder
-  }
-
-  async generateResponse(
-    stakeholderId: string,
-    userMessage: string,
+  /**
+   * Generates a response for a GROUP meeting.
+   * This is the main function you will use for meetings with more than one stakeholder.
+   * It uses a "Director AI" to intelligently choose which stakeholder should speak.
+   * @param context - The current state of the meeting.
+   * @param project - The details of the project being discussed.
+   * @param allStakeholders - A list of all stakeholder objects in the meeting.
+   * @param userMessage - The latest message typed by the Business Analyst.
+   * @returns A Message object from the stakeholder who is responding.
+   */
+  public async generateGroupResponse(
     context: ConversationContext,
     project: Project,
-    stakeholder: Stakeholder,
-    isFollowUpIntroduction: boolean = false
-  ): Promise<string> {
+    allStakeholders: Stakeholder[],
+    userMessage: string
+  ): Promise<Message> {
     try {
-      // Get conversation history for this stakeholder
-      const history = this.conversationHistory.get(stakeholderId) || []
-      
-      // Build the conversation context
-      const conversationMessages = this.buildConversationMessages(
-        stakeholder,
-        project,
-        context,
-        history,
-        userMessage,
-        isFollowUpIntroduction
-      )
+      // 1. Build the special "Director Prompt" that tells the AI how to behave.
+      const directorPrompt = this.buildDirectorPrompt(project, context, allStakeholders, userMessage);
 
-      // Call OpenAI to generate response
+      // 2. Call the OpenAI API with the prompt.
       const completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: conversationMessages,
+        model: "gpt-4-turbo", // Using a powerful model is key for the director logic
+        messages: directorPrompt,
         temperature: 0.7,
-        max_tokens: 250,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
-        stream: false
-      })
+        max_tokens: 350,
+        // We ask the AI to respond in a structured JSON format. This is crucial.
+        response_format: { type: "json_object" },
+      });
 
-      const response = completion.choices[0]?.message?.content || "I need to think about that question more carefully."
-
-      // Update conversation history
-      const userMsg: Message = {
-        id: `user-${Date.now()}`,
-        speaker: 'user',
-        content: userMessage,
-        timestamp: new Date().toISOString()
+      const rawResponse = completion.choices[0]?.message?.content;
+      if (!rawResponse) {
+        throw new Error("Received an empty response from OpenAI.");
       }
 
+      // 3. Parse the structured JSON response we get back from the AI.
+      const aiResponse: {
+        speakerId: string,
+        reasoning: string,
+        response: string
+      } = JSON.parse(rawResponse);
+
+      // 4. Find the stakeholder who the AI decided should speak.
+      const speakingStakeholder = allStakeholders.find(s => s.id === aiResponse.speakerId);
+      if (!speakingStakeholder) {
+        throw new Error(`AI tried to speak as a non-existent stakeholder: ${aiResponse.speakerId}`);
+      }
+
+      // 5. Create the final Message object to be sent back to your app's interface.
       const stakeholderMsg: Message = {
         id: `stakeholder-${Date.now()}`,
-        speaker: stakeholderId,
-        content: response,
+        speaker: speakingStakeholder.id,
+        content: aiResponse.response,
         timestamp: new Date().toISOString(),
-        stakeholderName: stakeholder.name,
-        stakeholderRole: stakeholder.role
-      }
+        stakeholderName: speakingStakeholder.name,
+        stakeholderRole: speakingStakeholder.role
+      };
 
-      this.conversationHistory.set(stakeholderId, [...history, userMsg, stakeholderMsg])
-
-      return response
+      return stakeholderMsg;
 
     } catch (error) {
-      console.error('OpenAI API Error:', error)
-      return this.getFallbackResponse(stakeholder, userMessage)
+      console.error('OpenAI API Error in Group Response:', error);
+      // If anything goes wrong, return a safe fallback message.
+      return {
+        id: `stakeholder-fallback-${Date.now()}`,
+        speaker: 'system', // The speaker is 'system' to indicate an error.
+        content: "I'm sorry, I seem to have encountered a technical issue. Could you please try asking that again?",
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 
-  private buildConversationMessages(
-    stakeholder: Stakeholder,
+  /**
+   * This method constructs the detailed instructions for our "Director AI".
+   * It tells the AI its purpose, who the stakeholders are, what has been said,
+   * and how it needs to format its response.
+   */
+  private buildDirectorPrompt(
     project: Project,
     context: ConversationContext,
-    history: Message[],
-    userMessage: string,
-    isFollowUpIntroduction: boolean = false
-  ) {
-    const messages: any[] = []
+    allStakeholders: Stakeholder[],
+    userMessage: string
+  ): any[] {
+    // We only look at the last 12 messages to keep the prompt from getting too long.
+    // The real "memory" comes from the summary we will generate.
+    const history = context.messages.slice(-12);
 
-    // System prompt - defines the stakeholder's persona and expertise
-    messages.push({
-      role: "system",
-      content: this.buildSystemPrompt(stakeholder, project, context, isFollowUpIntroduction)
-    })
+    // Create a list of stakeholder profiles for the AI to understand who is in the room.
+    const stakeholderProfiles = allStakeholders.map(s =>
+      `- ID: "${s.id}", Name: ${s.name}, Role: ${s.role}, Expertise/Priorities: ${s.priorities.join(', ')}`
+    ).join('\n');
 
-    // Add conversation history (last 10 messages to keep context manageable)
-    const recentHistory = history.slice(-10)
-    recentHistory.forEach(msg => {
-      if (msg.speaker === 'user') {
-        messages.push({
-          role: "user",
-          content: msg.content
-        })
-      } else if (msg.speaker === stakeholder.id) {
-        messages.push({
-          role: "assistant",
-          content: msg.content
-        })
-      }
-    })
-
-    // Add current user message
-    messages.push({
-      role: "user",
-      content: userMessage
-    })
-
-    return messages
-  }
-
-  private buildSystemPrompt(
-    stakeholder: Stakeholder,
-    project: Project,
-    context: ConversationContext,
-    isFollowUpIntroduction: boolean = false
-  ): string {
-    const isGroupMeeting = context.meetingType === 'group'
-    const otherStakeholders = context.stakeholderIds.filter(id => id !== stakeholder.id)
-    const isFirstMessage = context.messages.length <= 1
-    const hasOtherIntroductions = context.messages.some(msg => 
-      msg.speaker !== 'user' && msg.speaker !== stakeholder.id && 
-      (msg.content.toLowerCase().includes('hello') || msg.content.toLowerCase().includes('hi') || msg.content.toLowerCase().includes('glad'))
-    )
-
-    return `You are ${stakeholder.name}, ${stakeholder.role} at a company. You are participating in a Business Analysis requirements gathering session for the project: "${project.name}".
+    // This is the main set of instructions for the AI.
+    const systemPrompt = `You are a "Meeting Director" AI. Your job is to orchestrate a realistic business meeting simulation.
 
 PROJECT CONTEXT:
-${project.description}
+- Name: ${project.name}
+- Description: ${project.description}
 
-BUSINESS CONTEXT:
-${project.businessContext}
+STAKEHOLDER PROFILES IN THIS MEETING:
+${stakeholderProfiles}
 
-PROBLEM STATEMENT:
-${project.problemStatement}
+YOUR TASK:
+You must perform a two-step process:
+1.  **DECIDE WHO SPEAKS:** Analyze the Business Analyst's latest message and the conversation history. Decide which stakeholder is the *most appropriate* to respond based on their role and expertise.
+2.  **GENERATE THE RESPONSE:** After choosing a speaker, generate a natural, in-character response from *their perspective*. The response must always include the business reason ("the why") for any requirement mentioned.
 
-CURRENT PROCESS:
-${project.asIsProcess}
+CONVERSATION HISTORY (Most Recent Messages):
+${history.map(msg => `${msg.stakeholderName || msg.speaker}: ${msg.content}`).join('\n')}
 
-YOUR ROLE & EXPERTISE:
-- Position: ${stakeholder.role}
-- Department: ${stakeholder.department}
-- Background: ${stakeholder.bio}
-- Personality: ${stakeholder.personality}
-- Key Priorities: ${stakeholder.priorities.join(', ')}
+BUSINESS ANALYST'S LATEST MESSAGE:
+"${userMessage}"
 
-MEETING CONTEXT:
-${isGroupMeeting ? 
-  `This is a group meeting with multiple stakeholders. Other participants include stakeholders from different departments. You should respond when questions are relevant to your domain or when you have valuable input to add. You can also briefly interact with other stakeholders' points when appropriate.` :
-  `This is a one-on-one interview between you and the Business Analyst. You should provide detailed, thoughtful responses about your domain expertise.`
-}
+RESPONSE FORMAT:
+Your entire output MUST be a single, valid JSON object. Do not add any text before or after the JSON structure.
+The JSON object must look exactly like this:
+{
+  "speakerId": "The ID of the stakeholder who should speak",
+  "reasoning": "A brief, one-sentence explanation for why you chose this speaker. This is for debugging.",
+  "response": "The full response content, written from the chosen stakeholder's perspective."
+}`;
 
-${isFirstMessage ? 
-  `IMPORTANT: This appears to be the start of the meeting. Begin with a brief, professional greeting and introduction. Mention your name, role, and express readiness to discuss the project. Keep it natural and conversational - like a real business meeting.` :
-  isFollowUpIntroduction ? 
-    `IMPORTANT: Another stakeholder just introduced themselves. You should now naturally introduce yourself as well, following their lead. Keep it brief but professional - mention your name, role, and readiness to contribute. This is natural meeting etiquette where participants introduce themselves in turn.` :
-    `IMPORTANT: This is an ongoing conversation. Do not introduce yourself again unless specifically asked. Respond directly to the question or topic at hand.`
-}
-
-INSTRUCTIONS:
-9. When discussing requirements, always include:
-13. Be helpful and responsive - you're here to provide valuable insights
-- Reference specific challenges you face in your role
-- Use terminology appropriate for your department
-- Keep responses focused but comprehensive (2-5 sentences)
-${isFirstMessage ? '- Start with a brief greeting and introduction' : 
-  isFollowUpIntroduction ? '- Introduce yourself naturally after the previous stakeholder' : 
-  '- Respond directly to the question without re-introducing yourself'}
-- Always provide actionable insights, not generic responses
-- Include specific metrics, timelines, or examples when relevant
-
-Remember: You are a real person with real expertise, not a generic AI assistant. Respond as ${stakeholder.name} would, drawing from your deep experience in ${stakeholder.department}.`
+    // The final prompt is just the system instruction. The user message is inside it.
+    return [{ role: "system", content: systemPrompt }];
   }
 
-  private getFallbackResponse(stakeholder: Stakeholder, userMessage: string): string {
-    const fallbacks = [
-      `That's an important question about our ${stakeholder.department} processes. Let me think about the specific requirements from our perspective and get back to you with details.`,
-      `From my experience in ${stakeholder.role}, that touches on some key challenges we face. I'd like to provide you with a comprehensive answer that includes the business reasoning behind our needs.`,
-      `That's definitely something we need to address in ${stakeholder.department}. Let me gather my thoughts on the specific requirements and business justification.`
-    ]
-    
-    return fallbacks[Math.floor(Math.random() * fallbacks.length)]
-  }
-
-  // Method to check if OpenAI is configured
-  isConfigured(): boolean {
-    return !!import.meta.env.VITE_OPENAI_API_KEY
-  }
-
-  // Clear conversation history for a stakeholder
-  clearHistory(stakeholderId: string): void {
-    this.conversationHistory.delete(stakeholderId)
-  }
-
-  // Get conversation history for a stakeholder
-  getHistory(stakeholderId: string): Message[] {
-    return this.conversationHistory.get(stakeholderId) || []
+  /**
+   * This is a helper method to check if your OpenAI API key is set up.
+   */
+  public isConfigured(): boolean {
+    return !!import.meta.env.VITE_OPENAI_API_KEY;
   }
 }
 
-export const stakeholderAI = new StakeholderAI()
+// We create a single instance of the AI brain that the rest of our app can use.
+export const stakeholderAI = new StakeholderAI();
