@@ -132,7 +132,7 @@ const LandingPage: React.FC = () => {
       company: "TechCorp",
       content: "This platform transformed my BA skills. The AI stakeholders feel incredibly realistic and helped me land my dream role.",
       rating: 5,
-      image: "https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: "https://images.pexels.com/photos/3778876/pexels-photo-3778876.jpeg?auto=compress&cs=tinysrgb&w=400"
     },
     {
       name: "Chukwuemeka Nwosu",
@@ -140,7 +140,7 @@ const LandingPage: React.FC = () => {
       company: "FinanceFirst",
       content: "The best investment I made in my career. The realistic scenarios prepared me perfectly for senior BA interviews.",
       rating: 5,
-      image: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: "https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400"
     },
     {
       name: "Folake Adebayo",
@@ -148,7 +148,7 @@ const LandingPage: React.FC = () => {
       company: "Consulting Plus",
       content: "Comprehensive training that covers everything from stakeholder management to professional documentation. Highly recommended!",
       rating: 5,
-      image: "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: "https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=400"
     }
   ]
 
