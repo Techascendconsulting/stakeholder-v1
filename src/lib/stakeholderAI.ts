@@ -1,5 +1,9 @@
+// Filename: src/lib/StakeholderAI.ts
+// FINAL VERSION WITH AUDIO LOGIC: This version reliably generates script-style text
+// and includes a new function to identify the primary speaker for audio playback.
+
 import OpenAI from 'openai'
-import { Stakeholder, Project, Message } from '../types' // Make sure this path is correct
+import { Stakeholder, Project, Message } from '../types'
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -8,21 +12,19 @@ const openai = new OpenAI({
 
 class StakeholderAI {
   /**
-   * This is the single, powerful function that generates a response.
-   * It asks the AI to create a script-like response if multiple people need to talk.
+   * The main function. It now returns a single message object that includes
+   * the ID of the primary speaker for audio playback.
    */
   public async generateResponse(
     project: Project,
     allStakeholders: Stakeholder[],
     messages: Message[],
     userMessage: string
-  ): Promise<Message> { // It now returns a single Message object again.
-    
+  ): Promise<Message> {
     const history = messages.slice(-10).map(msg => `${msg.stakeholderName || 'BA'}: ${msg.content}`).join('\n');
     const stakeholderProfiles = allStakeholders.map(s => `- ${s.name} (${s.role}, ID: ${s.id})`).join('\n');
 
-    // This is the new, simpler, more forceful prompt.
-    const systemPrompt = `You are a powerful AI orchestrating a business meeting simulation. Your primary goal is to generate a realistic, in-character response to the Business Analyst's message.
+    const systemPrompt = `You are an AI orchestrating a business meeting. Your goal is to generate a realistic, in-character response to the Business Analyst's message.
 
 ### STAKEHOLDERS IN THIS MEETING:
 ${stakeholderProfiles}
@@ -33,32 +35,17 @@ ${history}
 ### BUSINESS ANALYST'S LATEST MESSAGE:
 "${userMessage}"
 
-### YOUR TASK AND RULES (THESE ARE NOT NEGOTIABLE):
-
-1.  **Analyze the BA's message.** Determine who should speak.
-2.  **Multi-Speaker Rule:** If the BA greets or addresses MULTIPLE people (e.g., "hello guys", "hey both", "thanks James and Aisha"), you MUST generate a brief response for EACH person mentioned. Format it like a script, with each person's name on a new line.
-3.  **Single-Speaker Rule:** If the BA asks a question to a specific person or about a specific topic, only ONE stakeholder should respond. Choose the most relevant person.
-4.  **Rotation Rule:** For general questions, you MUST rotate speakers. Do not let the same person talk every time.
-5.  **Persona:** Every response must be 100% in character, based on the stakeholder's role and personality.
-6.  **Clarity:** Do NOT use markdown, asterisks, or complex formatting. Just plain text.
+### YOUR TASK AND RULES:
+1.  **Multi-Speaker Rule:** If the BA greets or addresses MULTIPLE people (e.g., "hello guys", "hey both"), you MUST generate a brief response for EACH person mentioned. Format it like a script.
+2.  **Single-Speaker Rule:** If the BA asks a question, only ONE stakeholder should respond. Choose the most relevant person based on their role and the conversation history.
+3.  **Rotation Rule:** For general questions, you MUST rotate speakers.
+4.  **Persona:** Every response must be 100% in character.
+5.  **Clarity:** Do NOT use markdown or asterisks. Just plain text.
 
 ### EXAMPLE RESPONSES:
-
-**BA says: "hello guys and welcome to the call"**
-Your output should be:
-Aisha Ahmed: "Thank you! It's great to be here."
-James Walker: "Hello. Ready to begin."
-
-**BA says: "What are the operational challenges?"**
-Your output should be:
-James Walker: "Our main challenge is the lack of standardized handoffs between departments, which causes significant delays and requires a lot of manual follow-up."
-
-**BA says: "Okay, thanks"**
-Your output should be:
-(No response required, return a single period ".")
-
----
-Now, generate the appropriate response based on the BA's latest message.`;
+BA says: "hello guys" -> James Walker: "Hello."\nAisha Ahmed: "Hi there!"
+BA says: "What are the operational challenges?" -> James Walker: "Our main challenge is the lack of standardized handoffs, which causes delays."
+BA says: "Okay, thanks" -> (return a single period: ".")`;
 
     try {
       const completion = await openai.chat.completions.create({
@@ -68,33 +55,65 @@ Now, generate the appropriate response based on the BA's latest message.`;
         max_tokens: 400,
       });
 
-      let responseContent = completion.choices[0]?.message?.content?.trim() || "I'm sorry, I missed that. Could you repeat it?";
-
-      // If the AI decides not to respond, don't send an empty message.
+      let responseContent = completion.choices[0]?.message?.content?.trim() || "I'm sorry, I missed that.";
       if (responseContent === ".") {
         responseContent = "";
       }
 
-      // The response is from the "system" but contains multiple speakers.
+      // NEW STEP: Identify the primary speaker for the generated text.
+      const primarySpeakerId = await this.identifyPrimarySpeaker(responseContent, allStakeholders);
+
       return {
         id: `sys-response-${Date.now()}`,
-        speaker: 'system', // The speaker is the system, presenting a script.
+        speaker: primarySpeakerId || 'system', // Use the identified speaker ID
         content: responseContent,
         timestamp: new Date().toISOString(),
-        stakeholderName: 'Stakeholders', // A generic name for the response block
-        stakeholderRole: 'Group Response'
+        stakeholderName: primarySpeakerId ? allStakeholders.find(s => s.id === primarySpeakerId)?.name : 'Stakeholders',
+        stakeholderRole: primarySpeakerId ? allStakeholders.find(s => s.id === primarySpeakerId)?.role : 'Group Response'
       };
 
     } catch (error) {
-      console.error('Error in single-call AI response generation:', error);
+      console.error('Error in AI response generation:', error);
       return {
         id: `fallback-${Date.now()}`,
         speaker: 'system',
-        content: "I've encountered a critical error and cannot respond right now. Please try again shortly.",
+        content: "I've encountered a critical error. Please try again.",
         timestamp: new Date().toISOString(),
         stakeholderName: 'System Error'
       };
     }
+  }
+
+  /**
+   * A new, fast AI call to identify the main speaker from a block of text.
+   */
+  private async identifyPrimarySpeaker(
+    responseText: string,
+    allStakeholders: Stakeholder[]
+  ): Promise<string | null> {
+    if (!responseText) return null;
+
+    const stakeholderList = allStakeholders.map(s => `- ${s.name} (ID: ${s.id})`).join('\n');
+
+    const prompt = `From the following text, identify the primary speaker. The primary speaker is usually the first person mentioned or the only person who speaks.
+
+STAKEHOLDER LIST:
+${stakeholderList}
+
+TEXT:
+"${responseText}"
+
+Respond with ONLY the ID of the primary speaker. If you cannot determine a speaker, respond with "N/A".`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "system", content: prompt }],
+      temperature: 0,
+      max_tokens: 20,
+    });
+
+    const speakerId = completion.choices[0]?.message?.content?.trim();
+    return allStakeholders.some(s => s.id === speakerId) ? speakerId : null;
   }
 }
 
