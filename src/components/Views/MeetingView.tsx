@@ -47,6 +47,18 @@ const MeetingView: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Add this entire useEffect block to your MeetingView.tsx file
+
+useEffect(() => {
+  // This effect runs whenever 'isAiResponding' changes.
+  if (!isAiResponding) {
+    // If the AI is NOT responding, it means it just finished.
+    // We will focus the input field so the user can type immediately.
+    inputRef.current?.focus();
+  }
+}, [isAiResponding]); // The dependency array ensures this runs only when isAiResponding changes.
+
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages]);
