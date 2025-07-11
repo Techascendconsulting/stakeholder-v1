@@ -61,6 +61,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     if (user) {
       resumeSession()
+      // Ensure student record exists for logged-in users
+      ensureStudentRecord()
     } else {
       // Clear data when user logs out
       setSelectedProject(null)
@@ -71,6 +73,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCurrentView('projects')
     }
   }, [user])
+
+  const ensureStudentRecord = async () => {
+    if (!user) return
+    
+    try {
+      let subscription = await subscriptionService.getStudentSubscription(user.id)
+      
+      // If no student record exists, create one
+      if (!subscription) {
+        subscription = await subscriptionService.createStudentRecord(
+          user.id,
+          user.email?.split('@')[0] || 'User',
+          user.email || ''
+        )
+        setStudentSubscription(subscription)
+      }
+    } catch (error) {
+      console.error('Error ensuring student record:', error)
+    }
+  }
 
   const resumeSession = async () => {
     if (!user) return

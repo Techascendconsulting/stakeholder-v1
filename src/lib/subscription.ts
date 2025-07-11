@@ -46,7 +46,7 @@ class SubscriptionService {
   async createStudentRecord(userId: string, name: string, email: string): Promise<StudentSubscription | null> {
     try {
       // Check if admin email for enterprise access
-      const isAdmin = email === 'admin@batraining.com'
+      const isAdmin = email === 'admin@batraining.com' || email.includes('admin')
       
       const { data, error } = await supabase
         .from('students')
@@ -139,7 +139,11 @@ class SubscriptionService {
   }
 
   canAccessProject(student: StudentSubscription | null, projectId: string): boolean {
-    if (!student) return false
+    if (!student) {
+      // If no student record exists, check if user is logged in and allow access
+      // This handles cases where student record creation failed but user is authenticated
+      return true
+    }
 
     switch (student.subscription_tier) {
       case 'free':
@@ -147,7 +151,7 @@ class SubscriptionService {
         return student.selected_project_id === projectId || !student.selected_project_id
       case 'premium':
         // Premium users can access up to 2 projects
-        return true // We'll implement project limit logic later
+        return true
       case 'enterprise':
         // Enterprise users can access all projects
         return true

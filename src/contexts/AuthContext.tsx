@@ -61,17 +61,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password,
     })
     
-    // If signup successful and user is confirmed, create student record
-    if (!error && data.user && data.user.email_confirmed_at) {
+    // If signup successful, create student record immediately
+    if (!error && data.user) {
       try {
         await subscriptionService.createStudentRecord(
           data.user.id,
-          email.split('@')[0], // Use email prefix as name for now
+          email.split('@')[0],
           email
         )
       } catch (studentError) {
         console.error('Error creating student record:', studentError)
-        // Don't fail the signup if student record creation fails
       }
     }
     
