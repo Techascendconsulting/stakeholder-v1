@@ -1,22 +1,23 @@
+// Filename: src/components/Views/MeetingView.tsx
+// FINAL VERSION WITH CORRECTED AUDIO LOGIC
+
 import React, { useState, useRef, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import VoiceInputModal from '../VoiceInputModal'
 import { stakeholderAI } from '../../lib/stakeholderAI'
 import { 
-  ArrowLeft, Mic, Send, Volume2, VolumeX, Users, Loader2, MessageSquare, Play, Pause, AlertCircle, XCircle
+  ArrowLeft, Mic, Send, Volume2, VolumeX, Users, Loader2, MessageSquare, Play, Pause, AlertCircle
 } from 'lucide-react'
 import { isAudioRecordingSupported } from '../../lib/whisper'
 import { azureTTS, isAzureTTSAvailable, playBrowserTTS } from '../../lib/azureTTS'
 import { Message, Meeting } from '../../types'
 
-// This state now includes the audio object for playback control
 interface AudioPlaybackState {
   messageId: string
   isPlaying: boolean
   isLoading: boolean
-  audioObject?: HTMLAudioElement // To control the audio (e.g., stop it)
-  error?: string
+  audioObject?: HTMLAudioElement
 }
 
 const MeetingView: React.FC = () => {
@@ -41,9 +42,8 @@ const MeetingView: React.FC = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages]);
 
-  // This useEffect will clean up the audio object when the component unmounts
   useEffect(() => {
     return () => {
       if (audioPlayback?.audioObject) {
@@ -52,7 +52,6 @@ const MeetingView: React.FC = () => {
     };
   }, [audioPlayback]);
 
-  // (The other useEffect hooks for initializing the meeting and saving the transcript are correct and remain unchanged)
   useEffect(() => {
     if (selectedProject && selectedStakeholders.length > 0 && !currentMeeting) {
       const newMeeting: Meeting = {
@@ -82,7 +81,6 @@ const MeetingView: React.FC = () => {
       updateMeeting(currentMeeting.id, { transcript: messages });
     }
   }, [messages, currentMeeting, updateMeeting]);
-
 
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
@@ -122,23 +120,13 @@ const MeetingView: React.FC = () => {
 
       if (aiResponseMessage.content) {
         setMessages(prevMessages => [...prevMessages, aiResponseMessage]);
-        // Automatically play the audio for the new response if enabled
-        if (globalAudioEnabled) {
-          // A short delay feels more natural
+        // THE FIX IS HERE: We now correctly check the speaker ID to play audio.
+        if (globalAudioEnabled && aiResponseMessage.speaker !== 'system') {
           setTimeout(() => playMessageAudio(aiResponseMessage), 500);
         }
       }
     } catch (error) {
       console.error('Error in sendMessage:', error);
-      const fallbackMessage: Message = {
-        id: `msg-${Date.now()}-fallback`,
-        speaker: 'system',
-        content: "I'm sorry, a critical error occurred. Please try again.",
-        timestamp: new Date().toISOString(),
-        stakeholderName: 'System',
-        stakeholderRole: 'Error'
-      };
-      setMessages(prevMessages => [...prevMessages, fallbackMessage]);
     } finally {
       setIsAiResponding(false);
     }
@@ -147,58 +135,44 @@ const MeetingView: React.FC = () => {
   const stopCurrentAudio = () => {
     if (audioPlayback?.audioObject) {
       audioPlayback.audioObject.pause();
-      audioPlayback.audioObject.currentTime = 0; // Rewind to the start
+      audioPlayback.audioObject.currentTime = 0;
     }
     setAudioPlayback(null);
   };
 
   const playMessageAudio = async (message: Message) => {
-    // If another audio is playing, stop it first.
-    if (audioPlayback) {
-      stopCurrentAudio();
-    }
+    if (audioPlayback) stopCurrentAudio();
     
-    if (!message.stakeholderName || message.speaker === 'user' || message.speaker === 'system') return;
-
+    // This check is now the key. We only play if the speaker is a real stakeholder.
     const stakeholder = selectedStakeholders.find(s => s.id === message.speaker);
     if (!stakeholder || !isStakeholderVoiceEnabled(stakeholder.id)) return;
 
     setAudioPlayback({ messageId: message.id, isPlaying: false, isLoading: true });
 
     try {
-      let audioBlob;
-      if (isAzureTTSAvailable()) {
-        const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role);
-        audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceName);
-      } else {
-        // Fallback to browser TTS if Azure is not available
-        console.log("Azure TTS not available, using browser TTS.");
-        // Note: Browser TTS doesn't return a blob, so direct playback is handled differently.
-        // This example will focus on the Azure path for simplicity with controls.
-        await playBrowserTTS(message.content);
-        setAudioPlayback(null); // Browser TTS has no controls, so we reset state.
-        return;
-      }
+      // For script-style text, we need to isolate the speaker's line.
+      const lines = message.content.split('\n');
+      const speakerLine = lines.find(line => line.startsWith(stakeholder.name)) || message.content;
+      const speechText = speakerLine.replace(`${stakeholder.name}:`, '').trim();
 
+      const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role);
+      const audioBlob = await azureTTS.synthesizeSpeech(speechText, voiceName);
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
-      audio.onended = () => {
-        setAudioPlayback(null); // Clear state when audio finishes
-      };
-
+      audio.onended = () => setAudioPlayback(null);
       audio.play();
 
       setAudioPlayback({
         messageId: message.id,
         isPlaying: true,
         isLoading: false,
-        audioObject: audio // Store the audio object for control
+        audioObject: audio
       });
 
     } catch (error) {
       console.error('Audio playback error:', error);
-      setAudioPlayback({ messageId: message.id, isPlaying: false, isLoading: false, error: 'Audio playback failed' });
+      setAudioPlayback({ messageId: message.id, isPlaying: false, isLoading: false });
     }
   };
 
@@ -215,7 +189,7 @@ const MeetingView: React.FC = () => {
   };
 
   const endMeeting = () => {
-    stopCurrentAudio(); // Stop any playing audio before ending the meeting
+    stopCurrentAudio();
     if (currentMeeting) {
       const duration = Math.floor((Date.now() - new Date(currentMeeting.date).getTime()) / 1000 / 60);
       updateMeeting(currentMeeting.id, { status: 'completed', duration, transcript: messages });
@@ -269,25 +243,22 @@ const MeetingView: React.FC = () => {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => {
-          const stakeholder = message.speaker !== 'user' && message.speaker !== 'system' ? getStakeholderById(message.speaker) : null;
           const isThisMessagePlaying = audioPlayback?.messageId === message.id && audioPlayback.isPlaying;
           const isThisMessageLoading = audioPlayback?.messageId === message.id && audioPlayback.isLoading;
+          const canThisMessageBePlayed = message.speaker !== 'user' && message.speaker !== 'system';
 
           return (
             <div key={message.id} className={`flex items-start space-x-3 ${message.speaker === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
               <div className="flex-shrink-0">
                 {message.speaker === 'user' ? (<div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center"><span className="text-white font-medium">BA</span></div>)
-                : message.speaker === 'system' ? (<div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"><MessageSquare className="w-5 h-5 text-white" /></div>)
-                : stakeholder ? (<img src={stakeholder.photo} alt={stakeholder.name} className="w-10 h-10 rounded-full object-cover" />)
-                : (<div className="w-10 h-10 bg-gray-400 rounded-full" />)}
+                : (<div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"><MessageSquare className="w-5 h-5 text-white" /></div>)}
               </div>
               <div className={`flex-1 max-w-3xl ${message.speaker === 'user' ? 'text-right' : ''}`}>
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="text-sm font-medium text-gray-900">{message.speaker === 'user' ? 'You' : message.stakeholderName || 'System'}</span>
                   <span className="text-xs text-gray-500">{formatTime(new Date(message.timestamp))}</span>
                   
-                  {/* Audio Controls UI */}
-                  {message.speaker !== 'user' && message.speaker !== 'system' && (
+                  {canThisMessageBePlayed && (
                     <div className="flex items-center space-x-1">
                       {isThisMessageLoading ? (
                         <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
