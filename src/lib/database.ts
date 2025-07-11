@@ -183,6 +183,10 @@ class DatabaseService {
       const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) {
+        if (error.code === '42P01') {
+          console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
+          return []
+        }
         console.error('Error fetching user meetings:', error)
         return []
       }
@@ -271,6 +275,10 @@ class DatabaseService {
       const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) {
+        if (error.code === '42P01') {
+          console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
+          return []
+        }
         console.error('Error fetching user deliverables:', error)
         return []
       }
@@ -343,6 +351,11 @@ class DatabaseService {
         .eq('user_id', userId)
         .single()
 
+      if (error && error.code === '42P01') {
+        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
+        return null
+      }
+
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user progress:', error)
       }
@@ -370,6 +383,10 @@ class DatabaseService {
         .single()
 
       if (error) {
+        if (error.code === '42P01') {
+          console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
+          return null
+        }
         console.error('Error initializing user progress:', error)
         return null
       }
