@@ -238,7 +238,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const enhancedSetCurrentView = async (view: AppView) => {
+    console.log('🔧 DEBUG: enhancedSetCurrentView called with view:', view);
+    setCurrentView(view);
+    if (selectedProject && user) {
+      console.log('🔧 DEBUG: Updating user project current_step to:', view);
+      await databaseService.updateUserProject(user.id, selectedProject.id, {
+        current_step: view
+      });
+    }
+  };
+
   const enhancedSetSelectedProject = async (project: Project | null) => {
+    console.log('🔧 DEBUG: enhancedSetSelectedProject called with project:', project?.name || 'null');
     if (project && user) {
       await selectProject(project);
     } else {
@@ -246,15 +258,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const enhancedSetCurrentView = async (view: AppView) => {
-    setCurrentView(view);
-    if (selectedProject && user) {
-      await databaseService.updateUserProject(user.id, selectedProject.id, {
-        current_step: view
-      });
-    }
-  };
-
+  console.log('🔧 DEBUG: Creating AppContext value object');
   const value = {
     currentView,
     setCurrentView: enhancedSetCurrentView,
