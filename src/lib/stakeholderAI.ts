@@ -1,6 +1,5 @@
 // Filename: src/lib/StakeholderAI.ts
-// FINAL VERSION WITH AUDIO LOGIC: This version reliably generates script-style text
-// and includes a new function to identify the primary speaker for audio playback.
+// This is the complete and correct version that works with the new architecture.
 
 import OpenAI from 'openai'
 import { Stakeholder, Project, Message } from '../types'
@@ -62,14 +61,15 @@ BA says: "Okay, thanks" -> (return a single period: ".")`;
 
       // NEW STEP: Identify the primary speaker for the generated text.
       const primarySpeakerId = await this.identifyPrimarySpeaker(responseContent, allStakeholders);
+      const primarySpeaker = allStakeholders.find(s => s.id === primarySpeakerId);
 
       return {
         id: `sys-response-${Date.now()}`,
         speaker: primarySpeakerId || 'system', // Use the identified speaker ID
         content: responseContent,
         timestamp: new Date().toISOString(),
-        stakeholderName: primarySpeakerId ? allStakeholders.find(s => s.id === primarySpeakerId)?.name : 'Stakeholders',
-        stakeholderRole: primarySpeakerId ? allStakeholders.find(s => s.id === primarySpeakerId)?.role : 'Group Response'
+        stakeholderName: primarySpeaker ? primarySpeaker.name : 'Stakeholders',
+        stakeholderRole: primarySpeaker ? primarySpeaker.role : 'Group Response'
       };
 
     } catch (error) {
@@ -106,7 +106,7 @@ TEXT:
 Respond with ONLY the ID of the primary speaker. If you cannot determine a speaker, respond with "N/A".`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo", // Using a faster model for this simple task
       messages: [{ role: "system", content: prompt }],
       temperature: 0,
       max_tokens: 20,
