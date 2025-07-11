@@ -28,6 +28,10 @@ class SubscriptionService {
           console.warn('Students table not yet created. Please run the SQL setup script in Supabase.')
           return null
         }
+        if (error.code === 'PGRST116') {
+          // No student record found - this is normal for new users
+          return null
+        }
         console.error('Error fetching student subscription:', error)
         return null
       }
