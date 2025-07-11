@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { 
   GraduationCap, 
@@ -14,13 +14,22 @@ import {
   Building,
   Clock,
   Shield,
-  Zap
+  Zap,
+  MessageSquare,
+  BarChart3,
+  Globe,
+  Briefcase
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 
 const LandingPage: React.FC = () => {
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    setIsVisible(true)
+  }, [])
 
   if (showAuth) {
     return <LoginSignup />
@@ -30,22 +39,26 @@ const LandingPage: React.FC = () => {
     {
       icon: Users,
       title: "AI-Powered Stakeholder Interviews",
-      description: "Practice with realistic AI stakeholders that respond like real business professionals"
+      description: "Practice with realistic AI stakeholders that respond like real business professionals",
+      image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
     },
     {
       icon: FileText,
       title: "Professional Documentation",
-      description: "Create industry-standard BRDs, user stories, and acceptance criteria"
+      description: "Create industry-standard BRDs, user stories, and acceptance criteria",
+      image: "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=800"
     },
     {
       icon: Target,
       title: "Real-World Scenarios",
-      description: "Work on actual business cases from leading organizations"
+      description: "Work on actual business cases from leading organizations",
+      image: "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800"
     },
     {
       icon: Award,
       title: "Skill Certification",
-      description: "Build a portfolio of completed projects to showcase your expertise"
+      description: "Build a portfolio of completed projects to showcase your expertise",
+      image: "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=800"
     }
   ]
 
@@ -68,7 +81,8 @@ const LandingPage: React.FC = () => {
       ],
       buttonText: "Get Started Free",
       popular: false,
-      color: "border-gray-200"
+      color: "border-gray-200",
+      gradient: "from-gray-50 to-gray-100"
     },
     {
       name: "Premium",
@@ -86,7 +100,8 @@ const LandingPage: React.FC = () => {
       limitations: [],
       buttonText: "Coming Soon",
       popular: true,
-      color: "border-blue-500"
+      color: "border-blue-500",
+      gradient: "from-blue-50 to-purple-50"
     },
     {
       name: "Enterprise",
@@ -105,7 +120,8 @@ const LandingPage: React.FC = () => {
       limitations: [],
       buttonText: "Coming Soon",
       popular: false,
-      color: "border-purple-500"
+      color: "border-purple-500",
+      gradient: "from-purple-50 to-pink-50"
     }
   ]
 
@@ -115,32 +131,42 @@ const LandingPage: React.FC = () => {
       role: "Senior Business Analyst",
       company: "TechCorp",
       content: "This platform transformed my BA skills. The AI stakeholders feel incredibly realistic.",
-      rating: 5
+      rating: 5,
+      image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400"
     },
     {
       name: "Michael Chen",
       role: "Product Manager",
       company: "FinanceFirst",
       content: "The best investment I made in my career. Landed a senior BA role within 3 months.",
-      rating: 5
+      rating: 5,
+      image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400"
     },
     {
       name: "Emma Williams",
       role: "Business Consultant",
       company: "Consulting Plus",
       content: "Comprehensive training that covers everything from stakeholder management to documentation.",
-      rating: 5
+      rating: 5,
+      image: "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400"
     }
   ]
 
+  const stats = [
+    { number: "5", label: "Real-World Projects", icon: Briefcase },
+    { number: "25+", label: "AI Stakeholders", icon: Users },
+    { number: "100+", label: "Hours of Content", icon: Clock },
+    { number: "95%", label: "Success Rate", icon: TrendingUp }
+  ]
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+            <div className={`flex items-center space-x-3 transform transition-all duration-700 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -148,16 +174,16 @@ const LandingPage: React.FC = () => {
                 <p className="text-xs text-gray-600">Professional Development</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className={`flex items-center space-x-4 transform transition-all duration-700 delay-200 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}>
               <button
                 onClick={() => setShowAuth(true)}
-                className="text-gray-700 hover:text-gray-900 font-medium"
+                className="text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200"
               >
                 Sign In
               </button>
               <button
                 onClick={() => setShowAuth(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 Get Started
               </button>
@@ -167,50 +193,74 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Master Business Analysis with
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> AI-Powered Training</span>
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Practice stakeholder interviews, create professional deliverables, and build real-world BA skills 
-              through immersive, AI-driven scenarios based on actual business cases.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => setShowAuth(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-semibold text-lg flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
-              >
-                <span>Start Free Training</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button className="border border-gray-300 text-gray-700 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold text-lg flex items-center justify-center space-x-2">
-                <Play className="w-5 h-5" />
-                <span>Watch Demo</span>
-              </button>
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 py-20 overflow-hidden">
+        {/* Background Animation */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'}`}>
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                Master Business Analysis with
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> AI-Powered Training</span>
+              </h1>
+              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                Practice stakeholder interviews, create professional deliverables, and build real-world BA skills 
+                through immersive, AI-driven scenarios based on actual business cases.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <span>Start Free Training</span>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <button className="border border-gray-300 text-gray-700 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-2 transform hover:scale-105">
+                  <Play className="w-5 h-5" />
+                  <span>Watch Demo</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Image */}
+            <div className={`transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'}`}>
+              <div className="relative">
+                <img
+                  src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
+                  alt="Professional business meeting"
+                  className="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg animate-bounce">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">95% Success Rate</p>
+                      <p className="text-sm text-gray-600">Career Advancement</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">5</div>
-              <div className="text-gray-600">Real-World Projects</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">25+</div>
-              <div className="text-gray-600">AI Stakeholders</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">100+</div>
-              <div className="text-gray-600">Hours of Content</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">95%</div>
-              <div className="text-gray-600">Success Rate</div>
-            </div>
+          <div className={`grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 transform transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <stat.icon className="w-8 h-8 text-blue-600" />
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
+                <div className="text-gray-600">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -225,14 +275,28 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {features.map((feature, index) => (
-              <div key={index} className="text-center group">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform duration-200">
-                  <feature.icon className="w-8 h-8 text-blue-600" />
+              <div key={index} className={`group transform transition-all duration-700 delay-${index * 200} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+                <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:scale-105">
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={feature.image}
+                      alt={feature.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    <div className="absolute bottom-4 left-4">
+                      <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <feature.icon className="w-6 h-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -251,10 +315,10 @@ const LandingPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
-              <div key={index} className={`bg-white rounded-2xl shadow-sm border-2 ${plan.color} p-8 relative ${plan.popular ? 'scale-105' : ''}`}>
+              <div key={index} className={`bg-gradient-to-br ${plan.gradient} rounded-2xl shadow-lg border-2 ${plan.color} p-8 relative transform transition-all duration-700 delay-${index * 200} hover:scale-105 ${plan.popular ? 'scale-105 shadow-2xl' : ''} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold">
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold animate-pulse">
                       Most Popular
                     </span>
                   </div>
@@ -287,9 +351,9 @@ const LandingPage: React.FC = () => {
                 <button
                   onClick={() => plan.name === 'Free' ? setShowAuth(true) : undefined}
                   disabled={plan.name !== 'Free'}
-                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
+                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                     plan.name === 'Free'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
                       : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                   }`}
                 >
@@ -311,17 +375,24 @@ const LandingPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gray-50 rounded-2xl p-8">
+              <div key={index} className={`bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 transform hover:scale-105 delay-${index * 200} ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                   ))}
                 </div>
                 <p className="text-gray-700 mb-6 italic">"{testimonial.content}"</p>
-                <div>
-                  <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                  <div className="text-sm text-gray-600">{testimonial.role}</div>
-                  <div className="text-sm text-blue-600">{testimonial.company}</div>
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                    <div className="text-sm text-gray-600">{testimonial.role}</div>
+                    <div className="text-sm text-blue-600">{testimonial.company}</div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -330,8 +401,15 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            alt="Professional team"
+            className="w-full h-full object-cover opacity-20"
+          />
+        </div>
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to Become a Business Analysis Expert?
           </h2>
@@ -340,7 +418,7 @@ const LandingPage: React.FC = () => {
           </p>
           <button
             onClick={() => setShowAuth(true)}
-            className="bg-white text-blue-600 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold text-lg flex items-center justify-center space-x-2 mx-auto shadow-lg hover:shadow-xl"
+            className="bg-white text-blue-600 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-2 mx-auto shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <span>Start Free Training Now</span>
             <ArrowRight className="w-5 h-5" />
@@ -366,28 +444,28 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Platform</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>Training Projects</li>
-                <li>AI Stakeholders</li>
-                <li>Certification</li>
-                <li>Progress Tracking</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Training Projects</li>
+                <li className="hover:text-white transition-colors cursor-pointer">AI Stakeholders</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Certification</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Progress Tracking</li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>Help Center</li>
-                <li>Documentation</li>
-                <li>Community</li>
-                <li>Contact Us</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Help Center</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Documentation</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Community</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Contact Us</li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Company</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>About Us</li>
-                <li>Careers</li>
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
+                <li className="hover:text-white transition-colors cursor-pointer">About Us</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Careers</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Privacy Policy</li>
+                <li className="hover:text-white transition-colors cursor-pointer">Terms of Service</li>
               </ul>
             </div>
           </div>
