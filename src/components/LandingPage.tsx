@@ -75,7 +75,7 @@ const LandingPage: React.FC = () => {
       icon: Target,
       title: "Real Enterprise Scenarios",
       description: "Work on actual business cases from Fortune 500 companies across multiple industries",
-      image: "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      image: "https://images.pexels.com/photos/7688339/pexels-photo-7688339.jpeg?auto=compress&cs=tinysrgb&w=1200",
       stats: "5 Industries",
       color: "from-emerald-500 to-teal-500"
     },
