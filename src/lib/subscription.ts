@@ -21,15 +21,11 @@ class SubscriptionService {
         .from('students')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       if (error) {
         if (error.code === '42P01') {
           console.warn('Students table not yet created. Please run the SQL setup script in Supabase.')
-          return null
-        }
-        if (error.code === 'PGRST116') {
-          // No student record found - this is normal for new users
           return null
         }
         console.error('Error fetching student subscription:', error)

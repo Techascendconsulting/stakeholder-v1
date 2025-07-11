@@ -128,15 +128,16 @@ class DatabaseService {
         .select('*')
         .eq('user_id', userId)
         .eq('project_id', projectId)
-        .single()
+        .maybeSingle()
 
       if (error && error.code === '42P01') {
         console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
         return null
       }
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching user project:', error)
+        return null
       }
 
       return data || null
@@ -432,6 +433,8 @@ class DatabaseService {
           total_deliverables_created: deliverablesCreated,
           achievements,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         })
 
       if (error) {

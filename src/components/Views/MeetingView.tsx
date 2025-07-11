@@ -86,6 +86,7 @@ const MeetingView: React.FC = () => {
         id: `meeting-${Date.now()}`,
         projectId: selectedProject.id,
         stakeholderIds: selectedStakeholders.map(s => s.id),
+        meetingType: selectedStakeholders.length === 1 ? 'individual' : 'group',
         transcript: [], // Start with an empty transcript
         date: new Date().toISOString(),
         duration: 0,
