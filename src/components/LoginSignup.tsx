@@ -90,29 +90,15 @@ const LoginSignup: React.FC = () => {
 
     try {
       // Create user in Supabase Auth
-      const { data, error } = await signUp(formData.email, formData.password)
+      const { error } = await signUp(formData.email, formData.password)
       
       if (error) {
         setErrors({ general: error.message })
         return
       }
 
-      if (data.user) {
-        // Create student record
-        const studentRecord = await subscriptionService.createStudentRecord(
-          data.user.id,
-          formData.name.trim(),
-          formData.email
-        )
-
-        if (!studentRecord) {
-          console.error('Error creating student record')
-          // Don't show this error to user as auth was successful
-        }
-
-        setSuccess('Account created successfully! Please check your email for verification.')
-        setFormData({ name: '', email: '', password: '', confirmPassword: '' })
-      }
+      setSuccess('Account created successfully! Please check your email for verification.')
+      setFormData({ name: '', email: '', password: '', confirmPassword: '' })
     } catch (err) {
       setErrors({ general: 'An unexpected error occurred' })
     } finally {
