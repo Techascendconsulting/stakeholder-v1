@@ -1,6 +1,6 @@
 // Filename: src/contexts/AppContext.tsx
-// FINAL, CORRECTED VERSION: This version fixes the "selectProject is not a function" crash
-// and correctly implements the robust state management for the meeting chat.
+// FINAL, CORRECTED VERSION: This version fixes the infinite "Loading Meeting..." bug
+// by correctly finding and setting the currentMeeting after the session is resumed.
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useAuth } from './AuthContext';
@@ -23,12 +23,9 @@ interface AppContextType {
   meetings: Meeting[];
   addMeeting: (meeting: Meeting) => void;
   updateMeeting: (meetingId: string, updates: Partial<Meeting>) => void;
-  deliverables: Deliverable[];
-  addDeliverable: (deliverable: Deliverable) => void;
-  updateDeliverable: (deliverableId: string, updates: Partial<Deliverable>) => void;
   currentMeeting: Meeting | null;
   setCurrentMeeting: (meeting: Meeting | null) => void;
-  addMessageToCurrentMeeting: (message: Message) => void; // The new function for robust state
+  addMessageToCurrentMeeting: (message: Message) => void;
   userProgress: UserProgress | null;
   studentSubscription: StudentSubscription | null;
   isLoading: boolean;
@@ -39,10 +36,8 @@ interface AppContextType {
   selectProject: (project: Project) => Promise<void>;
 }
 
-// Create the context
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Custom hook to use the context
 export const useApp = () => {
   const context = useContext(AppContext);
   if (!context) {
@@ -51,7 +46,6 @@ export const useApp = () => {
   return context;
 };
 
-// The provider component
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [currentView, setCurrentView] = useState<AppView>('projects');
@@ -62,50 +56,39 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
   const [studentSubscription, setStudentSubscription] = useState<StudentSubscription | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [dbMeetings, setDbMeetings] = useState<DatabaseMeeting[]>([]);
   const [dbDeliverables, setDbDeliverables] = useState<DatabaseDeliverable[]>([]);
 
-  // This is the new, direct way to add a message to the current meeting's transcript.
   const addMessageToCurrentMeeting = (message: Message) => {
     if (!currentMeeting) return;
-
     const updatedMeeting = {
       ...currentMeeting,
       transcript: [...currentMeeting.transcript, message],
     };
-    
-    // This is now the single source of truth.
     setCurrentMeeting(updatedMeeting);
   };
 
-  // This useEffect now correctly saves the transcript whenever it changes.
   useEffect(() => {
     if (currentMeeting) {
       const meetingIndex = meetings.findIndex(m => m.id === currentMeeting.id);
-      if (meetingIndex !== -1) {
-        // Only update if the transcript has actually changed to prevent infinite loops.
-        if (JSON.stringify(meetings[meetingIndex].transcript) !== JSON.stringify(currentMeeting.transcript)) {
-          const updatedMeetings = [...meetings];
-          updatedMeetings[meetingIndex] = currentMeeting;
-          setMeetings(updatedMeetings);
-          
-          // Save the updated transcript to the database.
-          databaseService.updateUserMeeting(currentMeeting.id, {
-            transcript: currentMeeting.transcript
-          });
-        }
+      if (meetingIndex !== -1 && JSON.stringify(meetings[meetingIndex].transcript) !== JSON.stringify(currentMeeting.transcript)) {
+        const updatedMeetings = [...meetings];
+        updatedMeetings[meetingIndex] = currentMeeting;
+        setMeetings(updatedMeetings);
+        databaseService.updateUserMeeting(currentMeeting.id, {
+          transcript: currentMeeting.transcript
+        });
       }
     }
-  }, [currentMeeting]); // Reruns whenever the currentMeeting object changes.
+  }, [currentMeeting]);
 
-  // Load user data when user logs in
   useEffect(() => {
     if (user) {
       resumeSession();
       ensureStudentRecord();
     } else {
-      // Clear data when user logs out
+      setIsLoading(false);
       setSelectedProject(null);
       setMeetings([]);
       setDeliverables([]);
@@ -126,8 +109,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           user.email?.split('@')[0] || 'User',
           user.email || ''
         );
-        setStudentSubscription(subscription);
       }
+      setStudentSubscription(subscription);
     } catch (error) {
       console.error('Error ensuring student record:', error);
     }
@@ -143,43 +126,47 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const sessionData = await databaseService.resumeUserSession(user.id);
       setUserProgress(sessionData.progress);
 
+      const appMeetings: Meeting[] = sessionData.meetings.map(dbMeeting => ({
+        id: dbMeeting.id,
+        projectId: dbMeeting.project_id,
+        stakeholderIds: dbMeeting.stakeholder_ids,
+        transcript: dbMeeting.transcript,
+        date: dbMeeting.created_at,
+        duration: dbMeeting.duration,
+        status: dbMeeting.status,
+        meetingType: dbMeeting.meeting_type
+      }));
+      setMeetings(appMeetings);
+
+      const appDeliverables: Deliverable[] = sessionData.deliverables.map(dbDeliverable => ({
+        id: dbDeliverable.id,
+        projectId: dbDeliverable.project_id,
+        type: dbDeliverable.type,
+        title: dbDeliverable.title,
+        content: dbDeliverable.content,
+        lastModified: dbDeliverable.updated_at
+      }));
+      setDeliverables(appDeliverables);
+      
+      // --- THE CORE FIX IS HERE ---
       if (sessionData.currentProject) {
         const projectData = mockProjects.find(p => p.id === sessionData.currentProject!.project_id);
         if (projectData) {
           setSelectedProject(projectData);
-          
-          const appMeetings: Meeting[] = sessionData.meetings.map(dbMeeting => ({
-            id: dbMeeting.id,
-            projectId: dbMeeting.project_id,
-            stakeholderIds: dbMeeting.stakeholder_ids,
-            transcript: dbMeeting.transcript,
-            date: dbMeeting.created_at,
-            duration: dbMeeting.duration,
-            status: dbMeeting.status,
-            meetingType: dbMeeting.meeting_type
-          }));
-          
-          const appDeliverables: Deliverable[] = sessionData.deliverables.map(dbDeliverable => ({
-            id: dbDeliverable.id,
-            projectId: dbDeliverable.project_id,
-            type: dbDeliverable.type,
-            title: dbDeliverable.title,
-            content: dbDeliverable.content,
-            lastModified: dbDeliverable.updated_at
-          }));
-          
-          setMeetings(appMeetings);
-          setDeliverables(appDeliverables);
-          setDbMeetings(sessionData.meetings);
-          setDbDeliverables(sessionData.deliverables);
-          
+          // Find the active meeting for this project and set it as current
+          const activeMeeting = appMeetings.find(m => m.projectId === projectData.id && m.status === 'in_progress');
+          setCurrentMeeting(activeMeeting || null); // Set the meeting, or null if none is active
           setCurrentView(sessionData.currentProject.current_step as AppView);
         }
+      } else {
+        // If no active project, ensure we are on the projects page
+        setCurrentView('projects');
       }
+
     } catch (error) {
       console.error('Error resuming session:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Stop loading at the very end
     }
   };
 
@@ -216,10 +203,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     setMeetings(prev => [...prev, meeting]);
     if (user) {
-      const dbMeeting = await databaseService.createUserMeeting(meeting);
-      if (dbMeeting) {
-        setDbMeetings(prev => [...prev, dbMeeting]);
-      }
+      await databaseService.createUserMeeting(meeting);
     }
   };
 
@@ -228,25 +212,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       meeting.id === meetingId ? { ...meeting, ...updates } : meeting
     ));
     if (user) {
-      const dbMeeting = dbMeetings.find(m => m.id === meetingId);
-      if (dbMeeting) {
-        const dbUpdates: Partial<DatabaseMeeting> = {};
-        if (updates.transcript) dbUpdates.transcript = updates.transcript;
-        if (updates.status) dbUpdates.status = updates.status;
-        if (updates.duration) dbUpdates.duration = updates.duration;
-        if (updates.status === 'completed') dbUpdates.completed_at = new Date().toISOString();
-        await databaseService.updateUserMeeting(meetingId, dbUpdates);
-      }
+      await databaseService.updateUserMeeting(meetingId, updates);
     }
   };
 
   const addDeliverable = async (deliverable: Deliverable) => {
     setDeliverables(prev => [...prev, deliverable]);
     if (user) {
-      const dbDeliverable = await databaseService.createUserDeliverable(deliverable);
-      if (dbDeliverable) {
-        setDbDeliverables(prev => [...prev, dbDeliverable]);
-      }
+      await databaseService.createUserDeliverable(deliverable);
     }
   };
 
@@ -255,10 +228,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       deliverable.id === deliverableId ? { ...deliverable, ...updates } : deliverable
     ));
     if (user) {
-      const dbUpdates: Partial<DatabaseDeliverable> = {};
-      if (updates.content) dbUpdates.content = updates.content;
-      if (updates.title) dbUpdates.title = updates.title;
-      await databaseService.updateUserDeliverable(deliverableId, dbUpdates);
+      await databaseService.updateUserDeliverable(deliverableId, updates);
     }
   };
 
@@ -279,7 +249,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // The value provided to the context consumers
   const value = {
     currentView,
     setCurrentView: enhancedSetCurrentView,
@@ -298,7 +267,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateDeliverable,
     currentMeeting,
     setCurrentMeeting,
-    addMessageToCurrentMeeting, // The new function is here
+    addMessageToCurrentMeeting,
     userProgress,
     studentSubscription,
     isLoading,
@@ -306,7 +275,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     canAccessProject,
     canSaveNotes,
     canCreateMoreMeetings,
-    selectProject, // THE FIX: This function is now correctly included
+    selectProject,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
