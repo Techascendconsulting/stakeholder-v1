@@ -53,11 +53,11 @@ class DatabaseService {
   // User Projects
   async getUserProjects(userId: string): Promise<UserProject[]> {
     try {
-    const { data, error } = await supabase
-      .from('user_projects')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+      const { data, error } = await supabase
+        .from('user_projects')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
 
       if (error) {
         if (error.code === '42P01') {
@@ -87,34 +87,34 @@ class DatabaseService {
 
   async createUserProject(projectId: string, currentStep: string = 'project-brief'): Promise<UserProject | null> {
     try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
 
-    // Check if project already exists
-    const existing = await this.getUserProject(user.id, projectId)
-    if (existing) {
-      return this.updateUserProject(user.id, projectId, { current_step: currentStep })
-    }
+      // Check if project already exists
+      const existing = await this.getUserProject(user.id, projectId)
+      if (existing) {
+        return this.updateUserProject(user.id, projectId, { current_step: currentStep })
+      }
 
-    const { data, error } = await supabase
-      .from('user_projects')
-      .insert({
-        user_id: user.id,
-        project_id: projectId,
-        status: 'in_progress',
-        current_step: currentStep
-      })
-      .select()
-      .single()
+      const { data, error } = await supabase
+        .from('user_projects')
+        .insert({
+          user_id: user.id,
+          project_id: projectId,
+          status: 'in_progress',
+          current_step: currentStep
+        })
+        .select()
+        .single()
 
-    if (error) {
-      console.error('Error creating user project:', error)
-      return null
-    }
+      if (error) {
+        console.error('Error creating user project:', error)
+        return null
+      }
 
-    // Update progress stats
-    await this.updateProgressStats(user.id)
-    return data
+      // Update progress stats
+      await this.updateProgressStats(user.id)
+      return data
     } catch (error) {
       console.error('Database connection error:', error)
       return null
@@ -123,12 +123,12 @@ class DatabaseService {
 
   async getUserProject(userId: string, projectId: string): Promise<UserProject | null> {
     try {
-    const { data, error } = await supabase
-      .from('user_projects')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('project_id', projectId)
-      .single()
+      const { data, error } = await supabase
+        .from('user_projects')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('project_id', projectId)
+        .single()
 
       if (error && error.code === '42P01') {
         console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
@@ -148,248 +148,247 @@ class DatabaseService {
 
   async updateUserProject(userId: string, projectId: string, updates: Partial<UserProject>): Promise<UserProject | null> {
     try {
-    const { data, error } = await supabase
-      .from('user_projects')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('user_id', userId)
-      .eq('project_id', projectId)
-      .select()
-      .single()
+      const { data, error } = await supabase
+        .from('user_projects')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('project_id', projectId)
+        .select()
+        .single()
 
-    if (error) {
-      console.error('Error updating user project:', error)
+      if (error) {
+        console.error('Error updating user project:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Database connection error:', error)
       return null
     }
-
-    return data
   }
 
   // User Meetings
   async getUserMeetings(userId: string, projectId?: string): Promise<DatabaseMeeting[]> {
-    let query = supabase
-      .from('user_meetings')
-      .select('*')
-      .eq('user_id', userId)
+    try {
+      let query = supabase
+        .from('user_meetings')
+        .select('*')
+        .eq('user_id', userId)
 
-    if (projectId) {
-      query = query.eq('project_id', projectId)
-    }
+      if (projectId) {
+        query = query.eq('project_id', projectId)
+      }
 
-    const { data, error } = await query.order('created_at', { ascending: false })
+      const { data, error } = await query.order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error fetching user meetings:', error)
+      if (error) {
+        console.error('Error fetching user meetings:', error)
+        return []
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Database connection error:', error)
       return []
     }
-
-    return data || []
   }
 
   async createUserMeeting(meeting: Omit<Meeting, 'id'>): Promise<DatabaseMeeting | null> {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
 
-    const { data, error } = await supabase
-      .from('user_meetings')
-      .insert({
-        user_id: user.id,
-        project_id: meeting.projectId,
-        stakeholder_ids: meeting.stakeholderIds,
-        transcript: meeting.transcript,
-        status: meeting.status,
-        meeting_type: meeting.meetingType,
-        duration: meeting.duration
-      })
-      .select()
-      .single()
+      const { data, error } = await supabase
+        .from('user_meetings')
+        .insert({
+          user_id: user.id,
+          project_id: meeting.projectId,
+          stakeholder_ids: meeting.stakeholderIds,
+          transcript: meeting.transcript,
+          status: meeting.status,
+          meeting_type: meeting.meetingType,
+          duration: meeting.duration
+        })
+        .select()
+        .single()
 
-    if (error) {
-      console.error('Error creating user meeting:', error)
+      if (error) {
+        console.error('Error creating user meeting:', error)
+        return null
+      }
+
+      // Update progress stats
+      await this.updateProgressStats(user.id)
+      return data
+    } catch (error) {
+      console.error('Database connection error:', error)
       return null
     }
-
-    // Update progress stats
-    await this.updateProgressStats(user.id)
-    return data
   }
 
   async updateUserMeeting(meetingId: string, updates: Partial<DatabaseMeeting>): Promise<DatabaseMeeting | null> {
-    const { data, error } = await supabase
-      .from('user_meetings')
-      .update(updates)
-      .eq('id', meetingId)
-      .select()
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('user_meetings')
+        .update(updates)
+        .eq('id', meetingId)
+        .select()
+        .single()
 
-    if (error) {
-      console.error('Error updating user meeting:', error)
+      if (error) {
+        console.error('Error updating user meeting:', error)
+        return null
+      }
+
+      // Update progress stats if meeting completed
+      if (updates.status === 'completed') {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await this.updateProgressStats(user.id)
+        }
+      }
+
+      return data
+    } catch (error) {
+      console.error('Database connection error:', error)
       return null
     }
-
-    // Update progress stats if meeting completed
-    if (updates.status === 'completed') {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await this.updateProgressStats(user.id)
-      }
-    }
-
-    return data
   }
 
   // User Deliverables
   async getUserDeliverables(userId: string, projectId?: string): Promise<DatabaseDeliverable[]> {
-    let query = supabase
-      .from('user_deliverables')
-      .select('*')
-      .eq('user_id', userId)
+    try {
+      let query = supabase
+        .from('user_deliverables')
+        .select('*')
+        .eq('user_id', userId)
 
-    if (projectId) {
-      query = query.eq('project_id', projectId)
-    }
+      if (projectId) {
+        query = query.eq('project_id', projectId)
+      }
 
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching user deliverables:', error)
+        return []
+      }
+
+      return data || []
     } catch (error) {
       console.error('Database connection error:', error)
-      return null
-    }
-    const { data, error } = await query.order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching user deliverables:', error)
-    try {
       return []
     }
-
-    return data || []
   }
 
   async createUserDeliverable(deliverable: Omit<Deliverable, 'id' | 'lastModified'>): Promise<DatabaseDeliverable | null> {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
 
-    const { data, error } = await supabase
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return []
+      const { data, error } = await supabase
+        .from('user_deliverables')
+        .insert({
+          user_id: user.id,
+          project_id: deliverable.projectId,
+          type: deliverable.type,
+          title: deliverable.title,
+          content: deliverable.content
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating user deliverable:', error)
+        return null
       }
 
-      .from('user_deliverables')
-      .insert({
-        user_id: user.id,
-        project_id: deliverable.projectId,
-        type: deliverable.type,
-        title: deliverable.title,
+      // Update progress stats
+      await this.updateProgressStats(user.id)
+      return data
     } catch (error) {
       console.error('Database connection error:', error)
-      return []
-    }
-        content: deliverable.content
-      })
-      .select()
-    try {
-      .single()
-
-    if (error) {
-      console.error('Error creating user deliverable:', error)
       return null
     }
-
-    // Update progress stats
-    await this.updateProgressStats(user.id)
-    return data
   }
 
   async updateUserDeliverable(deliverableId: string, updates: Partial<DatabaseDeliverable>): Promise<DatabaseDeliverable | null> {
-    const { data, error } = await supabase
-      .from('user_deliverables')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', deliverableId)
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
+    try {
+      const { data, error } = await supabase
+        .from('user_deliverables')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', deliverableId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating user deliverable:', error)
         return null
       }
 
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error updating user deliverable:', error)
-      return null
-    }
-
+      return data
     } catch (error) {
       console.error('Database connection error:', error)
       return null
     }
-    return data
   }
 
-    try {
   // User Progress
   async getUserProgress(userId: string): Promise<UserProgress | null> {
-    const { data, error } = await supabase
-      .from('user_progress')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user progress:', error)
       }
 
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching user progress:', error)
+      return data || null
+    } catch (error) {
+      console.error('Database connection error:', error)
+      return null
     }
-
-    return data || null
   }
 
   async initializeUserProgress(userId: string): Promise<UserProgress | null> {
-    const { data, error } = await supabase
-      .from('user_progress')
-      .insert({
-        user_id: userId,
-        total_projects_started: 0,
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .insert({
+          user_id: userId,
+          total_projects_started: 0,
+          total_projects_completed: 0,
+          total_meetings_conducted: 0,
+          total_deliverables_created: 0,
+          achievements: []
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error initializing user progress:', error)
+        return null
+      }
+
+      return data
     } catch (error) {
       console.error('Database connection error:', error)
       return null
     }
-        total_projects_completed: 0,
-        total_meetings_conducted: 0,
-        total_deliverables_created: 0,
-        achievements: []
-    try {
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error initializing user progress:', error)
-      return null
-    }
-
-    return data
   }
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return []
-      }
-
 
   async updateProgressStats(userId: string): Promise<void> {
     try {
       // Get current counts
       const [projects, meetings, deliverables] = await Promise.all([
         this.getUserProjects(userId),
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return []
-    }
         this.getUserMeetings(userId),
         this.getUserDeliverables(userId)
       ])
-    try {
 
       const projectsStarted = projects.length
       const projectsCompleted = projects.filter(p => p.status === 'completed').length
@@ -405,11 +404,6 @@ class DatabaseService {
       if (deliverablesCreated >= 4) achievements.push('Deliverable Creator')
       if (projectsCompleted >= 3) achievements.push('BA Expert')
 
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
-
       // Update or create progress record
       const { error } = await supabase
         .from('user_progress')
@@ -418,25 +412,10 @@ class DatabaseService {
           total_projects_started: projectsStarted,
           total_projects_completed: projectsCompleted,
           total_meetings_conducted: meetingsCompleted,
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
           total_deliverables_created: deliverablesCreated,
           achievements,
           updated_at: new Date().toISOString()
-    try {
         })
-
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
-
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
 
       if (error) {
         console.error('Error updating progress stats:', error)
@@ -444,36 +423,21 @@ class DatabaseService {
     } catch (error) {
       console.error('Error in updateProgressStats:', error)
     }
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
   }
 
   // Utility functions
   async getCurrentUserProject(): Promise<{ project: UserProject | null, projectData: Project | null }> {
     try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { project: null, projectData: null }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return { project: null, projectData: null }
 
-    const projects = await this.getUserProjects(user.id)
-    const currentProject = projects.find(p => p.status === 'in_progress') || projects[0] || null
+      const projects = await this.getUserProjects(user.id)
+      const currentProject = projects.find(p => p.status === 'in_progress') || projects[0] || null
 
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user progress:', error)
-      }
-
-    // You'll need to import mockProjects or pass it as parameter
-    // For now, returning null for projectData
-      return data || null
+      return { project: currentProject, projectData: null }
     } catch (error) {
       console.error('Database connection error:', error)
-      return null
+      return { project: null, projectData: null }
     }
   }
 
@@ -489,7 +453,6 @@ class DatabaseService {
         this.getUserMeetings(userId),
         this.getUserDeliverables(userId),
         this.getUserProgress(userId)
-    try {
       ])
 
       const currentProject = projects.find(p => p.status === 'in_progress') || null
@@ -503,27 +466,13 @@ class DatabaseService {
     } catch (error) {
       console.error('Error resuming user session:', error)
       return {
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
-
         currentProject: null,
         meetings: [],
         deliverables: [],
         progress: null
       }
     }
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
   }
 }
-
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return
-      }
 
 export const databaseService = new DatabaseService()
