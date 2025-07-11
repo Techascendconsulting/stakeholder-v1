@@ -188,20 +188,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const selectProject = async (project: Project): Promise<void> => {
-    if (!user) return;
-    try {
-      await subscriptionService.selectProject(user.id, project.id);
-      const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
-      setStudentSubscription(updatedSubscription);
-      setSelectedProject(project);
-      await databaseService.createUserProject(project.id, 'project-brief');
-    } catch (error) {
-      console.error('Error selecting project:', error);
-      throw error;
-    }
-  };
-
   const addMeeting = async (meeting: Meeting) => {
     if (user && !canCreateMoreMeetings()) {
       throw new Error('You have reached your meeting limit.');
