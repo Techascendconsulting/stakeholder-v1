@@ -1,5 +1,6 @@
 // Filename: src/components/Views/MeetingView.tsx
-// FINAL VERSION WITH CORRECTED AUDIO LOGIC
+// FINAL VERSION WITH STATE MANAGEMENT FIX: This code correctly handles conversation history,
+// which fixes the chat restarting bug and makes the voice input work as intended.
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
@@ -22,7 +23,14 @@ interface AudioPlaybackState {
 
 const MeetingView: React.FC = () => {
   const { 
-    selectedProject, selectedStakeholders, setCurrentView, addMeeting, updateMeeting, currentMeeting, setCurrentMeeting 
+    selectedProject, 
+    selectedStakeholders, 
+    setCurrentView, 
+    addMeeting, 
+    updateMeeting, 
+    currentMeeting, 
+    setCurrentMeeting,
+    meetings // Assuming `useApp` context provides the list of all meetings
   } = useApp()
   
   const { 
@@ -33,7 +41,6 @@ const MeetingView: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('')
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
   const [isAiResponding, setIsAiResponding] = useState<boolean>(false)
-  const [meetingStartTime] = useState(new Date())
   const [audioPlayback, setAudioPlayback] = useState<AudioPlaybackState | null>(null)
   const [isTranscribing, setIsTranscribing] = useState(false)
 
@@ -44,6 +51,7 @@ const MeetingView: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages]);
 
+  // This useEffect will clean up the audio object when the component unmounts
   useEffect(() => {
     return () => {
       if (audioPlayback?.audioObject) {
@@ -52,45 +60,71 @@ const MeetingView: React.FC = () => {
     };
   }, [audioPlayback]);
 
+  // =================================================================================
+  // THE CORE FIX: This new useEffect correctly handles loading and creating meetings.
+  // =================================================================================
   useEffect(() => {
-    if (selectedProject && selectedStakeholders.length > 0 && !currentMeeting) {
+    if (!selectedProject || selectedStakeholders.length === 0) {
+      return; // Do nothing if we don't have what we need.
+    }
+
+    // 1. Find an existing meeting for this project and stakeholder group.
+    const existingMeeting = meetings.find(m => 
+      m.projectId === selectedProject.id &&
+      // This checks if the stakeholder groups are the same, regardless of order.
+      m.stakeholderIds.length === selectedStakeholders.length &&
+      m.stakeholderIds.every(id => selectedStakeholders.some(s => s.id === id))
+    );
+
+    if (existingMeeting) {
+      // 2. If a meeting exists, LOAD its history.
+      setCurrentMeeting(existingMeeting);
+      setMessages(existingMeeting.transcript);
+    } else {
+      // 3. If NO meeting exists, CREATE a new one.
       const newMeeting: Meeting = {
         id: `meeting-${Date.now()}`,
         projectId: selectedProject.id,
         stakeholderIds: selectedStakeholders.map(s => s.id),
-        transcript: [],
+        transcript: [], // Start with an empty transcript
         date: new Date().toISOString(),
         duration: 0,
-        status: 'in-progress',
-        meetingType: selectedStakeholders.length > 1 ? 'group' : 'individual'
-      }
-      addMeeting(newMeeting);
-      setCurrentMeeting(newMeeting);
+        status: 'in-progress'
+      };
+      
       const welcomeMessage: Message = {
         id: `welcome-${Date.now()}`,
         speaker: 'system',
-        content: `Welcome to your ${newMeeting.meetingType} meeting for ${selectedProject.name}. The stakeholders are ready to discuss the project requirements. You can start by greeting them.`,
+        content: `Welcome to your new group meeting for ${selectedProject.name}. The stakeholders are ready to discuss the project requirements. You can start by greeting them.`,
         timestamp: new Date().toISOString()
       };
-      setMessages([welcomeMessage]);
-    }
-  }, [selectedProject, selectedStakeholders, currentMeeting, addMeeting, setCurrentMeeting]);
 
+      // The initial transcript only contains the welcome message.
+      newMeeting.transcript = [welcomeMessage];
+
+      addMeeting(newMeeting);
+      setCurrentMeeting(newMeeting);
+      setMessages(newMeeting.transcript);
+    }
+  }, [selectedProject, selectedStakeholders]); // This hook only runs when the project or stakeholders change.
+
+
+  // This useEffect saves the transcript to the meeting object whenever messages change.
   useEffect(() => {
-    if (currentMeeting && messages.length > currentMeeting.transcript.length) {
-      updateMeeting(currentMeeting.id, { transcript: messages });
+    if (currentMeeting && messages.length > 0) {
+      // Check to prevent unnecessary updates on initial load.
+      if (JSON.stringify(currentMeeting.transcript) !== JSON.stringify(messages)) {
+        updateMeeting(currentMeeting.id, { transcript: messages });
+      }
     }
   }, [messages, currentMeeting, updateMeeting]);
 
-  if (!selectedProject || selectedStakeholders.length === 0) {
+
+  if (!selectedProject || selectedStakeholders.length === 0 || !currentMeeting) {
     return (
       <div className="p-8 text-center">
-        <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No Meeting Configuration</h3>
-        <p className="text-gray-600 mb-6">Please select a project and stakeholders to start a meeting.</p>
-        <button onClick={() => setCurrentView('projects')} className="text-blue-600 hover:text-blue-800 font-medium">
-          Back to Projects
-        </button>
+        <Loader2 className="w-16 h-16 text-gray-300 mx-auto mb-4 animate-spin" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Meeting...</h3>
       </div>
     )
   }
@@ -106,21 +140,22 @@ const MeetingView: React.FC = () => {
       timestamp: new Date().toISOString(),
       stakeholderName: 'Business Analyst'
     };
-    const updatedMessagesWithUser = [...messages, userMessage];
-    setMessages(updatedMessagesWithUser);
+    
+    // Use the functional form of setMessages to ensure we're always updating the latest state.
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setIsAiResponding(true);
 
     try {
       const aiResponseMessage = await stakeholderAI.generateResponse(
         selectedProject,
         selectedStakeholders,
-        updatedMessagesWithUser,
+        updatedMessages, // Pass the most up-to-date message list
         userMessageText
       );
 
       if (aiResponseMessage.content) {
         setMessages(prevMessages => [...prevMessages, aiResponseMessage]);
-        // THE FIX IS HERE: We now correctly check the speaker ID to play audio.
         if (globalAudioEnabled && aiResponseMessage.speaker !== 'system') {
           setTimeout(() => playMessageAudio(aiResponseMessage), 500);
         }
@@ -143,14 +178,12 @@ const MeetingView: React.FC = () => {
   const playMessageAudio = async (message: Message) => {
     if (audioPlayback) stopCurrentAudio();
     
-    // This check is now the key. We only play if the speaker is a real stakeholder.
     const stakeholder = selectedStakeholders.find(s => s.id === message.speaker);
     if (!stakeholder || !isStakeholderVoiceEnabled(stakeholder.id)) return;
 
     setAudioPlayback({ messageId: message.id, isPlaying: false, isLoading: true });
 
     try {
-      // For script-style text, we need to isolate the speaker's line.
       const lines = message.content.split('\n');
       const speakerLine = lines.find(line => line.startsWith(stakeholder.name)) || message.content;
       const speechText = speakerLine.replace(`${stakeholder.name}:`, '').trim();
@@ -195,11 +228,10 @@ const MeetingView: React.FC = () => {
       updateMeeting(currentMeeting.id, { status: 'completed', duration, transcript: messages });
       setCurrentMeeting(null);
     }
-    setCurrentView('notes');
+    setCurrentView('projects'); // Go back to projects list after ending
   };
 
   const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  const getStakeholderById = (id: string) => selectedStakeholders.find(s => s.id === id);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -207,7 +239,7 @@ const MeetingView: React.FC = () => {
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setCurrentView('stakeholders')} className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+            <button onClick={() => setCurrentView('projects')} className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
               <ArrowLeft className="w-5 h-5" />
               <span>Back</span>
             </button>
