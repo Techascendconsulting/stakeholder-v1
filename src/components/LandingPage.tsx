@@ -141,8 +141,9 @@ const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Floating Navigation */}
-      <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl px-6 py-3 shadow-2xl">
-        <div className="flex items-center space-x-8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-white" />
@@ -167,6 +168,7 @@ const LandingPage: React.FC = () => {
             >
               Start Free
             </button>
+          </div>
           </div>
         </div>
       </header>
@@ -253,29 +255,12 @@ const LandingPage: React.FC = () => {
                     <div className="text-xs text-gray-600 mt-1">Stakeholder: Sarah Chen, Head of Operations</div>
                   </div>
                   
-                  <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float delay-500">
-                    <div className="flex items-center space-x-2">
-                      <Brain className="w-5 h-5 text-blue-600" />
-                      <span className="text-sm font-semibold text-gray-900">AI Confidence: 94%</span>
-                    </div>
-                  </div>
-                  
-                  <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float delay-1000">
+                  <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float delay-500">
                     <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <Users className="w-5 h-5 text-purple-600" />
                       <div>
-                        <div className="text-sm font-semibold text-gray-900">Requirements Captured</div>
-                        <div className="text-xs text-gray-600">15 functional, 8 non-functional</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float delay-700">
-                    <div className="flex items-center space-x-3">
-                      <Trophy className="w-5 h-5 text-yellow-600" />
-                      <div>
-                        <div className="text-sm font-semibold text-gray-900">Skill Level</div>
-                        <div className="text-xs text-gray-600">Advanced BA</div>
+                        <div className="text-sm font-semibold text-gray-900">5 Stakeholders</div>
+                        <div className="text-xs text-gray-600">Ready for interview</div>
                       </div>
                     </div>
                   </div>
