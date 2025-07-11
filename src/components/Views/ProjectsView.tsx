@@ -270,10 +270,10 @@ const ProjectsView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                  Current Plan: {studentSubscription.subscription_tier.charAt(0).toUpperCase() + studentSubscription.subscription_tier.slice(1)}
+                  Current Plan: {studentSubscription.subscription_tier?.charAt(0).toUpperCase() + studentSubscription.subscription_tier?.slice(1) || 'Loading...'}
                 </h3>
                 <p className="text-gray-600">
-                  {studentSubscription.subscription_tier === 'free' && `${2 - studentSubscription.meeting_count} meetings remaining`}
+                  {studentSubscription.subscription_tier === 'free' && `${2 - (studentSubscription.meeting_count || 0)} meetings remaining`}
                   {studentSubscription.subscription_tier === 'premium' && 'Access to 2 projects with unlimited meetings'}
                   {studentSubscription.subscription_tier === 'enterprise' && 'Full access to all features'}
                 </p>
