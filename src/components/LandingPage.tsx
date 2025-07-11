@@ -127,26 +127,26 @@ const LandingPage: React.FC = () => {
 
   const testimonials = [
     {
-      name: "Sarah Johnson",
+      name: "Adunni Okafor",
       role: "Senior Business Analyst",
       company: "TechCorp",
-      content: "This platform transformed my BA skills. The AI stakeholders feel incredibly realistic.",
+      content: "This platform transformed my BA skills. The AI stakeholders feel incredibly realistic and helped me land my dream role.",
       rating: 5,
-      image: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: "https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=400"
     },
     {
-      name: "Michael Chen",
+      name: "Chukwuemeka Nwosu",
       role: "Product Manager",
       company: "FinanceFirst",
-      content: "The best investment I made in my career. Landed a senior BA role within 3 months.",
+      content: "The best investment I made in my career. The realistic scenarios prepared me perfectly for senior BA interviews.",
       rating: 5,
-      image: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400"
+      image: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
     },
     {
-      name: "Emma Williams",
+      name: "Folake Adebayo",
       role: "Business Consultant",
       company: "Consulting Plus",
-      content: "Comprehensive training that covers everything from stakeholder management to documentation.",
+      content: "Comprehensive training that covers everything from stakeholder management to professional documentation. Highly recommended!",
       rating: 5,
       image: "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400"
     }
