@@ -239,7 +239,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }
   const value = {
     currentView,
-    setCurrentView: enhancedSetCurrentView,
+    setCurrentView,
     user,
     selectedProject,
     setSelectedProject: enhancedSetSelectedProject,
