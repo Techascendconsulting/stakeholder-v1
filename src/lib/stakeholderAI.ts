@@ -1,11 +1,5 @@
-
 import OpenAI from 'openai'
 import { Stakeholder, Project, Message } from '../types' // Make sure this path is correct
-
-interface ConversationContext {
-  projectId: string
-  messages: Message[]
-}
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -14,154 +8,93 @@ const openai = new OpenAI({
 
 class StakeholderAI {
   /**
-   * The main orchestrator function. It determines who needs to speak and then
-   * generates a response for each of them, sending them back one by one via a callback.
+   * This is the single, powerful function that generates a response.
+   * It asks the AI to create a script-like response if multiple people need to talk.
    */
-  public async generateGroupResponse(
-    context: ConversationContext,
+  public async generateResponse(
     project: Project,
     allStakeholders: Stakeholder[],
-    userMessage: string,
-    onMessageGenerated: (message: Message) => void // This function sends messages to the UI
-  ): Promise<void> {
-    try {
-      // STEP 1: Call the Director AI to get a LIST of who should speak.
-      const speakerIds = await this.chooseNextSpeakers(context, allStakeholders, userMessage);
-      
-      if (speakerIds.length === 0) {
-        console.log("Director decided no one should speak for this message.");
-        return;
-      }
-
-      // STEP 2: Loop through the list and generate a response for EACH speaker.
-      for (const speakerId of speakerIds) {
-        const speakingStakeholder = allStakeholders.find(s => s.id === speakerId);
-        if (speakingStakeholder) {
-          // Add a short, realistic delay between speakers.
-          await new Promise(resolve => setTimeout(resolve, Math.random() * 1200 + 800));
-
-          const actorResponse = await this.generateActorResponse(context, speakingStakeholder, project, userMessage);
-          
-          // Use the callback to send the new message back to the MeetingView to be displayed.
-          onMessageGenerated(actorResponse);
-        }
-      }
-
-    } catch (error) {
-      console.error('Error in multi-response generation:', error);
-      const fallbackMessage: Message = {
-        id: `stakeholder-fallback-${Date.now()}`,
-        speaker: 'system',
-        content: "I'm sorry, a critical error occurred in my decision-making process. Please try again.",
-        timestamp: new Date().toISOString(),
-      };
-      onMessageGenerated(fallbackMessage);
-    }
-  }
-
-  /**
-   * AI Call 1: The Multi-Response Director.
-   * Its only job is to return a JSON array of stakeholder IDs in the order they should speak.
-   */
-  private async chooseNextSpeakers(
-    context: ConversationContext,
-    allStakeholders: Stakeholder[],
+    messages: Message[],
     userMessage: string
-  ): Promise<string[]> {
-    const history = context.messages.slice(-10).map(msg => `${msg.stakeholderName || 'BA'}: ${msg.content}`).join('\n');
-    const stakeholderProfiles = allStakeholders.map(s => `- ID: "${s.id}", Name: ${s.name}, Role: ${s.role}`).join('\n');
+  ): Promise<Message> { // It now returns a single Message object again.
+    
+    const history = messages.slice(-10).map(msg => `${msg.stakeholderName || 'BA'}: ${msg.content}`).join('\n');
+    const stakeholderProfiles = allStakeholders.map(s => `- ${s.name} (${s.role}, ID: ${s.id})`).join('\n');
 
-    const directorSystemPrompt = `You are a meeting director. Your job is to decide who should speak next. Your output MUST be a JSON array of stakeholder IDs.
+    // This is the new, simpler, more forceful prompt.
+    const systemPrompt = `You are a powerful AI orchestrating a business meeting simulation. Your primary goal is to generate a realistic, in-character response to the Business Analyst's message.
 
-STAKEHOLDERS:
+### STAKEHOLDERS IN THIS MEETING:
 ${stakeholderProfiles}
 
-CONVERSATION HISTORY:
+### RECENT CONVERSATION HISTORY:
 ${history}
 
-USER'S LATEST MESSAGE:
+### BUSINESS ANALYST'S LATEST MESSAGE:
 "${userMessage}"
 
-RULES:
-1.  **Multi-Person Detection:** Analyze the user's message. If they address multiple people by name (e.g., "Hi James and Aisha" or "Thanks, John and Sarah"), your output array MUST contain the IDs for all people mentioned, in order.
-2.  **Single Speaker:** If the message is a question for a specific role or a general topic, the array should contain only one ID for the most relevant speaker.
-3.  **Rotation:** For general questions, you MUST rotate speakers. Do not pick the same person who spoke last.
-4.  **Empty Array:** If the user's message doesn't require a response (e.g., "Okay, thanks"), return an empty array: [].
+### YOUR TASK AND RULES (THESE ARE NOT NEGOTIABLE):
 
-**Your response MUST be a valid JSON object containing a single key "speaker_ids" with an array of strings.**
+1.  **Analyze the BA's message.** Determine who should speak.
+2.  **Multi-Speaker Rule:** If the BA greets or addresses MULTIPLE people (e.g., "hello guys", "hey both", "thanks James and Aisha"), you MUST generate a brief response for EACH person mentioned. Format it like a script, with each person's name on a new line.
+3.  **Single-Speaker Rule:** If the BA asks a question to a specific person or about a specific topic, only ONE stakeholder should respond. Choose the most relevant person.
+4.  **Rotation Rule:** For general questions, you MUST rotate speakers. Do not let the same person talk every time.
+5.  **Persona:** Every response must be 100% in character, based on the stakeholder's role and personality.
+6.  **Clarity:** Do NOT use markdown, asterisks, or complex formatting. Just plain text.
 
-EXAMPLES:
-- User says: "Hi James and Aisha" -> {"speaker_ids": ["stake-1", "stake-2"]}
-- User says: "What are the marketing needs?" -> {"speaker_ids": ["stake-4"]}
-- User says: "Okay, I understand." -> {"speaker_ids": []}`;
+### EXAMPLE RESPONSES:
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
-      messages: [{ role: "system", content: directorSystemPrompt }],
-      temperature: 0.1,
-      response_format: { type: "json_object" },
-    });
+**BA says: "hello guys and welcome to the call"**
+Your output should be:
+Aisha Ahmed: "Thank you! It's great to be here."
+James Walker: "Hello. Ready to begin."
 
-    const rawResponse = completion.choices[0]?.message?.content;
-    if (!rawResponse) return [];
+**BA says: "What are the operational challenges?"**
+Your output should be:
+James Walker: "Our main challenge is the lack of standardized handoffs between departments, which causes significant delays and requires a lot of manual follow-up."
+
+**BA says: "Okay, thanks"**
+Your output should be:
+(No response required, return a single period ".")
+
+---
+Now, generate the appropriate response based on the BA's latest message.`;
 
     try {
-      const parsedJson = JSON.parse(rawResponse);
-      const speakerArray = parsedJson.speaker_ids;
-      if (Array.isArray(speakerArray)) {
-        return speakerArray;
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4-turbo",
+        messages: [{ role: "system", content: systemPrompt }],
+        temperature: 0.7,
+        max_tokens: 400,
+      });
+
+      let responseContent = completion.choices[0]?.message?.content?.trim() || "I'm sorry, I missed that. Could you repeat it?";
+
+      // If the AI decides not to respond, don't send an empty message.
+      if (responseContent === ".") {
+        responseContent = "";
       }
-      return [];
-    } catch (e) {
-      console.error("Failed to parse director's JSON response:", e);
-      return [];
+
+      // The response is from the "system" but contains multiple speakers.
+      return {
+        id: `sys-response-${Date.now()}`,
+        speaker: 'system', // The speaker is the system, presenting a script.
+        content: responseContent,
+        timestamp: new Date().toISOString(),
+        stakeholderName: 'Stakeholders', // A generic name for the response block
+        stakeholderRole: 'Group Response'
+      };
+
+    } catch (error) {
+      console.error('Error in single-call AI response generation:', error);
+      return {
+        id: `fallback-${Date.now()}`,
+        speaker: 'system',
+        content: "I've encountered a critical error and cannot respond right now. Please try again shortly.",
+        timestamp: new Date().toISOString(),
+        stakeholderName: 'System Error'
+      };
     }
-  }
-
-  /**
-   * AI Call 2: The Actor. Generates the response for one specific stakeholder.
-   */
-  private async generateActorResponse(
-    context: ConversationContext,
-    stakeholder: Stakeholder,
-    project: Project,
-    userMessage: string
-  ): Promise<Message> {
-    const actorSystemPrompt = `You are an actor playing a role in a business meeting simulation. You must fully embody the persona assigned to you and never break character.
-
-### Your Character Sheet
-- **Your Name:** ${stakeholder.name}
-- **Your Role:** ${stakeholder.role}
-- **Your Personality:** You are ${stakeholder.personality}.
-- **Your Goal:** Your main goal in this meeting is to advance your key priorities: ${stakeholder.priorities.join(', ')}.
-- **Project Context:** The meeting is about the "${project.name}" project.
-
-### Your Task
-The Business Analyst has just said: "${userMessage}"
-
-Respond to them as your character would.
-- If the BA greeted you by name, give a brief, polite reply.
-- If they asked a question, answer it from your perspective.
-- Keep your response concise (1-3 sentences).
-- **Do not use markdown.** Just provide clean, plain text. Do not use asterisks or lists.`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
-      messages: [{ role: "system", content: actorSystemPrompt }],
-      temperature: 0.75,
-      max_tokens: 150,
-    });
-
-    const responseContent = completion.choices[0]?.message?.content || "I see.";
-
-    return {
-      id: `stakeholder-${Date.now()}`,
-      speaker: stakeholder.id,
-      content: responseContent.trim(),
-      timestamp: new Date().toISOString(),
-      stakeholderName: stakeholder.name,
-      stakeholderRole: stakeholder.role
-    };
   }
 }
 
