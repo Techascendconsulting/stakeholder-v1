@@ -59,7 +59,7 @@ const LandingPage: React.FC = () => {
       icon: Brain,
       title: "AI-Powered Stakeholder Simulation",
       description: "Practice with hyper-realistic AI stakeholders that adapt to your questions and provide authentic business responses",
-      image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      image: "https://images.pexels.com/photos/2566581/pexels-photo-2566581.jpeg?auto=compress&cs=tinysrgb&w=1200",
       stats: "25+ Stakeholders",
       color: "from-blue-500 to-cyan-500"
     },
