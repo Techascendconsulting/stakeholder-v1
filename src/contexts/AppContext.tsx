@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
+import { useEffect } from 'react'
+import { useAuth } from './AuthContext'
 import { AppView, Project, Stakeholder, Meeting, Message, Deliverable } from '../types'
 import { mockProjects, mockStakeholders } from '../data/mockData'
+import { databaseService, UserProject, DatabaseMeeting, DatabaseDeliverable, UserProgress } from '../lib/database'
 
 interface AppContextType {
   currentView: AppView
@@ -19,6 +22,9 @@ interface AppContextType {
   updateDeliverable: (deliverableId: string, updates: Partial<Deliverable>) => void
   currentMeeting: Meeting | null
   setCurrentMeeting: (meeting: Meeting | null) => void
+  userProgress: UserProgress | null
+  isLoading: boolean
+  resumeSession: () => Promise<void>
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -32,38 +38,171 @@ export const useApp = () => {
 }
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user } = useAuth()
   const [currentView, setCurrentView] = useState<AppView>('projects')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([])
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [dbMeetings, setDbMeetings] = useState<DatabaseMeeting[]>([])
+  const [dbDeliverables, setDbDeliverables] = useState<DatabaseDeliverable[]>([])
 
-  const addMeeting = (meeting: Meeting) => {
+  // Load user data when user logs in
+  useEffect(() => {
+    if (user) {
+      resumeSession()
+    } else {
+      // Clear data when user logs out
+      setSelectedProject(null)
+      setMeetings([])
+      setDeliverables([])
+      setUserProgress(null)
+      setCurrentView('projects')
+    }
+  }, [user])
+
+  const resumeSession = async () => {
+    if (!user) return
+    
+    setIsLoading(true)
+    try {
+      const sessionData = await databaseService.resumeUserSession(user.id)
+      
+      // Set user progress
+      setUserProgress(sessionData.progress)
+      
+      // If user has a current project, load it
+      if (sessionData.currentProject) {
+        const projectData = mockProjects.find(p => p.id === sessionData.currentProject!.project_id)
+        if (projectData) {
+          setSelectedProject(projectData)
+          
+          // Convert database meetings to app meetings
+          const appMeetings: Meeting[] = sessionData.meetings.map(dbMeeting => ({
+            id: dbMeeting.id,
+            projectId: dbMeeting.project_id,
+            stakeholderIds: dbMeeting.stakeholder_ids,
+            transcript: dbMeeting.transcript,
+            date: dbMeeting.created_at,
+            duration: dbMeeting.duration,
+            status: dbMeeting.status,
+            meetingType: dbMeeting.meeting_type
+          }))
+          
+          // Convert database deliverables to app deliverables
+          const appDeliverables: Deliverable[] = sessionData.deliverables.map(dbDeliverable => ({
+            id: dbDeliverable.id,
+            projectId: dbDeliverable.project_id,
+            type: dbDeliverable.type,
+            title: dbDeliverable.title,
+            content: dbDeliverable.content,
+            lastModified: dbDeliverable.updated_at
+          }))
+          
+          setMeetings(appMeetings)
+          setDeliverables(appDeliverables)
+          setDbMeetings(sessionData.meetings)
+          setDbDeliverables(sessionData.deliverables)
+          
+          // Set current view based on project step
+          setCurrentView(sessionData.currentProject.current_step as AppView)
+        }
+      }
+    } catch (error) {
+      console.error('Error resuming session:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  const addMeeting = async (meeting: Meeting) => {
     setMeetings(prev => [...prev, meeting])
+    
+    // Save to database
+    if (user) {
+      const dbMeeting = await databaseService.createUserMeeting(meeting)
+      if (dbMeeting) {
+        setDbMeetings(prev => [...prev, dbMeeting])
+      }
+    }
   }
 
-  const updateMeeting = (meetingId: string, updates: Partial<Meeting>) => {
+  const updateMeeting = async (meetingId: string, updates: Partial<Meeting>) => {
     setMeetings(prev => prev.map(meeting => 
       meeting.id === meetingId ? { ...meeting, ...updates } : meeting
     ))
+    
+    // Update in database
+    if (user) {
+      const dbMeeting = dbMeetings.find(m => m.id === meetingId)
+      if (dbMeeting) {
+        const dbUpdates: Partial<DatabaseMeeting> = {}
+        if (updates.transcript) dbUpdates.transcript = updates.transcript
+        if (updates.status) dbUpdates.status = updates.status
+        if (updates.duration) dbUpdates.duration = updates.duration
+        if (updates.status === 'completed') dbUpdates.completed_at = new Date().toISOString()
+        
+        await databaseService.updateUserMeeting(meetingId, dbUpdates)
+      }
+    }
   }
 
-  const addDeliverable = (deliverable: Deliverable) => {
+  const addDeliverable = async (deliverable: Deliverable) => {
     setDeliverables(prev => [...prev, deliverable])
+    
+    // Save to database
+    if (user) {
+      const dbDeliverable = await databaseService.createUserDeliverable(deliverable)
+      if (dbDeliverable) {
+        setDbDeliverables(prev => [...prev, dbDeliverable])
+      }
+    }
   }
 
-  const updateDeliverable = (deliverableId: string, updates: Partial<Deliverable>) => {
+  const updateDeliverable = async (deliverableId: string, updates: Partial<Deliverable>) => {
     setDeliverables(prev => prev.map(deliverable => 
       deliverable.id === deliverableId ? { ...deliverable, ...updates } : deliverable
     ))
+    
+    // Update in database
+    if (user) {
+      const dbUpdates: Partial<DatabaseDeliverable> = {}
+      if (updates.content) dbUpdates.content = updates.content
+      if (updates.title) dbUpdates.title = updates.title
+      
+      await databaseService.updateUserDeliverable(deliverableId, dbUpdates)
+    }
+  }
+
+  // Enhanced setSelectedProject to save to database
+  const enhancedSetSelectedProject = async (project: Project | null) => {
+    setSelectedProject(project)
+    
+    if (project && user) {
+      // Create or update user project in database
+      await databaseService.createUserProject(project.id, 'project-brief')
+    }
+  }
+
+  // Enhanced setCurrentView to save current step
+  const enhancedSetCurrentView = async (view: AppView) => {
+    setCurrentView(view)
+    
+    if (selectedProject && user) {
+      // Update current step in database
+      await databaseService.updateUserProject(user.id, selectedProject.id, {
+        current_step: view
+      })
+    }
   }
 
   const value = {
     currentView,
-    setCurrentView,
+    setCurrentView: enhancedSetCurrentView,
     selectedProject,
-    setSelectedProject,
+    setSelectedProject: enhancedSetSelectedProject,
     selectedStakeholders,
     setSelectedStakeholders,
     projects: mockProjects,
@@ -76,6 +215,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateDeliverable,
     currentMeeting,
     setCurrentMeeting
+    userProgress,
+    isLoading,
+    resumeSession
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

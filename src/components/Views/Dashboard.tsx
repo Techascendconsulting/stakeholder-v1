@@ -12,16 +12,17 @@ import {
 } from 'lucide-react'
 
 const Dashboard: React.FC = () => {
-  const { projects, meetings, deliverables, setCurrentView } = useApp()
+  const { projects, meetings, deliverables, setCurrentView, userProgress, isLoading } = useApp()
 
-  const completedMeetings = meetings.filter(m => m.status === 'completed').length
-  const totalDeliverables = deliverables.length
-  const activeProjects = projects.length
+  // Use real data from userProgress if available, otherwise fall back to calculated values
+  const completedMeetings = userProgress?.total_meetings_conducted || meetings.filter(m => m.status === 'completed').length
+  const totalDeliverables = userProgress?.total_deliverables_created || deliverables.length
+  const activeProjects = userProgress?.total_projects_started || 0
 
   const stats = [
     {
       title: 'Available Projects',
-      value: activeProjects.toString(),
+      value: projects.length.toString(),
       icon: FolderOpen,
       color: 'from-blue-500 to-blue-600',
       change: '5 comprehensive scenarios',
@@ -45,7 +46,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Training Hours',
-      value: '24',
+      value: (completedMeetings * 2 + totalDeliverables * 3).toString(),
       icon: Clock,
       color: 'from-orange-500 to-orange-600',
       change: 'Continuous learning',

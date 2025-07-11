@@ -4,8 +4,9 @@ import { User, Mail, Calendar, Award, BookOpen, Clock } from 'lucide-react'
 
 const ProfileView: React.FC = () => {
   const { user } = useAuth()
+  const { userProgress } = useApp()
 
-  const achievements = [
+  const allAchievements = [
     { title: 'First Meeting', description: 'Completed your first stakeholder interview', earned: true },
     { title: 'Note Taker', description: 'Created your first meeting transcript', earned: true },
     { title: 'Requirements Gatherer', description: 'Documented 10 requirements', earned: false },
@@ -14,11 +15,17 @@ const ProfileView: React.FC = () => {
     { title: 'BA Expert', description: 'Completed 3 full projects', earned: false }
   ]
 
+  // Update achievements based on real progress
+  const achievements = allAchievements.map(achievement => ({
+    ...achievement,
+    earned: userProgress?.achievements.includes(achievement.title) || false
+  }))
+
   const stats = [
-    { label: 'Projects Completed', value: '0', icon: BookOpen },
-    { label: 'Meetings Conducted', value: '2', icon: User },
-    { label: 'Hours Logged', value: '24', icon: Clock },
-    { label: 'Deliverables Created', value: '3', icon: Award }
+    { label: 'Projects Completed', value: userProgress?.total_projects_completed.toString() || '0', icon: BookOpen },
+    { label: 'Meetings Conducted', value: userProgress?.total_meetings_conducted.toString() || '0', icon: User },
+    { label: 'Hours Logged', value: ((userProgress?.total_meetings_conducted || 0) * 2 + (userProgress?.total_deliverables_created || 0) * 3).toString(), icon: Clock },
+    { label: 'Deliverables Created', value: userProgress?.total_deliverables_created.toString() || '0', icon: Award }
   ]
 
   return (
@@ -139,28 +146,28 @@ const ProfileView: React.FC = () => {
               <div>
                 <div className="flex justify-between text-sm text-gray-600 mb-1">
                   <span>Overall Progress</span>
-                  <span>25%</span>
+                  <span>{Math.min(100, (userProgress?.total_projects_completed || 0) * 33)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full" style={{ width: '25%' }}></div>
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full" style={{ width: `${Math.min(100, (userProgress?.total_projects_completed || 0) * 33)}%` }}></div>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm text-gray-600 mb-1">
                   <span>Stakeholder Interviews</span>
-                  <span>40%</span>
+                  <span>{Math.min(100, (userProgress?.total_meetings_conducted || 0) * 20)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full" style={{ width: '40%' }}></div>
+                  <div className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full" style={{ width: `${Math.min(100, (userProgress?.total_meetings_conducted || 0) * 20)}%` }}></div>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm text-gray-600 mb-1">
                   <span>Deliverables</span>
-                  <span>15%</span>
+                  <span>{Math.min(100, (userProgress?.total_deliverables_created || 0) * 10)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-orange-500 to-red-600 h-2 rounded-full" style={{ width: '15%' }}></div>
+                  <div className="bg-gradient-to-r from-orange-500 to-red-600 h-2 rounded-full" style={{ width: `${Math.min(100, (userProgress?.total_deliverables_created || 0) * 10)}%` }}></div>
                 </div>
               </div>
             </div>

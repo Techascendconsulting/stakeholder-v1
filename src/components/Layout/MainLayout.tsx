@@ -11,7 +11,20 @@ import DeliverablesView from '../Views/DeliverablesView'
 import ProfileView from '../Views/ProfileView'
 
 const MainLayout: React.FC = () => {
-  const { currentView } = useApp()
+  const { currentView, isLoading } = useApp()
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your progress...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const renderView = () => {
     switch (currentView) {
