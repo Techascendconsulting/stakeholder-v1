@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { useEffect } from 'react'
 import { useAuth } from './AuthContext'
+import { subscriptionService, StudentSubscription } from '../lib/subscription'
 import { AppView, Project, Stakeholder, Meeting, Message, Deliverable } from '../types'
 import { mockProjects, mockStakeholders } from '../data/mockData'
 import { databaseService, UserProject, DatabaseMeeting, DatabaseDeliverable, UserProgress } from '../lib/database'
@@ -23,8 +24,13 @@ interface AppContextType {
   currentMeeting: Meeting | null
   setCurrentMeeting: (meeting: Meeting | null) => void
   userProgress: UserProgress | null
+  studentSubscription: StudentSubscription | null
   isLoading: boolean
   resumeSession: () => Promise<void>
+  canAccessProject: (projectId: string) => boolean
+  canSaveNotes: () => boolean
+  canCreateMoreMeetings: () => boolean
+  selectProject: (project: Project) => Promise<void>
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -46,6 +52,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null)
+  const [studentSubscription, setStudentSubscription] = useState<StudentSubscription | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [dbMeetings, setDbMeetings] = useState<DatabaseMeeting[]>([])
   const [dbDeliverables, setDbDeliverables] = useState<DatabaseDeliverable[]>([])
@@ -60,6 +67,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setMeetings([])
       setDeliverables([])
       setUserProgress(null)
+      setStudentSubscription(null)
       setCurrentView('projects')
     }
   }, [user])
@@ -69,6 +77,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     setIsLoading(true)
     try {
+      // Load student subscription data
+      const subscription = await subscriptionService.getStudentSubscription(user.id)
+      setStudentSubscription(subscription)
+
       const sessionData = await databaseService.resumeUserSession(user.id)
       
       // Set user progress
@@ -117,7 +129,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setIsLoading(false)
     }
   }
+
+  const canAccessProject = (projectId: string): boolean => {
+    return subscriptionService.canAccessProject(studentSubscription, projectId)
+  }
+
+  const canSaveNotes = (): boolean => {
+    return subscriptionService.canSaveNotes(studentSubscription)
+  }
+
+  const canCreateMoreMeetings = (): boolean => {
+    return subscriptionService.canCreateMoreMeetings(studentSubscription)
+  }
+
+  const selectProject = async (project: Project): Promise<void> => {
+    if (!user) return
+
+    try {
+      await subscriptionService.selectProject(user.id, project.id)
+      
+      // Refresh subscription data
+      const updatedSubscription = await subscriptionService.getStudentSubscription(user.id)
+      setStudentSubscription(updatedSubscription)
+      
+      // Set the selected project
+      setSelectedProject(project)
+      
+      // Create or update user project in database
+      await databaseService.createUserProject(project.id, 'project-brief')
+    } catch (error) {
+      console.error('Error selecting project:', error)
+      throw error
+    }
+  }
+
   const addMeeting = async (meeting: Meeting) => {
+    // Check meeting limits before adding
+    if (user && !canCreateMoreMeetings()) {
+      throw new Error('You have reached your meeting limit. Upgrade to Premium for unlimited meetings.')
+    }
+
+    // Increment meeting count for subscription tracking
+    if (user) {
+      try {
+        await subscriptionService.incrementMeetingCount(user.id)
+        // Refresh subscription data
+        const updatedSubscription = await subscriptionService.getStudentSubscription(user.id)
+        setStudentSubscription(updatedSubscription)
+      } catch (error) {
+        throw error
+      }
+    }
+
     setMeetings(prev => [...prev, meeting])
     
     // Save to database
@@ -178,11 +241,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Enhanced setSelectedProject to save to database
   const enhancedSetSelectedProject = async (project: Project | null) => {
-    setSelectedProject(project)
-    
     if (project && user) {
-      // Create or update user project in database
-      await databaseService.createUserProject(project.id, 'project-brief')
+      await selectProject(project)
+    } else {
+      setSelectedProject(project)
     }
   }
 
@@ -216,8 +278,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     currentMeeting,
     setCurrentMeeting,
     userProgress,
+    studentSubscription,
     isLoading,
-    resumeSession
+    resumeSession,
+    canAccessProject,
+    canSaveNotes,
+    canCreateMoreMeetings,
+    selectProject
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

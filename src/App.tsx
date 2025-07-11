@@ -2,6 +2,7 @@ import React from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AppProvider } from './contexts/AppContext'
 import { VoiceProvider } from './contexts/VoiceContext'
+import LandingPage from './components/LandingPage'
 import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
 import { AlertCircle } from 'lucide-react'
@@ -20,11 +21,7 @@ const AppContent: React.FC = () => {
     )
   }
 
-  if (!user) {
-    return <LoginSignup />
-  }
-
-  return <MainLayout />
+  return user ? <MainLayout /> : <LandingPage />
 }
 
 const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
