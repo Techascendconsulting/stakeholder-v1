@@ -1,6 +1,5 @@
 // Filename: src/contexts/AppContext.tsx
-// FINAL, CORRECTED VERSION: This version fixes the "Identifier has already been declared" crash.
-// It also includes the console.log statements for debugging the loading issue.
+// FIXED VERSION: Resolving the enhancedSetCurrentView undefined error
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useAuth } from './AuthContext';
@@ -55,9 +54,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const { user } = useAuth();
   console.log('👤 DEBUG: User from useAuth:', user?.id || 'null');
   
+  // State declarations
   const [currentView, setCurrentView] = useState<AppView>('projects');
-  console.log('📱 DEBUG: currentView state initialized:', currentView);
-  
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -66,11 +64,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
   const [studentSubscription, setStudentSubscription] = useState<StudentSubscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [dbMeetings, setDbMeetings] = useState<DatabaseMeeting[]>([]);
-  const [dbDeliverables, setDbDeliverables] = useState<DatabaseDeliverable[]>([]);
   
   console.log('📊 DEBUG: All state variables initialized');
 
+  // Enhanced setCurrentView function
+  const enhancedSetCurrentView = async (view: AppView) => {
+    console.log('🔧 DEBUG: enhancedSetCurrentView called with view:', view);
+    setCurrentView(view);
+    if (selectedProject && user) {
+      console.log('🔧 DEBUG: Updating user project current_step to:', view);
+      await databaseService.updateUserProject(user.id, selectedProject.id, {
+        current_step: view
+      });
+    }
+  };
+
+  // Enhanced setSelectedProject function
+  const enhancedSetSelectedProject = async (project: Project | null) => {
+    console.log('🔧 DEBUG: enhancedSetSelectedProject called with project:', project?.name || 'null');
+    if (project && user) {
+      await selectProject(project);
+    } else {
+      setSelectedProject(project);
+    }
+  };
+
+  // Add message to current meeting
   const addMessageToCurrentMeeting = (message: Message) => {
     console.log('💬 DEBUG: addMessageToCurrentMeeting called with message:', message.id);
     if (!currentMeeting) return;
@@ -82,67 +101,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     console.log('💬 DEBUG: currentMeeting updated with new message');
   };
 
-  console.log('🔧 DEBUG: About to define enhancedSetCurrentView function');
-  
-  const enhancedSetCurrentView = async (view: AppView) => {
-    console.log('🔧 DEBUG: enhancedSetCurrentView called with view:', view);
-    setCurrentView(view);
-    if (selectedProject && user) {
-      console.log('🔧 DEBUG: Updating user project current_step to:', view);
-      await databaseService.updateUserProject(user.id, selectedProject.id, {
-        current_step: view
-      });
-    }
-  };
-  
-  console.log('🔧 DEBUG: enhancedSetCurrentView function defined');
-  
-  const enhancedSetSelectedProject = async (project: Project | null) => {
-    console.log('🔧 DEBUG: enhancedSetSelectedProject called with project:', project?.name || 'null');
-    if (project && user) {
-      await selectProject(project);
-    } else {
-      setSelectedProject(project);
-    }
-  };
-  
-  console.log('🔧 DEBUG: enhancedSetSelectedProject function defined');
-  useEffect(() => {
-    if (currentMeeting) {
-      const meetingIndex = meetings.findIndex(m => m.id === currentMeeting.id);
-      if (meetingIndex !== -1 && JSON.stringify(meetings[meetingIndex].transcript) !== JSON.stringify(currentMeeting.transcript)) {
-        const updatedMeetings = [...meetings];
-        updatedMeetings[meetingIndex] = currentMeeting;
-        setMeetings(updatedMeetings);
-        databaseService.updateUserMeeting(currentMeeting.id, {
-          transcript: currentMeeting.transcript
-        });
-      }
-    }
-  }, [currentMeeting]);
-
-  useEffect(() => {
-    console.log('⚡ DEBUG: useEffect for currentMeeting triggered');
-    if (user) {
-      resumeSession();
-      ensureStudentRecord();
-    } else {
-      setIsLoading(false);
-      setSelectedProject(null);
-      setMeetings([]);
-      setDeliverables([]);
-      setUserProgress(null);
-      setStudentSubscription(null);
-      setCurrentView('projects');
-      setCurrentMeeting(null);
-    }
-  }, [user]);
-
+  // Ensure student record exists
   const ensureStudentRecord = async () => {
     if (!user) return;
+    console.log('📝 DEBUG: ensureStudentRecord called for user:', user.id);
     try {
       let subscription = await subscriptionService.getStudentSubscription(user.id);
       if (!subscription) {
+        console.log('📝 DEBUG: Creating new student record');
         subscription = await subscriptionService.createStudentRecord(
           user.id,
           user.email?.split('@')[0] || 'User',
@@ -150,21 +116,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         );
       }
       setStudentSubscription(subscription);
+      console.log('📝 DEBUG: Student subscription set:', subscription?.subscription_tier);
     } catch (error) {
-      console.error('Error ensuring student record:', error);
+      console.error('📝 DEBUG: Error ensuring student record:', error);
     }
   };
 
+  // Resume user session
   const resumeSession = async () => {
     if (!user) return;
-    console.log("DEBUG: Starting resumeSession...");
+    console.log("🔄 DEBUG: Starting resumeSession for user:", user.id);
     setIsLoading(true);
     try {
       const subscription = await subscriptionService.getStudentSubscription(user.id);
       setStudentSubscription(subscription);
+      console.log("🔄 DEBUG: Got subscription:", subscription?.subscription_tier);
 
       const sessionData = await databaseService.resumeUserSession(user.id);
-      console.log("DEBUG: Got sessionData from database:", sessionData);
+      console.log("🔄 DEBUG: Got sessionData from database:", sessionData);
       setUserProgress(sessionData.progress);
 
       const appMeetings: Meeting[] = sessionData.meetings.map(dbMeeting => ({
@@ -178,6 +147,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         meetingType: dbMeeting.meeting_type
       }));
       setMeetings(appMeetings);
+      console.log("🔄 DEBUG: Set meetings:", appMeetings.length);
 
       const appDeliverables: Deliverable[] = sessionData.deliverables.map(dbDeliverable => ({
         id: dbDeliverable.id,
@@ -188,60 +158,74 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         lastModified: dbDeliverable.updated_at
       }));
       setDeliverables(appDeliverables);
+      console.log("🔄 DEBUG: Set deliverables:", appDeliverables.length);
       
       if (sessionData.currentProject) {
-        console.log("DEBUG: Found an active project:", sessionData.currentProject.project_id);
+        console.log("🔄 DEBUG: Found an active project:", sessionData.currentProject.project_id);
         const projectData = mockProjects.find(p => p.id === sessionData.currentProject!.project_id);
         if (projectData) {
           setSelectedProject(projectData);
           const activeMeeting = appMeetings.find(m => m.projectId === projectData.id && m.status === 'in_progress');
-          console.log("DEBUG: Found active meeting:", activeMeeting);
+          console.log("🔄 DEBUG: Found active meeting:", activeMeeting?.id || 'none');
           setCurrentMeeting(activeMeeting || null);
           setCurrentView(sessionData.currentProject.current_step as AppView);
         }
       } else {
-        console.log("DEBUG: No active project found.");
+        console.log("🔄 DEBUG: No active project found.");
         setCurrentView('projects');
       }
 
     } catch (error) {
-      console.error('DEBUG: CRITICAL ERROR in resumeSession:', error);
+      console.error('🔄 DEBUG: CRITICAL ERROR in resumeSession:', error);
     } finally {
-      console.log("DEBUG: Finished resumeSession. Setting isLoading to false.");
+      console.log("🔄 DEBUG: Finished resumeSession. Setting isLoading to false.");
       setIsLoading(false);
     }
   };
 
-  const canAccessProject = (projectId: string): boolean => true;
-  const canSaveNotes = (): boolean => true;
-  const canCreateMoreMeetings = (): boolean => true;
+  // Permission functions
+  const canAccessProject = (projectId: string): boolean => {
+    console.log('🔐 DEBUG: canAccessProject called for:', projectId);
+    return true; // Temporary bypass
+  };
 
+  const canSaveNotes = (): boolean => {
+    console.log('🔐 DEBUG: canSaveNotes called');
+    return true; // Temporary bypass
+  };
+
+  const canCreateMoreMeetings = (): boolean => {
+    console.log('🔐 DEBUG: canCreateMoreMeetings called');
+    return true; // Temporary bypass
+  };
+
+  // Select project function
   const selectProject = async (project: Project): Promise<void> => {
     if (!user) return;
+    console.log('🎯 DEBUG: selectProject called with:', project.name);
     try {
       await subscriptionService.selectProject(user.id, project.id);
       const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
       setStudentSubscription(updatedSubscription);
       setSelectedProject(project);
       await databaseService.createUserProject(project.id, 'project-brief');
+      console.log('🎯 DEBUG: Project selected successfully');
     } catch (error) {
-      console.log('🎯 DEBUG: selectProject called with:', project.name);
-      console.error('Error selecting project:', error);
+      console.error('🎯 DEBUG: Error selecting project:', error);
       throw error;
     }
   };
 
+  // Add meeting function
   const addMeeting = async (meeting: Meeting) => {
+    console.log('➕ DEBUG: addMeeting called with meeting:', meeting.id);
     if (user && !canCreateMoreMeetings()) {
-      console.log('🎯 DEBUG: Project selected successfully');
       throw new Error('You have reached your meeting limit.');
     }
     if (user) {
-      console.log('⚡ DEBUG: Updating meeting transcript in database');
       try {
         await subscriptionService.incrementMeetingCount(user.id);
         const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
-        console.log('➕ DEBUG: addMeeting called with meeting:', meeting.id);
         setStudentSubscription(updatedSubscription);
       } catch (error) {
         throw error;
@@ -251,37 +235,80 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (user) {
       await databaseService.createUserMeeting(meeting);
     }
+    console.log('➕ DEBUG: Meeting added successfully');
   };
 
+  // Update meeting function
   const updateMeeting = async (meetingId: string, updates: Partial<Meeting>) => {
+    console.log('📝 DEBUG: updateMeeting called for:', meetingId);
     setMeetings(prev => prev.map(meeting => 
       meeting.id === meetingId ? { ...meeting, ...updates } : meeting
     ));
     if (user) {
-      console.log('➕ DEBUG: Meeting added successfully');
       await databaseService.updateUserMeeting(meetingId, updates);
     }
   };
 
+  // Add deliverable function
   const addDeliverable = async (deliverable: Deliverable) => {
+    console.log('📄 DEBUG: addDeliverable called with:', deliverable.title);
     setDeliverables(prev => [...prev, deliverable]);
     if (user) {
       await databaseService.createUserDeliverable(deliverable);
     }
-    console.log('📄 DEBUG: addDeliverable called with:', deliverable.title);
   };
 
+  // Update deliverable function
   const updateDeliverable = async (deliverableId: string, updates: Partial<Deliverable>) => {
+    console.log('📝 DEBUG: updateDeliverable called for:', deliverableId);
     setDeliverables(prev => prev.map(deliverable => 
       deliverable.id === deliverableId ? { ...deliverable, ...updates } : deliverable
     ));
     if (user) {
       await databaseService.updateUserDeliverable(deliverableId, updates);
     }
-    console.log('📝 DEBUG: updateDeliverable called for:', deliverableId);
   };
 
-  const value = {
+  // Effect to sync currentMeeting changes with meetings array
+  useEffect(() => {
+    console.log('⚡ DEBUG: useEffect for currentMeeting triggered');
+    if (currentMeeting) {
+      const meetingIndex = meetings.findIndex(m => m.id === currentMeeting.id);
+      if (meetingIndex !== -1 && JSON.stringify(meetings[meetingIndex].transcript) !== JSON.stringify(currentMeeting.transcript)) {
+        console.log('⚡ DEBUG: Updating meeting transcript in database');
+        const updatedMeetings = [...meetings];
+        updatedMeetings[meetingIndex] = currentMeeting;
+        setMeetings(updatedMeetings);
+        databaseService.updateUserMeeting(currentMeeting.id, {
+          transcript: currentMeeting.transcript
+        });
+      }
+    }
+  }, [currentMeeting, meetings]);
+
+  // Effect to handle user authentication changes
+  useEffect(() => {
+    console.log('⚡ DEBUG: useEffect for user authentication triggered');
+    if (user) {
+      console.log('⚡ DEBUG: User authenticated, resuming session and ensuring student record');
+      resumeSession();
+      ensureStudentRecord();
+    } else {
+      console.log('⚡ DEBUG: User not authenticated, resetting state');
+      setIsLoading(false);
+      setSelectedProject(null);
+      setMeetings([]);
+      setDeliverables([]);
+      setUserProgress(null);
+      setStudentSubscription(null);
+      setCurrentView('projects');
+      setCurrentMeeting(null);
+    }
+  }, [user]);
+
+  // Create the context value object
+  console.log('🔧 DEBUG: Creating context value object');
+  const value: AppContextType = {
     currentView,
     setCurrentView: enhancedSetCurrentView,
     user,
