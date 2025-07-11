@@ -249,6 +249,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const enhancedSetSelectedProject = async (project: Project | null) => {
     if (project && user) {
       await selectProject(project);
+    }
+  }
   const value = {
     currentView,
     setCurrentView: enhancedSetCurrentView,
