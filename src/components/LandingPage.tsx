@@ -59,7 +59,7 @@ const LandingPage: React.FC = () => {
       icon: Brain,
       title: "AI-Powered Stakeholder Simulation",
       description: "Practice with hyper-realistic AI stakeholders that adapt to your questions and provide authentic business responses",
-      image: "https://www.pexels.com/photo/a-group-of-people-working-together-7698715/?auto=compress&cs=tinysrgb&w=1200",
+      image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1200",
       stats: "25+ Stakeholders",
       color: "from-blue-500 to-cyan-500"
     },
@@ -191,7 +191,7 @@ const LandingPage: React.FC = () => {
                 <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
                 Join 2,847+ Successful Business Analysts
               </div>
-              
+            
               <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
                 Master
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient"> Business Analysis</span>
