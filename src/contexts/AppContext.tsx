@@ -9,6 +9,7 @@ import { databaseService, UserProject, DatabaseMeeting, DatabaseDeliverable, Use
 interface AppContextType {
   currentView: AppView
   setCurrentView: (view: AppView) => void
+  user: any
   selectedProject: Project | null
   setSelectedProject: (project: Project | null) => void
   selectedStakeholders: Stakeholder[]
@@ -153,6 +154,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }
 
   const canAccessProject = (projectId: string): boolean => {
+    console.log('canAccessProject Debug:', {
+      projectId,
+      studentSubscription,
+      user: user?.email,
+      result: subscriptionService.canAccessProject(studentSubscription, projectId)
+    })
     return subscriptionService.canAccessProject(studentSubscription, projectId)
   }
 
@@ -285,6 +292,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const value = {
     currentView,
     setCurrentView: enhancedSetCurrentView,
+    user,
     selectedProject,
     setSelectedProject: enhancedSetSelectedProject,
     selectedStakeholders,

@@ -139,23 +139,33 @@ class SubscriptionService {
   }
 
   canAccessProject(student: StudentSubscription | null, projectId: string): boolean {
+    console.log('canAccessProject Service Debug:', {
+      student,
+      projectId,
+      hasStudent: !!student,
+      tier: student?.subscription_tier
+    })
+    
     if (!student) {
-      // If no student record exists, check if user is logged in and allow access
-      // This handles cases where student record creation failed but user is authenticated
+      console.log('No student record - allowing access')
       return true
     }
 
     switch (student.subscription_tier) {
       case 'free':
+        console.log('Free tier - checking selected project')
         // Free users can only access their selected project
         return student.selected_project_id === projectId || !student.selected_project_id
       case 'premium':
+        console.log('Premium tier - allowing access')
         // Premium users can access up to 2 projects
         return true
       case 'enterprise':
+        console.log('Enterprise tier - allowing access')
         // Enterprise users can access all projects
         return true
       default:
+        console.log('Unknown tier - denying access')
         return false
     }
   }

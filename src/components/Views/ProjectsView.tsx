@@ -3,7 +3,14 @@ import { useApp } from '../../contexts/AppContext'
 import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
-  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject } = useApp()
+  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user } = useApp()
+
+  // Debug logging
+  console.log('ProjectsView Debug:', {
+    user: user?.email,
+    studentSubscription,
+    canAccessProject: canAccessProject('proj-1')
+  })
 
   const handleViewBrief = async (project: any) => {
     try {
