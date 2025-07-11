@@ -5,20 +5,13 @@ import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle
 const ProjectsView: React.FC = () => {
   const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user } = useApp()
 
-  // Debug logging
-  console.log('ProjectsView Debug:', {
-    user: user?.email,
-    studentSubscription,
-    canAccessProject: canAccessProject('proj-1')
-  })
-
   const handleViewBrief = async (project: any) => {
     try {
-      if (!canAccessProject(project.id)) {
-        // Show upgrade prompt for locked projects
-        alert('This project is not available in your current plan. Please upgrade to access more projects.')
-        return
-      }
+      // Temporary bypass: Allow access to all projects
+      // if (!canAccessProject(project.id)) {
+      //   alert('This project is not available in your current plan. Please upgrade to access more projects.')
+      //   return
+      // }
       
       await selectProject(project)
       setCurrentView('project-brief')
@@ -127,7 +120,7 @@ const ProjectsView: React.FC = () => {
             const businessImpact = getBusinessImpact(project.id)
             const priorityConfig = getPriorityConfig(businessImpact.priority)
             const requiredTier = getProjectRequirement(project.id)
-            const isAccessible = canAccessProject(project.id)
+            const isAccessible = true // Temporary bypass: All projects accessible
             const isSelected = studentSubscription?.selected_project_id === project.id
             
             return (

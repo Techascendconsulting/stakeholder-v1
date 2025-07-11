@@ -154,21 +154,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }
 
   const canAccessProject = (projectId: string): boolean => {
-    console.log('canAccessProject Debug:', {
-      projectId,
-      studentSubscription,
-      user: user?.email,
-      result: subscriptionService.canAccessProject(studentSubscription, projectId)
-    })
-    return subscriptionService.canAccessProject(studentSubscription, projectId)
+    // Temporary bypass: Allow access to all projects
+    return true
   }
 
   const canSaveNotes = (): boolean => {
-    return subscriptionService.canSaveNotes(studentSubscription)
+    // Temporary bypass: Allow all users to save notes
+    return true
   }
 
   const canCreateMoreMeetings = (): boolean => {
-    return subscriptionService.canCreateMoreMeetings(studentSubscription)
+    // Temporary bypass: Allow unlimited meetings
+    return true
   }
 
   const selectProject = async (project: Project): Promise<void> => {

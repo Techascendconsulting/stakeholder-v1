@@ -139,50 +139,18 @@ class SubscriptionService {
   }
 
   canAccessProject(student: StudentSubscription | null, projectId: string): boolean {
-    console.log('canAccessProject Service Debug:', {
-      student,
-      projectId,
-      hasStudent: !!student,
-      tier: student?.subscription_tier
-    })
-    
-    if (!student) {
-      console.log('No student record - allowing access')
-      return true
-    }
-
-    switch (student.subscription_tier) {
-      case 'free':
-        console.log('Free tier - checking selected project')
-        // Free users can only access their selected project
-        return student.selected_project_id === projectId || !student.selected_project_id
-      case 'premium':
-        console.log('Premium tier - allowing access')
-        // Premium users can access up to 2 projects
-        return true
-      case 'enterprise':
-        console.log('Enterprise tier - allowing access')
-        // Enterprise users can access all projects
-        return true
-      default:
-        console.log('Unknown tier - denying access')
-        return false
-    }
+    // Temporary bypass: Allow access to all projects for all users
+    return true
   }
 
   canSaveNotes(student: StudentSubscription | null): boolean {
-    if (!student) return false
-    return student.subscription_tier !== 'free'
+    // Temporary bypass: Allow all users to save notes
+    return true
   }
 
   canCreateMoreMeetings(student: StudentSubscription | null): boolean {
-    if (!student) return false
-    
-    if (student.subscription_tier === 'free') {
-      return student.meeting_count < 2
-    }
-    
-    return true // Premium and Enterprise have unlimited meetings
+    // Temporary bypass: Allow unlimited meetings for all users
+    return true
   }
 
   getProjectLimit(student: StudentSubscription | null): number {
