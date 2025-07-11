@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { subscriptionService } from '../lib/subscription'
 
 interface AuthContextType {
   user: User | null
@@ -55,10 +56,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     })
+    
+    // If signup successful and user is confirmed, create student record
+    if (!error && data.user && data.user.email_confirmed_at) {
+      try {
+        await subscriptionService.createStudentRecord(
+          data.user.id,
+          email.split('@')[0], // Use email prefix as name for now
+          email
+        )
+      } catch (studentError) {
+        console.error('Error creating student record:', studentError)
+        // Don't fail the signup if student record creation fails
+      }
+    }
+    
     return { error }
   }
 
