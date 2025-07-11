@@ -50,8 +50,14 @@ export const useApp = () => {
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  console.log('🚀 DEBUG: AppProvider component starting to render');
+  
   const { user } = useAuth();
+  console.log('👤 DEBUG: User from useAuth:', user?.id || 'null');
+  
   const [currentView, setCurrentView] = useState<AppView>('projects');
+  console.log('📱 DEBUG: currentView state initialized:', currentView);
+  
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -62,16 +68,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const [dbMeetings, setDbMeetings] = useState<DatabaseMeeting[]>([]);
   const [dbDeliverables, setDbDeliverables] = useState<DatabaseDeliverable[]>([]);
+  
+  console.log('📊 DEBUG: All state variables initialized');
 
   const addMessageToCurrentMeeting = (message: Message) => {
+    console.log('💬 DEBUG: addMessageToCurrentMeeting called with message:', message.id);
     if (!currentMeeting) return;
     const updatedMeeting = {
       ...currentMeeting,
       transcript: [...currentMeeting.transcript, message],
     };
     setCurrentMeeting(updatedMeeting);
+    console.log('💬 DEBUG: currentMeeting updated with new message');
   };
 
+  console.log('🔧 DEBUG: About to define enhancedSetCurrentView function');
+  
+  const enhancedSetCurrentView = async (view: AppView) => {
+    console.log('🔧 DEBUG: enhancedSetCurrentView called with view:', view);
+    setCurrentView(view);
+    if (selectedProject && user) {
+      console.log('🔧 DEBUG: Updating user project current_step to:', view);
+      await databaseService.updateUserProject(user.id, selectedProject.id, {
+        current_step: view
+      });
+    }
+  };
+  
+  console.log('🔧 DEBUG: enhancedSetCurrentView function defined');
+  
+  const enhancedSetSelectedProject = async (project: Project | null) => {
+    console.log('🔧 DEBUG: enhancedSetSelectedProject called with project:', project?.name || 'null');
+    if (project && user) {
+      await selectProject(project);
+    } else {
+      setSelectedProject(project);
+    }
+  };
+  
+  console.log('🔧 DEBUG: enhancedSetSelectedProject function defined');
   useEffect(() => {
     if (currentMeeting) {
       const meetingIndex = meetings.findIndex(m => m.id === currentMeeting.id);
@@ -87,6 +122,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [currentMeeting]);
 
   useEffect(() => {
+    console.log('⚡ DEBUG: useEffect for currentMeeting triggered');
     if (user) {
       resumeSession();
       ensureStudentRecord();
@@ -189,6 +225,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setSelectedProject(project);
       await databaseService.createUserProject(project.id, 'project-brief');
     } catch (error) {
+    console.log('🎯 DEBUG: selectProject called with:', project.name);
       console.error('Error selecting project:', error);
       throw error;
     }
@@ -196,12 +233,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addMeeting = async (meeting: Meeting) => {
     if (user && !canCreateMoreMeetings()) {
+      console.log('🎯 DEBUG: Project selected successfully');
       throw new Error('You have reached your meeting limit.');
     }
     if (user) {
+        console.log('⚡ DEBUG: Updating meeting transcript in database');
       try {
         await subscriptionService.incrementMeetingCount(user.id);
         const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
+    console.log('➕ DEBUG: addMeeting called with meeting:', meeting.id);
         setStudentSubscription(updatedSubscription);
       } catch (error) {
         throw error;
@@ -218,9 +258,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       meeting.id === meetingId ? { ...meeting, ...updates } : meeting
     ));
     if (user) {
+    console.log('➕ DEBUG: Meeting added successfully');
       await databaseService.updateUserMeeting(meetingId, updates);
     }
   };
+    console.log('🔄 DEBUG: updateMeeting called for meeting:', meetingId);
 
   const addDeliverable = async (deliverable: Deliverable) => {
     setDeliverables(prev => [...prev, deliverable]);
@@ -230,6 +272,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateDeliverable = async (deliverableId: string, updates: Partial<Deliverable>) => {
+    console.log('📄 DEBUG: addDeliverable called with:', deliverable.title);
     setDeliverables(prev => prev.map(deliverable => 
       deliverable.id === deliverableId ? { ...deliverable, ...updates } : deliverable
     ));
@@ -237,6 +280,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       await databaseService.updateUserDeliverable(deliverableId, updates);
     }
   };
+    console.log('📝 DEBUG: updateDeliverable called for:', deliverableId);
 
   const enhancedSetCurrentView = async (view: AppView) => {
     console.log('🔧 DEBUG: enhancedSetCurrentView called with view:', view);
@@ -245,24 +289,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('🔧 DEBUG: Updating user project current_step to:', view);
       await databaseService.updateUserProject(user.id, selectedProject.id, {
         current_step: view
-      });
-    }
-  };
-
-  const enhancedSetSelectedProject = async (project: Project | null) => {
-    console.log('🔧 DEBUG: enhancedSetSelectedProject called with project:', project?.name || 'null');
-    if (project && user) {
-      await selectProject(project);
-    } else {
-      setSelectedProject(project);
-    }
-  };
-
-  console.log('🔧 DEBUG: Creating AppContext value object');
-  const value = {
     currentView,
     setCurrentView: enhancedSetCurrentView,
+  console.log('🔧 DEBUG: enhancedSetCurrentView exists?', typeof enhancedSetCurrentView);
+  console.log('🔧 DEBUG: enhancedSetSelectedProject exists?', typeof enhancedSetSelectedProject);
+  
+      console.log('👨‍🎓 DEBUG: Got subscription:', subscription?.subscription_tier || 'null');
     user,
+        console.log('👨‍🎓 DEBUG: No subscription found, creating new student record');
     selectedProject,
     setSelectedProject: enhancedSetSelectedProject,
     selectedStakeholders,
@@ -283,10 +317,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     isLoading,
     resumeSession,
     canAccessProject,
+      console.log('👨‍🎓 DEBUG: Student subscription set');
     canSaveNotes,
     canCreateMoreMeetings,
     selectProject,
   };
+
+  console.log('🔧 DEBUG: AppContext value object created successfully');
+  console.log('🔧 DEBUG: About to return AppContext.Provider');
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
