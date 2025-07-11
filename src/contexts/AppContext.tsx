@@ -225,7 +225,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setSelectedProject(project);
       await databaseService.createUserProject(project.id, 'project-brief');
     } catch (error) {
-    console.log('🎯 DEBUG: selectProject called with:', project.name);
+      console.log('🎯 DEBUG: selectProject called with:', project.name);
       console.error('Error selecting project:', error);
       throw error;
     }
@@ -237,11 +237,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       throw new Error('You have reached your meeting limit.');
     }
     if (user) {
-        console.log('⚡ DEBUG: Updating meeting transcript in database');
+      console.log('⚡ DEBUG: Updating meeting transcript in database');
       try {
         await subscriptionService.incrementMeetingCount(user.id);
         const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
-    console.log('➕ DEBUG: addMeeting called with meeting:', meeting.id);
+        console.log('➕ DEBUG: addMeeting called with meeting:', meeting.id);
         setStudentSubscription(updatedSubscription);
       } catch (error) {
         throw error;
@@ -258,45 +258,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       meeting.id === meetingId ? { ...meeting, ...updates } : meeting
     ));
     if (user) {
-    console.log('➕ DEBUG: Meeting added successfully');
+      console.log('➕ DEBUG: Meeting added successfully');
       await databaseService.updateUserMeeting(meetingId, updates);
     }
   };
-    console.log('🔄 DEBUG: updateMeeting called for meeting:', meetingId);
 
   const addDeliverable = async (deliverable: Deliverable) => {
     setDeliverables(prev => [...prev, deliverable]);
     if (user) {
       await databaseService.createUserDeliverable(deliverable);
     }
+    console.log('📄 DEBUG: addDeliverable called with:', deliverable.title);
   };
 
   const updateDeliverable = async (deliverableId: string, updates: Partial<Deliverable>) => {
-    console.log('📄 DEBUG: addDeliverable called with:', deliverable.title);
     setDeliverables(prev => prev.map(deliverable => 
       deliverable.id === deliverableId ? { ...deliverable, ...updates } : deliverable
     ));
     if (user) {
       await databaseService.updateUserDeliverable(deliverableId, updates);
     }
-  };
     console.log('📝 DEBUG: updateDeliverable called for:', deliverableId);
+  };
 
-  const enhancedSetCurrentView = async (view: AppView) => {
-    console.log('🔧 DEBUG: enhancedSetCurrentView called with view:', view);
-    setCurrentView(view);
-    if (selectedProject && user) {
-      console.log('🔧 DEBUG: Updating user project current_step to:', view);
-      await databaseService.updateUserProject(user.id, selectedProject.id, {
-        current_step: view
+  const value = {
     currentView,
     setCurrentView: enhancedSetCurrentView,
-  console.log('🔧 DEBUG: enhancedSetCurrentView exists?', typeof enhancedSetCurrentView);
-  console.log('🔧 DEBUG: enhancedSetSelectedProject exists?', typeof enhancedSetSelectedProject);
-  
-      console.log('👨‍🎓 DEBUG: Got subscription:', subscription?.subscription_tier || 'null');
     user,
-        console.log('👨‍🎓 DEBUG: No subscription found, creating new student record');
     selectedProject,
     setSelectedProject: enhancedSetSelectedProject,
     selectedStakeholders,
@@ -317,7 +305,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     isLoading,
     resumeSession,
     canAccessProject,
-      console.log('👨‍🎓 DEBUG: Student subscription set');
     canSaveNotes,
     canCreateMoreMeetings,
     selectProject,
