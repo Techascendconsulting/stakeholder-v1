@@ -60,7 +60,7 @@ const LandingPage: React.FC = () => {
       title: "AI-Powered Stakeholder Simulation",
       description: "Practice with hyper-realistic AI stakeholders that adapt to your questions and provide authentic business responses",
       image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1200",
-      stats: "25+ AI Personalities",
+      stats: "25+ Stakeholders",
       color: "from-blue-500 to-cyan-500"
     },
     {
@@ -641,7 +641,7 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 BA Mastery Platform. All rights reserved. Transforming careers worldwide.</p>
+            <p>&copy; 2025 BA Mastery Platform. All rights reserved. Transforming careers worldwide.</p>
           </div>
         </div>
       </footer>
