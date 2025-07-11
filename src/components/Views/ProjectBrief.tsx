@@ -1,6 +1,6 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Scope, XCircle } from 'lucide-react'
+import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Telescope as Scope, XCircle } from 'lucide-react'
 
 const ProjectBrief: React.FC = () => {
   const { selectedProject, setCurrentView } = useApp()
