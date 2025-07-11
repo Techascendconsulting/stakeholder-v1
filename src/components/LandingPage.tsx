@@ -241,7 +241,7 @@ const LandingPage: React.FC = () => {
                 {/* Main Product Screenshot */}
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-all duration-500 group">
                   <img
-                    src="hhttps://images.pexels.com/photos/7698715/pexels-photo-7698715.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                    src="https://images.pexels.com/photos/7698715/pexels-photo-7698715.jpeg?auto=compress&cs=tinysrgb&w=1200"
                     alt="AI-Powered Business Analysis Training Platform"
                     className="w-full h-[600px] object-cover group-hover:scale-110 transition-transform duration-700"
                   />
