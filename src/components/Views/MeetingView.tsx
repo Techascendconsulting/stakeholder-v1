@@ -88,7 +88,7 @@ const MeetingView: React.FC = () => {
   }
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || isAiResponding) return
+    if (!inputMessage.trim() || isAiResponding) return;
 
     const userMessageText = inputMessage.trim();
     setInputMessage('');
@@ -99,34 +99,31 @@ const MeetingView: React.FC = () => {
       content: userMessageText,
       timestamp: new Date().toISOString(),
       stakeholderName: 'Business Analyst'
-    }
+    };
 
     const updatedMessagesWithUser = [...messages, userMessage];
     setMessages(updatedMessagesWithUser);
     setIsAiResponding(true);
 
-    const conversationContext = {
-      projectId: selectedProject.id,
-      messages: updatedMessagesWithUser,
-    };
-
     try {
-      // Call the new AI orchestrator. We pass it a function that it will use
-      // to send messages back to this component one by one.
-      await stakeholderAI.generateGroupResponse(
-        conversationContext,
+      // Call the new, simplified AI function. It returns one single message block.
+      const aiResponseMessage = await stakeholderAI.generateResponse(
         selectedProject,
         selectedStakeholders,
-        userMessageText,
-        (newAiMessage) => {
-          // This function adds each new AI message to the chat in real-time.
-          setMessages(prevMessages => [...prevMessages, newAiMessage]);
-          // Auto-play audio for each message as it arrives.
-          if (globalAudioEnabled) {
-            setTimeout(() => playMessageAudio(newAiMessage), 300);
-          }
-        }
+        updatedMessagesWithUser, // Pass the most up-to-date message list
+        userMessageText
       );
+
+      // Add the AI's response to the chat, but only if it's not empty.
+      if (aiResponseMessage.content) {
+        setMessages(prevMessages => [...prevMessages, aiResponseMessage]);
+        
+        // Audio playback for system-generated multi-responses is complex,
+        // so we will only play audio for single-speaker messages for now.
+        if (globalAudioEnabled && aiResponseMessage.speaker !== 'system') {
+          setTimeout(() => playMessageAudio(aiResponseMessage), 300);
+        }
+      }
 
     } catch (error) {
       console.error('Error in sendMessage:', error);
@@ -140,10 +137,9 @@ const MeetingView: React.FC = () => {
       };
       setMessages(prevMessages => [...prevMessages, fallbackMessage]);
     } finally {
-      // Set loading state to false after ALL responses have been received.
       setIsAiResponding(false);
     }
-  }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -255,6 +251,7 @@ const MeetingView: React.FC = () => {
                   <span className="text-xs text-gray-500">{formatTime(new Date(message.timestamp))}</span>
                 </div>
                 <div className={`inline-block p-3 rounded-lg ${message.speaker === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
+                  {/* The whitespace-pre-wrap is important for showing the script-like format */}
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                 </div>
               </div>
@@ -264,7 +261,7 @@ const MeetingView: React.FC = () => {
         {isAiResponding && (
           <div className="flex items-start space-x-3">
             <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-gray-600" /></div>
-            <div className="bg-white border border-gray-200 rounded-lg p-3"><p className="text-sm text-gray-600 italic">Stakeholder is thinking...</p></div>
+            <div className="bg-white border border-gray-200 rounded-lg p-3"><p className="text-sm text-gray-600 italic">Stakeholders are responding...</p></div>
           </div>
         )}
         <div ref={messagesEndRef} />
