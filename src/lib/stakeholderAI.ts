@@ -1,10 +1,3 @@
-// Filename: src/lib/StakeholderAI.ts
-//
-// FINAL, RELIABLE VERSION: This implements a two-step AI call process.
-// 1. A "Director" AI call to choose the speaker.
-// 2. An "Actor" AI call for the chosen stakeholder to generate the response.
-// This is the most robust way to solve the "one person talking" problem.
-
 import OpenAI from 'openai'
 import { Stakeholder, Project, Message } from '../types'
 
