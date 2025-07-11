@@ -214,7 +214,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     addDeliverable,
     updateDeliverable,
     currentMeeting,
-    setCurrentMeeting
+    setCurrentMeeting,
     userProgress,
     isLoading,
     resumeSession
