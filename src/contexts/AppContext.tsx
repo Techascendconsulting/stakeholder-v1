@@ -48,6 +48,9 @@ export const useApp = () => {
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  
+  console.log('🔧 AppProvider: Initializing with user:', user?.id);
+  
   const [currentView, setCurrentView] = useState<AppView>('projects');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([]);
@@ -61,6 +64,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [dbDeliverables, setDbDeliverables] = useState<DatabaseDeliverable[]>([]);
 
   const addMessageToCurrentMeeting = (message: Message) => {
+    console.log('💬 Adding message to current meeting:', message.id, currentMeeting?.id);
     if (!currentMeeting) return;
     const updatedMeeting = {
       ...currentMeeting,
@@ -85,9 +89,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     if (user) {
+      console.log('👤 User changed, resuming session for:', user.id);
       resumeSession();
       ensureStudentRecord();
     } else {
+      console.log('👤 User logged out, clearing state');
       setIsLoading(false);
       setSelectedProject(null);
       setMeetings([]);
@@ -101,9 +107,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const ensureStudentRecord = async () => {
     if (!user) return;
+    console.log('📝 Ensuring student record for:', user.id);
     try {
       let subscription = await subscriptionService.getStudentSubscription(user.id);
+      console.log('📝 Current subscription:', subscription);
       if (!subscription) {
+        console.log('📝 Creating new student record');
         subscription = await subscriptionService.createStudentRecord(
           user.id,
           user.email?.split('@')[0] || 'User',
@@ -112,18 +121,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
       setStudentSubscription(subscription);
     } catch (error) {
-      console.error('Error ensuring student record:', error);
+      console.error('❌ Error ensuring student record:', error);
     }
   };
 
   const resumeSession = async () => {
     if (!user) return;
+    console.log('🔄 Resuming session for user:', user.id);
     setIsLoading(true);
     try {
       const subscription = await subscriptionService.getStudentSubscription(user.id);
+      console.log('🔄 Got subscription:', subscription);
       setStudentSubscription(subscription);
 
       const sessionData = await databaseService.resumeUserSession(user.id);
+      console.log('🔄 Session data:', sessionData);
       setUserProgress(sessionData.progress);
 
       const appMeetings: Meeting[] = sessionData.meetings.map(dbMeeting => ({
@@ -136,6 +148,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         status: dbMeeting.status,
         meetingType: dbMeeting.meeting_type
       }));
+      console.log('🔄 Converted meetings:', appMeetings.length);
       setMeetings(appMeetings);
 
       const appDeliverables: Deliverable[] = sessionData.deliverables.map(dbDeliverable => ({
@@ -146,26 +159,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         content: dbDeliverable.content,
         lastModified: dbDeliverable.updated_at
       }));
+      console.log('🔄 Converted deliverables:', appDeliverables.length);
       setDeliverables(appDeliverables);
       
       // --- THE CORE FIX IS HERE ---
       if (sessionData.currentProject) {
+        console.log('🔄 Found current project:', sessionData.currentProject.project_id);
         const projectData = mockProjects.find(p => p.id === sessionData.currentProject!.project_id);
         if (projectData) {
+          console.log('🔄 Setting selected project:', projectData.name);
           setSelectedProject(projectData);
           // Find the active meeting for this project and set it as current
           const activeMeeting = appMeetings.find(m => m.projectId === projectData.id && m.status === 'in_progress');
+          console.log('🔄 Found active meeting:', activeMeeting?.id);
           setCurrentMeeting(activeMeeting || null); // Set the meeting, or null if none is active
+          console.log('🔄 Setting current view to:', sessionData.currentProject.current_step);
           setCurrentView(sessionData.currentProject.current_step as AppView);
         }
       } else {
         // If no active project, ensure we are on the projects page
+        console.log('🔄 No current project, setting view to projects');
         setCurrentView('projects');
       }
 
     } catch (error) {
-      console.error('Error resuming session:', error);
+      console.error('❌ Error resuming session:', error);
     } finally {
+      console.log('🔄 Resume session complete, setting loading to false');
       setIsLoading(false); // Stop loading at the very end
     }
   };
@@ -176,19 +196,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const selectProject = async (project: Project): Promise<void> => {
     if (!user) return;
+    console.log('🎯 Selecting project:', project.name, 'for user:', user.id);
     try {
       await subscriptionService.selectProject(user.id, project.id);
       const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
+      console.log('🎯 Updated subscription after project selection:', updatedSubscription);
       setStudentSubscription(updatedSubscription);
       setSelectedProject(project);
       await databaseService.createUserProject(project.id, 'project-brief');
+      console.log('🎯 Project selection complete');
     } catch (error) {
-      console.error('Error selecting project:', error);
+      console.error('❌ Error selecting project:', error);
       throw error;
     }
   };
 
   const addMeeting = async (meeting: Meeting) => {
+    console.log('➕ Adding meeting:', meeting.id, 'for project:', meeting.projectId);
     if (user && !canCreateMoreMeetings()) {
       throw new Error('You have reached your meeting limit.');
     }
@@ -198,6 +222,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
         setStudentSubscription(updatedSubscription);
       } catch (error) {
+        console.error('❌ Error incrementing meeting count:', error);
         throw error;
       }
     }
@@ -208,6 +233,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateMeeting = async (meetingId: string, updates: Partial<Meeting>) => {
+    console.log('📝 Updating meeting:', meetingId, 'with updates:', updates);
     setMeetings(prev => prev.map(meeting => 
       meeting.id === meetingId ? { ...meeting, ...updates } : meeting
     ));
@@ -217,6 +243,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addDeliverable = async (deliverable: Deliverable) => {
+    console.log('📄 Adding deliverable:', deliverable.id, 'for project:', deliverable.projectId);
     setDeliverables(prev => [...prev, deliverable]);
     if (user) {
       await databaseService.createUserDeliverable(deliverable);
@@ -224,6 +251,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateDeliverable = async (deliverableId: string, updates: Partial<Deliverable>) => {
+    console.log('📝 Updating deliverable:', deliverableId, 'with updates:', updates);
     setDeliverables(prev => prev.map(deliverable => 
       deliverable.id === deliverableId ? { ...deliverable, ...updates } : deliverable
     ));
@@ -233,10 +261,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const enhancedSetSelectedProject = async (project: Project | null) => {
+    console.log('🎯 Enhanced set selected project called with:', project?.name);
     if (project && user) {
       await selectProject(project);
     }
   }
+
+  console.log('🔧 AppProvider: Creating value object with currentView:', currentView, 'isLoading:', isLoading);
 
   const value = {
     currentView,
