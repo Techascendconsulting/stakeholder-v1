@@ -1,12 +1,10 @@
-import OpenAI from 'openai'
-import { Stakeholder, Project, Message } from '../types'
 
-// This can be an interface if you have a types.ts file
+import OpenAI from 'openai'
+import { Stakeholder, Project, Message } from '../types' // Make sure this path is correct
+
 interface ConversationContext {
   projectId: string
-  stakeholderIds: string[]
   messages: Message[]
-  meetingType: 'individual' | 'group'
 }
 
 const openai = new OpenAI({
@@ -16,57 +14,64 @@ const openai = new OpenAI({
 
 class StakeholderAI {
   /**
-   * This is the main function that now orchestrates the two-call process.
+   * The main orchestrator function. It determines who needs to speak and then
+   * generates a response for each of them, sending them back one by one via a callback.
    */
   public async generateGroupResponse(
     context: ConversationContext,
     project: Project,
     allStakeholders: Stakeholder[],
-    userMessage: string
-  ): Promise<Message> {
+    userMessage: string,
+    onMessageGenerated: (message: Message) => void // This function sends messages to the UI
+  ): Promise<void> {
     try {
-      // =================================================================
-      // STEP 1: Call the "Director" AI to decide who should speak next.
-      // =================================================================
-      const speakerId = await this.chooseNextSpeaker(context, allStakeholders, userMessage);
+      // STEP 1: Call the Director AI to get a LIST of who should speak.
+      const speakerIds = await this.chooseNextSpeakers(context, allStakeholders, userMessage);
       
-      const speakingStakeholder = allStakeholders.find(s => s.id === speakerId);
-      if (!speakingStakeholder) {
-        // If the director fails, fall back to the first stakeholder to avoid crashing.
-        console.error(`Director AI chose an invalid speaker ID: ${speakerId}. Defaulting to the first stakeholder.`);
-        const firstStakeholder = allStakeholders[0];
-        return this.generateActorResponse(context, firstStakeholder, userMessage);
+      if (speakerIds.length === 0) {
+        console.log("Director decided no one should speak for this message.");
+        return;
       }
 
-      // =================================================================
-      // STEP 2: Call the "Actor" AI to generate a response for the chosen speaker.
-      // =================================================================
-      return this.generateActorResponse(context, speakingStakeholder, userMessage);
+      // STEP 2: Loop through the list and generate a response for EACH speaker.
+      for (const speakerId of speakerIds) {
+        const speakingStakeholder = allStakeholders.find(s => s.id === speakerId);
+        if (speakingStakeholder) {
+          // Add a short, realistic delay between speakers.
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 1200 + 800));
+
+          const actorResponse = await this.generateActorResponse(context, speakingStakeholder, project, userMessage);
+          
+          // Use the callback to send the new message back to the MeetingView to be displayed.
+          onMessageGenerated(actorResponse);
+        }
+      }
 
     } catch (error) {
-      console.error('Error in the two-step AI response generation:', error);
-      return {
+      console.error('Error in multi-response generation:', error);
+      const fallbackMessage: Message = {
         id: `stakeholder-fallback-${Date.now()}`,
         speaker: 'system',
-        content: "I'm sorry, my internal process has failed. Please give me a moment and try again.",
+        content: "I'm sorry, a critical error occurred in my decision-making process. Please try again.",
         timestamp: new Date().toISOString(),
       };
+      onMessageGenerated(fallbackMessage);
     }
   }
 
   /**
-   * AI Call 1: The Director.
-   * Its only job is to return the ID of the next speaker.
+   * AI Call 1: The Multi-Response Director.
+   * Its only job is to return a JSON array of stakeholder IDs in the order they should speak.
    */
-  private async chooseNextSpeaker(
+  private async chooseNextSpeakers(
     context: ConversationContext,
     allStakeholders: Stakeholder[],
     userMessage: string
-  ): Promise<string> {
+  ): Promise<string[]> {
     const history = context.messages.slice(-10).map(msg => `${msg.stakeholderName || 'BA'}: ${msg.content}`).join('\n');
     const stakeholderProfiles = allStakeholders.map(s => `- ID: "${s.id}", Name: ${s.name}, Role: ${s.role}`).join('\n');
 
-    const directorSystemPrompt = `You are a silent meeting director. Your only job is to decide which stakeholder should speak next. Analyze the conversation and the user's last message.
+    const directorSystemPrompt = `You are a meeting director. Your job is to decide who should speak next. Your output MUST be a JSON array of stakeholder IDs.
 
 STAKEHOLDERS:
 ${stakeholderProfiles}
@@ -74,94 +79,89 @@ ${stakeholderProfiles}
 CONVERSATION HISTORY:
 ${history}
 
-BUSINESS ANALYST'S (USER'S) LATEST MESSAGE:
+USER'S LATEST MESSAGE:
 "${userMessage}"
 
 RULES:
-1.  Read the user's message. Is it for a specific role (e.g., "marketing")? If so, choose that stakeholder.
-2.  If the question is general, choose the most relevant stakeholder based on their role.
-3.  **Most Importantly:** If the question is general and multiple people could answer, **pick someone who has not spoken recently.** Look at the history to see who spoke last and pick someone else. Rotate speakers.
-4.  Your response MUST be ONLY the ID of the stakeholder you choose. Do not add any other text, explanation, or punctuation.
+1.  **Multi-Person Detection:** Analyze the user's message. If they address multiple people by name (e.g., "Hi James and Aisha" or "Thanks, John and Sarah"), your output array MUST contain the IDs for all people mentioned, in order.
+2.  **Single Speaker:** If the message is a question for a specific role or a general topic, the array should contain only one ID for the most relevant speaker.
+3.  **Rotation:** For general questions, you MUST rotate speakers. Do not pick the same person who spoke last.
+4.  **Empty Array:** If the user's message doesn't require a response (e.g., "Okay, thanks"), return an empty array: [].
 
-Example Response: "stk_12345abcde"`;
+**Your response MUST be a valid JSON object containing a single key "speaker_ids" with an array of strings.**
+
+EXAMPLES:
+- User says: "Hi James and Aisha" -> {"speaker_ids": ["stake-1", "stake-2"]}
+- User says: "What are the marketing needs?" -> {"speaker_ids": ["stake-4"]}
+- User says: "Okay, I understand." -> {"speaker_ids": []}`;
 
     const completion = await openai.chat.completions.create({
-      // Using a cheaper, faster model is fine for this simple decision.
-      model: "gpt-3.5-turbo", 
+      model: "gpt-4-turbo",
       messages: [{ role: "system", content: directorSystemPrompt }],
-      temperature: 0.2,
-      max_tokens: 20,
+      temperature: 0.1,
+      response_format: { type: "json_object" },
     });
 
-    const choice = completion.choices[0]?.message?.content?.trim().replace(/"/g, ''); // Clean up the response
-    if (!choice || !allStakeholders.some(s => s.id === choice)) {
-      console.error("Director AI returned an invalid or empty choice. Defaulting.");
-      // Fallback to a simple rotation if the AI fails.
-      const lastSpeakerId = context.messages.filter(m => m.speaker !== 'user').pop()?.speaker;
-      const lastSpeakerIndex = allStakeholders.findIndex(s => s.id === lastSpeakerId);
-      const nextSpeakerIndex = (lastSpeakerIndex + 1) % allStakeholders.length;
-      return allStakeholders[nextSpeakerIndex].id;
+    const rawResponse = completion.choices[0]?.message?.content;
+    if (!rawResponse) return [];
+
+    try {
+      const parsedJson = JSON.parse(rawResponse);
+      const speakerArray = parsedJson.speaker_ids;
+      if (Array.isArray(speakerArray)) {
+        return speakerArray;
+      }
+      return [];
+    } catch (e) {
+      console.error("Failed to parse director's JSON response:", e);
+      return [];
     }
-    
-    return choice;
   }
 
   /**
-   * AI Call 2: The Actor.
-   * Its only job is to be one person and respond naturally.
+   * AI Call 2: The Actor. Generates the response for one specific stakeholder.
    */
   private async generateActorResponse(
     context: ConversationContext,
     stakeholder: Stakeholder,
+    project: Project,
     userMessage: string
   ): Promise<Message> {
-    const history = context.messages.slice(-10);
+    const actorSystemPrompt = `You are an actor playing a role in a business meeting simulation. You must fully embody the persona assigned to you and never break character.
 
-    const actorSystemPrompt = `You are a business professional in a meeting. You MUST act as this specific person and no one else.
+### Your Character Sheet
+- **Your Name:** ${stakeholder.name}
+- **Your Role:** ${stakeholder.role}
+- **Your Personality:** You are ${stakeholder.personality}.
+- **Your Goal:** Your main goal in this meeting is to advance your key priorities: ${stakeholder.priorities.join(', ')}.
+- **Project Context:** The meeting is about the "${project.name}" project.
 
-### Your Persona
-- **Name:** ${stakeholder.name}
-- **Role:** ${stakeholder.role}
-- **Department:** ${stakeholder.department}
-- **Personality:** ${stakeholder.personality}
-- **Your Key Priorities:** ${stakeholder.priorities.join(', ')}
+### Your Task
+The Business Analyst has just said: "${userMessage}"
 
-### Meeting Context
-- **Project:** "${context.projectId}"
-- **Your Task:** You are answering a question from the Business Analyst. Provide a helpful, in-character response. When you state a requirement, you MUST explain the business reason ("the why") behind it.
-
-### Conversation History
-${history.map(msg => `${msg.stakeholderName || 'BA'}: ${msg.content}`).join('\n')}
-
-The Business Analyst just said: "${userMessage}"
-
-Respond as ${stakeholder.name}. Do not break character. Do not refer to yourself as an AI.`;
+Respond to them as your character would.
+- If the BA greeted you by name, give a brief, polite reply.
+- If they asked a question, answer it from your perspective.
+- Keep your response concise (1-3 sentences).
+- **Do not use markdown.** Just provide clean, plain text. Do not use asterisks or lists.`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo", // Use the high-quality model for the actual response
-      messages: [
-        { role: "system", content: actorSystemPrompt },
-        // We can also add the user message here again for clarity
-        { role: "user", content: userMessage }
-      ],
+      model: "gpt-4-turbo",
+      messages: [{ role: "system", content: actorSystemPrompt }],
       temperature: 0.75,
-      max_tokens: 250,
+      max_tokens: 150,
     });
 
-    const responseContent = completion.choices[0]?.message?.content || "I need to think on that for a moment.";
+    const responseContent = completion.choices[0]?.message?.content || "I see.";
 
     return {
       id: `stakeholder-${Date.now()}`,
       speaker: stakeholder.id,
-      content: responseContent,
+      content: responseContent.trim(),
       timestamp: new Date().toISOString(),
       stakeholderName: stakeholder.name,
       stakeholderRole: stakeholder.role
     };
-  }
-
-  public isConfigured(): boolean {
-    return !!import.meta.env.VITE_OPENAI_API_KEY;
   }
 }
 
