@@ -237,6 +237,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       await selectProject(project);
     }
   }
+
   const value = {
     currentView,
     setCurrentView,
