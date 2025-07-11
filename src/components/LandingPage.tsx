@@ -67,7 +67,7 @@ const LandingPage: React.FC = () => {
       icon: FileText,
       title: "Professional Documentation Suite",
       description: "Generate industry-standard BRDs, user stories, and acceptance criteria with AI-assisted templates",
-      image: "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      image: "https://images.pexels.com/photos/15543115/pexels-photo-15543115.jpeg?auto=compress&cs=tinysrgb&w=1200",
       stats: "15+ Templates",
       color: "from-purple-500 to-pink-500"
     },
