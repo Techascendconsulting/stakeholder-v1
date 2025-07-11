@@ -162,7 +162,7 @@ const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Header - Kajabi Style */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-3">
@@ -174,20 +174,20 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 font-medium">Features</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 font-medium">Pricing</a>
-              <a href="#testimonials" className="text-gray-600 hover:text-gray-900 font-medium">Reviews</a>
+              <a href="#features" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Features</a>
+              <a href="#pricing" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Pricing</a>
+              <a href="#testimonials" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">Reviews</a>
             </nav>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowAuth(true)}
-                className="text-gray-700 hover:text-gray-900 font-medium"
+                className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
               >
                 Sign In
               </button>
               <button
                 onClick={() => setShowAuth(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium transform hover:scale-105"
               >
                 Get Started Free
               </button>
@@ -196,13 +196,19 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section - Kajabi Inspired */}
-      <section className="bg-white py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section - Rich Imagery Like Kajabi */}
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 py-20 lg:py-32 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-10 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-10 animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <div className="inline-flex items-center bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className={`text-center lg:text-left transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+              <div className="inline-flex items-center bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6 animate-bounce">
                 <Star className="w-4 h-4 mr-2" />
                 Trusted by 1000+ Business Analysts
               </div>
@@ -216,12 +222,12 @@ const LandingPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-2 shadow-lg"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-2 shadow-lg transform hover:scale-105"
                 >
                   <span>Start Free Training</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-2">
+                <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-300 font-semibold text-lg flex items-center justify-center space-x-2 transform hover:scale-105">
                   <Play className="w-5 h-5" />
                   <span>Watch Demo</span>
                 </button>
@@ -244,16 +250,21 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right Image */}
-            <div className="relative">
+            {/* Right Image - Hero Product Shot */}
+            <div className={`relative transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <div className="relative z-10">
-                <img
-                  src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
-                  alt="Professional business meeting"
-                  className="rounded-2xl shadow-2xl w-full"
-                />
-                {/* Floating Cards */}
-                <div className="absolute -top-6 -left-6 bg-white rounded-xl p-4 shadow-lg">
+                {/* Main Hero Image */}
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <img
+                    src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800"
+                    alt="Professional business meeting"
+                    className="w-full h-96 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                </div>
+                
+                {/* Floating UI Elements - Kajabi Style */}
+                <div className="absolute -top-6 -left-6 bg-white rounded-xl p-4 shadow-lg animate-float">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                       <CheckCircle className="w-5 h-5 text-green-600" />
@@ -264,7 +275,8 @@ const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="absolute -bottom-6 -right-6 bg-white rounded-xl p-4 shadow-lg">
+                
+                <div className="absolute -bottom-6 -right-6 bg-white rounded-xl p-4 shadow-lg animate-float delay-500">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <FileText className="w-5 h-5 text-blue-600" />
@@ -275,7 +287,16 @@ const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Progress Indicator */}
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-gray-700">Live Session</span>
+                  </div>
+                </div>
               </div>
+              
               {/* Background Decoration */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl transform rotate-3 scale-105 -z-10"></div>
             </div>
@@ -283,30 +304,30 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof - Kajabi Style */}
+      {/* Social Proof - Company Logos */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="text-gray-600 font-medium">Trusted by professionals at leading companies</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-60">
-            <div className="text-center">
+            <div className="text-center transform hover:scale-110 transition-transform">
               <div className="text-2xl font-bold text-gray-400">Microsoft</div>
             </div>
-            <div className="text-center">
+            <div className="text-center transform hover:scale-110 transition-transform">
               <div className="text-2xl font-bold text-gray-400">Deloitte</div>
             </div>
-            <div className="text-center">
+            <div className="text-center transform hover:scale-110 transition-transform">
               <div className="text-2xl font-bold text-gray-400">PwC</div>
             </div>
-            <div className="text-center">
+            <div className="text-center transform hover:scale-110 transition-transform">
               <div className="text-2xl font-bold text-gray-400">Accenture</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section - Clean Kajabi Style */}
+      {/* Features Section - Rich Visual Cards */}
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -316,53 +337,34 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Users,
-                title: "AI Stakeholder Interviews",
-                description: "Practice with realistic AI stakeholders that respond like real business professionals with unique personalities and priorities."
-              },
-              {
-                icon: FileText,
-                title: "Professional Documentation",
-                description: "Create industry-standard BRDs, user stories, and acceptance criteria using proven templates and methodologies."
-              },
-              {
-                icon: Target,
-                title: "Real-World Projects",
-                description: "Work on actual business cases from leading organizations across different industries and complexity levels."
-              },
-              {
-                icon: BarChart3,
-                title: "Progress Tracking",
-                description: "Monitor your skill development with detailed analytics and personalized feedback on your performance."
-              },
-              {
-                icon: Award,
-                title: "Skill Certification",
-                description: "Build a portfolio of completed projects to showcase your expertise to potential employers."
-              },
-              {
-                icon: MessageSquare,
-                title: "Expert Support",
-                description: "Get guidance from experienced Business Analysts and access to our community of professionals."
-              }
-            ].map((feature, index) => (
-              <div key={index} className="text-center p-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <feature.icon className="w-8 h-8 text-blue-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={feature.image}
+                    alt={feature.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4">
+                    <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                      <feature.icon className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works - Kajabi Style */}
-      <section className="py-20 bg-gray-50">
+      {/* How It Works - Visual Process */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">How it works</h2>
@@ -390,18 +392,21 @@ const LandingPage: React.FC = () => {
                 image: "https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=600"
               }
             ].map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="relative mb-8">
-                  <img
-                    src={step.image}
-                    alt={step.title}
-                    className="w-full h-48 object-cover rounded-2xl"
-                  />
-                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              <div key={index} className="text-center group">
+                <div className="relative mb-8 transform group-hover:scale-105 transition-transform duration-300">
+                  <div className="relative overflow-hidden rounded-2xl">
+                    <img
+                      src={step.image}
+                      alt={step.title}
+                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  </div>
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
                     {step.step}
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{step.title}</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">{step.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{step.description}</p>
               </div>
             ))}
@@ -409,8 +414,25 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Section - Kajabi Style */}
-      <section id="pricing" className="py-20 bg-white">
+      {/* Stats Section - Animated Numbers */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <stat.icon className="w-8 h-8 text-blue-600" />
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{stat.number}</div>
+                <div className="text-gray-600 font-medium">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section - Enhanced Cards */}
+      <section id="pricing" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h2>
@@ -419,10 +441,10 @@ const LandingPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => (
-              <div key={index} className={`bg-white rounded-2xl border-2 p-8 relative ${plan.popular ? 'border-blue-500 shadow-xl scale-105' : 'border-gray-200'}`}>
+              <div key={index} className={`bg-white rounded-2xl border-2 p-8 relative transform transition-all duration-300 hover:scale-105 hover:shadow-xl ${plan.popular ? 'border-blue-500 shadow-xl scale-105' : 'border-gray-200'}`}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold">
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold animate-pulse">
                       Most Popular
                     </span>
                   </div>
@@ -455,9 +477,9 @@ const LandingPage: React.FC = () => {
                 <button
                   onClick={() => plan.name === 'Free' ? setShowAuth(true) : undefined}
                   disabled={plan.name !== 'Free'}
-                  className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                  className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                     plan.popular
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg'
                       : plan.name === 'Free'
                       ? 'bg-gray-900 text-white hover:bg-gray-800'
                       : 'bg-gray-100 text-gray-500 cursor-not-allowed'
@@ -471,8 +493,8 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials - Kajabi Style */}
-      <section id="testimonials" className="py-20 bg-gray-50">
+      {/* Testimonials - Enhanced with Images */}
+      <section id="testimonials" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">What our students say</h2>
@@ -481,7 +503,7 @@ const LandingPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-2xl p-8 shadow-lg">
+              <div key={index} className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
@@ -506,9 +528,19 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section - Kajabi Style */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      {/* CTA Section - Rich Background */}
+      <section className="relative py-20 bg-gradient-to-r from-blue-600 to-purple-600 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1200"
+            alt="Professional team"
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-purple-600/90"></div>
+        </div>
+
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to advance your BA career?
           </h2>
@@ -517,7 +549,7 @@ const LandingPage: React.FC = () => {
           </p>
           <button
             onClick={() => setShowAuth(true)}
-            className="bg-white text-blue-600 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold text-lg inline-flex items-center space-x-2 shadow-lg"
+            className="bg-white text-blue-600 px-8 py-4 rounded-xl hover:bg-gray-50 transition-all duration-300 font-semibold text-lg inline-flex items-center space-x-2 shadow-lg transform hover:scale-105"
           >
             <span>Start Free Training</span>
             <ArrowRight className="w-5 h-5" />
@@ -526,7 +558,7 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer - Clean Kajabi Style */}
+      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -541,13 +573,13 @@ const LandingPage: React.FC = () => {
                 The most comprehensive Business Analysis training platform. Master real-world skills with AI-powered scenarios.
               </p>
               <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 cursor-pointer">
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 cursor-pointer transition-colors">
                   <span className="text-gray-600 font-bold">f</span>
                 </div>
-                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 cursor-pointer">
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 cursor-pointer transition-colors">
                   <span className="text-gray-600 font-bold">t</span>
                 </div>
-                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 cursor-pointer">
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 cursor-pointer transition-colors">
                   <span className="text-gray-600 font-bold">in</span>
                 </div>
               </div>
@@ -555,19 +587,19 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform</h3>
               <ul className="space-y-3 text-gray-600">
-                <li className="hover:text-gray-900 cursor-pointer">Features</li>
-                <li className="hover:text-gray-900 cursor-pointer">Pricing</li>
-                <li className="hover:text-gray-900 cursor-pointer">Projects</li>
-                <li className="hover:text-gray-900 cursor-pointer">Certification</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Features</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Pricing</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Projects</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Certification</li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Support</h3>
               <ul className="space-y-3 text-gray-600">
-                <li className="hover:text-gray-900 cursor-pointer">Help Center</li>
-                <li className="hover:text-gray-900 cursor-pointer">Contact Us</li>
-                <li className="hover:text-gray-900 cursor-pointer">Privacy Policy</li>
-                <li className="hover:text-gray-900 cursor-pointer">Terms of Service</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Help Center</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Contact Us</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Privacy Policy</li>
+                <li className="hover:text-gray-900 cursor-pointer transition-colors">Terms of Service</li>
               </ul>
             </div>
           </div>
@@ -576,6 +608,17 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Custom CSS for animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   )
 }
