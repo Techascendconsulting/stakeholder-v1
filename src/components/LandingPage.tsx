@@ -106,7 +106,7 @@ const LandingPage: React.FC = () => {
   company: "Deloitte",
   content: "The real-world scenarios are incredible. I practiced on the exact type of digital transformation project I later worked on at Deloitte. The stakeholder personalities are so diverse and realistic.",
   rating: 5,
-  image: "https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/images/ChatGPT%20Image%20Jul%2011,%202025,%2007_38_00%20PM.png",
+  image: "https://ckppwcsnkbrgekxtwccq.supabase.co/storage/v1/object/public/images//ChatGPT%20Image%20Jul%2011,%202025,%2007_55_26%20PM.png",
   salary: "£65k → £95k",
   location: "Manchester, UK"
 },
