@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
+import { subscriptionService } from '../lib/subscription'
 
 const LoginSignup: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin')
@@ -98,18 +98,15 @@ const LoginSignup: React.FC = () => {
       }
 
       if (data.user) {
-        // Insert student record
-        const { error: studentError } = await supabase
-          .from('students')
-          .insert({
-            id: data.user.id,
-            name: formData.name.trim(),
-            email: formData.email,
-            subscription_status: 'free'
-          })
+        // Create student record
+        const studentRecord = await subscriptionService.createStudentRecord(
+          data.user.id,
+          formData.name.trim(),
+          formData.email
+        )
 
-        if (studentError) {
-          console.error('Error creating student record:', studentError)
+        if (!studentRecord) {
+          console.error('Error creating student record')
           // Don't show this error to user as auth was successful
         }
 

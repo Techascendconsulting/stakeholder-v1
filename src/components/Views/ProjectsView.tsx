@@ -1,13 +1,23 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star } from 'lucide-react'
+import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
-  const { projects, setSelectedProject, setCurrentView } = useApp()
+  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject } = useApp()
 
-  const handleViewBrief = (project: any) => {
-    setSelectedProject(project)
-    setCurrentView('project-brief')
+  const handleViewBrief = async (project: any) => {
+    try {
+      if (!canAccessProject(project.id)) {
+        // Show upgrade prompt for locked projects
+        alert('This project is not available in your current plan. Please upgrade to access more projects.')
+        return
+      }
+      
+      await selectProject(project)
+      setCurrentView('project-brief')
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'An error occurred')
+    }
   }
 
   const getComplexityConfig = (complexity: string) => {
@@ -63,6 +73,24 @@ const ProjectsView: React.FC = () => {
     }
   }
 
+  const getSubscriptionIcon = (tier: string) => {
+    switch (tier) {
+      case 'premium':
+        return <Star className="w-4 h-4 text-yellow-500" />
+      case 'enterprise':
+        return <Crown className="w-4 h-4 text-purple-500" />
+      default:
+        return null
+    }
+  }
+
+  const getProjectRequirement = (projectId: string) => {
+    // First project is free, others require premium/enterprise
+    if (projectId === 'proj-3') return 'free' // Inventory Management - beginner level
+    if (projectId === 'proj-1' || projectId === 'proj-4') return 'premium'
+    return 'enterprise'
+  }
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -91,16 +119,50 @@ const ProjectsView: React.FC = () => {
             const complexityConfig = getComplexityConfig(project.complexity)
             const businessImpact = getBusinessImpact(project.id)
             const priorityConfig = getPriorityConfig(businessImpact.priority)
+            const requiredTier = getProjectRequirement(project.id)
+            const isAccessible = canAccessProject(project.id)
+            const isSelected = studentSubscription?.selected_project_id === project.id
             
             return (
-              <div key={project.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group">
+              <div key={project.id} className={`bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 group relative ${
+                isAccessible ? 'hover:shadow-lg' : 'opacity-75'
+              } ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
+                
+                {/* Lock overlay for inaccessible projects */}
+                {!isAccessible && (
+                  <div className="absolute inset-0 bg-gray-50 bg-opacity-90 flex items-center justify-center z-10 rounded-2xl">
+                    <div className="text-center p-6">
+                      <Lock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                        {requiredTier === 'premium' ? 'Premium' : 'Enterprise'} Required
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        Upgrade to access this project
+                      </p>
+                      <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium">
+                        Upgrade Now
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected badge */}
+                {isSelected && (
+                  <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium z-20">
+                    Selected
+                  </div>
+                )}
+
                 {/* Project Header */}
                 <div className="p-8 border-b border-gray-100">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight group-hover:text-blue-600 transition-colors">
-                        {project.name}
-                      </h3>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="text-2xl font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+                          {project.name}
+                        </h3>
+                        {getSubscriptionIcon(requiredTier)}
+                      </div>
                       <div className="flex items-center space-x-3 mb-4">
                         <span className={`inline-flex items-center space-x-2 px-3 py-1.5 text-sm font-semibold rounded-full border ${complexityConfig.color}`}>
                           <complexityConfig.icon className="w-4 h-4" />
@@ -186,16 +248,44 @@ const ProjectsView: React.FC = () => {
                 <div className="p-6">
                   <button
                     onClick={() => handleViewBrief(project)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-3 shadow-sm hover:shadow-md group"
+                    disabled={!isAccessible}
+                    className={`w-full font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-sm hover:shadow-md group ${
+                      isAccessible 
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
-                    <span>View Project Brief</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <span>{isSelected ? 'Continue Project' : 'View Project Brief'}</span>
+                    {isAccessible && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
                   </button>
                 </div>
               </div>
             )
           })}
         </div>
+
+        {/* Subscription Status */}
+        {studentSubscription && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  Current Plan: {studentSubscription.subscription_tier.charAt(0).toUpperCase() + studentSubscription.subscription_tier.slice(1)}
+                </h3>
+                <p className="text-gray-600">
+                  {studentSubscription.subscription_tier === 'free' && `${2 - studentSubscription.meeting_count} meetings remaining`}
+                  {studentSubscription.subscription_tier === 'premium' && 'Access to 2 projects with unlimited meetings'}
+                  {studentSubscription.subscription_tier === 'enterprise' && 'Full access to all features'}
+                </p>
+              </div>
+              {studentSubscription.subscription_tier === 'free' && (
+                <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium">
+                  Upgrade Plan
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Enhanced Professional Training Information */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6">
