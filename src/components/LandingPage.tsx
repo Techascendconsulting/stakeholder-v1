@@ -375,6 +375,208 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* One Platform All Features Section */}
+      <section className="py-24 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              ONE PLATFORM.
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+                ALL THE FEATURES.
+              </span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Stop juggling multiple training resources and platforms. We've seamlessly integrated everything 
+              into one comprehensive Business Analysis mastery platform.
+            </p>
+            <button
+              onClick={() => setShowAuth(true)}
+              className="mt-8 inline-flex items-center space-x-2 bg-white text-gray-900 px-8 py-4 rounded-2xl hover:bg-gray-100 transition-all duration-300 font-semibold text-lg shadow-xl transform hover:scale-105"
+            >
+              <span>Explore All Features</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Feature Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* AI Stakeholder Interviews */}
+            <div className="group bg-gradient-to-br from-pink-100 to-rose-100 rounded-3xl p-8 border border-pink-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">AI STAKEHOLDER INTERVIEWS</h3>
+              </div>
+              
+              {/* Mock Interface */}
+              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
+                <div className="flex items-center space-x-2 mb-3">
+                  <div className="w-8 h-8 bg-pink-500 rounded-full"></div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-900">Sarah Chen</div>
+                    <div className="text-xs text-gray-600">Head of Operations</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-2 bg-gray-200 rounded w-full"></div>
+                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-2 bg-pink-200 rounded w-1/2"></div>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 mb-4 font-medium">
+                Practice with hyper-realistic AI stakeholders that respond authentically to your questions.
+              </p>
+              <button className="text-pink-600 font-semibold hover:text-pink-800 transition-colors flex items-center space-x-1">
+                <span>Learn More</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Requirements Documentation */}
+            <div className="group bg-gradient-to-br from-yellow-100 to-amber-100 rounded-3xl p-8 border border-yellow-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">REQUIREMENTS DOCUMENTATION</h3>
+              </div>
+              
+              {/* Mock Interface */}
+              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs font-semibold text-gray-900">Business Requirements</div>
+                  <div className="text-xs text-green-600 font-medium">✓ Complete</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <div className="text-xs text-gray-700">User Stories: 12/15</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="text-xs text-gray-700">BRD: Complete</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <div className="text-xs text-gray-700">Acceptance Criteria: 8/10</div>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 mb-4 font-medium">
+                Create professional BRDs, user stories, and acceptance criteria with industry-standard templates.
+              </p>
+              <button className="text-yellow-600 font-semibold hover:text-yellow-800 transition-colors flex items-center space-x-1">
+                <span>Learn More</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Real-World Projects */}
+            <div className="group bg-gradient-to-br from-purple-100 to-indigo-100 rounded-3xl p-8 border border-purple-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Briefcase className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">REAL-WORLD PROJECTS</h3>
+              </div>
+              
+              {/* Mock Interface */}
+              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-semibold text-gray-900">Customer Onboarding</div>
+                    <div className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Active</div>
+                  </div>
+                  <div className="text-xs text-gray-600">Fortune 500 Case Study</div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-purple-500 h-2 rounded-full w-3/4"></div>
+                  </div>
+                  <div className="text-xs text-gray-500">Progress: 75%</div>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 mb-4 font-medium">
+                Work on actual business cases from Fortune 500 companies across multiple industries.
+              </p>
+              <button className="text-purple-600 font-semibold hover:text-purple-800 transition-colors flex items-center space-x-1">
+                <span>Learn More</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Progress Analytics */}
+            <div className="group bg-gradient-to-br from-cyan-100 to-blue-100 rounded-3xl p-8 border border-cyan-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <BarChart3 className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">PROGRESS ANALYTICS</h3>
+              </div>
+              
+              {/* Mock Interface */}
+              <div className="bg-white rounded-xl p-4 shadow-lg mb-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs text-gray-600">Skill Development</div>
+                    <div className="text-lg font-bold text-cyan-600">94%</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-700">Stakeholder Mgmt</span>
+                      <span className="text-cyan-600 font-medium">Expert</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-700">Requirements</span>
+                      <span className="text-blue-600 font-medium">Advanced</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-700">Documentation</span>
+                      <span className="text-purple-600 font-medium">Proficient</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 mb-4 font-medium">
+                Track your BA skill development with detailed analytics and personalized insights.
+              </p>
+              <button className="text-cyan-600 font-semibold hover:text-cyan-800 transition-colors flex items-center space-x-1">
+                <span>Learn More</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center mt-16">
+            <p className="text-gray-300 text-lg mb-8">
+              Everything you need to master Business Analysis in one comprehensive platform
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => setShowAuth(true)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg shadow-xl transform hover:scale-105"
+              >
+                Start Free Training
+              </button>
+              <button className="border-2 border-white text-white px-10 py-4 rounded-2xl hover:bg-white hover:text-gray-900 transition-all duration-300 font-semibold text-lg">
+                View All Features
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* Success Stories - Interactive Testimonials */}
       <section id="success" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
