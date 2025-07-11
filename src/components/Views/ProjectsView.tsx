@@ -41,11 +41,11 @@ const ProjectsView: React.FC = () => {
 
   const getBusinessImpact = (projectId: string) => {
     const impacts = {
-      'proj-1': { value: '$2.3M', type: 'Annual Cost Savings', priority: 'High' },
-      'proj-2': { value: '$320K', type: 'Process Efficiency', priority: 'Critical' },
-      'proj-3': { value: '$4.2M', type: 'Revenue Impact', priority: 'High' },
-      'proj-4': { value: '$180K', type: 'Operational Savings', priority: 'Medium' },
-      'proj-5': { value: '$380K', type: 'Strategic Investment', priority: 'High' }
+      'proj-1': { value: '£1.8M', type: 'Annual Cost Savings', priority: 'High' },
+      'proj-2': { value: '£250K', type: 'Process Efficiency', priority: 'Critical' },
+      'proj-3': { value: '£3.3M', type: 'Revenue Impact', priority: 'High' },
+      'proj-4': { value: '£140K', type: 'Operational Savings', priority: 'Medium' },
+      'proj-5': { value: '£300K', type: 'Strategic Investment', priority: 'High' }
     }
     return impacts[projectId as keyof typeof impacts] || { value: 'TBD', type: 'Business Value', priority: 'Medium' }
   }
