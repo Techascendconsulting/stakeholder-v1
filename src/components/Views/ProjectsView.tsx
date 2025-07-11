@@ -67,15 +67,13 @@ const ProjectsView: React.FC = () => {
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header */}
-        <div className="mb-12">
-          <div className="flex items-center space-x-3 mb-6">
+        <div className="mb-10">
+          <div className="text-center mb-8">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
               <Building2 className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900">Business Analysis Training Projects</h1>
-              <p className="text-lg text-gray-600 mt-2">Professional Development Portfolio</p>
-            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mt-4 mb-2">Business Analysis Training Projects</h1>
+            <p className="text-lg text-gray-600">Professional Development Portfolio</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <p className="text-lg text-gray-700 leading-relaxed max-w-4xl">
@@ -88,7 +86,7 @@ const ProjectsView: React.FC = () => {
         </div>
 
         {/* Enhanced Project Cards */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
           {projects.map((project) => {
             const complexityConfig = getComplexityConfig(project.complexity)
             const businessImpact = getBusinessImpact(project.id)
@@ -185,10 +183,10 @@ const ProjectsView: React.FC = () => {
                 </div>
 
                 {/* Action Button */}
-                <div className="p-8">
+                <div className="p-6">
                   <button
                     onClick={() => handleViewBrief(project)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-3 shadow-sm hover:shadow-md group"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-3 shadow-sm hover:shadow-md group"
                   >
                     <span>View Project Brief</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -200,7 +198,7 @@ const ProjectsView: React.FC = () => {
         </div>
 
         {/* Enhanced Professional Training Information */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Professional Development Framework</h3>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -209,28 +207,28 @@ const ProjectsView: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
                 <Target className="w-10 h-10 text-white" />
               </div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">Requirements Analysis</h4>
+              <h4 className="text-lg font-bold text-gray-900 mb-3">Requirements Analysis</h4>
               <p className="text-gray-600 leading-relaxed">
                 Master stakeholder interview techniques, requirements elicitation methodologies, and documentation best practices following BABOK® standards
               </p>
             </div>
             <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
                 <Users className="w-10 h-10 text-white" />
               </div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">Stakeholder Management</h4>
+              <h4 className="text-lg font-bold text-gray-900 mb-3">Stakeholder Management</h4>
               <p className="text-gray-600 leading-relaxed">
                 Develop advanced skills in stakeholder identification, influence mapping, communication strategies, and conflict resolution techniques
               </p>
             </div>
             <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
                 <TrendingUp className="w-10 h-10 text-white" />
               </div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">Deliverable Creation</h4>
+              <h4 className="text-lg font-bold text-gray-900 mb-3">Deliverable Creation</h4>
               <p className="text-gray-600 leading-relaxed">
                 Create professional BRDs, user stories, acceptance criteria, and process documentation using industry-standard templates and formats
               </p>
@@ -239,7 +237,7 @@ const ProjectsView: React.FC = () => {
         </div>
 
         {/* Enhanced Learning Objectives */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-8">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-6">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Comprehensive Learning Objectives</h3>
             <p className="text-lg text-gray-700">
@@ -249,58 +247,58 @@ const ProjectsView: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-white text-sm font-bold">1</span>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">Stakeholder Engagement Excellence</h4>
+                  <h4 className="text-base font-semibold text-gray-900 mb-1">Stakeholder Engagement Excellence</h4>
                   <p className="text-gray-700">Conduct effective stakeholder interviews and requirements gathering sessions using proven methodologies</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-white text-sm font-bold">2</span>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">Process Analysis & Optimization</h4>
+                  <h4 className="text-base font-semibold text-gray-900 mb-1">Process Analysis & Optimization</h4>
                   <p className="text-gray-700">Analyze business processes and identify improvement opportunities using structured analysis techniques</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-white text-sm font-bold">3</span>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">Professional Documentation</h4>
+                  <h4 className="text-base font-semibold text-gray-900 mb-1">Professional Documentation</h4>
                   <p className="text-gray-700">Create comprehensive business requirements documentation following industry standards and best practices</p>
                 </div>
               </div>
             </div>
             <div className="space-y-4">
               <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-white text-sm font-bold">4</span>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">Agile Requirements Management</h4>
+                  <h4 className="text-base font-semibold text-gray-900 mb-1">Agile Requirements Management</h4>
                   <p className="text-gray-700">Develop user stories and acceptance criteria following industry standards and agile methodologies</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-white text-sm font-bold">5</span>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">Strategic Business Analysis</h4>
+                  <h4 className="text-base font-semibold text-gray-900 mb-1">Strategic Business Analysis</h4>
                   <p className="text-gray-700">Apply structured analysis techniques to complex business problems and present solutions to senior stakeholders</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-white text-sm font-bold">6</span>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">Executive Communication</h4>
+                  <h4 className="text-base font-semibold text-gray-900 mb-1">Executive Communication</h4>
                   <p className="text-gray-700">Present findings and recommendations to senior stakeholders with confidence and professional clarity</p>
                 </div>
               </div>
