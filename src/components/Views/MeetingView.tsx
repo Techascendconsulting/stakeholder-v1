@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Play, Pause, Square, SkipForward, Volume2, VolumeX } from 'lucide-react'
-import { stakeholderAI } from '../lib/StakeholderAI'
-import { messageQueue, QueuedMessage } from '../lib/MessageQueue'
-import { audioOrchestrator, AudioPlaybackState } from '../lib/AudioOrchestrator'
+import { stakeholderAI } from '../../lib/stakeholderAI'
+import { messageQueue, QueuedMessage } from '../../lib/messageQueue'
+import { audioOrchestrator, AudioPlaybackState } from '../../lib/audioOrchestrator'
 import { DatabaseService, Project, Stakeholder, Message, Student } from '../../database'
 
 interface MeetingViewProps {
@@ -391,8 +391,3 @@ const MeetingView: React.FC<MeetingViewProps> = ({
 }
 
 export default MeetingView
-
-
-
-
-
