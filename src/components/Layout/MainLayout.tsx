@@ -27,6 +27,10 @@ const MainLayout: React.FC = () => {
   }
 
   const renderView = () => {
+    console.log('🔍 DEBUG: MainLayout renderView called with currentView:', currentView)
+    console.log('🔍 DEBUG: selectedProject:', selectedProject?.name || 'null')
+    console.log('🔍 DEBUG: selectedStakeholders count:', selectedStakeholders?.length || 0)
+    
     switch (currentView) {
       case 'dashboard':
         return <Dashboard />
@@ -37,6 +41,11 @@ const MainLayout: React.FC = () => {
       case 'stakeholders':
         return <StakeholdersView />
       case 'meeting':
+        console.log('🔍 DEBUG: Rendering MeetingView with props:', {
+          selectedProject: selectedProject?.name,
+          selectedStakeholders: selectedStakeholders?.map(s => s.name),
+          currentUser: user?.email
+        })
         return <MeetingView 
           selectedProject={selectedProject}
           selectedStakeholders={selectedStakeholders}

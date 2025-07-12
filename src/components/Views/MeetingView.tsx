@@ -6,7 +6,13 @@ import { audioOrchestrator, AudioPlaybackState } from '../../lib/audioOrchestrat
 import { DatabaseService, Project, Stakeholder, Message, Student } from '../../lib/database'
 
 const MeetingView: React.FC = () => {
+  console.log('🎬 DEBUG: MeetingView component rendered')
   const { selectedProject, selectedStakeholders, user } = useApp()
+  console.log('🎬 DEBUG: MeetingView data:', {
+    selectedProject: selectedProject?.name || 'null',
+    selectedStakeholders: selectedStakeholders?.length || 0,
+    user: user?.email || 'null'
+  })
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)

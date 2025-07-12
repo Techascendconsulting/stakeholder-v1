@@ -36,7 +36,9 @@ const StakeholdersView: React.FC = () => {
     const selectedStakeholderObjects = stakeholders.filter(s => 
       localSelectedStakeholders.includes(s.id)
     )
+    console.log('🎯 DEBUG: Starting meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
     setSelectedStakeholders(selectedStakeholderObjects)
+    console.log('🎯 DEBUG: Setting current view to meeting')
     setCurrentView('meeting')
   }
 
