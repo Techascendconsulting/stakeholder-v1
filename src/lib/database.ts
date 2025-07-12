@@ -1,498 +1,314 @@
-import { supabase } from './supabase'
-import { Project, Meeting, Deliverable, Message } from '../types'
+// database.ts - Supabase integration for meeting history tracking
+import { createClient } from '@supabase/supabase-js'
 
-export interface UserProject {
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Types for database entities
+export interface Project {
   id: string
-  user_id: string
+  name: string
+  description?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Stakeholder {
+  id: string
+  name: string
+  role: string
+  department?: string
+  expertise_area?: string
+  azure_voice_id?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Student {
+  id: string
+  name: string
+  email?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Meeting {
+  id: string
   project_id: string
-  status: 'not_started' | 'in_progress' | 'completed'
+  ba_id: string
+  meeting_type: 'group' | 'individual'
+  status: 'in-progress' | 'completed' | 'paused'
   started_at: string
-  completed_at?: string
-  current_step: string
+  ended_at?: string
+  duration_minutes: number
   created_at: string
   updated_at: string
 }
 
-export interface UserProgress {
+export interface StakeholderInteraction {
   id: string
-  user_id: string
-  total_projects_started: number
-  total_projects_completed: number
-  total_meetings_conducted: number
-  total_deliverables_created: number
-  achievements: string[]
-  created_at: string
-  updated_at: string
+  ba_id: string
+  stakeholder_id: string
+  project_id: string
+  first_interaction_at: string
+  total_interactions: number
+  last_interaction_at: string
 }
 
-export interface DatabaseMeeting {
+export interface Message {
   id: string
-  user_id: string
-  project_id: string
-  stakeholder_ids: string[]
-  transcript: Message[]
-  status: 'scheduled' | 'in_progress' | 'completed'
-  meeting_type: 'individual' | 'group'
-  duration: number
-  created_at: string
-  completed_at?: string
-}
-
-export interface DatabaseDeliverable {
-  id: string
-  user_id: string
-  project_id: string
-  type: 'goals' | 'user-stories' | 'acceptance-criteria' | 'brd'
-  title: string
+  meeting_id: string
+  speaker_type: 'ba' | 'stakeholder' | 'system'
+  speaker_id?: string
   content: string
+  audio_url?: string
+  sequence_number: number
   created_at: string
-  updated_at: string
 }
 
-class DatabaseService {
-  // User Projects
-  async getUserProjects(userId: string): Promise<UserProject[]> {
-    try {
-      const { data, error } = await supabase
-        .from('user_projects')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+// Database utility functions
+export class DatabaseService {
+  
+  // Check if this is the first interaction between a BA (student) and stakeholder for a project
+  static async isFirstInteraction(
+    baId: string, 
+    stakeholderId: string, 
+    projectId: string
+  ): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('stakeholder_interactions')
+      .select('id')
+      .eq('ba_id', baId)
+      .eq('stakeholder_id', stakeholderId)
+      .eq('project_id', projectId)
+      .single()
 
-      if (error) {
-        if (error.code === '42P01') {
-          console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-          return []
-        }
-        console.error('Error fetching user projects:', error)
-        return []
-      }
-
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
-
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
-
-      return data || []
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return []
+    if (error && error.code === 'PGRST116') {
+      // No record found, this is a first interaction
+      return true
     }
+    
+    if (error) {
+      console.error('Error checking first interaction:', error)
+      return true // Default to first interaction on error
+    }
+
+    return false // Record exists, not a first interaction
   }
 
-  async createUserProject(projectId: string, currentStep: string = 'project-brief'): Promise<UserProject | null> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
+  // Record an interaction between a BA (student) and stakeholder
+  static async recordInteraction(
+    baId: string, 
+    stakeholderId: string, 
+    projectId: string
+  ): Promise<void> {
+    const { data: existing, error: fetchError } = await supabase
+      .from('stakeholder_interactions')
+      .select('*')
+      .eq('ba_id', baId)
+      .eq('stakeholder_id', stakeholderId)
+      .eq('project_id', projectId)
+      .single()
 
-      // Check if project already exists
-      const existing = await this.getUserProject(user.id, projectId)
-      if (existing) {
-        return this.updateUserProject(user.id, projectId, { current_step: currentStep })
-      }
-
-      const { data, error } = await supabase
-        .from('user_projects')
+    if (fetchError && fetchError.code === 'PGRST116') {
+      // No existing record, create new one
+      const { error: insertError } = await supabase
+        .from('stakeholder_interactions')
         .insert({
-          user_id: user.id,
+          ba_id: baId,
+          stakeholder_id: stakeholderId,
           project_id: projectId,
-          status: 'in_progress',
-          current_step: currentStep
+          first_interaction_at: new Date().toISOString(),
+          total_interactions: 1,
+          last_interaction_at: new Date().toISOString()
         })
-        .select()
-        .single()
 
-      if (error) {
-        console.error('Error creating user project:', error)
-        return null
+      if (insertError) {
+        console.error('Error recording new interaction:', insertError)
       }
+    } else if (!fetchError && existing) {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('stakeholder_interactions')
+        .update({
+          total_interactions: existing.total_interactions + 1,
+          last_interaction_at: new Date().toISOString()
+        })
+        .eq('id', existing.id)
 
-      // Update progress stats
-      await this.updateProgressStats(user.id)
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
+      if (updateError) {
+        console.error('Error updating interaction:', updateError)
+      }
     }
   }
 
-  async getUserProject(userId: string, projectId: string): Promise<UserProject | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_projects')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('project_id', projectId)
-        .maybeSingle()
+  // Get first interaction status for multiple stakeholders
+  static async getFirstInteractionStatus(
+    baId: string, 
+    stakeholderIds: string[], 
+    projectId: string
+  ): Promise<Record<string, boolean>> {
+    const status: Record<string, boolean> = {}
 
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
+    for (const stakeholderId of stakeholderIds) {
+      status[stakeholderId] = await this.isFirstInteraction(baId, stakeholderId, projectId)
+    }
 
-      if (error) {
-        console.error('Error fetching user project:', error)
-        return null
-      }
+    return status
+  }
 
-      return data || null
-    } catch (error) {
-      console.error('Database connection error:', error)
+  // Create a new meeting
+  static async createMeeting(
+    projectId: string,
+    baId: string,
+    stakeholderIds: string[],
+    meetingType: 'group' | 'individual'
+  ): Promise<string | null> {
+    const { data: meeting, error: meetingError } = await supabase
+      .from('meetings')
+      .insert({
+        project_id: projectId,
+        ba_id: baId,
+        meeting_type: meetingType,
+        status: 'in-progress'
+      })
+      .select('id')
+      .single()
+
+    if (meetingError) {
+      console.error('Error creating meeting:', meetingError)
       return null
+    }
+
+    // Add participants
+    const participants = stakeholderIds.map(stakeholderId => ({
+      meeting_id: meeting.id,
+      stakeholder_id: stakeholderId
+    }))
+
+    const { error: participantsError } = await supabase
+      .from('meeting_participants')
+      .insert(participants)
+
+    if (participantsError) {
+      console.error('Error adding meeting participants:', participantsError)
+    }
+
+    return meeting.id
+  }
+
+  // Save a message to the database
+  static async saveMessage(
+    meetingId: string,
+    speakerType: 'ba' | 'stakeholder' | 'system',
+    content: string,
+    speakerId?: string,
+    audioUrl?: string
+  ): Promise<void> {
+    // Get the next sequence number
+    const { data: lastMessage, error: sequenceError } = await supabase
+      .from('conversation_history') // Changed from 'messages'
+      .select('sequence_number')
+      .eq('meeting_id', meetingId)
+      .order('sequence_number', { ascending: false })
+      .limit(1)
+      .single()
+
+    const sequenceNumber = lastMessage ? lastMessage.sequence_number + 1 : 1
+
+    const { error } = await supabase
+      .from('conversation_history') // Changed from 'messages'
+      .insert({
+        meeting_id: meetingId,
+        speaker_type: speakerType,
+        speaker_id: speakerId,
+        content: content,
+        audio_url: audioUrl,
+        sequence_number: sequenceNumber
+      })
+
+    if (error) {
+      console.error('Error saving message:', error)
     }
   }
 
-  async updateUserProject(userId: string, projectId: string, updates: Partial<UserProject>): Promise<UserProject | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_projects')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('user_id', userId)
-        .eq('project_id', projectId)
-        .select()
-        .single()
+  // Get all projects
+  static async getProjects(): Promise<Project[]> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('name')
 
-      if (error) {
-        console.error('Error updating user project:', error)
-        return null
-      }
-
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
-  }
-
-  // User Meetings
-  async getUserMeetings(userId: string, projectId?: string): Promise<DatabaseMeeting[]> {
-    try {
-      let query = supabase
-        .from('user_meetings')
-        .select('*')
-        .eq('user_id', userId)
-
-      if (projectId) {
-        query = query.eq('project_id', projectId)
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false })
-
-      if (error) {
-        if (error.code === '42P01') {
-          console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-          return []
-        }
-        console.error('Error fetching user meetings:', error)
-        return []
-      }
-
-      return data || []
-    } catch (error) {
-      console.error('Database connection error:', error)
+    if (error) {
+      console.error('Error fetching projects:', error)
       return []
     }
+
+    return data || []
   }
 
-  async createUserMeeting(meeting: Meeting): Promise<DatabaseMeeting | null> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
+  // Get all stakeholders
+  static async getStakeholders(): Promise<Stakeholder[]> {
+    const { data, error } = await supabase
+      .from('stakeholders')
+      .select('*')
+      .order('name')
 
-      const { data, error } = await supabase
-        .from('user_meetings')
-        .insert({
-          user_id: user.id,
-          project_id: meeting.projectId,
-          stakeholder_ids: meeting.stakeholderIds,
-          transcript: meeting.transcript,
-          status: meeting.status,
-          meeting_type: meeting.meetingType,
-          duration: meeting.duration
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Error creating user meeting:', error)
-        return null
-      }
-
-      // Update progress stats
-      await this.updateProgressStats(user.id)
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
-  }
-
-  async updateUserMeeting(meetingId: string, updates: Partial<DatabaseMeeting>): Promise<DatabaseMeeting | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_meetings')
-        .update(updates)
-        .eq('id', meetingId)
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Error updating user meeting:', error)
-        return null
-      }
-
-      // Update progress stats if meeting completed
-      if (updates.status === 'completed') {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          await this.updateProgressStats(user.id)
-        }
-      }
-
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
-  }
-
-  // User Deliverables
-  async getUserDeliverables(userId: string, projectId?: string): Promise<DatabaseDeliverable[]> {
-    try {
-      let query = supabase
-        .from('user_deliverables')
-        .select('*')
-        .eq('user_id', userId)
-
-      if (projectId) {
-        query = query.eq('project_id', projectId)
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false })
-
-      if (error) {
-        if (error.code === '42P01') {
-          console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-          return []
-        }
-        console.error('Error fetching user deliverables:', error)
-        return []
-      }
-
-      return data || []
-    } catch (error) {
-      console.error('Database connection error:', error)
+    if (error) {
+      console.error('Error fetching stakeholders:', error)
       return []
     }
+
+    return data || []
   }
 
-  async createUserDeliverable(deliverable: Omit<Deliverable, 'id' | 'lastModified'>): Promise<DatabaseDeliverable | null> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
+  // Get stakeholder by ID
+  static async getStakeholderById(id: string): Promise<Stakeholder | null> {
+    const { data, error } = await supabase
+      .from('stakeholders')
+      .select('*')
+      .eq('id', id)
+      .single()
 
-      const { data, error } = await supabase
-        .from('user_deliverables')
-        .insert({
-          user_id: user.id,
-          project_id: deliverable.projectId,
-          type: deliverable.type,
-          title: deliverable.title,
-          content: deliverable.content
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Error creating user deliverable:', error)
-        return null
-      }
-
-      // Update progress stats
-      await this.updateProgressStats(user.id)
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
+    if (error) {
+      console.error('Error fetching stakeholder:', error)
       return null
     }
+
+    return data
   }
 
-  async updateUserDeliverable(deliverableId: string, updates: Partial<DatabaseDeliverable>): Promise<DatabaseDeliverable | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_deliverables')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', deliverableId)
-        .select()
-        .single()
+  // Get all students (Business Analysts)
+  static async getStudents(): Promise<Student[]> {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .order('name')
 
-      if (error) {
-        console.error('Error updating user deliverable:', error)
-        return null
-      }
-
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
+    if (error) {
+      console.error('Error fetching students:', error)
+      return []
     }
+
+    return data || []
   }
 
-  // User Progress
-  async getUserProgress(userId: string): Promise<UserProgress | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+  // Get meeting messages
+  static async getMeetingMessages(meetingId: string): Promise<Message[]> {
+    const { data, error } = await supabase
+      .from('conversation_history') // Changed from 'messages'
+      .select('*')
+      .eq('meeting_id', meetingId)
+      .order('sequence_number')
 
-      if (error && error.code === '42P01') {
-        console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-        return null
-      }
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user progress:', error)
-      }
-
-      return data || null
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
+    if (error) {
+      console.error('Error fetching messages:', error)
+      return []
     }
-  }
 
-  async initializeUserProgress(userId: string): Promise<UserProgress | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_progress')
-        .insert({
-          user_id: userId,
-          total_projects_started: 0,
-          total_projects_completed: 0,
-          total_meetings_conducted: 0,
-          total_deliverables_created: 0,
-          achievements: []
-        })
-        .select()
-        .single()
-
-      if (error) {
-        if (error.code === '42P01') {
-          console.warn('Database tables not yet created. Please run the SQL setup script in Supabase.')
-          return null
-        }
-        console.error('Error initializing user progress:', error)
-        return null
-      }
-
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
-  }
-
-  async updateProgressStats(userId: string): Promise<void> {
-    try {
-      // Get current counts
-      const [projects, meetings, deliverables] = await Promise.all([
-        this.getUserProjects(userId),
-        this.getUserMeetings(userId),
-        this.getUserDeliverables(userId)
-      ])
-
-      const projectsStarted = projects.length
-      const projectsCompleted = projects.filter(p => p.status === 'completed').length
-      const meetingsCompleted = meetings.filter(m => m.status === 'completed').length
-      const deliverablesCreated = deliverables.length
-
-      // Check for achievements
-      const achievements: string[] = []
-      if (meetingsCompleted >= 1) achievements.push('First Meeting')
-      if (deliverablesCreated >= 1) achievements.push('Note Taker')
-      if (deliverablesCreated >= 10) achievements.push('Requirements Gatherer')
-      if (meetingsCompleted >= 5) achievements.push('Stakeholder Whisperer')
-      if (deliverablesCreated >= 4) achievements.push('Deliverable Creator')
-      if (projectsCompleted >= 3) achievements.push('BA Expert')
-
-      // Update or create progress record
-      const { error } = await supabase
-        .from('user_progress')
-        .upsert({
-          user_id: userId,
-          total_projects_started: projectsStarted,
-          total_projects_completed: projectsCompleted,
-          total_meetings_conducted: meetingsCompleted,
-          total_deliverables_created: deliverablesCreated,
-          achievements,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        })
-
-      if (error) {
-        console.error('Error updating progress stats:', error)
-      }
-    } catch (error) {
-      console.error('Error in updateProgressStats:', error)
-    }
-  }
-
-  // Utility functions
-  async getCurrentUserProject(): Promise<{ project: UserProject | null, projectData: Project | null }> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return { project: null, projectData: null }
-
-      const projects = await this.getUserProjects(user.id)
-      const currentProject = projects.find(p => p.status === 'in_progress') || projects[0] || null
-
-      return { project: currentProject, projectData: null }
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return { project: null, projectData: null }
-    }
-  }
-
-  async resumeUserSession(userId: string): Promise<{
-    currentProject: UserProject | null
-    meetings: DatabaseMeeting[]
-    deliverables: DatabaseDeliverable[]
-    progress: UserProgress | null
-  }> {
-    try {
-      const [projects, meetings, deliverables, progress] = await Promise.all([
-        this.getUserProjects(userId),
-        this.getUserMeetings(userId),
-        this.getUserDeliverables(userId),
-        this.getUserProgress(userId)
-      ])
-
-      const currentProject = projects.find(p => p.status === 'in_progress') || null
-
-      return {
-        currentProject,
-        meetings: currentProject ? meetings.filter(m => m.project_id === currentProject.project_id) : [],
-        deliverables: currentProject ? deliverables.filter(d => d.project_id === currentProject.project_id) : [],
-        progress: progress || await this.initializeUserProgress(userId)
-      }
-    } catch (error) {
-      console.error('Error resuming user session:', error)
-      return {
-        currentProject: null,
-        meetings: [],
-        deliverables: [],
-        progress: null
-      }
-    }
+    return data || []
   }
 }
 
-export const databaseService = new DatabaseService()
