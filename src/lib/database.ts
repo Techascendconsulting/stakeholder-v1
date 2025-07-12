@@ -412,15 +412,12 @@ export class DatabaseService {
   }
 
   // Create user project
-  static async createUserProject(projectId: string, currentStep: string): Promise<UserProject | null> {
+  static async createUserProject(userId: string, projectId: string, currentStep: string): Promise<UserProject | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
-
       const { data, error } = await supabase
         .from('user_projects')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           project_id: projectId,
           current_step: currentStep
         })
@@ -463,15 +460,12 @@ export class DatabaseService {
   }
 
   // Create user meeting
-  static async createUserMeeting(meeting: Meeting): Promise<DatabaseMeeting | null> {
+  static async createUserMeeting(userId: string, meeting: Meeting): Promise<DatabaseMeeting | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
-
       const { data, error } = await supabase
         .from('user_meetings')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           project_id: meeting.projectId,
           stakeholder_ids: meeting.stakeholderIds,
           transcript: meeting.transcript,
@@ -523,15 +517,12 @@ export class DatabaseService {
   }
 
   // Create user deliverable
-  static async createUserDeliverable(deliverable: Deliverable): Promise<DatabaseDeliverable | null> {
+  static async createUserDeliverable(userId: string, deliverable: Deliverable): Promise<DatabaseDeliverable | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
-
       const { data, error } = await supabase
         .from('user_deliverables')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           project_id: deliverable.projectId,
           type: deliverable.type,
           title: deliverable.title,

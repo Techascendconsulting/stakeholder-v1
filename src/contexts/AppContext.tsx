@@ -208,7 +208,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
       setStudentSubscription(updatedSubscription);
       setSelectedProject(project);
-      await DatabaseService.createUserProject(project.id, 'project-brief');
+      await DatabaseService.createUserProject(user.id, project.id, 'project-brief');
       console.log('🎯 DEBUG: Project selected successfully');
     } catch (error) {
       console.error('🎯 DEBUG: Error selecting project:', error);
@@ -232,7 +232,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setStudentSubscription(updatedSubscription);
         
         // Create meeting in database and get the generated ID
-        const dbMeeting = await DatabaseService.createUserMeeting(meeting);
+        const dbMeeting = await DatabaseService.createUserMeeting(user.id, meeting);
         if (dbMeeting) {
           createdMeeting = {
             id: dbMeeting.id,
@@ -276,7 +276,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     console.log('📄 DEBUG: addDeliverable called with:', deliverable.title);
     setDeliverables(prev => [...prev, deliverable]);
     if (user) {
-      await DatabaseService.createUserDeliverable(deliverable);
+      await DatabaseService.createUserDeliverable(user.id, deliverable);
     }
   };
 
