@@ -5,17 +5,8 @@ import { messageQueue, QueuedMessage } from '../../lib/messageQueue'
 import { audioOrchestrator, AudioPlaybackState } from '../../lib/audioOrchestrator'
 import { DatabaseService, Project, Stakeholder, Message, Student } from '../../lib/database'
 
-interface MeetingViewProps {
-  selectedProject: Project | null
-  selectedStakeholders: Stakeholder[]
-  currentUser: Student // Changed type to Student
-}
-
-const MeetingView: React.FC<MeetingViewProps> = ({
-  selectedProject,
-  selectedStakeholders,
-  currentUser
-}) => {
+const MeetingView: React.FC = () => {
+  const { selectedProject, selectedStakeholders, user } = useApp()
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -32,10 +23,10 @@ const MeetingView: React.FC<MeetingViewProps> = ({
 
   // Initialize meeting when project and stakeholders are selected
   useEffect(() => {
-    if (selectedProject && selectedStakeholders.length > 0 && currentUser) {
+    if (selectedProject && selectedStakeholders.length > 0 && user) {
       initializeMeeting()
     }
-  }, [selectedProject, selectedStakeholders, currentUser])
+  }, [selectedProject, selectedStakeholders, user])
 
   // Subscribe to audio state changes
   useEffect(() => {
@@ -58,13 +49,13 @@ const MeetingView: React.FC<MeetingViewProps> = ({
   }, [])
 
   const initializeMeeting = async () => {
-    if (!selectedProject || !currentUser) return
+    if (!selectedProject || !user) return
 
     try {
       // Create a new meeting in the database
       const meetingId = await DatabaseService.createMeeting(
         selectedProject.id,
-        currentUser.id,
+        user.id,
         selectedStakeholders.map(s => s.id),
         selectedStakeholders.length > 1 ? 'group' : 'individual'
       )
@@ -105,7 +96,7 @@ const MeetingView: React.FC<MeetingViewProps> = ({
         id: `user-${Date.now()}`,
         meeting_id: currentMeetingId,
         speaker_type: 'ba',
-        speaker_id: currentUser.id,
+        speaker_id: user.id,
         content: inputMessage,
         sequence_number: messages.length + 1,
         created_at: new Date().toISOString()
@@ -119,12 +110,12 @@ const MeetingView: React.FC<MeetingViewProps> = ({
         currentMeetingId,
         'ba',
         inputMessage,
-        currentUser.id
+        user.id
       )
 
       // Get first interaction status for all stakeholders
       const firstInteractionStatus = await DatabaseService.getFirstInteractionStatus(
-        currentUser.id,
+        user.id,
         selectedStakeholders.map(s => s.id),
         selectedProject.id
       )
@@ -135,7 +126,7 @@ const MeetingView: React.FC<MeetingViewProps> = ({
         selectedStakeholders,
         updatedMessages,
         inputMessage,
-        currentUser.id,
+        user.id,
         firstInteractionStatus
       )
 
@@ -213,8 +204,17 @@ const MeetingView: React.FC<MeetingViewProps> = ({
 
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">
-        <p>Select a project and stakeholders to start a meeting.</p>
+      <div className="p-8">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Meeting Active</h3>
+          <p className="text-gray-600 mb-4">Select a project and stakeholders to start a meeting.</p>
+          <button
+            onClick={() => setCurrentView('stakeholders')}
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Go to Stakeholder Selection
+          </button>
+        </div>
       </div>
     )
   }
