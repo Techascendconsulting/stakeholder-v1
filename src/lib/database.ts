@@ -199,7 +199,7 @@ class DatabaseService {
     }
   }
 
-  async createUserMeeting(meeting: Omit<Meeting, 'id'>): Promise<DatabaseMeeting | null> {
+  async createUserMeeting(meeting: Meeting): Promise<DatabaseMeeting | null> {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return null

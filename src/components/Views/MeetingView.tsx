@@ -49,18 +49,15 @@ const MeetingView: React.FC = () => {
   useEffect(() => {
     if (selectedProject && selectedStakeholders.length > 0 && !currentMeeting) {
       const newMeeting: Meeting = {
-        id: `meeting-${Date.now()}`,
+        id: '', // Let database generate UUID
         projectId: selectedProject.id,
         stakeholderIds: selectedStakeholders.map(s => s.id),
         transcript: [],
         date: new Date().toISOString(),
         duration: 0,
-        status: 'in-progress',
+        status: 'in_progress',
         meetingType: selectedStakeholders.length > 1 ? 'group' : 'individual'
       }
-      
-      addMeeting(newMeeting)
-      setCurrentMeeting(newMeeting)
       
       const welcomeMessage: Message = {
         id: `welcome-${Date.now()}`,
@@ -70,13 +67,18 @@ const MeetingView: React.FC = () => {
         stakeholderName: 'System'
       }
       
-      // Add welcome message to the meeting
-      const updatedMeeting = {
+      // Create meeting with welcome message
+      const meetingWithWelcome = {
         ...newMeeting,
         transcript: [welcomeMessage]
       }
-      setCurrentMeeting(updatedMeeting)
-      updateMeeting(newMeeting.id, { transcript: [welcomeMessage] })
+      
+      // Add meeting and let database generate ID
+      addMeeting(meetingWithWelcome).then((createdMeeting) => {
+        if (createdMeeting) {
+          setCurrentMeeting(createdMeeting)
+        }
+      })
     }
   }, [selectedProject, selectedStakeholders, currentMeeting, addMeeting, setCurrentMeeting, updateMeeting]);
 

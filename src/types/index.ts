@@ -29,7 +29,7 @@ export interface Meeting {
   transcript: Message[]
   date: string
   duration: number
-  status: 'scheduled' | 'in-progress' | 'completed'
+  status: 'scheduled' | 'in_progress' | 'completed'
   meetingType: 'individual' | 'group'
 }
 

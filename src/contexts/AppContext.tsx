@@ -217,25 +217,47 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   // Add meeting function
-  const addMeeting = async (meeting: Meeting) => {
+  const addMeeting = async (meeting: Meeting): Promise<Meeting | null> => {
     console.log('➕ DEBUG: addMeeting called with meeting:', meeting.id);
     if (user && !canCreateMoreMeetings()) {
       throw new Error('You have reached your meeting limit.');
     }
+    
+    let createdMeeting: Meeting | null = null;
+    
     if (user) {
       try {
         await subscriptionService.incrementMeetingCount(user.id);
         const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
         setStudentSubscription(updatedSubscription);
+        
+        // Create meeting in database and get the generated ID
+        const dbMeeting = await databaseService.createUserMeeting(meeting);
+        if (dbMeeting) {
+          createdMeeting = {
+            id: dbMeeting.id,
+            projectId: dbMeeting.project_id,
+            stakeholderIds: dbMeeting.stakeholder_ids,
+            transcript: dbMeeting.transcript,
+            date: dbMeeting.created_at,
+            duration: dbMeeting.duration,
+            status: dbMeeting.status,
+            meetingType: dbMeeting.meeting_type
+          };
+          setMeetings(prev => [...prev, createdMeeting!]);
+        }
       } catch (error) {
+        console.error('➕ DEBUG: Error in addMeeting:', error);
         throw error;
       }
+    } else {
+      // For non-authenticated users, use the meeting as-is with a generated ID
+      createdMeeting = { ...meeting, id: `meeting-${Date.now()}` };
+      setMeetings(prev => [...prev, createdMeeting!]);
     }
-    setMeetings(prev => [...prev, meeting]);
-    if (user) {
-      await databaseService.createUserMeeting(meeting);
-    }
+    
     console.log('➕ DEBUG: Meeting added successfully');
+    return createdMeeting;
   };
 
   // Update meeting function
