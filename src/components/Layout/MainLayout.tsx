@@ -11,7 +11,7 @@ import DeliverablesView from '../Views/DeliverablesView'
 import ProfileView from '../Views/ProfileView'
 
 const MainLayout: React.FC = () => {
-  const { currentView, isLoading } = useApp()
+  const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
 
   if (isLoading) {
     return (
@@ -37,7 +37,11 @@ const MainLayout: React.FC = () => {
       case 'stakeholders':
         return <StakeholdersView />
       case 'meeting':
-        return <MeetingView />
+        return <MeetingView 
+          selectedProject={selectedProject}
+          selectedStakeholders={selectedStakeholders}
+          currentUser={user}
+        />
       case 'notes':
         return <NotesView />
       case 'deliverables':
