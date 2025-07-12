@@ -22,14 +22,13 @@ interface AudioPlaybackState {
 
 const MeetingView: React.FC = () => {
   const { 
-    selectedProject, selectedStakeholders, setCurrentView, addMeeting, updateMeeting, currentMeeting, setCurrentMeeting 
+    selectedProject, selectedStakeholders, setCurrentView, addMeeting, updateMeeting, currentMeeting, setCurrentMeeting, addMessageToCurrentMeeting
   } = useApp()
   
   const { 
     globalAudioEnabled, setGlobalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled 
   } = useVoice()
 
-  const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
   const [isAiResponding, setIsAiResponding] = useState<boolean>(false)
@@ -39,6 +38,9 @@ const MeetingView: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Get messages from current meeting transcript
+  const messages = currentMeeting?.transcript || []
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -64,18 +66,19 @@ const MeetingView: React.FC = () => {
         id: `welcome-${Date.now()}`,
         speaker: 'system',
         content: `Welcome to your ${newMeeting.meetingType} meeting for ${selectedProject.name}. The stakeholders are ready to discuss the project requirements. You can start by greeting them.`,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        stakeholderName: 'System'
       }
       
-      setMessages([welcomeMessage])
+      // Add welcome message to the meeting
+      const updatedMeeting = {
+        ...newMeeting,
+        transcript: [welcomeMessage]
+      }
+      setCurrentMeeting(updatedMeeting)
+      updateMeeting(newMeeting.id, { transcript: [welcomeMessage] })
     }
-  }, [selectedProject, selectedStakeholders, currentMeeting, addMeeting, setCurrentMeeting]);
-
-  useEffect(() => {
-    if (currentMeeting && messages.length > currentMeeting.transcript.length) {
-      updateMeeting(currentMeeting.id, { transcript: messages });
-    }
-  }, [messages, currentMeeting, updateMeeting]);
+  }, [selectedProject, selectedStakeholders, currentMeeting, addMeeting, setCurrentMeeting, updateMeeting]);
 
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
@@ -104,8 +107,9 @@ const MeetingView: React.FC = () => {
       stakeholderName: 'Business Analyst'
     };
 
+    // Add user message to current meeting
+    addMessageToCurrentMeeting(userMessage);
     const updatedMessagesWithUser = [...messages, userMessage];
-    setMessages(updatedMessagesWithUser);
     setIsAiResponding(true);
 
     try {
@@ -119,7 +123,7 @@ const MeetingView: React.FC = () => {
 
       // Add the AI's response to the chat, but only if it's not empty.
       if (aiResponseMessage.content) {
-        setMessages(prevMessages => [...prevMessages, aiResponseMessage]);
+        addMessageToCurrentMeeting(aiResponseMessage);
         
         // Audio playback for system-generated multi-responses is complex,
         // so we will only play audio for single-speaker messages for now.
@@ -138,7 +142,7 @@ const MeetingView: React.FC = () => {
         stakeholderName: 'System',
         stakeholderRole: 'Error'
       };
-      setMessages(prevMessages => [...prevMessages, fallbackMessage]);
+      addMessageToCurrentMeeting(fallbackMessage);
     } finally {
       setIsAiResponding(false);
     }
@@ -186,8 +190,7 @@ const MeetingView: React.FC = () => {
       const duration = Math.floor((Date.now() - new Date(currentMeeting.date).getTime()) / 1000 / 60)
       updateMeeting(currentMeeting.id, { 
         status: 'completed',
-        duration,
-        transcript: messages
+        duration
       })
       setCurrentMeeting(null)
     }
