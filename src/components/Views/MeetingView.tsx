@@ -1,302 +1,393 @@
-// Working meetingview.tsx
+import React, { useState, useEffect, useCallback } from 'react'
+import { Play, Pause, Square, SkipForward, Volume2, VolumeX } from 'lucide-react'
+import { stakeholderAI } from '../lib/StakeholderAI'
+import { messageQueue, QueuedMessage } from '../lib/MessageQueue'
+import { audioOrchestrator, AudioPlaybackState } from '../lib/AudioOrchestrator'
+import { DatabaseService, Project, Stakeholder, Message, Student } from '../../database'
 
-
-import React, { useState, useRef, useEffect } from 'react'
-import { useApp } from '../../contexts/AppContext' // Adjust path if needed
-import { useVoice } from '../../contexts/VoiceContext' // Adjust path if needed
-import VoiceInputModal from '../VoiceInputModal' // Adjust path if needed
-import { stakeholderAI } from '../../lib/stakeholderAI' // Adjust path if needed
-import { 
-  ArrowLeft, Mic, Send, Volume2, VolumeX, Users, Loader2, MessageSquare, Play, Pause, AlertCircle
-} from 'lucide-react'
-import { isAudioRecordingSupported } from '../../lib/whisper' // Adjust path if needed
-import { azureTTS, isAzureTTSAvailable, playBrowserTTS } from '../../lib/azureTTS' // Adjust path if needed
-import { Message, Meeting } from '../../types' // Adjust path if needed
-
-interface AudioPlaybackState {
-  messageId: string
-  isPlaying: boolean
-  isLoading: boolean
-  error?: string
+interface MeetingViewProps {
+  selectedProject: Project | null
+  selectedStakeholders: Stakeholder[]
+  currentUser: Student // Changed type to Student
 }
 
-const MeetingView: React.FC = () => {
-  const { 
-    selectedProject, selectedStakeholders, setCurrentView, addMeeting, updateMeeting, currentMeeting, setCurrentMeeting, addMessageToCurrentMeeting
-  } = useApp()
-  
-  const { 
-    globalAudioEnabled, setGlobalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled 
-  } = useVoice()
-
+const MeetingView: React.FC<MeetingViewProps> = ({
+  selectedProject,
+  selectedStakeholders,
+  currentUser
+}) => {
   const [inputMessage, setInputMessage] = useState('')
-  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
-  const [isAiResponding, setIsAiResponding] = useState<boolean>(false)
-  const [meetingStartTime] = useState(new Date())
-  const [audioPlayback, setAudioPlayback] = useState<AudioPlaybackState | null>(null)
-  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null)
+  const [audioState, setAudioState] = useState<AudioPlaybackState>({
+    isPlaying: false,
+    isPaused: false,
+    currentMessageId: null,
+    queueLength: 0,
+    currentPosition: 0,
+    duration: 0
+  })
+  const [processedMessages, setProcessedMessages] = useState<QueuedMessage[]>([])
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  // Get messages from current meeting transcript
-  const messages = currentMeeting?.transcript || []
-
+  // Initialize meeting when project and stakeholders are selected
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  useEffect(() => {
-    if (selectedProject && selectedStakeholders.length > 0 && !currentMeeting) {
-      const newMeeting: Meeting = {
-        id: '', // Let database generate UUID
-        projectId: selectedProject.id,
-        stakeholderIds: selectedStakeholders.map(s => s.id),
-        transcript: [],
-        date: new Date().toISOString(),
-        duration: 0,
-        status: 'in_progress',
-        meetingType: selectedStakeholders.length > 1 ? 'group' : 'individual'
-      }
-      
-      const welcomeMessage: Message = {
-        id: `welcome-${Date.now()}`,
-        speaker: 'system',
-        content: `Welcome to your ${newMeeting.meetingType} meeting for ${selectedProject.name}. The stakeholders are ready to discuss the project requirements. You can start by greeting them.`,
-        timestamp: new Date().toISOString(),
-        stakeholderName: 'System'
-      }
-      
-      // Create meeting with welcome message
-      const meetingWithWelcome = {
-        ...newMeeting,
-        transcript: [welcomeMessage]
-      }
-      
-      // Add meeting and let database generate ID
-      addMeeting(meetingWithWelcome).then((createdMeeting) => {
-        if (createdMeeting) {
-          setCurrentMeeting(createdMeeting)
-        }
-      })
+    if (selectedProject && selectedStakeholders.length > 0 && currentUser) {
+      initializeMeeting()
     }
-  }, [selectedProject, selectedStakeholders, currentMeeting, addMeeting, setCurrentMeeting, updateMeeting]);
+  }, [selectedProject, selectedStakeholders, currentUser])
 
-  if (!selectedProject || selectedStakeholders.length === 0) {
-    return (
-      <div className="p-8 text-center">
-        <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No Meeting Configuration</h3>
-        <p className="text-gray-600 mb-6">Please select a project and stakeholders to start a meeting.</p>
-        <button onClick={() => setCurrentView('projects')} className="text-blue-600 hover:text-blue-800 font-medium">
-          Back to Projects
-        </button>
-      </div>
-    )
-  }
+  // Subscribe to audio state changes
+  useEffect(() => {
+    const handleStateChange = (state: AudioPlaybackState) => {
+      setAudioState(state)
+    }
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim() || isAiResponding) return;
+    audioOrchestrator.onStateChange(handleStateChange)
+    return () => audioOrchestrator.offStateChange(handleStateChange)
+  }, [])
 
-    const userMessageText = inputMessage.trim();
-    setInputMessage('');
+  // Subscribe to message queue processing
+  useEffect(() => {
+    const handleMessageProcessed = (message: QueuedMessage) => {
+      setProcessedMessages(prev => [...prev, message])
+    }
 
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      speaker: 'user',
-      content: userMessageText,
-      timestamp: new Date().toISOString(),
-      stakeholderName: 'Business Analyst'
-    };
+    messageQueue.onMessageProcessed(handleMessageProcessed)
+    return () => messageQueue.offMessageProcessed(handleMessageProcessed)
+  }, [])
 
-    // Add user message to current meeting
-    addMessageToCurrentMeeting(userMessage);
-    const updatedMessagesWithUser = [...messages, userMessage];
-    setIsAiResponding(true);
+  const initializeMeeting = async () => {
+    if (!selectedProject || !currentUser) return
 
     try {
-      // Call the new, simplified AI function. It returns one single message block.
-      const aiResponseMessage = await stakeholderAI.generateResponse(
-        selectedProject,
-        selectedStakeholders,
-        updatedMessagesWithUser, // Pass the most up-to-date message list
-        userMessageText
-      );
+      // Create a new meeting in the database
+      const meetingId = await DatabaseService.createMeeting(
+        selectedProject.id,
+        currentUser.id,
+        selectedStakeholders.map(s => s.id),
+        selectedStakeholders.length > 1 ? 'group' : 'individual'
+      )
 
-      // Add the AI's response to the chat, but only if it's not empty.
-      if (aiResponseMessage.content) {
-        addMessageToCurrentMeeting(aiResponseMessage);
+      if (meetingId) {
+        setCurrentMeetingId(meetingId)
         
-        // Audio playback for system-generated multi-responses is complex,
-        // so we will only play audio for single-speaker messages for now.
-        if (globalAudioEnabled && aiResponseMessage.speaker !== 'system') {
-          setTimeout(() => playMessageAudio(aiResponseMessage), 300);
+        // Add welcome message
+        const welcomeMessage: Message = {
+          id: `welcome-${Date.now()}`,
+          meeting_id: meetingId,
+          speaker_type: 'system',
+          content: `Welcome to your meeting for ${selectedProject.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}. `,
+          sequence_number: 1,
+          created_at: new Date().toISOString()
         }
+
+        setMessages([welcomeMessage])
+        await DatabaseService.saveMessage(
+          meetingId,
+          'system',
+          welcomeMessage.content
+        )
+      }
+    } catch (error) {
+      console.error('Error initializing meeting:', error)
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || !selectedProject || !currentMeetingId || isLoading) return
+
+    setIsLoading(true)
+
+    try {
+      // Add user message to the conversation
+      const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        meeting_id: currentMeetingId,
+        speaker_type: 'ba',
+        speaker_id: currentUser.id,
+        content: inputMessage,
+        sequence_number: messages.length + 1,
+        created_at: new Date().toISOString()
       }
 
+      const updatedMessages = [...messages, userMessage]
+      setMessages(updatedMessages)
+
+      // Save user message to database
+      await DatabaseService.saveMessage(
+        currentMeetingId,
+        'ba',
+        inputMessage,
+        currentUser.id
+      )
+
+      // Get first interaction status for all stakeholders
+      const firstInteractionStatus = await DatabaseService.getFirstInteractionStatus(
+        currentUser.id,
+        selectedStakeholders.map(s => s.id),
+        selectedProject.id
+      )
+
+      // Generate AI response
+      const aiResponse = await stakeholderAI.generateResponse(
+        selectedProject,
+        selectedStakeholders,
+        updatedMessages,
+        inputMessage,
+        currentUser.id,
+        firstInteractionStatus
+      )
+
+      // Parse and queue the AI response for audio playback
+      const queuedMessages = await messageQueue.parseAndQueueResponse(
+        aiResponse,
+        selectedStakeholders,
+        true // Auto-play audio
+      )
+
+      // Add AI response to messages
+      const aiMessage: Message = {
+        id: aiResponse.id,
+        meeting_id: currentMeetingId,
+        speaker_type: 'stakeholder',
+        speaker_id: aiResponse.speaker,
+        content: aiResponse.content,
+        sequence_number: updatedMessages.length + 1,
+        created_at: aiResponse.timestamp
+      }
+
+      setMessages(prev => [...prev, aiMessage])
+
+      // Save AI response to database
+      await DatabaseService.saveMessage(
+        currentMeetingId,
+        'stakeholder',
+        aiResponse.content,
+        aiResponse.speaker
+      )
+
+      setInputMessage('')
     } catch (error) {
-      console.error('Error in sendMessage:', error);
-      const fallbackMessage: Message = {
-        id: `msg-${Date.now()}-fallback`,
-        speaker: 'system',
-        content: "I'm sorry, a critical error occurred. Please try again.",
-        timestamp: new Date().toISOString(),
-        stakeholderName: 'System',
-        stakeholderRole: 'Error'
-      };
-      addMessageToCurrentMeeting(fallbackMessage);
+      console.error('Error sending message:', error)
     } finally {
-      setIsAiResponding(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      sendMessage()
+      handleSendMessage()
     }
   }
 
-  const handleVoiceInput = (transcription: string) => {
-    setInputMessage(transcription)
-    inputRef.current?.focus()
-  }
-
-  const playMessageAudio = async (message: Message) => {
-    if (!message.stakeholderName || message.speaker === 'user' || message.speaker === 'system') return
-
-    const stakeholder = selectedStakeholders.find(s => s.id === message.speaker)
-    if (!stakeholder || !isStakeholderVoiceEnabled(stakeholder.id)) return
-
-    setAudioPlayback({ messageId: message.id, isPlaying: false, isLoading: true })
-
-    try {
-      if (isAzureTTSAvailable()) {
-        const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
-        const audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceName)
-        setAudioPlayback({ messageId: message.id, isPlaying: true, isLoading: false })
-        await azureTTS.playAudio(audioBlob)
-      } else {
-        await playBrowserTTS(message.content)
-      }
-    } catch (error) {
-      console.error('Audio playback error:', error)
-      setAudioPlayback({ messageId: message.id, isPlaying: false, isLoading: false, error: 'Audio playback failed' })
-    } finally {
-      setTimeout(() => setAudioPlayback(null), 500)
+  const handleAudioControl = (action: 'play' | 'pause' | 'stop' | 'skip') => {
+    switch (action) {
+      case 'play':
+        if (audioState.isPaused) {
+          audioOrchestrator.resume()
+        } else {
+          messageQueue.resumeProcessing(selectedStakeholders)
+        }
+        break
+      case 'pause':
+        audioOrchestrator.pause()
+        messageQueue.pauseProcessing()
+        break
+      case 'stop':
+        audioOrchestrator.stop()
+        messageQueue.stopProcessing()
+        break
+      case 'skip':
+        audioOrchestrator.skipToNext()
+        break
     }
   }
 
-  const endMeeting = () => {
-    if (currentMeeting) {
-      const duration = Math.floor((Date.now() - new Date(currentMeeting.date).getTime()) / 1000 / 60)
-      updateMeeting(currentMeeting.id, { 
-        status: 'completed',
-        duration
-      })
-      setCurrentMeeting(null)
-    }
-    setCurrentView('notes')
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-  const getStakeholderById = (id: string) => selectedStakeholders.find(s => s.id === id)
+  if (!selectedProject || selectedStakeholders.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        <p>Select a project and stakeholders to start a meeting.</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button onClick={() => setCurrentView('stakeholders')} className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back</span>
-            </button>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Group Meeting</h1>
-              <p className="text-sm text-gray-600">{selectedProject.name}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Users className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-600">{selectedStakeholders.length} participants</span>
-            <button onClick={() => setGlobalAudioEnabled(!globalAudioEnabled)} className={`p-2 rounded-lg ${globalAudioEnabled ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
-              {globalAudioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-            </button>
-            <button onClick={endMeeting} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
-              End Meeting
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3 mt-4">
-          {selectedStakeholders.map((stakeholder) => (
-            <div key={stakeholder.id} className="flex items-center space-x-2">
-              <img src={stakeholder.photo} alt={stakeholder.name} className="w-8 h-8 rounded-full object-cover" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">{stakeholder.name}</p>
-                <p className="text-xs text-gray-600">{stakeholder.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="flex flex-col h-full max-w-4xl mx-auto">
+      {/* Meeting Header */}
+      <div className="bg-white border-b border-gray-200 p-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Meeting: {selectedProject.name}
+        </h2>
+        <p className="text-sm text-gray-600 mt-1">
+          Participants: {selectedStakeholders.map(s => s.name).join(', ')}
+        </p>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.map((message) => {
-          const stakeholder = message.speaker !== 'user' && message.speaker !== 'system' ? getStakeholderById(message.speaker) : null;
-          return (
-            <div key={message.id} className={`flex items-start space-x-3 ${message.speaker === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-              <div className="flex-shrink-0">
-                {message.speaker === 'user' ? (<div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center"><span className="text-white font-medium">BA</span></div>)
-                : message.speaker === 'system' ? (<div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"><MessageSquare className="w-5 h-5 text-white" /></div>)
-                : stakeholder ? (<img src={stakeholder.photo} alt={stakeholder.name} className="w-10 h-10 rounded-full object-cover" />)
-                : (<div className="w-10 h-10 bg-gray-400 rounded-full" />)}
+      {/* Audio Controls */}
+      {(audioState.isPlaying || audioState.isPaused || audioState.queueLength > 0) && (
+        <div className="bg-gray-50 border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                {audioState.isPlaying ? (
+                  <button
+                    onClick={() => handleAudioControl('pause')}
+                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                  >
+                    <Pause size={16} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleAudioControl('play')}
+                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                  >
+                    <Play size={16} />
+                  </button>
+                )}
+                
+                <button
+                  onClick={() => handleAudioControl('stop')}
+                  className="p-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors"
+                >
+                  <Square size={16} />
+                </button>
+                
+                <button
+                  onClick={() => handleAudioControl('skip')}
+                  className="p-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors"
+                >
+                  <SkipForward size={16} />
+                </button>
               </div>
-              <div className={`flex-1 max-w-3xl ${message.speaker === 'user' ? 'text-right' : ''}`}>
-                <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm font-medium text-gray-900">{message.speaker === 'user' ? 'You' : message.stakeholderName || 'System'}</span>
-                  <span className="text-xs text-gray-500">{formatTime(new Date(message.timestamp))}</span>
-                </div>
-                <div className={`inline-block p-3 rounded-lg ${message.speaker === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
-                  {/* The whitespace-pre-wrap is important for showing the script-like format */}
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                </div>
+
+              <div className="text-sm text-gray-600">
+                {audioState.isPlaying && (
+                  <span>
+                    {formatTime(audioState.currentPosition)} / {formatTime(audioState.duration)}
+                  </span>
+                )}
+                {audioState.queueLength > 0 && (
+                  <span className="ml-4">
+                    Queue: {audioState.queueLength} message{audioState.queueLength !== 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
             </div>
-          );
-        })}
-        {isAiResponding && (
-          <div className="flex items-start space-x-3">
-            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-gray-600" /></div>
-            <div className="bg-white border border-gray-200 rounded-lg p-3"><p className="text-sm text-gray-600 italic">Stakeholders are responding...</p></div>
+
+            <div className="flex items-center space-x-2">
+              {audioState.isPlaying ? (
+                <Volume2 size={16} className="text-green-600" />
+              ) : (
+                <VolumeX size={16} className="text-gray-400" />
+              )}
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          {audioState.duration > 0 && (
+            <div className="mt-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${(audioState.currentPosition / audioState.duration) * 100}%`
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex ${
+              message.speaker_type === 'ba' ? 'justify-end' : 'justify-start'
+            }`}
+          >
+            <div
+              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                message.speaker_type === 'ba'
+                  ? 'bg-blue-600 text-white'
+                  : message.speaker_type === 'system'
+                  ? 'bg-gray-200 text-gray-800'
+                  : 'bg-gray-100 text-gray-900'
+              }`}
+            >
+              {message.speaker_type === 'stakeholder' && (
+                <div className="text-xs font-semibold mb-1 opacity-75">
+                  {selectedStakeholders.find(s => s.id === message.speaker_id)?.name || 'Stakeholder'}
+                </div>
+              )}
+              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+              <div className="text-xs mt-1 opacity-75">
+                {new Date(message.created_at).toLocaleTimeString()}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Show currently processing messages */}
+        {processedMessages.map((message) => (
+          <div key={`processed-${message.id}`} className="flex justify-start">
+            <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-yellow-100 text-gray-900 border-l-4 border-yellow-500">
+              <div className="text-xs font-semibold mb-1 text-yellow-700">
+                🔊 {message.stakeholderName} (Speaking...)
+              </div>
+              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+            </div>
+          </div>
+        ))}
+
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-100 text-gray-900">
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                <span className="text-sm">Stakeholders are thinking...</span>
+              </div>
+            </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
       <div className="bg-white border-t border-gray-200 p-4">
-        <div className="flex items-end space-x-3">
-          <div className="flex-1">
-            <div className="relative">
-              <input ref={inputRef} type="text" value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} onKeyPress={handleKeyPress} placeholder="Type your question or message..." disabled={isAiResponding || isTranscribing} className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-              {isAudioRecordingSupported() && (
-                <button onClick={() => setIsVoiceModalOpen(true)} disabled={isAiResponding} className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600">
-                  <Mic className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-          </div>
-          <button onClick={sendMessage} disabled={!inputMessage.trim() || isAiResponding} className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50">
-            <Send className="w-5 h-5" />
+        <div className="flex space-x-4">
+          <textarea
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type your message to the stakeholders..."
+            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            rows={2}
+            disabled={isLoading}
+          />
+          <button
+            onClick={handleSendMessage}
+            disabled={!inputMessage.trim() || isLoading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Send
           </button>
         </div>
+        <div className="mt-2 text-xs text-gray-500">
+          Press Enter to send, Shift+Enter for new line
+        </div>
       </div>
-
-      <VoiceInputModal isOpen={isVoiceModalOpen} onClose={() => setIsVoiceModalOpen(false)} onSave={handleVoiceInput} onTranscribingChange={setIsTranscribing} />
     </div>
-  );
+  )
 }
 
-export default MeetingView;
+export default MeetingView
