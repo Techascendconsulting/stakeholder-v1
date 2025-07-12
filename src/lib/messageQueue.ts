@@ -1,6 +1,6 @@
 // MessageQueue.ts - Handles parsing and queuing of multi-speaker responses
 import { Stakeholder } from '../../types'
-import { audioOrchestrator, AudioMessage } from './AudioOrchestrator'
+import { audioOrchestrator, AudioMessage } from './audioOrchestrator'
 
 export interface QueuedMessage {
   id: string

@@ -3,7 +3,7 @@ import { Play, Pause, Square, SkipForward, Volume2, VolumeX } from 'lucide-react
 import { stakeholderAI } from '../../lib/stakeholderAI'
 import { messageQueue, QueuedMessage } from '../../lib/messageQueue'
 import { audioOrchestrator, AudioPlaybackState } from '../../lib/audioOrchestrator'
-import { DatabaseService, Project, Stakeholder, Message, Student } from '../../database'
+import { DatabaseService, Project, Stakeholder, Message, Student } from '../../lib/database'
 
 interface MeetingViewProps {
   selectedProject: Project | null
