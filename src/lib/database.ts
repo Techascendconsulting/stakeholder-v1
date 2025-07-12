@@ -1,5 +1,6 @@
 // database.ts - Supabase integration for meeting history tracking
 import { createClient } from '@supabase/supabase-js'
+import { Meeting, Deliverable } from '../types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -66,6 +67,50 @@ export interface Message {
   audio_url?: string
   sequence_number: number
   created_at: string
+}
+
+export interface UserProject {
+  id: string
+  user_id: string
+  project_id: string
+  current_step: string
+  created_at: string
+  updated_at: string
+}
+
+export interface UserProgress {
+  id: string
+  user_id: string
+  current_project_id: string | null
+  total_meetings: number
+  total_deliverables: number
+  last_activity_at: string
+  created_at: string
+  updated_at: string
+}
+
+export interface DatabaseMeeting {
+  id: string
+  user_id: string
+  project_id: string
+  stakeholder_ids: string[]
+  transcript: any[]
+  meeting_type: string
+  status: string
+  duration: number
+  created_at: string
+  updated_at: string
+}
+
+export interface DatabaseDeliverable {
+  id: string
+  user_id: string
+  project_id: string
+  type: string
+  title: string
+  content: string
+  created_at: string
+  updated_at: string
 }
 
 // Database utility functions
@@ -310,5 +355,228 @@ export class DatabaseService {
 
     return data || []
   }
-}
 
+  // Resume user session - get all user data
+  static async resumeUserSession(userId: string): Promise<{
+    progress: UserProgress | null
+    meetings: DatabaseMeeting[]
+    deliverables: DatabaseDeliverable[]
+    currentProject: UserProject | null
+  }> {
+    try {
+      // Get user progress
+      const { data: progress } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      // Get user meetings
+      const { data: meetings } = await supabase
+        .from('user_meetings')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      // Get user deliverables
+      const { data: deliverables } = await supabase
+        .from('user_deliverables')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      // Get current project
+      const { data: currentProject } = await supabase
+        .from('user_projects')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      return {
+        progress: progress || null,
+        meetings: meetings || [],
+        deliverables: deliverables || [],
+        currentProject: currentProject || null
+      }
+    } catch (error) {
+      console.error('Error resuming user session:', error)
+      return {
+        progress: null,
+        meetings: [],
+        deliverables: [],
+        currentProject: null
+      }
+    }
+  }
+
+  // Create user project
+  static async createUserProject(projectId: string, currentStep: string): Promise<UserProject | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+
+      const { data, error } = await supabase
+        .from('user_projects')
+        .insert({
+          user_id: user.id,
+          project_id: projectId,
+          current_step: currentStep
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating user project:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error creating user project:', error)
+      return null
+    }
+  }
+
+  // Update user project
+  static async updateUserProject(userId: string, projectId: string, updates: Partial<UserProject>): Promise<UserProject | null> {
+    try {
+      const { data, error } = await supabase
+        .from('user_projects')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('project_id', projectId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating user project:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error updating user project:', error)
+      return null
+    }
+  }
+
+  // Create user meeting
+  static async createUserMeeting(meeting: Meeting): Promise<DatabaseMeeting | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+
+      const { data, error } = await supabase
+        .from('user_meetings')
+        .insert({
+          user_id: user.id,
+          project_id: meeting.projectId,
+          stakeholder_ids: meeting.stakeholderIds,
+          transcript: meeting.transcript,
+          meeting_type: meeting.meetingType,
+          status: meeting.status,
+          duration: meeting.duration || 0
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating user meeting:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error creating user meeting:', error)
+      return null
+    }
+  }
+
+  // Update user meeting
+  static async updateUserMeeting(meetingId: string, updates: Partial<Meeting>): Promise<DatabaseMeeting | null> {
+    try {
+      const dbUpdates: any = { updated_at: new Date().toISOString() }
+      
+      if (updates.transcript) dbUpdates.transcript = updates.transcript
+      if (updates.status) dbUpdates.status = updates.status
+      if (updates.duration) dbUpdates.duration = updates.duration
+
+      const { data, error } = await supabase
+        .from('user_meetings')
+        .update(dbUpdates)
+        .eq('id', meetingId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating user meeting:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error updating user meeting:', error)
+      return null
+    }
+  }
+
+  // Create user deliverable
+  static async createUserDeliverable(deliverable: Deliverable): Promise<DatabaseDeliverable | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+
+      const { data, error } = await supabase
+        .from('user_deliverables')
+        .insert({
+          user_id: user.id,
+          project_id: deliverable.projectId,
+          type: deliverable.type,
+          title: deliverable.title,
+          content: deliverable.content
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating user deliverable:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error creating user deliverable:', error)
+      return null
+    }
+  }
+
+  // Update user deliverable
+  static async updateUserDeliverable(deliverableId: string, updates: Partial<Deliverable>): Promise<DatabaseDeliverable | null> {
+    try {
+      const dbUpdates: any = { updated_at: new Date().toISOString() }
+      
+      if (updates.title) dbUpdates.title = updates.title
+      if (updates.content) dbUpdates.content = updates.content
+      if (updates.type) dbUpdates.type = updates.type
+
+      const { data, error } = await supabase
+        .from('user_deliverables')
+        .update(dbUpdates)
+        .eq('id', deliverableId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating user deliverable:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error updating user deliverable:', error)
+      return null
+    }
+  }
+}
