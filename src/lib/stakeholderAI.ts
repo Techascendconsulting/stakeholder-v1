@@ -126,4 +126,3 @@ BA says: "Okay, thanks" -> (return a single period: ".")`;
 }
 
 export const stakeholderAI = new StakeholderAI();
-
