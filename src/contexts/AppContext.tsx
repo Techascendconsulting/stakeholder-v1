@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 import { subscriptionService, StudentSubscription } from '../lib/subscription';
 import { AppView, Project, Stakeholder, Meeting, Message, Deliverable } from '../types';
 import { mockProjects, mockStakeholders } from '../data/mockData';
-import { databaseService, DatabaseMeeting, DatabaseDeliverable, UserProgress } from '../lib/database';
+import { DatabaseService, DatabaseMeeting, DatabaseDeliverable, UserProgress } from '../lib/database';
 
 // Interface defining the context's shape
 interface AppContextType {
@@ -73,7 +73,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCurrentView(view);
     if (selectedProject && user) {
       console.log('🔧 DEBUG: Updating user project current_step to:', view);
-      await databaseService.updateUserProject(user.id, selectedProject.id, {
+      await DatabaseService.updateUserProject(user.id, selectedProject.id, {
         current_step: view
       });
     }
@@ -132,7 +132,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setStudentSubscription(subscription);
       console.log("🔄 DEBUG: Got subscription:", subscription?.subscription_tier);
 
-      const sessionData = await databaseService.resumeUserSession(user.id);
+      const sessionData = await DatabaseService.resumeUserSession(user.id);
       console.log("🔄 DEBUG: Got sessionData from database:", sessionData);
       setUserProgress(sessionData.progress);
 
@@ -208,7 +208,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const updatedSubscription = await subscriptionService.getStudentSubscription(user.id);
       setStudentSubscription(updatedSubscription);
       setSelectedProject(project);
-      await databaseService.createUserProject(project.id, 'project-brief');
+      await DatabaseService.createUserProject(project.id, 'project-brief');
       console.log('🎯 DEBUG: Project selected successfully');
     } catch (error) {
       console.error('🎯 DEBUG: Error selecting project:', error);
@@ -232,7 +232,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setStudentSubscription(updatedSubscription);
         
         // Create meeting in database and get the generated ID
-        const dbMeeting = await databaseService.createUserMeeting(meeting);
+        const dbMeeting = await DatabaseService.createUserMeeting(meeting);
         if (dbMeeting) {
           createdMeeting = {
             id: dbMeeting.id,
@@ -267,7 +267,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       meeting.id === meetingId ? { ...meeting, ...updates } : meeting
     ));
     if (user) {
-      await databaseService.updateUserMeeting(meetingId, updates);
+      await DatabaseService.updateUserMeeting(meetingId, updates);
     }
   };
 
@@ -276,7 +276,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     console.log('📄 DEBUG: addDeliverable called with:', deliverable.title);
     setDeliverables(prev => [...prev, deliverable]);
     if (user) {
-      await databaseService.createUserDeliverable(deliverable);
+      await DatabaseService.createUserDeliverable(deliverable);
     }
   };
 
@@ -287,7 +287,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       deliverable.id === deliverableId ? { ...deliverable, ...updates } : deliverable
     ));
     if (user) {
-      await databaseService.updateUserDeliverable(deliverableId, updates);
+      await DatabaseService.updateUserDeliverable(deliverableId, updates);
     }
   };
 
@@ -301,7 +301,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const updatedMeetings = [...meetings];
         updatedMeetings[meetingIndex] = currentMeeting;
         setMeetings(updatedMeetings);
-        databaseService.updateUserMeeting(currentMeeting.id, {
+        DatabaseService.updateUserMeeting(currentMeeting.id, {
           transcript: currentMeeting.transcript
         });
       }
@@ -364,3 +364,4 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
+
