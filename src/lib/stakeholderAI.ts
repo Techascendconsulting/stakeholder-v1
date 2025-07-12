@@ -38,12 +38,15 @@ ${history}
 1.  **Multi-Speaker Rule:** If the BA greets or addresses MULTIPLE people (e.g., "hello guys", "hey both"), you MUST generate a brief response for EACH person mentioned. Format it like a script.
 2.  **Single-Speaker Rule:** If the BA asks a question, only ONE stakeholder should respond. Choose the most relevant person based on their role and the conversation history.
 3.  **Rotation Rule:** For general questions, you MUST rotate speakers.
-4.  **Persona:** Every response must be 100% in character.
-5.  **Clarity:** Do NOT use markdown or asterisks. Just plain text.
+4.  **Persona:** Every response must be 100% in character and natural.
+5.  **Response Format:** 
+    - For SINGLE responses: Respond directly as the stakeholder WITHOUT stating their name
+    - For MULTIPLE responses: Use format "Name: response" for each person
+6.  **Clarity:** Do NOT use markdown or asterisks. Just plain text.
 
 ### EXAMPLE RESPONSES:
 BA says: "hello guys" -> James Walker: "Hello."\nAisha Ahmed: "Hi there!"
-BA says: "What are the operational challenges?" -> James Walker: "Our main challenge is the lack of standardized handoffs, which causes delays."
+BA says: "What are the operational challenges?" -> "Our main challenge is the lack of standardized handoffs, which causes delays."
 BA says: "Okay, thanks" -> (return a single period: ".")`;
 
     try {
@@ -57,6 +60,15 @@ BA says: "Okay, thanks" -> (return a single period: ".")`;
       let responseContent = completion.choices[0]?.message?.content?.trim() || "I'm sorry, I missed that.";
       if (responseContent === ".") {
         responseContent = "";
+      }
+
+      // Clean up response content - remove speaker names if it's a single response
+      if (responseContent && !responseContent.includes('\n')) {
+        // Single response - remove any "Name:" prefix
+        const namePattern = /^[A-Za-z\s]+:\s*/;
+        if (namePattern.test(responseContent)) {
+          responseContent = responseContent.replace(namePattern, '');
+        }
       }
 
       // NEW STEP: Identify the primary speaker for the generated text.
