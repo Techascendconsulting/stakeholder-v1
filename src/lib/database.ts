@@ -445,11 +445,16 @@ export class DatabaseService {
         .eq('user_id', userId)
         .eq('project_id', projectId)
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error('Error updating user project:', error)
         return null
+      }
+
+      // If no existing record, create one
+      if (!data) {
+        return this.createUserProject(userId, projectId, updates.current_step || 'initial')
       }
 
       return data
