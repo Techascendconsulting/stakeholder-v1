@@ -304,6 +304,11 @@ const ProjectsView: React.FC = () => {
             >
               Create Custom Project
             </button>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Or access this feature from the sidebar: <span className="font-semibold">Create Your Own Project</span>
+              </p>
+            </div>
           </div>
         </div>
 

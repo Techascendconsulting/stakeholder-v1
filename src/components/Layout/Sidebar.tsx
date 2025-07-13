@@ -7,7 +7,8 @@ import {
   FileText, 
   User, 
   LogOut,
-  GraduationCap
+  GraduationCap,
+  Plus
 } from 'lucide-react'
 import { AppView } from '../../types'
 
@@ -18,6 +19,7 @@ const Sidebar: React.FC = () => {
   const menuItems = [
     { id: 'dashboard' as AppView, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'projects' as AppView, label: 'Training Projects', icon: FolderOpen },
+    { id: 'custom-project' as AppView, label: 'Create Your Own Project', icon: Plus },
     { id: 'notes' as AppView, label: 'Interview Notes', icon: FileText },
     { id: 'profile' as AppView, label: 'Profile', icon: User },
   ]
