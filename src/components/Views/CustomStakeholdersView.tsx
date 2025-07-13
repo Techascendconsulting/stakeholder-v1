@@ -549,7 +549,7 @@ const CustomStakeholdersView: React.FC = () => {
                   className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>Use Our Stakeholders</span>
+                  <span>Generate Stakeholders</span>
                 </button>
               )}
               <button
