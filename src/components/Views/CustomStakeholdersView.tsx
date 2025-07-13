@@ -20,13 +20,6 @@ const CustomStakeholdersView: React.FC = () => {
     priorities: ['', '', '']
   })
 
-  useEffect(() => {
-    // Only auto-generate AI stakeholders if no manual stakeholders exist
-    if (customProject && manualStakeholders.length === 0 && !hasGeneratedAI) {
-      generateStakeholders()
-    }
-  }, [customProject, manualStakeholders.length, hasGeneratedAI])
-
   const generateStakeholders = () => {
     setIsGenerating(true)
     
@@ -449,14 +442,14 @@ const CustomStakeholdersView: React.FC = () => {
     )
   }
 
-  if (isGenerating && manualStakeholders.length === 0) {
+  if (isGenerating) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Generating AI Stakeholders</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Generating Our Stakeholders</h2>
           <p className="text-gray-600 mb-6">Creating realistic stakeholders based on your project context...</p>
           <div className="flex items-center justify-center space-x-2">
             <div className="w-3 h-3 bg-purple-600 rounded-full animate-bounce"></div>
@@ -550,7 +543,7 @@ const CustomStakeholdersView: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              {manualStakeholders.length === 0 && (
+              {manualStakeholders.length === 0 && generatedStakeholders.length === 0 && (
                 <button
                   onClick={handleUseAIStakeholders}
                   className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -700,11 +693,11 @@ const CustomStakeholdersView: React.FC = () => {
             </div>
           )}
 
-          {manualStakeholders.length === 0 && !showAddForm && (
+          {manualStakeholders.length === 0 && generatedStakeholders.length === 0 && !showAddForm && (
             <div className="text-center py-8">
               <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No stakeholders added yet</p>
-              <p className="text-sm text-gray-400">Add your project stakeholders or generate AI ones</p>
+              <p className="text-sm text-gray-400">Add your project stakeholders or use our pre-built ones</p>
             </div>
           )}
         </div>
@@ -714,7 +707,7 @@ const CustomStakeholdersView: React.FC = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">Want to try our pre-built stakeholders instead?</h3>
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Want to use our pre-built stakeholders instead?</h3>
                 <p className="text-blue-700">You can replace your custom stakeholders with our professionally designed stakeholders that match your project context.</p>
               </div>
               <button
