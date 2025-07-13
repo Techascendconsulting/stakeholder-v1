@@ -9,6 +9,7 @@ import MeetingView from '../Views/MeetingView'
 import NotesView from '../Views/NotesView'
 import DeliverablesView from '../Views/DeliverablesView'
 import ProfileView from '../Views/ProfileView'
+import AnalysisView from '../Views/AnalysisView'
 
 const MainLayout: React.FC = () => {
   const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
@@ -57,6 +58,8 @@ const MainLayout: React.FC = () => {
         return <DeliverablesView />
       case 'profile':
         return <ProfileView />
+      case 'analysis':
+        return <AnalysisView />
       default:
         return <ProjectsView />
     }

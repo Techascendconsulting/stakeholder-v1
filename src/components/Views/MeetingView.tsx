@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX } from 'lucide-react'
+import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp } from 'lucide-react'
 import { stakeholderAI } from '../../lib/stakeholderAI'
 import { messageQueue, QueuedMessage } from '../../lib/messageQueue'
 import { audioOrchestrator, AudioPlaybackState } from '../../lib/audioOrchestrator'
 import { DatabaseService, Project, Stakeholder, Message, Student } from '../../lib/database'
+import { useApp } from '../../contexts/AppContext'
 
 const MeetingView: React.FC = () => {
   console.log('🎬 DEBUG: MeetingView component rendered')
-  const { selectedProject, selectedStakeholders, user } = useApp()
+  const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
   console.log('🎬 DEBUG: MeetingView data:', {
     selectedProject: selectedProject?.name || 'null',
     selectedStakeholders: selectedStakeholders?.length || 0,
@@ -17,6 +18,8 @@ const MeetingView: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [currentMeetingId, setCurrentMeetingId] = useState<string | null>(null)
+  const [showQuestionHelper, setShowQuestionHelper] = useState(false)
+  const [selectedQuestionCategory, setSelectedQuestionCategory] = useState<'as-is' | 'to-be'>('as-is')
   const [audioState, setAudioState] = useState<AudioPlaybackState>({
     isPlaying: false,
     isPaused: false,
@@ -53,6 +56,72 @@ const MeetingView: React.FC = () => {
     messageQueue.onMessageProcessed(handleMessageProcessed)
     return () => messageQueue.offMessageProcessed(handleMessageProcessed)
   }, [])
+
+  // Generate suggested questions based on project and stakeholder
+  const getSuggestedQuestions = (category: 'as-is' | 'to-be') => {
+    if (!selectedProject || selectedStakeholders.length === 0) return []
+
+    const stakeholderRole = selectedStakeholders[0]?.role || 'Stakeholder'
+    
+    const questionTemplates = {
+      'as-is': [
+        `Can you walk me through the current ${selectedProject.name.toLowerCase()} process from your perspective?`,
+        `What are the main pain points you experience with the current system?`,
+        `How much time does the current process typically take?`,
+        `What tools or systems do you currently use for this process?`,
+        `Where do you see the most inefficiencies in the current workflow?`,
+        `What manual steps are required that could potentially be automated?`,
+        `How does the current process impact your daily responsibilities?`,
+        `What data or information is difficult to access in the current system?`
+      ],
+      'to-be': [
+        `What would an ideal ${selectedProject.name.toLowerCase()} process look like for you?`,
+        `What specific outcomes would you like to see from this improvement?`,
+        `How would you measure success for this initiative?`,
+        `What features or capabilities are most important to you?`,
+        `How should the new process integrate with your existing workflows?`,
+        `What would make your job easier in the new system?`,
+        `What are your expectations for training and change management?`,
+        `How do you envision this impacting your team's productivity?`
+      ]
+    }
+
+    return questionTemplates[category]
+  }
+
+  const handleQuestionClick = (question: string) => {
+    setInputMessage(question)
+    setShowQuestionHelper(false)
+  }
+
+  const handleSaveNotes = async () => {
+    if (!currentMeetingId || messages.length === 0) return
+    
+    // Save meeting notes - this could be enhanced to save to a specific notes table
+    console.log('Saving meeting notes for meeting:', currentMeetingId)
+    alert('Meeting notes saved successfully!')
+  }
+
+  const handleAnalyzeAnswers = () => {
+    if (messages.length === 0) {
+      alert('No conversation to analyze yet. Please conduct the interview first.')
+      return
+    }
+    
+    // Store the current meeting data for analysis
+    const analysisData = {
+      project: selectedProject,
+      stakeholders: selectedStakeholders,
+      messages: messages,
+      meetingId: currentMeetingId
+    }
+    
+    // Store in sessionStorage for the analysis page
+    sessionStorage.setItem('meetingAnalysis', JSON.stringify(analysisData))
+    
+    // Navigate to analysis page
+    setCurrentView('analysis')
+  }
 
   const initializeMeeting = async () => {
     if (!selectedProject || !user) return
@@ -229,12 +298,69 @@ const MeetingView: React.FC = () => {
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       {/* Meeting Header */}
       <div className="bg-white border-b border-gray-200 p-4">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Meeting: {selectedProject.name}
-        </h2>
-        <p className="text-sm text-gray-600 mt-1">
-          Participants: {selectedStakeholders.map(s => s.name).join(', ')}
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Meeting: {selectedProject.name}
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Participants: {selectedStakeholders.map(s => s.name).join(', ')}
+            </p>
+          </div>
+          
+          {/* Question Helper Toggle */}
+          <button
+            onClick={() => setShowQuestionHelper(!showQuestionHelper)}
+            className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+          >
+            <HelpCircle className="w-5 h-5" />
+            <span>Question Helper</span>
+            {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+        
+        {/* Question Helper Panel */}
+        {showQuestionHelper && (
+          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center space-x-4 mb-4">
+              <h3 className="text-lg font-semibold text-blue-900">Suggested Questions</h3>
+              <div className="flex bg-white rounded-lg p-1 border border-blue-200">
+                <button
+                  onClick={() => setSelectedQuestionCategory('as-is')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    selectedQuestionCategory === 'as-is'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-blue-700 hover:bg-blue-100'
+                  }`}
+                >
+                  As-Is Process
+                </button>
+                <button
+                  onClick={() => setSelectedQuestionCategory('to-be')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    selectedQuestionCategory === 'to-be'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-blue-700 hover:bg-blue-100'
+                  }`}
+                >
+                  To-Be Vision
+                </button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto">
+              {getSuggestedQuestions(selectedQuestionCategory).map((question, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuestionClick(question)}
+                  className="text-left p-3 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-sm"
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Audio Controls */}
@@ -388,9 +514,31 @@ const MeetingView: React.FC = () => {
             Send
           </button>
         </div>
-        <div className="mt-2 text-xs text-gray-500">
-          Press Enter to send, Shift+Enter for new line
-        </div>
+        
+        {/* Action Buttons */}
+        {messages.length > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            <div className="text-xs text-gray-500">
+              Press Enter to send, Shift+Enter for new line
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={handleSaveNotes}
+                className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Notes</span>
+              </button>
+              <button
+                onClick={handleAnalyzeAnswers}
+                className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Analyze Answers</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

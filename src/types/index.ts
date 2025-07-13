@@ -51,4 +51,4 @@ export interface Deliverable {
   lastModified: string
 }
 
-export type AppView = 'dashboard' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile'
+export type AppView = 'dashboard' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis'
