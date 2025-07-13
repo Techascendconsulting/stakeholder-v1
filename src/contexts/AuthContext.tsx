@@ -44,8 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })
 
     // Listen for auth changes
-    const {
-      async (event, session, error) => {
+    const subscription = supabase.auth.onAuthStateChange(async (event, session, error) => {
         if (error) {
           console.error('Auth state change error:', error)
           // Clear any stale tokens on error
@@ -57,10 +56,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
         
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
     })
 
     return () => subscription.unsubscribe()
