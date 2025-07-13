@@ -128,6 +128,7 @@ class SubscriptionService {
           selected_project_id: projectId
         })
       } catch (updateError) {
+      }
 
       return true
     } catch (error) {
