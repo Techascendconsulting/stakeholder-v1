@@ -30,25 +30,197 @@ const CustomStakeholdersView: React.FC = () => {
   const generateStakeholders = () => {
     setIsGenerating(true)
     
-    // Simulate AI generation based on project context
+    // Generate stakeholders based on project context
     setTimeout(() => {
-      const stakeholders = customProject?.stakeholderRoles.map((role, index) => ({
+      // Use project context to generate relevant stakeholders
+      const relevantRoles = getRelevantStakeholderRoles(customProject)
+      const stakeholders = relevantRoles.map((roleData, index) => ({
         id: `custom-stakeholder-${index}`,
-        name: generateName(role),
-        role: role,
-        department: getDepartment(role),
-        bio: generateBio(role, customProject?.industry),
+        name: generateName(roleData.role),
+        role: roleData.role,
+        department: roleData.department,
+        bio: roleData.bio,
         photo: `https://images.pexels.com/photos/${getPhotoId(index)}/pexels-photo-${getPhotoId(index)}.jpeg?auto=compress&cs=tinysrgb&w=400`,
-        personality: generatePersonality(role),
-        priorities: generatePriorities(role, customProject?.projectType),
+        personality: roleData.personality,
+        priorities: roleData.priorities,
         voice: getVoiceId(index),
         isCustom: true
-      })) || []
+      }))
 
       setGeneratedStakeholders(stakeholders)
       setHasGeneratedAI(true)
       setIsGenerating(false)
     }, 2000)
+  }
+
+  const getRelevantStakeholderRoles = (project: any) => {
+    if (!project) return []
+
+    // Base stakeholders that apply to most projects
+    const baseStakeholders = [
+      {
+        role: 'Project Sponsor',
+        department: 'Executive Leadership',
+        bio: `Senior executive sponsor for the ${project.name} initiative with 15+ years of leadership experience in ${project.industry || 'the industry'}. Responsible for strategic oversight, budget approval, and ensuring project alignment with organizational goals.`,
+        personality: 'Strategic, results-focused, interested in ROI and business impact',
+        priorities: ['Strategic alignment', 'Budget management', 'Business value delivery']
+      },
+      {
+        role: 'Operations Manager',
+        department: 'Operations',
+        bio: `Operations manager with 12 years of experience in process optimization and operational excellence. Deep understanding of current ${project.projectType || 'business'} processes and day-to-day operational challenges.`,
+        personality: 'Process-oriented, practical, focused on efficiency and quality',
+        priorities: ['Process efficiency', 'Operational stability', 'Resource optimization']
+      }
+    ]
+
+    // Add industry-specific stakeholders
+    const industryStakeholders = getIndustrySpecificStakeholders(project.industry, project)
+    
+    // Add project-type specific stakeholders
+    const projectTypeStakeholders = getProjectTypeSpecificStakeholders(project.projectType, project)
+
+    // Combine and limit to 5 stakeholders
+    const allStakeholders = [...baseStakeholders, ...industryStakeholders, ...projectTypeStakeholders]
+    return allStakeholders.slice(0, 5)
+  }
+
+  const getIndustrySpecificStakeholders = (industry: string, project: any) => {
+    const industryMap: Record<string, any[]> = {
+      'Financial Services': [
+        {
+          role: 'Compliance Officer',
+          department: 'Risk & Compliance',
+          bio: `Compliance specialist with 10 years in financial services regulation. Ensures all ${project.name} changes meet regulatory requirements including SOX, PCI-DSS, and industry-specific compliance standards.`,
+          personality: 'Detail-oriented, risk-aware, regulatory-focused',
+          priorities: ['Regulatory compliance', 'Risk mitigation', 'Audit readiness']
+        },
+        {
+          role: 'Customer Experience Manager',
+          department: 'Customer Experience',
+          bio: `Customer experience leader with expertise in financial services customer journey optimization. Focuses on improving customer satisfaction and reducing friction in financial processes.`,
+          personality: 'Customer-centric, analytical, service-focused',
+          priorities: ['Customer satisfaction', 'User experience', 'Service quality']
+        }
+      ],
+      'Healthcare': [
+        {
+          role: 'Clinical Operations Director',
+          department: 'Clinical Operations',
+          bio: `Healthcare operations leader with 14 years in clinical process improvement. Specializes in patient care workflows, clinical efficiency, and healthcare quality standards.`,
+          personality: 'Patient-focused, quality-driven, collaborative',
+          priorities: ['Patient care quality', 'Clinical efficiency', 'Safety standards']
+        },
+        {
+          role: 'Health Information Manager',
+          department: 'Health Information',
+          bio: `Health information specialist ensuring HIPAA compliance and data security in healthcare systems. Expert in medical records management and healthcare data privacy.`,
+          personality: 'Security-conscious, detail-oriented, privacy-focused',
+          priorities: ['Data privacy', 'HIPAA compliance', 'Information security']
+        }
+      ],
+      'Technology': [
+        {
+          role: 'Technical Architect',
+          department: 'Engineering',
+          bio: `Senior technical architect with 12 years in enterprise software development. Responsible for technical feasibility, system architecture, and integration planning for ${project.name}.`,
+          personality: 'Technical, analytical, solution-oriented',
+          priorities: ['Technical feasibility', 'System scalability', 'Integration capabilities']
+        },
+        {
+          role: 'Product Manager',
+          department: 'Product Management',
+          bio: `Product management leader with expertise in technology product development and user experience. Focuses on feature prioritization and product-market fit.`,
+          personality: 'User-focused, strategic, data-driven',
+          priorities: ['User needs', 'Product vision', 'Market requirements']
+        }
+      ],
+      'Manufacturing': [
+        {
+          role: 'Production Manager',
+          department: 'Manufacturing',
+          bio: `Manufacturing operations manager with 15 years in production optimization and lean manufacturing. Expert in production workflows, quality control, and operational efficiency.`,
+          personality: 'Efficiency-focused, quality-driven, practical',
+          priorities: ['Production efficiency', 'Quality control', 'Cost optimization']
+        },
+        {
+          role: 'Supply Chain Manager',
+          department: 'Supply Chain',
+          bio: `Supply chain specialist with expertise in vendor management, inventory optimization, and logistics coordination. Focuses on supply chain efficiency and cost management.`,
+          personality: 'Analytical, cost-conscious, relationship-focused',
+          priorities: ['Supply chain efficiency', 'Cost management', 'Vendor relationships']
+        }
+      ],
+      'Retail': [
+        {
+          role: 'Store Operations Manager',
+          department: 'Retail Operations',
+          bio: `Retail operations manager with 11 years in multi-location retail management. Expert in customer service, inventory management, and store operational efficiency.`,
+          personality: 'Customer-focused, operationally-minded, results-driven',
+          priorities: ['Customer experience', 'Store efficiency', 'Sales performance']
+        },
+        {
+          role: 'Merchandising Manager',
+          department: 'Merchandising',
+          bio: `Merchandising specialist with expertise in product placement, inventory planning, and sales optimization. Focuses on product performance and customer buying patterns.`,
+          personality: 'Data-driven, customer-focused, commercially-minded',
+          priorities: ['Product performance', 'Inventory optimization', 'Sales growth']
+        }
+      ]
+    }
+
+    return industryMap[industry] || [
+      {
+        role: 'Business Analyst',
+        department: 'Business Analysis',
+        bio: `Senior business analyst with expertise in ${industry || 'cross-industry'} process improvement and requirements gathering. Specializes in stakeholder management and solution design.`,
+        personality: 'Analytical, collaborative, process-focused',
+        priorities: ['Requirements clarity', 'Stakeholder alignment', 'Solution effectiveness']
+      }
+    ]
+  }
+
+  const getProjectTypeSpecificStakeholders = (projectType: string, project: any) => {
+    const projectTypeMap: Record<string, any[]> = {
+      'Process Improvement': [
+        {
+          role: 'Process Excellence Manager',
+          department: 'Process Excellence',
+          bio: `Process improvement specialist with 10 years in lean methodology and process optimization. Expert in identifying inefficiencies and designing streamlined workflows.`,
+          personality: 'Analytical, improvement-focused, methodical',
+          priorities: ['Process efficiency', 'Waste reduction', 'Continuous improvement']
+        }
+      ],
+      'System Implementation': [
+        {
+          role: 'IT Project Manager',
+          department: 'Information Technology',
+          bio: `IT project manager with 12 years in enterprise system implementations. Specializes in technology rollouts, user training, and change management for system deployments.`,
+          personality: 'Organized, technical, change-focused',
+          priorities: ['Implementation success', 'User adoption', 'Technical stability']
+        }
+      ],
+      'Digital Transformation': [
+        {
+          role: 'Digital Strategy Manager',
+          department: 'Digital Strategy',
+          bio: `Digital transformation leader with expertise in organizational change and technology adoption. Focuses on digital capability building and cultural transformation.`,
+          personality: 'Visionary, change-oriented, strategic',
+          priorities: ['Digital adoption', 'Cultural change', 'Innovation']
+        }
+      ],
+      'Customer Experience': [
+        {
+          role: 'Customer Success Manager',
+          department: 'Customer Success',
+          bio: `Customer success specialist with 9 years in customer journey optimization and satisfaction improvement. Expert in customer feedback analysis and experience design.`,
+          personality: 'Customer-centric, empathetic, data-driven',
+          priorities: ['Customer satisfaction', 'User experience', 'Customer retention']
+        }
+      ]
+    }
+
+    return projectTypeMap[projectType] || []
   }
 
   const generateName = (role: string): string => {
@@ -368,31 +540,31 @@ const CustomStakeholdersView: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'Add Your Project Stakeholders'}
+                {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'Choose Your Stakeholders'}
               </h3>
               <p className="text-sm text-gray-600">
                 {manualStakeholders.length > 0 
                   ? 'Your custom stakeholders based on your actual project team'
-                  : 'Create stakeholders based on your actual project team, or use AI-generated ones'
+                  : 'Add your actual project stakeholders or use our pre-built stakeholders that match your project'
                 }
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              {manualStakeholders.length === 0 && !hasGeneratedAI && (
+              {manualStakeholders.length === 0 && (
                 <button
                   onClick={handleUseAIStakeholders}
-                  className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                  className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>Generate AI Stakeholders</span>
+                  <span>Use Our Stakeholders</span>
                 </button>
               )}
               <button
                 onClick={() => setShowAddForm(true)}
-                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add Stakeholder</span>
+                <span>Add Your Stakeholder</span>
               </button>
             </div>
           </div>
@@ -542,15 +714,15 @@ const CustomStakeholdersView: React.FC = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">Want to try AI-generated stakeholders instead?</h3>
-                <p className="text-blue-700">You can replace your custom stakeholders with AI-generated ones based on your project context.</p>
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Want to try our pre-built stakeholders instead?</h3>
+                <p className="text-blue-700">You can replace your custom stakeholders with our professionally designed stakeholders that match your project context.</p>
               </div>
               <button
                 onClick={handleUseAIStakeholders}
                 className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Use AI Stakeholders</span>
+                <span>Use Our Stakeholders</span>
               </button>
             </div>
           </div>
@@ -560,7 +732,7 @@ const CustomStakeholdersView: React.FC = () => {
         {(manualStakeholders.length > 0 || generatedStakeholders.length > 0) && (
           <div className="mb-8">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'AI-Generated Stakeholders'}
+              {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'Our Pre-Built Stakeholders'}
             </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
             {[...manualStakeholders, ...generatedStakeholders].map((stakeholder) => {
@@ -678,7 +850,7 @@ const CustomStakeholdersView: React.FC = () => {
               className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors mx-auto"
             >
               <RefreshCw className="w-5 h-5" />
-              <span>Regenerate AI Stakeholders</span>
+              <span>Generate Different Stakeholders</span>
             </button>
           </div>
         )}
