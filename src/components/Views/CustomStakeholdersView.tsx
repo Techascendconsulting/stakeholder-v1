@@ -697,7 +697,7 @@ const CustomStakeholdersView: React.FC = () => {
             <div className="text-center py-8">
               <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No stakeholders added yet</p>
-              <p className="text-sm text-gray-400">Add your project stakeholders or use our pre-built ones</p>
+              <p className="text-sm text-gray-400">Add your project stakeholders or generate ones for your project</p>
             </div>
           )}
         </div>
