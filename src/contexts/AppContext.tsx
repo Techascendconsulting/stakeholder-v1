@@ -52,6 +52,7 @@ class SubscriptionService {
           email,
           // Only include fields that definitely exist
           ...(isAdmin ? {} : {}) // Will add subscription fields when schema is fixed
+        })
         .select()
         .single()
 
@@ -113,9 +114,6 @@ class SubscriptionService {
         console.warn('No student record found, allowing project selection anyway')
         return true // Allow selection even if student record doesn't exist
       }
-        console.warn('No student record found, allowing project selection anyway')
-        return true // Allow selection even if student record doesn't exist
-      }
 
       // For free users, lock the project selection
       if (student.subscription_tier === 'free' && student.selected_project_id) {
@@ -130,9 +128,8 @@ class SubscriptionService {
           selected_project_id: projectId
         })
       } catch (updateError) {
-          selected_project_id: projectId
-        })
-      } catch (updateError) {
+        console.warn('Could not update project selection (schema issue), continuing anyway')
+      }
 
       return true
     } catch (error) {
