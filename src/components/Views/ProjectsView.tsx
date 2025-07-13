@@ -1,6 +1,6 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown } from 'lucide-react'
+import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
   const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user } = useApp()
@@ -262,6 +262,49 @@ const ProjectsView: React.FC = () => {
               </div>
             )
           })}
+        </div>
+
+        {/* Create Custom Project */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-dashed border-purple-300 rounded-2xl p-8">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Plus className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Create Your Own Project</h3>
+            <p className="text-lg text-gray-700 mb-6 max-w-2xl mx-auto">
+              Already a BA with your own project? Describe your context and practice stakeholder interviews 
+              with AI stakeholders who will adapt to your specific scenario.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <span className="text-purple-600 font-bold">1</span>
+                </div>
+                <p className="text-sm font-medium text-gray-900">Describe Your Project</p>
+                <p className="text-xs text-gray-600 mt-1">Context, goals, stakeholders</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-blue-200">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <span className="text-blue-600 font-bold">2</span>
+                </div>
+                <p className="text-sm font-medium text-gray-900">AI Generates Questions</p>
+                <p className="text-xs text-gray-600 mt-1">Tailored to your scenario</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <span className="text-emerald-600 font-bold">3</span>
+                </div>
+                <p className="text-sm font-medium text-gray-900">Practice Interviews</p>
+                <p className="text-xs text-gray-600 mt-1">With adaptive AI stakeholders</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setCurrentView('custom-project')}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold px-8 py-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              Create Custom Project
+            </button>
+          </div>
         </div>
 
         {/* Subscription Status */}

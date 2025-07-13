@@ -8,6 +8,10 @@ export interface Project {
   businessGoals: string[]
   duration: string
   complexity: 'Beginner' | 'Intermediate' | 'Advanced'
+  isCustom?: boolean
+  stakeholderRoles?: string[]
+  industry?: string
+  projectType?: string
 }
 
 export interface Stakeholder {
@@ -20,6 +24,7 @@ export interface Stakeholder {
   personality: string
   priorities: string[]
   voice: string
+  isCustom?: boolean
 }
 
 export interface Meeting {
@@ -51,4 +56,4 @@ export interface Deliverable {
   lastModified: string
 }
 
-export type AppView = 'dashboard' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis'
+export type AppView = 'dashboard' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'

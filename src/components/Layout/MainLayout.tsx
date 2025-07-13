@@ -10,6 +10,8 @@ import NotesView from '../Views/NotesView'
 import DeliverablesView from '../Views/DeliverablesView'
 import ProfileView from '../Views/ProfileView'
 import AnalysisView from '../Views/AnalysisView'
+import CustomProjectView from '../Views/CustomProjectView'
+import CustomStakeholdersView from '../Views/CustomStakeholdersView'
 
 const MainLayout: React.FC = () => {
   const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
@@ -60,6 +62,10 @@ const MainLayout: React.FC = () => {
         return <ProfileView />
       case 'analysis':
         return <AnalysisView />
+      case 'custom-project':
+        return <CustomProjectView />
+      case 'custom-stakeholders':
+        return <CustomStakeholdersView />
       default:
         return <ProjectsView />
     }

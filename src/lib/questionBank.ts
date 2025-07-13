@@ -290,7 +290,8 @@ export class QuestionBankService {
   static getQuestionsForStakeholder(
     stakeholderRole: string,
     projectName: string,
-    category: 'as-is' | 'to-be' | 'all' = 'all'
+    category: 'as-is' | 'to-be' | 'all' = 'all',
+    isCustomProject: boolean = false
   ): QuestionTemplate[] {
     let filteredQuestions = questionTemplates.filter(template => {
       // Check if question applies to this stakeholder role
@@ -317,6 +318,48 @@ export class QuestionBankService {
       ...template,
       question: template.question.replace('{projectName}', projectName.toLowerCase())
     }))
+
+    // For custom projects, add dynamic questions based on project context
+    if (isCustomProject) {
+      const customQuestions = this.generateCustomQuestions(projectName, stakeholderRole, category)
+      filteredQuestions = [...filteredQuestions, ...customQuestions]
+    }
+
+    return filteredQuestions
+  }
+
+  static generateCustomQuestions(
+    projectName: string,
+    stakeholderRole: string,
+    category: 'as-is' | 'to-be' | 'all'
+  ): QuestionTemplate[] {
+    const customQuestions: QuestionTemplate[] = []
+
+    if (category === 'as-is' || category === 'all') {
+      customQuestions.push({
+        id: `custom-as-is-${Date.now()}`,
+        category: 'as-is',
+        stakeholderRoles: [stakeholderRole],
+        projectTypes: [],
+        question: `From your perspective as ${stakeholderRole}, what are the main challenges with the current ${projectName.toLowerCase()} process?`,
+        tags: ['custom', 'challenges', 'current-state'],
+        priority: 'high'
+      })
+    }
+
+    if (category === 'to-be' || category === 'all') {
+      customQuestions.push({
+        id: `custom-to-be-${Date.now()}`,
+        category: 'to-be',
+        stakeholderRoles: [stakeholderRole],
+        projectTypes: [],
+        question: `What would success look like for you in the improved ${projectName.toLowerCase()} process?`,
+        tags: ['custom', 'success-criteria', 'future-state'],
+        priority: 'high'
+      })
+    }
+
+    return customQuestions
   }
 
   static getQuestionsByCategory(

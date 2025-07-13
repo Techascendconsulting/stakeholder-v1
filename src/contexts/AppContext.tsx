@@ -27,6 +27,10 @@ interface AppContextType {
   addDeliverable: (deliverable: Deliverable) => void
   updateDeliverable: (id: string, updates: Partial<Deliverable>) => void
   
+  // Custom project data
+  customProject: Project | null
+  setCustomProject: (project: Project) => void
+  
   // User data
   user: any
   userProgress: any
@@ -60,6 +64,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [customProject, setCustomProject] = useState<Project | null>(null)
 
   // Mock user progress data
   const userProgress = {
@@ -119,6 +124,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     deliverables,
     addDeliverable,
     updateDeliverable,
+    customProject,
+    setCustomProject,
     user,
     userProgress,
     studentSubscription,
