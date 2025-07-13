@@ -7,7 +7,8 @@ const CustomStakeholdersView: React.FC = () => {
   const [generatedStakeholders, setGeneratedStakeholders] = useState<any[]>([])
   const [manualStakeholders, setManualStakeholders] = useState<any[]>([])
   const [selectedStakeholderIds, setSelectedStakeholderIds] = useState<string[]>([])
-  const [isGenerating, setIsGenerating] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [hasGeneratedAI, setHasGeneratedAI] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingStakeholder, setEditingStakeholder] = useState<any>(null)
   const [newStakeholder, setNewStakeholder] = useState({
@@ -20,10 +21,11 @@ const CustomStakeholdersView: React.FC = () => {
   })
 
   useEffect(() => {
-    if (customProject) {
+    // Only auto-generate AI stakeholders if no manual stakeholders exist
+    if (customProject && manualStakeholders.length === 0 && !hasGeneratedAI) {
       generateStakeholders()
     }
-  }, [customProject])
+  }, [customProject, manualStakeholders.length, hasGeneratedAI])
 
   const generateStakeholders = () => {
     setIsGenerating(true)
@@ -44,6 +46,7 @@ const CustomStakeholdersView: React.FC = () => {
       })) || []
 
       setGeneratedStakeholders(stakeholders)
+      setHasGeneratedAI(true)
       setIsGenerating(false)
     }, 2000)
   }
@@ -144,6 +147,12 @@ const CustomStakeholdersView: React.FC = () => {
       priorities: ['', '', '']
     })
     setShowAddForm(false)
+    
+    // Clear AI-generated stakeholders when user adds their own
+    if (generatedStakeholders.length > 0) {
+      setGeneratedStakeholders([])
+      setSelectedStakeholderIds(prev => prev.filter(id => !id.startsWith('custom-stakeholder-')))
+    }
   }
 
   const handleEditStakeholder = (stakeholder: any) => {
@@ -192,6 +201,19 @@ const CustomStakeholdersView: React.FC = () => {
       priorities: ['', '', '']
     })
     setShowAddForm(false)
+  }
+
+  const handleUseAIStakeholders = () => {
+    if (manualStakeholders.length > 0) {
+      if (confirm('This will replace your custom stakeholders with AI-generated ones. Are you sure?')) {
+        setManualStakeholders([])
+        setSelectedStakeholderIds([])
+        setHasGeneratedAI(false)
+        generateStakeholders()
+      }
+    } else {
+      generateStakeholders()
+    }
   }
 
   const handleDeleteStakeholder = (stakeholderId: string) => {
@@ -255,7 +277,7 @@ const CustomStakeholdersView: React.FC = () => {
     )
   }
 
-  if (isGenerating) {
+  if (isGenerating && manualStakeholders.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -342,19 +364,37 @@ const CustomStakeholdersView: React.FC = () => {
         )}
 
         {/* Add Stakeholder Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Your Custom Stakeholders</h3>
-              <p className="text-sm text-gray-600">Create stakeholders based on your actual project team</p>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'Add Your Project Stakeholders'}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {manualStakeholders.length > 0 
+                  ? 'Your custom stakeholders based on your actual project team'
+                  : 'Create stakeholders based on your actual project team, or use AI-generated ones'
+                }
+              </p>
             </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Stakeholder</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              {manualStakeholders.length === 0 && !hasGeneratedAI && (
+                <button
+                  onClick={handleUseAIStakeholders}
+                  className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Generate AI Stakeholders</span>
+                </button>
+              )}
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Stakeholder</span>
+              </button>
+            </div>
           </div>
 
           {/* Add/Edit Stakeholder Form */}
@@ -491,15 +531,37 @@ const CustomStakeholdersView: React.FC = () => {
           {manualStakeholders.length === 0 && !showAddForm && (
             <div className="text-center py-8">
               <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No custom stakeholders created yet</p>
-              <p className="text-sm text-gray-400">Click "Add Stakeholder" to create your first custom stakeholder</p>
+              <p className="text-gray-500">No stakeholders added yet</p>
+              <p className="text-sm text-gray-400">Add your project stakeholders or generate AI ones</p>
             </div>
           )}
         </div>
 
-        {/* Generated Stakeholders */}
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">All Available Stakeholders</h3>
+        {/* AI Generation Option for existing manual stakeholders */}
+        {manualStakeholders.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Want to try AI-generated stakeholders instead?</h3>
+                <p className="text-blue-700">You can replace your custom stakeholders with AI-generated ones based on your project context.</p>
+              </div>
+              <button
+                onClick={handleUseAIStakeholders}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Use AI Stakeholders</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* All Stakeholders Display */}
+        {(manualStakeholders.length > 0 || generatedStakeholders.length > 0) && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'AI-Generated Stakeholders'}
+            </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
             {[...manualStakeholders, ...generatedStakeholders].map((stakeholder) => {
             const isSelected = selectedStakeholderIds.includes(stakeholder.id)
@@ -606,17 +668,20 @@ const CustomStakeholdersView: React.FC = () => {
             })}
           </div>
         </div>
+        )}
 
-        {/* Regenerate Option */}
-        <div className="text-center mb-8">
-          <button
-            onClick={generateStakeholders}
-            className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors mx-auto"
-          >
-            <RefreshCw className="w-5 h-5" />
-            <span>Regenerate Stakeholders</span>
-          </button>
-        </div>
+        {/* Regenerate Option - only show for AI stakeholders */}
+        {generatedStakeholders.length > 0 && manualStakeholders.length === 0 && (
+          <div className="text-center mb-8">
+            <button
+              onClick={generateStakeholders}
+              className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors mx-auto"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span>Regenerate AI Stakeholders</span>
+            </button>
+          </div>
+        )}
 
         {/* Practice Tips */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-2xl p-8">
