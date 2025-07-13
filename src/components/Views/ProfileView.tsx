@@ -1,5 +1,6 @@
 import React from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useApp } from '../../contexts/AppContext'
 import { User, Mail, Calendar, Award, BookOpen, Clock } from 'lucide-react'
 
 const ProfileView: React.FC = () => {

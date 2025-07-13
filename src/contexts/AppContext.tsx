@@ -1,215 +1,132 @@
-import { supabase } from './supabase'
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useAuth } from './AuthContext'
+import { mockProjects, mockStakeholders } from '../data/mockData'
+import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
 
-export interface StudentSubscription {
-  id: string
-  name: string
-  email: string
-  subscription_tier: 'free' | 'premium' | 'enterprise'
-  subscription_status_active: boolean
-  selected_project_id: string | null
-  meeting_count: number
-  stripe_customer_id: string | null
-  subscription_expires_at: string | null
-  created_at: string
-  updated_at: string
+interface AppContextType {
+  // Current view
+  currentView: AppView
+  setCurrentView: (view: AppView) => void
+  
+  // Project data
+  projects: Project[]
+  selectedProject: Project | null
+  selectProject: (project: Project) => Promise<void>
+  
+  // Stakeholder data
+  stakeholders: Stakeholder[]
+  selectedStakeholders: Stakeholder[]
+  setSelectedStakeholders: (stakeholders: Stakeholder[]) => void
+  
+  // Meeting data
+  meetings: Meeting[]
+  currentMeeting: Meeting | null
+  
+  // Deliverables
+  deliverables: Deliverable[]
+  addDeliverable: (deliverable: Deliverable) => void
+  updateDeliverable: (id: string, updates: Partial<Deliverable>) => void
+  
+  // User data
+  user: any
+  userProgress: any
+  studentSubscription: any
+  
+  // Utility functions
+  canAccessProject: (projectId: string) => boolean
+  canSaveNotes: () => boolean
+  canCreateMoreMeetings: () => boolean
+  
+  // Loading state
+  isLoading: boolean
 }
 
-class SubscriptionService {
-  async getStudentSubscription(userId: string): Promise<StudentSubscription | null> {
-    try {
-      const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle()
+const AppContext = createContext<AppContextType | undefined>(undefined)
 
-      if (error) {
-        if (error.code === '42P01' || error.code === 'PGRST204') {
-          console.warn('Database schema issue - students table or columns missing:', error.message)
-          return null
-        }
-        console.error('Error fetching student subscription:', error)
-        return null
-      }
-
-      return data
-    } catch (error) {
-      console.error('Database connection error:', error)
-      return null
-    }
+export const useApp = () => {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error('useApp must be used within an AppProvider')
   }
-
-  async createStudentRecord(userId: string, name: string, email: string): Promise<StudentSubscription | null> {
-    try {
-      // Check if admin email for enterprise access
-      const isAdmin = email === 'admin@batraining.com' || email.includes('admin')
-      
-      const { data, error } = await supabase
-        .from('students')
-        .insert({
-          id: userId,
-          name,
-          email,
-          // Only include fields that definitely exist
-          ...(isAdmin ? {} : {}) // Will add subscription fields when schema is fixed
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.warn('Could not create student record (schema issue):', error.message)
-        return null
-      }
-
-      return data
-    } catch (error) {
-      console.warn('Database connection error:', error)
-      return null
-    }
-  }
-
-  async updateStudentSubscription(userId: string, updates: Partial<StudentSubscription>): Promise<StudentSubscription | null> {
-    try {
-      // First check if record exists
-      const { data: existing, error: fetchError } = await supabase
-        .from('students')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle()
-
-      if (fetchError) {
-        console.warn('Could not fetch student record (schema issue):', fetchError.message)
-        return null
-      }
-
-      if (existing) {
-        // Update existing record
-        const { data, error } = await supabase
-          .from('students')
-          .update({ ...updates, updated_at: new Date().toISOString() })
-          .eq('id', userId)
-          .select()
-          .single()
-
-        if (error) {
-          console.warn('Could not update student subscription (schema issue):', error.message)
-          return null
-        }
-
-        return data
-      } else {
-        console.warn('Student record not found for user:', userId)
-        return null
-      }
-    } catch (error) {
-      console.warn('Database connection error:', error)
-      return null
-    }
-  }
-
-  async selectProject(userId: string, projectId: string): Promise<boolean> {
-    try {
-      const student = await this.getStudentSubscription(userId)
-      if (!student) {
-        console.warn('No student record found, allowing project selection anyway')
-        return true // Allow selection even if student record doesn't exist
-      }
-
-      // For free users, lock the project selection
-      if (student.subscription_tier === 'free' && student.selected_project_id) {
-        if (student.selected_project_id && student.selected_project_id !== projectId) {
-          throw new Error('Free users can only access one project. Upgrade to Premium to access more projects.')
-        }
-      }
-
-      // Try to update, but don't fail if it doesn't work
-      try {
-        await this.updateStudentSubscription(userId, {
-          selected_project_id: projectId
-        })
-      } catch (updateError) {
-        console.warn('Could not update project selection (schema issue), continuing anyway')
-      }
-
-      return true
-    } catch (error) {
-      console.error('Error selecting project:', error)
-      throw error
-    }
-  }
-
-  async incrementMeetingCount(userId: string): Promise<boolean> {
-    try {
-      const student = await this.getStudentSubscription(userId)
-      if (!student) {
-        console.warn('No student record found, allowing meeting creation anyway')
-        return true
-      }
-
-      // Check meeting limits for free users
-      if (student.subscription_tier === 'free' && student.meeting_count >= 2) {
-        throw new Error('Free users are limited to 2 meetings. Upgrade to Premium for unlimited meetings.')
-      }
-
-      // Try to update, but don't fail if it doesn't work
-      try {
-        await this.updateStudentSubscription(userId, {
-          meeting_count: student.meeting_count + 1
-        })
-      } catch (updateError) {
-        console.warn('Could not update meeting count (schema issue), continuing anyway')
-      }
-
-      return true
-    } catch (error) {
-      console.error('Error incrementing meeting count:', error)
-      throw error
-    }
-  }
-
-  canAccessProject(student: StudentSubscription | null, projectId: string): boolean {
-    // Temporary bypass: Allow access to all projects for all users
-    return true
-  }
-
-  canSaveNotes(student: StudentSubscription | null): boolean {
-    // Temporary bypass: Allow all users to save notes
-    return true
-  }
-
-  canCreateMoreMeetings(student: StudentSubscription | null): boolean {
-    // Temporary bypass: Allow unlimited meetings for all users
-    return true
-  }
-
-  getProjectLimit(student: StudentSubscription | null): number {
-    if (!student) return 0
-
-    switch (student.subscription_tier) {
-      case 'free':
-        return 1
-      case 'premium':
-        return 2
-      case 'enterprise':
-        return 999 // Unlimited
-      default:
-        return 0
-    }
-  }
-
-  getMeetingLimit(student: StudentSubscription | null): number {
-    if (!student) return 0
-
-    switch (student.subscription_tier) {
-      case 'free':
-        return 2
-      case 'premium':
-      case 'enterprise':
-        return 999 // Unlimited
-      default:
-        return 0
-    }
-  }
+  return context
 }
 
-export const subscriptionService = new SubscriptionService()
+export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user } = useAuth()
+  const [currentView, setCurrentView] = useState<AppView>('dashboard')
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([])
+  const [meetings, setMeetings] = useState<Meeting[]>([])
+  const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
+  const [deliverables, setDeliverables] = useState<Deliverable[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Mock user progress data
+  const userProgress = {
+    total_projects_started: 1,
+    total_projects_completed: 0,
+    total_meetings_conducted: 2,
+    total_deliverables_created: 1,
+    achievements: ['First Meeting', 'Note Taker']
+  }
+
+  // Mock subscription data
+  const studentSubscription = {
+    id: user?.id || '',
+    name: user?.email || '',
+    email: user?.email || '',
+    subscription_tier: 'free' as const,
+    subscription_status_active: true,
+    selected_project_id: selectedProject?.id || null,
+    meeting_count: 2,
+    stripe_customer_id: null,
+    subscription_expires_at: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+
+  const selectProject = async (project: Project) => {
+    setSelectedProject(project)
+    setCurrentView('project-brief')
+  }
+
+  const addDeliverable = (deliverable: Deliverable) => {
+    setDeliverables(prev => [...prev, deliverable])
+  }
+
+  const updateDeliverable = (id: string, updates: Partial<Deliverable>) => {
+    setDeliverables(prev => 
+      prev.map(d => d.id === id ? { ...d, ...updates } : d)
+    )
+  }
+
+  // Utility functions
+  const canAccessProject = (projectId: string) => true // Allow all projects for now
+  const canSaveNotes = () => true
+  const canCreateMoreMeetings = () => true
+
+  const value = {
+    currentView,
+    setCurrentView,
+    projects: mockProjects,
+    selectedProject,
+    selectProject,
+    stakeholders: mockStakeholders,
+    selectedStakeholders,
+    setSelectedStakeholders,
+    meetings,
+    currentMeeting,
+    deliverables,
+    addDeliverable,
+    updateDeliverable,
+    user,
+    userProgress,
+    studentSubscription,
+    canAccessProject,
+    canSaveNotes,
+    canCreateMoreMeetings,
+    isLoading
+  }
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
+}
