@@ -439,25 +439,39 @@ export class DatabaseService {
   // Update user project
   static async updateUserProject(userId: string, projectId: string, updates: Partial<UserProject>): Promise<UserProject | null> {
     try {
-      const { data, error } = await supabase
+      // First try to get existing record
+      const { data: existing, error: fetchError } = await supabase
         .from('user_projects')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .select('*')
         .eq('user_id', userId)
         .eq('project_id', projectId)
-        .select()
+        .limit(1)
         .maybeSingle()
 
-      if (error) {
-        console.error('Error updating user project:', error)
+      if (fetchError) {
+        console.error('Error fetching user project:', fetchError)
         return null
       }
 
-      // If no existing record, create one
-      if (!data) {
+      if (existing) {
+        // Update existing record
+        const { data, error } = await supabase
+          .from('user_projects')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('id', existing.id)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error updating user project:', error)
+          return null
+        }
+
+        return data
+      } else {
+        // Create new record
         return this.createUserProject(userId, projectId, updates.current_step || 'initial')
       }
-
-      return data
     } catch (error) {
       console.error('Error updating user project:', error)
       return null

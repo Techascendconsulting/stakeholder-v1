@@ -71,19 +71,37 @@ class SubscriptionService {
 
   async updateStudentSubscription(userId: string, updates: Partial<StudentSubscription>): Promise<StudentSubscription | null> {
     try {
-      const { data, error } = await supabase
+      // First check if record exists
+      const { data: existing, error: fetchError } = await supabase
         .from('students')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .select('*')
         .eq('id', userId)
-        .select()
-        .single()
+        .maybeSingle()
 
-      if (error) {
-        console.error('Error updating student subscription:', error)
+      if (fetchError) {
+        console.error('Error fetching student record:', fetchError)
         return null
       }
 
-      return data
+      if (existing) {
+        // Update existing record
+        const { data, error } = await supabase
+          .from('students')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('id', userId)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error updating student subscription:', error)
+          return null
+        }
+
+        return data
+      } else {
+        console.error('Student record not found for user:', userId)
+        return null
+      }
     } catch (error) {
       console.error('Database connection error:', error)
       return null

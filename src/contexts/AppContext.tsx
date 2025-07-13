@@ -71,11 +71,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const enhancedSetCurrentView = async (view: AppView) => {
     console.log('🔧 DEBUG: enhancedSetCurrentView called with view:', view);
     setCurrentView(view);
-    if (selectedProject && user) {
+    if (selectedProject && user && view !== 'projects') {
       console.log('🔧 DEBUG: Updating user project current_step to:', view);
-      await DatabaseService.updateUserProject(user.id, selectedProject.id, {
-        current_step: view
-      });
+      try {
+        await DatabaseService.updateUserProject(user.id, selectedProject.id, {
+          current_step: view
+        });
+      } catch (error) {
+        console.error('🔧 DEBUG: Error updating user project step:', error);
+        // Don't block the UI if this fails
+      }
     }
   };
 
