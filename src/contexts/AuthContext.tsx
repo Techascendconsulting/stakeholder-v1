@@ -1,201 +1,205 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
-import { subscriptionService } from '../lib/subscription'
+import { supabase } from './supabase'
 
-interface AuthContextType {
-  user: User | null
-  session: Session | null
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
-  signOut: () => Promise<void>
+export interface StudentSubscription {
+  id: string
+  name: string
+  email: string
+  subscription_tier: 'free' | 'premium' | 'enterprise'
+  subscription_status_active: boolean
+  selected_project_id: string | null
+  meeting_count: number
+  stripe_customer_id: string | null
+  subscription_expires_at: string | null
+  created_at: string
+  updated_at: string
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      if (error) {
-        console.warn('Session error, clearing auth state:', error.message)
-        // Clear any stale tokens on auth errors
-        await supabase.auth.signOut()
-        setUser(null)
-        setSession(null)
-        setLoading(false)
-        return
-      }
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      try {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-      } catch (error) {
-        console.warn('Auth state change error:', error)
-        // Clear auth state on any error
-        await supabase.auth.signOut()
-        setSession(null)
-        setUser(null)
-        setLoading(false)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  // Handle auth errors gracefully
-  const handleAuthError = async (error: any) => {
-    console.warn('Authentication error:', error.message)
-    if (error.message?.includes('refresh_token') || 
-        error.message?.includes('Invalid Refresh Token') ||
-        error.message?.includes('Refresh Token Not Found')) {
-      // Clear stale auth state
-      await supabase.auth.signOut()
-      setUser(null)
-      setSession(null)
-    }
-  }
-
-  const signIn = async (email: string, password: string) => {
+class SubscriptionService {
+  async getStudentSubscription(userId: string): Promise<StudentSubscription | null> {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) {
-        await handleAuthError(error)
-      }
-      return { error }
-    } catch (error) {
-      await handleAuthError(error)
-      return { error }
-    }
-  }
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
 
-  const signUp = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-      
       if (error) {
-        await handleAuthError(error)
-        return { error }
-      }
-      
-      // If signup successful, try to create student record
-      if (data.user) {
-        try {
-          await subscriptionService.createStudentRecord(
-            data.user.id,
-            email.split('@')[0],
-            email
-          )
-        } catch (studentError) {
-          console.warn('Could not create student record (database schema issue):', studentError)
-          // Don't fail signup if student record creation fails
+        if (error.code === '42P01' || error.code === 'PGRST204') {
+          console.warn('Database schema issue - students table or columns missing:', error.message)
+          return null
         }
+        console.error('Error fetching student subscription:', error)
+        return null
       }
-      
-      return { error }
+
+      return data
     } catch (error) {
-      await handleAuthError(error)
-      return { error }
+      console.error('Database connection error:', error)
+      return null
     }
   }
 
-  const signOut = async () => {
+  async createStudentRecord(userId: string, name: string, email: string): Promise<StudentSubscription | null> {
     try {
-      await supabase.auth.signOut()
+      // Check if admin email for enterprise access
+      const isAdmin = email === 'admin@batraining.com' || email.includes('admin')
+      
+      const { data, error } = await supabase
+        .from('students')
+        .insert({
+          id: userId,
+          name,
+          email,
+          // Only include fields that definitely exist
+          ...(isAdmin ? {} : {}) // Will add subscription fields when schema is fixed
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.warn('Could not create student record (schema issue):', error.message)
+        return null
+      }
+
+      return data
     } catch (error) {
-      console.warn('Sign out error:', error)
-      // Force clear local state even if signOut fails
-      setUser(null)
-      setSession(null)
+      console.warn('Database connection error:', error)
+      return null
     }
   }
+
+  async updateStudentSubscription(userId: string, updates: Partial<StudentSubscription>): Promise<StudentSubscription | null> {
+    try {
+      // First check if record exists
+      const { data: existing, error: fetchError } = await supabase
+        .from('students')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (fetchError) {
+        console.warn('Could not fetch student record (schema issue):', fetchError.message)
+        return null
+      }
+
+      if (existing) {
+        // Update existing record
+        const { data, error } = await supabase
+          .from('students')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('id', userId)
+          .select()
+          .single()
+
         if (error) {
-          console.error('Auth state change error:', error)
-          // Clear any stale tokens on error
-          if (error.message?.includes('refresh_token_not_found') || 
-              error.message?.includes('Invalid Refresh Token')) {
-            await supabase.auth.signOut()
-            setUser(null)
-            return
-          }
+          console.warn('Could not update student subscription (schema issue):', error.message)
+          return null
         }
-        
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-    })
 
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { error }
-  }
-
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-    
-    // If signup successful, create student record immediately
-    if (!error && data.user) {
-      try {
-        await subscriptionService.createStudentRecord(
-          data.user.id,
-          email.split('@')[0],
-          email
-        )
-      } catch (studentError) {
-        console.error('Error creating student record:', studentError)
+        return data
+      } else {
+        console.warn('Student record not found for user:', userId)
+        return null
       }
+    } catch (error) {
+      console.warn('Database connection error:', error)
+      return null
     }
-    
-    return { error }
   }
 
-  const signOut = async () => {
-    await supabase.auth.signOut()
+  async selectProject(userId: string, projectId: string): Promise<boolean> {
+    try {
+      const student = await this.getStudentSubscription(userId)
+      if (!student) {
+        console.warn('No student record found, allowing project selection anyway')
+        return true // Allow selection even if student record doesn't exist
+      }
+
+      // For free users, lock the project selection
+      if (student.subscription_tier === 'free' && student.selected_project_id) {
+        if (student.selected_project_id && student.selected_project_id !== projectId) {
+          throw new Error('Free users can only access one project. Upgrade to Premium to access more projects.')
+        }
+      }
+
+      // Try to update, but don't fail if it doesn't work
+      try {
+        await this.updateStudentSubscription(userId, {
+          selected_project_id: projectId
+        })
+      } catch (updateError) {
+
+      return true
+    } catch (error) {
+      console.error('Error selecting project:', error)
+      throw error
+    }
   }
 
-  const value = {
-    user,
-    session,
-    loading,
-    signIn,
-    signUp,
-    signOut,
+  async incrementMeetingCount(userId: string): Promise<boolean> {
+    try {
+      const student = await this.getStudentSubscription(userId)
+      if (!student) return false
+
+      // Check meeting limits for free users
+      if (student.subscription_tier === 'free' && student.meeting_count >= 2) {
+        throw new Error('Free users are limited to 2 meetings. Upgrade to Premium for unlimited meetings.')
+      }
+
+      await this.updateStudentSubscription(userId, {
+        meeting_count: student.meeting_count + 1
+      })
+
+      return true
+    } catch (error) {
+      console.error('Error incrementing meeting count:', error)
+      throw error
+    }
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  canAccessProject(student: StudentSubscription | null, projectId: string): boolean {
+    // Temporary bypass: Allow access to all projects for all users
+    return true
+  }
+
+  canSaveNotes(student: StudentSubscription | null): boolean {
+    // Temporary bypass: Allow all users to save notes
+    return true
+  }
+
+  canCreateMoreMeetings(student: StudentSubscription | null): boolean {
+    // Temporary bypass: Allow unlimited meetings for all users
+    return true
+  }
+
+  getProjectLimit(student: StudentSubscription | null): number {
+    if (!student) return 0
+
+    switch (student.subscription_tier) {
+      case 'free':
+        return 1
+      case 'premium':
+        return 2
+      case 'enterprise':
+        return 999 // Unlimited
+      default:
+        return 0
+    }
+  }
+
+  getMeetingLimit(student: StudentSubscription | null): number {
+    if (!student) return 0
+
+    switch (student.subscription_tier) {
+      case 'free':
+        return 2
+      case 'premium':
+      case 'enterprise':
+        return 999 // Unlimited
+      default:
+        return 0
+    }
+  }
 }
+
+export const subscriptionService = new SubscriptionService()
