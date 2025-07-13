@@ -29,12 +29,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (error) {
-        console.error('Error getting session:', error)
-        // Clear any stale tokens
-        supabase.auth.signOut()
+        console.warn('Session error, clearing auth state:', error.message)
+        // Clear any stale tokens on auth errors
+        await supabase.auth.signOut()
         setUser(null)
+        setSession(null)
         setLoading(false)
         return
       }
@@ -44,7 +45,96 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })
 
     // Listen for auth changes
-    const subscription = supabase.auth.onAuthStateChange(async (event, session, error) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      try {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      } catch (error) {
+        console.warn('Auth state change error:', error)
+        // Clear auth state on any error
+        await supabase.auth.signOut()
+        setSession(null)
+        setUser(null)
+        setLoading(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Handle auth errors gracefully
+  const handleAuthError = async (error: any) => {
+    console.warn('Authentication error:', error.message)
+    if (error.message?.includes('refresh_token') || 
+        error.message?.includes('Invalid Refresh Token') ||
+        error.message?.includes('Refresh Token Not Found')) {
+      // Clear stale auth state
+      await supabase.auth.signOut()
+      setUser(null)
+      setSession(null)
+    }
+  }
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) {
+        await handleAuthError(error)
+      }
+      return { error }
+    } catch (error) {
+      await handleAuthError(error)
+      return { error }
+    }
+  }
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+      
+      if (error) {
+        await handleAuthError(error)
+        return { error }
+      }
+      
+      // If signup successful, try to create student record
+      if (data.user) {
+        try {
+          await subscriptionService.createStudentRecord(
+            data.user.id,
+            email.split('@')[0],
+            email
+          )
+        } catch (studentError) {
+          console.warn('Could not create student record (database schema issue):', studentError)
+          // Don't fail signup if student record creation fails
+        }
+      }
+      
+      return { error }
+    } catch (error) {
+      await handleAuthError(error)
+      return { error }
+    }
+  }
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.warn('Sign out error:', error)
+      // Force clear local state even if signOut fails
+      setUser(null)
+      setSession(null)
+    }
+  }
         if (error) {
           console.error('Auth state change error:', error)
           // Clear any stale tokens on error
