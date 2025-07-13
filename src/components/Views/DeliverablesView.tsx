@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { FileText, Plus, Edit3, Save, X } from 'lucide-react'
+import { FileText, Plus, Edit3, Save, X, ArrowLeft } from 'lucide-react'
 import { Deliverable } from '../../types'
 
 const DeliverablesView: React.FC = () => {
-  const { selectedProject, deliverables, addDeliverable, updateDeliverable } = useApp()
+  const { selectedProject, deliverables, addDeliverable, updateDeliverable, setCurrentView } = useApp()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
 
@@ -76,6 +76,17 @@ const DeliverablesView: React.FC = () => {
 
   return (
     <div className="p-8">
+      {/* Header with Back Navigation */}
+      <div className="flex items-center space-x-4 mb-8">
+        <button
+          onClick={() => setCurrentView('meeting')}
+          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Meeting</span>
+        </button>
+      </div>
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Deliverables Workspace</h1>
         <p className="text-gray-600">Create and manage your Business Analysis deliverables for {selectedProject.name}</p>
