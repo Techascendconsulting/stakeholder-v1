@@ -24,6 +24,7 @@ class StakeholderAI {
 
   constructor() {
     this.apiKey = import.meta.env.VITE_OPENAI_API_KEY || ''
+    console.log('🔑 OpenAI API Key loaded:', this.apiKey ? 'YES' : 'NO')
     if (typeof window !== 'undefined' && this.apiKey) {
       this.initializeOpenAI()
     }
@@ -36,8 +37,9 @@ class StakeholderAI {
         apiKey: this.apiKey,
         dangerouslyAllowBrowser: true
       })
+      console.log('✅ OpenAI initialized successfully')
     } catch (error) {
-      console.error('Failed to initialize OpenAI:', error)
+      console.error('❌ Failed to initialize OpenAI:', error)
     }
   }
 
@@ -120,32 +122,48 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
   ): Stakeholder {
     const messageContent = userMessage.toLowerCase()
     
-    // If it's a greeting, alternate or let everyone respond
+    console.log('🎯 Selecting stakeholder for message:', userMessage)
+    console.log('📋 Available stakeholders:', stakeholders.map(s => `${s.name} (${s.role})`))
+    
+    // FIRST: Check for specific name mentions (HIGHEST PRIORITY)
+    for (const stakeholder of stakeholders) {
+      const firstName = stakeholder.name.split(' ')[0].toLowerCase()
+      const fullName = stakeholder.name.toLowerCase()
+      
+      if (messageContent.includes(firstName) || messageContent.includes(fullName)) {
+        console.log('✅ Name match found:', stakeholder.name)
+        return stakeholder
+      }
+    }
+
+    // SECOND: Check for role/department mentions
+    for (const stakeholder of stakeholders) {
+      const roleMatch = messageContent.includes(stakeholder.role.toLowerCase())
+      const deptMatch = messageContent.includes(stakeholder.department.toLowerCase())
+      
+      if (roleMatch || deptMatch) {
+        console.log('✅ Role/Dept match found:', stakeholder.name, stakeholder.role)
+        return stakeholder
+      }
+    }
+
+    // THIRD: If it's a greeting, rotate through stakeholders
     if (this.isGreetingMessage(userMessage)) {
-      // For greetings, rotate through stakeholders
       const lastResponder = conversationHistory
         .filter(msg => msg.speaker !== 'user' && msg.speaker !== 'system')
         .pop()
       
       if (lastResponder) {
         const lastIndex = stakeholders.findIndex(s => s.id === lastResponder.speaker)
-        return stakeholders[(lastIndex + 1) % stakeholders.length]
+        const nextStakeholder = stakeholders[(lastIndex + 1) % stakeholders.length]
+        console.log('✅ Greeting rotation:', nextStakeholder.name)
+        return nextStakeholder
       }
+      console.log('✅ First greeting:', stakeholders[0].name)
       return stakeholders[0]
     }
 
-    // Check for specific role/department mentions
-    for (const stakeholder of stakeholders) {
-      const roleMatch = messageContent.includes(stakeholder.role.toLowerCase())
-      const deptMatch = messageContent.includes(stakeholder.department.toLowerCase())
-      const nameMatch = messageContent.includes(stakeholder.name.toLowerCase())
-      
-      if (roleMatch || deptMatch || nameMatch) {
-        return stakeholder
-      }
-    }
-
-    // Smart rotation based on question type and last speaker
+    // FOURTH: Smart rotation based on question type
     const questionTypes = {
       technical: ['system', 'technology', 'integration', 'api', 'database', 'software'],
       process: ['process', 'workflow', 'procedure', 'step', 'current', 'how do you'],
@@ -155,7 +173,6 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
       hr: ['people', 'team', 'staff', 'training', 'skills', 'employee']
     }
 
-    // Find stakeholder best suited for question type
     for (const [type, keywords] of Object.entries(questionTypes)) {
       if (keywords.some(keyword => messageContent.includes(keyword))) {
         const suitableStakeholder = stakeholders.find(s => 
@@ -164,43 +181,47 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
           s.priorities.some(p => p.toLowerCase().includes(type))
         )
         if (suitableStakeholder) {
+          console.log('✅ Question type match:', type, suitableStakeholder.name)
           return suitableStakeholder
         }
       }
     }
 
-    // Intelligent rotation to ensure all stakeholders participate
+    // FIFTH: Ensure all stakeholders get a chance to speak
     const recentSpeakers = conversationHistory
       .filter(msg => msg.speaker !== 'user' && msg.speaker !== 'system')
-      .slice(-4) // Last 4 responses
+      .slice(-4)
       .map(msg => msg.speaker)
 
-    // Find stakeholder who hasn't spoken recently
     for (const stakeholder of stakeholders) {
       if (!recentSpeakers.includes(stakeholder.id)) {
+        console.log('✅ Fresh participant:', stakeholder.name)
         return stakeholder
       }
     }
 
-    // If all have spoken recently, rotate based on least recent
+    // SIXTH: Simple rotation
     const lastResponderId = conversationHistory
       .filter(msg => msg.speaker !== 'user' && msg.speaker !== 'system')
       .pop()?.speaker
 
     if (lastResponderId) {
       const lastResponderIndex = stakeholders.findIndex(s => s.id === lastResponderId)
-      const nextIndex = (lastResponderIndex + 1) % stakeholders.length
-      return stakeholders[nextIndex]
+      const nextStakeholder = stakeholders[(lastResponderIndex + 1) % stakeholders.length]
+      console.log('✅ Simple rotation:', nextStakeholder.name)
+      return nextStakeholder
     }
 
-    // Random selection as final fallback
-    return stakeholders[Math.floor(Math.random() * stakeholders.length)]
+    // FALLBACK: Random selection
+    const randomStakeholder = stakeholders[Math.floor(Math.random() * stakeholders.length)]
+    console.log('✅ Random selection:', randomStakeholder.name)
+    return randomStakeholder
   }
 
   private buildConversationContext(messages: Message[]): string {
     const recentMessages = messages
       .filter(msg => msg.speaker !== 'system')
-      .slice(-6) // Last 6 messages for context
+      .slice(-6)
       .map(msg => {
         if (msg.speaker === 'user') {
           return `BA: ${msg.content}`
@@ -220,20 +241,28 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
     userMessage: string,
     firstInteractionStatus: Record<string, boolean>
   ): Promise<AIResponse> {
+    console.log('🚀 Generating response for:', userMessage)
+    console.log('🔧 OpenAI available:', !!this.openAI)
+    console.log('🔑 API Key available:', !!this.apiKey)
+
+    const isGreeting = this.isGreetingMessage(userMessage)
+    const respondingStakeholder = this.selectRespondingStakeholder(allStakeholders, userMessage, messages)
+    const isFirstInteraction = !firstInteractionStatus[respondingStakeholder.id]
+    const conversationContext = this.buildConversationContext(messages)
+
+    console.log('👤 Selected stakeholder:', respondingStakeholder.name)
+
     if (!this.openAI || !this.apiKey) {
-      return this.generateFallbackResponse(allStakeholders, project, userMessage, firstInteractionStatus)
+      console.log('⚠️ Using fallback response (no OpenAI)')
+      return this.generateFallbackResponse(allStakeholders, project, userMessage, firstInteractionStatus, respondingStakeholder)
     }
 
     try {
-      const isGreeting = this.isGreetingMessage(userMessage)
-      const respondingStakeholder = this.selectRespondingStakeholder(allStakeholders, userMessage, messages)
-      const isFirstInteraction = !firstInteractionStatus[respondingStakeholder.id]
-      const conversationContext = this.buildConversationContext(messages)
-
-      // Build conversation history for OpenAI
+      console.log('🤖 Calling OpenAI API...')
+      
       const conversationHistory = messages
         .filter(msg => msg.speaker !== 'system')
-        .slice(-8) // Last 8 messages for context
+        .slice(-8)
         .map(msg => ({
           role: msg.speaker === 'user' ? 'user' : 'assistant',
           content: msg.speaker === 'user' ? msg.content : `${msg.stakeholderName}: ${msg.content}`
@@ -246,6 +275,8 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
         isGreeting,
         conversationContext
       )
+
+      console.log('📝 System prompt length:', systemPrompt.length)
 
       const completion = await this.openAI.chat.completions.create({
         model: 'gpt-3.5-turbo',
@@ -263,6 +294,8 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
       const response = completion.choices[0]?.message?.content || 
         `I understand what you're asking about. Let me think about that for a moment and get back to you with a detailed response.`
 
+      console.log('✅ OpenAI response received:', response.substring(0, 100) + '...')
+
       return {
         id: `ai-response-${Date.now()}`,
         speaker: respondingStakeholder.id,
@@ -272,8 +305,8 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
         stakeholderRole: respondingStakeholder.role
       }
     } catch (error) {
-      console.error('OpenAI API error:', error)
-      return this.generateFallbackResponse(allStakeholders, project, userMessage, firstInteractionStatus)
+      console.error('❌ OpenAI API error:', error)
+      return this.generateFallbackResponse(allStakeholders, project, userMessage, firstInteractionStatus, respondingStakeholder)
     }
   }
 
@@ -281,11 +314,16 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
     stakeholders: Stakeholder[],
     project: Project,
     userMessage: string,
-    firstInteractionStatus: Record<string, boolean>
+    firstInteractionStatus: Record<string, boolean>,
+    selectedStakeholder?: Stakeholder
   ): AIResponse {
+    console.log('🔄 Generating fallback response')
+    
     const isGreeting = this.isGreetingMessage(userMessage)
-    const stakeholder = this.selectRespondingStakeholder(stakeholders, userMessage, [])
+    const stakeholder = selectedStakeholder || this.selectRespondingStakeholder(stakeholders, userMessage, [])
     const isFirstInteraction = !firstInteractionStatus[stakeholder.id]
+
+    console.log('👤 Fallback stakeholder:', stakeholder.name)
 
     let response = ''
     
@@ -319,14 +357,13 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
   ): Promise<AIResponse[]> {
     const introductions: AIResponse[] = []
 
-    // Stagger introductions with slight delays
     for (let i = 0; i < stakeholders.length; i++) {
       const stakeholder = stakeholders[i]
       const introduction: AIResponse = {
         id: `intro-${stakeholder.id}-${Date.now()}-${i}`,
         speaker: stakeholder.id,
         content: `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. Really excited to be working with you on the ${project.name} project. I bring expertise in ${stakeholder.priorities.slice(0, 2).join(' and ')}, and I'm here to make sure we capture all the requirements from our department's perspective. Looking forward to a productive discussion!`,
-        timestamp: new Date(Date.now() + i * 1000).toISOString(), // Stagger timestamps
+        timestamp: new Date(Date.now() + i * 1000).toISOString(),
         stakeholderName: stakeholder.name,
         stakeholderRole: stakeholder.role
       }

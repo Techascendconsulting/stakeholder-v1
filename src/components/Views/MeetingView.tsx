@@ -24,7 +24,9 @@ const MeetingView: React.FC = () => {
   })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
-  const audioQueueRef = useRef<string[]>([]) // Track pending audio
+
+  console.log('🎧 Audio enabled:', globalAudioEnabled)
+  console.log('🎯 Selected stakeholders:', selectedStakeholders.map(s => s.name))
 
   // Enhanced question bank with more BA-specific questions
   const mockQuestions = {
@@ -57,6 +59,7 @@ const MeetingView: React.FC = () => {
   // Initialize meeting when stakeholders and project are selected
   useEffect(() => {
     if (selectedProject && selectedStakeholders.length > 0 && !isInitialized) {
+      console.log('🚀 Initializing meeting...')
       initializeMeeting()
     }
   }, [selectedProject, selectedStakeholders, isInitialized])
@@ -88,6 +91,8 @@ const MeetingView: React.FC = () => {
       recognitionRef.current.onend = () => {
         setIsListening(false)
       }
+
+      console.log('🎤 Speech recognition initialized')
     }
 
     return () => {
@@ -100,6 +105,7 @@ const MeetingView: React.FC = () => {
   // Set up audio orchestrator state monitoring
   useEffect(() => {
     const handleStateChange = (state: any) => {
+      console.log('🎵 Audio state changed:', state)
       setAudioPlaybackState({
         isPlaying: state.isPlaying,
         isPaused: state.isPaused,
@@ -114,12 +120,21 @@ const MeetingView: React.FC = () => {
   }, [])
 
   const playAudioForMessage = async (message: Message, autoPlay: boolean = true) => {
-    if (!globalAudioEnabled) return
+    console.log('🔊 Attempting to play audio for:', message.stakeholderName, 'Audio enabled:', globalAudioEnabled)
+    
+    if (!globalAudioEnabled) {
+      console.log('🔇 Audio disabled globally')
+      return
+    }
 
     const stakeholder = selectedStakeholders.find(s => s.id === message.speaker)
-    if (!stakeholder) return
+    if (!stakeholder) {
+      console.log('❌ No stakeholder found for message speaker:', message.speaker)
+      return
+    }
 
     try {
+      console.log('🎯 Queuing audio for stakeholder:', stakeholder.name)
       await audioOrchestrator.queueMessage(
         {
           id: message.id,
@@ -130,14 +145,16 @@ const MeetingView: React.FC = () => {
         stakeholder,
         autoPlay
       )
+      console.log('✅ Audio queued successfully')
     } catch (error) {
-      console.error('Failed to queue audio:', error)
+      console.error('❌ Failed to queue audio:', error)
     }
   }
 
   const initializeMeeting = async () => {
     if (!selectedProject || selectedStakeholders.length === 0) return
 
+    console.log('🎬 Starting meeting initialization...')
     setIsLoading(true)
     
     try {
@@ -150,6 +167,7 @@ const MeetingView: React.FC = () => {
       }
 
       // Generate introductions for all stakeholders
+      console.log('👥 Generating introductions for', selectedStakeholders.length, 'stakeholders')
       const introductions = await stakeholderAI.generateIntroduction(selectedStakeholders, selectedProject)
       
       // Convert AI responses to messages
@@ -174,18 +192,21 @@ const MeetingView: React.FC = () => {
 
       // Play audio for introductions if enabled - with proper sequencing
       if (globalAudioEnabled) {
+        console.log('🎵 Setting up audio for introductions...')
         for (let i = 0; i < introductionMessages.length; i++) {
           const message = introductionMessages[i]
           // Delay each audio to allow previous to finish
           setTimeout(() => {
+            console.log('🔊 Playing introduction', i + 1, 'of', introductionMessages.length)
             playAudioForMessage(message, true)
-          }, i * 3000) // 3 second delay between introductions
+          }, i * 4000) // 4 second delay between introductions
         }
       }
 
       setIsInitialized(true)
+      console.log('✅ Meeting initialized successfully')
     } catch (error) {
-      console.error('Failed to initialize meeting:', error)
+      console.error('❌ Failed to initialize meeting:', error)
     } finally {
       setIsLoading(false)
     }
@@ -194,6 +215,7 @@ const MeetingView: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !selectedProject) return
 
+    console.log('📨 Sending message:', inputMessage)
     setIsLoading(true)
 
     try {
@@ -208,6 +230,8 @@ const MeetingView: React.FC = () => {
       const updatedMessages = [...messages, userMessage]
       setMessages(updatedMessages)
 
+      console.log('🤖 Generating AI response...')
+      
       // Generate AI response
       const aiResponse = await stakeholderAI.generateResponse(
         selectedProject,
@@ -216,6 +240,8 @@ const MeetingView: React.FC = () => {
         inputMessage,
         firstInteractionStatus
       )
+
+      console.log('✅ AI Response received from:', aiResponse.stakeholderName)
 
       // Convert AI response to message
       const responseMessage: Message = {
@@ -231,10 +257,11 @@ const MeetingView: React.FC = () => {
 
       // Play audio response immediately if enabled
       if (globalAudioEnabled) {
+        console.log('🔊 Scheduling audio playback...')
         // Small delay to ensure message is rendered
         setTimeout(() => {
           playAudioForMessage(responseMessage, true)
-        }, 100)
+        }, 500)
       }
 
       // Update first interaction status if needed
@@ -246,7 +273,7 @@ const MeetingView: React.FC = () => {
       }
 
     } catch (error) {
-      console.error('Failed to generate response:', error)
+      console.error('❌ Failed to generate response:', error)
       
       // Add error message
       const errorMessage: Message = {
@@ -324,14 +351,17 @@ const MeetingView: React.FC = () => {
   }
 
   const pauseAllAudio = () => {
+    console.log('⏸️ Pausing all audio')
     audioOrchestrator.pause()
   }
 
   const resumeAllAudio = () => {
+    console.log('▶️ Resuming all audio')
     audioOrchestrator.resume()
   }
 
   const stopAllAudio = () => {
+    console.log('⏹️ Stopping all audio')
     audioOrchestrator.stop()
   }
 
@@ -367,15 +397,21 @@ const MeetingView: React.FC = () => {
                 Participants: {selectedStakeholders.map(s => `${s.name} (${s.role})`).join(', ')}
               </p>
               {audioPlaybackState.isPlaying && (
-                <div className="flex items-center space-x-2 text-green-600 text-sm">
+                <div className="flex items-center space-x-2 text-green-600 text-sm font-medium">
                   <Volume2 className="w-4 h-4 animate-pulse" />
-                  <span>Audio Playing</span>
+                  <span>🔊 Audio Playing</span>
                 </div>
               )}
               {audioPlaybackState.isPaused && (
-                <div className="flex items-center space-x-2 text-yellow-600 text-sm">
+                <div className="flex items-center space-x-2 text-yellow-600 text-sm font-medium">
                   <Pause className="w-4 h-4" />
-                  <span>Audio Paused</span>
+                  <span>⏸️ Audio Paused</span>
+                </div>
+              )}
+              {globalAudioEnabled && !audioPlaybackState.isPlaying && !audioPlaybackState.isPaused && (
+                <div className="flex items-center space-x-2 text-blue-600 text-sm">
+                  <Volume2 className="w-4 h-4" />
+                  <span>🎧 Audio Ready</span>
                 </div>
               )}
             </div>
@@ -383,15 +419,18 @@ const MeetingView: React.FC = () => {
           
           <div className="flex items-center space-x-3">
             {/* Enhanced Audio Controls */}
-            <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-2">
+            <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-2 border">
               <button
-                onClick={() => setGlobalAudioEnabled(!globalAudioEnabled)}
+                onClick={() => {
+                  console.log('🔄 Toggling global audio:', !globalAudioEnabled)
+                  setGlobalAudioEnabled(!globalAudioEnabled)
+                }}
                 className={`p-2 rounded-lg transition-colors ${
                   globalAudioEnabled 
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-300' 
+                    : 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-300'
                 }`}
-                title={globalAudioEnabled ? 'Audio Enabled' : 'Audio Disabled'}
+                title={globalAudioEnabled ? 'Audio Enabled - Click to Disable' : 'Audio Disabled - Click to Enable'}
               >
                 {globalAudioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
               </button>
@@ -399,7 +438,7 @@ const MeetingView: React.FC = () => {
               {audioPlaybackState.isPlaying && (
                 <button
                   onClick={pauseAllAudio}
-                  className="p-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors"
+                  className="p-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors border border-yellow-300"
                   title="Pause Audio"
                 >
                   <Pause className="w-5 h-5" />
@@ -409,7 +448,7 @@ const MeetingView: React.FC = () => {
               {audioPlaybackState.isPaused && (
                 <button
                   onClick={resumeAllAudio}
-                  className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                  className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors border border-green-300"
                   title="Resume Audio"
                 >
                   <Play className="w-5 h-5" />
@@ -419,7 +458,7 @@ const MeetingView: React.FC = () => {
               {(audioPlaybackState.isPlaying || audioPlaybackState.isPaused) && (
                 <button
                   onClick={stopAllAudio}
-                  className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                  className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors border border-red-300"
                   title="Stop Audio"
                 >
                   <Square className="w-5 h-5" />
@@ -511,9 +550,9 @@ const MeetingView: React.FC = () => {
                       {stakeholder.name} - {stakeholder.role}
                     </span>
                     {audioPlaybackState.currentMessageId === message.id && (
-                      <div className="flex items-center space-x-1 text-green-600">
+                      <div className="flex items-center space-x-1 text-green-600 font-medium">
                         <Volume2 className="w-4 h-4 animate-pulse" />
-                        <span className="text-xs">Speaking</span>
+                        <span className="text-xs">🔊 Speaking</span>
                       </div>
                     )}
                     {globalAudioEnabled && message.speaker !== 'system' && (
@@ -552,7 +591,7 @@ const MeetingView: React.FC = () => {
             <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-100 text-gray-900 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                <span className="text-sm">Stakeholder is thinking...</span>
+                <span className="text-sm">🤖 Stakeholder is thinking...</span>
               </div>
             </div>
           </div>
