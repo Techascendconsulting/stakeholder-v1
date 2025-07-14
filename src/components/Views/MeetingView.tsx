@@ -275,11 +275,19 @@ const MeetingView: React.FC = () => {
     } catch (error) {
       console.error('❌ Failed to generate response:', error)
       
-      // Add error message
+      // Add specific error message
+      let errorContent = 'Sorry, I encountered an issue generating a response.'
+      
+      if (error.message.includes('OpenAI not available')) {
+        errorContent = '❌ OpenAI is not properly configured. Check your API key in .env.local and refresh the page.'
+      } else if (error.message.includes('API call failed')) {
+        errorContent = '❌ OpenAI API call failed. Check your internet connection and API key credits.'
+      }
+      
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         speaker: 'system',
-        content: 'Sorry, I encountered an issue generating a response. Please try again.',
+        content: errorContent,
         timestamp: new Date().toISOString()
       }
       setMessages(prev => [...prev, errorMessage])

@@ -24,7 +24,7 @@ class StakeholderAI {
 
   constructor() {
     this.apiKey = import.meta.env.VITE_OPENAI_API_KEY || ''
-    console.log('🔑 OpenAI API Key loaded:', this.apiKey ? 'YES' : 'NO')
+    console.log('🔑 OpenAI API Key loaded:', this.apiKey ? `YES (${this.apiKey.substring(0, 20)}...)` : 'NO')
     if (typeof window !== 'undefined' && this.apiKey) {
       this.initializeOpenAI()
     }
@@ -253,8 +253,7 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
     console.log('👤 Selected stakeholder:', respondingStakeholder.name)
 
     if (!this.openAI || !this.apiKey) {
-      console.log('⚠️ Using fallback response (no OpenAI)')
-      return this.generateFallbackResponse(allStakeholders, project, userMessage, firstInteractionStatus, respondingStakeholder)
+      throw new Error(`❌ OpenAI not available! API Key: ${this.apiKey ? 'Present' : 'Missing'}, OpenAI: ${this.openAI ? 'Initialized' : 'Not initialized'}`)
     }
 
     try {
@@ -306,48 +305,7 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
       }
     } catch (error) {
       console.error('❌ OpenAI API error:', error)
-      return this.generateFallbackResponse(allStakeholders, project, userMessage, firstInteractionStatus, respondingStakeholder)
-    }
-  }
-
-  private generateFallbackResponse(
-    stakeholders: Stakeholder[],
-    project: Project,
-    userMessage: string,
-    firstInteractionStatus: Record<string, boolean>,
-    selectedStakeholder?: Stakeholder
-  ): AIResponse {
-    console.log('🔄 Generating fallback response')
-    
-    const isGreeting = this.isGreetingMessage(userMessage)
-    const stakeholder = selectedStakeholder || this.selectRespondingStakeholder(stakeholders, userMessage, [])
-    const isFirstInteraction = !firstInteractionStatus[stakeholder.id]
-
-    console.log('👤 Fallback stakeholder:', stakeholder.name)
-
-    let response = ''
-    
-    if (isGreeting) {
-      if (isFirstInteraction) {
-        response = `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. Great to meet you! I'm excited to work together on the ${project.name} project. How can I help you understand our current processes and requirements?`
-      } else {
-        response = `Good to see you again! I'm ready to dive deeper into the ${project.name} project. What specific aspects would you like to explore today?`
-      }
-    } else if (userMessage.toLowerCase().includes('current') || userMessage.toLowerCase().includes('as-is')) {
-      response = `That's a great question about our current state. In my role as ${stakeholder.role}, I see several challenges daily. For instance, we often deal with manual processes that could be streamlined, and there are definitely some pain points in how we handle ${project.name.toLowerCase()} workflows. Would you like me to walk you through our typical day-to-day operations?`
-    } else if (userMessage.toLowerCase().includes('future') || userMessage.toLowerCase().includes('to-be')) {
-      response = `From my perspective in ${stakeholder.department}, an ideal solution would address our key concerns around efficiency and accuracy. We need something that integrates well with our existing systems while giving us the flexibility to handle exceptions. What specific areas are you most interested in improving?`
-    } else {
-      response = `That's an interesting point. From my experience in ${stakeholder.department}, this relates directly to some of the challenges we face with ${project.name.toLowerCase()}. Let me share some specific insights from our operations. We typically handle this by... well, actually, let me ask - are you looking for information about our current process or what we'd like to see in the future?`
-    }
-
-    return {
-      id: `fallback-response-${Date.now()}`,
-      speaker: stakeholder.id,
-      content: response,
-      timestamp: new Date().toISOString(),
-      stakeholderName: stakeholder.name,
-      stakeholderRole: stakeholder.role
+      throw new Error(`❌ OpenAI API call failed: ${error.message}`)
     }
   }
 
