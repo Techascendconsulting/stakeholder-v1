@@ -313,21 +313,83 @@ Remember: You're a real person with real expertise, not an AI assistant. Behave 
     stakeholders: Stakeholder[],
     project: Project
   ): Promise<AIResponse[]> {
+    console.log('🎭 Generating REAL OpenAI introductions for', stakeholders.length, 'stakeholders')
+    
+    if (!this.openAI || !this.apiKey) {
+      throw new Error('❌ OpenAI not available for introductions! Check API key.')
+    }
+
     const introductions: AIResponse[] = []
 
     for (let i = 0; i < stakeholders.length; i++) {
       const stakeholder = stakeholders[i]
-      const introduction: AIResponse = {
-        id: `intro-${stakeholder.id}-${Date.now()}-${i}`,
-        speaker: stakeholder.id,
-        content: `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. Really excited to be working with you on the ${project.name} project. I bring expertise in ${stakeholder.priorities.slice(0, 2).join(' and ')}, and I'm here to make sure we capture all the requirements from our department's perspective. Looking forward to a productive discussion!`,
-        timestamp: new Date(Date.now() + i * 1000).toISOString(),
-        stakeholderName: stakeholder.name,
-        stakeholderRole: stakeholder.role
+      
+      try {
+        console.log(`🤖 Generating intro for ${stakeholder.name}...`)
+        
+        const systemPrompt = `You are ${stakeholder.name}, a ${stakeholder.role} in the ${stakeholder.department} department.
+
+BACKGROUND:
+${stakeholder.bio}
+
+PERSONALITY:
+${stakeholder.personality}
+
+PRIORITIES:
+${stakeholder.priorities.join(', ')}
+
+PROJECT:
+You're about to start a requirements gathering meeting for "${project.name}". This is your first time meeting the Business Analyst.
+
+TASK:
+Give a natural, warm introduction of yourself. Include:
+- Your name and role
+- Your department 
+- Your enthusiasm about the project
+- What expertise you bring
+- Keep it conversational and professional (2-3 sentences max)
+
+Remember: You're a real person with real expertise, not an AI. Speak naturally.`
+
+        const completion = await this.openAI.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: 'Please introduce yourself to the Business Analyst for this requirements gathering meeting.' }
+          ],
+          max_tokens: 150,
+          temperature: 0.9,
+          presence_penalty: 0.2
+        })
+
+        const introduction = completion.choices[0]?.message?.content || 
+          `Hello! I'm ${stakeholder.name}, ${stakeholder.role}. Looking forward to working on this project with you!`
+
+        console.log(`✅ Generated intro for ${stakeholder.name}:`, introduction.substring(0, 50) + '...')
+
+        const response: AIResponse = {
+          id: `intro-${stakeholder.id}-${Date.now()}-${i}`,
+          speaker: stakeholder.id,
+          content: introduction,
+          timestamp: new Date(Date.now() + i * 1000).toISOString(),
+          stakeholderName: stakeholder.name,
+          stakeholderRole: stakeholder.role
+        }
+        
+        introductions.push(response)
+        
+        // Small delay between API calls to avoid rate limits
+        if (i < stakeholders.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+        
+      } catch (error) {
+        console.error(`❌ Failed to generate intro for ${stakeholder.name}:`, error)
+        throw new Error(`Failed to generate introduction for ${stakeholder.name}: ${error.message}`)
       }
-      introductions.push(introduction)
     }
 
+    console.log('✅ All introductions generated successfully')
     return introductions
   }
 }
