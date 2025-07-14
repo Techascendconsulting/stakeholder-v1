@@ -12,11 +12,19 @@ export interface AIResponse {
 class StakeholderAI {
   private openAI: any
   private apiKey: string
+  private conversationState: {
+    lastSpeakerId: string | null
+    questionCount: number
+    greetingExchanged: boolean
+  } = {
+    lastSpeakerId: null,
+    questionCount: 0,
+    greetingExchanged: false
+  }
 
   constructor() {
     this.apiKey = import.meta.env.VITE_OPENAI_API_KEY || ''
     if (typeof window !== 'undefined' && this.apiKey) {
-      // Dynamically import OpenAI only on client side
       this.initializeOpenAI()
     }
   }
@@ -36,19 +44,23 @@ class StakeholderAI {
   private createStakeholderSystemPrompt(
     stakeholder: Stakeholder,
     project: Project,
-    isFirstInteraction: boolean
+    isFirstInteraction: boolean,
+    isGreeting: boolean,
+    conversationContext: string
   ): string {
-    const introductionPart = isFirstInteraction 
-      ? `This is your first time meeting the Business Analyst. Start by greeting them warmly and introducing yourself briefly - your name, role, and department. Show enthusiasm about working on this project.` 
-      : `You've already met the Business Analyst before, so just offer a friendly greeting.`
+    const greetingInstructions = isGreeting 
+      ? `The user is greeting you. Respond warmly and naturally as a professional colleague would. ${isFirstInteraction ? 'Since this is your first meeting, briefly introduce yourself.' : 'Give a friendly greeting back.'}`
+      : ''
 
-    return `You are ${stakeholder.name}, a ${stakeholder.role} in the ${stakeholder.department} department. 
+    return `You are ${stakeholder.name}, a ${stakeholder.role} in the ${stakeholder.department} department.
 
 PERSONALITY & BACKGROUND:
 ${stakeholder.bio}
+
+YOUR PERSONALITY TRAITS:
 ${stakeholder.personality}
 
-YOUR PRIORITIES FOR THIS PROJECT:
+YOUR KEY PRIORITIES:
 ${stakeholder.priorities.join(', ')}
 
 PROJECT CONTEXT:
@@ -58,21 +70,47 @@ Business Context: ${project.businessContext}
 Current Problems: ${project.problemStatement}
 Business Goals: ${project.businessGoals.join(', ')}
 
-INTERACTION GUIDELINES:
-${introductionPart}
+CONVERSATION CONTEXT:
+${conversationContext}
 
-As a subject matter expert (SME), you should:
-- Provide specific, detailed answers based on your role and department's perspective
-- Give concrete examples from your daily work experience
-- Explain the "why" behind your requirements and suggestions
-- Be collaborative and helpful, but also advocate for your department's needs
-- Ask clarifying questions when the BA's question is too broad
-- Reference specific processes, systems, or challenges you face
-- Speak naturally and conversationally, as if in a real business meeting
-- Stay in character and maintain your personality throughout
-- Draw from your expertise in your specific role and department
+INSTRUCTIONS:
+${greetingInstructions}
 
-Remember: You're here to help the BA understand requirements, but also to ensure your department's needs are properly captured and addressed.`
+You are an expert in your field attending a business requirements meeting. Respond naturally and conversationally as a real person would. 
+
+BEHAVIOR GUIDELINES:
+- Speak as a real professional colleague, not an AI
+- Use natural language with occasional "um", "you know", "I think"
+- Share specific examples from your daily work experience
+- Reference actual systems, processes, or challenges you face in your role
+- Show genuine interest in solving business problems
+- Ask clarifying questions when the BA's question is too broad or unclear
+- Advocate for your department's needs while being collaborative
+- Build on previous conversation points naturally
+- Express opinions and preferences as a real person would
+- Use industry terminology appropriate to your role
+- Show enthusiasm about improvements that would help your work
+
+RESPONSE STYLE:
+- Keep responses conversational (100-200 words typically)
+- Use first person ("I", "we", "our team")
+- Include specific examples when possible
+- Show personality - be human, not robotic
+- Express genuine concerns and excitement
+- Ask follow-up questions to keep conversation flowing
+
+Remember: You're a real person with real expertise, not an AI assistant. Behave accordingly.`
+  }
+
+  private isGreetingMessage(message: string): boolean {
+    const greetingWords = [
+      'hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening',
+      'greetings', 'nice to meet', 'pleasure to meet', 'thanks for joining',
+      'thank you for', 'appreciate you', 'glad to have', 'welcome'
+    ]
+    
+    const lowercaseMessage = message.toLowerCase()
+    return greetingWords.some(greeting => lowercaseMessage.includes(greeting))
   }
 
   private selectRespondingStakeholder(
@@ -80,20 +118,71 @@ Remember: You're here to help the BA understand requirements, but also to ensure
     userMessage: string,
     conversationHistory: Message[]
   ): Stakeholder {
-    // Simple logic to rotate or select based on message content
-    // In a more sophisticated version, this could use AI to determine the most relevant stakeholder
-    
-    // If the message mentions a specific role or department, prioritize that stakeholder
     const messageContent = userMessage.toLowerCase()
     
+    // If it's a greeting, alternate or let everyone respond
+    if (this.isGreetingMessage(userMessage)) {
+      // For greetings, rotate through stakeholders
+      const lastResponder = conversationHistory
+        .filter(msg => msg.speaker !== 'user' && msg.speaker !== 'system')
+        .pop()
+      
+      if (lastResponder) {
+        const lastIndex = stakeholders.findIndex(s => s.id === lastResponder.speaker)
+        return stakeholders[(lastIndex + 1) % stakeholders.length]
+      }
+      return stakeholders[0]
+    }
+
+    // Check for specific role/department mentions
     for (const stakeholder of stakeholders) {
-      if (messageContent.includes(stakeholder.role.toLowerCase()) ||
-          messageContent.includes(stakeholder.department.toLowerCase())) {
+      const roleMatch = messageContent.includes(stakeholder.role.toLowerCase())
+      const deptMatch = messageContent.includes(stakeholder.department.toLowerCase())
+      const nameMatch = messageContent.includes(stakeholder.name.toLowerCase())
+      
+      if (roleMatch || deptMatch || nameMatch) {
         return stakeholder
       }
     }
 
-    // If no specific mention, rotate based on conversation history
+    // Smart rotation based on question type and last speaker
+    const questionTypes = {
+      technical: ['system', 'technology', 'integration', 'api', 'database', 'software'],
+      process: ['process', 'workflow', 'procedure', 'step', 'current', 'how do you'],
+      business: ['business', 'goal', 'objective', 'strategy', 'revenue', 'customer'],
+      operations: ['operations', 'daily', 'routine', 'manage', 'handle', 'perform'],
+      finance: ['cost', 'budget', 'expense', 'financial', 'money', 'price'],
+      hr: ['people', 'team', 'staff', 'training', 'skills', 'employee']
+    }
+
+    // Find stakeholder best suited for question type
+    for (const [type, keywords] of Object.entries(questionTypes)) {
+      if (keywords.some(keyword => messageContent.includes(keyword))) {
+        const suitableStakeholder = stakeholders.find(s => 
+          s.role.toLowerCase().includes(type) || 
+          s.department.toLowerCase().includes(type) ||
+          s.priorities.some(p => p.toLowerCase().includes(type))
+        )
+        if (suitableStakeholder) {
+          return suitableStakeholder
+        }
+      }
+    }
+
+    // Intelligent rotation to ensure all stakeholders participate
+    const recentSpeakers = conversationHistory
+      .filter(msg => msg.speaker !== 'user' && msg.speaker !== 'system')
+      .slice(-4) // Last 4 responses
+      .map(msg => msg.speaker)
+
+    // Find stakeholder who hasn't spoken recently
+    for (const stakeholder of stakeholders) {
+      if (!recentSpeakers.includes(stakeholder.id)) {
+        return stakeholder
+      }
+    }
+
+    // If all have spoken recently, rotate based on least recent
     const lastResponderId = conversationHistory
       .filter(msg => msg.speaker !== 'user' && msg.speaker !== 'system')
       .pop()?.speaker
@@ -104,8 +193,24 @@ Remember: You're here to help the BA understand requirements, but also to ensure
       return stakeholders[nextIndex]
     }
 
-    // Default to first stakeholder
-    return stakeholders[0]
+    // Random selection as final fallback
+    return stakeholders[Math.floor(Math.random() * stakeholders.length)]
+  }
+
+  private buildConversationContext(messages: Message[]): string {
+    const recentMessages = messages
+      .filter(msg => msg.speaker !== 'system')
+      .slice(-6) // Last 6 messages for context
+      .map(msg => {
+        if (msg.speaker === 'user') {
+          return `BA: ${msg.content}`
+        } else {
+          return `${msg.stakeholderName}: ${msg.content}`
+        }
+      })
+      .join('\n')
+
+    return recentMessages ? `Recent conversation:\n${recentMessages}` : 'This is the start of the conversation.'
   }
 
   public async generateResponse(
@@ -120,38 +225,43 @@ Remember: You're here to help the BA understand requirements, but also to ensure
     }
 
     try {
-      // Select which stakeholder should respond
+      const isGreeting = this.isGreetingMessage(userMessage)
       const respondingStakeholder = this.selectRespondingStakeholder(allStakeholders, userMessage, messages)
       const isFirstInteraction = !firstInteractionStatus[respondingStakeholder.id]
+      const conversationContext = this.buildConversationContext(messages)
 
-      // Build conversation history for context
-      const conversationContext = messages
+      // Build conversation history for OpenAI
+      const conversationHistory = messages
         .filter(msg => msg.speaker !== 'system')
-        .slice(-10) // Last 10 messages for context
+        .slice(-8) // Last 8 messages for context
         .map(msg => ({
           role: msg.speaker === 'user' ? 'user' : 'assistant',
           content: msg.speaker === 'user' ? msg.content : `${msg.stakeholderName}: ${msg.content}`
         }))
 
-      // Create system prompt
       const systemPrompt = this.createStakeholderSystemPrompt(
         respondingStakeholder,
         project,
-        isFirstInteraction
+        isFirstInteraction,
+        isGreeting,
+        conversationContext
       )
 
       const completion = await this.openAI.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
-          ...conversationContext,
+          ...conversationHistory,
           { role: 'user', content: userMessage }
         ],
-        max_tokens: 500,
-        temperature: 0.7
+        max_tokens: 400,
+        temperature: 0.8,
+        presence_penalty: 0.3,
+        frequency_penalty: 0.3
       })
 
-      const response = completion.choices[0]?.message?.content || 'I understand your question, but I need a moment to gather my thoughts. Could you please rephrase that?'
+      const response = completion.choices[0]?.message?.content || 
+        `I understand what you're asking about. Let me think about that for a moment and get back to you with a detailed response.`
 
       return {
         id: `ai-response-${Date.now()}`,
@@ -173,30 +283,24 @@ Remember: You're here to help the BA understand requirements, but also to ensure
     userMessage: string,
     firstInteractionStatus: Record<string, boolean>
   ): AIResponse {
-    const stakeholder = stakeholders[0] || {
-      id: 'mock-stakeholder',
-      name: 'Mock Stakeholder',
-      role: 'Team Member',
-      department: 'Operations'
-    }
-
+    const isGreeting = this.isGreetingMessage(userMessage)
+    const stakeholder = this.selectRespondingStakeholder(stakeholders, userMessage, [])
     const isFirstInteraction = !firstInteractionStatus[stakeholder.id]
 
     let response = ''
     
-    if (isFirstInteraction) {
-      response = `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. Nice to meet you! I'm excited to work with you on the ${project.name} project. `
-    } else {
-      response = `Good to see you again! `
-    }
-
-    // Add contextual response based on the question
-    if (userMessage.toLowerCase().includes('current') || userMessage.toLowerCase().includes('as-is')) {
-      response += `Regarding our current process, I can tell you that we face several challenges in our daily operations. The manual steps often create bottlenecks, and we spend a lot of time on repetitive tasks that could be automated.`
+    if (isGreeting) {
+      if (isFirstInteraction) {
+        response = `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. Great to meet you! I'm excited to work together on the ${project.name} project. How can I help you understand our current processes and requirements?`
+      } else {
+        response = `Good to see you again! I'm ready to dive deeper into the ${project.name} project. What specific aspects would you like to explore today?`
+      }
+    } else if (userMessage.toLowerCase().includes('current') || userMessage.toLowerCase().includes('as-is')) {
+      response = `That's a great question about our current state. In my role as ${stakeholder.role}, I see several challenges daily. For instance, we often deal with manual processes that could be streamlined, and there are definitely some pain points in how we handle ${project.name.toLowerCase()} workflows. Would you like me to walk you through our typical day-to-day operations?`
     } else if (userMessage.toLowerCase().includes('future') || userMessage.toLowerCase().includes('to-be')) {
-      response += `For the future state, I envision a more streamlined process where we can focus on value-added activities rather than administrative tasks. We need better integration between our systems and real-time visibility into our operations.`
+      response = `From my perspective in ${stakeholder.department}, an ideal solution would address our key concerns around efficiency and accuracy. We need something that integrates well with our existing systems while giving us the flexibility to handle exceptions. What specific areas are you most interested in improving?`
     } else {
-      response += `That's a thoughtful question. From my perspective in ${stakeholder.department}, this relates directly to the challenges we face daily. Let me share some specific insights from our department's experience.`
+      response = `That's an interesting point. From my experience in ${stakeholder.department}, this relates directly to some of the challenges we face with ${project.name.toLowerCase()}. Let me share some specific insights from our operations. We typically handle this by... well, actually, let me ask - are you looking for information about our current process or what we'd like to see in the future?`
     }
 
     return {
@@ -215,12 +319,14 @@ Remember: You're here to help the BA understand requirements, but also to ensure
   ): Promise<AIResponse[]> {
     const introductions: AIResponse[] = []
 
-    for (const stakeholder of stakeholders) {
+    // Stagger introductions with slight delays
+    for (let i = 0; i < stakeholders.length; i++) {
+      const stakeholder = stakeholders[i]
       const introduction: AIResponse = {
-        id: `intro-${stakeholder.id}-${Date.now()}`,
+        id: `intro-${stakeholder.id}-${Date.now()}-${i}`,
         speaker: stakeholder.id,
-        content: `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. I'm looking forward to working with you on the ${project.name} project. I bring expertise in ${stakeholder.priorities.slice(0, 2).join(' and ')}, and I'm here to help ensure we capture all the requirements from our department's perspective.`,
-        timestamp: new Date().toISOString(),
+        content: `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. Really excited to be working with you on the ${project.name} project. I bring expertise in ${stakeholder.priorities.slice(0, 2).join(' and ')}, and I'm here to make sure we capture all the requirements from our department's perspective. Looking forward to a productive discussion!`,
+        timestamp: new Date(Date.now() + i * 1000).toISOString(), // Stagger timestamps
         stakeholderName: stakeholder.name,
         stakeholderRole: stakeholder.role
       }

@@ -24,6 +24,7 @@ const MeetingView: React.FC = () => {
   })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
+  const audioQueueRef = useRef<string[]>([]) // Track pending audio
 
   // Enhanced question bank with more BA-specific questions
   const mockQuestions = {
@@ -112,6 +113,28 @@ const MeetingView: React.FC = () => {
     }
   }, [])
 
+  const playAudioForMessage = async (message: Message, autoPlay: boolean = true) => {
+    if (!globalAudioEnabled) return
+
+    const stakeholder = selectedStakeholders.find(s => s.id === message.speaker)
+    if (!stakeholder) return
+
+    try {
+      await audioOrchestrator.queueMessage(
+        {
+          id: message.id,
+          content: message.content,
+          speakerId: message.speaker,
+          stakeholderName: message.stakeholderName || stakeholder.name
+        },
+        stakeholder,
+        autoPlay
+      )
+    } catch (error) {
+      console.error('Failed to queue audio:', error)
+    }
+  }
+
   const initializeMeeting = async () => {
     if (!selectedProject || selectedStakeholders.length === 0) return
 
@@ -149,22 +172,14 @@ const MeetingView: React.FC = () => {
       const allMessages = [welcomeMessage, ...introductionMessages]
       setMessages(allMessages)
 
-      // Play audio for introductions if enabled
+      // Play audio for introductions if enabled - with proper sequencing
       if (globalAudioEnabled) {
-        for (const intro of introductions) {
-          const stakeholder = selectedStakeholders.find(s => s.id === intro.speaker)
-          if (stakeholder) {
-            await audioOrchestrator.queueMessage(
-              {
-                id: intro.id,
-                content: intro.content,
-                speakerId: intro.speaker,
-                stakeholderName: intro.stakeholderName
-              },
-              stakeholder,
-              false // Don't auto-play, just queue
-            )
-          }
+        for (let i = 0; i < introductionMessages.length; i++) {
+          const message = introductionMessages[i]
+          // Delay each audio to allow previous to finish
+          setTimeout(() => {
+            playAudioForMessage(message, true)
+          }, i * 3000) // 3 second delay between introductions
         }
       }
 
@@ -214,21 +229,12 @@ const MeetingView: React.FC = () => {
 
       setMessages(prev => [...prev, responseMessage])
 
-      // Play audio response if enabled
+      // Play audio response immediately if enabled
       if (globalAudioEnabled) {
-        const stakeholder = selectedStakeholders.find(s => s.id === aiResponse.speaker)
-        if (stakeholder) {
-          await audioOrchestrator.queueMessage(
-            {
-              id: aiResponse.id,
-              content: aiResponse.content,
-              speakerId: aiResponse.speaker,
-              stakeholderName: aiResponse.stakeholderName
-            },
-            stakeholder,
-            true
-          )
-        }
+        // Small delay to ensure message is rendered
+        setTimeout(() => {
+          playAudioForMessage(responseMessage, true)
+        }, 100)
       }
 
       // Update first interaction status if needed
@@ -317,6 +323,18 @@ const MeetingView: React.FC = () => {
     return selectedStakeholders.find(s => s.id === stakeholderId)
   }
 
+  const pauseAllAudio = () => {
+    audioOrchestrator.pause()
+  }
+
+  const resumeAllAudio = () => {
+    audioOrchestrator.resume()
+  }
+
+  const stopAllAudio = () => {
+    audioOrchestrator.stop()
+  }
+
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
       <div className="p-8">
@@ -350,16 +368,22 @@ const MeetingView: React.FC = () => {
               </p>
               {audioPlaybackState.isPlaying && (
                 <div className="flex items-center space-x-2 text-green-600 text-sm">
-                  <Volume2 className="w-4 h-4" />
+                  <Volume2 className="w-4 h-4 animate-pulse" />
                   <span>Audio Playing</span>
+                </div>
+              )}
+              {audioPlaybackState.isPaused && (
+                <div className="flex items-center space-x-2 text-yellow-600 text-sm">
+                  <Pause className="w-4 h-4" />
+                  <span>Audio Paused</span>
                 </div>
               )}
             </div>
           </div>
           
           <div className="flex items-center space-x-3">
-            {/* Audio Controls */}
-            <div className="flex items-center space-x-2">
+            {/* Enhanced Audio Controls */}
+            <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-2">
               <button
                 onClick={() => setGlobalAudioEnabled(!globalAudioEnabled)}
                 className={`p-2 rounded-lg transition-colors ${
@@ -374,7 +398,7 @@ const MeetingView: React.FC = () => {
               
               {audioPlaybackState.isPlaying && (
                 <button
-                  onClick={() => audioOrchestrator.pause()}
+                  onClick={pauseAllAudio}
                   className="p-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors"
                   title="Pause Audio"
                 >
@@ -384,11 +408,21 @@ const MeetingView: React.FC = () => {
               
               {audioPlaybackState.isPaused && (
                 <button
-                  onClick={() => audioOrchestrator.resume()}
+                  onClick={resumeAllAudio}
                   className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
                   title="Resume Audio"
                 >
                   <Play className="w-5 h-5" />
+                </button>
+              )}
+
+              {(audioPlaybackState.isPlaying || audioPlaybackState.isPaused) && (
+                <button
+                  onClick={stopAllAudio}
+                  className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                  title="Stop Audio"
+                >
+                  <Square className="w-5 h-5" />
                 </button>
               )}
             </div>
@@ -471,16 +505,25 @@ const MeetingView: React.FC = () => {
                     <img
                       src={stakeholder.photo}
                       alt={stakeholder.name}
-                      className="w-6 h-6 rounded-full"
+                      className="w-8 h-8 rounded-full border-2 border-gray-200"
                     />
-                    <span className="text-xs font-semibold text-gray-600">
+                    <span className="text-sm font-semibold text-gray-700">
                       {stakeholder.name} - {stakeholder.role}
                     </span>
                     {audioPlaybackState.currentMessageId === message.id && (
                       <div className="flex items-center space-x-1 text-green-600">
-                        <Volume2 className="w-4 h-4" />
-                        <span className="text-xs">Playing</span>
+                        <Volume2 className="w-4 h-4 animate-pulse" />
+                        <span className="text-xs">Speaking</span>
                       </div>
+                    )}
+                    {globalAudioEnabled && message.speaker !== 'system' && (
+                      <button
+                        onClick={() => playAudioForMessage(message, true)}
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Replay this message"
+                      >
+                        <Play className="w-3 h-3 text-gray-500" />
+                      </button>
                     )}
                   </div>
                 )}
@@ -491,7 +534,7 @@ const MeetingView: React.FC = () => {
                       ? 'bg-blue-600 text-white ml-auto'
                       : message.speaker === 'system'
                       ? 'bg-gray-200 text-gray-800'
-                      : 'bg-gray-100 text-gray-900'
+                      : 'bg-gray-100 text-gray-900 border border-gray-200'
                   }`}
                 >
                   <div className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</div>
@@ -506,7 +549,7 @@ const MeetingView: React.FC = () => {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-100 text-gray-900">
+            <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-100 text-gray-900 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
                 <span className="text-sm">Stakeholder is thinking...</span>
