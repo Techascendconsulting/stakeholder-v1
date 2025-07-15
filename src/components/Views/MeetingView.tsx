@@ -140,15 +140,23 @@ const MeetingView: React.FC = () => {
     const recentMessages = conversationHistory.slice(-6)
     const recentContext = recentMessages.map(m => m.content).join(' ').toLowerCase()
     
+    // Get stakeholder context for variation functions
+    const roleContext = getStakeholderContext(stakeholder)
+    
     // Generate dynamic response based on stakeholder expertise and question context
     const response = generateDynamicResponse(stakeholder, question, recentContext, conversationHistory)
     
-    // Avoid duplicate responses
+    // Enhanced duplicate detection and response variation
     let finalResponse = response
     let attempts = 0
-    while (previousResponses.includes(finalResponse) && attempts < 3) {
-      finalResponse = addResponseVariation(response, attempts, stakeholder)
+    while (isSimilarResponse(finalResponse, previousResponses) && attempts < 5) {
+      finalResponse = addResponseVariation(response, attempts, stakeholder, roleContext)
       attempts++
+    }
+    
+    // If still similar after variations, force a completely different approach
+    if (isSimilarResponse(finalResponse, previousResponses)) {
+      finalResponse = generateAlternativeResponse(stakeholder, question, roleContext, conversationHistory)
     }
     
     // Track this response
@@ -361,12 +369,43 @@ const MeetingView: React.FC = () => {
   }
 
   const buildProcessResponse = (questionAnalysis: any, roleContext: any, conversationContext: any, stakeholder: any) => {
+    const processVariants = [
+      () => buildProcessResponseVariant1(roleContext, conversationContext, stakeholder),
+      () => buildProcessResponseVariant2(roleContext, conversationContext, stakeholder),
+      () => buildProcessResponseVariant3(roleContext, conversationContext, stakeholder)
+    ]
+    
+    const selectedVariant = processVariants[Math.floor(Math.random() * processVariants.length)]
+    return selectedVariant()
+  }
+
+  const buildProcessResponseVariant1 = (roleContext: any, conversationContext: any, stakeholder: any) => {
     const processOverview = `Our current process from a ${roleContext.expertise} perspective involves coordinated efforts to ensure ${roleContext.priorities.slice(0, 2).join(' and ')}.`
     const specificSteps = generateSpecificSteps(roleContext, conversationContext)
     const challenges = `We face challenges with ${roleContext.challenges.slice(0, 2).join(' and ')}.`
     const improvements = `We're working on ${roleContext.solutions.slice(0, 2).join(' and ')} to improve this.`
     
     return `${processOverview} ${specificSteps} ${challenges} ${improvements}`
+  }
+
+  const buildProcessResponseVariant2 = (roleContext: any, conversationContext: any, stakeholder: any) => {
+    const priorities = getRandomSubset(roleContext.priorities, 2)
+    const challenges = getRandomSubset(roleContext.challenges, 2)
+    const solutions = getRandomSubset(roleContext.solutions, 2)
+    
+    return `Let me break down how we approach this from a ${roleContext.expertise} standpoint. The workflow centers around ${priorities[0]} as our primary focus, while maintaining ${priorities[1]} throughout. We've structured our process to handle ${challenges[0]} proactively, though ${challenges[1]} still presents ongoing difficulties. Our current improvement initiatives include ${solutions[0]} and ${solutions[1]}, which we believe will strengthen our overall approach.`
+  }
+
+  const buildProcessResponseVariant3 = (roleContext: any, conversationContext: any, stakeholder: any) => {
+    const contextualReference = conversationContext.topics.length > 0 
+      ? `Given our earlier discussion about ${conversationContext.topics[0]}, ` 
+      : ''
+    
+    const metric = roleContext.metrics[Math.floor(Math.random() * roleContext.metrics.length)]
+    const challenge = roleContext.challenges[Math.floor(Math.random() * roleContext.challenges.length)]
+    const solution = roleContext.solutions[Math.floor(Math.random() * roleContext.solutions.length)]
+    
+    return `${contextualReference}our ${roleContext.expertise} process is designed around continuous improvement. We measure success through ${metric} and have identified ${challenge} as a key area for enhancement. The process itself prioritizes ${roleContext.priorities[0]} while balancing ${roleContext.priorities[1]} requirements. We're actively implementing ${solution} to address current limitations and improve overall effectiveness.`
   }
 
   const buildInformationResponse = (questionAnalysis: any, roleContext: any, conversationContext: any, stakeholder: any) => {
@@ -388,12 +427,94 @@ const MeetingView: React.FC = () => {
   }
 
   const buildChallengeResponse = (questionAnalysis: any, roleContext: any, conversationContext: any, stakeholder: any) => {
-    const mainChallenges = `The primary challenges we face in ${roleContext.expertise} include ${roleContext.challenges.slice(0, 2).join(' and ')}.`
-    const impact = `These particularly impact our ${roleContext.priorities.slice(0, 2).join(' and ')} objectives.`
-    const measurement = `We track this through ${roleContext.metrics.slice(0, 2).join(' and ')}.`
-    const solutions = `We're addressing these through ${roleContext.solutions.slice(0, 2).join(' and ')}.`
+    // Add randomness to structure and content
+    const responseVariants = [
+      () => buildChallengeResponseVariant1(roleContext, conversationContext),
+      () => buildChallengeResponseVariant2(roleContext, conversationContext),
+      () => buildChallengeResponseVariant3(roleContext, conversationContext),
+      () => buildChallengeResponseVariant4(roleContext, conversationContext)
+    ]
     
-    return `${mainChallenges} ${impact} ${measurement} ${solutions}`
+    const selectedVariant = responseVariants[Math.floor(Math.random() * responseVariants.length)]
+    return selectedVariant()
+  }
+
+  const buildChallengeResponseVariant1 = (roleContext: any, conversationContext: any) => {
+    const challengeIntros = [
+      `The biggest obstacles we're dealing with right now are`,
+      `What keeps me up at night from a ${roleContext.expertise} standpoint is`,
+      `The most pressing concerns in our ${roleContext.expertise} area involve`,
+      `If I'm being honest, our main struggles center around`
+    ]
+    
+    const intro = challengeIntros[Math.floor(Math.random() * challengeIntros.length)]
+    const challenges = getRandomSubset(roleContext.challenges, 2)
+    const detail = generateChallengeDetail(challenges[0], roleContext)
+    const impact = generateImpactStatement(roleContext)
+    const action = generateActionStatement(roleContext)
+    
+    return `${intro} ${challenges.join(' and ')}. ${detail} ${impact} ${action}`
+  }
+
+  const buildChallengeResponseVariant2 = (roleContext: any, conversationContext: any) => {
+    const contextualStart = conversationContext.topics.length > 0 
+      ? `Building on what we've discussed about ${conversationContext.topics[0]}, `
+      : ``
+    
+    const challenges = getRandomSubset(roleContext.challenges, 2)
+    const metrics = getRandomSubset(roleContext.metrics, 2)
+    
+    return `${contextualStart}Our ${roleContext.expertise} team faces several key challenges. ${challenges[0]} is particularly problematic because it affects our ability to maintain ${roleContext.priorities[0]}. We're seeing this reflected in our ${metrics[0]} data. Meanwhile, ${challenges[1]} creates additional complexity that impacts ${roleContext.priorities[1]}. We're actively working on ${roleContext.solutions[0]} to address these issues.`
+  }
+
+  const buildChallengeResponseVariant3 = (roleContext: any, conversationContext: any) => {
+    const priorities = getRandomSubset(roleContext.priorities, 2)
+    const solutions = getRandomSubset(roleContext.solutions, 2)
+    
+    return `Let me share some specific examples of what we're dealing with. Our focus on ${priorities[0]} is being challenged by ${roleContext.challenges[0]}, which creates bottlenecks in our workflow. Additionally, ${roleContext.challenges[1]} makes it difficult to achieve our ${priorities[1]} goals. We measure the impact through ${roleContext.metrics[0]}, and we're implementing ${solutions[0]} alongside ${solutions[1]} to create sustainable improvements.`
+  }
+
+  const buildChallengeResponseVariant4 = (roleContext: any, conversationContext: any) => {
+    const challenge = roleContext.challenges[Math.floor(Math.random() * roleContext.challenges.length)]
+    const solution = roleContext.solutions[Math.floor(Math.random() * roleContext.solutions.length)]
+    const metric = roleContext.metrics[Math.floor(Math.random() * roleContext.metrics.length)]
+    
+    return `From my day-to-day experience, ${challenge} stands out as our most significant challenge. This isn't just theory - it's something our team encounters regularly. The ripple effects touch everything from ${roleContext.priorities[0]} to ${roleContext.priorities[1]}. We're tracking progress through ${metric} and have committed resources to ${solution}. It's a complex situation, but we're seeing gradual improvements as we implement these changes.`
+  }
+
+  const generateChallengeDetail = (challenge: string, roleContext: any) => {
+    const details = [
+      `This creates bottlenecks that slow down our entire ${roleContext.expertise} process.`,
+      `The impact on our ${roleContext.priorities[0]} is significant and measurable.`,
+      `We see this affecting our team's ability to deliver on ${roleContext.priorities[1]}.`,
+      `This challenge directly conflicts with our ${roleContext.expertise} objectives.`
+    ]
+    return details[Math.floor(Math.random() * details.length)]
+  }
+
+  const generateImpactStatement = (roleContext: any) => {
+    const impacts = [
+      `The consequences ripple through our ${roleContext.priorities[0]} metrics.`,
+      `This affects our ability to meet ${roleContext.priorities[1]} expectations.`,
+      `We're seeing direct impacts on ${roleContext.metrics[0]} performance.`,
+      `The challenge creates cascading effects across our ${roleContext.expertise} operations.`
+    ]
+    return impacts[Math.floor(Math.random() * impacts.length)]
+  }
+
+  const generateActionStatement = (roleContext: any) => {
+    const actions = [
+      `We're tackling this through ${roleContext.solutions[0]} and monitoring progress closely.`,
+      `Our response involves ${roleContext.solutions[1]} with regular assessment of ${roleContext.metrics[0]}.`,
+      `We've prioritized ${roleContext.solutions[0]} as our primary intervention strategy.`,
+      `The team is implementing ${roleContext.solutions[1]} while tracking ${roleContext.metrics[1]} improvements.`
+    ]
+    return actions[Math.floor(Math.random() * actions.length)]
+  }
+
+  const getRandomSubset = (array: any[], count: number) => {
+    const shuffled = [...array].sort(() => 0.5 - Math.random())
+    return shuffled.slice(0, count)
   }
 
   const buildImprovementResponse = (questionAnalysis: any, roleContext: any, conversationContext: any, stakeholder: any) => {
@@ -447,16 +568,103 @@ const MeetingView: React.FC = () => {
     return `${contextualSteps} This involves ${roleContext.priorities.slice(0, 2).join(' and ')} at each stage.`
   }
 
-  const addResponseVariation = (response: string, attempt: number, stakeholder: any) => {
+  const isSimilarResponse = (newResponse: string, previousResponses: string[]) => {
+    const normalizeResponse = (text: string) => {
+      return text.toLowerCase()
+        .replace(/[.,!?;:]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+    }
+    
+    const normalizedNew = normalizeResponse(newResponse)
+    const words = normalizedNew.split(' ')
+    
+    return previousResponses.some(prev => {
+      const normalizedPrev = normalizeResponse(prev)
+      const prevWords = normalizedPrev.split(' ')
+      
+      // Check for significant word overlap (>70%)
+      const commonWords = words.filter(word => prevWords.includes(word))
+      const similarity = commonWords.length / Math.max(words.length, prevWords.length)
+      
+      return similarity > 0.7
+    })
+  }
+
+  const addResponseVariation = (response: string, attempt: number, stakeholder: any, roleContext: any) => {
     const variations = [
-      response.replace('From my', 'In my experience with'),
-      response.replace('Our', 'In our'),
-      response.replace('We', 'Our team'),
-      response.replace('This', 'This particular aspect'),
-      response.replace('The', 'The specific')
+      () => response.replace(/^([A-Z][^.]*\.)/, `Looking at this from a ${roleContext.expertise} perspective, `),
+      () => response.replace(/we face/g, 'our team encounters').replace(/We track/g, 'Our monitoring shows'),
+      () => response.replace(/challenges/g, 'obstacles').replace(/solutions/g, 'approaches'),
+      () => response.replace(/primary/g, 'main').replace(/particularly/g, 'especially'),
+      () => `Based on my ${roleContext.expertise} experience, ` + response.replace(/^[A-Z][^.]*\.\s*/, ''),
+      () => response.replace(/include/g, 'involve').replace(/through/g, 'via'),
+      () => response.replace(/addressing/g, 'tackling').replace(/implementing/g, 'deploying')
     ]
     
-    return variations[attempt] || response
+    if (attempt < variations.length) {
+      return variations[attempt]()
+    }
+    
+    return response
+  }
+
+  const generateAlternativeResponse = (stakeholder: any, question: string, roleContext: any, conversationHistory: Message[]) => {
+    const lowerQuestion = question.toLowerCase()
+    
+    // Generate completely different structure/approach
+    if (lowerQuestion.includes('challenge') || lowerQuestion.includes('issue')) {
+      return generatePersonalizedChallengeResponse(roleContext, stakeholder)
+    }
+    
+    if (lowerQuestion.includes('process') || lowerQuestion.includes('workflow')) {
+      return generatePersonalizedProcessResponse(roleContext, stakeholder)
+    }
+    
+    return generatePersonalizedGeneralResponse(roleContext, stakeholder, question)
+  }
+
+  const generatePersonalizedChallengeResponse = (roleContext: any, stakeholder: any) => {
+    const personalTouches = [
+      `Speaking from ${stakeholder.name.split(' ')[0]}'s perspective,`,
+      `In my role as ${stakeholder.role},`,
+      `From where I sit in ${roleContext.expertise},`,
+      `Having worked in ${roleContext.expertise} for years,`
+    ]
+    
+    const challenge = roleContext.challenges[Math.floor(Math.random() * roleContext.challenges.length)]
+    const solution = roleContext.solutions[Math.floor(Math.random() * roleContext.solutions.length)]
+    const metric = roleContext.metrics[Math.floor(Math.random() * roleContext.metrics.length)]
+    
+    const personal = personalTouches[Math.floor(Math.random() * personalTouches.length)]
+    
+    return `${personal} I'd say our biggest hurdle right now is ${challenge}. This isn't just a theoretical problem - it's something I deal with every day. The way it manifests in our work is through reduced ${roleContext.priorities[0]} and impacts on ${roleContext.priorities[1]}. What we're doing about it is focusing on ${solution}, and we measure our progress through ${metric}. It's a work in progress, but we're committed to seeing it through.`
+  }
+
+  const generatePersonalizedProcessResponse = (roleContext: any, stakeholder: any) => {
+    const processDescriptions = [
+      `Our ${roleContext.expertise} workflow begins with`,
+      `The way we handle ${roleContext.priorities[0]} starts with`,
+      `From a ${roleContext.expertise} standpoint, we first`,
+      `In terms of ${roleContext.priorities[1]}, our approach involves`
+    ]
+    
+    const description = processDescriptions[Math.floor(Math.random() * processDescriptions.length)]
+    
+    return `${description} coordinated efforts across our team. We focus heavily on ${roleContext.priorities[0]} while ensuring ${roleContext.priorities[1]} remains a priority. The key metrics we watch are ${roleContext.metrics[0]} and ${roleContext.metrics[1]}. Our main challenge is ${roleContext.challenges[0]}, which we're addressing through ${roleContext.solutions[0]}. It's a complex process, but one that works well when all the pieces come together.`
+  }
+
+  const generatePersonalizedGeneralResponse = (roleContext: any, stakeholder: any, question: string) => {
+    const generalStarters = [
+      `That's a great question about`,
+      `From my ${roleContext.expertise} background, I can tell you that`,
+      `Having dealt with this in ${roleContext.expertise}, I'd say`,
+      `In my experience with ${roleContext.priorities[0]},`
+    ]
+    
+    const starter = generalStarters[Math.floor(Math.random() * generalStarters.length)]
+    
+    return `${starter} this touches on several aspects of our work. We prioritize ${roleContext.priorities[0]} and ${roleContext.priorities[1]} in everything we do. The challenge is balancing ${roleContext.challenges[0]} with our need for ${roleContext.solutions[0]}. We track success through ${roleContext.metrics[0]}, which gives us a clear picture of where we stand. It's an evolving situation that requires constant attention and adjustment.`
   }
 
   const handleQuestionClick = (question: string) => {
