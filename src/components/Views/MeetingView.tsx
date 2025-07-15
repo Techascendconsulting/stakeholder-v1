@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag } from 'lucide-react'
+import { Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import { Message } from '../../types'
 import StakeholderMessageAudio from '../StakeholderMessageAudio'
 
 const MeetingView: React.FC = () => {
-  const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
+  const { selectedProject, selectedStakeholders, setCurrentView } = useApp()
   const { globalAudioEnabled, setGlobalAudioEnabled } = useVoice()
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -95,7 +95,7 @@ const MeetingView: React.FC = () => {
     setInputMessage('')
   }
 
-  const generateMockResponse = (question: string, stakeholder: any) => {
+  const generateMockResponse = (_question: string, stakeholder: any) => {
     const responses = [
       `That's a great question. From my perspective as ${stakeholder.role}, I can tell you that our current process involves several manual steps that could be streamlined.`,
       `In my experience, the main challenge we face is the lack of integration between our systems. This creates delays and potential for errors.`,
