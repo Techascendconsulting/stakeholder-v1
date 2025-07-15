@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
+import { useVoice } from '../../contexts/VoiceContext'
 import { Message } from '../../types'
+import StakeholderMessageAudio from '../StakeholderMessageAudio'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
+  const { globalAudioEnabled, setGlobalAudioEnabled } = useVoice()
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showQuestionHelper, setShowQuestionHelper] = useState(false)
   const [selectedQuestionCategory, setSelectedQuestionCategory] = useState<'as-is' | 'to-be'>('as-is')
+  const [currentlyPlayingAudio, setCurrentlyPlayingAudio] = useState<string | null>(null)
+
+  // Handle audio playback state - only one audio can play at a time
+  const handleAudioPlayingChange = (messageId: string, isPlaying: boolean) => {
+    if (isPlaying) {
+      setCurrentlyPlayingAudio(messageId)
+    } else if (currentlyPlayingAudio === messageId) {
+      setCurrentlyPlayingAudio(null)
+    }
+  }
 
   // Mock questions for demonstration
   const mockQuestions = {
@@ -153,15 +166,31 @@ const MeetingView: React.FC = () => {
             </p>
           </div>
           
-          {/* Question Helper Toggle */}
-          <button
-            onClick={() => setShowQuestionHelper(!showQuestionHelper)}
-            className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-          >
-            <HelpCircle className="w-5 h-5" />
-            <span>Question Helper</span>
-            {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center space-x-3">
+            {/* Global Audio Toggle */}
+            <button
+              onClick={() => setGlobalAudioEnabled(!globalAudioEnabled)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors border ${
+                globalAudioEnabled
+                  ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                  : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+              }`}
+              title={globalAudioEnabled ? 'Disable Audio' : 'Enable Audio'}
+            >
+              {globalAudioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+              <span>{globalAudioEnabled ? 'Audio On' : 'Audio Off'}</span>
+            </button>
+
+            {/* Question Helper Toggle */}
+            <button
+              onClick={() => setShowQuestionHelper(!showQuestionHelper)}
+              className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+            >
+              <HelpCircle className="w-5 h-5" />
+              <span>Question Helper</span>
+              {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
         
         {/* Question Helper Panel */}
@@ -239,6 +268,15 @@ const MeetingView: React.FC = () => {
               <div className="text-xs mt-1 opacity-75">
                 {new Date(message.timestamp).toLocaleTimeString()}
               </div>
+              
+              {/* Audio Controls for Stakeholder Messages */}
+              {message.speaker !== 'user' && message.speaker !== 'system' && (
+                <StakeholderMessageAudio
+                  message={message}
+                  autoPlay={true}
+                  onPlayingChange={(isPlaying) => handleAudioPlayingChange(message.id, isPlaying)}
+                />
+              )}
             </div>
           </div>
         ))}
