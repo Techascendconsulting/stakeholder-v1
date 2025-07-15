@@ -93,7 +93,9 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
   }
 
   const handlePlay = useCallback(async () => {
+    console.log('handlePlay called for message:', message.id, 'speaker:', message.speaker)
     if (!globalAudioEnabled || !isStakeholderVoiceEnabled(message.speaker)) {
+      console.log('Audio disabled for this stakeholder:', message.speaker)
       return
     }
 
@@ -111,50 +113,58 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
 
       // Generate new audio
       const voiceName = getStakeholderVoice(message.speaker, message.stakeholderRole)
-      let audioBlob: Blob
+      console.log('Using voice:', voiceName, 'for stakeholder:', message.speaker)
 
       if (isAzureTTSAvailable()) {
+        console.log('Using Azure TTS')
         // Use Azure TTS
-        audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceName)
+        const audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceName)
+        
+        // Clean up previous audio
+        cleanup()
+
+        // Create new audio element
+        const audioUrl = URL.createObjectURL(audioBlob)
+        audioUrlRef.current = audioUrl
+        
+        const audio = new Audio(audioUrl)
+        audioRef.current = audio
+
+        // Set up event listeners
+        audio.addEventListener('loadedmetadata', () => {
+          setAudioDuration(audio.duration)
+        })
+
+        audio.addEventListener('ended', () => {
+          setIsPlaying(false)
+          setAudioProgress(0)
+          stopProgressTracking()
+        })
+
+        audio.addEventListener('error', () => {
+          setError('Audio playback failed')
+          setIsPlaying(false)
+          setIsLoading(false)
+          stopProgressTracking()
+        })
+
+        // Start playback
+        await audio.play()
+        setIsPlaying(true)
+        startProgressTracking()
       } else {
-        // Fallback to browser TTS
+        console.log('Using browser TTS fallback')
+        // Use browser TTS - simulate progress for consistency
+        setIsPlaying(true)
+        setAudioDuration(message.content.length * 0.1) // Rough estimate
+        startProgressTracking()
+        
         await playBrowserTTS(message.content)
-        setIsLoading(false)
-        return
-      }
-
-      // Clean up previous audio
-      cleanup()
-
-      // Create new audio element
-      const audioUrl = URL.createObjectURL(audioBlob)
-      audioUrlRef.current = audioUrl
-      
-      const audio = new Audio(audioUrl)
-      audioRef.current = audio
-
-      // Set up event listeners
-      audio.addEventListener('loadedmetadata', () => {
-        setAudioDuration(audio.duration)
-      })
-
-      audio.addEventListener('ended', () => {
+        
         setIsPlaying(false)
         setAudioProgress(0)
         stopProgressTracking()
-      })
-
-      audio.addEventListener('error', () => {
-        setError('Audio playback failed')
-        setIsPlaying(false)
-        setIsLoading(false)
-        stopProgressTracking()
-      })
-
-      // Start playback
-      await audio.play()
-      setIsPlaying(true)
-      startProgressTracking()
+      }
 
     } catch (error) {
       console.error('Audio playback error:', error)
@@ -163,9 +173,11 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
       
       // Try browser TTS as fallback
       try {
+        console.log('Trying browser TTS fallback')
         await playBrowserTTS(message.content)
       } catch (fallbackError) {
         console.error('Browser TTS fallback failed:', fallbackError)
+        setError('All audio methods failed')
       }
     } finally {
       setIsLoading(false)
@@ -196,19 +208,25 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Don't render if audio is disabled for this stakeholder
-  if (!globalAudioEnabled || !isStakeholderVoiceEnabled(message.speaker)) {
-    return null
-  }
+  // Always render the controls, just disable functionality if audio is disabled
+  console.log('Audio component rendering for message:', message.id, 'speaker:', message.speaker)
+  console.log('Global audio enabled:', globalAudioEnabled)
+  console.log('Stakeholder voice enabled:', isStakeholderVoiceEnabled(message.speaker))
+  
+  const audioDisabled = !globalAudioEnabled || !isStakeholderVoiceEnabled(message.speaker)
 
   return (
     <div className="flex items-center space-x-2 mt-2 bg-gray-50 rounded-lg p-2">
       {/* Play/Pause Button */}
       <button
         onClick={isPlaying ? handlePause : handlePlay}
-        disabled={isLoading}
-        className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        title={isPlaying ? 'Pause' : 'Play'}
+        disabled={isLoading || audioDisabled}
+        className={`flex items-center justify-center w-8 h-8 text-white rounded-full transition-colors ${
+          audioDisabled 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-blue-600 hover:bg-blue-700'
+        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        title={audioDisabled ? 'Audio disabled' : isPlaying ? 'Pause' : 'Play'}
       >
         {isLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
