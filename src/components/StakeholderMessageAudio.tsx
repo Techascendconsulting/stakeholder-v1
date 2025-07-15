@@ -86,6 +86,14 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
       setIsLoading(true)
       setError(null)
 
+      // Force stop any existing audio first
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+      }
+
+      // Small delay to ensure previous audio has stopped
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       // If already playing, just resume
       if (audioRef.current && audioRef.current.paused && audioUrlRef.current) {
         audioRef.current.play()
@@ -171,10 +179,14 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
   // Auto-play when component mounts if enabled
   useEffect(() => {
     if (autoPlay && globalAudioEnabled && isStakeholderVoiceEnabled(message.speaker)) {
-      // Small delay to ensure component is fully mounted
-      setTimeout(() => {
+      // Longer delay to ensure component is fully mounted and previous audio has stopped
+      const timeoutId = setTimeout(() => {
         handlePlay()
-      }, 100)
+      }, 300)
+      
+      return () => {
+        clearTimeout(timeoutId)
+      }
     }
     
     // Cleanup on unmount
@@ -190,6 +202,25 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
       handleStop()
     }
   }, [shouldStop, isPlaying])
+
+  // Stop audio when another message starts playing
+  useEffect(() => {
+    if (shouldStop && (isPlaying || isLoading)) {
+      // Force stop any playing audio
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+      }
+      // Cancel any browser speech
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+      }
+      setIsPlaying(false)
+      setIsLoading(false)
+      setAudioProgress(0)
+      stopProgressTracking()
+    }
+  }, [shouldStop])
 
   // Notify parent component when playing state changes
   useEffect(() => {

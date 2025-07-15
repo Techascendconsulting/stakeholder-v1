@@ -14,10 +14,16 @@ const MeetingView: React.FC = () => {
   const [showQuestionHelper, setShowQuestionHelper] = useState(false)
   const [selectedQuestionCategory, setSelectedQuestionCategory] = useState<'as-is' | 'to-be'>('as-is')
   const [currentlyPlayingAudio, setCurrentlyPlayingAudio] = useState<string | null>(null)
+  const [responseHistory, setResponseHistory] = useState<Map<string, string[]>>(new Map())
 
   // Handle audio playback state - only one audio can play at a time
   const handleAudioPlayingChange = (messageId: string, isPlaying: boolean) => {
     if (isPlaying) {
+      // Force stop all browser speech before starting new audio
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+      }
+      
       // Stop all other audio when new audio starts
       setCurrentlyPlayingAudio(messageId)
     } else if (currentlyPlayingAudio === messageId) {
@@ -126,94 +132,243 @@ const MeetingView: React.FC = () => {
 
   const generateContextualResponse = (question: string, stakeholder: any, conversationHistory: Message[]) => {
     const lowerQuestion = question.toLowerCase()
+    const stakeholderId = stakeholder.id || stakeholder.name
     
-    // Role-specific response patterns
-    const roleResponses = {
-      'Head of Operations': [
-        `From an operations perspective, ${getOperationsResponse(lowerQuestion)}`,
-        `Operationally speaking, ${getOperationsResponse(lowerQuestion)}`,
-        `In my experience managing operations, ${getOperationsResponse(lowerQuestion)}`
-      ],
+    // Get previous responses for this stakeholder
+    const previousResponses = responseHistory.get(stakeholderId) || []
+    
+    // Generate response based on question type and context
+    let response = ''
+    
+    if (lowerQuestion.includes('hello') || lowerQuestion.includes('hi')) {
+      response = getGreetingResponse(stakeholder, lowerQuestion)
+    } else if (lowerQuestion.includes('process') || lowerQuestion.includes('workflow')) {
+      response = getProcessResponse(stakeholder, lowerQuestion)
+    } else if (lowerQuestion.includes('challenge') || lowerQuestion.includes('problem')) {
+      response = getChallengeResponse(stakeholder, lowerQuestion)
+    } else if (lowerQuestion.includes('improve') || lowerQuestion.includes('better')) {
+      response = getImprovementResponse(stakeholder, lowerQuestion)
+    } else if (lowerQuestion.includes('time') || lowerQuestion.includes('duration')) {
+      response = getTimeResponse(stakeholder, lowerQuestion)
+    } else {
+      response = getDefaultResponse(stakeholder, lowerQuestion)
+    }
+    
+    // Avoid duplicate responses
+    let finalResponse = response
+    let attempts = 0
+    while (previousResponses.includes(finalResponse) && attempts < 3) {
+      finalResponse = addVariation(response, attempts)
+      attempts++
+    }
+    
+    // Track this response
+    const updatedHistory = new Map(responseHistory)
+    updatedHistory.set(stakeholderId, [...previousResponses, finalResponse])
+    setResponseHistory(updatedHistory)
+    
+    return finalResponse
+  }
+
+  const getGreetingResponse = (stakeholder: any, question: string) => {
+    const greetings = {
       'Customer Service Manager': [
-        `From a customer service standpoint, ${getCustomerServiceResponse(lowerQuestion)}`,
-        `In terms of customer experience, ${getCustomerServiceResponse(lowerQuestion)}`,
-        `From our customer-facing perspective, ${getCustomerServiceResponse(lowerQuestion)}`
+        'Hello! Great to be here discussing how we can improve our customer experience.',
+        'Hi there! I\'m looking forward to sharing our customer service perspective.',
+        'Hello! I\'m excited to discuss how we can make things better for our customers.'
+      ],
+      'Head of Operations': [
+        'Hello! Ready to dive into our operational processes and improvements.',
+        'Hi! I\'m here to discuss our current workflows and optimization opportunities.',
+        'Hello! Looking forward to sharing operational insights with you.'
       ],
       'IT Systems Lead': [
-        `From a technical perspective, ${getITResponse(lowerQuestion)}`,
-        `Looking at this from a systems standpoint, ${getITResponse(lowerQuestion)}`,
-        `From an IT infrastructure perspective, ${getITResponse(lowerQuestion)}`
+        'Hello! Excited to discuss our technical infrastructure and possibilities.',
+        'Hi! I\'m here to share our IT perspective on system improvements.',
+        'Hello! Ready to talk about our technology challenges and solutions.'
       ],
       'HR Business Partner': [
-        `From an HR perspective, ${getHRResponse(lowerQuestion)}`,
-        `Considering the people aspect, ${getHRResponse(lowerQuestion)}`,
-        `From a human resources standpoint, ${getHRResponse(lowerQuestion)}`
+        'Hello! I\'m here to discuss the people side of any changes we make.',
+        'Hi! Looking forward to sharing HR insights on team impact and training.',
+        'Hello! Ready to talk about change management and team support.'
       ]
     }
     
-    const responses = roleResponses[stakeholder.role] || [
-      `That's a great question. From my perspective as ${stakeholder.role}, I can share some insights.`,
-      `Let me address that from my role as ${stakeholder.role}.`,
-      `From a ${stakeholder.role} standpoint, I can provide some context.`
+    const responses = greetings[stakeholder.role] || [
+      `Hello! I'm ${stakeholder.name}, and I'm here to help with your questions about ${stakeholder.role.toLowerCase()}.`
     ]
     
     return responses[Math.floor(Math.random() * responses.length)]
   }
 
-  const getOperationsResponse = (question: string) => {
-    if (question.includes('process') || question.includes('workflow')) {
-      return 'our current process involves several manual steps that could be streamlined. We typically handle 200-300 cases per day, and each one requires multiple touchpoints.'
+  const getProcessResponse = (stakeholder: any, question: string) => {
+    const processResponses = {
+      'Customer Service Manager': [
+        'From a customer perspective, our current process has several touchpoints that could be streamlined. Customers often ask us for status updates because they don\'t have visibility.',
+        'The customer-facing part of our process involves multiple handoffs. We receive inquiries, coordinate with different teams, and try to keep customers informed throughout.',
+        'Our process currently requires customers to provide the same information multiple times to different departments, which creates frustration.'
+      ],
+      'Head of Operations': [
+        'Our operational process involves 15 distinct steps, with manual handoffs between departments. We process approximately 200-300 cases daily.',
+        'The current workflow requires multiple approvals and data entry points. Each case moves through 4 different systems before completion.',
+        'Operationally, we see bottlenecks in the verification stage and final approval process. These create delays that ripple through the entire workflow.'
+      ],
+      'IT Systems Lead': [
+        'From a technical standpoint, our process involves 3 separate systems that don\'t communicate well. Data has to be manually transferred between platforms.',
+        'Our current process relies on legacy systems that require significant manual intervention. Integration between our CRM and processing systems is limited.',
+        'The technical architecture behind our process involves point-to-point connections that are fragile and hard to maintain.'
+      ],
+      'HR Business Partner': [
+        'From a people perspective, our current process requires extensive training because it\'s complex and has many manual steps.',
+        'The process impacts our team\'s daily work significantly. Staff spend about 60% of their time on administrative tasks rather than value-add activities.',
+        'Our current process requires different skill sets across departments, which creates dependencies and potential bottlenecks when people are unavailable.'
+      ]
     }
-    if (question.includes('time') || question.includes('duration')) {
-      return 'the current process typically takes about 2-3 hours per case, but with the right improvements, we could reduce that significantly.'
-    }
-    if (question.includes('problem') || question.includes('issue') || question.includes('challenge')) {
-      return 'the main challenge we face is the lack of integration between our systems. This creates delays and potential for errors.'
-    }
-    if (question.includes('improve') || question.includes('better') || question.includes('optimize')) {
-      return 'we need to ensure any new solution maintains our quality standards while improving efficiency. Automation would help, but we still need flexibility for exceptions.'
-    }
-    return 'we handle the operational aspects of the onboarding process, and there are definitely opportunities for improvement in our workflows.'
+    
+    const responses = processResponses[stakeholder.role] || [
+      `From my ${stakeholder.role} perspective, our process involves several key steps that could be optimized.`
+    ]
+    
+    return responses[Math.floor(Math.random() * responses.length)]
   }
 
-  const getCustomerServiceResponse = (question: string) => {
-    if (question.includes('customer') || question.includes('experience')) {
-      return 'customer experience is our top priority. Currently, customers often have to wait for updates, and the process can feel fragmented from their perspective.'
+  const getChallengeResponse = (stakeholder: any, question: string) => {
+    const challengeResponses = {
+      'Customer Service Manager': [
+        'Our biggest challenge is managing customer expectations when there are delays. They want transparency and timely updates.',
+        'The main issue we face is customers having to repeat information to different departments. It creates a fragmented experience.',
+        'Communication gaps between departments mean customers sometimes receive conflicting information, which damages trust.'
+      ],
+      'Head of Operations': [
+        'Our primary challenge is the lack of real-time visibility into case status. Managers spend too much time on status updates instead of strategic work.',
+        'The biggest operational challenge is managing peak volumes with our current manual processes. We often have to add temporary staff.',
+        'Data quality issues cause rework and delays. Information gets lost or corrupted during handoffs between systems.'
+      ],
+      'IT Systems Lead': [
+        'Our main technical challenge is system integration. Our platforms were built at different times and don\'t communicate effectively.',
+        'Legacy system maintenance consumes significant IT resources. We spend more time keeping old systems running than building new capabilities.',
+        'Data inconsistency across systems creates problems. The same customer information exists in multiple places with different formats.'
+      ],
+      'HR Business Partner': [
+        'Change resistance is our biggest challenge. Staff are comfortable with current processes, even if they\'re inefficient.',
+        'Skills gaps in our team mean we rely heavily on a few key people. When they\'re unavailable, processes slow down significantly.',
+        'Training new staff takes 6-8 weeks because our processes are complex and not well-documented.'
+      ]
     }
-    if (question.includes('feedback') || question.includes('complaint')) {
-      return 'we receive feedback about delays and lack of visibility into the process. Customers want to know where they stand in the onboarding journey.'
-    }
-    if (question.includes('communication') || question.includes('update')) {
-      return 'we currently send manual updates, but they\'re not always timely. An automated system would help keep customers informed throughout the process.'
-    }
-    return 'from a customer service perspective, we need to ensure the onboarding process is smooth and transparent for our customers.'
+    
+    const responses = challengeResponses[stakeholder.role] || [
+      `The main challenge from my ${stakeholder.role} perspective is ensuring smooth operations while managing complexity.`
+    ]
+    
+    return responses[Math.floor(Math.random() * responses.length)]
   }
 
-  const getITResponse = (question: string) => {
-    if (question.includes('system') || question.includes('technology') || question.includes('technical')) {
-      return 'our current systems are somewhat fragmented. We have different platforms that don\'t communicate well with each other, which creates data silos.'
+  const getImprovementResponse = (stakeholder: any, question: string) => {
+    const improvementResponses = {
+      'Customer Service Manager': [
+        'We need self-service options for customers to check status and update information. This would reduce inquiry volume and improve satisfaction.',
+        'Automated notifications at key process milestones would help customers stay informed without having to contact us.',
+        'A unified customer portal where they can see all their interactions and documents would significantly improve the experience.'
+      ],
+      'Head of Operations': [
+        'Process automation would eliminate many manual handoffs and reduce errors. We could probably automate 70% of our current manual tasks.',
+        'Real-time dashboards would give managers better visibility into bottlenecks and help with resource allocation.',
+        'Standardized workflows with built-in quality checks would reduce variability and improve consistency.'
+      ],
+      'IT Systems Lead': [
+        'A unified data platform would eliminate the need for manual data transfers and reduce errors significantly.',
+        'API-based integrations would make our systems more flexible and easier to maintain than current point-to-point connections.',
+        'Cloud-based solutions would give us better scalability and reduce the maintenance burden on our IT team.'
+      ],
+      'HR Business Partner': [
+        'Simplified processes with better documentation would reduce training time and make staff more confident.',
+        'Role-based dashboards would help staff focus on their specific responsibilities without getting overwhelmed.',
+        'Better change management support would help the team adapt more quickly to new processes and technologies.'
+      ]
     }
-    if (question.includes('integration') || question.includes('data')) {
-      return 'we need better integration between our CRM, billing system, and customer portal. Currently, data has to be manually transferred between systems.'
-    }
-    if (question.includes('automation') || question.includes('automate')) {
-      return 'there are many opportunities for automation in our current process. We could automate document processing, status updates, and notifications.'
-    }
-    return 'from a technical standpoint, we have the infrastructure to support improvements, but we need better integration between our systems.'
+    
+    const responses = improvementResponses[stakeholder.role] || [
+      `From my ${stakeholder.role} perspective, we should focus on streamlining our most common workflows first.`
+    ]
+    
+    return responses[Math.floor(Math.random() * responses.length)]
   }
 
-  const getHRResponse = (question: string) => {
-    if (question.includes('training') || question.includes('skill') || question.includes('people')) {
-      return 'our team would need proper training on any new system. Change management is crucial for successful implementation.'
+  const getTimeResponse = (stakeholder: any, question: string) => {
+    const timeResponses = {
+      'Customer Service Manager': [
+        'Customers currently wait 2-3 days for initial processing, and the entire process takes 1-2 weeks depending on complexity.',
+        'Response times vary significantly. Simple cases might take 24 hours, but complex ones can take up to 10 business days.',
+        'Our service level agreement is 5 business days, but we often struggle to meet that during peak periods.'
+      ],
+      'Head of Operations': [
+        'Each case takes approximately 3-4 hours of actual work time, but calendar time is 7-10 days due to queuing and handoffs.',
+        'Processing time breaks down to: initial review (30 minutes), verification (2 hours), approval (1 hour), but waiting time between steps adds days.',
+        'During peak periods, processing times can double due to resource constraints and system performance issues.'
+      ],
+      'IT Systems Lead': [
+        'System response times are generally good, but batch processing jobs that run overnight can cause morning delays.',
+        'Data synchronization between systems happens every 4 hours, which can delay real-time updates.',
+        'System downtime for maintenance occurs monthly for 2-3 hours, which impacts processing during those windows.'
+      ],
+      'HR Business Partner': [
+        'Staff typically spend 15-20 minutes per case on administrative tasks, but complex cases can take up to an hour.',
+        'Training new staff takes 6-8 weeks to reach full productivity due to process complexity.',
+        'Our team spends about 30% of their time on status updates and coordination rather than core processing work.'
+      ]
     }
-    if (question.includes('impact') || question.includes('affect') || question.includes('change')) {
-      return 'any changes to the process will impact our team\'s daily work. We need to ensure proper support and training during the transition.'
-    }
-    if (question.includes('resource') || question.includes('staff')) {
-      return 'we have the right people in place, but they need to be equipped with the right tools and training to succeed with any new process.'
-    }
-    return 'from an HR perspective, we need to consider the impact on our team and ensure they have the support they need during any transition.'
+    
+    const responses = timeResponses[stakeholder.role] || [
+      `From my ${stakeholder.role} perspective, timing is definitely an area where we can improve efficiency.`
+    ]
+    
+    return responses[Math.floor(Math.random() * responses.length)]
   }
+
+  const getDefaultResponse = (stakeholder: any, question: string) => {
+    const defaultResponses = {
+      'Customer Service Manager': [
+        'From a customer experience standpoint, that\'s an important consideration. We always need to think about how changes affect our customers.',
+        'I can share some insights from our customer feedback. This is definitely something that comes up in our customer conversations.',
+        'That\'s a great question. From our customer-facing perspective, we see this impact our service quality regularly.'
+      ],
+      'Head of Operations': [
+        'From an operational standpoint, that\'s definitely something we need to consider in our daily workflows.',
+        'That\'s a good point. Operationally, we see this affecting our efficiency and resource allocation.',
+        'I can provide some context from our operations experience. This touches on several areas of our work.'
+      ],
+      'IT Systems Lead': [
+        'From a technical perspective, that\'s an interesting challenge. Our systems architecture plays a role in this.',
+        'That\'s a valid concern. From an IT standpoint, we need to consider the technical implications and feasibility.',
+        'I can share some insights from our technical infrastructure. This relates to several system components.'
+      ],
+      'HR Business Partner': [
+        'From a people perspective, that\'s something we need to carefully consider in terms of team impact.',
+        'That\'s an important consideration. From an HR standpoint, we need to think about training and change management.',
+        'I can provide some context from our team experience. This affects how our staff work and collaborate.'
+      ]
+    }
+    
+    const responses = defaultResponses[stakeholder.role] || [
+      `That's a thoughtful question. From my ${stakeholder.role} perspective, I can share some relevant insights.`
+    ]
+    
+    return responses[Math.floor(Math.random() * responses.length)]
+  }
+
+  const addVariation = (response: string, attempt: number) => {
+    const variations = [
+      response.replace('From a ', 'Looking at this from a '),
+      response.replace('From my ', 'In my experience as '),
+      response.replace('Our ', 'We see that our '),
+      response.replace('The ', 'I\'d say the '),
+      response.replace('We ', 'In our department, we ')
+    ]
+    
+    return variations[attempt % variations.length] || response
+  }
+
+
 
   const handleQuestionClick = (question: string) => {
     setInputMessage(question)
