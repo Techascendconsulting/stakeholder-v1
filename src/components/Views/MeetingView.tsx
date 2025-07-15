@@ -74,9 +74,6 @@ const MeetingView: React.FC = () => {
     // Simulate AI response
     setTimeout(() => {
       const stakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
-      console.log('🔍 DEBUG: Selected stakeholder:', stakeholder)
-      console.log('🔍 DEBUG: Stakeholder ID:', stakeholder.id)
-      console.log('🔍 DEBUG: All selected stakeholders:', selectedStakeholders)
       
       const aiMessage: Message = {
         id: `ai-${Date.now()}`,
@@ -87,7 +84,6 @@ const MeetingView: React.FC = () => {
         stakeholderRole: stakeholder.role
       }
 
-      console.log('🔍 DEBUG: Created AI message:', aiMessage)
       setMessages(prev => [...prev, aiMessage])
       setIsLoading(false)
     }, 1500)
@@ -248,17 +244,13 @@ const MeetingView: React.FC = () => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => {
-          console.log('🔍 DEBUG: Rendering message:', message.id, 'Speaker:', message.speaker, 'Type:', typeof message.speaker)
-          console.log('🔍 DEBUG: Message content preview:', message.content.substring(0, 50) + '...')
-          
-          return (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.speaker === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex ${
+              message.speaker === 'user' ? 'justify-end' : 'justify-start'
+            }`}
+          >
             <div
               className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                 message.speaker === 'user'
@@ -278,30 +270,17 @@ const MeetingView: React.FC = () => {
                 {new Date(message.timestamp).toLocaleTimeString()}
               </div>
               
-              {/* Audio Controls for Stakeholder Messages */}
-              {(() => {
-                const shouldShowAudio = message.speaker !== 'user' && message.speaker !== 'system'
-                console.log('🔍 DEBUG: Should show audio for message:', message.id, 'Speaker:', message.speaker, 'Show:', shouldShowAudio)
-                
-                // TEMP: Force show audio for all non-user messages for debugging
-                const forceShowAudio = message.speaker !== 'user'
-                console.log('🔍 DEBUG: Force show audio:', forceShowAudio)
-                
-                return forceShowAudio && (
-                  <div>
-                    <p style={{color: 'red', fontSize: '12px'}}>DEBUG: Audio controls should appear here</p>
-                                         <StakeholderMessageAudio
-                       message={message}
-                       autoPlay={false}
-                       onPlayingChange={(isPlaying) => handleAudioPlayingChange(message.id, isPlaying)}
-                     />
-                  </div>
-                )
-              })()}
+                            {/* Audio Controls for Stakeholder Messages */}
+              {message.speaker !== 'user' && message.speaker !== 'system' && (
+                <StakeholderMessageAudio
+                  message={message}
+                  autoPlay={true}
+                  onPlayingChange={(isPlaying) => handleAudioPlayingChange(message.id, isPlaying)}
+                />
+              )}
             </div>
-            </div>
-          )
-        })}
+          </div>
+        ))}
 
         {isLoading && (
           <div className="flex justify-start">
@@ -361,21 +340,7 @@ const MeetingView: React.FC = () => {
           </div>
         )}
 
-        {/* TEMP: Debug audio component */}
-        <div className="mt-4 p-4 bg-yellow-100 border border-yellow-400 rounded-lg">
-          <p className="text-sm text-yellow-800 mb-2">DEBUG: Testing audio component directly</p>
-          <StakeholderMessageAudio
-            message={{
-              id: 'test-123',
-              content: 'This is a test message for audio debugging',
-              speaker: 'test-stakeholder',
-              stakeholderName: 'Test Stakeholder',
-              stakeholderRole: 'Test Role'
-            }}
-            autoPlay={false}
-            onPlayingChange={() => {}}
-          />
-        </div>
+
       </div>
     </div>
   )

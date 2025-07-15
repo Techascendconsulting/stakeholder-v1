@@ -76,9 +76,7 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
   }
 
   const handlePlay = async () => {
-    console.log('handlePlay called for message:', message.id, 'speaker:', message.speaker)
     if (!globalAudioEnabled || !isStakeholderVoiceEnabled(message.speaker)) {
-      console.log('Audio disabled for this stakeholder:', message.speaker)
       return
     }
 
@@ -96,10 +94,8 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
 
       // Generate new audio
       const voiceName = getStakeholderVoice(message.speaker, message.stakeholderRole)
-      console.log('Using voice:', voiceName, 'for stakeholder:', message.speaker)
 
       if (isAzureTTSAvailable()) {
-        console.log('Using Azure TTS')
         // Use Azure TTS
         const audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceName)
         
@@ -136,7 +132,6 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
         setIsPlaying(true)
         startProgressTracking()
       } else {
-        console.log('Using browser TTS fallback')
         // Use browser TTS - simulate progress for consistency
         setIsPlaying(true)
         setAudioDuration(message.content.length * 0.1) // Rough estimate
@@ -156,7 +151,6 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
       
       // Try browser TTS as fallback
       try {
-        console.log('Trying browser TTS fallback')
         await playBrowserTTS(message.content)
       } catch (fallbackError) {
         console.error('Browser TTS fallback failed:', fallbackError)
@@ -169,10 +163,12 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
 
   // Auto-play when component mounts if enabled
   useEffect(() => {
-    // Temporarily disable autoPlay to avoid initialization issues
-    // if (autoPlay && globalAudioEnabled && isStakeholderVoiceEnabled(message.speaker)) {
-    //   handlePlay()
-    // }
+    if (autoPlay && globalAudioEnabled && isStakeholderVoiceEnabled(message.speaker)) {
+      // Small delay to ensure component is fully mounted
+      setTimeout(() => {
+        handlePlay()
+      }, 100)
+    }
     
     // Cleanup on unmount
     return () => {
@@ -211,19 +207,15 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
   }
 
   // Always render the controls, just disable functionality if audio is disabled
-  console.log('Audio component rendering for message:', message.id, 'speaker:', message.speaker)
-  console.log('Global audio enabled:', globalAudioEnabled)
-  console.log('Stakeholder voice enabled:', isStakeholderVoiceEnabled(message.speaker))
-  
   const audioDisabled = !globalAudioEnabled || !isStakeholderVoiceEnabled(message.speaker)
 
   return (
-    <div className="flex items-center space-x-2 mt-2 bg-gray-50 rounded-lg p-2">
+    <div className="flex items-center space-x-2 mt-3 bg-blue-50 rounded-lg p-2 border border-blue-200">
       {/* Play/Pause Button */}
       <button
         onClick={isPlaying ? handlePause : handlePlay}
         disabled={isLoading || audioDisabled}
-        className={`flex items-center justify-center w-8 h-8 text-white rounded-full transition-colors ${
+        className={`flex items-center justify-center w-7 h-7 text-white rounded-full transition-colors ${
           audioDisabled 
             ? 'bg-gray-400 cursor-not-allowed' 
             : 'bg-blue-600 hover:bg-blue-700'
@@ -231,11 +223,11 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
         title={audioDisabled ? 'Audio disabled' : isPlaying ? 'Pause' : 'Play'}
       >
         {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-3 h-3 animate-spin" />
         ) : isPlaying ? (
-          <Pause className="w-4 h-4" />
+          <Pause className="w-3 h-3" />
         ) : (
-          <Play className="w-4 h-4" />
+          <Play className="w-3 h-3" />
         )}
       </button>
 
@@ -243,38 +235,38 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
       <button
         onClick={handleStop}
         disabled={!isPlaying && !audioRef.current}
-        className="flex items-center justify-center w-8 h-8 bg-gray-600 text-white rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center justify-center w-7 h-7 bg-gray-600 text-white rounded-full hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         title="Stop"
       >
-        <Square className="w-4 h-4" />
+        <Square className="w-3 h-3" />
       </button>
 
       {/* Progress Bar */}
       <div className="flex-1 flex items-center space-x-2">
-        <div className="flex-1 bg-gray-200 rounded-full h-2">
+        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all duration-100"
+            className="bg-blue-600 h-1.5 rounded-full transition-all duration-100"
             style={{ width: `${audioProgress}%` }}
           />
         </div>
         
         {/* Time Display */}
         {audioDuration > 0 && (
-          <div className="text-xs text-gray-500 min-w-0">
+          <div className="text-xs text-gray-600 min-w-0 font-mono">
             {formatTime((audioProgress / 100) * audioDuration)} / {formatTime(audioDuration)}
           </div>
         )}
       </div>
 
       {/* Volume Icon */}
-      <div className="text-gray-400">
-        <Volume2 className="w-4 h-4" />
+      <div className="text-blue-600">
+        <Volume2 className="w-3 h-3" />
       </div>
 
       {/* Error Display */}
       {error && (
         <div className="flex items-center space-x-1 text-red-600" title={error}>
-          <AlertCircle className="w-4 h-4" />
+          <AlertCircle className="w-3 h-3" />
           <span className="text-xs">Error</span>
         </div>
       )}
