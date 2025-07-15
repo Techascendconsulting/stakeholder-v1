@@ -18,6 +18,7 @@ const MeetingView: React.FC = () => {
   // Handle audio playback state - only one audio can play at a time
   const handleAudioPlayingChange = (messageId: string, isPlaying: boolean) => {
     if (isPlaying) {
+      // Stop all other audio when new audio starts
       setCurrentlyPlayingAudio(messageId)
     } else if (currentlyPlayingAudio === messageId) {
       setCurrentlyPlayingAudio(null)
@@ -73,15 +74,16 @@ const MeetingView: React.FC = () => {
 
     // Simulate AI response
     setTimeout(() => {
-      const stakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
+      // Determine which stakeholder should respond based on the message content
+      const respondingStakeholder = determineRespondingStakeholder(inputMessage, selectedStakeholders)
       
       const aiMessage: Message = {
         id: `ai-${Date.now()}`,
-        speaker: stakeholder.id || 'stakeholder',
-        content: generateMockResponse(inputMessage, stakeholder),
+        speaker: respondingStakeholder.id || 'stakeholder',
+        content: generateContextualResponse(inputMessage, respondingStakeholder, messages),
         timestamp: new Date().toISOString(),
-        stakeholderName: stakeholder.name,
-        stakeholderRole: stakeholder.role
+        stakeholderName: respondingStakeholder.name,
+        stakeholderRole: respondingStakeholder.role
       }
 
       setMessages(prev => [...prev, aiMessage])
@@ -91,15 +93,126 @@ const MeetingView: React.FC = () => {
     setInputMessage('')
   }
 
-  const generateMockResponse = (_question: string, stakeholder: any) => {
-    const responses = [
-      `That's a great question. From my perspective as ${stakeholder.role}, I can tell you that our current process involves several manual steps that could be streamlined.`,
-      `In my experience, the main challenge we face is the lack of integration between our systems. This creates delays and potential for errors.`,
-      `I think the ideal solution would automate much of what we do manually today, while still giving us the flexibility to handle exceptions.`,
-      `The current process typically takes about 2-3 hours per case, but with the right improvements, we could reduce that significantly.`,
-      `From a ${stakeholder.department} standpoint, we need to ensure any new solution maintains our quality standards while improving efficiency.`
+  const determineRespondingStakeholder = (message: string, stakeholders: any[]) => {
+    // Convert message to lowercase for easier matching
+    const lowerMessage = message.toLowerCase()
+    
+    // Look for stakeholder names in the message
+    for (const stakeholder of stakeholders) {
+      const firstName = stakeholder.name.split(' ')[0].toLowerCase()
+      const fullName = stakeholder.name.toLowerCase()
+      
+      if (lowerMessage.includes(firstName) || lowerMessage.includes(fullName)) {
+        return stakeholder
+      }
+    }
+    
+    // Look for role-based addressing
+    for (const stakeholder of stakeholders) {
+      const role = stakeholder.role.toLowerCase()
+      if (lowerMessage.includes(role) || 
+          lowerMessage.includes('operations') && role.includes('operations') ||
+          lowerMessage.includes('customer') && role.includes('customer') ||
+          lowerMessage.includes('hr') && role.includes('hr') ||
+          lowerMessage.includes('it') && role.includes('it')) {
+        return stakeholder
+      }
+    }
+    
+    // Default: rotate through stakeholders based on message count
+    const messageCount = messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system').length
+    return stakeholders[messageCount % stakeholders.length] || stakeholders[0]
+  }
+
+  const generateContextualResponse = (question: string, stakeholder: any, conversationHistory: Message[]) => {
+    const lowerQuestion = question.toLowerCase()
+    
+    // Role-specific response patterns
+    const roleResponses = {
+      'Head of Operations': [
+        `From an operations perspective, ${getOperationsResponse(lowerQuestion)}`,
+        `Operationally speaking, ${getOperationsResponse(lowerQuestion)}`,
+        `In my experience managing operations, ${getOperationsResponse(lowerQuestion)}`
+      ],
+      'Customer Service Manager': [
+        `From a customer service standpoint, ${getCustomerServiceResponse(lowerQuestion)}`,
+        `In terms of customer experience, ${getCustomerServiceResponse(lowerQuestion)}`,
+        `From our customer-facing perspective, ${getCustomerServiceResponse(lowerQuestion)}`
+      ],
+      'IT Systems Lead': [
+        `From a technical perspective, ${getITResponse(lowerQuestion)}`,
+        `Looking at this from a systems standpoint, ${getITResponse(lowerQuestion)}`,
+        `From an IT infrastructure perspective, ${getITResponse(lowerQuestion)}`
+      ],
+      'HR Business Partner': [
+        `From an HR perspective, ${getHRResponse(lowerQuestion)}`,
+        `Considering the people aspect, ${getHRResponse(lowerQuestion)}`,
+        `From a human resources standpoint, ${getHRResponse(lowerQuestion)}`
+      ]
+    }
+    
+    const responses = roleResponses[stakeholder.role] || [
+      `That's a great question. From my perspective as ${stakeholder.role}, I can share some insights.`,
+      `Let me address that from my role as ${stakeholder.role}.`,
+      `From a ${stakeholder.role} standpoint, I can provide some context.`
     ]
+    
     return responses[Math.floor(Math.random() * responses.length)]
+  }
+
+  const getOperationsResponse = (question: string) => {
+    if (question.includes('process') || question.includes('workflow')) {
+      return 'our current process involves several manual steps that could be streamlined. We typically handle 200-300 cases per day, and each one requires multiple touchpoints.'
+    }
+    if (question.includes('time') || question.includes('duration')) {
+      return 'the current process typically takes about 2-3 hours per case, but with the right improvements, we could reduce that significantly.'
+    }
+    if (question.includes('problem') || question.includes('issue') || question.includes('challenge')) {
+      return 'the main challenge we face is the lack of integration between our systems. This creates delays and potential for errors.'
+    }
+    if (question.includes('improve') || question.includes('better') || question.includes('optimize')) {
+      return 'we need to ensure any new solution maintains our quality standards while improving efficiency. Automation would help, but we still need flexibility for exceptions.'
+    }
+    return 'we handle the operational aspects of the onboarding process, and there are definitely opportunities for improvement in our workflows.'
+  }
+
+  const getCustomerServiceResponse = (question: string) => {
+    if (question.includes('customer') || question.includes('experience')) {
+      return 'customer experience is our top priority. Currently, customers often have to wait for updates, and the process can feel fragmented from their perspective.'
+    }
+    if (question.includes('feedback') || question.includes('complaint')) {
+      return 'we receive feedback about delays and lack of visibility into the process. Customers want to know where they stand in the onboarding journey.'
+    }
+    if (question.includes('communication') || question.includes('update')) {
+      return 'we currently send manual updates, but they\'re not always timely. An automated system would help keep customers informed throughout the process.'
+    }
+    return 'from a customer service perspective, we need to ensure the onboarding process is smooth and transparent for our customers.'
+  }
+
+  const getITResponse = (question: string) => {
+    if (question.includes('system') || question.includes('technology') || question.includes('technical')) {
+      return 'our current systems are somewhat fragmented. We have different platforms that don\'t communicate well with each other, which creates data silos.'
+    }
+    if (question.includes('integration') || question.includes('data')) {
+      return 'we need better integration between our CRM, billing system, and customer portal. Currently, data has to be manually transferred between systems.'
+    }
+    if (question.includes('automation') || question.includes('automate')) {
+      return 'there are many opportunities for automation in our current process. We could automate document processing, status updates, and notifications.'
+    }
+    return 'from a technical standpoint, we have the infrastructure to support improvements, but we need better integration between our systems.'
+  }
+
+  const getHRResponse = (question: string) => {
+    if (question.includes('training') || question.includes('skill') || question.includes('people')) {
+      return 'our team would need proper training on any new system. Change management is crucial for successful implementation.'
+    }
+    if (question.includes('impact') || question.includes('affect') || question.includes('change')) {
+      return 'any changes to the process will impact our team\'s daily work. We need to ensure proper support and training during the transition.'
+    }
+    if (question.includes('resource') || question.includes('staff')) {
+      return 'we have the right people in place, but they need to be equipped with the right tools and training to succeed with any new process.'
+    }
+    return 'from an HR perspective, we need to consider the impact on our team and ensure they have the support they need during any transition.'
   }
 
   const handleQuestionClick = (question: string) => {
@@ -275,6 +388,7 @@ const MeetingView: React.FC = () => {
                 <StakeholderMessageAudio
                   message={message}
                   autoPlay={true}
+                  shouldStop={currentlyPlayingAudio !== null && currentlyPlayingAudio !== message.id}
                   onPlayingChange={(isPlaying) => handleAudioPlayingChange(message.id, isPlaying)}
                 />
               )}

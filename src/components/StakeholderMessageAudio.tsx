@@ -12,12 +12,14 @@ interface StakeholderMessageAudioProps {
     stakeholderRole?: string
   }
   autoPlay?: boolean
+  shouldStop?: boolean
   onPlayingChange?: (isPlaying: boolean) => void
 }
 
 const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
   message,
   autoPlay = false,
+  shouldStop = false,
   onPlayingChange
 }) => {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -137,7 +139,12 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
         setAudioDuration(message.content.length * 0.1) // Rough estimate
         startProgressTracking()
         
-        await playBrowserTTS(message.content)
+        try {
+          await playBrowserTTS(message.content)
+        } catch (browserTTSError) {
+          console.error('Browser TTS failed:', browserTTSError)
+          setError('Audio playback not supported in this browser')
+        }
         
         setIsPlaying(false)
         setAudioProgress(0)
@@ -176,6 +183,13 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPlay, globalAudioEnabled, message.speaker, isStakeholderVoiceEnabled])
+
+  // Stop audio when shouldStop becomes true
+  useEffect(() => {
+    if (shouldStop && isPlaying) {
+      handleStop()
+    }
+  }, [shouldStop, isPlaying])
 
   // Notify parent component when playing state changes
   useEffect(() => {

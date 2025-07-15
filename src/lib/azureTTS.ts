@@ -263,15 +263,50 @@ export function playBrowserTTS(text: string): Promise<void> {
       return
     }
 
+    // Cancel any existing speech
+    speechSynthesis.cancel()
+
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = 0.9
     utterance.pitch = 1
     utterance.volume = 0.8
     utterance.lang = 'en-GB'
 
-    utterance.onend = () => resolve()
-    utterance.onerror = (error) => reject(new Error('Browser TTS failed'))
+    let hasEnded = false
+    const handleEnd = () => {
+      if (!hasEnded) {
+        hasEnded = true
+        resolve()
+      }
+    }
 
-    speechSynthesis.speak(utterance)
+    const handleError = (error: SpeechSynthesisErrorEvent) => {
+      if (!hasEnded) {
+        hasEnded = true
+        reject(new Error(`Browser TTS failed: ${error.error}`))
+      }
+    }
+
+    utterance.onend = handleEnd
+    utterance.onerror = handleError
+
+    // Fallback timeout in case events don't fire
+    const timeoutId = setTimeout(() => {
+      if (!hasEnded) {
+        hasEnded = true
+        speechSynthesis.cancel()
+        resolve()
+      }
+    }, text.length * 100) // Rough estimate based on text length
+
+    try {
+      speechSynthesis.speak(utterance)
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (!hasEnded) {
+        hasEnded = true
+        reject(new Error('Failed to initialize browser TTS'))
+      }
+    }
   })
 }
