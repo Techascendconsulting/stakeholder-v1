@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Play, Pause, Square, Volume2, Loader2, AlertCircle } from 'lucide-react'
 import { useVoice } from '../contexts/VoiceContext'
 import { azureTTS, isAzureTTSAvailable, playBrowserTTS } from '../lib/azureTTS'
@@ -35,23 +35,6 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
     isStakeholderVoiceEnabled, 
     globalAudioEnabled 
   } = useVoice()
-
-  // Auto-play when component mounts if enabled
-  useEffect(() => {
-    if (autoPlay && globalAudioEnabled && isStakeholderVoiceEnabled(message.speaker)) {
-      handlePlay()
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      cleanup()
-    }
-  }, [autoPlay, globalAudioEnabled, message.speaker, handlePlay, isStakeholderVoiceEnabled])
-
-  // Notify parent component when playing state changes
-  useEffect(() => {
-    onPlayingChange?.(isPlaying)
-  }, [isPlaying, onPlayingChange])
 
   const cleanup = () => {
     if (audioRef.current) {
@@ -92,7 +75,7 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
     }
   }
 
-  const handlePlay = useCallback(async () => {
+  const handlePlay = async () => {
     console.log('handlePlay called for message:', message.id, 'speaker:', message.speaker)
     if (!globalAudioEnabled || !isStakeholderVoiceEnabled(message.speaker)) {
       console.log('Audio disabled for this stakeholder:', message.speaker)
@@ -182,7 +165,26 @@ const StakeholderMessageAudio: React.FC<StakeholderMessageAudioProps> = ({
     } finally {
       setIsLoading(false)
     }
-  }, [globalAudioEnabled, isStakeholderVoiceEnabled, message.speaker, message.stakeholderRole, message.content, getStakeholderVoice])
+  }
+
+  // Auto-play when component mounts if enabled
+  useEffect(() => {
+    // Temporarily disable autoPlay to avoid initialization issues
+    // if (autoPlay && globalAudioEnabled && isStakeholderVoiceEnabled(message.speaker)) {
+    //   handlePlay()
+    // }
+    
+    // Cleanup on unmount
+    return () => {
+      cleanup()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, globalAudioEnabled, message.speaker, isStakeholderVoiceEnabled])
+
+  // Notify parent component when playing state changes
+  useEffect(() => {
+    onPlayingChange?.(isPlaying)
+  }, [isPlaying, onPlayingChange])
 
   const handlePause = () => {
     if (audioRef.current) {

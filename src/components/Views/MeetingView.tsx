@@ -290,11 +290,11 @@ const MeetingView: React.FC = () => {
                 return forceShowAudio && (
                   <div>
                     <p style={{color: 'red', fontSize: '12px'}}>DEBUG: Audio controls should appear here</p>
-                    <StakeholderMessageAudio
-                      message={message}
-                      autoPlay={true}
-                      onPlayingChange={(isPlaying) => handleAudioPlayingChange(message.id, isPlaying)}
-                    />
+                                         <StakeholderMessageAudio
+                       message={message}
+                       autoPlay={false}
+                       onPlayingChange={(isPlaying) => handleAudioPlayingChange(message.id, isPlaying)}
+                     />
                   </div>
                 )
               })()}
