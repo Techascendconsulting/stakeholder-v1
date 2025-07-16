@@ -1,6 +1,6 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, BarChart3, ArrowRight, Zap, Trophy, Globe, Building2 } from 'lucide-react'
+import { Clock, Users, BarChart3, ArrowRight, Zap, Trophy, Globe, Building2, Target, TrendingUp, Star } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
   const { projects, selectProject } = useApp()
@@ -13,29 +13,32 @@ const ProjectsView: React.FC = () => {
     }
   }
 
-  const getComplexityColor = (complexity: string) => {
+  const getComplexityConfig = (complexity: string) => {
     switch (complexity) {
       case 'Beginner':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return {
+          color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+          icon: Target,
+          description: 'Foundation Level'
+        }
       case 'Intermediate':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+        return {
+          color: 'bg-amber-100 text-amber-800 border-amber-200',
+          icon: TrendingUp,
+          description: 'Professional Level'
+        }
       case 'Advanced':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return {
+          color: 'bg-red-100 text-red-800 border-red-200',
+          icon: Star,
+          description: 'Expert Level'
+        }
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
-  const getComplexityIcon = (complexity: string) => {
-    switch (complexity) {
-      case 'Beginner':
-        return <Zap className="w-4 h-4" />
-      case 'Intermediate':
-        return <BarChart3 className="w-4 h-4" />
-      case 'Advanced':
-        return <Trophy className="w-4 h-4" />
-      default:
-        return <Globe className="w-4 h-4" />
+        return {
+          color: 'bg-gray-100 text-gray-800 border-gray-200',
+          icon: Target,
+          description: 'Standard Level'
+        }
     }
   }
 
