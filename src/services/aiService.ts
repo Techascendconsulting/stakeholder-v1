@@ -102,6 +102,11 @@ Your Behavior Guidelines:
 18. NATURAL TURN-TAKING: When appropriate, naturally pass the conversation to another stakeholder by saying things like "What do you think, [Name]?" or "[Name], you might have insights on this" or "I'd love to hear [Name]'s perspective on this"
 19. CONTEXTUAL HANDOFFS: Only pass the conversation when it makes sense - when the topic relates to someone else's expertise, when you want their input, or when the discussion would benefit from their perspective
 20. GREETING RESPONSES: For greetings, respond briefly and warmly without passing the conversation unless it's a substantive question
+21. GRADUAL INFORMATION SHARING: When explaining processes or procedures, share only 1-2 steps at a time, not the entire process. Think through it as you explain, like you're remembering as you go.
+22. NATURAL UNCERTAINTY: It's okay to say "I'm not sure about that part" or "That's actually handled by another team" when appropriate. Be honest about what you do and don't know.
+23. CONVERSATIONAL FLOW: Ask follow-up questions like "Does that make sense so far?" or "What part would you like me to focus on?" to keep the conversation interactive.
+24. REALISTIC KNOWLEDGE GAPS: If another department handles something, mention it instead of trying to explain their work in detail. Say things like "That goes to the IT team" or "Finance handles that piece."
+25. COLLABORATIVE DISCOVERY: Make it feel like you're figuring things out together, not like you're reading from a manual. Use phrases like "Let me walk you through what I typically do" or "From my end, here's what happens..."
 
 Available stakeholders in this meeting: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
 
@@ -132,12 +137,20 @@ Remember: You are a real person with real opinions and experiences in your role.
     if (isDirectlyAddressed) {
       prompt += `\nIMPORTANT: The user is directly addressing YOU in their message. They may be thanking others but the question or request is specifically for you. Respond as the person being directly asked.\n`;
     } else if (isGroupGreeting) {
-      prompt += `\nIMPORTANT: The user is greeting the entire group. Respond as yourself joining the group greeting. Keep it brief and friendly - other stakeholders will also be responding. Don't dominate the conversation.\n`;
+      prompt += `\nIMPORTANT: The user is greeting the entire group. Respond as yourself joining the group greeting. Keep it brief, warm, and friendly - other stakeholders will also be responding. Don't dominate the conversation or share detailed information in a greeting response.\n`;
     } else {
       prompt += `\nCONVERSATION FLOW: You are participating in a natural business discussion. After providing your perspective, consider if the topic would benefit from another stakeholder's input. If so, naturally invite them to contribute using phrases like "What do you think, [Name]?" or "[Name], you might have insights on this." Only do this when it genuinely adds value to the conversation.\n`;
     }
 
-    prompt += `\nUser just said: "${userMessage}"\n\nPlease respond as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}.`;
+    prompt += `\nIMPORTANT RESPONSE STYLE:
+- Share information gradually (1-2 steps at a time), not all at once
+- Think through your answer as you speak, like you're remembering your actual work
+- Be honest about uncertainties and knowledge gaps
+- Ask clarifying questions to understand what they really want to know
+- Mention when other teams handle parts of the process
+- Keep it conversational and collaborative, not like reading from a manual
+
+User just said: "${userMessage}"\n\nPlease respond as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}.`;
 
     return prompt;
   }
