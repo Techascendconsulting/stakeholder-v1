@@ -168,9 +168,9 @@ const MeetingView: React.FC = () => {
     }
   }
 
-  const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true) => {
+  const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
     if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
-      return
+      return Promise.resolve()
     }
 
     try {
@@ -179,7 +179,7 @@ const MeetingView: React.FC = () => {
       
       if (!autoPlay) {
         // Manual play - just set up the audio for this message
-        return
+        return Promise.resolve()
       }
 
       const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
@@ -194,21 +194,32 @@ const MeetingView: React.FC = () => {
         setPlayingMessageId(messageId)
         setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
         
-        audio.onended = () => {
-          URL.revokeObjectURL(audioUrl)
-          setCurrentAudio(null)
-          setPlayingMessageId(null)
-          setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-        }
-        
-        audio.onerror = () => {
-          URL.revokeObjectURL(audioUrl)
-          setCurrentAudio(null)
-          setPlayingMessageId(null)
-          setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-        }
-        
-        await audio.play()
+        // Return a promise that resolves when audio finishes
+        return new Promise((resolve) => {
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl)
+            setCurrentAudio(null)
+            setPlayingMessageId(null)
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+            resolve()
+          }
+          
+          audio.onerror = () => {
+            URL.revokeObjectURL(audioUrl)
+            setCurrentAudio(null)
+            setPlayingMessageId(null)
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+            resolve() // Resolve even on error to prevent hanging
+          }
+          
+          audio.play().catch(() => {
+            URL.revokeObjectURL(audioUrl)
+            setCurrentAudio(null)
+            setPlayingMessageId(null)
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+            resolve()
+          })
+        })
       } else {
         // Fallback to browser TTS
         setPlayingMessageId(messageId)
@@ -218,11 +229,13 @@ const MeetingView: React.FC = () => {
         
         setPlayingMessageId(null)
         setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+        return Promise.resolve()
       }
     } catch (error) {
       console.error('Audio playback failed:', error)
       setPlayingMessageId(null)
       setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+      return Promise.resolve()
     }
   }
 
@@ -286,19 +299,21 @@ const MeetingView: React.FC = () => {
         for (let i = 0; i < greetingRespondents.length; i++) {
           const stakeholder = greetingRespondents[i]
           
-          // Add natural delay between greeting responses
-          if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 600))
-          }
-          
+          // Generate response
           const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, 'greeting')
           const responseMessage = createResponseMessage(stakeholder, response, i)
           
+          // Add message to conversation
           currentMessages = [...currentMessages, responseMessage]
           setMessages(currentMessages)
           
-          // Play audio for greeting
+          // Play audio and wait for it to completely finish
           await playMessageAudio(responseMessage.id, response, stakeholder, true)
+          
+          // Add natural pause between speakers (but not after the last one)
+          if (i < greetingRespondents.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 500))
+          }
         }
       } else {
         // Handle discussions with natural turn-taking
@@ -332,10 +347,11 @@ const MeetingView: React.FC = () => {
       const response = await generateStakeholderResponse(currentSpeaker, userMessage, currentMessages, 'discussion')
       const responseMessage = createResponseMessage(currentSpeaker, response, turnCount)
       
+      // Add message to conversation
       currentMessages = [...currentMessages, responseMessage]
       setMessages(currentMessages)
       
-      // Play audio response
+      // Play audio response and wait for it to finish
       await playMessageAudio(responseMessage.id, response, currentSpeaker, true)
       
       // Check if current speaker is passing the conversation
@@ -358,7 +374,7 @@ const MeetingView: React.FC = () => {
         
         if (targetStakeholder && targetStakeholder.id !== currentSpeaker.id) {
           // Natural delay before next person speaks
-          await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 800))
+          await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
           
           currentSpeaker = targetStakeholder
           turnCount++
