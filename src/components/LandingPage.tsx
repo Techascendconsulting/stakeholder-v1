@@ -1,19 +1,40 @@
 import React, { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import { 
-  ArrowRight, 
-  Star, 
+  GraduationCap, 
   Users, 
   FileText, 
+  Target, 
   CheckCircle, 
-  TrendingUp,
-  Target,
+  Star,
+  ArrowRight,
   Play,
+  Award,
+  TrendingUp,
+  Building,
+  Clock,
+  Shield,
+  Zap,
+  MessageSquare,
+  BarChart3,
+  Globe,
+  Briefcase,
   ChevronRight,
-  Brain
+  Sparkles,
+  Brain,
+  Lightbulb,
+  Rocket,
+  Trophy,
+  BookOpen,
+  Video,
+  Headphones,
+  Monitor,
+  Smartphone
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 
 const LandingPage: React.FC = () => {
+  const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
