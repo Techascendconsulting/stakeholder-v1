@@ -3,7 +3,7 @@ import { Message } from '../types';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY || 'your-api-key-here',
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY || 'your-api-key-here',
   dangerouslyAllowBrowser: true
 });
 
