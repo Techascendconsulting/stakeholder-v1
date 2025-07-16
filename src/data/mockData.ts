@@ -202,6 +202,7 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'Strategic, process-focused, results-driven leadership style',
     priorities: ['Operational efficiency', 'Process standardization', 'Resource optimization'],
+    expertise: ['Process optimization', 'Operational strategy', 'Cross-functional coordination', 'Efficiency improvements', 'Resource management'],
     voice: 'en-GB-RyanNeural'
   },
   {
@@ -213,6 +214,7 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'Customer-focused, empathetic, performance-oriented',
     priorities: ['Customer satisfaction', 'Service quality', 'Team efficiency'],
+    expertise: ['Customer experience management', 'Service delivery optimization', 'Customer satisfaction improvement', 'Team performance management', 'Service quality assurance'],
     voice: 'en-GB-SoniaNeural'
   },
   {
@@ -224,6 +226,7 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'Technical, analytical, security-conscious',
     priorities: ['System security', 'Technical feasibility', 'Integration capabilities'],
+    expertise: ['IT systems architecture', 'Enterprise technology solutions', 'System integration', 'Security implementation', 'Technical feasibility assessment'],
     voice: 'en-GB-ThomasNeural'
   },
   {
@@ -235,6 +238,7 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'People-focused, collaborative, change management expert',
     priorities: ['Employee engagement', 'Change management', 'Training effectiveness'],
+    expertise: ['HR business partnering', 'HR strategy alignment', 'Change management', 'Employee engagement', 'Organizational development'],
     voice: 'en-GB-LibbyNeural'
   },
   {
@@ -246,6 +250,7 @@ export const mockStakeholders: Stakeholder[] = [
     photo: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=400',
     personality: 'Detail-oriented, risk-aware, compliance-focused',
     priorities: ['Regulatory compliance', 'Risk mitigation', 'Policy adherence'],
+    expertise: ['Regulatory compliance', 'Risk assessment', 'Policy development', 'Compliance management', 'Risk mitigation strategies'],
     voice: 'en-GB-AbbiNeural'
   }
 ]
