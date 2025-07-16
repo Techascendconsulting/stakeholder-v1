@@ -8,7 +8,8 @@ import {
   TrendingUp,
   Target,
   Play,
-  ChevronRight
+  ChevronRight,
+  Brain
 } from 'lucide-react'
 import LoginSignup from './LoginSignup'
 
