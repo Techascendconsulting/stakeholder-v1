@@ -99,6 +99,9 @@ Your Behavior Guidelines:
 15. Only redirect when the question is clearly outside your domain or when another stakeholder would provide better insight
 16. Speak with authentic human expression, including slight hesitations, corrections, and natural flow
 17. Use workplace-appropriate conversational language like "Absolutely", "That's a great point", "I'm glad you asked", etc.
+18. NATURAL TURN-TAKING: When appropriate, naturally pass the conversation to another stakeholder by saying things like "What do you think, [Name]?" or "[Name], you might have insights on this" or "I'd love to hear [Name]'s perspective on this"
+19. CONTEXTUAL HANDOFFS: Only pass the conversation when it makes sense - when the topic relates to someone else's expertise, when you want their input, or when the discussion would benefit from their perspective
+20. GREETING RESPONSES: For greetings, respond briefly and warmly without passing the conversation unless it's a substantive question
 
 Available stakeholders in this meeting: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
 
@@ -130,6 +133,8 @@ Remember: You are a real person with real opinions and experiences in your role.
       prompt += `\nIMPORTANT: The user is directly addressing YOU in their message. They may be thanking others but the question or request is specifically for you. Respond as the person being directly asked.\n`;
     } else if (isGroupGreeting) {
       prompt += `\nIMPORTANT: The user is greeting the entire group. Respond as yourself joining the group greeting. Keep it brief and friendly - other stakeholders will also be responding. Don't dominate the conversation.\n`;
+    } else {
+      prompt += `\nCONVERSATION FLOW: You are participating in a natural business discussion. After providing your perspective, consider if the topic would benefit from another stakeholder's input. If so, naturally invite them to contribute using phrases like "What do you think, [Name]?" or "[Name], you might have insights on this." Only do this when it genuinely adds value to the conversation.\n`;
     }
 
     prompt += `\nUser just said: "${userMessage}"\n\nPlease respond as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}.`;
@@ -219,6 +224,63 @@ Rules:
 
     } catch (error) {
       console.error('Error detecting stakeholder redirect:', error);
+      return null;
+    }
+  }
+
+  // Function to detect natural conversation passing (turn-taking)
+  async detectConversationHandoff(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
+    try {
+      const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are analyzing a stakeholder's response in a business meeting to detect if they are naturally passing the conversation to another stakeholder.
+
+Available stakeholders: ${stakeholderNames}
+
+Your task: Determine if the response contains a natural conversation handoff to another stakeholder and if so, return ONLY the exact name of the target stakeholder. If no handoff is detected, return "NO_HANDOFF".
+
+Examples of natural handoffs:
+- "What do you think, Sarah?"
+- "James, you might have insights on this"
+- "I'd love to hear Michael's perspective on this"
+- "Sarah, what's your take on this?"
+- "That's something David could speak to better"
+
+Rules:
+- Return only the exact full name from the available stakeholders list
+- If the mentioned name doesn't match any available stakeholder, return "NO_HANDOFF"
+- Detect natural conversation passing, not formal redirects
+- Look for conversational cues that invite someone else to speak
+- Be contextual - only detect when someone is genuinely inviting another person to contribute
+- Ignore casual name mentions that don't invite participation
+- Focus on end-of-response invitations and natural conversation flow cues`
+          },
+          {
+            role: "user",
+            content: `Response to analyze: "${response}"`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 50
+      });
+
+      const result = completion.choices[0]?.message?.content?.trim();
+      
+      if (!result || result === "NO_HANDOFF") {
+        return null;
+      }
+
+      // Find the stakeholder by exact name match
+      const targetStakeholder = availableStakeholders.find(s => s.name === result);
+      return targetStakeholder || null;
+
+    } catch (error) {
+      console.error('Error detecting conversation handoff:', error);
       return null;
     }
   }
