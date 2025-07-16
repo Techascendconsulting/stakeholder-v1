@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AppProvider } from './contexts/AppContext'
 import { VoiceProvider } from './contexts/VoiceContext'
 import LandingPage from './components/LandingPage'
+import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
 import { AlertCircle } from 'lucide-react'
 

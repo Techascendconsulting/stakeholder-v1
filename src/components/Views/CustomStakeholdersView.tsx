@@ -320,7 +320,7 @@ const CustomStakeholdersView: React.FC = () => {
     }
   }
 
-  const handleEditStakeholder = (stakeholder: Stakeholder) => {
+  const handleEditStakeholder = (stakeholder: any) => {
     setEditingStakeholder(stakeholder)
     setNewStakeholder({
       name: stakeholder.name,

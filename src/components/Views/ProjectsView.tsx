@@ -1,13 +1,20 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, BarChart3, ArrowRight, Zap, Trophy, Globe, Building2, Target, TrendingUp, Star } from 'lucide-react'
+import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
-  const { projects, selectProject } = useApp()
+  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user } = useApp()
 
-  const handleProjectSelect = async (project: any) => {
+  const handleViewBrief = async (project: any) => {
     try {
+      // Temporary bypass: Allow access to all projects
+      // if (!canAccessProject(project.id)) {
+      //   alert('This project is not available in your current plan. Please upgrade to access more projects.')
+      //   return
+      // }
+      
       await selectProject(project)
+      setCurrentView('project-brief')
     } catch (error) {
       alert(error instanceof Error ? error.message : 'An error occurred')
     }

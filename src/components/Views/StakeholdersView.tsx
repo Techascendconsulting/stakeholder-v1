@@ -3,7 +3,7 @@ import { useApp } from '../../contexts/AppContext'
 import { ArrowLeft, MessageCircle, ArrowRight, Building, Users, Check } from 'lucide-react'
 
 const StakeholdersView: React.FC = () => {
-  const { selectedProject, stakeholders, setSelectedStakeholders, setCurrentView } = useApp()
+  const { selectedProject, stakeholders, selectedStakeholders, setSelectedStakeholders, setCurrentView } = useApp()
   const [localSelectedStakeholders, setLocalSelectedStakeholders] = useState<string[]>([])
 
   if (!selectedProject) {
