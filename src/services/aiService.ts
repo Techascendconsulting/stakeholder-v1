@@ -92,8 +92,9 @@ Your Behavior Guidelines:
 8. If greeted, respond warmly and professionally as yourself
 9. Build on the conversation history - don't repeat previous responses
 10. Keep responses focused and business-appropriate (2-4 paragraphs max)
-11. You can redirect questions to other stakeholders by saying things like "That's a great question for [Name]" or "[Name], could you speak to that?"
-12. When asked about areas outside your expertise, feel free to suggest who would be better to answer
+11. When asked about areas outside your expertise, naturally redirect to the appropriate stakeholder using their full name
+12. Use natural language to redirect: "That's a great question for [Full Name]" or "[Full Name], could you address that?"
+13. Only redirect when the question is clearly outside your domain or when another stakeholder would provide better insight
 
 Available stakeholders in this meeting: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
 
@@ -118,37 +119,56 @@ Remember: You are a real person with real opinions and experiences in your role.
     return prompt;
   }
 
-  // Function to detect if a stakeholder's response redirects to another stakeholder
-  detectStakeholderRedirect(response: string, availableStakeholders: StakeholderContext[]): StakeholderContext | null {
-    const responseLower = response.toLowerCase();
-    
-    // Look for patterns like "That's a great question for [Name]" or "[Name], could you speak to that?"
-    const redirectPatterns = [
-      /that'?s? (?:a )?(?:great |good )?question for (\w+)/i,
-      /(\w+),? (?:could you|can you|would you) (?:speak to|address|answer|handle) (?:that|this)/i,
-      /(\w+) (?:would be|is) (?:better|best) (?:suited |placed )?to (?:answer|address|handle) (?:that|this)/i,
-      /i'?d (?:like to |)?(?:ask |have )(\w+) (?:to )?(?:speak to|address|answer|handle) (?:that|this)/i,
-      /(\w+),? (?:what'?s |what do you think about|how do you see|what are) (?:your thoughts|your perspective)/i
-    ];
-    
-    for (const pattern of redirectPatterns) {
-      const match = response.match(pattern);
-      if (match && match[1]) {
-        const targetName = match[1].toLowerCase();
-        
-        // Find stakeholder by first name
-        const targetStakeholder = availableStakeholders.find(s => {
-          const firstName = s.name.split(' ')[0].toLowerCase();
-          return firstName === targetName;
-        });
-        
-        if (targetStakeholder) {
-          return targetStakeholder;
-        }
+  // Function to intelligently detect if a stakeholder's response redirects to another stakeholder
+  async detectStakeholderRedirect(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
+    try {
+      const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are analyzing a stakeholder's response in a business meeting to detect if they are redirecting a question to another stakeholder.
+
+Available stakeholders: ${stakeholderNames}
+
+Your task: Determine if the response redirects to another stakeholder and if so, return ONLY the exact name of the target stakeholder. If no redirect is detected, return "NO_REDIRECT".
+
+Examples:
+- "That's a great question for James Walker" → "James Walker"
+- "Sarah, could you speak to that?" → "Sarah Patel" (if Sarah Patel is available)
+- "I think David would be better suited to answer this" → "David Thompson" (if David Thompson is available)
+- "I can answer that myself..." → "NO_REDIRECT"
+
+Rules:
+- Return only the exact full name from the available stakeholders list
+- If the mentioned name doesn't match any available stakeholder, return "NO_REDIRECT"
+- Be strict - only detect clear redirects, not just mentions`
+          },
+          {
+            role: "user",
+            content: `Response to analyze: "${response}"`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 50
+      });
+
+      const result = completion.choices[0]?.message?.content?.trim();
+      
+      if (!result || result === "NO_REDIRECT") {
+        return null;
       }
+
+      // Find the stakeholder by exact name match
+      const targetStakeholder = availableStakeholders.find(s => s.name === result);
+      return targetStakeholder || null;
+
+    } catch (error) {
+      console.error('Error detecting stakeholder redirect:', error);
+      return null;
     }
-    
-    return null;
   }
 
   private getFallbackResponse(stakeholder: StakeholderContext, userMessage: string): string {

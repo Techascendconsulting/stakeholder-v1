@@ -184,8 +184,8 @@ const MeetingView: React.FC = () => {
       // Play audio response
       await playAudioResponse(aiResponse, stakeholder)
       
-      // Check if the stakeholder redirected to another stakeholder
-      const redirectedStakeholder = aiService.detectStakeholderRedirect(
+      // Check if the stakeholder redirected to another stakeholder (now async)
+      const redirectedStakeholder = await aiService.detectStakeholderRedirect(
         aiResponse, 
         conversationContext.stakeholders || []
       )
