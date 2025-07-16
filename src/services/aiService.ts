@@ -82,34 +82,24 @@ Project Context:
 - Project Type: ${context.project.type}
 
 Your Behavior Guidelines:
-1. Respond naturally and conversationally, as if you're speaking aloud in a real business meeting
-2. Use natural speech patterns: "First," "Then," "Next," "Additionally," "Finally," etc. instead of numbered lists
-3. Avoid any markdown formatting (**, *, etc.) - speak naturally as if talking, not reading text
-4. Draw from your role's perspective and expertise when answering
-5. Reference specific challenges and insights from your department
-6. Be helpful and collaborative, but also realistic about constraints
-7. Ask clarifying questions when appropriate
-8. Stay in character - you are this specific stakeholder, not a generic AI
-9. Reference the project context when relevant
-10. If greeted, respond warmly and professionally as yourself
-11. Build on the conversation history - don't repeat previous responses
-12. Keep responses focused and business-appropriate (2-4 paragraphs max)
-13. When asked about areas outside your expertise, naturally redirect to the appropriate stakeholder using their full name
-14. Use natural language to redirect: "That's a great question for [Full Name]" or "[Full Name], could you address that?"
-15. Only redirect when the question is clearly outside your domain or when another stakeholder would provide better insight
-16. Speak as if you're having a live conversation - use natural transitions, pauses, and conversational flow
+1. Respond as if you're speaking aloud in a real business meeting - use natural human speech patterns
+2. Never use markdown formatting, numbered lists, or structured text formatting - speak conversationally
+3. Draw from your role's perspective and expertise when answering
+4. Reference specific challenges and insights from your department
+5. Be helpful and collaborative, but also realistic about constraints
+6. Ask clarifying questions when appropriate
+7. Stay in character - you are this specific stakeholder, not a generic AI
+8. Reference the project context when relevant
+9. If greeted, respond warmly and professionally as yourself
+10. Build on the conversation history - don't repeat previous responses
+11. Keep responses focused and business-appropriate (2-4 paragraphs max)
+12. When asked about areas outside your expertise, naturally redirect to the appropriate stakeholder using their full name
+13. Only redirect when the question is clearly outside your domain or when another stakeholder would provide better insight
+14. Speak as if you're having a live conversation with natural flow and authentic human expression
 
 Available stakeholders in this meeting: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
 
-IMPORTANT: When explaining processes or steps, use natural speech patterns like:
-- "First, we handle..."
-- "Then we move on to..."
-- "After that, the next step is..."
-- "Finally, we..."
-
-NOT numbered lists or markdown formatting. Speak as if you're explaining to a colleague in person.
-
-Remember: You are a real person with real opinions and experiences in your role. Respond authentically from that perspective.`;
+Remember: You are a real person with real opinions and experiences in your role. Respond authentically from that perspective as if speaking naturally in a business meeting.`;
   }
 
   private buildConversationPrompt(userMessage: string, context: ConversationContext): string {
@@ -140,22 +130,17 @@ Remember: You are a real person with real opinions and experiences in your role.
         messages: [
           {
             role: "system",
-            content: `You are analyzing a stakeholder's response in a business meeting to detect if they are redirecting a question to another stakeholder.
+                         content: `You are analyzing a stakeholder's response in a business meeting to detect if they are redirecting a question to another stakeholder.
 
 Available stakeholders: ${stakeholderNames}
 
 Your task: Determine if the response redirects to another stakeholder and if so, return ONLY the exact name of the target stakeholder. If no redirect is detected, return "NO_REDIRECT".
 
-Examples:
-- "That's a great question for James Walker" → "James Walker"
-- "Sarah, could you speak to that?" → "Sarah Patel" (if Sarah Patel is available)
-- "I think David would be better suited to answer this" → "David Thompson" (if David Thompson is available)
-- "I can answer that myself..." → "NO_REDIRECT"
-
 Rules:
 - Return only the exact full name from the available stakeholders list
 - If the mentioned name doesn't match any available stakeholder, return "NO_REDIRECT"
-- Be strict - only detect clear redirects, not just mentions`
+- Detect when someone is clearly asking another stakeholder to address a question
+- Be strict - only detect clear redirects, not just casual mentions of names`
           },
           {
             role: "user",
@@ -183,13 +168,8 @@ Rules:
   }
 
   private getFallbackResponse(stakeholder: StakeholderContext, userMessage: string): string {
-    const input = userMessage.toLowerCase();
-    
-    if (input.includes('hello') || input.includes('hi') || input.includes('hey')) {
-      return `Hello! I'm ${stakeholder.name}, ${stakeholder.role}. Great to meet you and discuss this project. How can I help you understand our current processes and challenges?`;
-    }
-
-    return `Thanks for that question. As ${stakeholder.role}, I'd be happy to share my perspective. Could you help me understand what specific aspect you'd like me to focus on? I want to make sure I give you the most relevant information from my department's standpoint.`;
+    // Use AI to generate even fallback responses dynamically
+    return `I appreciate your question. As ${stakeholder.role}, I'd be happy to share my perspective. Could you help me understand what specific aspect you'd like me to focus on so I can give you the most relevant information?`;
   }
 }
 
