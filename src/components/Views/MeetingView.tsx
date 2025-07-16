@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
+import { useVoice } from '../../contexts/VoiceContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
+import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
+  const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice()
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showQuestionHelper, setShowQuestionHelper] = useState(false)
   const [selectedQuestionCategory, setSelectedQuestionCategory] = useState<'as-is' | 'to-be'>('as-is')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Mock questions for demonstration
   const mockQuestions = {
@@ -43,6 +47,73 @@ const MeetingView: React.FC = () => {
     }
   }, [selectedProject, selectedStakeholders])
 
+  // Focus input when component mounts or after sending message
+  useEffect(() => {
+    if (inputRef.current && !isLoading) {
+      inputRef.current.focus()
+    }
+  }, [isLoading, messages])
+
+  // Function to determine which stakeholder should respond
+  const getTargetStakeholder = (userMessage: string) => {
+    const message = userMessage.toLowerCase()
+    
+    // Check if user mentioned a specific stakeholder by name
+    for (const stakeholder of selectedStakeholders) {
+      const firstName = stakeholder.name.split(' ')[0].toLowerCase()
+      const fullName = stakeholder.name.toLowerCase()
+      
+      if (message.includes(firstName) || message.includes(fullName)) {
+        return stakeholder
+      }
+    }
+    
+    // Check for role-based targeting
+    const roleKeywords = {
+      'operations': ['operations', 'process', 'workflow', 'operational'],
+      'customer service': ['customer', 'service', 'support', 'client'],
+      'it': ['technical', 'system', 'technology', 'integration', 'it'],
+      'hr': ['hr', 'human', 'people', 'team', 'staff', 'training'],
+      'compliance': ['compliance', 'risk', 'regulatory', 'policy']
+    }
+    
+    for (const [roleType, keywords] of Object.entries(roleKeywords)) {
+      if (keywords.some(keyword => message.includes(keyword))) {
+        const targetStakeholder = selectedStakeholders.find(s => 
+          s.role.toLowerCase().includes(roleType)
+        )
+        if (targetStakeholder) return targetStakeholder
+      }
+    }
+    
+    // Default: rotate through stakeholders
+    const stakeholderIndex = messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system').length % selectedStakeholders.length
+    return selectedStakeholders[stakeholderIndex] || selectedStakeholders[0]
+  }
+
+  // Function to play audio response
+  const playAudioResponse = async (text: string, stakeholder: any) => {
+    if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
+      return
+    }
+
+    try {
+      const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
+      
+      if (isAzureTTSAvailable()) {
+        // Use Azure TTS
+        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName)
+        await azureTTS.playAudio(audioBlob)
+      } else {
+        // Fallback to browser TTS
+        await playBrowserTTS(text)
+      }
+    } catch (error) {
+      console.error('Audio playback failed:', error)
+      // Silently fail - don't disrupt the conversation
+    }
+  }
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return
 
@@ -60,9 +131,8 @@ const MeetingView: React.FC = () => {
     setMessages(updatedMessages)
 
     try {
-      // Select a stakeholder (rotate through them)
-      const stakeholderIndex = messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system').length % selectedStakeholders.length
-      const stakeholder = selectedStakeholders[stakeholderIndex] || selectedStakeholders[0]
+      // Select the appropriate stakeholder based on user message
+      const stakeholder = getTargetStakeholder(inputMessage)
       
       // Create stakeholder context for AI
       const stakeholderContext: StakeholderContext = {
@@ -102,6 +172,9 @@ const MeetingView: React.FC = () => {
       }
 
       setMessages(prev => [...prev, aiMessage])
+      
+      // Play audio response
+      await playAudioResponse(aiResponse, stakeholder)
     } catch (error) {
       console.error('Error generating AI response:', error)
       // Fallback response
@@ -205,11 +278,15 @@ const MeetingView: React.FC = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {mockQuestions[selectedQuestionCategory].map((question, index) => (
-                  <div
-                    key={index}
-                    className="bg-white border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors cursor-pointer"
-                    onClick={() => setInputMessage(question)}
-                  >
+                                     <div
+                     key={index}
+                     className="bg-white border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors cursor-pointer"
+                     onClick={() => {
+                       setInputMessage(question)
+                       setShowQuestionHelper(false)
+                       setTimeout(() => inputRef.current?.focus(), 100)
+                     }}
+                   >
                     <p className="text-sm text-blue-900 font-medium">{question}</p>
                   </div>
                 ))}
@@ -259,6 +336,7 @@ const MeetingView: React.FC = () => {
         <div className="border-t p-4">
           <div className="flex space-x-4">
             <input
+              ref={inputRef}
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
