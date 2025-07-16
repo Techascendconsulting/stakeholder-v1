@@ -23,6 +23,7 @@ export interface ConversationContext {
     type: string;
   };
   conversationHistory: Message[];
+  stakeholders?: StakeholderContext[];
   currentTopic?: string;
 }
 
@@ -91,6 +92,10 @@ Your Behavior Guidelines:
 8. If greeted, respond warmly and professionally as yourself
 9. Build on the conversation history - don't repeat previous responses
 10. Keep responses focused and business-appropriate (2-4 paragraphs max)
+11. You can redirect questions to other stakeholders by saying things like "That's a great question for [Name]" or "[Name], could you speak to that?"
+12. When asked about areas outside your expertise, feel free to suggest who would be better to answer
+
+Available stakeholders in this meeting: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
 
 Remember: You are a real person with real opinions and experiences in your role. Respond authentically from that perspective.`;
   }
@@ -111,6 +116,39 @@ Remember: You are a real person with real opinions and experiences in your role.
     prompt += `\nUser just said: "${userMessage}"\n\nPlease respond as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}.`;
 
     return prompt;
+  }
+
+  // Function to detect if a stakeholder's response redirects to another stakeholder
+  detectStakeholderRedirect(response: string, availableStakeholders: StakeholderContext[]): StakeholderContext | null {
+    const responseLower = response.toLowerCase();
+    
+    // Look for patterns like "That's a great question for [Name]" or "[Name], could you speak to that?"
+    const redirectPatterns = [
+      /that'?s? (?:a )?(?:great |good )?question for (\w+)/i,
+      /(\w+),? (?:could you|can you|would you) (?:speak to|address|answer|handle) (?:that|this)/i,
+      /(\w+) (?:would be|is) (?:better|best) (?:suited |placed )?to (?:answer|address|handle) (?:that|this)/i,
+      /i'?d (?:like to |)?(?:ask |have )(\w+) (?:to )?(?:speak to|address|answer|handle) (?:that|this)/i,
+      /(\w+),? (?:what'?s |what do you think about|how do you see|what are) (?:your thoughts|your perspective)/i
+    ];
+    
+    for (const pattern of redirectPatterns) {
+      const match = response.match(pattern);
+      if (match && match[1]) {
+        const targetName = match[1].toLowerCase();
+        
+        // Find stakeholder by first name
+        const targetStakeholder = availableStakeholders.find(s => {
+          const firstName = s.name.split(' ')[0].toLowerCase();
+          return firstName === targetName;
+        });
+        
+        if (targetStakeholder) {
+          return targetStakeholder;
+        }
+      }
+    }
+    
+    return null;
   }
 
   private getFallbackResponse(stakeholder: StakeholderContext, userMessage: string): string {

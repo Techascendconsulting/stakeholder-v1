@@ -151,7 +151,15 @@ const MeetingView: React.FC = () => {
           description: selectedProject?.description || 'Project description',
           type: selectedProject?.projectType || 'General'
         },
-        conversationHistory: updatedMessages
+        conversationHistory: updatedMessages,
+        stakeholders: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department,
+          priorities: s.priorities,
+          personality: s.personality,
+          expertise: s.expertise || []
+        }))
       }
 
       // Generate AI response
@@ -175,6 +183,53 @@ const MeetingView: React.FC = () => {
       
       // Play audio response
       await playAudioResponse(aiResponse, stakeholder)
+      
+      // Check if the stakeholder redirected to another stakeholder
+      const redirectedStakeholder = aiService.detectStakeholderRedirect(
+        aiResponse, 
+        conversationContext.stakeholders || []
+      )
+      
+      if (redirectedStakeholder) {
+        // Find the actual stakeholder object from selectedStakeholders
+        const targetStakeholder = selectedStakeholders.find(s => s.name === redirectedStakeholder.name)
+        
+        if (targetStakeholder) {
+          // Automatically trigger the redirected stakeholder to respond
+          setTimeout(async () => {
+            try {
+              const redirectContext: ConversationContext = {
+                ...conversationContext,
+                conversationHistory: [...updatedMessages, aiMessage]
+              }
+              
+              // Generate response from the redirected stakeholder
+              const redirectResponse = await aiService.generateStakeholderResponse(
+                `${stakeholder.name} asked you to address this question: "${inputMessage}"`,
+                redirectedStakeholder,
+                redirectContext
+              )
+              
+              const redirectMessage: Message = {
+                id: `redirect-${Date.now()}`,
+                speaker: targetStakeholder.id || 'stakeholder',
+                content: redirectResponse,
+                timestamp: new Date().toISOString(),
+                stakeholderName: targetStakeholder.name,
+                stakeholderRole: targetStakeholder.role
+              }
+              
+              setMessages(prev => [...prev, redirectMessage])
+              
+              // Play audio for the redirected response
+              await playAudioResponse(redirectResponse, targetStakeholder)
+              
+            } catch (error) {
+              console.error('Error generating redirect response:', error)
+            }
+          }, 1000) // Small delay to make it feel natural
+        }
+      }
     } catch (error) {
       console.error('Error generating AI response:', error)
       // Fallback response
