@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { subscriptionService } from '../lib/subscription'
+import { supabase } from '../lib/supabase'
 
 const LoginSignup: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin')
@@ -74,7 +74,7 @@ const LoginSignup: React.FC = () => {
       if (error) {
         setErrors({ general: error.message })
       }
-    } catch (err) {
+    } catch {
       setErrors({ general: 'An unexpected error occurred' })
     } finally {
       setLoading(false)
@@ -99,7 +99,7 @@ const LoginSignup: React.FC = () => {
 
       setSuccess('Account created successfully! Please check your email for verification.')
       setFormData({ name: '', email: '', password: '', confirmPassword: '' })
-    } catch (err) {
+    } catch {
       setErrors({ general: 'An unexpected error occurred' })
     } finally {
       setLoading(false)
@@ -120,7 +120,7 @@ const LoginSignup: React.FC = () => {
       } else {
         setSuccess('Password reset email sent! Check your inbox.')
       }
-    } catch (err) {
+    } catch {
       setErrors({ general: 'An unexpected error occurred' })
     } finally {
       setLoading(false)

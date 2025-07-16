@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { ArrowLeft, Users, Sparkles, ArrowRight, RefreshCw, Plus, Edit3, Trash2, Save, X } from 'lucide-react'
+import { ArrowLeft, Users, Sparkles, ArrowRight, RefreshCw, Plus, Edit3, Trash2, Save } from 'lucide-react'
+import { Stakeholder } from '../../types'
 
 const CustomStakeholdersView: React.FC = () => {
   const { customProject, setCurrentView, setSelectedStakeholders } = useApp()
-  const [generatedStakeholders, setGeneratedStakeholders] = useState<any[]>([])
-  const [manualStakeholders, setManualStakeholders] = useState<any[]>([])
+  const [generatedStakeholders, setGeneratedStakeholders] = useState<Stakeholder[]>([])
+  const [manualStakeholders, setManualStakeholders] = useState<Stakeholder[]>([])
   const [selectedStakeholderIds, setSelectedStakeholderIds] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
-  const [hasGeneratedAI, setHasGeneratedAI] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [editingStakeholder, setEditingStakeholder] = useState<any>(null)
+  const [editingStakeholder, setEditingStakeholder] = useState<Stakeholder | null>(null)
   const [newStakeholder, setNewStakeholder] = useState({
     name: '',
     role: '',
@@ -41,7 +41,6 @@ const CustomStakeholdersView: React.FC = () => {
       }))
 
       setGeneratedStakeholders(stakeholders)
-      setHasGeneratedAI(true)
       setIsGenerating(false)
     }, 2000)
   }
@@ -320,7 +319,7 @@ const CustomStakeholdersView: React.FC = () => {
     }
   }
 
-  const handleEditStakeholder = (stakeholder: any) => {
+  const handleEditStakeholder = (stakeholder: Stakeholder) => {
     setEditingStakeholder(stakeholder)
     setNewStakeholder({
       name: stakeholder.name,
@@ -373,7 +372,6 @@ const CustomStakeholdersView: React.FC = () => {
       if (confirm('This will replace your custom stakeholders with AI-generated ones. Are you sure?')) {
         setManualStakeholders([])
         setSelectedStakeholderIds([])
-        setHasGeneratedAI(false)
         generateStakeholders()
       }
     } else {

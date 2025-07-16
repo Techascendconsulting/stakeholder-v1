@@ -1,51 +1,41 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus } from 'lucide-react'
+import { Clock, Users, BarChart3, ArrowRight, Zap, Trophy, Globe } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
-  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user } = useApp()
+  const { projects, selectProject } = useApp()
 
-  const handleViewBrief = async (project: any) => {
+  const handleProjectSelect = async (project: any) => {
     try {
-      // Temporary bypass: Allow access to all projects
-      // if (!canAccessProject(project.id)) {
-      //   alert('This project is not available in your current plan. Please upgrade to access more projects.')
-      //   return
-      // }
-      
       await selectProject(project)
-      setCurrentView('project-brief')
     } catch (error) {
       alert(error instanceof Error ? error.message : 'An error occurred')
     }
   }
 
-  const getComplexityConfig = (complexity: string) => {
+  const getComplexityColor = (complexity: string) => {
     switch (complexity) {
       case 'Beginner':
-        return {
-          color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-          icon: Target,
-          description: 'Foundation Level'
-        }
+        return 'bg-green-100 text-green-800 border-green-200'
       case 'Intermediate':
-        return {
-          color: 'bg-amber-100 text-amber-800 border-amber-200',
-          icon: TrendingUp,
-          description: 'Professional Level'
-        }
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'Advanced':
-        return {
-          color: 'bg-red-100 text-red-800 border-red-200',
-          icon: Star,
-          description: 'Expert Level'
-        }
+        return 'bg-red-100 text-red-800 border-red-200'
       default:
-        return {
-          color: 'bg-gray-100 text-gray-800 border-gray-200',
-          icon: Target,
-          description: 'Standard Level'
-        }
+        return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
+
+  const getComplexityIcon = (complexity: string) => {
+    switch (complexity) {
+      case 'Beginner':
+        return <Zap className="w-4 h-4" />
+      case 'Intermediate':
+        return <BarChart3 className="w-4 h-4" />
+      case 'Advanced':
+        return <Trophy className="w-4 h-4" />
+      default:
+        return <Globe className="w-4 h-4" />
     }
   }
 

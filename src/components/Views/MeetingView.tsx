@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag } from 'lucide-react'
+import { HelpCircle, Save, BarChart3, ChevronDown, ChevronUp } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { Message } from '../../types'
 
 const MeetingView: React.FC = () => {
-  const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
+  const { selectedProject, selectedStakeholders, setCurrentView } = useApp()
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)

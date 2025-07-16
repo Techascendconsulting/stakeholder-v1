@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
@@ -60,10 +60,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentView, setCurrentView] = useState<AppView>('dashboard')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([])
-  const [meetings, setMeetings] = useState<Meeting[]>([])
-  const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
+  const [meetings] = useState<Meeting[]>([])
+  const [currentMeeting] = useState<Meeting | null>(null)
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [customProject, setCustomProject] = useState<Project | null>(null)
 
   // Mock user progress data
@@ -106,7 +105,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }
 
   // Utility functions
-  const canAccessProject = (projectId: string) => true // Allow all projects for now
+  const canAccessProject = () => true // Allow all projects for now
   const canSaveNotes = () => true
   const canCreateMoreMeetings = () => true
 
@@ -132,7 +131,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     canAccessProject,
     canSaveNotes,
     canCreateMoreMeetings,
-    isLoading
+    isLoading: false
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
