@@ -20,6 +20,7 @@ const MeetingView: React.FC = () => {
   const [audioStates, setAudioStates] = useState<{[key: string]: 'playing' | 'paused' | 'stopped'}>({})
   const [showVoiceModal, setShowVoiceModal] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
+  const [currentSpeaker, setCurrentSpeaker] = useState<any>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -126,6 +127,17 @@ const MeetingView: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Speaker change animation effect
+  useEffect(() => {
+    if (currentSpeaker) {
+      // Add a subtle pulse animation to the page when speaker changes
+      document.body.style.animation = 'none'
+      setTimeout(() => {
+        document.body.style.animation = ''
+      }, 10)
+    }
+  }, [currentSpeaker])
 
   // Function to detect if a message is addressed to the group
   const isGroupMessage = (userMessage: string): boolean => {
@@ -265,6 +277,7 @@ const MeetingView: React.FC = () => {
       currentAudio.currentTime = 0
       setCurrentAudio(null)
       setPlayingMessageId(null)
+      setCurrentSpeaker(null) // Clear current speaker when audio stops
     }
   }
 
@@ -281,6 +294,9 @@ const MeetingView: React.FC = () => {
         // Manual play - just set up the audio for this message
         return Promise.resolve()
       }
+
+      // Set current speaker when audio starts
+      setCurrentSpeaker(stakeholder)
 
       const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
       
@@ -301,6 +317,7 @@ const MeetingView: React.FC = () => {
             setCurrentAudio(null)
             setPlayingMessageId(null)
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+            setCurrentSpeaker(null) // Clear current speaker when audio ends
             resolve()
           }
           
@@ -309,6 +326,7 @@ const MeetingView: React.FC = () => {
             setCurrentAudio(null)
             setPlayingMessageId(null)
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+            setCurrentSpeaker(null) // Clear current speaker on error
             resolve() // Resolve even on error to prevent hanging
           }
           
@@ -317,6 +335,7 @@ const MeetingView: React.FC = () => {
             setCurrentAudio(null)
             setPlayingMessageId(null)
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+            setCurrentSpeaker(null) // Clear current speaker on play error
             resolve()
           })
         })
@@ -329,12 +348,14 @@ const MeetingView: React.FC = () => {
         
         setPlayingMessageId(null)
         setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+        setCurrentSpeaker(null) // Clear current speaker when browser TTS ends
         return Promise.resolve()
       }
     } catch (error) {
       console.error('Audio playback failed:', error)
       setPlayingMessageId(null)
       setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+      setCurrentSpeaker(null) // Clear current speaker on error
       return Promise.resolve()
     }
   }
@@ -598,13 +619,54 @@ const MeetingView: React.FC = () => {
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-white">
-                  Meeting: {selectedProject.name}
-                </h2>
-                <p className="text-sm text-blue-100 mt-1">
-                  Participants: {selectedStakeholders.map(s => s.name).join(', ')}
-                </p>
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-white">
+                    Meeting: {selectedProject.name}
+                  </h2>
+                  <p className="text-sm text-blue-100 mt-1">
+                    Participants: {selectedStakeholders.map(s => s.name).join(', ')}
+                  </p>
+                </div>
+                
+                {/* Current Speaker Display */}
+                {currentSpeaker && (
+                  <div className="hidden lg:flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/30 transition-all duration-300 ease-in-out animate-in slide-in-from-right shadow-lg">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-white/30 animate-pulse absolute inset-0"></div>
+                      <img 
+                        src={currentSpeaker.photo} 
+                        alt={currentSpeaker.name}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white/50 transition-transform duration-200 hover:scale-105 relative z-10"
+                        onError={(e) => {
+                          // Fallback to a default avatar if image fails to load
+                          e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                        }}
+                        onLoad={(e) => {
+                          // Hide loading animation when image loads
+                          const loadingDiv = e.currentTarget.previousElementSibling as HTMLElement
+                          if (loadingDiv) loadingDiv.style.display = 'none'
+                        }}
+                      />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse shadow-lg z-20"></div>
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-white flex items-center space-x-2">
+                        <span>Currently Speaking</span>
+                        {/* Sound Wave Animation */}
+                        <div className="flex items-center space-x-0.5">
+                          <div className="w-0.5 h-2 bg-white rounded-full animate-pulse"></div>
+                          <div className="w-0.5 h-3 bg-white rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-0.5 h-4 bg-white rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-0.5 h-3 bg-white rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                          <div className="w-0.5 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-blue-100 font-medium">{currentSpeaker.name}</div>
+                      <div className="text-xs text-blue-200 opacity-75">{currentSpeaker.role}</div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Question Helper Toggle */}
@@ -613,10 +675,33 @@ const MeetingView: React.FC = () => {
                 className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
               >
                 <HelpCircle className="w-5 h-5" />
-                <span>Question Helper</span>
+                <span className="hidden sm:inline">Question Helper</span>
                 {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
             </div>
+            
+            {/* Mobile Current Speaker Display */}
+            {currentSpeaker && (
+              <div className="lg:hidden mt-3 flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/30 transition-all duration-300 ease-in-out">
+                <div className="relative">
+                  <img 
+                    src={currentSpeaker.photo} 
+                    alt={currentSpeaker.name}
+                    className="w-8 h-8 rounded-full object-cover border-2 border-white/50"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                    }}
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border border-white animate-pulse"></div>
+                </div>
+                <div className="text-left flex-1">
+                  <div className="text-xs font-medium text-white flex items-center space-x-1">
+                    <span>🎤 {currentSpeaker.name}</span>
+                  </div>
+                  <div className="text-xs text-blue-200 opacity-75">{currentSpeaker.role}</div>
+                </div>
+              </div>
+            )}
             
             {/* Question Helper Panel */}
             {showQuestionHelper && (
@@ -681,6 +766,24 @@ const MeetingView: React.FC = () => {
                   key={message.id}
                   className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
+                  {/* Stakeholder Avatar for non-user messages */}
+                  {isStakeholderMessage && stakeholder && (
+                    <div className="flex-shrink-0 mr-3 mt-1">
+                      <img 
+                        src={stakeholder.photo} 
+                        alt={stakeholder.name}
+                        className={`w-8 h-8 rounded-full object-cover border-2 transition-all duration-200 ${
+                          isCurrentlyPlaying 
+                            ? 'border-green-400 shadow-lg scale-110' 
+                            : 'border-gray-300'
+                        }`}
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                        }}
+                      />
+                    </div>
+                  )}
+                  
                   <div
                     className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg relative ${
                       message.speaker === 'user'
@@ -691,8 +794,10 @@ const MeetingView: React.FC = () => {
                     }`}
                   >
                     {isStakeholderMessage && (
-                      <div className="text-xs font-medium text-gray-600 mb-1">
-                        {message.stakeholderName} ({message.stakeholderRole})
+                      <div className="text-xs font-medium text-gray-600 mb-1 flex items-center space-x-2">
+                        <span>{message.stakeholderName}</span>
+                        <span className="text-gray-400">•</span>
+                        <span className="text-gray-500">{message.stakeholderRole}</span>
                       </div>
                     )}
                     <div className="text-sm whitespace-pre-wrap pr-8">{message.content}</div>
