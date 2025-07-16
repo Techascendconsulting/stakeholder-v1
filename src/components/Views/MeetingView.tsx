@@ -130,6 +130,38 @@ const MeetingView: React.FC = () => {
     return selectedStakeholders[stakeholderIndex] || selectedStakeholders[0]
   }
 
+  // Function to detect if a message is addressed to the group
+  const isGroupMessage = (userMessage: string): boolean => {
+    const message = userMessage.toLowerCase()
+    
+    // Group greeting patterns
+    const groupPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)/,
+      /^(hi|hello|hey)\s+(there|y'all)/,
+      /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
+      /^(hi|hello|hey)(?:\s+team)?$/,
+      /(can\s+everyone|everyone\s+can|could\s+everyone|everyone\s+could)/,
+      /(i\s+want\s+everyone|everyone\s+should|let's\s+all|we\s+all\s+need)/,
+      /(what\s+does\s+everyone|how\s+does\s+everyone|everyone\s+thinks?)/,
+    ]
+    
+    return groupPatterns.some(pattern => pattern.test(message))
+  }
+
+  // Function to get stakeholders for group response
+  const getGroupRespondents = (userMessage: string) => {
+    // For greetings, have 2-3 stakeholders respond
+    if (isGroupMessage(userMessage) && userMessage.toLowerCase().includes('hi') || 
+        userMessage.toLowerCase().includes('hello') || 
+        userMessage.toLowerCase().includes('hey')) {
+      // Return first 2-3 stakeholders for greeting
+      return selectedStakeholders.slice(0, Math.min(3, selectedStakeholders.length))
+    }
+    
+    // For other group messages, return all stakeholders
+    return selectedStakeholders
+  }
+
   // Enhanced audio management system
   const stopCurrentAudio = () => {
     if (currentAudio) {
@@ -247,103 +279,172 @@ const MeetingView: React.FC = () => {
     setMessages(updatedMessages)
 
     try {
-      // Select the appropriate stakeholder based on user message
-      const stakeholder = getTargetStakeholder(messageContent)
+      // Check if this is a group message
+      const isGroup = isGroupMessage(messageContent)
       
-      // Create stakeholder context for AI
-      const stakeholderContext: StakeholderContext = {
-        name: stakeholder.name,
-        role: stakeholder.role,
-        department: stakeholder.department,
-        priorities: stakeholder.priorities,
-        personality: stakeholder.personality,
-        expertise: stakeholder.expertise || []
-      }
-
-      // Create conversation context
-      const conversationContext: ConversationContext = {
-        project: {
-          name: selectedProject?.name || 'Current Project',
-          description: selectedProject?.description || 'Project description',
-          type: selectedProject?.projectType || 'General'
-        },
-        conversationHistory: updatedMessages,
-        stakeholders: selectedStakeholders.map(s => ({
-          name: s.name,
-          role: s.role,
-          department: s.department,
-          priorities: s.priorities,
-          personality: s.personality,
-          expertise: s.expertise || []
-        }))
-      }
-
-      // Generate AI response
-      const aiService = AIService.getInstance()
-      const aiResponse = await aiService.generateStakeholderResponse(
-        messageContent,
-        stakeholderContext,
-        conversationContext
-      )
-
-      const aiMessage: Message = {
-        id: `ai-${Date.now()}`,
-        speaker: stakeholder.id || 'stakeholder',
-        content: aiResponse,
-        timestamp: new Date().toISOString(),
-        stakeholderName: stakeholder.name,
-        stakeholderRole: stakeholder.role
-      }
-
-      setMessages(prev => [...prev, aiMessage])
-      
-      // Play audio response with new system
-      await playMessageAudio(aiMessage.id, aiResponse, stakeholder, true)
-      
-      // Check if the stakeholder redirected to another stakeholder (now async)
-      const redirectedStakeholder = await aiService.detectStakeholderRedirect(
-        aiResponse, 
-        conversationContext.stakeholders || []
-      )
-      
-      if (redirectedStakeholder) {
-        // Find the actual stakeholder object from selectedStakeholders
-        const targetStakeholder = selectedStakeholders.find(s => s.name === redirectedStakeholder.name)
+      if (isGroup) {
+        // Handle group message - multiple stakeholders respond
+        const respondents = getGroupRespondents(messageContent)
         
-        if (targetStakeholder) {
-          // Automatically trigger the redirected stakeholder to respond
-          setTimeout(async () => {
-            try {
-              const redirectContext: ConversationContext = {
-                ...conversationContext,
-                conversationHistory: [...updatedMessages, aiMessage]
+        // Generate responses from multiple stakeholders with delays
+        for (let i = 0; i < respondents.length; i++) {
+          const stakeholder = respondents[i]
+          
+          // Add a delay between responses to make it feel natural
+          if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
+          }
+          
+          // Create stakeholder context for AI
+          const stakeholderContext: StakeholderContext = {
+            name: stakeholder.name,
+            role: stakeholder.role,
+            department: stakeholder.department,
+            priorities: stakeholder.priorities,
+            personality: stakeholder.personality,
+            expertise: stakeholder.expertise || []
+          }
+
+          // Create conversation context
+          const conversationContext: ConversationContext = {
+            project: {
+              name: selectedProject?.name || 'Current Project',
+              description: selectedProject?.description || 'Project description',
+              type: selectedProject?.projectType || 'General'
+            },
+            conversationHistory: updatedMessages,
+            stakeholders: selectedStakeholders.map(s => ({
+              name: s.name,
+              role: s.role,
+              department: s.department,
+              priorities: s.priorities,
+              personality: s.personality,
+              expertise: s.expertise || []
+            }))
+          }
+
+          // Generate AI response with group context
+          const aiService = AIService.getInstance()
+          const aiResponse = await aiService.generateStakeholderResponse(
+            messageContent,
+            stakeholderContext,
+            conversationContext
+          )
+
+          const aiMessage: Message = {
+            id: `ai-${Date.now()}-${i}`,
+            speaker: stakeholder.id || 'stakeholder',
+            content: aiResponse,
+            timestamp: new Date().toISOString(),
+            stakeholderName: stakeholder.name,
+            stakeholderRole: stakeholder.role
+          }
+
+          // Add message to the conversation
+          setMessages(prev => [...prev, aiMessage])
+          
+          // Play audio response
+          await playMessageAudio(aiMessage.id, aiResponse, stakeholder, true)
+        }
+      } else {
+        // Handle individual message - single stakeholder responds
+        const stakeholder = getTargetStakeholder(messageContent)
+        
+        // Create stakeholder context for AI
+        const stakeholderContext: StakeholderContext = {
+          name: stakeholder.name,
+          role: stakeholder.role,
+          department: stakeholder.department,
+          priorities: stakeholder.priorities,
+          personality: stakeholder.personality,
+          expertise: stakeholder.expertise || []
+        }
+
+        // Create conversation context
+        const conversationContext: ConversationContext = {
+          project: {
+            name: selectedProject?.name || 'Current Project',
+            description: selectedProject?.description || 'Project description',
+            type: selectedProject?.projectType || 'General'
+          },
+          conversationHistory: updatedMessages,
+          stakeholders: selectedStakeholders.map(s => ({
+            name: s.name,
+            role: s.role,
+            department: s.department,
+            priorities: s.priorities,
+            personality: s.personality,
+            expertise: s.expertise || []
+          }))
+        }
+
+        // Generate AI response
+        const aiService = AIService.getInstance()
+        const aiResponse = await aiService.generateStakeholderResponse(
+          messageContent,
+          stakeholderContext,
+          conversationContext
+        )
+
+        const aiMessage: Message = {
+          id: `ai-${Date.now()}`,
+          speaker: stakeholder.id || 'stakeholder',
+          content: aiResponse,
+          timestamp: new Date().toISOString(),
+          stakeholderName: stakeholder.name,
+          stakeholderRole: stakeholder.role
+        }
+
+        setMessages(prev => [...prev, aiMessage])
+        
+        // Play audio response
+        await playMessageAudio(aiMessage.id, aiResponse, stakeholder, true)
+        
+        // Check if the stakeholder redirected to another stakeholder
+        const redirectedStakeholder = await aiService.detectStakeholderRedirect(
+          aiResponse, 
+          conversationContext.stakeholders || []
+        )
+        
+        if (redirectedStakeholder) {
+          // Find the actual stakeholder object from selectedStakeholders
+          const targetStakeholder = selectedStakeholders.find(s => s.name === redirectedStakeholder.name)
+          
+          if (targetStakeholder) {
+            // Automatically trigger the redirected stakeholder to respond
+            setTimeout(async () => {
+              try {
+                const redirectContext: ConversationContext = {
+                  ...conversationContext,
+                  conversationHistory: [...updatedMessages, aiMessage]
+                }
+                
+                // Generate response from the redirected stakeholder
+                const redirectResponse = await aiService.generateStakeholderResponse(
+                  `${stakeholder.name} asked you to address this question: "${messageContent}"`,
+                  redirectedStakeholder,
+                  redirectContext
+                )
+                
+                const redirectMessage: Message = {
+                  id: `redirect-${Date.now()}`,
+                  speaker: targetStakeholder.id || 'stakeholder',
+                  content: redirectResponse,
+                  timestamp: new Date().toISOString(),
+                  stakeholderName: targetStakeholder.name,
+                  stakeholderRole: targetStakeholder.role
+                }
+                
+                setMessages(prev => [...prev, redirectMessage])
+                
+                // Play audio for the redirected response
+                await playMessageAudio(redirectMessage.id, redirectResponse, targetStakeholder, true)
+                
+              } catch (error) {
+                console.error('Error generating redirect response:', error)
               }
-              
-              // Generate response from the redirected stakeholder
-              const redirectResponse = await aiService.generateStakeholderResponse(
-                `${stakeholder.name} asked you to address this question: "${messageContent}"`,
-                redirectedStakeholder,
-                redirectContext
-              )
-              
-              const redirectMessage: Message = {
-                id: `redirect-${Date.now()}`,
-                speaker: targetStakeholder.id || 'stakeholder',
-                content: redirectResponse,
-                timestamp: new Date().toISOString(),
-                stakeholderName: targetStakeholder.name,
-                stakeholderRole: targetStakeholder.role
-              }
-              
-              setMessages(prev => [...prev, redirectMessage])
-              
-              // Play audio for the redirected response
-              await playMessageAudio(redirectMessage.id, redirectResponse, targetStakeholder, true)
-              
-            } catch (error) {
-              console.error('Error generating redirect response:', error)
-            }
-          }, 1000) // Small delay to make it feel natural
+            }, 1000)
+          }
         }
       }
     } catch (error) {

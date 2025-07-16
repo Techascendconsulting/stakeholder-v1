@@ -123,13 +123,32 @@ Remember: You are a real person with real opinions and experiences in your role.
     // Analyze if the user is directly addressing this stakeholder
     const isDirectlyAddressed = this.isDirectlyAddressed(userMessage, context, currentStakeholder);
     
+    // Check if this is a group greeting or group message
+    const isGroupGreeting = this.isGroupGreeting(userMessage);
+    
     if (isDirectlyAddressed) {
       prompt += `\nIMPORTANT: The user is directly addressing YOU in their message. They may be thanking others but the question or request is specifically for you. Respond as the person being directly asked.\n`;
+    } else if (isGroupGreeting) {
+      prompt += `\nIMPORTANT: The user is greeting the entire group. Respond as yourself joining the group greeting. Keep it brief and friendly - other stakeholders will also be responding. Don't dominate the conversation.\n`;
     }
 
     prompt += `\nUser just said: "${userMessage}"\n\nPlease respond as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}.`;
 
     return prompt;
+  }
+
+  // Helper function to detect group greetings
+  private isGroupGreeting(userMessage: string): boolean {
+    const message = userMessage.toLowerCase();
+    
+    const groupGreetingPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)/,
+      /^(hi|hello|hey)\s+(there|y'all)/,
+      /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
+      /^(hi|hello|hey)(?:\s+team)?$/,
+    ];
+    
+    return groupGreetingPatterns.some(pattern => pattern.test(message));
   }
 
   // Helper function to detect if a stakeholder is being directly addressed
