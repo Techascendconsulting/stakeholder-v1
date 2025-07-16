@@ -1,6 +1,6 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, BarChart3, ArrowRight, Zap, Trophy, Globe } from 'lucide-react'
+import { Clock, Users, BarChart3, ArrowRight, Zap, Trophy, Globe, Building2 } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
   const { projects, selectProject } = useApp()
