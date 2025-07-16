@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag } from 'lucide-react'
+import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
+import VoiceInputModal from '../VoiceInputModal'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
@@ -17,6 +18,8 @@ const MeetingView: React.FC = () => {
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null)
   const [audioStates, setAudioStates] = useState<{[key: string]: 'playing' | 'paused' | 'stopped'}>({})
+  const [showVoiceModal, setShowVoiceModal] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -67,7 +70,34 @@ const MeetingView: React.FC = () => {
   const getTargetStakeholder = (userMessage: string) => {
     const message = userMessage.toLowerCase()
     
-    // Check if user mentioned a specific stakeholder by name
+    // First, check for direct addressing patterns like "Aisha, let's start" or "Sarah, can you"
+    const directAddressingPatterns = [
+      // Look for patterns like "Name, verb" or "Name verb" indicating direct addressing
+      /(\w+),?\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)/,
+      // Look for patterns like "Name, I want to" or "Name, I need"
+      /(\w+),?\s+(i want|i need|i would like|i'd like)/,
+      // Look for patterns after acknowledgments like "Thanks X, Name verb"
+      /thanks?\s+\w+,?\s+(\w+)\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)/,
+    ]
+    
+    for (const pattern of directAddressingPatterns) {
+      const match = message.match(pattern)
+      if (match) {
+        const targetName = match[1] || match[2] // Get the name from the capture group
+        
+        // Find stakeholder by first name or full name
+        for (const stakeholder of selectedStakeholders) {
+          const firstName = stakeholder.name.split(' ')[0].toLowerCase()
+          const fullName = stakeholder.name.toLowerCase()
+          
+          if (firstName === targetName || fullName.includes(targetName)) {
+            return stakeholder
+          }
+        }
+      }
+    }
+    
+    // Check if user mentioned a specific stakeholder by name (existing logic)
     for (const stakeholder of selectedStakeholders) {
       const firstName = stakeholder.name.split(' ')[0].toLowerCase()
       const fullName = stakeholder.name.toLowerCase()
@@ -341,6 +371,17 @@ const MeetingView: React.FC = () => {
     }
   }
 
+  const handleVoiceInput = (transcription: string) => {
+    setInputMessage(transcription)
+    setShowVoiceModal(false)
+    // Focus input after a short delay to ensure modal is closed
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  const handleTranscribingChange = (transcribing: boolean) => {
+    setIsTranscribing(transcribing)
+  }
+
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
       <div className="p-8">
@@ -520,6 +561,17 @@ const MeetingView: React.FC = () => {
                 disabled={isLoading}
               />
               <button
+                onClick={() => setShowVoiceModal(true)}
+                disabled={isLoading || isTranscribing}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-2"
+                title="Voice Input"
+              >
+                <Mic className="w-5 h-5" />
+                {isTranscribing && (
+                  <span className="text-sm">Transcribing...</span>
+                )}
+              </button>
+              <button
                 onClick={handleSendMessage}
                 disabled={isLoading || !inputMessage.trim()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
@@ -529,6 +581,12 @@ const MeetingView: React.FC = () => {
             </div>
           </div>
         </div>
+                 <VoiceInputModal
+           isOpen={showVoiceModal}
+           onClose={() => setShowVoiceModal(false)}
+           onSave={handleVoiceInput}
+           onTranscribingChange={handleTranscribingChange}
+         />
       </div>
     )
 }

@@ -44,7 +44,7 @@ export class AIService {
   ): Promise<string> {
     try {
       const systemPrompt = this.buildSystemPrompt(stakeholder, context);
-      const conversationPrompt = this.buildConversationPrompt(userMessage, context);
+      const conversationPrompt = this.buildConversationPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4",
@@ -107,7 +107,7 @@ IMPORTANT: Sound like a real person having a natural conversation, not a formal 
 Remember: You are a real person with real opinions and experiences in your role. Respond authentically from that perspective as if speaking naturally in a business meeting.`;
   }
 
-  private buildConversationPrompt(userMessage: string, context: ConversationContext): string {
+  private buildConversationPrompt(userMessage: string, context: ConversationContext, currentStakeholder: StakeholderContext): string {
     let prompt = `Recent conversation history:\n`;
     
     // Include last 5 messages for context
@@ -120,9 +120,41 @@ Remember: You are a real person with real opinions and experiences in your role.
       }
     });
 
+    // Analyze if the user is directly addressing this stakeholder
+    const isDirectlyAddressed = this.isDirectlyAddressed(userMessage, context, currentStakeholder);
+    
+    if (isDirectlyAddressed) {
+      prompt += `\nIMPORTANT: The user is directly addressing YOU in their message. They may be thanking others but the question or request is specifically for you. Respond as the person being directly asked.\n`;
+    }
+
     prompt += `\nUser just said: "${userMessage}"\n\nPlease respond as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}.`;
 
     return prompt;
+  }
+
+  // Helper function to detect if a stakeholder is being directly addressed
+  private isDirectlyAddressed(userMessage: string, context: ConversationContext, currentStakeholder: StakeholderContext): boolean {
+    const message = userMessage.toLowerCase();
+    const stakeholderFirstName = currentStakeholder.name.split(' ')[0].toLowerCase();
+    const stakeholderFullName = currentStakeholder.name.toLowerCase();
+    
+    // Look for direct addressing patterns that mention this stakeholder's name
+    const directAddressingPatterns = [
+      // Pattern: "Name, verb" or "Name verb" 
+      new RegExp(`(${stakeholderFirstName}|${stakeholderFullName}),?\\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)`),
+      // Pattern: "Name, I want" or "Name, I need"
+      new RegExp(`(${stakeholderFirstName}|${stakeholderFullName}),?\\s+(i want|i need|i would like|i'd like)`),
+      // Pattern: "Thanks X, Name verb" - after acknowledgment
+      new RegExp(`thanks?\\s+\\w+,?\\s+(${stakeholderFirstName}|${stakeholderFullName})\\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)`),
+    ];
+    
+    for (const pattern of directAddressingPatterns) {
+      if (pattern.test(message)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   // Function to intelligently detect if a stakeholder's response redirects to another stakeholder
