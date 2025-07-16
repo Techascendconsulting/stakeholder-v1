@@ -58,20 +58,46 @@ const MeetingView: React.FC = () => {
     const updatedMessages = [...messages, userMessage]
     setMessages(updatedMessages)
 
-    // Simulate AI response
+    // Simulate AI response with proper stakeholder selection
     setTimeout(() => {
-      const stakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
-      const aiMessage: Message = {
-        id: `ai-${Date.now()}`,
-        speaker: stakeholder.id || 'stakeholder',
-        content: generateMockResponse(inputMessage, stakeholder),
-        timestamp: new Date().toISOString(),
-        stakeholderName: stakeholder.name,
-        stakeholderRole: stakeholder.role
+      const respondingStakeholders = getRespondingStakeholders(inputMessage, selectedStakeholders)
+      
+      // Generate responses from appropriate stakeholders
+      respondingStakeholders.forEach((stakeholder, index) => {
+        setTimeout(() => {
+          const aiMessage: Message = {
+            id: `ai-${Date.now()}-${index}`,
+            speaker: stakeholder.id || 'stakeholder',
+            content: generateMockResponse(inputMessage, stakeholder),
+            timestamp: new Date().toISOString(),
+            stakeholderName: stakeholder.name,
+            stakeholderRole: stakeholder.role
+          }
+          
+          setMessages(prev => [...prev, aiMessage])
+          
+          // Set loading to false after the last response
+          if (index === respondingStakeholders.length - 1) {
+            setIsLoading(false)
+          }
+        }, index * 800) // Stagger responses by 800ms
+      })
+      
+      // Fallback if no stakeholders should respond
+      if (respondingStakeholders.length === 0) {
+        const defaultStakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
+        const aiMessage: Message = {
+          id: `ai-${Date.now()}`,
+          speaker: defaultStakeholder.id || 'stakeholder',
+          content: generateMockResponse(inputMessage, defaultStakeholder),
+          timestamp: new Date().toISOString(),
+          stakeholderName: defaultStakeholder.name,
+          stakeholderRole: defaultStakeholder.role
+        }
+        
+        setMessages(prev => [...prev, aiMessage])
+        setIsLoading(false)
       }
-
-      setMessages(prev => [...prev, aiMessage])
-      setIsLoading(false)
     }, 1500)
 
     setInputMessage('')
