@@ -358,179 +358,179 @@ const MeetingView: React.FC = () => {
     )
   }
 
-  return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-white">
-                Meeting: {selectedProject.name}
-              </h2>
-              <p className="text-sm text-blue-100 mt-1">
-                Participants: {selectedStakeholders.map(s => s.name).join(', ')}
-              </p>
-            </div>
-            
-            {/* Question Helper Toggle */}
-            <button
-              onClick={() => setShowQuestionHelper(!showQuestionHelper)}
-              className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-            >
-              <HelpCircle className="w-5 h-5" />
-              <span>Question Helper</span>
-              {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
-          
-          {/* Question Helper Panel */}
-          {showQuestionHelper && (
-            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-blue-900">
-                  Question Bank for {selectedStakeholders[0]?.role || 'Stakeholder'}
-                </h3>
-                <div className="flex bg-white rounded-lg p-1 border border-blue-200">
-                  <button
-                    onClick={() => setSelectedQuestionCategory('as-is')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      selectedQuestionCategory === 'as-is'
-                        ? 'bg-blue-600 text-white'
-                        : 'text-blue-700 hover:bg-blue-100'
-                    }`}
-                  >
-                    As-Is Process ({mockQuestions['as-is'].length})
-                  </button>
-                  <button
-                    onClick={() => setSelectedQuestionCategory('to-be')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      selectedQuestionCategory === 'to-be'
-                        ? 'bg-blue-600 text-white'
-                        : 'text-blue-700 hover:bg-blue-100'
-                    }`}
-                  >
-                    To-Be Vision ({mockQuestions['to-be'].length})
-                  </button>
-                </div>
+      return (
+      <div className="max-w-6xl mx-auto p-6 h-screen flex flex-col">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-white">
+                  Meeting: {selectedProject.name}
+                </h2>
+                <p className="text-sm text-blue-100 mt-1">
+                  Participants: {selectedStakeholders.map(s => s.name).join(', ')}
+                </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {mockQuestions[selectedQuestionCategory].map((question, index) => (
-                                     <div
-                     key={index}
-                     className="bg-white border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors cursor-pointer"
-                     onClick={() => {
-                       setInputMessage(question)
-                       setShowQuestionHelper(false)
-                       setTimeout(() => inputRef.current?.focus(), 100)
-                     }}
-                   >
-                    <p className="text-sm text-blue-900 font-medium">{question}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Messages */}
-        <div className="h-96 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => {
-            const stakeholder = selectedStakeholders.find(s => s.id === message.speaker)
-            const isStakeholderMessage = message.speaker !== 'user' && message.speaker !== 'system'
-            const audioState = audioStates[message.id] || 'stopped'
-            const isCurrentlyPlaying = playingMessageId === message.id
-            
-            return (
-              <div
-                key={message.id}
-                className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
+              {/* Question Helper Toggle */}
+              <button
+                onClick={() => setShowQuestionHelper(!showQuestionHelper)}
+                className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
               >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg relative group ${
-                    message.speaker === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : message.speaker === 'system'
-                      ? 'bg-gray-100 text-gray-800'
-                      : 'bg-gray-200 text-gray-800'
-                  }`}
-                >
-                  {isStakeholderMessage && (
-                    <div className="text-xs font-medium text-gray-600 mb-1">
-                      {message.stakeholderName} ({message.stakeholderRole})
-                    </div>
-                  )}
-                  <div className="text-sm whitespace-pre-wrap pr-8">{message.content}</div>
-                  <div className="text-xs mt-1 opacity-75">
-                    {new Date(message.timestamp).toLocaleTimeString()}
+                <HelpCircle className="w-5 h-5" />
+                <span>Question Helper</span>
+                {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+            
+            {/* Question Helper Panel */}
+            {showQuestionHelper && (
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-blue-900">
+                    Question Bank for {selectedStakeholders[0]?.role || 'Stakeholder'}
+                  </h3>
+                  <div className="flex bg-white rounded-lg p-1 border border-blue-200">
+                    <button
+                      onClick={() => setSelectedQuestionCategory('as-is')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        selectedQuestionCategory === 'as-is'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-blue-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      As-Is Process ({mockQuestions['as-is'].length})
+                    </button>
+                    <button
+                      onClick={() => setSelectedQuestionCategory('to-be')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        selectedQuestionCategory === 'to-be'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-blue-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      To-Be Vision ({mockQuestions['to-be'].length})
+                    </button>
                   </div>
-                  
-                  {/* Audio Controls for Stakeholder Messages */}
-                  {isStakeholderMessage && stakeholder && globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id) && (
-                    <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => toggleMessageAudio(message.id, message.content, stakeholder)}
-                        className="p-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors"
-                        title={isCurrentlyPlaying ? 'Pause' : audioState === 'paused' ? 'Resume' : 'Play'}
-                      >
-                        {isCurrentlyPlaying ? (
-                          <Pause className="w-3 h-3 text-gray-700" />
-                        ) : (
-                          <Play className="w-3 h-3 text-gray-700" />
-                        )}
-                      </button>
-                      {audioState !== 'stopped' && (
-                        <button
-                          onClick={() => stopMessageAudio(message.id)}
-                          className="p-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors"
-                          title="Stop"
-                        >
-                          <Square className="w-3 h-3 text-gray-700" />
-                        </button>
-                      )}
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {mockQuestions[selectedQuestionCategory].map((question, index) => (
+                    <div
+                      key={index}
+                      className="bg-white border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setInputMessage(question)
+                        setShowQuestionHelper(false)
+                        setTimeout(() => inputRef.current?.focus(), 100)
+                      }}
+                    >
+                      <p className="text-sm text-blue-900 font-medium">{question}</p>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
-            )
-          })}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">
-                <div className="text-sm">Thinking...</div>
-              </div>
-            </div>
-          )}
-          {/* Scroll anchor */}
-          <div ref={messagesEndRef} />
-        </div>
+            )}
+          </div>
 
-        {/* Input */}
-        <div className="border-t p-4">
-          <div className="flex space-x-4">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={isLoading || !inputMessage.trim()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-            >
-              Send
-            </button>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {messages.map((message) => {
+              const stakeholder = selectedStakeholders.find(s => s.id === message.speaker)
+              const isStakeholderMessage = message.speaker !== 'user' && message.speaker !== 'system'
+              const audioState = audioStates[message.id] || 'stopped'
+              const isCurrentlyPlaying = playingMessageId === message.id
+              
+              return (
+                <div
+                  key={message.id}
+                  className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg relative ${
+                      message.speaker === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : message.speaker === 'system'
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-gray-200 text-gray-800'
+                    }`}
+                  >
+                    {isStakeholderMessage && (
+                      <div className="text-xs font-medium text-gray-600 mb-1">
+                        {message.stakeholderName} ({message.stakeholderRole})
+                      </div>
+                    )}
+                    <div className="text-sm whitespace-pre-wrap pr-8">{message.content}</div>
+                    <div className="text-xs mt-1 opacity-75">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
+                    
+                    {/* Audio Controls for Stakeholder Messages */}
+                    {isStakeholderMessage && stakeholder && globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id) && (
+                      <div className="absolute top-2 right-2 flex space-x-1">
+                        <button
+                          onClick={() => toggleMessageAudio(message.id, message.content, stakeholder)}
+                          className="p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
+                          title={isCurrentlyPlaying ? 'Pause' : audioState === 'paused' ? 'Resume' : 'Play'}
+                        >
+                          {isCurrentlyPlaying ? (
+                            <Pause className="w-3 h-3 text-gray-700" />
+                          ) : (
+                            <Play className="w-3 h-3 text-gray-700" />
+                          )}
+                        </button>
+                        {audioState !== 'stopped' && (
+                          <button
+                            onClick={() => stopMessageAudio(message.id)}
+                            className="p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
+                            title="Stop"
+                          >
+                            <Square className="w-3 h-3 text-gray-700" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">
+                  <div className="text-sm">Thinking...</div>
+                </div>
+              </div>
+            )}
+            {/* Scroll anchor */}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="border-t p-4 flex-shrink-0">
+            <div className="flex space-x-4">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={isLoading || !inputMessage.trim()}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
 }
 
 export default MeetingView
