@@ -23,6 +23,33 @@ const MeetingView: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Dynamic conversation configuration based on context
+  const getConversationConfig = () => {
+    const stakeholderCount = selectedStakeholders.length
+    
+    return {
+      // Greeting responses: Adaptive based on team size (2-4 people respond)
+      // Small teams: 60% respond, Large teams: capped at 4 to prevent chaos
+      maxGreetingRespondents: Math.min(Math.max(2, Math.floor(stakeholderCount * 0.6)), 4),
+      
+      // Turn limits: More turns for larger groups to allow natural conversation flow
+      // 2 base turns + additional turns based on team size (max 5 to prevent endless loops)
+      maxDiscussionTurns: Math.min(2 + Math.floor(stakeholderCount / 2), 5),
+      
+      // Timing: Adaptive delays based on group size for natural conversation rhythm
+      // Larger groups need longer pauses to feel natural
+      greetingPauseTiming: {
+        base: 800 + (stakeholderCount * 100),      // 800ms-1600ms base
+        variance: 300 + (stakeholderCount * 50)     // 300ms-650ms variance
+      },
+      
+      handoffPauseTiming: {
+        base: 1200 + (stakeholderCount * 150),     // 1.2s-2.4s base
+        variance: 600 + (stakeholderCount * 100)   // 600ms-1.2s variance
+      }
+    }
+  }
+
   // Mock questions for demonstration
   const mockQuestions = {
     'as-is': [
@@ -294,7 +321,8 @@ const MeetingView: React.FC = () => {
       
       if (isGroup && isGreeting) {
         // Handle simple greetings - multiple stakeholders respond briefly
-        const greetingRespondents = selectedStakeholders.slice(0, Math.min(3, selectedStakeholders.length))
+        const config = getConversationConfig()
+        const greetingRespondents = selectedStakeholders.slice(0, config.maxGreetingRespondents)
         
         for (let i = 0; i < greetingRespondents.length; i++) {
           const stakeholder = greetingRespondents[i]
@@ -312,7 +340,8 @@ const MeetingView: React.FC = () => {
           
           // Add natural pause between speakers (but not after the last one)
           if (i < greetingRespondents.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 500))
+            const pauseTime = config.greetingPauseTiming.base + Math.random() * config.greetingPauseTiming.variance
+            await new Promise(resolve => setTimeout(resolve, pauseTime))
           }
         }
       } else {
@@ -337,12 +366,12 @@ const MeetingView: React.FC = () => {
 
   // Handle natural discussion flow with turn-taking
   const handleDiscussionFlow = async (initialStakeholder: any, userMessage: string, currentMessages: Message[]) => {
+    const config = getConversationConfig()
     let currentSpeaker = initialStakeholder
     let conversationActive = true
     let turnCount = 0
-    const maxTurns = 3 // Prevent endless loops
     
-    while (conversationActive && turnCount < maxTurns) {
+    while (conversationActive && turnCount < config.maxDiscussionTurns) {
       // Generate response from current speaker
       const response = await generateStakeholderResponse(currentSpeaker, userMessage, currentMessages, 'discussion')
       const responseMessage = createResponseMessage(currentSpeaker, response, turnCount)
@@ -374,7 +403,8 @@ const MeetingView: React.FC = () => {
         
         if (targetStakeholder && targetStakeholder.id !== currentSpeaker.id) {
           // Natural delay before next person speaks
-          await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
+          const handoffPause = config.handoffPauseTiming.base + Math.random() * config.handoffPauseTiming.variance
+          await new Promise(resolve => setTimeout(resolve, handoffPause))
           
           currentSpeaker = targetStakeholder
           turnCount++
@@ -419,9 +449,10 @@ const MeetingView: React.FC = () => {
 
     const aiService = AIService.getInstance()
     return await aiService.generateStakeholderResponse(
-      responseType === 'greeting' ? userMessage : userMessage,
+      userMessage,
       stakeholderContext,
-      conversationContext
+      conversationContext,
+      responseType
     )
   }
 

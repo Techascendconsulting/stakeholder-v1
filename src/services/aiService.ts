@@ -37,14 +37,39 @@ export class AIService {
     return AIService.instance;
   }
 
+  // Dynamic AI configuration based on context and conversation type
+  private getAIConfig(responseType: 'greeting' | 'discussion' | 'handoff' = 'discussion') {
+    const configs = {
+      greeting: {
+        temperature: 0.8,     // More creative for natural greetings
+        maxTokens: 150,       // Shorter responses for greetings
+        historyLimit: 3       // Less context needed
+      },
+      discussion: {
+        temperature: 0.7,     // Balanced creativity and consistency
+        maxTokens: 400,       // Standard response length
+        historyLimit: 5       // Standard context window
+      },
+      handoff: {
+        temperature: 0.2,     // More focused for detection tasks
+        maxTokens: 50,        // Very short for detection
+        historyLimit: 2       // Minimal context needed
+      }
+    }
+    
+    return configs[responseType]
+  }
+
   async generateStakeholderResponse(
     userMessage: string,
     stakeholder: StakeholderContext,
-    context: ConversationContext
+    context: ConversationContext,
+    responseType: 'greeting' | 'discussion' = 'discussion'
   ): Promise<string> {
     try {
+      const aiConfig = this.getAIConfig(responseType);
       const systemPrompt = this.buildSystemPrompt(stakeholder, context);
-      const conversationPrompt = this.buildConversationPrompt(userMessage, context, stakeholder);
+      const conversationPrompt = this.buildConversationPrompt(userMessage, context, stakeholder, aiConfig.historyLimit);
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4",
@@ -52,8 +77,8 @@ export class AIService {
           { role: "system", content: systemPrompt },
           { role: "user", content: conversationPrompt }
         ],
-        temperature: 0.7,
-        max_tokens: 400,
+        temperature: aiConfig.temperature,
+        max_tokens: aiConfig.maxTokens,
         presence_penalty: 0.1,
         frequency_penalty: 0.1
       });
@@ -115,11 +140,11 @@ IMPORTANT: Sound like a real person having a natural conversation, not a formal 
 Remember: You are a real person with real opinions and experiences in your role. Respond authentically from that perspective as if speaking naturally in a business meeting.`;
   }
 
-  private buildConversationPrompt(userMessage: string, context: ConversationContext, currentStakeholder: StakeholderContext): string {
+  private buildConversationPrompt(userMessage: string, context: ConversationContext, currentStakeholder: StakeholderContext, historyLimit: number): string {
     let prompt = `Recent conversation history:\n`;
     
     // Include last 5 messages for context
-    const recentMessages = context.conversationHistory.slice(-5);
+    const recentMessages = context.conversationHistory.slice(-historyLimit);
     recentMessages.forEach(msg => {
       if (msg.speaker === 'user') {
         prompt += `User: ${msg.content}\n`;
@@ -197,6 +222,7 @@ User just said: "${userMessage}"\n\nPlease respond as ${context.conversationHist
   // Function to intelligently detect if a stakeholder's response redirects to another stakeholder
   async detectStakeholderRedirect(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
     try {
+      const aiConfig = this.getAIConfig('handoff');
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
       const completion = await openai.chat.completions.create({
@@ -221,8 +247,8 @@ Rules:
             content: `Response to analyze: "${response}"`
           }
         ],
-        temperature: 0.1,
-        max_tokens: 50
+        temperature: aiConfig.temperature,
+        max_tokens: aiConfig.maxTokens
       });
 
       const result = completion.choices[0]?.message?.content?.trim();
@@ -244,6 +270,7 @@ Rules:
   // Function to detect natural conversation passing (turn-taking)
   async detectConversationHandoff(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
     try {
+      const aiConfig = this.getAIConfig('handoff');
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
       const completion = await openai.chat.completions.create({
@@ -278,8 +305,8 @@ Rules:
             content: `Response to analyze: "${response}"`
           }
         ],
-        temperature: 0.1,
-        max_tokens: 50
+        temperature: aiConfig.temperature,
+        max_tokens: aiConfig.maxTokens
       });
 
       const result = completion.choices[0]?.message?.content?.trim();
