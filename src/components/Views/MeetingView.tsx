@@ -21,6 +21,7 @@ const MeetingView: React.FC = () => {
   const [showVoiceModal, setShowVoiceModal] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [currentSpeaker, setCurrentSpeaker] = useState<any>(null)
+  const [meetingEndedSuccess, setMeetingEndedSuccess] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -596,6 +597,86 @@ const MeetingView: React.FC = () => {
     setIsTranscribing(transcribing)
   }
 
+  const handleEndMeeting = async () => {
+    if (messages.length <= 1) {
+      alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
+      return;
+    }
+
+    const isConfirmed = window.confirm(
+      'Are you sure you want to end this meeting? This will generate comprehensive interview notes and end the current session.'
+    );
+
+    if (!isConfirmed) return;
+
+    setIsLoading(true);
+
+    try {
+      // Stop any current audio
+      stopCurrentAudio();
+
+      // Calculate meeting duration
+      const meetingStartTime = new Date(messages[0]?.timestamp || new Date().toISOString());
+      const meetingEndTime = new Date();
+      const duration = Math.round((meetingEndTime.getTime() - meetingStartTime.getTime()) / 1000 / 60); // in minutes
+
+      // Generate comprehensive meeting notes
+      const meetingData = {
+        project: {
+          name: selectedProject?.name || 'Current Project',
+          description: selectedProject?.description || '',
+          type: selectedProject?.projectType || 'General'
+        },
+        participants: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department
+        })),
+        messages: messages.filter(m => m.speaker !== 'system'), // Exclude system messages
+        startTime: meetingStartTime,
+        endTime: meetingEndTime,
+        duration,
+        user: user?.email || 'Business Analyst'
+      };
+
+      const aiService = AIService.getInstance();
+      const interviewNotes = await aiService.generateInterviewNotes(meetingData);
+
+      // Create a formatted notes object
+      const notesObject = {
+        id: `meeting-${Date.now()}`,
+        title: `Interview Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
+        content: interviewNotes,
+        projectId: selectedProject?.id || 'unknown',
+        meetingType: 'stakeholder-interview',
+        participants: selectedStakeholders.map(s => s.name).join(', '),
+        date: meetingEndTime.toISOString(),
+        duration: `${duration} minutes`,
+        createdBy: user?.email || 'Business Analyst'
+      };
+
+      // Save to localStorage (in a real app, this would go to a database)
+      const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
+      existingNotes.push(notesObject);
+      localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
+
+      // Show success notification
+      setMeetingEndedSuccess(true);
+      
+      // Navigate to notes view after a short delay to show success message
+      setTimeout(() => {
+        setCurrentView('notes');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error ending meeting:', error);
+      // Use a better error notification in the future
+      alert('Error generating meeting notes. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
       <div className="p-8">
@@ -678,7 +759,50 @@ const MeetingView: React.FC = () => {
                 <span className="hidden sm:inline">Question Helper</span>
                 {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
+              
+              {/* End Meeting Button */}
+              <button
+                onClick={handleEndMeeting}
+                disabled={messages.length <= 1 || isLoading}
+                className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-sm"
+                title="End meeting and generate interview notes"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="hidden sm:inline">Ending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-4 h-4" />
+                    <span className="hidden sm:inline">End Meeting</span>
+                  </>
+                )}
+              </button>
             </div>
+            
+            {/* Mobile End Meeting Button */}
+            {messages.length > 1 && (
+              <div className="sm:hidden mt-3 flex justify-center">
+                <button
+                  onClick={handleEndMeeting}
+                  disabled={isLoading}
+                  className="flex items-center space-x-2 bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg w-full max-w-xs justify-center"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Generating Notes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Square className="w-4 h-4" />
+                      <span>End Meeting</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
             
             {/* Mobile Current Speaker Display */}
             {currentSpeaker && (
@@ -885,6 +1009,39 @@ const MeetingView: React.FC = () => {
            onSave={handleVoiceInput}
            onTranscribingChange={handleTranscribingChange}
          />
+         
+         {/* Meeting End Success Notification */}
+         {meetingEndedSuccess && (
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+               <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                 <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                 </svg>
+               </div>
+               
+               <h3 className="text-xl font-bold text-gray-900 mb-2">Meeting Ended Successfully!</h3>
+               
+               <div className="space-y-2 text-sm text-gray-600 mb-6">
+                 <p><strong>Participants:</strong> {selectedStakeholders.length} stakeholders</p>
+                 <p><strong>Project:</strong> {selectedProject?.name}</p>
+                 <p><strong>Status:</strong> Comprehensive interview notes generated</p>
+               </div>
+               
+               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                 <p className="text-blue-800 text-sm">
+                   📝 Your interview notes have been automatically generated and saved. 
+                   You'll be redirected to view them in a moment.
+                 </p>
+               </div>
+               
+               <div className="flex items-center justify-center space-x-2 text-blue-600">
+                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                 <span className="text-sm">Navigating to notes...</span>
+               </div>
+             </div>
+           </div>
+         )}
       </div>
     )
 }

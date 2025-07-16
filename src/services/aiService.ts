@@ -125,6 +125,127 @@ export class AIService {
     }
   }
 
+  // Generate comprehensive interview notes from meeting data
+  async generateInterviewNotes(meetingData: any): Promise<string> {
+    try {
+      const { project, participants, messages, startTime, endTime, duration, user } = meetingData;
+      
+      // Format conversation for AI analysis
+      const conversationTranscript = messages.map((msg: any) => {
+        const time = new Date(msg.timestamp).toLocaleTimeString();
+        if (msg.speaker === 'user') {
+          return `[${time}] Business Analyst: ${msg.content}`;
+        } else {
+          return `[${time}] ${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}`;
+        }
+      }).join('\n');
+
+      const prompt = `You are a professional business analyst creating comprehensive interview notes from a stakeholder meeting. 
+
+MEETING DETAILS:
+- Project: ${project.name}
+- Date: ${new Date(startTime).toLocaleDateString()} 
+- Start Time: ${new Date(startTime).toLocaleTimeString()}
+- End Time: ${new Date(endTime).toLocaleTimeString()}
+- Duration: ${duration} minutes
+- Facilitator: ${user}
+- Participants: ${participants.map((p: any) => `${p.name} (${p.role}, ${p.department})`).join(', ')}
+
+CONVERSATION TRANSCRIPT:
+${conversationTranscript}
+
+Please generate comprehensive interview notes in the following format:
+
+# Interview Notes: ${project.name}
+
+## Meeting Information
+- **Date:** ${new Date(startTime).toLocaleDateString()}
+- **Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()} (${duration} minutes)
+- **Facilitator:** ${user}
+- **Project:** ${project.name}
+- **Project Type:** ${project.type}
+
+## Participants
+${participants.map((p: any) => `- **${p.name}** - ${p.role}, ${p.department}`).join('\n')}
+
+## Executive Summary
+[Provide a 2-3 sentence overview of the meeting's main purpose and outcomes]
+
+## Key Discussion Points
+[Organize the main topics discussed with bullet points and sub-points]
+
+## Stakeholder Insights
+[For each stakeholder, summarize their key contributions, concerns, and perspectives]
+
+## Process Information Gathered
+[Document any process steps, workflows, or procedural information shared]
+
+## Pain Points Identified
+[List current challenges and issues mentioned by stakeholders]
+
+## Requirements and Needs
+[Document any requirements, needs, or requests identified]
+
+## Action Items and Follow-ups
+[List any next steps, action items, or follow-up meetings mentioned]
+
+## Additional Notes
+[Any other relevant information or observations]
+
+---
+*Notes generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*
+
+Make the notes professional, comprehensive, and well-organized. Focus on extracting actionable insights and maintaining the context of who said what.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.3, // Lower temperature for more consistent, professional output
+        max_tokens: 2000 // Longer output for comprehensive notes
+      });
+
+      return completion.choices[0]?.message?.content || this.getFallbackNotes(meetingData);
+    } catch (error) {
+      console.error('Error generating interview notes:', error);
+      return this.getFallbackNotes(meetingData);
+    }
+  }
+
+  // Fallback notes generation if AI fails
+  private getFallbackNotes(meetingData: any): string {
+    const { project, participants, messages, startTime, endTime, duration, user } = meetingData;
+    
+    return `# Interview Notes: ${project.name}
+
+## Meeting Information
+- **Date:** ${new Date(startTime).toLocaleDateString()}
+- **Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()} (${duration} minutes)
+- **Facilitator:** ${user}
+- **Project:** ${project.name}
+
+## Participants
+${participants.map((p: any) => `- **${p.name}** - ${p.role}, ${p.department}`).join('\n')}
+
+## Conversation Summary
+The meeting included ${messages.filter((m: any) => m.speaker !== 'user').length} stakeholder responses and covered various aspects of the ${project.name} project.
+
+## Raw Transcript
+${messages.map((msg: any) => {
+  const time = new Date(msg.timestamp).toLocaleTimeString();
+  if (msg.speaker === 'user') {
+    return `[${time}] Business Analyst: ${msg.content}`;
+  } else {
+    return `[${time}] ${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}`;
+  }
+}).join('\n')}
+
+---
+*Notes generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*
+*Note: This is a basic transcript. For detailed analysis, please review the conversation manually.*`;
+  }
+
   private buildSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext): string {
     return `You are ${stakeholder.name}, a ${stakeholder.role} at a company. You are participating in a stakeholder requirements gathering meeting for the project "${context.project.name}".
 
