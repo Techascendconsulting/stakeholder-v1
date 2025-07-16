@@ -163,6 +163,45 @@ const MeetingView: React.FC = () => {
   const getInitialRespondent = (userMessage: string) => {
     const message = userMessage.toLowerCase()
     
+    // Check if this is a follow-up to someone who was recently addressed
+    const recentMessages = messages.slice(-3) // Look at last 3 messages
+    let lastAddressedStakeholder = null
+    
+    for (let i = recentMessages.length - 1; i >= 0; i--) {
+      const msg = recentMessages[i]
+      if (msg.speaker !== 'user' && msg.speaker !== 'system') {
+        // Check if this stakeholder was recently addressed by another stakeholder
+        const stakeholderMessage = msg.content.toLowerCase()
+        for (const stakeholder of selectedStakeholders) {
+          const firstName = stakeholder.name.split(' ')[0].toLowerCase()
+          const fullName = stakeholder.name.toLowerCase()
+          
+          // Look for patterns where this stakeholder was addressed
+          if (stakeholderMessage.includes(`${firstName},`) || 
+              stakeholderMessage.includes(`${fullName},`) ||
+              stakeholderMessage.includes(`${firstName} could`) ||
+              stakeholderMessage.includes(`${firstName} might`) ||
+              stakeholderMessage.includes(`${firstName}?`)) {
+            lastAddressedStakeholder = stakeholder
+            break
+          }
+        }
+        if (lastAddressedStakeholder) break
+      }
+    }
+    
+    // If this seems like a follow-up and someone was recently addressed, prioritize them
+    const followUpPatterns = [
+      /^(and|so|what about|how about|what|can you|could you|would you)/,
+      /^(yes|yeah|ok|okay|sure|right|exactly|absolutely)/,
+      /^(tell me|explain|show me|walk me through)/
+    ]
+    
+    const isFollowUp = followUpPatterns.some(pattern => pattern.test(message))
+    if (isFollowUp && lastAddressedStakeholder && !message.includes('james') && !message.includes('walker')) {
+      return lastAddressedStakeholder
+    }
+    
     // Check for direct addressing first
     const directAddressingPatterns = [
       /(\w+),?\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)/,
@@ -440,8 +479,24 @@ const MeetingView: React.FC = () => {
           const handoffPause = config.handoffPauseTiming.base + Math.random() * config.handoffPauseTiming.variance
           await new Promise(resolve => setTimeout(resolve, handoffPause))
           
+          // Generate response from the handoff target with context that they were addressed
+          const handoffResponse = await generateStakeholderResponse(
+            targetStakeholder, 
+            `${currentSpeaker.name} asked you: "${response.split(/[.!?]/).pop()?.trim() || userMessage}"`, 
+            currentMessages, 
+            'discussion'
+          )
+          
+          const handoffMessage = createResponseMessage(targetStakeholder, handoffResponse, turnCount + 1)
+          
+          currentMessages = [...currentMessages, handoffMessage]
+          setMessages(currentMessages)
+          
+          // Play audio for the handoff response
+          await playMessageAudio(handoffMessage.id, handoffResponse, targetStakeholder, true)
+          
           currentSpeaker = targetStakeholder
-          turnCount++
+          turnCount += 2 // Increment by 2 since we had both original response and handoff
           
           // Continue the conversation with the new speaker
           continue

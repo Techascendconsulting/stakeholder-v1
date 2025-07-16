@@ -45,10 +45,10 @@ export class AIService {
     
     const baseConfigs = {
       greeting: {
-        // Shorter responses for larger groups to prevent chaos
+        // Brief but warm greetings
         maxTokens: Math.max(
-          Math.floor(teamComplexityFactor * 40), 
-          Math.floor((6 - teamComplexityFactor) * 25)
+          Math.floor(teamComplexityFactor * 60), 
+          Math.floor((6 - teamComplexityFactor) * 35)
         ),
         // Higher creativity for natural greetings, moderated by team size
         temperature: Math.min(
@@ -58,17 +58,17 @@ export class AIService {
         historyLimit: Math.max(1, Math.min(stakeholderCount - 1, Math.floor(teamComplexityFactor * 2)))
       },
       discussion: {
-        // Adaptive response length: shorter for larger groups, longer for complex topics
+        // More human-like response length: enough to express a complete thought
         maxTokens: Math.max(
-          Math.floor(teamComplexityFactor * 60), 
+          Math.floor(teamComplexityFactor * 120), 
           Math.min(
-            Math.floor((8 - stakeholderCount) * 30), 
-            Math.floor(180 + (conversationMaturityFactor * 70))
+            Math.floor((8 - stakeholderCount) * 50), 
+            Math.floor(280 + (conversationMaturityFactor * 100))
           )
         ),
-        // Higher creativity for natural conversation, adjusted for group dynamics
+        // Balanced creativity for natural conversation
         temperature: Math.min(
-          0.9, 
+          0.85, 
           0.65 + (teamComplexityFactor * 0.08) + (conversationMaturityFactor * 0.05)
         ),
         historyLimit: Math.max(
@@ -77,17 +77,17 @@ export class AIService {
         )
       },
       handoff: {
-        // Very focused detection, minimal tokens needed
+        // More sensitive detection
         maxTokens: Math.max(
-          Math.floor(teamComplexityFactor * 15), 
-          Math.floor((7 - stakeholderCount) * 8)
+          Math.floor(teamComplexityFactor * 20), 
+          Math.floor((7 - stakeholderCount) * 12)
         ),
-        // Low temperature for consistent detection, slightly higher for larger teams
+        // Slightly higher temperature for better natural language understanding
         temperature: Math.max(
-          0.05, 
-          Math.min(0.3, 0.15 + (teamComplexityFactor * 0.03))
+          0.1, 
+          Math.min(0.4, 0.2 + (teamComplexityFactor * 0.04))
         ),
-        historyLimit: Math.max(1, Math.min(Math.floor(teamComplexityFactor), 3))
+        historyLimit: Math.max(1, Math.min(Math.floor(teamComplexityFactor), 4))
       }
     }
     
@@ -141,23 +141,23 @@ Project Context:
 - Project Type: ${context.project.type}
 
 Your Behavior Guidelines:
-1. Keep responses VERY SHORT - aim for brief, natural conversation turns appropriate for a ${context.stakeholders?.length || 'small'}-person team
-2. Share only ONE point or step at a time, then stop and wait for follow-up questions
+1. Respond naturally like a human in a business meeting - give complete thoughts but stay conversational
+2. Share enough information to be helpful, but don't dump everything at once - think "one complete idea per response"
 3. Use natural speech patterns: "Well,", "You know,", "Actually,", "Um,", "Let me think...", "I mean,"
-4. Ask questions back to keep the conversation flowing: "What specifically are you looking for?" or "Does that help?" or "Should I go into more detail on that?"
-5. BE CONVERSATIONAL, not informative - you're chatting, not presenting
-6. If explaining a process, share just the FIRST step, then ask if they want to hear what happens next
-7. Use phrases like "From my side..." or "What I typically do is..." to make it personal
-8. It's okay to say "I'm not sure about that part" or "That's handled by [team]"
-9. Never list multiple steps or dump information - real people don't talk that way
-10. End responses with questions or natural conversation enders to invite interaction
-11. Think out loud: "Hmm, let me think about that..." or "Well, the way I see it..."
-12. Be authentic - admit uncertainties, pause to think, speak like you're remembering
-13. STOP after making ONE point - don't elaborate unless asked
-14. Use collaborative language: "Maybe we should ask [Name] about that?" or "What do you think?"
-15. Keep the energy conversational and light, not formal or instructional
+4. Express your thoughts fully but then invite interaction: "What do you think about that?" or "Does that make sense?"
+5. BE CONVERSATIONAL, not formal - you're having a discussion, not giving a presentation
+6. When explaining processes, share a meaningful step or two, then check if they want more detail
+7. Use phrases like "From my experience..." or "What I typically see is..." to make it personal and authentic
+8. It's perfectly fine to say "I'm not sure about that part" or "That's really [colleague's] area"
+9. Give enough context to be useful - humans don't speak in single sentences in business meetings
+10. End with natural conversation connectors that invite engagement
+11. Think out loud briefly: "Hmm, that's interesting..." or "You know, I've seen this before..."
+12. Be authentic - pause to think, admit uncertainties, speak like you're genuinely considering the question
+13. Share one meaningful point with enough detail to be useful, then see where the conversation goes
+14. Use collaborative language: "Maybe [Name] has additional insights?" or "What's been your experience?"
+15. Sound like a helpful colleague who's genuinely engaged in solving the problem together
 
-CRITICAL: Your response should feel like someone briefly answering in a real meeting, not giving a presentation. Share one thing, then see what they say back.
+CRITICAL: Respond like a real person who's thoughtfully contributing to a business discussion. Give enough information to be valuable, but stay conversational and invite continued dialogue.
 
 Available stakeholders in this meeting: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
 
@@ -190,21 +190,21 @@ Remember: You are a real person with real opinions and experiences in your role.
     } else if (isGroupGreeting) {
       prompt += `\nIMPORTANT: The user is greeting the entire group. Respond as yourself joining the group greeting. Keep it brief, warm, and friendly - other stakeholders will also be responding. Don't dominate the conversation or share detailed information in a greeting response.\n`;
     } else {
-      prompt += `\nCONVERSATION FLOW: You are participating in a natural business discussion with ${context.stakeholders?.length || 'several'} people. Keep it brief and interactive. After sharing ONE point, consider asking a follow-up question or naturally inviting another stakeholder to contribute. Never dump multiple pieces of information at once.\n`;
+      prompt += `\nCONVERSATION FLOW: You are participating in a natural business discussion with ${context.stakeholders?.length || 'several'} people. Give thoughtful, complete responses that contribute meaningfully to the discussion. After sharing your perspective, naturally invite continued conversation or collaboration.\n`;
     }
 
     const teamSize = context.stakeholders?.length || 3;
-    const responseGuidance = teamSize > 5 ? 'extra brief' : teamSize > 3 ? 'concise' : 'conversational';
+    const responseGuidance = teamSize > 5 ? 'focused and efficient' : teamSize > 3 ? 'clear and collaborative' : 'detailed and engaging';
     
-    prompt += `\nCRITICAL RESPONSE RULES:
-- Keep responses ${responseGuidance} for this ${teamSize}-person team
-- Share only ONE idea, step, or point per response
-- End with a question or natural conversation opener
-- Think out loud briefly, then ask for their thoughts
-- Stop after making your point - don't elaborate unless asked
-- Make it feel like a quick back-and-forth chat, not a lecture
+    prompt += `\nRESPONSE APPROACH:
+- Provide ${responseGuidance} responses appropriate for this ${teamSize}-person team
+- Share one complete, meaningful idea with sufficient context
+- Think out loud naturally and express your genuine perspective
+- End with engagement that invites continued discussion
+- Be authentically helpful while staying conversational
+- Give enough detail to be valuable without overwhelming
 
-User just said: "${userMessage}"\n\nRespond BRIEFLY as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}. Remember: ONE point, then stop and engage.`;
+User just said: "${userMessage}"\n\nRespond naturally as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}. Share your perspective thoughtfully and keep the discussion flowing.`;
 
     return prompt;
   }
@@ -319,6 +319,14 @@ Examples of natural handoffs:
 - "I'd love to hear Michael's perspective on this"
 - "Sarah, what's your take on this?"
 - "That's something David could speak to better"
+- "Sarah, could you please shed some light on what we cover in this call?"
+- "Aisha, could you help us understand..."
+- "What would you add to this, [Name]?"
+- "[Name], from your experience..."
+- "I think [Name] would know more about this"
+- "[Name], what's your view?"
+- "[Name], care to elaborate?"
+- "Over to you, [Name]"
 
 Rules:
 - Return only the exact full name from the available stakeholders list
