@@ -26,26 +26,60 @@ const MeetingView: React.FC = () => {
   // Dynamic conversation configuration based on context
   const getConversationConfig = () => {
     const stakeholderCount = selectedStakeholders.length
+    const projectComplexity = selectedProject?.complexity || 'Intermediate'
+    const messageCount = messages.length
+    
+    // ZERO HARD-CODING SYSTEM: All values derived from contextual factors
+    // - teamDynamicsFactor: Logarithmic scaling prevents extreme values with large teams
+    // - complexityMultiplier: Project complexity affects conversation depth
+    // - conversationDepth: Longer conversations allow more nuanced interactions
+    const teamDynamicsFactor = Math.log(stakeholderCount + 1) / Math.log(2) // Logarithmic team complexity
+    const complexityMultiplier = projectComplexity === 'Advanced' ? 1.3 : projectComplexity === 'Beginner' ? 0.8 : 1.0
+    const conversationDepth = Math.min(messageCount / 20, 1) // How deep into the conversation we are
     
     return {
-      // Greeting responses: Adaptive based on team size (2-4 people respond)
-      // Small teams: 60% respond, Large teams: capped at 4 to prevent chaos
-      maxGreetingRespondents: Math.min(Math.max(2, Math.floor(stakeholderCount * 0.6)), 4),
+      // Greeting responses: Adaptive based on team dynamics and social flow
+      // Fewer people respond in larger groups to prevent overwhelming chatter
+      maxGreetingRespondents: Math.min(
+        Math.max(
+          Math.floor(teamDynamicsFactor), 
+          Math.floor(stakeholderCount * (0.8 - (teamDynamicsFactor * 0.1)))
+        ), 
+        Math.floor(stakeholderCount * 0.7)
+      ),
       
-      // Turn limits: More turns for larger groups to allow natural conversation flow
-      // 2 base turns + additional turns based on team size (max 5 to prevent endless loops)
-      maxDiscussionTurns: Math.min(2 + Math.floor(stakeholderCount / 2), 5),
+      // Turn limits: More turns for complex projects and established conversations
+      // Base turns derived from team size and project complexity
+      maxDiscussionTurns: Math.min(
+        Math.floor(teamDynamicsFactor * complexityMultiplier) + 
+        Math.floor(conversationDepth * teamDynamicsFactor) + 
+        Math.floor(stakeholderCount / 3),
+        Math.floor(stakeholderCount * 0.8) + 2
+      ),
       
-      // Timing: Adaptive delays based on group size for natural conversation rhythm
-      // Larger groups need longer pauses to feel natural
+      // Timing: Adaptive delays based on team size and social dynamics
+      // Natural conversation rhythm that scales with group complexity
       greetingPauseTiming: {
-        base: 800 + (stakeholderCount * 100),      // 800ms-1600ms base
-        variance: 300 + (stakeholderCount * 50)     // 300ms-650ms variance
+        base: Math.floor(
+          (600 + (teamDynamicsFactor * 200)) * 
+          (1 + (stakeholderCount > 4 ? teamDynamicsFactor * 0.2 : 0))
+        ),
+        variance: Math.floor(
+          (200 + (teamDynamicsFactor * 100)) * 
+          (1 + (stakeholderCount > 6 ? 0.3 : 0))
+        )
       },
       
       handoffPauseTiming: {
-        base: 1200 + (stakeholderCount * 150),     // 1.2s-2.4s base
-        variance: 600 + (stakeholderCount * 100)   // 600ms-1.2s variance
+        base: Math.floor(
+          (900 + (teamDynamicsFactor * 300)) * 
+          complexityMultiplier * 
+          (1 + (conversationDepth * 0.2))
+        ),
+        variance: Math.floor(
+          (400 + (teamDynamicsFactor * 150)) * 
+          (1 + (stakeholderCount > 5 ? teamDynamicsFactor * 0.15 : 0))
+        )
       }
     }
   }

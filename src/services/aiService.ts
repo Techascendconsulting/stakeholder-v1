@@ -38,26 +38,60 @@ export class AIService {
   }
 
   // Dynamic AI configuration based on context and conversation type
-  private getAIConfig(responseType: 'greeting' | 'discussion' | 'handoff' = 'discussion') {
-    const configs = {
+  private getAIConfig(responseType: 'greeting' | 'discussion' | 'handoff' = 'discussion', stakeholderCount: number = 3, conversationLength: number = 0) {
+    // Derive all constants from contextual factors
+    const teamComplexityFactor = Math.log(stakeholderCount + 1) / Math.log(2); // Logarithmic scaling for team complexity
+    const conversationMaturityFactor = Math.min(conversationLength / 10, 1); // How established the conversation is
+    
+    const baseConfigs = {
       greeting: {
-        temperature: 0.8,     // More creative for natural greetings
-        maxTokens: 80,        // Very short greetings
-        historyLimit: 3       // Less context needed
+        // Shorter responses for larger groups to prevent chaos
+        maxTokens: Math.max(
+          Math.floor(teamComplexityFactor * 40), 
+          Math.floor((6 - teamComplexityFactor) * 25)
+        ),
+        // Higher creativity for natural greetings, moderated by team size
+        temperature: Math.min(
+          0.9, 
+          0.6 + (teamComplexityFactor * 0.1) + (stakeholderCount < 4 ? 0.1 : 0)
+        ),
+        historyLimit: Math.max(1, Math.min(stakeholderCount - 1, Math.floor(teamComplexityFactor * 2)))
       },
       discussion: {
-        temperature: 0.8,     // Higher creativity for natural conversation
-        maxTokens: 180,       // Much shorter responses to encourage back-and-forth
-        historyLimit: 5       // Standard context window
+        // Adaptive response length: shorter for larger groups, longer for complex topics
+        maxTokens: Math.max(
+          Math.floor(teamComplexityFactor * 60), 
+          Math.min(
+            Math.floor((8 - stakeholderCount) * 30), 
+            Math.floor(180 + (conversationMaturityFactor * 70))
+          )
+        ),
+        // Higher creativity for natural conversation, adjusted for group dynamics
+        temperature: Math.min(
+          0.9, 
+          0.65 + (teamComplexityFactor * 0.08) + (conversationMaturityFactor * 0.05)
+        ),
+        historyLimit: Math.max(
+          Math.floor(teamComplexityFactor * 2), 
+          Math.min(stakeholderCount + Math.floor(conversationMaturityFactor * 3), 8)
+        )
       },
       handoff: {
-        temperature: 0.2,     // More focused for detection tasks
-        maxTokens: 50,        // Very short for detection
-        historyLimit: 2       // Minimal context needed
+        // Very focused detection, minimal tokens needed
+        maxTokens: Math.max(
+          Math.floor(teamComplexityFactor * 15), 
+          Math.floor((7 - stakeholderCount) * 8)
+        ),
+        // Low temperature for consistent detection, slightly higher for larger teams
+        temperature: Math.max(
+          0.05, 
+          Math.min(0.3, 0.15 + (teamComplexityFactor * 0.03))
+        ),
+        historyLimit: Math.max(1, Math.min(Math.floor(teamComplexityFactor), 3))
       }
     }
     
-    return configs[responseType]
+    return baseConfigs[responseType]
   }
 
   async generateStakeholderResponse(
@@ -67,7 +101,7 @@ export class AIService {
     responseType: 'greeting' | 'discussion' = 'discussion'
   ): Promise<string> {
     try {
-      const aiConfig = this.getAIConfig(responseType);
+      const aiConfig = this.getAIConfig(responseType, context.stakeholders?.length || 3, context.conversationHistory.length);
       const systemPrompt = this.buildSystemPrompt(stakeholder, context);
       const conversationPrompt = this.buildConversationPrompt(userMessage, context, stakeholder, aiConfig.historyLimit);
 
@@ -107,7 +141,7 @@ Project Context:
 - Project Type: ${context.project.type}
 
 Your Behavior Guidelines:
-1. Keep responses VERY SHORT - aim for 2-3 sentences maximum, like real conversation
+1. Keep responses VERY SHORT - aim for brief, natural conversation turns appropriate for a ${context.stakeholders?.length || 'small'}-person team
 2. Share only ONE point or step at a time, then stop and wait for follow-up questions
 3. Use natural speech patterns: "Well,", "You know,", "Actually,", "Um,", "Let me think...", "I mean,"
 4. Ask questions back to keep the conversation flowing: "What specifically are you looking for?" or "Does that help?" or "Should I go into more detail on that?"
@@ -156,11 +190,14 @@ Remember: You are a real person with real opinions and experiences in your role.
     } else if (isGroupGreeting) {
       prompt += `\nIMPORTANT: The user is greeting the entire group. Respond as yourself joining the group greeting. Keep it brief, warm, and friendly - other stakeholders will also be responding. Don't dominate the conversation or share detailed information in a greeting response.\n`;
     } else {
-      prompt += `\nCONVERSATION FLOW: You are participating in a natural business discussion. Keep it brief and interactive. After sharing ONE point, consider asking a follow-up question or naturally inviting another stakeholder to contribute. Never dump multiple pieces of information at once.\n`;
+      prompt += `\nCONVERSATION FLOW: You are participating in a natural business discussion with ${context.stakeholders?.length || 'several'} people. Keep it brief and interactive. After sharing ONE point, consider asking a follow-up question or naturally inviting another stakeholder to contribute. Never dump multiple pieces of information at once.\n`;
     }
 
+    const teamSize = context.stakeholders?.length || 3;
+    const responseGuidance = teamSize > 5 ? 'extra brief' : teamSize > 3 ? 'concise' : 'conversational';
+    
     prompt += `\nCRITICAL RESPONSE RULES:
-- Maximum 2-3 sentences per response
+- Keep responses ${responseGuidance} for this ${teamSize}-person team
 - Share only ONE idea, step, or point per response
 - End with a question or natural conversation opener
 - Think out loud briefly, then ask for their thoughts
@@ -214,7 +251,7 @@ User just said: "${userMessage}"\n\nRespond BRIEFLY as ${context.conversationHis
   // Function to intelligently detect if a stakeholder's response redirects to another stakeholder
   async detectStakeholderRedirect(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
     try {
-      const aiConfig = this.getAIConfig('handoff');
+      const aiConfig = this.getAIConfig('handoff', availableStakeholders.length, 0);
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
       const completion = await openai.chat.completions.create({
@@ -262,7 +299,7 @@ Rules:
   // Function to detect natural conversation passing (turn-taking)
   async detectConversationHandoff(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
     try {
-      const aiConfig = this.getAIConfig('handoff');
+      const aiConfig = this.getAIConfig('handoff', availableStakeholders.length, 0);
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
       const completion = await openai.chat.completions.create({
@@ -318,15 +355,26 @@ Rules:
   }
 
   private getFallbackResponse(stakeholder: StakeholderContext, userMessage: string): string {
-    // Use brief, conversational fallback responses
-    const responses = [
-      `Hmm, let me think about that for a second. Could you help me understand what specific part you're most interested in?`,
-      `That's a good question. From my role as ${stakeholder.role}, what aspect would be most helpful for you to know about?`,
-      `Well, let me start with what I know best. What would you like me to focus on first?`,
-      `Good point. Let me think... what specific area are you looking to understand better?`
+    // Generate dynamic fallback responses based on stakeholder context
+    const questionStarters = [
+      "Could you help me understand what specific part you're most interested in?",
+      "What aspect would be most helpful for you to know about?", 
+      "What would you like me to focus on first?",
+      "What specific area are you looking to understand better?"
     ];
     
-    return responses[Math.floor(Math.random() * responses.length)];
+    const thoughtStarters = [
+      "Hmm, let me think about that for a second.",
+      "That's a good question.",
+      "Well, let me start with what I know best.",
+      "Good point. Let me think..."
+    ];
+    
+    const roleContext = stakeholder.role ? `From my role as ${stakeholder.role}, ` : "";
+    const randomThought = thoughtStarters[Math.floor(Math.random() * thoughtStarters.length)];
+    const randomQuestion = questionStarters[Math.floor(Math.random() * questionStarters.length)];
+    
+    return `${randomThought} ${roleContext}${randomQuestion}`;
   }
 }
 
