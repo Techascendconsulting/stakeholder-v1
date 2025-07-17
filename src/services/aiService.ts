@@ -245,7 +245,10 @@ export class AIService {
     const personalityKey = this.getPersonalityKey(stakeholder.personality);
     const baseGreeting = greetingStyles[personalityKey] || greetingStyles['collaborative'];
     
-    return `${baseGreeting} As ${stakeholder.role}, I'm particularly interested in how this ${context.project.type} project will impact ${stakeholder.department}.`;
+    // Use actual project name dynamically - NO HARD-CODING
+    const projectReference = context.project.name ? `the ${context.project.name} project` : 'this project';
+    
+    return `${baseGreeting} As ${stakeholder.role}, I'm particularly interested in how ${projectReference} will impact ${stakeholder.department}.`;
   }
 
   private generateFollowUpGreeting(stakeholder: StakeholderContext, context: ConversationContext): string {
