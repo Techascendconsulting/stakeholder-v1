@@ -939,6 +939,14 @@ These notes were generated using a fallback system due to extended AI processing
               setCurrentSpeaker(null)
               setIsAudioPlaying(false)
               setCurrentlyProcessingAudio(null)
+              
+              // Auto-focus input field when audio completes
+              setTimeout(() => {
+                if (inputRef.current) {
+                  inputRef.current.focus()
+                }
+              }, 100)
+              
               resolve()
             }
             
@@ -980,6 +988,14 @@ These notes were generated using a fallback system due to extended AI processing
           setCurrentSpeaker(null)
           setIsAudioPlaying(false)
           setCurrentlyProcessingAudio(null)
+          
+          // Auto-focus input field when browser TTS completes
+          setTimeout(() => {
+            if (inputRef.current) {
+              inputRef.current.focus()
+            }
+          }, 100)
+          
           return Promise.resolve()
         }
       } catch (error) {
@@ -989,6 +1005,14 @@ These notes were generated using a fallback system due to extended AI processing
         setCurrentSpeaker(null)
         setIsAudioPlaying(false)
         setCurrentlyProcessingAudio(null)
+        
+        // Auto-focus input field even on audio error
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+          }
+        }, 100)
+        
         return Promise.resolve()
       }
     }
@@ -1052,6 +1076,13 @@ These notes were generated using a fallback system due to extended AI processing
       if (globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id)) {
         playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
       }
+      
+      // Auto-focus input field when stakeholder response is complete
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }, 500) // Small delay to ensure message is rendered
       
       return updatedMessages
     } catch (error) {
@@ -1513,7 +1544,8 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
       questionAnalysis,
       stakeholderExpertise,
       stakeholder,
-      analytics.conversationPace
+      analytics.conversationPace,
+      userQuestion // Pass the actual question for more specific thinking messages
     )
     
     return contextualMessage
@@ -1593,7 +1625,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
   }
 
      // Generate contextually aligned thinking message
-   const generateContextualThinkingMessage = (questionAnalysis: any, stakeholderExpertise: any, stakeholder: any, conversationPace: string) => {
+   const generateContextualThinkingMessage = (questionAnalysis: any, stakeholderExpertise: any, stakeholder: any, conversationPace: string, userQuestion = '') => {
      const { topics, questionType, complexity, isSpecific } = questionAnalysis
      const personality = stakeholder.personality || 'collaborative'
      
@@ -1639,38 +1671,38 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
         stakeholderExpertise.some(expertise => topic.includes(expertise) || expertise.includes(topic))
       ) || topics[0]
       
-      // Create contextual subject
+      // Create more specific contextual subject that directly relates to the question
       const subjectMap = {
-        budget: ['the budget requirements', 'financial implications', 'cost considerations', 'funding needs'],
-        timeline: ['the project timeline', 'scheduling requirements', 'delivery expectations', 'timing constraints'],
-        technical: ['the technical approach', 'implementation details', 'system architecture', 'technical feasibility'],
-        process: ['the workflow process', 'procedural requirements', 'implementation steps', 'process optimization'],
-        requirements: ['the requirements', 'feature specifications', 'functional needs', 'project scope'],
-        users: ['user experience', 'customer needs', 'user requirements', 'interface design'],
-        team: ['team structure', 'resource allocation', 'collaboration approach', 'team dynamics'],
-        risks: ['potential risks', 'challenges ahead', 'mitigation strategies', 'risk factors'],
-        goals: ['project objectives', 'success criteria', 'target outcomes', 'achievement metrics'],
-        integration: ['integration requirements', 'connectivity options', 'system interfaces', 'compatibility needs'],
-        performance: ['performance requirements', 'optimization strategies', 'scalability needs', 'efficiency goals'],
-        security: ['security considerations', 'protection measures', 'access controls', 'compliance requirements'],
-        data: ['data requirements', 'information needs', 'storage solutions', 'data flow'],
-        quality: ['quality standards', 'testing approach', 'validation methods', 'quality assurance']
+        budget: ['the budget implications', 'cost considerations', 'financial aspects', 'funding requirements'],
+        timeline: ['the timeline requirements', 'scheduling considerations', 'delivery expectations', 'timing aspects'],
+        technical: ['the technical solution', 'implementation approach', 'system requirements', 'technical feasibility'],
+        process: ['the process requirements', 'workflow considerations', 'implementation steps', 'procedural aspects'],
+        requirements: ['the specific requirements', 'functional specifications', 'project needs', 'scope considerations'],
+        users: ['user experience aspects', 'customer requirements', 'user needs', 'interface considerations'],
+        team: ['team implications', 'resource requirements', 'collaboration needs', 'team structure'],
+        risks: ['potential risks', 'challenge considerations', 'mitigation approaches', 'risk implications'],
+        goals: ['project objectives', 'success criteria', 'target outcomes', 'goal alignment'],
+        integration: ['integration requirements', 'connectivity needs', 'system interfaces', 'compatibility aspects'],
+        performance: ['performance implications', 'optimization needs', 'scalability requirements', 'efficiency considerations'],
+        security: ['security requirements', 'protection measures', 'access considerations', 'compliance needs'],
+        data: ['data requirements', 'information needs', 'storage considerations', 'data implications'],
+        quality: ['quality requirements', 'testing considerations', 'validation needs', 'quality standards']
       }
       
-      const subjectOptions = subjectMap[relevantTopic] || [`the ${relevantTopic} aspects`, `${relevantTopic} considerations`]
+      const subjectOptions = subjectMap[relevantTopic] || [`the ${relevantTopic} requirements`, `${relevantTopic} considerations`]
       subject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)]
     } else {
-      // Fallback to expertise-based subject
+      // Enhanced fallback to be more specific to stakeholder expertise
       const expertiseSubjects = {
-        technical: ['the technical aspects', 'implementation details', 'system considerations'],
-        business: ['the business implications', 'strategic considerations', 'operational aspects'],
-        product: ['the product requirements', 'user experience', 'feature considerations'],
-        financial: ['the financial aspects', 'budget considerations', 'cost implications'],
-        marketing: ['the market implications', 'customer impact', 'positioning aspects'],
-        operations: ['the operational requirements', 'process considerations', 'workflow aspects'],
-        security: ['the security implications', 'compliance requirements', 'risk factors'],
-        data: ['the data requirements', 'information needs', 'analytics aspects'],
-        general: ['your question', 'this topic', 'the requirements']
+        technical: ['the technical solution', 'implementation approach', 'system requirements'],
+        business: ['the business impact', 'strategic implications', 'operational considerations'],
+        product: ['the product requirements', 'user experience', 'feature specifications'],
+        financial: ['the financial implications', 'budget considerations', 'cost analysis'],
+        marketing: ['the market impact', 'customer considerations', 'positioning strategy'],
+        operations: ['the operational impact', 'process requirements', 'workflow considerations'],
+        security: ['the security implications', 'compliance requirements', 'risk assessment'],
+        data: ['the data requirements', 'information needs', 'analytics considerations'],
+        general: ['your specific question', 'this request', 'the requirements']
       }
       
       const primaryExpertise = stakeholderExpertise[0] || 'general'
@@ -1686,7 +1718,35 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
      const paceModifier = conversationPace === 'fast' ? '' : 
                          conversationPace === 'slow' ? 'thoughtfully ' : ''
      
-     return `${thinkingPattern} ${paceModifier}${complexityModifier}${subject}...`
+     // Extract key phrases from the user question for more specific thinking messages
+     let specificSubject = subject
+     if (userQuestion && userQuestion.length > 0) {
+       const questionLower = userQuestion.toLowerCase()
+       
+       // Look for specific objects/topics in the question
+       const specificMatches = [
+         { pattern: /about (.+?)(\?|$|\.|\,)/, prefix: 'about' },
+         { pattern: /with (.+?)(\?|$|\.|\,)/, prefix: 'with' },
+         { pattern: /for (.+?)(\?|$|\.|\,)/, prefix: 'for' },
+         { pattern: /how (.+?)(\?|$|\.|\,)/, prefix: 'how' },
+         { pattern: /why (.+?)(\?|$|\.|\,)/, prefix: 'why' },
+         { pattern: /what (.+?)(\?|$|\.|\,)/, prefix: 'what' },
+         { pattern: /when (.+?)(\?|$|\.|\,)/, prefix: 'when' }
+       ]
+       
+       for (const match of specificMatches) {
+         const result = questionLower.match(match.pattern)
+         if (result && result[1]) {
+           const extractedPhrase = result[1].trim()
+           if (extractedPhrase.length > 3 && extractedPhrase.length < 50) {
+             specificSubject = `${match.prefix} ${extractedPhrase}`
+             break
+           }
+         }
+       }
+     }
+     
+     return `${thinkingPattern} ${paceModifier}${complexityModifier}${specificSubject}...`
   }
 
   // Dynamic lead stakeholder selection
@@ -2416,15 +2476,18 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 return null
               }
               
-              // Generate dynamic thinking message based on actual user question and stakeholder context
-              const lastUserMessage = messages.slice().reverse().find(msg => msg.speaker === 'user')?.content || ''
-              const thinkingContext = { 
-                stakeholder, 
-                messageContent: lastUserMessage,
-                conversationHistory: messages,
-                responseContext: 'display_thinking'
-              }
-              const currentThinkingMessage = dynamicFeedback || generateThinkingMessage(stakeholder, thinkingContext)
+                    // Generate dynamic thinking message based on actual user question and stakeholder context
+      const lastUserMessage = messages.slice().reverse().find(msg => msg.speaker === 'user')?.content || ''
+      const thinkingContext = { 
+        stakeholder, 
+        messageContent: lastUserMessage,
+        conversationHistory: messages,
+        responseContext: 'display_thinking'
+      }
+      const currentThinkingMessage = dynamicFeedback || generateThinkingMessage(stakeholder, thinkingContext)
+      
+      // Debug logging for thinking message alignment
+      console.log(`Thinking message for ${stakeholder.name}:`, currentThinkingMessage, 'Based on question:', lastUserMessage)
               
               return (
                 <div key={`thinking-${stakeholderId}`} className="flex justify-start">
@@ -2473,6 +2536,16 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Direct Addressing Guidance */}
+          <div className="border-t border-b bg-blue-50 p-3 flex-shrink-0">
+            <div className="flex items-center space-x-2 text-sm text-blue-700">
+              <HelpCircle className="w-4 h-4 flex-shrink-0" />
+              <span>
+                <strong>Tip:</strong> To get input from a specific stakeholder, address them directly (e.g., "David, what are your thoughts?" or "Sarah, can you help with...")
+              </span>
+            </div>
+          </div>
+
           {/* Input */}
           <div className="border-t p-4 flex-shrink-0">
             <div className="flex space-x-4">
@@ -2482,7 +2555,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={shouldAllowUserInput() ? "Type your message..." : isGeneratingResponse ? "Stakeholders are responding..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
+                placeholder={shouldAllowUserInput() ? "Type your message or address a stakeholder directly..." : isGeneratingResponse ? "Stakeholders are responding..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
                 className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!shouldAllowUserInput()}
               />
