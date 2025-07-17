@@ -1134,7 +1134,7 @@ These notes were generated using a fallback system due to extended AI processing
     }
   }
 
-  // Dynamic discussion flow management with conversation control
+  // Dynamic discussion flow management with speaking queue
   const handleAdaptiveDiscussion = async (messageContent: string, currentMessages: Message[]) => {
     // Dynamic context analysis for response strategy
     const context = {
@@ -1144,37 +1144,58 @@ These notes were generated using a fallback system due to extended AI processing
       currentPhase: conversationDynamics.phase
     }
     
-    // Dynamic primary respondent selection
-    const primaryRespondent = selectContextualRespondent(messageContent, currentMessages)
+    // Check if this is a question that should have multiple respondents
+    const shouldHaveMultipleResponders = isGeneralQuestion(messageContent) || isOpenEndedQuestion(messageContent)
     
-    if (primaryRespondent) {
-      await processDynamicStakeholderResponse(primaryRespondent, messageContent, currentMessages, 'discussion_primary')
+    if (shouldHaveMultipleResponders) {
+      // Get multiple relevant stakeholders for this question
+      const relevantStakeholders = selectMultipleRespondents(messageContent, currentMessages)
       
-      // Wait for primary response to complete before considering follow-up
-      while (currentSpeaking !== null) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-      
-      // Dynamic assessment of follow-up need (only after primary response is complete)
-      const followUpAssessment = await assessFollowUpNeed(messageContent, currentMessages, primaryRespondent)
-      
-      if (followUpAssessment.shouldFollowUp && currentSpeaking === null) {
-        // Dynamic delay calculation for follow-up
-        const followUpDelay = calculateDynamicPause({ 
-          ...context, 
-          stakeholder: primaryRespondent,
-          followUpContext: followUpAssessment 
-        })
+      // Queue all relevant stakeholders to respond
+      for (const stakeholder of relevantStakeholders) {
+        await processDynamicStakeholderResponse(stakeholder, messageContent, currentMessages, 'discussion_primary')
         
-        setTimeout(async () => {
-          // Double-check no one is speaking before starting follow-up
-          if (currentSpeaking === null) {
-            const followUpStakeholder = selectDynamicFollowUp(messageContent, currentMessages, primaryRespondent, followUpAssessment)
-            if (followUpStakeholder) {
-              await processDynamicStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'discussion_followup')
+        // Wait for current speaker to finish before next one
+        while (currentSpeaking !== null) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        
+        // Natural pause between speakers
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    } else {
+      // Single respondent for specific questions
+      const primaryRespondent = selectContextualRespondent(messageContent, currentMessages)
+      
+      if (primaryRespondent) {
+        await processDynamicStakeholderResponse(primaryRespondent, messageContent, currentMessages, 'discussion_primary')
+        
+        // Wait for primary response to complete before considering follow-up
+        while (currentSpeaking !== null) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        
+        // Dynamic assessment of follow-up need (only after primary response is complete)
+        const followUpAssessment = await assessFollowUpNeed(messageContent, currentMessages, primaryRespondent)
+        
+        if (followUpAssessment.shouldFollowUp && currentSpeaking === null) {
+          // Dynamic delay calculation for follow-up
+          const followUpDelay = calculateDynamicPause({ 
+            ...context, 
+            stakeholder: primaryRespondent,
+            followUpContext: followUpAssessment 
+          })
+          
+          setTimeout(async () => {
+            // Double-check no one is speaking before starting follow-up
+            if (currentSpeaking === null) {
+              const followUpStakeholder = selectDynamicFollowUp(messageContent, currentMessages, primaryRespondent, followUpAssessment)
+              if (followUpStakeholder) {
+                await processDynamicStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'discussion_followup')
+              }
             }
-          }
-        }, followUpDelay)
+          }, followUpDelay)
+        }
       }
     }
   }
@@ -1251,7 +1272,34 @@ These notes were generated using a fallback system due to extended AI processing
    setMessages(prev => [...prev, fallbackMessage])
  }
 
- // Enhanced meeting analytics
+   // Generate user avatar from name
+  const generateUserAvatar = (name: string) => {
+    if (!name) return null
+    
+    const initials = name.split(' ').map(word => word.charAt(0).toUpperCase()).join('')
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-red-500',
+      'bg-yellow-500',
+      'bg-indigo-500',
+      'bg-pink-500',
+      'bg-teal-500'
+    ]
+    
+    // Use name to consistently pick the same color
+    const colorIndex = name.length % colors.length
+    const backgroundColor = colors[colorIndex]
+    
+    return (
+      <div className={`w-8 h-8 rounded-full ${backgroundColor} flex items-center justify-center text-white text-sm font-medium`}>
+        {initials}
+      </div>
+    )
+  }
+
+  // Enhanced meeting analytics
   const [meetingAnalytics, setMeetingAnalytics] = useState({
     participationBalance: new Map<string, number>(),
     topicsDiscussed: new Set<string>(),
@@ -2100,6 +2148,84 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
     return null
   }
 
+  // Detect if question should have multiple respondents
+  const isGeneralQuestion = (messageContent: string): boolean => {
+    const generalPatterns = [
+      /what.*think/i,
+      /how.*feel/i,
+      /thoughts.*on/i,
+      /opinion.*about/i,
+      /perspective.*on/i,
+      /views.*on/i,
+      /everyone.*thoughts/i,
+      /all.*input/i,
+      /team.*feedback/i,
+      /what.*approach/i,
+      /how.*handle/i,
+      /suggestions.*for/i,
+      /ideas.*about/i,
+      /concerns.*about/i,
+      /challenges.*with/i
+    ]
+    
+    return generalPatterns.some(pattern => pattern.test(messageContent))
+  }
+
+  const isOpenEndedQuestion = (messageContent: string): boolean => {
+    const openEndedPatterns = [
+      /what.*best/i,
+      /how.*improve/i,
+      /what.*recommend/i,
+      /how.*approach/i,
+      /what.*strategy/i,
+      /how.*optimize/i,
+      /what.*process/i,
+      /how.*implement/i,
+      /what.*solution/i,
+      /how.*resolve/i
+    ]
+    
+    return openEndedPatterns.some(pattern => pattern.test(messageContent))
+  }
+
+  // Select multiple stakeholders for general questions
+  const selectMultipleRespondents = (messageContent: string, currentMessages: Message[]) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+    
+    // Get all stakeholders who are relevant to this question
+    const relevantStakeholders = selectedStakeholders.filter(stakeholder => {
+      const relevanceScore = calculateExpertiseRelevance(stakeholder, messageContent)
+      return relevanceScore > 10 // Only include if they have decent relevance
+    })
+    
+    // Sort by relevance and participation balance
+    const scoredStakeholders = relevantStakeholders.map(stakeholder => {
+      let score = 0
+      
+      // Expertise relevance
+      score += calculateExpertiseRelevance(stakeholder, messageContent)
+      
+      // Participation balance (prefer those who have spoken less)
+      const participationCount = analytics.participationCounts?.[stakeholder.id] || 0
+      score += Math.max(0, 15 - (participationCount * 2))
+      
+      // Avoid recent speakers
+      const recentSpeakers = currentMessages.slice(-2).map(msg => msg.speaker)
+      if (recentSpeakers.includes(stakeholder.id)) {
+        score -= 10
+      }
+      
+      return { stakeholder, score }
+    })
+    
+    // Return top 2-3 most relevant stakeholders
+    return scoredStakeholders
+      .sort((a, b) => b.score - a.score)
+      .slice(0, Math.min(3, scoredStakeholders.length))
+      .map(item => item.stakeholder)
+  }
+
   // Dynamic contextual respondent selection - NO HARD-CODING
  const selectContextualRespondent = (messageContent: string, currentMessages: Message[]) => {
    const aiService = AIService.getInstance()
@@ -2531,6 +2657,13 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                     </div>
                   )}
                   
+                  {/* User Avatar for user messages */}
+                  {message.speaker === 'user' && (
+                    <div className="flex-shrink-0 ml-3 mt-1 order-last">
+                      {generateUserAvatar(user?.name || user?.email || 'Business Analyst')}
+                    </div>
+                  )}
+                  
                   <div
                     className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg relative ${
                       message.speaker === 'user'
@@ -2547,6 +2680,15 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                         <span className="text-gray-500">{message.stakeholderRole}</span>
                       </div>
                     )}
+                    
+                    {message.speaker === 'user' && (
+                      <div className="text-xs font-medium text-blue-200 mb-1 flex items-center space-x-2">
+                        <span>{user?.name || user?.email || 'Business Analyst'}</span>
+                        <span className="text-blue-300">•</span>
+                        <span className="text-blue-300">Meeting Facilitator</span>
+                      </div>
+                    )}
+                    
                     <div className="text-sm whitespace-pre-wrap pr-8">{message.content}</div>
                     <div className="text-xs mt-1 opacity-75">
                       {new Date(message.timestamp).toLocaleTimeString()}

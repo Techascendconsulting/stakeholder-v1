@@ -221,12 +221,12 @@ export class AIService {
   }
 
   // Dynamic greeting management
-  private getGreetingResponse(stakeholder: StakeholderContext, context: ConversationContext): string {
+  private async getGreetingResponse(stakeholder: StakeholderContext, context: ConversationContext): Promise<string> {
     const greetingStatus = this.conversationState.greetingStatus.get(stakeholder.name) || 'not_greeted';
     
     if (greetingStatus === 'not_greeted') {
       this.conversationState.greetingStatus.set(stakeholder.name, 'greeted');
-      return this.generateInitialGreeting(stakeholder, context);
+      return await this.generateInitialGreeting(stakeholder, context);
     } else if (greetingStatus === 'greeted') {
       this.conversationState.greetingStatus.set(stakeholder.name, 're_greeted');
       return this.generateFollowUpGreeting(stakeholder, context);
@@ -236,22 +236,68 @@ export class AIService {
     }
   }
 
-  private generateInitialGreeting(stakeholder: StakeholderContext, context: ConversationContext): string {
-    const greetingStyles = {
-      'collaborative': "Hello everyone! Great to be here today. I'm looking forward to our discussion.",
-      'analytical': "Good morning. I'm ready to dive into the details of this project.",
-      'strategic': "Hello team. I'm excited to explore how this initiative aligns with our strategic objectives.",
-      'practical': "Hi everyone. Let's focus on the practical aspects and get some clear outcomes.",
-      'innovative': "Hello! I'm energized about the possibilities this project could bring."
-    };
+  private async generateInitialGreeting(stakeholder: StakeholderContext, context: ConversationContext): Promise<string> {
+    try {
+      // Generate truly dynamic greeting using AI - NO HARD-CODING
+      const greetingPrompt = `Generate a natural, conversational greeting for ${stakeholder.name}, a ${stakeholder.role} in ${stakeholder.department}, joining a stakeholder meeting for "${context.project.name}".
+
+CONTEXT:
+- Project: ${context.project.name} (${context.project.type})
+- Stakeholder: ${stakeholder.name} (${stakeholder.role}, ${stakeholder.department})
+- Personality: ${stakeholder.personality}
+- Priorities: ${stakeholder.priorities.join(', ')}
+- Expertise: ${stakeholder.expertise.join(', ')}
+
+REQUIREMENTS:
+- Keep it natural and conversational (1-2 sentences max)
+- Show personality traits (${stakeholder.personality})
+- Make it unique to this stakeholder's role and department
+- Avoid templates or formulaic language
+- Sound like a real person joining a meeting
+- NO mentions of "particularly interested in how X will impact Y"
+- Make it fresh and authentic
+
+Generate only the greeting, nothing else.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "user", content: greetingPrompt }
+        ],
+        temperature: 0.8, // Higher temperature for more creative, varied responses
+        max_tokens: 100,
+        presence_penalty: 0.6, // Encourage diverse responses
+        frequency_penalty: 0.6
+      });
+
+      const aiGreeting = completion.choices[0]?.message?.content?.trim();
+      
+      if (aiGreeting && aiGreeting.length > 10) {
+        return aiGreeting;
+      }
+      
+      // Fallback to simple dynamic greeting if AI fails
+      return this.generateSimpleDynamicGreeting(stakeholder, context);
+      
+    } catch (error) {
+      console.error('Error generating dynamic greeting:', error);
+      return this.generateSimpleDynamicGreeting(stakeholder, context);
+    }
+  }
+
+  private generateSimpleDynamicGreeting(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const dynamicGreetings = [
+      `Hi everyone! ${stakeholder.name} here, ready to dive in.`,
+      `Hello team! Looking forward to discussing this from a ${stakeholder.department.toLowerCase()} perspective.`,
+      `Good morning everyone! ${stakeholder.name} from ${stakeholder.department} - excited to be here.`,
+      `Hey there! Ready to tackle this project together.`,
+      `Hello! ${stakeholder.name} here - let's get started.`,
+      `Hi all! Great to be part of this discussion.`,
+      `Good morning team! ${stakeholder.name} ready to contribute.`,
+      `Hello everyone! Looking forward to our conversation today.`
+    ];
     
-    const personalityKey = this.getPersonalityKey(stakeholder.personality);
-    const baseGreeting = greetingStyles[personalityKey] || greetingStyles['collaborative'];
-    
-    // Use actual project name dynamically - NO HARD-CODING
-    const projectReference = context.project.name ? `the ${context.project.name} project` : 'this project';
-    
-    return `${baseGreeting} As ${stakeholder.role}, I'm particularly interested in how ${projectReference} will impact ${stakeholder.department}.`;
+    return dynamicGreetings[Math.floor(Math.random() * dynamicGreetings.length)];
   }
 
   private generateFollowUpGreeting(stakeholder: StakeholderContext, context: ConversationContext): string {
@@ -311,7 +357,7 @@ export class AIService {
     try {
       // Handle greetings intelligently
       if (this.isGreetingMessage(userMessage)) {
-        const greetingResponse = this.getGreetingResponse(stakeholder, context);
+        const greetingResponse = await this.getGreetingResponse(stakeholder, context);
         this.updateConversationState(stakeholder, userMessage, greetingResponse);
         return greetingResponse;
       }
