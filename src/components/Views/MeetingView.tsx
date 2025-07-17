@@ -172,103 +172,573 @@ const MeetingView: React.FC = () => {
     return greetingPatterns.some(pattern => pattern.test(message))
   }
 
-  // Function to get initial respondent for discussion
-  const getInitialRespondent = (userMessage: string) => {
+  // Enhanced stakeholder selection logic
+  const getContextualStakeholder = (userMessage: string, conversationHistory: Message[]) => {
     const message = userMessage.toLowerCase()
     
-    // Check if this is a follow-up to someone who was recently addressed
-    const recentMessages = messages.slice(-3) // Look at last 3 messages
-    let lastAddressedStakeholder = null
+    // 1. Check for explicit stakeholder mentions first
+    const explicitStakeholder = getExplicitlyMentionedStakeholder(message)
+    if (explicitStakeholder) return explicitStakeholder
     
-    for (let i = recentMessages.length - 1; i >= 0; i--) {
-      const msg = recentMessages[i]
-      if (msg.speaker !== 'user' && msg.speaker !== 'system') {
-        // Check if this stakeholder was recently addressed by another stakeholder
-        const stakeholderMessage = msg.content.toLowerCase()
-        for (const stakeholder of selectedStakeholders) {
-          const firstName = stakeholder.name.split(' ')[0].toLowerCase()
-          const fullName = stakeholder.name.toLowerCase()
-          
-          // Look for patterns where this stakeholder was addressed
-          if (stakeholderMessage.includes(`${firstName},`) || 
-              stakeholderMessage.includes(`${fullName},`) ||
-              stakeholderMessage.includes(`${firstName} could`) ||
-              stakeholderMessage.includes(`${firstName} might`) ||
-              stakeholderMessage.includes(`${firstName}?`)) {
-            lastAddressedStakeholder = stakeholder
-            break
-          }
-        }
-        if (lastAddressedStakeholder) break
-      }
-    }
+    // 2. Check for topic-based stakeholder relevance
+    const topicStakeholder = getTopicRelevantStakeholder(message)
+    if (topicStakeholder) return topicStakeholder
     
-    // If this seems like a follow-up and someone was recently addressed, prioritize them
-    const followUpPatterns = [
-      /^(and|so|what about|how about|what|can you|could you|would you)/,
-      /^(yes|yeah|ok|okay|sure|right|exactly|absolutely)/,
-      /^(tell me|explain|show me|walk me through)/
-    ]
+    // 3. Check conversation context and recent interactions
+    const contextualStakeholder = getContextuallyRelevantStakeholder(message, conversationHistory)
+    if (contextualStakeholder) return contextualStakeholder
     
-    const isFollowUp = followUpPatterns.some(pattern => pattern.test(message))
-    if (isFollowUp && lastAddressedStakeholder && !message.includes('james') && !message.includes('walker')) {
-      return lastAddressedStakeholder
-    }
+    // 4. Check for follow-up patterns
+    const followUpStakeholder = getFollowUpStakeholder(message, conversationHistory)
+    if (followUpStakeholder) return followUpStakeholder
     
-    // Check for direct addressing first
-    const directAddressingPatterns = [
-      /(\w+),?\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)/,
-      /(\w+),?\s+(i want|i need|i would like|i'd like)/,
-      /thanks?\s+\w+,?\s+(\w+)\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)/,
-    ]
-    
-    for (const pattern of directAddressingPatterns) {
-      const match = message.match(pattern)
-      if (match) {
-        const targetName = match[1] || match[2]
-        
-        for (const stakeholder of selectedStakeholders) {
-          const firstName = stakeholder.name.split(' ')[0].toLowerCase()
-          const fullName = stakeholder.name.toLowerCase()
-          
-          if (firstName === targetName || fullName.includes(targetName)) {
-            return stakeholder
-          }
-        }
-      }
-    }
-    
-    // Check for specific stakeholder mentions
+    // 5. Use intelligent rotation based on conversation balance
+    return getBalancedStakeholder(conversationHistory)
+  }
+
+  const getExplicitlyMentionedStakeholder = (message: string) => {
     for (const stakeholder of selectedStakeholders) {
       const firstName = stakeholder.name.split(' ')[0].toLowerCase()
       const fullName = stakeholder.name.toLowerCase()
       
-      if (message.includes(firstName) || message.includes(fullName)) {
+      // Direct addressing patterns
+      const directPatterns = [
+        new RegExp(`\\b${firstName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
+        new RegExp(`\\b${fullName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
+        new RegExp(`\\b(to|for)\\s+${firstName}\\b`),
+        new RegExp(`\\b${firstName}\\s*,`),
+        new RegExp(`\\b${firstName}\\s*\\?`)
+      ]
+      
+      if (directPatterns.some(pattern => pattern.test(message))) {
         return stakeholder
       }
     }
-    
-    // Check for role-based targeting
-    const roleKeywords = {
-      'operations': ['operations', 'process', 'workflow', 'operational'],
-      'customer service': ['customer', 'service', 'support', 'client'],
-      'it': ['technical', 'system', 'technology', 'integration', 'it'],
-      'hr': ['hr', 'human', 'people', 'team', 'staff', 'training'],
-      'compliance': ['compliance', 'risk', 'regulatory', 'policy']
+    return null
+  }
+
+  const getTopicRelevantStakeholder = (message: string) => {
+    const topicKeywords = {
+      'operations': ['process', 'workflow', 'efficiency', 'operations', 'daily', 'routine', 'procedure'],
+      'it': ['system', 'technical', 'technology', 'software', 'integration', 'security', 'data'],
+      'customer': ['customer', 'client', 'user', 'service', 'support', 'satisfaction', 'experience'],
+      'finance': ['cost', 'budget', 'financial', 'money', 'expense', 'roi', 'investment'],
+      'hr': ['staff', 'employee', 'people', 'team', 'training', 'change', 'culture'],
+      'compliance': ['compliance', 'regulatory', 'policy', 'risk', 'audit', 'legal'],
+      'sales': ['sales', 'revenue', 'customer', 'market', 'selling', 'prospects'],
+      'marketing': ['marketing', 'brand', 'campaign', 'promotion', 'advertising', 'market']
     }
     
-    for (const [roleType, keywords] of Object.entries(roleKeywords)) {
-      if (keywords.some(keyword => message.includes(keyword))) {
-        const targetStakeholder = selectedStakeholders.find(s => 
-          s.role.toLowerCase().includes(roleType)
-        )
-        if (targetStakeholder) return targetStakeholder
+    let bestMatch = null
+    let maxScore = 0
+    
+    for (const stakeholder of selectedStakeholders) {
+      const role = stakeholder.role.toLowerCase()
+      const department = stakeholder.department.toLowerCase()
+      
+      let score = 0
+      
+      // Check topic relevance
+      for (const [topic, keywords] of Object.entries(topicKeywords)) {
+        if (role.includes(topic) || department.includes(topic)) {
+          const keywordMatches = keywords.filter(keyword => message.includes(keyword)).length
+          score += keywordMatches * 2
+        }
+      }
+      
+      // Check priority alignment
+      stakeholder.priorities.forEach(priority => {
+        if (message.includes(priority.toLowerCase())) {
+          score += 3
+        }
+      })
+      
+      if (score > maxScore) {
+        maxScore = score
+        bestMatch = stakeholder
       }
     }
     
-    // Default: rotate through stakeholders
-    const stakeholderIndex = messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system').length % selectedStakeholders.length
-    return selectedStakeholders[stakeholderIndex] || selectedStakeholders[0]
+    return maxScore > 2 ? bestMatch : null
+  }
+
+  const getContextuallyRelevantStakeholder = (message: string, conversationHistory: Message[]) => {
+    const recentMessages = conversationHistory.slice(-5)
+    const questionTypes = {
+      'follow-up': ['and', 'also', 'what about', 'how about', 'regarding', 'concerning'],
+      'clarification': ['can you clarify', 'what do you mean', 'explain', 'clarify'],
+      'continuation': ['continue', 'go on', 'tell me more', 'elaborate']
+    }
+    
+    // Check if this is a follow-up question
+    const isFollowUp = questionTypes['follow-up'].some(pattern => message.includes(pattern))
+    const isClarification = questionTypes['clarification'].some(pattern => message.includes(pattern))
+    
+    if (isFollowUp || isClarification) {
+      // Find the most recent non-user speaker
+      for (let i = recentMessages.length - 1; i >= 0; i--) {
+        const msg = recentMessages[i]
+        if (msg.speaker !== 'user' && msg.speaker !== 'system') {
+          const stakeholder = selectedStakeholders.find(s => s.id === msg.speaker)
+          if (stakeholder) return stakeholder
+        }
+      }
+    }
+    
+    return null
+  }
+
+  const getFollowUpStakeholder = (message: string, conversationHistory: Message[]) => {
+    const recentMessages = conversationHistory.slice(-3)
+    
+    // Check for conversation threads
+    const threads = new Map<string, number>()
+    
+    recentMessages.forEach(msg => {
+      if (msg.speaker !== 'user' && msg.speaker !== 'system') {
+        const count = threads.get(msg.speaker) || 0
+        threads.set(msg.speaker, count + 1)
+      }
+    })
+    
+    // If someone has been actively participating, prioritize them for follow-ups
+    const activeParticipant = [...threads.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .find(([speakerId, count]) => count >= 2)
+    
+    if (activeParticipant) {
+      return selectedStakeholders.find(s => s.id === activeParticipant[0])
+    }
+    
+    return null
+  }
+
+  const getBalancedStakeholder = (conversationHistory: Message[]) => {
+    // Count messages per stakeholder
+    const messageCounts = new Map<string, number>()
+    
+    selectedStakeholders.forEach(stakeholder => {
+      const count = conversationHistory.filter(msg => msg.speaker === stakeholder.id).length
+      messageCounts.set(stakeholder.id, count)
+    })
+    
+    // Find stakeholder with least participation
+    const leastActiveStakeholder = selectedStakeholders.reduce((least, current) => {
+      const leastCount = messageCounts.get(least.id) || 0
+      const currentCount = messageCounts.get(current.id) || 0
+      return currentCount < leastCount ? current : least
+    })
+    
+    return leastActiveStakeholder
+  }
+
+  // Enhanced conversation flow management
+  const manageConversationFlow = async (initialStakeholder: any, userMessage: string, currentMessages: Message[]) => {
+    const config = getConversationConfig()
+    let conversationActive = true
+    let turnCount = 0
+    let currentSpeaker = initialStakeholder
+    
+    // Enhanced conversation quality metrics
+    const conversationMetrics = {
+      stakeholderParticipation: new Map<string, number>(),
+      topicsCovered: new Set<string>(),
+      questionsAsked: 0,
+      collaborativeExchanges: 0
+    }
+    
+    while (conversationActive && turnCount < config.maxDiscussionTurns) {
+      try {
+        // Generate response from current speaker
+        const response = await generateStakeholderResponse(currentSpeaker, userMessage, currentMessages, 'discussion')
+        const responseMessage = createResponseMessage(currentSpeaker, response, turnCount)
+        
+        // Update conversation metrics
+        updateConversationMetrics(conversationMetrics, currentSpeaker, response)
+        
+        // Add message to conversation
+        currentMessages = [...currentMessages, responseMessage]
+        setMessages(currentMessages)
+        
+        // Play audio response and wait for it to finish
+        await playMessageAudio(responseMessage.id, response, currentSpeaker, true)
+        
+        // Enhanced handoff detection with context
+        const handoffTarget = await detectIntelligentHandoff(response, currentSpeaker, currentMessages)
+        
+        if (handoffTarget) {
+          // Natural delay before next person speaks
+          const handoffPause = config.handoffPauseTiming.base + Math.random() * config.handoffPauseTiming.variance
+          await new Promise(resolve => setTimeout(resolve, handoffPause))
+          
+          // Generate contextual handoff response
+          const handoffResponse = await generateHandoffResponse(handoffTarget, currentSpeaker, response, currentMessages)
+          
+          if (handoffResponse) {
+            const handoffMessage = createResponseMessage(handoffTarget, handoffResponse, turnCount + 1)
+            
+            currentMessages = [...currentMessages, handoffMessage]
+            setMessages(currentMessages)
+            
+            // Update metrics
+            conversationMetrics.collaborativeExchanges++
+            updateConversationMetrics(conversationMetrics, handoffTarget, handoffResponse)
+            
+            // Play audio for the handoff response
+            await playMessageAudio(handoffMessage.id, handoffResponse, handoffTarget, true)
+            
+            currentSpeaker = handoffTarget
+            turnCount += 2
+            continue
+          }
+        }
+        
+        // Check if conversation should naturally end
+        const shouldEnd = evaluateConversationCompletion(response, conversationMetrics, turnCount)
+        if (shouldEnd) {
+          conversationActive = false
+          break
+        }
+        
+        turnCount++
+        
+      } catch (error) {
+        console.error('Error in conversation flow:', error)
+        conversationActive = false
+      }
+    }
+    
+    // Log conversation quality metrics for analytics
+    console.log('Conversation Quality Metrics:', conversationMetrics)
+  }
+
+  const updateConversationMetrics = (metrics: any, stakeholder: any, response: string) => {
+    // Update stakeholder participation
+    const currentCount = metrics.stakeholderParticipation.get(stakeholder.id) || 0
+    metrics.stakeholderParticipation.set(stakeholder.id, currentCount + 1)
+    
+    // Detect topics covered
+    const topicKeywords = ['process', 'system', 'customer', 'cost', 'quality', 'efficiency', 'timeline']
+    topicKeywords.forEach(topic => {
+      if (response.toLowerCase().includes(topic)) {
+        metrics.topicsCovered.add(topic)
+      }
+    })
+    
+    // Count questions asked
+    const questionCount = (response.match(/\?/g) || []).length
+    metrics.questionsAsked += questionCount
+  }
+
+  const detectIntelligentHandoff = async (response: string, currentSpeaker: any, conversationHistory: Message[]) => {
+    const aiService = AIService.getInstance()
+    
+    // Get available stakeholders (excluding current speaker)
+    const availableStakeholders = selectedStakeholders
+      .filter(s => s.id !== currentSpeaker.id)
+      .map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }))
+    
+    // Use AI service for handoff detection
+    const handoffTarget = await aiService.detectConversationHandoff(response, availableStakeholders)
+    
+    if (handoffTarget) {
+      return selectedStakeholders.find(s => s.name === handoffTarget.name)
+    }
+    
+    return null
+  }
+
+  const generateHandoffResponse = async (targetStakeholder: any, previousSpeaker: any, previousResponse: string, conversationHistory: Message[]) => {
+    // Extract the key question or topic from the handoff
+    const handoffContext = extractHandoffContext(previousResponse)
+    const contextualPrompt = `${previousSpeaker.name} just mentioned: "${handoffContext}" and is asking for your perspective.`
+    
+    return await generateStakeholderResponse(targetStakeholder, contextualPrompt, conversationHistory, 'discussion')
+  }
+
+  const extractHandoffContext = (response: string): string => {
+    // Extract the most relevant part of the response for handoff context
+    const sentences = response.split(/[.!?]/)
+    const lastSentence = sentences[sentences.length - 2]?.trim() || sentences[sentences.length - 1]?.trim()
+    
+    if (lastSentence && lastSentence.length > 10) {
+      return lastSentence
+    }
+    
+    return response.substring(0, 100) + '...'
+  }
+
+  const evaluateConversationCompletion = (response: string, metrics: any, turnCount: number): boolean => {
+    // Evaluate if conversation has reached natural completion
+    const completionSignals = [
+      'that covers everything',
+      'i think we\'re good',
+      'sounds like a plan',
+      'let me know if you need',
+      'feel free to reach out'
+    ]
+    
+    const hasCompletionSignal = completionSignals.some(signal => 
+      response.toLowerCase().includes(signal)
+    )
+    
+    const hasGoodCoverage = metrics.topicsCovered.size >= 3
+    const hasBalancedParticipation = metrics.stakeholderParticipation.size >= Math.min(2, selectedStakeholders.length)
+    
+    return hasCompletionSignal || (hasGoodCoverage && hasBalancedParticipation && turnCount >= 3)
+  }
+
+  // Function to get initial respondent for discussion
+  const getInitialRespondent = (userMessage: string) => {
+    return getContextualStakeholder(userMessage, messages)
+  }
+
+  // Handle natural discussion flow with turn-taking
+  const handleDiscussionFlow = async (initialStakeholder: any, userMessage: string, currentMessages: Message[]) => {
+    await manageConversationFlow(initialStakeholder, userMessage, currentMessages)
+  }
+
+  // Generate stakeholder response with context
+  const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: 'greeting' | 'discussion') => {
+    const stakeholderContext = {
+      name: stakeholder.name,
+      role: stakeholder.role,
+      department: stakeholder.department,
+      priorities: stakeholder.priorities,
+      personality: stakeholder.personality,
+      expertise: stakeholder.expertise || []
+    }
+
+    const conversationContext = {
+      project: {
+        name: selectedProject?.name || 'Current Project',
+        description: selectedProject?.description || 'Project description',
+        type: selectedProject?.projectType || 'General'
+      },
+      conversationHistory: currentMessages,
+      stakeholders: selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }))
+    }
+
+    const aiService = AIService.getInstance()
+    return await aiService.generateStakeholderResponse(
+      userMessage,
+      stakeholderContext,
+      conversationContext,
+      responseType
+    )
+  }
+
+  // Create response message object
+  const createResponseMessage = (stakeholder: any, response: string, index: number): Message => {
+    return {
+      id: `ai-${Date.now()}-${index}`,
+      speaker: stakeholder.id || 'stakeholder',
+      content: response,
+      timestamp: new Date().toISOString(),
+      stakeholderName: stakeholder.name,
+      stakeholderRole: stakeholder.role
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
+  }
+
+  const handleVoiceInput = (transcription: string) => {
+    setInputMessage(transcription)
+    setShowVoiceModal(false)
+    // Focus input after a short delay to ensure modal is closed
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  const handleTranscribingChange = (transcribing: boolean) => {
+    setIsTranscribing(transcribing)
+  }
+
+  const handleEndMeeting = async () => {
+    if (messages.length <= 1) {
+      alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
+      return;
+    }
+
+    const isConfirmed = window.confirm(
+      'Are you sure you want to end this meeting? This will generate comprehensive interview notes with analytics and end the current session.'
+    );
+
+    if (!isConfirmed) return;
+
+    setIsLoading(true);
+
+    try {
+      // Stop any current audio
+      stopCurrentAudio();
+
+      // Calculate meeting duration
+      const meetingStartTime = new Date(messages[0]?.timestamp || new Date().toISOString());
+      const meetingEndTime = new Date();
+      const duration = Math.round((meetingEndTime.getTime() - meetingStartTime.getTime()) / 1000 / 60); // in minutes
+
+      // Generate enhanced meeting data with analytics
+      const meetingData = {
+        project: {
+          name: selectedProject?.name || 'Current Project',
+          description: selectedProject?.description || '',
+          type: selectedProject?.projectType || 'General'
+        },
+        participants: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department,
+          engagementLevel: meetingAnalytics.stakeholderEngagementLevels.get(s.id) || 'medium',
+          participationPercentage: Math.round(meetingAnalytics.participationBalance.get(s.id) || 0)
+        })),
+        messages: messages.filter(m => m.speaker !== 'system'), // Exclude system messages
+        startTime: meetingStartTime,
+        endTime: meetingEndTime,
+        duration,
+        user: user?.email || 'Business Analyst',
+        analytics: {
+          effectivenessScore: meetingAnalytics.meetingEffectivenessScore,
+          collaborationIndex: meetingAnalytics.collaborationIndex,
+          topicsDiscussed: Array.from(meetingAnalytics.topicsDiscussed),
+          keyInsights: meetingAnalytics.keyInsights,
+          conversationFlow: meetingAnalytics.conversationFlow
+        }
+      };
+
+      const aiService = AIService.getInstance();
+      const baseInterviewNotes = await aiService.generateInterviewNotes(meetingData);
+      
+      // Enhanced interview notes with analytics
+      const analyticsSection = generateMeetingAnalyticsSummary();
+      const enhancedInterviewNotes = `${baseInterviewNotes}
+
+---
+
+${analyticsSection}
+
+---
+
+## Meeting Quality Assessment
+
+**Overall Meeting Effectiveness**: ${meetingAnalytics.meetingEffectivenessScore}/100
+
+### Strengths
+${meetingAnalytics.keyInsights.filter(insight => 
+  insight.includes('Excellent') || insight.includes('Great') || insight.includes('Active')
+).map(insight => `• ${insight}`).join('\n') || '• Good stakeholder engagement and participation'}
+
+### Areas for Improvement
+${meetingAnalytics.keyInsights.filter(insight => 
+  insight.includes('Consider') || insight.includes('Limited') || insight.includes('suggest')
+).map(insight => `• ${insight}`).join('\n') || '• Continue to maintain current engagement levels'}
+
+### Recommendations for Future Meetings
+${generateMeetingRecommendations()}
+
+---
+
+*This enhanced interview summary includes AI-powered analytics to help improve future stakeholder meetings and requirements gathering sessions.*`;
+
+      // Create a formatted notes object with analytics
+      const notesObject = {
+        id: `meeting-${Date.now()}`,
+        title: `Enhanced Interview Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
+        content: enhancedInterviewNotes,
+        projectId: selectedProject?.id || 'unknown',
+        meetingType: 'stakeholder-interview',
+        participants: selectedStakeholders.map(s => s.name).join(', '),
+        date: meetingEndTime.toISOString(),
+        duration: `${duration} minutes`,
+        createdBy: user?.email || 'Business Analyst',
+        analytics: {
+          effectivenessScore: meetingAnalytics.meetingEffectivenessScore,
+          collaborationIndex: meetingAnalytics.collaborationIndex,
+          topicsDiscussed: Array.from(meetingAnalytics.topicsDiscussed),
+          participationBalance: Object.fromEntries(meetingAnalytics.participationBalance),
+          keyInsights: meetingAnalytics.keyInsights
+        }
+      };
+
+      // Save to localStorage (in a real app, this would go to a database)
+      const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
+      existingNotes.push(notesObject);
+      localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
+
+      // Show success notification
+      setMeetingEndedSuccess(true);
+      
+      // Navigate to notes view after a short delay to show success message
+      setTimeout(() => {
+        setCurrentView('notes');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error ending meeting:', error);
+      alert('Error generating meeting notes. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const generateMeetingRecommendations = (): string => {
+    const recommendations: string[] = [];
+    
+    // Based on participation balance
+    const participationValues = Array.from(meetingAnalytics.participationBalance.values());
+    const maxParticipation = Math.max(...participationValues);
+    const minParticipation = Math.min(...participationValues);
+    
+    if (maxParticipation - minParticipation > 40) {
+      recommendations.push('• Use facilitation techniques to encourage quieter stakeholders to share their perspectives');
+      recommendations.push('• Consider using round-robin or structured discussion formats for more balanced participation');
+    }
+    
+    // Based on collaboration index
+    if (meetingAnalytics.collaborationIndex < 40) {
+      recommendations.push('• Encourage more cross-stakeholder dialogue by asking stakeholders to build on each other\'s ideas');
+      recommendations.push('• Use collaborative exercises or group problem-solving activities');
+    }
+    
+    // Based on topic coverage
+    if (meetingAnalytics.topicsDiscussed.size < 4) {
+      recommendations.push('• Use a structured agenda to ensure comprehensive topic coverage');
+      recommendations.push('• Prepare topic-specific questions to guide the conversation more effectively');
+    }
+    
+    // Based on engagement levels
+    const lowEngagementCount = Array.from(meetingAnalytics.stakeholderEngagementLevels.values())
+      .filter(level => level === 'low').length;
+    
+    if (lowEngagementCount > 1) {
+      recommendations.push('• Send pre-meeting materials to help stakeholders prepare for more meaningful participation');
+      recommendations.push('• Consider shorter, more focused meetings to maintain engagement');
+    }
+    
+    // Default recommendations if no specific issues
+    if (recommendations.length === 0) {
+      recommendations.push('• Continue with current meeting approach - good stakeholder engagement observed');
+      recommendations.push('• Consider documenting best practices from this meeting for future sessions');
+    }
+    
+    return recommendations.join('\n');
   }
 
   // Enhanced audio management system
@@ -459,222 +929,259 @@ const MeetingView: React.FC = () => {
     }
   }
 
-  // Handle natural discussion flow with turn-taking
-  const handleDiscussionFlow = async (initialStakeholder: any, userMessage: string, currentMessages: Message[]) => {
-    const config = getConversationConfig()
-    let currentSpeaker = initialStakeholder
-    let conversationActive = true
-    let turnCount = 0
+  // Enhanced meeting analytics
+  const [meetingAnalytics, setMeetingAnalytics] = useState({
+    participationBalance: new Map<string, number>(),
+    topicsDiscussed: new Set<string>(),
+    questionTypes: new Map<string, number>(),
+    collaborationIndex: 0,
+    meetingEffectivenessScore: 0,
+    keyInsights: [] as string[],
+    stakeholderEngagementLevels: new Map<string, 'low' | 'medium' | 'high'>(),
+    conversationFlow: [] as { speaker: string, timestamp: string, topic: string }[]
+  })
+
+  // Update analytics when messages change
+  useEffect(() => {
+    if (messages.length > 1) {
+      updateMeetingAnalytics()
+    }
+  }, [messages])
+
+  const updateMeetingAnalytics = () => {
+    const stakeholderMessages = messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system')
+    const totalMessages = stakeholderMessages.length
     
-    while (conversationActive && turnCount < config.maxDiscussionTurns) {
-      // Generate response from current speaker
-      const response = await generateStakeholderResponse(currentSpeaker, userMessage, currentMessages, 'discussion')
-      const responseMessage = createResponseMessage(currentSpeaker, response, turnCount)
-      
-      // Add message to conversation
-      currentMessages = [...currentMessages, responseMessage]
-      setMessages(currentMessages)
-      
-      // Play audio response and wait for it to finish
-      await playMessageAudio(responseMessage.id, response, currentSpeaker, true)
-      
-      // Check if current speaker is passing the conversation
-      const aiService = AIService.getInstance()
-      const handoffTarget = await aiService.detectConversationHandoff(
-        response,
-        selectedStakeholders.map(s => ({
-          name: s.name,
-          role: s.role,
-          department: s.department,
-          priorities: s.priorities,
-          personality: s.personality,
-          expertise: s.expertise || []
-        }))
-      )
-      
-      if (handoffTarget) {
-        // Find the target stakeholder
-        const targetStakeholder = selectedStakeholders.find(s => s.name === handoffTarget.name)
-        
-        if (targetStakeholder && targetStakeholder.id !== currentSpeaker.id) {
-          // Natural delay before next person speaks
-          const handoffPause = config.handoffPauseTiming.base + Math.random() * config.handoffPauseTiming.variance
-          await new Promise(resolve => setTimeout(resolve, handoffPause))
-          
-          // Generate response from the handoff target with context that they were addressed
-          const handoffResponse = await generateStakeholderResponse(
-            targetStakeholder, 
-            `${currentSpeaker.name} asked you: "${response.split(/[.!?]/).pop()?.trim() || userMessage}"`, 
-            currentMessages, 
-            'discussion'
-          )
-          
-          const handoffMessage = createResponseMessage(targetStakeholder, handoffResponse, turnCount + 1)
-          
-          currentMessages = [...currentMessages, handoffMessage]
-          setMessages(currentMessages)
-          
-          // Play audio for the handoff response
-          await playMessageAudio(handoffMessage.id, handoffResponse, targetStakeholder, true)
-          
-          currentSpeaker = targetStakeholder
-          turnCount += 2 // Increment by 2 since we had both original response and handoff
-          
-          // Continue the conversation with the new speaker
-          continue
+    if (totalMessages === 0) return
+
+    // Calculate participation balance
+    const participationBalance = new Map<string, number>()
+    selectedStakeholders.forEach(stakeholder => {
+      const messageCount = stakeholderMessages.filter(m => m.speaker === stakeholder.id).length
+      participationBalance.set(stakeholder.id, (messageCount / totalMessages) * 100)
+    })
+
+    // Identify topics discussed
+    const topicsDiscussed = new Set<string>()
+    const topicKeywords = {
+      'Process': ['process', 'workflow', 'procedure', 'steps'],
+      'Technology': ['system', 'software', 'technical', 'integration'],
+      'Cost': ['cost', 'budget', 'expense', 'financial'],
+      'Quality': ['quality', 'standards', 'performance', 'excellence'],
+      'Timeline': ['timeline', 'schedule', 'deadline', 'timing'],
+      'Resources': ['resources', 'staff', 'team', 'personnel'],
+      'Customers': ['customer', 'user', 'client', 'service'],
+      'Compliance': ['compliance', 'regulatory', 'policy', 'audit'],
+      'Training': ['training', 'education', 'learning', 'skills'],
+      'Communication': ['communication', 'feedback', 'information', 'reporting']
+    }
+
+    stakeholderMessages.forEach(msg => {
+      const content = msg.content.toLowerCase()
+      Object.entries(topicKeywords).forEach(([topic, keywords]) => {
+        if (keywords.some(keyword => content.includes(keyword))) {
+          topicsDiscussed.add(topic)
         }
+      })
+    })
+
+    // Analyze question types
+    const questionTypes = new Map<string, number>()
+    const questionPatterns = {
+      'Clarification': ['what do you mean', 'can you explain', 'clarify', 'could you elaborate'],
+      'Information': ['what', 'how', 'when', 'where', 'who', 'which'],
+      'Opinion': ['what do you think', 'your opinion', 'your perspective', 'your view'],
+      'Confirmation': ['is that correct', 'right', 'confirm', 'verify'],
+      'Action': ['what should we do', 'how do we', 'what\'s the next step', 'how can we']
+    }
+
+    messages.filter(m => m.speaker === 'user').forEach(msg => {
+      const content = msg.content.toLowerCase()
+      Object.entries(questionPatterns).forEach(([type, patterns]) => {
+        if (patterns.some(pattern => content.includes(pattern))) {
+          questionTypes.set(type, (questionTypes.get(type) || 0) + 1)
+        }
+      })
+    })
+
+    // Calculate collaboration index
+    const handoffCount = calculateHandoffCount(stakeholderMessages)
+    const collaborationIndex = Math.min(100, (handoffCount / Math.max(1, totalMessages - 1)) * 100)
+
+    // Calculate meeting effectiveness score
+    const balanceScore = calculateParticipationBalance(participationBalance)
+    const topicScore = Math.min(100, (topicsDiscussed.size / 10) * 100)
+    const engagementScore = calculateEngagementScore(stakeholderMessages)
+    const meetingEffectivenessScore = Math.round((balanceScore + topicScore + engagementScore) / 3)
+
+    // Generate key insights
+    const keyInsights = generateKeyInsights(participationBalance, topicsDiscussed, questionTypes, collaborationIndex)
+
+    // Calculate stakeholder engagement levels
+    const stakeholderEngagementLevels = new Map<string, 'low' | 'medium' | 'high'>()
+    selectedStakeholders.forEach(stakeholder => {
+      const participation = participationBalance.get(stakeholder.id) || 0
+      const messageCount = stakeholderMessages.filter(m => m.speaker === stakeholder.id).length
+      const avgWordsPerMessage = calculateAvgWordsPerMessage(stakeholder.id, stakeholderMessages)
+      
+      let level: 'low' | 'medium' | 'high' = 'low'
+      if (participation > 25 && messageCount > 2 && avgWordsPerMessage > 30) {
+        level = 'high'
+      } else if (participation > 15 && messageCount > 1 && avgWordsPerMessage > 20) {
+        level = 'medium'
       }
       
-      // No handoff detected, end the conversation
-      conversationActive = false
-    }
+      stakeholderEngagementLevels.set(stakeholder.id, level)
+    })
+
+    // Build conversation flow
+    const conversationFlow = stakeholderMessages.map(msg => ({
+      speaker: msg.stakeholderName || 'Unknown',
+      timestamp: msg.timestamp,
+      topic: identifyMessageTopic(msg.content, topicKeywords)
+    }))
+
+    setMeetingAnalytics({
+      participationBalance,
+      topicsDiscussed,
+      questionTypes,
+      collaborationIndex,
+      meetingEffectivenessScore,
+      keyInsights,
+      stakeholderEngagementLevels,
+      conversationFlow
+    })
   }
 
-  // Generate stakeholder response with context
-  const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: 'greeting' | 'discussion') => {
-    const stakeholderContext = {
-      name: stakeholder.name,
-      role: stakeholder.role,
-      department: stakeholder.department,
-      priorities: stakeholder.priorities,
-      personality: stakeholder.personality,
-      expertise: stakeholder.expertise || []
+  const calculateHandoffCount = (stakeholderMessages: Message[]): number => {
+    let handoffCount = 0
+    for (let i = 0; i < stakeholderMessages.length - 1; i++) {
+      if (stakeholderMessages[i].speaker !== stakeholderMessages[i + 1].speaker) {
+        handoffCount++
+      }
     }
-
-    const conversationContext = {
-      project: {
-        name: selectedProject?.name || 'Current Project',
-        description: selectedProject?.description || 'Project description',
-        type: selectedProject?.projectType || 'General'
-      },
-      conversationHistory: currentMessages,
-      stakeholders: selectedStakeholders.map(s => ({
-        name: s.name,
-        role: s.role,
-        department: s.department,
-        priorities: s.priorities,
-        personality: s.personality,
-        expertise: s.expertise || []
-      }))
-    }
-
-    const aiService = AIService.getInstance()
-    return await aiService.generateStakeholderResponse(
-      userMessage,
-      stakeholderContext,
-      conversationContext,
-      responseType
-    )
+    return handoffCount
   }
 
-  // Create response message object
-  const createResponseMessage = (stakeholder: any, response: string, index: number): Message => {
-    return {
-      id: `ai-${Date.now()}-${index}`,
-      speaker: stakeholder.id || 'stakeholder',
-      content: response,
-      timestamp: new Date().toISOString(),
-      stakeholderName: stakeholder.name,
-      stakeholderRole: stakeholder.role
-    }
+  const calculateParticipationBalance = (participationMap: Map<string, number>): number => {
+    const participationValues = Array.from(participationMap.values())
+    const idealParticipation = 100 / selectedStakeholders.length
+    
+    const deviations = participationValues.map(p => Math.abs(p - idealParticipation))
+    const avgDeviation = deviations.reduce((sum, dev) => sum + dev, 0) / deviations.length
+    
+    return Math.max(0, 100 - (avgDeviation * 2))
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
+  const calculateEngagementScore = (stakeholderMessages: Message[]): number => {
+    const totalWords = stakeholderMessages.reduce((sum, msg) => sum + msg.content.split(' ').length, 0)
+    const avgWordsPerMessage = totalWords / Math.max(1, stakeholderMessages.length)
+    
+    // Score based on message length and frequency
+    const lengthScore = Math.min(100, (avgWordsPerMessage / 50) * 100)
+    const frequencyScore = Math.min(100, (stakeholderMessages.length / 10) * 100)
+    
+    return Math.round((lengthScore + frequencyScore) / 2)
   }
 
-  const handleVoiceInput = (transcription: string) => {
-    setInputMessage(transcription)
-    setShowVoiceModal(false)
-    // Focus input after a short delay to ensure modal is closed
-    setTimeout(() => inputRef.current?.focus(), 100)
+  const calculateAvgWordsPerMessage = (stakeholderId: string, stakeholderMessages: Message[]): number => {
+    const messages = stakeholderMessages.filter(m => m.speaker === stakeholderId)
+    if (messages.length === 0) return 0
+    
+    const totalWords = messages.reduce((sum, msg) => sum + msg.content.split(' ').length, 0)
+    return totalWords / messages.length
   }
 
-  const handleTranscribingChange = (transcribing: boolean) => {
-    setIsTranscribing(transcribing)
+  const identifyMessageTopic = (content: string, topicKeywords: any): string => {
+    const contentLower = content.toLowerCase()
+    
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+      if ((keywords as string[]).some(keyword => contentLower.includes(keyword))) {
+        return topic
+      }
+    }
+    
+    return 'General'
   }
 
-  const handleEndMeeting = async () => {
-    if (messages.length <= 1) {
-      alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
-      return;
+  const generateKeyInsights = (
+    participationBalance: Map<string, number>,
+    topicsDiscussed: Set<string>,
+    questionTypes: Map<string, number>,
+    collaborationIndex: number
+  ): string[] => {
+    const insights: string[] = []
+    
+    // Participation insights
+    const participationValues = Array.from(participationBalance.values())
+    const maxParticipation = Math.max(...participationValues)
+    const minParticipation = Math.min(...participationValues)
+    
+    if (maxParticipation - minParticipation > 40) {
+      insights.push('Consider encouraging more balanced participation - some stakeholders are dominating the conversation')
     }
-
-    const isConfirmed = window.confirm(
-      'Are you sure you want to end this meeting? This will generate comprehensive interview notes and end the current session.'
-    );
-
-    if (!isConfirmed) return;
-
-    setIsLoading(true);
-
-    try {
-      // Stop any current audio
-      stopCurrentAudio();
-
-      // Calculate meeting duration
-      const meetingStartTime = new Date(messages[0]?.timestamp || new Date().toISOString());
-      const meetingEndTime = new Date();
-      const duration = Math.round((meetingEndTime.getTime() - meetingStartTime.getTime()) / 1000 / 60); // in minutes
-
-      // Generate comprehensive meeting notes
-      const meetingData = {
-        project: {
-          name: selectedProject?.name || 'Current Project',
-          description: selectedProject?.description || '',
-          type: selectedProject?.projectType || 'General'
-        },
-        participants: selectedStakeholders.map(s => ({
-          name: s.name,
-          role: s.role,
-          department: s.department
-        })),
-        messages: messages.filter(m => m.speaker !== 'system'), // Exclude system messages
-        startTime: meetingStartTime,
-        endTime: meetingEndTime,
-        duration,
-        user: user?.email || 'Business Analyst'
-      };
-
-      const aiService = AIService.getInstance();
-      const interviewNotes = await aiService.generateInterviewNotes(meetingData);
-
-      // Create a formatted notes object
-      const notesObject = {
-        id: `meeting-${Date.now()}`,
-        title: `Interview Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
-        content: interviewNotes,
-        projectId: selectedProject?.id || 'unknown',
-        meetingType: 'stakeholder-interview',
-        participants: selectedStakeholders.map(s => s.name).join(', '),
-        date: meetingEndTime.toISOString(),
-        duration: `${duration} minutes`,
-        createdBy: user?.email || 'Business Analyst'
-      };
-
-      // Save to localStorage (in a real app, this would go to a database)
-      const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
-      existingNotes.push(notesObject);
-      localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
-
-      // Show success notification
-      setMeetingEndedSuccess(true);
-      
-      // Navigate to notes view after a short delay to show success message
-      setTimeout(() => {
-        setCurrentView('notes');
-      }, 2000);
-
-    } catch (error) {
-      console.error('Error ending meeting:', error);
-      // Use a better error notification in the future
-      alert('Error generating meeting notes. Please try again.');
-    } finally {
-      setIsLoading(false);
+    
+    if (collaborationIndex > 70) {
+      insights.push('Excellent collaboration - stakeholders are effectively building on each other\'s ideas')
+    } else if (collaborationIndex < 30) {
+      insights.push('Limited cross-stakeholder interaction - consider facilitating more collaborative dialogue')
     }
+    
+    // Topic coverage insights
+    if (topicsDiscussed.size > 6) {
+      insights.push('Great topic coverage - multiple important areas have been discussed')
+    } else if (topicsDiscussed.size < 3) {
+      insights.push('Consider exploring more diverse topics to ensure comprehensive requirements gathering')
+    }
+    
+    // Question type insights
+    const totalQuestions = Array.from(questionTypes.values()).reduce((sum, count) => sum + count, 0)
+    if (totalQuestions > 5) {
+      insights.push('Active questioning approach - good for thorough requirements gathering')
+    }
+    
+    const clarificationQuestions = questionTypes.get('Clarification') || 0
+    if (clarificationQuestions > 2) {
+      insights.push('Multiple clarification requests suggest need for clearer communication')
+    }
+    
+    return insights.slice(0, 3) // Limit to top 3 insights
+  }
+
+  // Enhanced meeting summary with analytics
+  const generateMeetingAnalyticsSummary = (): string => {
+    const analytics = meetingAnalytics
+    const duration = Math.round((Date.now() - new Date(messages[0]?.timestamp || new Date()).getTime()) / 1000 / 60)
+    
+    return `
+## Meeting Analytics Summary
+
+**Duration**: ${duration} minutes
+**Effectiveness Score**: ${analytics.meetingEffectivenessScore}/100
+**Collaboration Index**: ${Math.round(analytics.collaborationIndex)}%
+
+### Participation Balance
+${Array.from(analytics.participationBalance.entries())
+  .map(([stakeholderId, percentage]) => {
+    const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+    return `- ${stakeholder?.name}: ${Math.round(percentage)}%`
+  })
+  .join('\n')}
+
+### Topics Covered (${analytics.topicsDiscussed.size})
+${Array.from(analytics.topicsDiscussed).join(', ')}
+
+### Key Insights
+${analytics.keyInsights.map(insight => `• ${insight}`).join('\n')}
+
+### Stakeholder Engagement Levels
+${Array.from(analytics.stakeholderEngagementLevels.entries())
+  .map(([stakeholderId, level]) => {
+    const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+    return `- ${stakeholder?.name}: ${level.toUpperCase()}`
+  })
+  .join('\n')}
+`
   }
 
   if (!selectedProject || selectedStakeholders.length === 0) {

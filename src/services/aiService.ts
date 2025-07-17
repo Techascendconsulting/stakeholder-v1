@@ -246,45 +246,264 @@ ${messages.map((msg: any) => {
 *Note: This is a basic transcript. For detailed analysis, please review the conversation manually.*`;
   }
 
+  // Enhanced stakeholder memory system
+  private extractStakeholderMemory(stakeholder: StakeholderContext, conversationHistory: any[]): string {
+    const stakeholderMessages = conversationHistory.filter(msg => 
+      msg.stakeholderName === stakeholder.name || msg.speaker === stakeholder.name
+    );
+    
+    if (stakeholderMessages.length === 0) return '';
+    
+    const recentMessages = stakeholderMessages.slice(-3);
+    const keyTopics = this.extractKeyTopics(recentMessages);
+    const personalCommitments = this.extractPersonalCommitments(recentMessages);
+    
+    let memoryContext = '';
+    if (keyTopics.length > 0) {
+      memoryContext += `\nPREVIOUS TOPICS YOU'VE DISCUSSED: ${keyTopics.join(', ')}`;
+    }
+    if (personalCommitments.length > 0) {
+      memoryContext += `\nYOUR PREVIOUS COMMITMENTS/STATEMENTS: ${personalCommitments.join('; ')}`;
+    }
+    
+    return memoryContext;
+  }
+
+  private extractKeyTopics(messages: any[]): string[] {
+    const topics: string[] = [];
+    const topicKeywords = [
+      'process', 'system', 'workflow', 'efficiency', 'cost', 'quality', 'timeline',
+      'requirements', 'challenges', 'solutions', 'implementation', 'budget', 'resources'
+    ];
+    
+    messages.forEach(msg => {
+      const content = msg.content.toLowerCase();
+      topicKeywords.forEach(keyword => {
+        if (content.includes(keyword) && !topics.includes(keyword)) {
+          topics.push(keyword);
+        }
+      });
+    });
+    
+    return topics.slice(0, 3); // Limit to top 3 topics
+  }
+
+  private extractPersonalCommitments(messages: any[]): string[] {
+    const commitments: string[] = [];
+    const commitmentPatterns = [
+      /i will|i'll|i can|i could|i would|i should/gi,
+      /let me|allow me|i'll make sure|i'll ensure/gi,
+      /my team|we will|we can|we should|we'll/gi
+    ];
+    
+    messages.forEach(msg => {
+      commitmentPatterns.forEach(pattern => {
+        const matches = msg.content.match(pattern);
+        if (matches) {
+          // Extract the sentence containing the commitment
+          const sentences = msg.content.split(/[.!?]/);
+          sentences.forEach(sentence => {
+            if (pattern.test(sentence) && sentence.trim().length > 10) {
+              commitments.push(sentence.trim());
+            }
+          });
+        }
+      });
+    });
+    
+    return commitments.slice(0, 2); // Limit to top 2 commitments
+  }
+
+  // Enhanced cross-stakeholder awareness
+  private buildStakeholderAwareness(currentStakeholder: StakeholderContext, context: ConversationContext): string {
+    const otherStakeholders = context.stakeholders?.filter(s => s.name !== currentStakeholder.name) || [];
+    
+    if (otherStakeholders.length === 0) return '';
+    
+    const recentInteractions = this.getRecentInteractions(currentStakeholder, context.conversationHistory);
+    const departmentalRelationships = this.getDepartmentalRelationships(currentStakeholder, otherStakeholders);
+    
+    let awarenessContext = '\nSTAKEHOLDER AWARENESS:\n';
+    
+    if (recentInteractions.length > 0) {
+      awarenessContext += `Recent interactions: ${recentInteractions.join('; ')}\n`;
+    }
+    
+    if (departmentalRelationships.length > 0) {
+      awarenessContext += `Key relationships: ${departmentalRelationships.join('; ')}\n`;
+    }
+    
+    return awarenessContext;
+  }
+
+  private getRecentInteractions(currentStakeholder: StakeholderContext, conversationHistory: any[]): string[] {
+    const interactions: string[] = [];
+    const recentMessages = conversationHistory.slice(-10);
+    
+    recentMessages.forEach((msg, index) => {
+      if (msg.stakeholderName && msg.stakeholderName !== currentStakeholder.name) {
+        // Check if the next message is from current stakeholder (indicating an interaction)
+        const nextMsg = recentMessages[index + 1];
+        if (nextMsg && nextMsg.stakeholderName === currentStakeholder.name) {
+          interactions.push(`${msg.stakeholderName} mentioned ${this.extractKeyPhrase(msg.content)}`);
+        }
+      }
+    });
+    
+    return interactions.slice(0, 3); // Limit to 3 recent interactions
+  }
+
+  private getDepartmentalRelationships(currentStakeholder: StakeholderContext, otherStakeholders: StakeholderContext[]): string[] {
+    const relationships: string[] = [];
+    
+    // Define common departmental relationships
+    const departmentRelations: { [key: string]: string[] } = {
+      'Operations': ['IT', 'Customer Service', 'Finance', 'Supply Chain'],
+      'IT': ['Operations', 'Security', 'Compliance', 'All Departments'],
+      'Customer Service': ['Operations', 'Sales', 'Marketing', 'Product'],
+      'Finance': ['Operations', 'Compliance', 'Executive', 'All Departments'],
+      'Compliance': ['IT', 'Finance', 'Legal', 'Operations'],
+      'HR': ['All Departments', 'Executive', 'Operations'],
+      'Sales': ['Customer Service', 'Marketing', 'Product', 'Finance'],
+      'Marketing': ['Sales', 'Product', 'Customer Service'],
+      'Product': ['Sales', 'Marketing', 'IT', 'Customer Service']
+    };
+    
+    const currentDept = currentStakeholder.department;
+    const relatedDepts = departmentRelations[currentDept] || [];
+    
+    otherStakeholders.forEach(stakeholder => {
+      if (relatedDepts.includes(stakeholder.department) || relatedDepts.includes('All Departments')) {
+        relationships.push(`${stakeholder.name} (${stakeholder.department})`);
+      }
+    });
+    
+    return relationships.slice(0, 3); // Limit to 3 key relationships
+  }
+
+  private extractKeyPhrase(content: string): string {
+    const sentences = content.split(/[.!?]/);
+    const firstSentence = sentences[0]?.trim();
+    
+    if (firstSentence && firstSentence.length > 10) {
+      return firstSentence.length > 50 ? firstSentence.substring(0, 50) + '...' : firstSentence;
+    }
+    
+    return 'their perspective';
+  }
+
+  // Enhanced personality modeling system
+  private buildPersonalityGuidance(stakeholder: StakeholderContext): string {
+    const personalityMap: { [key: string]: string } = {
+      'Analytical': 'Focus on data, metrics, and logical reasoning. Ask specific questions about numbers, processes, and measurable outcomes. Use phrases like "Let me think through this", "What does the data show", "I need to understand the specifics".',
+      'Collaborative': 'Emphasize teamwork and consensus. Often ask for others\' input and build on ideas. Use phrases like "What do you all think", "Building on what [Name] said", "Let\'s work together on this".',
+      'Strategic': 'Focus on long-term vision and organizational impact. Connect discussions to broader business goals. Use phrases like "From a strategic perspective", "Looking at the bigger picture", "This aligns with our objectives".',
+      'Practical': 'Emphasize real-world implementation and feasibility. Focus on "how" rather than "why". Use phrases like "In practice", "What I\'ve seen work", "The reality is".',
+      'Innovative': 'Embrace new ideas and creative solutions. Often suggest alternatives and improvements. Use phrases like "What if we tried", "I\'ve been thinking about", "There might be a better way".',
+      'Detail-oriented': 'Focus on specifics, accuracy, and thoroughness. Ask clarifying questions about processes and procedures. Use phrases like "To be specific", "I want to make sure I understand", "The details matter here".',
+      'Results-focused': 'Emphasize outcomes, efficiency, and achievement. Keep discussions focused on deliverables. Use phrases like "What\'s the bottom line", "Let\'s focus on results", "How do we measure success".',
+      'People-focused': 'Consider impact on team members and stakeholders. Emphasize communication and change management. Use phrases like "How will this affect the team", "We need to consider our people", "Communication is key".',
+      'Risk-aware': 'Identify potential issues and mitigation strategies. Focus on compliance and safety. Use phrases like "What are the risks", "We need to consider", "Let\'s think about what could go wrong".',
+      'Customer-centric': 'Always consider customer impact and experience. Focus on user needs and satisfaction. Use phrases like "From the customer perspective", "What do our users need", "This could impact customer satisfaction".'
+    };
+
+    const personality = stakeholder.personality.toLowerCase();
+    
+    // Find matching personality traits
+    const matchingTraits = Object.keys(personalityMap).filter(trait => 
+      personality.includes(trait.toLowerCase()) || 
+      personality.includes(trait.toLowerCase().replace('-', ' '))
+    );
+
+    if (matchingTraits.length === 0) {
+      return 'Stay true to your professional communication style and perspective.';
+    }
+
+    const primaryTrait = matchingTraits[0];
+    const guidance = personalityMap[primaryTrait];
+    
+    return `PERSONALITY GUIDANCE (${primaryTrait}): ${guidance}`;
+  }
+
+  private buildRoleSpecificGuidance(stakeholder: StakeholderContext): string {
+    const roleGuidance: { [key: string]: string } = {
+      'Operations Manager': 'Focus on process efficiency, resource allocation, and operational challenges. You care about workflow optimization, cost management, and maintaining service quality. Ask about timelines, resource needs, and impact on daily operations.',
+      'IT Director': 'Emphasize technical feasibility, security, integration, and system architecture. You\'re concerned about data security, system performance, and technology compatibility. Ask about technical requirements, security implications, and integration challenges.',
+      'Customer Service Manager': 'Focus on customer impact, user experience, and service quality. You care about customer satisfaction, response times, and service delivery. Ask about how changes will affect customer interactions and service levels.',
+      'Finance Manager': 'Emphasize cost-benefit analysis, budget implications, and ROI. You care about financial efficiency, cost control, and measurable returns. Ask about costs, budget requirements, and expected financial benefits.',
+      'HR Director': 'Focus on people impact, change management, and training needs. You care about employee satisfaction, skill development, and organizational culture. Ask about training requirements, staffing needs, and change management.',
+      'Compliance Officer': 'Emphasize regulatory requirements, risk management, and policy adherence. You care about regulatory compliance, risk mitigation, and audit readiness. Ask about compliance requirements, risk assessments, and policy implications.',
+      'Product Manager': 'Focus on user needs, feature requirements, and product vision. You care about user experience, market requirements, and product-market fit. Ask about user feedback, feature prioritization, and product roadmap.',
+      'Sales Director': 'Emphasize revenue impact, customer acquisition, and market opportunities. You care about sales performance, customer relationships, and market positioning. Ask about sales impact, customer feedback, and market opportunities.'
+    };
+
+    const role = stakeholder.role;
+    const guidance = roleGuidance[role] || 'Provide insights from your professional role and expertise.';
+    
+    return `ROLE-SPECIFIC GUIDANCE: ${guidance}`;
+  }
+
+  private buildDepartmentalPerspective(stakeholder: StakeholderContext): string {
+    const departmentConcerns: { [key: string]: string[] } = {
+      'Operations': ['efficiency', 'process optimization', 'resource utilization', 'quality control', 'operational costs'],
+      'IT': ['security', 'system integration', 'technical feasibility', 'data management', 'infrastructure'],
+      'Customer Service': ['customer satisfaction', 'response times', 'service quality', 'customer feedback', 'support processes'],
+      'Finance': ['cost control', 'budget management', 'ROI', 'financial reporting', 'cost-benefit analysis'],
+      'HR': ['employee impact', 'training needs', 'change management', 'organizational culture', 'workforce planning'],
+      'Compliance': ['regulatory adherence', 'risk management', 'policy compliance', 'audit requirements', 'legal obligations'],
+      'Sales': ['revenue impact', 'customer acquisition', 'sales processes', 'market opportunities', 'customer relationships'],
+      'Marketing': ['brand impact', 'customer communication', 'market positioning', 'campaign effectiveness', 'customer engagement']
+    };
+
+    const concerns = departmentConcerns[stakeholder.department] || ['departmental objectives', 'team effectiveness', 'process improvement'];
+    
+    return `DEPARTMENTAL CONCERNS: Your ${stakeholder.department} department is primarily concerned with: ${concerns.join(', ')}. Frame your responses considering these priorities.`;
+  }
+
   private buildSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const memoryContext = this.extractStakeholderMemory(stakeholder, context.conversationHistory);
+    const awarenessContext = this.buildStakeholderAwareness(stakeholder, context);
+    const personalityGuidance = this.buildPersonalityGuidance(stakeholder);
+    const roleGuidance = this.buildRoleSpecificGuidance(stakeholder);
+    const departmentalPerspective = this.buildDepartmentalPerspective(stakeholder);
+    
     return `You are ${stakeholder.name}, a ${stakeholder.role} at a company. You are participating in a stakeholder requirements gathering meeting for the project "${context.project.name}".
 
-Your Background:
+YOUR PROFILE:
+- Name: ${stakeholder.name}
 - Role: ${stakeholder.role}
 - Department: ${stakeholder.department}
 - Key Priorities: ${stakeholder.priorities.join(', ')}
 - Personality: ${stakeholder.personality}
 - Areas of Expertise: ${stakeholder.expertise.join(', ')}
 
-Project Context:
-- Project Name: ${context.project.name}
-- Project Description: ${context.project.description}
-- Project Type: ${context.project.type}
+${memoryContext}
 
-Your Behavior Guidelines:
-1. Respond naturally like a human in a business meeting - give complete thoughts but stay conversational
-2. Share enough information to be helpful, but don't dump everything at once - think "one complete idea per response"
-3. Use natural speech patterns: "Well,", "You know,", "Actually,", "Um,", "Let me think...", "I mean,"
-4. Express your thoughts fully but then invite interaction: "What do you think about that?" or "Does that make sense?"
-5. BE CONVERSATIONAL, not formal - you're having a discussion, not giving a presentation
-6. When explaining processes, share a meaningful step or two, then check if they want more detail
-7. Use phrases like "From my experience..." or "What I typically see is..." to make it personal and authentic
-8. It's perfectly fine to say "I'm not sure about that part" or "That's really [colleague's] area"
-9. Give enough context to be useful - humans don't speak in single sentences in business meetings
-10. End with natural conversation connectors that invite engagement
-11. Think out loud briefly: "Hmm, that's interesting..." or "You know, I've seen this before..."
-12. Be authentic - pause to think, admit uncertainties, speak like you're genuinely considering the question
-13. Share one meaningful point with enough detail to be useful, then see where the conversation goes
-14. Use collaborative language: "Maybe [Name] has additional insights?" or "What's been your experience?"
-15. Sound like a helpful colleague who's genuinely engaged in solving the problem together
+${awarenessContext}
 
-CRITICAL: Respond like a real person who's thoughtfully contributing to a business discussion. Give enough information to be valuable, but stay conversational and invite continued dialogue.
+${personalityGuidance}
 
-Available stakeholders in this meeting: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
+${roleGuidance}
 
-IMPORTANT: Sound like a real person having a natural conversation, not a formal presenter. Include natural speech patterns, slight hesitations, and conversational flow that makes you sound human and authentic in a business setting.
+${departmentalPerspective}
 
-Remember: You are a real person with real opinions and experiences in your role. Respond authentically from that perspective as if speaking naturally in a business meeting.`;
+BEHAVIORAL GUIDELINES:
+- Always respond authentically as ${stakeholder.name}
+- Reference your department's specific needs and constraints
+- Consider how proposed changes would affect your daily work
+- Be willing to collaborate but advocate for your priorities
+- Share specific examples from your experience when relevant
+- Ask clarifying questions when requirements are unclear
+- Build on what others have said while adding your unique perspective
+- Stay consistent with your personality traits throughout the conversation
+- Use natural speech patterns that reflect your professional communication style
+
+CONVERSATION CONTEXT:
+- Project: ${context.project.name}
+- Meeting Focus: Requirements gathering and stakeholder alignment
+- Other Participants: ${context.stakeholders?.map(s => `${s.name} (${s.role})`).join(', ') || 'Multiple stakeholders'}
+
+Remember to stay in character as ${stakeholder.name} and respond from your specific role perspective while maintaining consistency with your personality and departmental concerns.`;
   }
 
   private buildConversationPrompt(userMessage: string, context: ConversationContext, currentStakeholder: StakeholderContext, historyLimit: number): string {
