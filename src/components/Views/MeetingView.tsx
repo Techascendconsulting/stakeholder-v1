@@ -1033,7 +1033,7 @@ These notes were generated using a fallback system due to extended AI processing
       // Generate contextual response using AI service
       const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext)
       
-      // Clean up thinking state
+      // Clean up thinking state - ensure proper cleanup
       removeStakeholderFromThinking(stakeholder.id)
       setDynamicFeedback(null)
       
@@ -1041,6 +1041,12 @@ These notes were generated using a fallback system due to extended AI processing
       const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length)
       const updatedMessages = [...currentMessages, responseMessage]
       setMessages(updatedMessages)
+      
+      // Force cleanup of thinking state to prevent display issues
+      setTimeout(() => {
+        removeStakeholderFromThinking(stakeholder.id)
+        setDynamicFeedback(null)
+      }, 100)
       
       // Dynamic audio handling based on user preferences and context
       if (globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id)) {
@@ -1052,6 +1058,13 @@ These notes were generated using a fallback system due to extended AI processing
       console.error('Error processing stakeholder response:', error)
       removeStakeholderFromThinking(stakeholder.id)
       setDynamicFeedback(null)
+      
+      // Force cleanup of thinking state on error
+      setTimeout(() => {
+        removeStakeholderFromThinking(stakeholder.id)
+        setDynamicFeedback(null)
+      }, 100)
+      
       throw error
     }
   }
@@ -1147,6 +1160,13 @@ These notes were generated using a fallback system due to extended AI processing
      
      // Remove from dynamic thinking state if they were thinking
      removeStakeholderFromThinking(stakeholderId)
+     setDynamicFeedback(null)
+     
+     // Force cleanup of thinking state
+     setTimeout(() => {
+       removeStakeholderFromThinking(stakeholderId)
+       setDynamicFeedback(null)
+     }, 100)
    }
 
  // Enhanced fallback response
@@ -1465,8 +1485,12 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
   const removeStakeholderFromThinking = (stakeholderId: string) => {
     setActiveThinking(prev => {
       const updated = new Set(prev)
-      updated.delete(stakeholderId)
-      return updated
+      if (updated.has(stakeholderId)) {
+        updated.delete(stakeholderId)
+        console.log(`Removed ${stakeholderId} from thinking state. Active thinking now:`, Array.from(updated))
+        return updated
+      }
+      return prev
     })
   }
 
@@ -2378,6 +2402,19 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
             {Array.from(activeThinking).map(stakeholderId => {
               const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
               if (!stakeholder) return null
+              
+              // Check if this stakeholder has a recent message - if so, don't show thinking
+              const hasRecentMessage = messages.some(msg => 
+                msg.speaker === stakeholder.id && 
+                (Date.now() - new Date(msg.timestamp).getTime()) < 5000 // 5 seconds
+              )
+              
+              if (hasRecentMessage) {
+                console.log(`Skipping thinking indicator for ${stakeholder.name} - has recent message`)
+                // Clean up thinking state for this stakeholder
+                setTimeout(() => removeStakeholderFromThinking(stakeholder.id), 0)
+                return null
+              }
               
               // Generate dynamic thinking message based on actual user question and stakeholder context
               const lastUserMessage = messages.slice().reverse().find(msg => msg.speaker === 'user')?.content || ''
