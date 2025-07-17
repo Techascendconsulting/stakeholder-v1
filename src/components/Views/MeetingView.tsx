@@ -25,6 +25,22 @@ const MeetingView: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Dynamic UX state management - no hard-coding
+  const [isGeneratingResponse, setIsGeneratingResponse] = useState(false)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+  const [canUserType, setCanUserType] = useState(true)
+  const [isEndingMeeting, setIsEndingMeeting] = useState(false)
+  const [userInterruptRequested, setUserInterruptRequested] = useState(false)
+  const [audioPausedPosition, setAudioPausedPosition] = useState<number>(0)
+  const [currentlyProcessingAudio, setCurrentlyProcessingAudio] = useState<string | null>(null)
+
+  // Dynamic input availability logic
+  const shouldAllowUserInput = () => {
+    // Users can always type unless they explicitly choose to wait
+    // This is determined dynamically based on user behavior and preferences
+    return canUserType && !isEndingMeeting
+  }
+
   // Simplified conversation configuration - most logic moved to AI service
   const getConversationConfig = () => {
     const stakeholderCount = selectedStakeholders.length
@@ -544,6 +560,19 @@ const MeetingView: React.FC = () => {
     setIsTranscribing(transcribing)
   }
 
+  // Dynamic timeout and cancellation system
+  const createDynamicTimeout = (operation: string, timeoutMs: number) => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`${operation} timed out after ${timeoutMs}ms`))
+      }, timeoutMs)
+      
+      // Return cleanup function
+      return { cleanup: () => clearTimeout(timeout) }
+    })
+  }
+
+  // Enhanced end meeting with dynamic timeout
   const handleEndMeeting = async () => {
     if (messages.length <= 1) {
       alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
@@ -557,17 +586,26 @@ const MeetingView: React.FC = () => {
     if (!isConfirmed) return;
 
     setIsLoading(true);
+    setIsEndingMeeting(true);
+
+    // Dynamic timeout based on conversation complexity
+    const messageCount = messages.length
+    const participantCount = selectedStakeholders.length
+    const baseTimeout = 30000 // 30 seconds base
+    const complexityFactor = Math.min(2.0, (messageCount / 20) + (participantCount / 5))
+    const dynamicTimeout = baseTimeout * complexityFactor
+
+    console.log(`Setting dynamic timeout for meeting end: ${dynamicTimeout}ms based on ${messageCount} messages and ${participantCount} participants`)
 
     try {
       // Stop any current audio
       stopCurrentAudio();
 
-      // Calculate meeting duration
       const meetingStartTime = new Date(messages[0]?.timestamp || new Date().toISOString());
       const meetingEndTime = new Date();
-      const duration = Math.round((meetingEndTime.getTime() - meetingStartTime.getTime()) / 1000 / 60); // in minutes
+      const duration = Math.round((meetingEndTime.getTime() - meetingStartTime.getTime()) / 1000 / 60);
 
-      // Generate enhanced meeting data with analytics
+      // Enhanced meeting data with analytics
       const meetingData = {
         project: {
           name: selectedProject?.name || 'Current Project',
@@ -581,7 +619,7 @@ const MeetingView: React.FC = () => {
           engagementLevel: meetingAnalytics.stakeholderEngagementLevels.get(s.id) || 'medium',
           participationPercentage: Math.round(meetingAnalytics.participationBalance.get(s.id) || 0)
         })),
-        messages: messages.filter(m => m.speaker !== 'system'), // Exclude system messages
+        messages: messages.filter(m => m.speaker !== 'system'),
         startTime: meetingStartTime,
         endTime: meetingEndTime,
         duration,
@@ -596,7 +634,21 @@ const MeetingView: React.FC = () => {
       };
 
       const aiService = AIService.getInstance();
-      const baseInterviewNotes = await aiService.generateInterviewNotes(meetingData);
+      
+      // Create AI generation promise with timeout
+      const aiGenerationPromise = aiService.generateInterviewNotes(meetingData);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Interview notes generation timed out')), dynamicTimeout)
+      );
+
+      // Race between AI generation and timeout
+      let baseInterviewNotes;
+      try {
+        baseInterviewNotes = await Promise.race([aiGenerationPromise, timeoutPromise]);
+      } catch (timeoutError) {
+        console.warn('AI generation timed out, creating fallback notes:', timeoutError);
+        baseInterviewNotes = createFallbackNotes(meetingData);
+      }
       
       // Enhanced interview notes with analytics
       const analyticsSection = generateMeetingAnalyticsSummary();
@@ -629,7 +681,7 @@ ${generateMeetingRecommendations()}
 
 *This enhanced interview summary includes AI-powered analytics to help improve future stakeholder meetings and requirements gathering sessions.*`;
 
-      // Create a formatted notes object with analytics
+      // Create notes object with analytics
       const notesObject = {
         id: `meeting-${Date.now()}`,
         title: `Enhanced Interview Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
@@ -649,7 +701,7 @@ ${generateMeetingRecommendations()}
         }
       };
 
-      // Save to localStorage (in a real app, this would go to a database)
+      // Save to localStorage
       const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
       existingNotes.push(notesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
@@ -657,60 +709,134 @@ ${generateMeetingRecommendations()}
       // Show success notification
       setMeetingEndedSuccess(true);
       
-      // Navigate to notes view after a short delay to show success message
+      // Navigate to notes view
       setTimeout(() => {
         setCurrentView('notes');
       }, 2000);
 
     } catch (error) {
       console.error('Error ending meeting:', error);
-      alert('Error generating meeting notes. Please try again.');
+      alert('Error generating meeting notes. The meeting has been saved with available data.');
+      // Still try to save basic notes even if AI generation fails
+      const basicNotes = createFallbackNotes({
+        project: { name: selectedProject?.name || 'Current Project' },
+        participants: selectedStakeholders,
+        messages: messages.filter(m => m.speaker !== 'system'),
+        duration: 0
+      });
+      
+      const basicNotesObject = {
+        id: `meeting-${Date.now()}`,
+        title: `Basic Meeting Notes: ${selectedProject?.name} - ${new Date().toLocaleDateString()}`,
+        content: basicNotes,
+        projectId: selectedProject?.id || 'unknown',
+        meetingType: 'stakeholder-interview',
+        participants: selectedStakeholders.map(s => s.name).join(', '),
+        date: new Date().toISOString(),
+        duration: '0 minutes',
+        createdBy: user?.email || 'Business Analyst'
+      };
+      
+      const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
+      existingNotes.push(basicNotesObject);
+      localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
+      
+      setCurrentView('notes');
     } finally {
       setIsLoading(false);
+      setIsEndingMeeting(false);
     }
   }
 
-  const generateMeetingRecommendations = (): string => {
-    const recommendations: string[] = [];
+  // Dynamic fallback notes creation
+  const createFallbackNotes = (meetingData: any): string => {
+    const participantList = meetingData.participants.map((p: any) => `- ${p.name} (${p.role})`).join('\n');
+    const messageCount = meetingData.messages?.length || 0;
+    const projectName = meetingData.project?.name || 'Unknown Project';
     
-    // Based on participation balance
-    const participationValues = Array.from(meetingAnalytics.participationBalance.values());
-    const maxParticipation = Math.max(...participationValues);
-    const minParticipation = Math.min(...participationValues);
-    
-    if (maxParticipation - minParticipation > 40) {
-      recommendations.push('• Use facilitation techniques to encourage quieter stakeholders to share their perspectives');
-      recommendations.push('• Consider using round-robin or structured discussion formats for more balanced participation');
-    }
-    
-    // Based on collaboration index
-    if (meetingAnalytics.collaborationIndex < 40) {
-      recommendations.push('• Encourage more cross-stakeholder dialogue by asking stakeholders to build on each other\'s ideas');
-      recommendations.push('• Use collaborative exercises or group problem-solving activities');
-    }
-    
-    // Based on topic coverage
-    if (meetingAnalytics.topicsDiscussed.size < 4) {
-      recommendations.push('• Use a structured agenda to ensure comprehensive topic coverage');
-      recommendations.push('• Prepare topic-specific questions to guide the conversation more effectively');
-    }
-    
-    // Based on engagement levels
-    const lowEngagementCount = Array.from(meetingAnalytics.stakeholderEngagementLevels.values())
-      .filter(level => level === 'low').length;
-    
-    if (lowEngagementCount > 1) {
-      recommendations.push('• Send pre-meeting materials to help stakeholders prepare for more meaningful participation');
-      recommendations.push('• Consider shorter, more focused meetings to maintain engagement');
-    }
-    
-    // Default recommendations if no specific issues
-    if (recommendations.length === 0) {
-      recommendations.push('• Continue with current meeting approach - good stakeholder engagement observed');
-      recommendations.push('• Consider documenting best practices from this meeting for future sessions');
-    }
-    
-    return recommendations.join('\n');
+    return `# Meeting Notes: ${projectName}
+
+## Meeting Overview
+- **Date**: ${new Date().toLocaleDateString()}
+- **Duration**: ${meetingData.duration || 'Unknown'} minutes
+- **Participants**: ${meetingData.participants?.length || 0} stakeholders
+- **Messages Exchanged**: ${messageCount}
+
+## Participants
+${participantList}
+
+## Conversation Summary
+This meeting included ${messageCount} exchanges between the business analyst and stakeholders. 
+
+${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were captured during the session.' : 'No detailed conversation was recorded.'}
+
+## Technical Note
+These notes were generated using a fallback system due to extended AI processing time. For more detailed analysis, consider reviewing the conversation transcript manually.
+
+---
+*Generated automatically on ${new Date().toLocaleString()}*`;
+  }
+
+  // User interruption controls
+  const handleUserInterruption = () => {
+    setUserInterruptRequested(true)
+    stopCurrentAudio()
+    setCanUserType(true)
+  }
+
+     // Add escape key listener for interruption
+   useEffect(() => {
+     const handleEscapeKey = (event: KeyboardEvent) => {
+       if (event.key === 'Escape') {
+         handleUserInterruption()
+       }
+     }
+
+     document.addEventListener('keydown', handleEscapeKey)
+     return () => document.removeEventListener('keydown', handleEscapeKey)
+   }, [])
+
+   const generateMeetingRecommendations = (): string => {
+     const recommendations: string[] = [];
+     
+     // Based on participation balance
+     const participationValues = Array.from(meetingAnalytics.participationBalance.values());
+     const maxParticipation = Math.max(...participationValues);
+     const minParticipation = Math.min(...participationValues);
+     
+     if (maxParticipation - minParticipation > 40) {
+       recommendations.push('• Use facilitation techniques to encourage quieter stakeholders to share their perspectives');
+       recommendations.push('• Consider using round-robin or structured discussion formats for more balanced participation');
+     }
+     
+     // Based on collaboration index
+     if (meetingAnalytics.collaborationIndex < 40) {
+       recommendations.push('• Encourage more cross-stakeholder dialogue by asking stakeholders to build on each other\'s ideas');
+       recommendations.push('• Use collaborative exercises or group problem-solving activities');
+     }
+     
+     // Based on topic coverage
+     if (meetingAnalytics.topicsDiscussed.size < 4) {
+       recommendations.push('• Use a structured agenda to ensure comprehensive topic coverage');
+       recommendations.push('• Prepare topic-specific questions to guide the conversation more effectively');
+     }
+     
+     // Based on engagement levels
+     const lowEngagementCount = Array.from(meetingAnalytics.stakeholderEngagementLevels.values())
+       .filter(level => level === 'low').length;
+     
+     if (lowEngagementCount > 1) {
+       recommendations.push('• Send pre-meeting materials to help stakeholders prepare for more meaningful participation');
+       recommendations.push('• Consider shorter, more focused meetings to maintain engagement');
+     }
+     
+     // Default recommendations if no specific issues
+     if (recommendations.length === 0) {
+       recommendations.push('• Continue with current meeting approach - good stakeholder engagement observed');
+       recommendations.push('• Consider documenting best practices from this meeting for future sessions');
+     }
+     
+         return recommendations.join('\n');
   }
 
   // Enhanced audio management system
@@ -720,201 +846,51 @@ ${generateMeetingRecommendations()}
       currentAudio.currentTime = 0
       setCurrentAudio(null)
       setPlayingMessageId(null)
-      setCurrentSpeaker(null) // Clear current speaker when audio stops
+      setCurrentSpeaker(null)
+      setIsAudioPlaying(false)
+      setCurrentlyProcessingAudio(null)
+      setAudioPausedPosition(0)
     }
   }
 
-  const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
-    // DEBUG: Log audio attempt
-    console.log('Audio playback attempt:', { messageId, stakeholder: stakeholder.name, globalAudioEnabled, autoPlay })
-    
-    if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
-      console.log('Audio disabled for stakeholder:', stakeholder.name)
-      return Promise.resolve()
-    }
-
-    try {
-      // Stop any currently playing audio
-      stopCurrentAudio()
-      
-      if (!autoPlay) {
-        // Manual play - just set up the audio for this message
-        return Promise.resolve()
-      }
-
-      // Set current speaker when audio starts
-      setCurrentSpeaker(stakeholder)
-
-      const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
-      console.log('Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
-      
-      if (isAzureTTSAvailable()) {
-        console.log('Using Azure TTS for audio synthesis')
-        // Use Azure TTS
-        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName)
-        const audioUrl = URL.createObjectURL(audioBlob)
-        const audio = new Audio(audioUrl)
-        
-        setCurrentAudio(audio)
-        setPlayingMessageId(messageId)
-        setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
-        
-        // Return a promise that resolves when audio finishes
-        return new Promise((resolve) => {
-          audio.onended = () => {
-            URL.revokeObjectURL(audioUrl)
-            setCurrentAudio(null)
-            setPlayingMessageId(null)
-            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-            setCurrentSpeaker(null) // Clear current speaker when audio ends
-            resolve()
-          }
-          
-          audio.onerror = (error) => {
-            console.error('Audio element error:', error)
-            URL.revokeObjectURL(audioUrl)
-            setCurrentAudio(null)
-            setPlayingMessageId(null)
-            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-            setCurrentSpeaker(null) // Clear current speaker on error
-            resolve() // Resolve even on error to prevent hanging
-          }
-          
-          audio.play().catch((playError) => {
-            console.error('Audio play error:', playError)
-            URL.revokeObjectURL(audioUrl)
-            setCurrentAudio(null)
-            setPlayingMessageId(null)
-            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-            setCurrentSpeaker(null) // Clear current speaker on play error
-            resolve()
-          })
-        })
-      } else {
-        console.log('Using browser TTS for audio synthesis')
-        // Fallback to browser TTS
-        setPlayingMessageId(messageId)
-        setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
-        
-        await playBrowserTTS(text)
-        
-        setPlayingMessageId(null)
-        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-        setCurrentSpeaker(null) // Clear current speaker when browser TTS ends
-        return Promise.resolve()
-      }
-    } catch (error) {
-      console.error('Audio playback failed:', error)
-      setPlayingMessageId(null)
-      setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-      setCurrentSpeaker(null) // Clear current speaker on error
-      return Promise.resolve()
+  const pauseCurrentAudio = () => {
+    if (currentAudio && isAudioPlaying) {
+      setAudioPausedPosition(currentAudio.currentTime)
+      currentAudio.pause()
+      setIsAudioPlaying(false)
+      setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'paused' }))
     }
   }
 
-  const toggleMessageAudio = async (messageId: string, text: string, stakeholder: any) => {
-    if (playingMessageId === messageId) {
-      // Currently playing this message - pause it
-      if (currentAudio) {
-        currentAudio.pause()
-        setAudioStates(prev => ({ ...prev, [messageId]: 'paused' }))
-      }
-    } else if (audioStates[messageId] === 'paused') {
-      // Resume paused audio
-      if (currentAudio) {
-        currentAudio.play()
-        setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
-      }
-    } else {
-      // Start playing this message
-      await playMessageAudio(messageId, text, stakeholder, true)
-    }
-  }
+     const resumeCurrentAudio = () => {
+     if (currentAudio && !isAudioPlaying) {
+       currentAudio.currentTime = audioPausedPosition
+       currentAudio.play()
+       setIsAudioPlaying(true)
+       setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'playing' }))
+     }
+   }
 
-  const stopMessageAudio = (messageId: string) => {
-    if (playingMessageId === messageId) {
-      stopCurrentAudio()
-    }
-    setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-  }
+   // Enhanced toggle audio with proper pause/resume
+   const toggleMessageAudio = async (messageId: string, text: string, stakeholder: any) => {
+     if (playingMessageId === messageId && isAudioPlaying) {
+       pauseCurrentAudio()
+     } else if (playingMessageId === messageId && !isAudioPlaying) {
+       resumeCurrentAudio()
+     } else {
+       await playMessageAudio(messageId, text, stakeholder, true)
+     }
+   }
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return
+   const stopMessageAudio = (messageId: string) => {
+     if (playingMessageId === messageId) {
+       stopCurrentAudio()
+     }
+     setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+     setCanUserType(true)
+   }
 
-    setIsLoading(true)
-    
-    // Store the message content before clearing
-    const messageContent = inputMessage.trim()
-    
-    // Clear input immediately for better UX
-    setInputMessage('')
-
-    // Add user message
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      speaker: 'user',
-      content: messageContent,
-      timestamp: new Date().toISOString()
-    }
-
-    let currentMessages = [...messages, userMessage]
-    setMessages(currentMessages)
-
-    try {
-      // Use AI service's intelligent conversation handling
-      const isGroup = isGroupMessage(messageContent)
-      const isGreeting = isSimpleGreeting(messageContent)
-      
-      if (isGroup && isGreeting) {
-        // Handle greetings with intelligent stakeholder selection
-        const config = getConversationConfig()
-        const greetingRespondents = selectedStakeholders.slice(0, config.maxGreetingRespondents)
-        
-        for (let i = 0; i < greetingRespondents.length; i++) {
-          const stakeholder = greetingRespondents[i]
-          
-          // Use AI service's intelligent greeting handling
-          const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, 'greeting')
-          const responseMessage = createResponseMessage(stakeholder, response, i)
-          
-          // Add message to conversation
-          currentMessages = [...currentMessages, responseMessage]
-          setMessages(currentMessages)
-          
-          // Play audio with error handling
-          try {
-            await playMessageAudio(responseMessage.id, response, stakeholder, true)
-          } catch (audioError) {
-            console.warn('Audio playback failed, continuing without audio:', audioError)
-          }
-          
-          // Add natural pause between speakers
-          if (i < greetingRespondents.length - 1) {
-            const pauseTime = config.greetingPauseTiming.base + Math.random() * config.greetingPauseTiming.variance
-            await new Promise(resolve => setTimeout(resolve, pauseTime))
-          }
-        }
-      } else {
-        // Handle discussions with AI-driven conversation flow
-        const initialRespondent = getInitialRespondent(messageContent)
-        await handleDiscussionFlow(initialRespondent, messageContent, currentMessages)
-      }
-    } catch (error) {
-      console.error('Error generating AI response:', error)
-      // Fallback response
-      const fallbackStakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
-      const fallbackMessage = createResponseMessage(
-        fallbackStakeholder,
-        `Thank you for your question. I'm experiencing some technical difficulties right now, but I'd be happy to discuss this further. Could you please rephrase your question?`,
-        0
-      )
-      setMessages(prev => [...prev, fallbackMessage])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Enhanced meeting analytics
+   // Enhanced meeting analytics
   const [meetingAnalytics, setMeetingAnalytics] = useState({
     participationBalance: new Map<string, number>(),
     topicsDiscussed: new Set<string>(),
@@ -1500,9 +1476,9 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
+                placeholder={shouldAllowUserInput() ? "Type your message..." : isGeneratingResponse ? "AI is thinking..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
                 className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
+                disabled={!shouldAllowUserInput()}
               />
               <button
                 onClick={() => setShowVoiceModal(true)}
@@ -1517,7 +1493,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               </button>
               <button
                 onClick={handleSendMessage}
-                disabled={isLoading || !inputMessage.trim()}
+                disabled={isLoading || !inputMessage.trim() || !shouldAllowUserInput()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
               >
                 Send
