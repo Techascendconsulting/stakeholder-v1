@@ -1207,7 +1207,7 @@ These notes were generated using a fallback system due to extended AI processing
      if (!inputMessage.trim() || isEndingMeeting) return
 
      setIsGeneratingResponse(true)
-     setCanUserType(false)
+     // DO NOT block user input during AI generation - users should be able to type while stakeholders respond
      
      const messageContent = inputMessage.trim()
      setInputMessage('')
@@ -1237,7 +1237,7 @@ These notes were generated using a fallback system due to extended AI processing
        await handleFallbackResponse(currentMessages)
      } finally {
        setIsGeneratingResponse(false)
-       setCanUserType(true)
+       // canUserType remains true throughout - users can always type unless ending meeting
      }
    }
 

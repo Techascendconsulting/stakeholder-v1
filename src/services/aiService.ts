@@ -473,6 +473,17 @@ Generate only the greeting, nothing else.`;
       .replace(new RegExp(`\\b[Mm]y\\s+name\\s+is\\s+${fullName}\\b`, 'g'), 'I')
       .replace(new RegExp(`\\b[Mm]y\\s+name\\s+is\\s+${firstName}\\b`, 'g'), 'I')
       
+      // Remove greetings to self - CRITICAL FIX
+      .replace(new RegExp(`\\b[Hh]i\\s+${firstName}[,!]?\\s*`, 'g'), 'Hi everyone, ')
+      .replace(new RegExp(`\\b[Hh]ello\\s+${firstName}[,!]?\\s*`, 'g'), 'Hello everyone, ')
+      .replace(new RegExp(`\\b[Gg]ood\\s+morning\\s+${firstName}[,!]?\\s*`, 'g'), 'Good morning everyone, ')
+      .replace(new RegExp(`\\b[Gg]ood\\s+afternoon\\s+${firstName}[,!]?\\s*`, 'g'), 'Good afternoon everyone, ')
+      
+      // Remove direct addressing to self - CRITICAL FIX
+      .replace(new RegExp(`\\b${firstName}[,]\\s+(great|good|nice|wonderful|excellent)\\s+to\\s+`, 'g'), 'It\\'s great to ')
+      .replace(new RegExp(`\\b${firstName}[,]\\s+(you|your)\\s+`, 'g'), 'My ')
+      .replace(new RegExp(`\\b${firstName}[,]\\s+`, 'g'), '')
+      
       // Remove awkward third-person self-references
       .replace(new RegExp(`\\b${fullName}\\s+thinks?\\b`, 'g'), 'I think')
       .replace(new RegExp(`\\b${fullName}\\s+believes?\\b`, 'g'), 'I believe')
@@ -1081,9 +1092,12 @@ CRITICAL: YOU ARE THE DOMAIN EXPERT - DO NOT DEFLECT:
 CRITICAL IDENTITY RULES:
 - NEVER refer to yourself by your full name "${stakeholder.name}" in responses
 - NEVER say "I am ${stakeholder.name}" or "My name is ${stakeholder.name}"
+- NEVER greet yourself: NO "Hi ${stakeholder.name.split(' ')[0]}" or "Hello ${stakeholder.name.split(' ')[0]}"
+- NEVER address yourself directly: NO "${stakeholder.name.split(' ')[0]}, great to have your..." patterns
 - Use natural first-person language: "I", "me", "my", "we", "our"
 - When referencing your role, say "As the ${stakeholder.role}" or "In my role as ${stakeholder.role}"
 - Speak naturally without unnecessarily stating your name
+- You are NOT talking TO yourself - you are talking WITH others in the meeting
 - Demonstrate sophisticated problem-solving and analytical capabilities
 
 CONVERSATION INTELLIGENCE - ADVANCED:
