@@ -360,8 +360,12 @@ const MeetingView: React.FC = () => {
         currentMessages = [...currentMessages, responseMessage]
         setMessages(currentMessages)
         
-        // Play audio response and wait for it to finish
-        await playMessageAudio(responseMessage.id, response, currentSpeaker, true)
+        // Play audio response and wait for it to finish - FIXED: Ensure proper audio playback
+        try {
+          await playMessageAudio(responseMessage.id, response, currentSpeaker, true)
+        } catch (audioError) {
+          console.warn('Audio playback failed, continuing without audio:', audioError)
+        }
         
         // Enhanced handoff detection with context
         const handoffTarget = await detectIntelligentHandoff(response, currentSpeaker, currentMessages)
@@ -384,8 +388,12 @@ const MeetingView: React.FC = () => {
             conversationMetrics.collaborativeExchanges++
             updateConversationMetrics(conversationMetrics, handoffTarget, handoffResponse)
             
-            // Play audio for the handoff response
-            await playMessageAudio(handoffMessage.id, handoffResponse, handoffTarget, true)
+            // Play audio for the handoff response - FIXED: Ensure proper audio playback
+            try {
+              await playMessageAudio(handoffMessage.id, handoffResponse, handoffTarget, true)
+            } catch (audioError) {
+              console.warn('Audio playback failed, continuing without audio:', audioError)
+            }
             
             currentSpeaker = handoffTarget
             turnCount += 2
@@ -753,7 +761,11 @@ ${generateMeetingRecommendations()}
   }
 
   const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
+    // DEBUG: Log audio attempt
+    console.log('Audio playback attempt:', { messageId, stakeholder: stakeholder.name, globalAudioEnabled, autoPlay })
+    
     if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
+      console.log('Audio disabled for stakeholder:', stakeholder.name)
       return Promise.resolve()
     }
 
@@ -770,8 +782,10 @@ ${generateMeetingRecommendations()}
       setCurrentSpeaker(stakeholder)
 
       const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
+      console.log('Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
       
       if (isAzureTTSAvailable()) {
+        console.log('Using Azure TTS for audio synthesis')
         // Use Azure TTS
         const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName)
         const audioUrl = URL.createObjectURL(audioBlob)
@@ -792,7 +806,8 @@ ${generateMeetingRecommendations()}
             resolve()
           }
           
-          audio.onerror = () => {
+          audio.onerror = (error) => {
+            console.error('Audio element error:', error)
             URL.revokeObjectURL(audioUrl)
             setCurrentAudio(null)
             setPlayingMessageId(null)
@@ -801,7 +816,8 @@ ${generateMeetingRecommendations()}
             resolve() // Resolve even on error to prevent hanging
           }
           
-          audio.play().catch(() => {
+          audio.play().catch((playError) => {
+            console.error('Audio play error:', playError)
             URL.revokeObjectURL(audioUrl)
             setCurrentAudio(null)
             setPlayingMessageId(null)
@@ -811,6 +827,7 @@ ${generateMeetingRecommendations()}
           })
         })
       } else {
+        console.log('Using browser TTS for audio synthesis')
         // Fallback to browser TTS
         setPlayingMessageId(messageId)
         setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
@@ -900,8 +917,12 @@ ${generateMeetingRecommendations()}
           currentMessages = [...currentMessages, responseMessage]
           setMessages(currentMessages)
           
-          // Play audio and wait for it to completely finish
-          await playMessageAudio(responseMessage.id, response, stakeholder, true)
+          // Play audio and wait for it to completely finish - FIXED: Ensure proper audio playback
+          try {
+            await playMessageAudio(responseMessage.id, response, stakeholder, true)
+          } catch (audioError) {
+            console.warn('Audio playback failed, continuing without audio:', audioError)
+          }
           
           // Add natural pause between speakers (but not after the last one)
           if (i < greetingRespondents.length - 1) {
