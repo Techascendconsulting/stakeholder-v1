@@ -1552,22 +1552,43 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
     return stakeholderExpertise.length > 0 ? stakeholderExpertise : ['general']
   }
 
-  // Generate contextually aligned thinking message
-  const generateContextualThinkingMessage = (questionAnalysis: any, stakeholderExpertise: any, stakeholder: any, conversationPace: string) => {
-    const { topics, questionType, complexity, isSpecific } = questionAnalysis
-    const personality = stakeholder.personality || 'collaborative'
-    
-    // Base thinking patterns by personality
-    const thinkingPatterns = {
-      analytical: ['Analyzing', 'Examining', 'Evaluating', 'Reviewing', 'Assessing'],
-      collaborative: ['Considering', 'Thinking about', 'Reflecting on', 'Discussing', 'Exploring'],
-      direct: ['Addressing', 'Tackling', 'Focusing on', 'Handling', 'Dealing with'],
-      strategic: ['Evaluating', 'Strategizing about', 'Planning for', 'Considering', 'Analyzing']
-    }
-    
-    // Get appropriate thinking pattern
-    const patterns = thinkingPatterns[personality] || thinkingPatterns.collaborative
-    const thinkingPattern = patterns[Math.floor(Math.random() * patterns.length)]
+     // Generate contextually aligned thinking message
+   const generateContextualThinkingMessage = (questionAnalysis: any, stakeholderExpertise: any, stakeholder: any, conversationPace: string) => {
+     const { topics, questionType, complexity, isSpecific } = questionAnalysis
+     const personality = stakeholder.personality || 'collaborative'
+     
+     // Base thinking patterns by personality and question type
+     const thinkingPatterns = {
+       analytical: {
+         process: ['Analyzing', 'Breaking down', 'Examining', 'Dissecting'],
+         definition: ['Defining', 'Clarifying', 'Explaining', 'Detailing'],
+         reasoning: ['Evaluating', 'Assessing', 'Reasoning through', 'Analyzing'],
+         general: ['Analyzing', 'Examining', 'Evaluating', 'Reviewing', 'Assessing']
+       },
+       collaborative: {
+         process: ['Considering', 'Thinking through', 'Exploring', 'Discussing'],
+         definition: ['Thinking about', 'Considering', 'Reflecting on', 'Exploring'],
+         reasoning: ['Reflecting on', 'Considering', 'Thinking about', 'Exploring'],
+         general: ['Considering', 'Thinking about', 'Reflecting on', 'Discussing', 'Exploring']
+       },
+       direct: {
+         process: ['Addressing', 'Tackling', 'Focusing on', 'Handling'],
+         definition: ['Clarifying', 'Explaining', 'Defining', 'Outlining'],
+         reasoning: ['Addressing', 'Tackling', 'Focusing on', 'Handling'],
+         general: ['Addressing', 'Tackling', 'Focusing on', 'Handling', 'Dealing with']
+       },
+       strategic: {
+         process: ['Strategizing about', 'Planning for', 'Evaluating', 'Considering'],
+         definition: ['Defining', 'Outlining', 'Strategizing about', 'Planning'],
+         reasoning: ['Evaluating', 'Strategizing about', 'Analyzing', 'Considering'],
+         general: ['Evaluating', 'Strategizing about', 'Planning for', 'Considering', 'Analyzing']
+       }
+     }
+     
+     // Get appropriate thinking pattern based on personality and question type
+     const personalityPatterns = thinkingPatterns[personality] || thinkingPatterns.collaborative
+     const patterns = personalityPatterns[questionType] || personalityPatterns.general
+     const thinkingPattern = patterns[Math.floor(Math.random() * patterns.length)]
     
     // Generate contextual subject based on question topics and stakeholder expertise
     let subject = ''
@@ -1617,11 +1638,15 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
       subject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)]
     }
     
-    // Add complexity modifier based on question complexity
-    const complexityModifier = complexity === 'high' ? 'carefully ' : 
-                              complexity === 'medium' ? 'thoroughly ' : ''
-    
-    return `${thinkingPattern} ${complexityModifier}${subject}...`
+         // Add complexity modifier based on question complexity
+     const complexityModifier = complexity === 'high' ? 'carefully ' : 
+                               complexity === 'medium' ? 'thoroughly ' : ''
+     
+     // Add conversation pace modifier
+     const paceModifier = conversationPace === 'fast' ? '' : 
+                         conversationPace === 'slow' ? 'thoughtfully ' : ''
+     
+     return `${thinkingPattern} ${paceModifier}${complexityModifier}${subject}...`
   }
 
   // Dynamic lead stakeholder selection
