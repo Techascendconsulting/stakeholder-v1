@@ -32,7 +32,7 @@ interface ConversationState {
   topicsDiscussed: Set<string>;
   lastSpeakers: string[];
   greetingStatus: Map<string, 'not_greeted' | 'greeted' | 're_greeted'>;
-  conversationPhase: 'opening' | 'discussion' | 'deep_dive' | 'closing';
+  conversationPhase: 'opening' | 'as_is' | 'pain_points' | 'solutioning' | 'deep_dive' | 'closing';
   stakeholderStates: Map<string, StakeholderState>;
 }
 
@@ -141,7 +141,7 @@ export class AIService {
   }
 
   // Update conversation state dynamically
-  private updateConversationState(stakeholder: StakeholderContext, userMessage: string, aiResponse: string) {
+  private async updateConversationState(stakeholder: StakeholderContext, userMessage: string, aiResponse: string, context: ConversationContext) {
     this.conversationState.messageCount++;
     
     // Update participant interactions
@@ -161,8 +161,8 @@ export class AIService {
     // Extract and update topics from AI response
     this.extractAndUpdateTopics(aiResponse, stakeholderState);
     
-    // Update conversation phase
-    this.updateConversationPhase();
+    // Update conversation phase dynamically
+    await this.updateConversationPhase(context);
     
     // Update emotional state based on content
     this.updateEmotionalState(stakeholder.name, userMessage, aiResponse);
@@ -191,19 +191,67 @@ export class AIService {
     }
   }
 
-  private updateConversationPhase() {
+  private async updateConversationPhase(context: ConversationContext) {
     const messageCount = this.conversationState.messageCount;
-    const topicCount = this.conversationState.topicsDiscussed.size;
-    const participantCount = this.conversationState.participantInteractions.size;
     
+    // Handle basic opening phase
     if (messageCount <= 3) {
       this.conversationState.conversationPhase = 'opening';
-    } else if (messageCount <= 10 && topicCount <= 5) {
-      this.conversationState.conversationPhase = 'discussion';
-    } else if (topicCount > 5 || messageCount > 10) {
-      this.conversationState.conversationPhase = 'deep_dive';
-    } else if (messageCount > 20) {
+      return;
+    }
+    
+    // Handle closing phase
+    if (messageCount > 25) {
       this.conversationState.conversationPhase = 'closing';
+      return;
+    }
+    
+    // Analyze conversation content to determine business analysis phase
+    const recentMessages = context.conversationHistory.slice(-10);
+    const conversationContent = recentMessages.map(msg => msg.content).join(' ');
+    
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are analyzing a business stakeholder meeting to determine the current meeting phase. Based on the conversation content, determine which phase the meeting is in:
+
+PHASES:
+- "as_is": Understanding current state, processes, how things work now
+- "pain_points": Identifying problems, challenges, issues with current state
+- "solutioning": Discussing solutions, proposals, implementation plans
+- "deep_dive": Detailed analysis of any of the above phases
+
+ANALYSIS CRITERIA:
+- as_is: Questions about current processes, "how do you currently...", "what's the current state", "walk me through the process"
+- pain_points: Discussing problems, challenges, frustrations, "what doesn't work", "what are the issues"
+- solutioning: Proposing solutions, "what if we...", "how about...", "we could implement", discussing implementation
+
+Return ONLY the phase name: "as_is", "pain_points", "solutioning", or "deep_dive"`
+          },
+          {
+            role: "user",
+            content: `Recent conversation content: "${conversationContent}"`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 20
+      });
+
+      const detectedPhase = completion.choices[0]?.message?.content?.trim();
+      
+      if (detectedPhase && ['as_is', 'pain_points', 'solutioning', 'deep_dive'].includes(detectedPhase)) {
+        this.conversationState.conversationPhase = detectedPhase as any;
+      } else {
+        // Default to as_is if detection fails
+        this.conversationState.conversationPhase = 'as_is';
+      }
+    } catch (error) {
+      console.error('Error detecting conversation phase:', error);
+      // Default to as_is if AI detection fails
+      this.conversationState.conversationPhase = 'as_is';
     }
   }
 
@@ -368,7 +416,7 @@ Generate only the greeting, nothing else.`;
       // Handle greetings intelligently
       if (this.isGreetingMessage(userMessage)) {
         const greetingResponse = await this.getGreetingResponse(stakeholder, context);
-        this.updateConversationState(stakeholder, userMessage, greetingResponse);
+        await this.updateConversationState(stakeholder, userMessage, greetingResponse, context);
         return greetingResponse;
       }
 
@@ -398,7 +446,7 @@ Generate only the greeting, nothing else.`;
       // Filter out self-referencing by name
       aiResponse = this.filterSelfReferences(aiResponse, stakeholder);
 
-      this.updateConversationState(stakeholder, userMessage, aiResponse);
+      await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
       return aiResponse;
 
     } catch (error) {
@@ -904,18 +952,58 @@ Remember to stay in character as ${stakeholder.name} and respond from your speci
     
     // Dynamic role context based on conversation phase
     let phaseContext = ''
+    let phaseGuidelines = ''
+    
     switch (conversationPhase) {
       case 'opening':
         phaseContext = 'The meeting is just beginning. Be professional but warm, and help establish the meeting tone.'
+        phaseGuidelines = 'Focus on introductions and setting the stage for discussion.'
         break
-      case 'discussion':
-        phaseContext = 'The discussion is underway. Contribute meaningfully while staying true to your role and priorities.'
+        
+      case 'as_is':
+        phaseContext = 'The meeting is focused on understanding the current state and existing processes.'
+        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - AS-IS DISCOVERY:
+        - Focus ONLY on describing current state, existing processes, and how things work now
+        - Share your knowledge of current systems, workflows, and procedures
+        - Avoid proposing solutions, improvements, or changes
+        - Don't discuss what "should be" or "could be" - only what "is"
+        - Provide factual information about current operations
+        - Help map out existing processes and current state
+        - If asked about solutions, redirect to understanding current state first`
         break
+        
+      case 'pain_points':
+        phaseContext = 'The meeting is focused on identifying problems and challenges with the current state.'
+        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - PAIN POINTS IDENTIFICATION:
+        - Focus ONLY on identifying problems, challenges, and frustrations with current processes
+        - Share specific issues you've observed or experienced
+        - Discuss what doesn't work well in current systems
+        - Avoid proposing solutions or fixes - only identify problems
+        - Help surface inefficiencies, bottlenecks, and pain points
+        - Provide concrete examples of current challenges
+        - If asked about solutions, acknowledge the problem but stay focused on problem identification`
+        break
+        
+      case 'solutioning':
+        phaseContext = 'The meeting is focused on discussing potential solutions and implementation approaches.'
+        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - SOLUTION DEVELOPMENT:
+        - Now you CAN discuss solutions, improvements, and implementation approaches
+        - Propose specific solutions based on your expertise
+        - Discuss implementation considerations and approaches
+        - Share recommendations for improvements
+        - Consider feasibility and implementation challenges
+        - Build on the current state and pain points already identified
+        - Provide actionable suggestions and next steps`
+        break
+        
       case 'deep_dive':
         phaseContext = 'The conversation is in-depth. Provide detailed insights from your expertise and experience.'
+        phaseGuidelines = 'Provide comprehensive analysis while staying aligned with the current meeting focus.'
         break
+        
       case 'closing':
         phaseContext = 'The meeting is wrapping up. Summarize key points and next steps relevant to your role.'
+        phaseGuidelines = 'Focus on summary, key takeaways, and next steps within your domain.'
         break
     }
     
@@ -950,6 +1038,9 @@ CONVERSATION CONTEXT:
 - ${emotionalContext}
 - ${topicContext}
 - ${batonContext}
+
+PHASE-SPECIFIC BEHAVIOR:
+${phaseGuidelines}
 
 NATURAL CONVERSATION REQUIREMENTS - CRITICAL:
 - Speak like a real person in a business meeting, not like a report or documentation
@@ -1076,6 +1167,41 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     prompt += `- CRITICAL: You are THE expert for ${stakeholder.department} - provide direct answers, don't deflect to other departments\n`
     prompt += `- NEVER suggest committees, task forces, or consulting with other teams\n`
     prompt += `- You were invited because you know your domain - share that knowledge directly\n`
+    
+    // Add phase-specific response guidance
+    const currentPhase = this.conversationState.conversationPhase
+    switch (currentPhase) {
+      case 'as_is':
+        prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE:\n`
+        prompt += `- Focus your response on CURRENT STATE and EXISTING PROCESSES only\n`
+        prompt += `- Describe how things work now, not how they should work\n`
+        prompt += `- Share factual information about current operations in your domain\n`
+        prompt += `- Avoid suggesting improvements or solutions - stick to current reality\n`
+        prompt += `- If asked about solutions, redirect to understanding current state first\n`
+        break
+        
+      case 'pain_points':
+        prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE:\n`
+        prompt += `- Focus your response on PROBLEMS and CHALLENGES with current processes\n`
+        prompt += `- Share specific issues you've observed or experienced\n`
+        prompt += `- Discuss what doesn't work well in current systems\n`
+        prompt += `- Avoid proposing solutions - only identify and elaborate on problems\n`
+        prompt += `- Help surface inefficiencies and bottlenecks in your domain\n`
+        break
+        
+      case 'solutioning':
+        prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE:\n`
+        prompt += `- Now you CAN discuss solutions, improvements, and implementation approaches\n`
+        prompt += `- Propose specific solutions based on your expertise\n`
+        prompt += `- Discuss implementation considerations and feasibility\n`
+        prompt += `- Share recommendations for improvements in your domain\n`
+        prompt += `- Build on the current state and pain points already identified\n`
+        break
+        
+      default:
+        // No specific guidance for other phases
+        break
+    }
     
     prompt += `\nCONSISTENCY AND NATURAL SPEECH REQUIREMENTS:\n`
     prompt += `- Maintain the EXACT SAME voice, tone, and speaking style as ${stakeholder.name} throughout\n`
