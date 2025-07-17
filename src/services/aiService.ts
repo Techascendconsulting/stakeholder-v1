@@ -386,38 +386,87 @@ export class AIService {
     return cleanResponse;
   }
 
-  // Generate comprehensive interview notes from meeting data
-  async generateInterviewNotes(meetingData: any): Promise<string> {
+  // Generate comprehensive interview notes with progressive feedback
+  async generateInterviewNotes(meetingData: any, progressCallback?: (progress: string) => void): Promise<string> {
     try {
       const { project, participants, messages, startTime, endTime, duration, user } = meetingData;
       
-      // Format conversation for AI analysis
+      // Provide immediate feedback
+      if (progressCallback) {
+        progressCallback('Processing meeting transcript...');
+      }
+      
+      // Format conversation for AI analysis (optimized for faster processing)
       const conversationTranscript = messages.map((msg: any) => {
         const time = new Date(msg.timestamp).toLocaleTimeString();
         if (msg.speaker === 'user') {
-          return `[${time}] Business Analyst: ${msg.content}`;
+          return `[${time}] BA: ${msg.content}`;
         } else {
-          return `[${time}] ${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}`;
+          return `[${time}] ${msg.stakeholderName}: ${msg.content}`;
         }
       }).join('\n');
 
-      const prompt = `You are a professional business analyst creating comprehensive interview notes from a stakeholder meeting. 
+      // Generate basic structure immediately
+      const basicNotes = this.generateBasicStructure(meetingData);
+      
+      if (progressCallback) {
+        progressCallback('Analyzing conversation content...');
+      }
 
-MEETING DETAILS:
-- Project: ${project.name}
-- Date: ${new Date(startTime).toLocaleDateString()} 
-- Start Time: ${new Date(startTime).toLocaleTimeString()}
-- End Time: ${new Date(endTime).toLocaleTimeString()}
-- Duration: ${duration} minutes
-- Facilitator: ${user}
-- Participants: ${participants.map((p: any) => `${p.name} (${p.role}, ${p.department})`).join(', ')}
+      // Use optimized prompt for faster processing
+      const prompt = `Analyze this stakeholder meeting transcript and generate concise, professional interview notes.
 
-CONVERSATION TRANSCRIPT:
+PROJECT: ${project.name}
+DURATION: ${duration} minutes
+PARTICIPANTS: ${participants.map((p: any) => `${p.name} (${p.role})`).join(', ')}
+
+TRANSCRIPT:
 ${conversationTranscript}
 
-Please generate comprehensive interview notes in the following format:
+Generate notes with these sections:
+1. Executive Summary (2-3 sentences)
+2. Key Discussion Points (bullet points)
+3. Stakeholder Insights (per participant)
+4. Pain Points Identified
+5. Requirements Mentioned
+6. Action Items
 
-# Interview Notes: ${project.name}
+Be concise but comprehensive. Focus on actionable insights.`;
+
+      if (progressCallback) {
+        progressCallback('Generating AI analysis...');
+      }
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo", // Faster model for quicker response
+        messages: [
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.2, // Lower temperature for faster, more consistent output
+        max_tokens: 1200 // Reduced tokens for faster processing
+      });
+
+      const aiAnalysis = completion.choices[0]?.message?.content || '';
+      
+      if (progressCallback) {
+        progressCallback('Finalizing notes...');
+      }
+
+      // Combine basic structure with AI analysis
+      const enhancedNotes = this.combineNotesWithAnalysis(basicNotes, aiAnalysis);
+      
+      return enhancedNotes;
+    } catch (error) {
+      console.error('Error generating interview notes:', error);
+      return this.getFallbackNotes(meetingData);
+    }
+  }
+
+  // Generate basic structure immediately for faster feedback
+  private generateBasicStructure(meetingData: any): string {
+    const { project, participants, messages, startTime, endTime, duration, user } = meetingData;
+    
+    return `# Interview Notes: ${project.name}
 
 ## Meeting Information
 - **Date:** ${new Date(startTime).toLocaleDateString()}
@@ -429,49 +478,38 @@ Please generate comprehensive interview notes in the following format:
 ## Participants
 ${participants.map((p: any) => `- **${p.name}** - ${p.role}, ${p.department}`).join('\n')}
 
-## Executive Summary
-[Provide a 2-3 sentence overview of the meeting's main purpose and outcomes]
-
-## Key Discussion Points
-[Organize the main topics discussed with bullet points and sub-points]
-
-## Stakeholder Insights
-[For each stakeholder, summarize their key contributions, concerns, and perspectives]
-
-## Process Information Gathered
-[Document any process steps, workflows, or procedural information shared]
-
-## Pain Points Identified
-[List current challenges and issues mentioned by stakeholders]
-
-## Requirements and Needs
-[Document any requirements, needs, or requests identified]
-
-## Action Items and Follow-ups
-[List any next steps, action items, or follow-up meetings mentioned]
-
-## Additional Notes
-[Any other relevant information or observations]
+## Meeting Statistics
+- **Total Messages:** ${messages.length}
+- **Stakeholder Responses:** ${messages.filter((m: any) => m.speaker !== 'user').length}
+- **Topics Covered:** ${Math.ceil(messages.length / 3)} estimated topics
 
 ---
-*Notes generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*
+*Processing AI analysis...*`;
+  }
 
-Make the notes professional, comprehensive, and well-organized. Focus on extracting actionable insights and maintaining the context of who said what.`;
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.3, // Lower temperature for more consistent, professional output
-        max_tokens: 2000 // Longer output for comprehensive notes
-      });
-
-      return completion.choices[0]?.message?.content || this.getFallbackNotes(meetingData);
-    } catch (error) {
-      console.error('Error generating interview notes:', error);
-      return this.getFallbackNotes(meetingData);
+  // Combine basic structure with AI analysis
+  private combineNotesWithAnalysis(basicNotes: string, aiAnalysis: string): string {
+    if (!aiAnalysis) {
+      return basicNotes;
     }
+
+    // Extract sections from AI analysis and enhance basic structure
+    const sections = aiAnalysis.split('\n\n');
+    const enhancedContent = sections.map(section => {
+      // Clean up and format AI content
+      return section.trim();
+    }).join('\n\n');
+
+    // Replace processing message with actual analysis
+    const finalNotes = basicNotes.replace(
+      '*Processing AI analysis...*',
+      `${enhancedContent}
+
+---
+*Notes generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*`
+    );
+
+    return finalNotes;
   }
 
   // Fallback notes generation if AI fails

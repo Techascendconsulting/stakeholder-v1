@@ -576,7 +576,10 @@ const MeetingView: React.FC = () => {
     })
   }
 
-  // Enhanced end meeting with dynamic timeout
+  // State for progress tracking
+  const [noteGenerationProgress, setNoteGenerationProgress] = useState<string>('');
+
+  // Enhanced end meeting with progressive feedback
   const handleEndMeeting = async () => {
     if (messages.length <= 1) {
       alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
@@ -591,15 +594,16 @@ const MeetingView: React.FC = () => {
 
     setIsLoading(true);
     setIsEndingMeeting(true);
+    setNoteGenerationProgress('Preparing to generate notes...');
 
-    // Dynamic timeout based on conversation complexity
+    // Optimized timeout for faster note generation
     const messageCount = messages.length
     const participantCount = selectedStakeholders.length
-    const baseTimeout = 30000 // 30 seconds base
-    const complexityFactor = Math.min(2.0, (messageCount / 20) + (participantCount / 5))
+    const baseTimeout = 20000 // Reduced base timeout (20 seconds)
+    const complexityFactor = Math.min(1.5, (messageCount / 30) + (participantCount / 8))
     const dynamicTimeout = baseTimeout * complexityFactor
 
-    console.log(`Setting dynamic timeout for meeting end: ${dynamicTimeout}ms based on ${messageCount} messages and ${participantCount} participants`)
+    console.log(`Setting optimized timeout for meeting end: ${dynamicTimeout}ms based on ${messageCount} messages and ${participantCount} participants`)
 
     try {
       // Stop any current audio
@@ -639,8 +643,13 @@ const MeetingView: React.FC = () => {
 
       const aiService = AIService.getInstance();
       
-      // Create AI generation promise with timeout
-      const aiGenerationPromise = aiService.generateInterviewNotes(meetingData);
+      // Progress callback for real-time feedback
+      const progressCallback = (progress: string) => {
+        setNoteGenerationProgress(progress);
+      };
+      
+      // Create AI generation promise with progress tracking
+      const aiGenerationPromise = aiService.generateInterviewNotes(meetingData, progressCallback);
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Interview notes generation timed out')), dynamicTimeout)
       );
@@ -651,10 +660,12 @@ const MeetingView: React.FC = () => {
         baseInterviewNotes = await Promise.race([aiGenerationPromise, timeoutPromise]);
       } catch (timeoutError) {
         console.warn('AI generation timed out, creating fallback notes:', timeoutError);
+        setNoteGenerationProgress('Creating fallback notes...');
         baseInterviewNotes = createFallbackNotes(meetingData);
       }
       
       // Enhanced interview notes with analytics
+      setNoteGenerationProgress('Generating meeting analytics...');
       const analyticsSection = generateMeetingAnalyticsSummary();
       const enhancedInterviewNotes = `${baseInterviewNotes}
 
@@ -686,6 +697,7 @@ ${generateMeetingRecommendations()}
 *This enhanced interview summary includes AI-powered analytics to help improve future stakeholder meetings and requirements gathering sessions.*`;
 
       // Create notes object with analytics
+      setNoteGenerationProgress('Saving interview notes...');
       const notesObject = {
         id: `meeting-${Date.now()}`,
         title: `Enhanced Interview Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
@@ -711,15 +723,17 @@ ${generateMeetingRecommendations()}
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
 
       // Show success notification
+      setNoteGenerationProgress('Meeting ended successfully!');
       setMeetingEndedSuccess(true);
       
       // Navigate to notes view
       setTimeout(() => {
         setCurrentView('notes');
-      }, 2000);
+      }, 1500);
 
     } catch (error) {
       console.error('Error ending meeting:', error);
+      setNoteGenerationProgress('Error occurred - saving basic notes...');
       alert('Error generating meeting notes. The meeting has been saved with available data.');
       // Still try to save basic notes even if AI generation fails
       const basicNotes = createFallbackNotes({
@@ -749,6 +763,8 @@ ${generateMeetingRecommendations()}
     } finally {
       setIsLoading(false);
       setIsEndingMeeting(false);
+      setUserInterruptRequested(false);
+      setNoteGenerationProgress('');
     }
   }
 
@@ -2163,7 +2179,9 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span className="hidden sm:inline">Ending...</span>
+                    <span className="hidden sm:inline">
+                      {noteGenerationProgress || 'Ending...'}
+                    </span>
                   </>
                 ) : (
                   <>
@@ -2185,7 +2203,9 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                   {isLoading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Generating Notes...</span>
+                      <span className="text-sm">
+                        {noteGenerationProgress || 'Generating Notes...'}
+                      </span>
                     </>
                   ) : (
                     <>
