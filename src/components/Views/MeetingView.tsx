@@ -1849,7 +1849,14 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
    const aiService = AIService.getInstance()
    const analytics = aiService.getConversationAnalytics()
    
-   // Dynamic context analysis
+   // PRIORITY 1: Check if user is directly addressing someone by name
+   const directlyAddressedStakeholder = detectDirectAddressing(messageContent)
+   if (directlyAddressedStakeholder) {
+     console.log(`User directly addressed ${directlyAddressedStakeholder.name}, they will respond`)
+     return directlyAddressedStakeholder
+   }
+   
+   // PRIORITY 2: Dynamic context analysis for general questions
    const recentSpeakers = currentMessages.slice(-3).map(msg => msg.speaker).filter(speaker => speaker !== 'user')
    const availableStakeholders = selectedStakeholders.filter(s => !recentSpeakers.includes(s.id))
    
