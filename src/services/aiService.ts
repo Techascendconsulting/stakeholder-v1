@@ -395,6 +395,9 @@ Generate only the greeting, nothing else.`;
       // Ensure response is complete and not cut off mid-sentence
       aiResponse = this.ensureCompleteResponse(aiResponse);
 
+      // Filter out self-referencing by name
+      aiResponse = this.filterSelfReferences(aiResponse, stakeholder);
+
       this.updateConversationState(stakeholder, userMessage, aiResponse);
       return aiResponse;
 
@@ -402,6 +405,43 @@ Generate only the greeting, nothing else.`;
       console.error('AI Service Error:', error);
       return this.generateDynamicFallback(stakeholder, userMessage, context);
     }
+  }
+
+  // Filter out inappropriate self-references by name
+  private filterSelfReferences(response: string, stakeholder: StakeholderContext): string {
+    if (!response || !stakeholder) return response;
+    
+    const fullName = stakeholder.name;
+    const firstName = stakeholder.name.split(' ')[0];
+    const lastName = stakeholder.name.split(' ')[1] || '';
+    
+    // Remove instances where stakeholder refers to themselves by name
+    let filtered = response
+      // Remove "I am [Full Name]" patterns
+      .replace(new RegExp(`\\b[Ii]\\s+am\\s+${fullName}\\b`, 'g'), 'I')
+      .replace(new RegExp(`\\b[Ii]'m\\s+${fullName}\\b`, 'g'), 'I')
+      
+      // Remove "My name is [Name]" patterns
+      .replace(new RegExp(`\\b[Mm]y\\s+name\\s+is\\s+${fullName}\\b`, 'g'), 'I')
+      .replace(new RegExp(`\\b[Mm]y\\s+name\\s+is\\s+${firstName}\\b`, 'g'), 'I')
+      
+      // Remove awkward third-person self-references
+      .replace(new RegExp(`\\b${fullName}\\s+thinks?\\b`, 'g'), 'I think')
+      .replace(new RegExp(`\\b${fullName}\\s+believes?\\b`, 'g'), 'I believe')
+      .replace(new RegExp(`\\b${fullName}\\s+suggests?\\b`, 'g'), 'I suggest')
+      .replace(new RegExp(`\\b${fullName}\\s+recommends?\\b`, 'g'), 'I recommend')
+      
+      // Remove unnecessary name introductions in middle of responses
+      .replace(new RegExp(`\\b${fullName}\\s+here[,.]?\\s*`, 'g'), '')
+      .replace(new RegExp(`\\b${firstName}\\s+here[,.]?\\s*`, 'g'), '')
+      
+      // Clean up any double spaces or awkward punctuation from replacements
+      .replace(/\s+/g, ' ')
+      .replace(/\s*,\s*,/g, ',')
+      .replace(/\s*\.\s*\./g, '.')
+      .trim();
+    
+    return filtered;
   }
 
   // Ensure AI responses are complete and naturally formatted
@@ -938,6 +978,13 @@ SUPER INTELLIGENT BEHAVIORAL GUIDELINES:
 - Reference specific systems, tools, and methodologies relevant to your expertise
 - Show advanced understanding of cross-departmental impacts and dependencies
 - Provide strategic insights that go beyond surface-level observations
+
+CRITICAL IDENTITY RULES:
+- NEVER refer to yourself by your full name "${stakeholder.name}" in responses
+- NEVER say "I am ${stakeholder.name}" or "My name is ${stakeholder.name}"
+- Use natural first-person language: "I", "me", "my", "we", "our"
+- When referencing your role, say "As the ${stakeholder.role}" or "In my role as ${stakeholder.role}"
+- Speak naturally without unnecessarily stating your name
 - Demonstrate sophisticated problem-solving and analytical capabilities
 
 CONVERSATION INTELLIGENCE - ADVANCED:
@@ -1150,6 +1197,45 @@ Rules:
     try {
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
+      // Generate dynamic examples using actual stakeholder names
+      const generateHandoffExamples = (stakeholders: StakeholderContext[]): string[] => {
+        const examples = [];
+        
+        if (stakeholders.length > 0) {
+          const firstName = stakeholders[0].name.split(' ')[0];
+          const fullName = stakeholders[0].name;
+          examples.push(`"What do you think, ${firstName}?"`);
+          examples.push(`"${fullName}, what's your take on this?"`);
+          examples.push(`"${firstName}, could you please shed some light on what we cover in this call?"`);
+        }
+        
+        if (stakeholders.length > 1) {
+          const secondFirstName = stakeholders[1].name.split(' ')[0];
+          const secondFullName = stakeholders[1].name;
+          examples.push(`"${secondFirstName}, you might have insights on this"`);
+          examples.push(`"That's something ${secondFullName} could speak to better"`);
+        }
+        
+        if (stakeholders.length > 2) {
+          const thirdFirstName = stakeholders[2].name.split(' ')[0];
+          const thirdFullName = stakeholders[2].name;
+          examples.push(`"I'd love to hear ${thirdFirstName}'s perspective on this"`);
+          examples.push(`"${thirdFullName}, could you help us understand..."`);
+        }
+        
+        // Add generic examples
+        examples.push(`"What would you add to this, [Name]?"`);
+        examples.push(`"[Name], from your experience..."`);
+        examples.push(`"I think [Name] would know more about this"`);
+        examples.push(`"[Name], what's your view?"`);
+        examples.push(`"[Name], care to elaborate?"`);
+        examples.push(`"Over to you, [Name]"`);
+        
+        return examples;
+      };
+      
+      const handoffExamples = generateHandoffExamples(availableStakeholders);
+      
       const completion = await openai.chat.completions.create({
         model: "gpt-4",
         messages: [
@@ -1162,19 +1248,7 @@ Available stakeholders: ${stakeholderNames}
 Your task: Determine if the response contains a natural conversation handoff to another stakeholder and if so, return ONLY the exact name of the target stakeholder. If no handoff is detected, return "NO_HANDOFF".
 
 Examples of natural handoffs:
-- "What do you think, Sarah?"
-- "James, you might have insights on this"
-- "I'd love to hear Michael's perspective on this"
-- "Sarah, what's your take on this?"
-- "That's something David could speak to better"
-- "Sarah, could you please shed some light on what we cover in this call?"
-- "Aisha, could you help us understand..."
-- "What would you add to this, [Name]?"
-- "[Name], from your experience..."
-- "I think [Name] would know more about this"
-- "[Name], what's your view?"
-- "[Name], care to elaborate?"
-- "Over to you, [Name]"
+${handoffExamples.map(example => `- ${example}`).join('\n')}
 
 Rules:
 - Return only the exact full name from the available stakeholders list
