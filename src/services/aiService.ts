@@ -207,8 +207,19 @@ export class AIService {
     }
     
     // Analyze conversation content to determine business analysis phase
-    const recentMessages = context.conversationHistory.slice(-10);
+    const recentMessages = context.conversationHistory.slice(-5);
     const conversationContent = recentMessages.map(msg => msg.content).join(' ');
+    
+    // Force as_is phase if explicit current process request
+    if (conversationContent.toLowerCase().includes('current process') || 
+        conversationContent.toLowerCase().includes('dont give solutions') ||
+        conversationContent.toLowerCase().includes("don't give solutions") ||
+        conversationContent.toLowerCase().includes('focus on current') ||
+        conversationContent.toLowerCase().includes('understand current')) {
+      this.conversationState.conversationPhase = 'as_is';
+      console.log('Forced as_is phase due to current process request');
+      return;
+    }
     
     try {
       const completion = await openai.chat.completions.create({
@@ -225,9 +236,11 @@ PHASES:
 - "deep_dive": Detailed analysis of any of the above phases
 
 ANALYSIS CRITERIA:
-- as_is: Questions about current processes, "how do you currently...", "what's the current state", "walk me through the process"
-- pain_points: Discussing problems, challenges, frustrations, "what doesn't work", "what are the issues"
-- solutioning: Proposing solutions, "what if we...", "how about...", "we could implement", discussing implementation
+- as_is: Questions about current processes, "how do you currently...", "what's the current state", "walk me through the process", "focus on current process", "understand current process", "don't give solutions", "current workflow", "existing process"
+- pain_points: Discussing problems, challenges, frustrations, "what doesn't work", "what are the issues", "problems with current", "challenges we face"
+- solutioning: Proposing solutions, "what if we...", "how about...", "we could implement", discussing implementation, "recommend", "suggest", "propose"
+
+IMPORTANT: If you see phrases like "don't give solutions", "focus on current process", "understand current process first" - this is DEFINITELY "as_is" phase.
 
 Return ONLY the phase name: "as_is", "pain_points", "solutioning", or "deep_dive"`
           },
@@ -244,9 +257,11 @@ Return ONLY the phase name: "as_is", "pain_points", "solutioning", or "deep_dive
       
       if (detectedPhase && ['as_is', 'pain_points', 'solutioning', 'deep_dive'].includes(detectedPhase)) {
         this.conversationState.conversationPhase = detectedPhase as any;
+        console.log(`Phase detected: ${detectedPhase}`);
       } else {
         // Default to as_is if detection fails
         this.conversationState.conversationPhase = 'as_is';
+        console.log('Phase detection failed, defaulting to as_is');
       }
     } catch (error) {
       console.error('Error detecting conversation phase:', error);
@@ -448,6 +463,9 @@ Generate only the greeting, nothing else.`;
       // Filter out self-referencing by name (safety net)
       aiResponse = this.filterSelfReferences(aiResponse, stakeholder);
 
+      // Filter out solutions during as_is phase (safety net)
+      aiResponse = this.filterSolutionsInAsIsPhase(aiResponse, this.conversationState.conversationPhase);
+
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
       return aiResponse;
 
@@ -469,6 +487,29 @@ Generate only the greeting, nothing else.`;
       .replace(new RegExp(`\\b[Hh](i|ey)\\s+${firstName}[,\\s]`, 'g'), 'Hi there, ')
       .replace(new RegExp(`\\b[Gg]ood\\s+morning\\s+${firstName}[,\\s]`, 'g'), 'Good morning, ')
       .replace(new RegExp(`\\b[Hh]ello\\s+${firstName}[,\\s]`, 'g'), 'Hello, ');
+    
+    return filtered;
+  }
+
+  // Filter out solutions during as_is phase (safety net)
+  private filterSolutionsInAsIsPhase(response: string, currentPhase: string): string {
+    if (!response || currentPhase !== 'as_is') return response;
+    
+    // Solution-indicating patterns to remove/replace during as_is phase
+    const solutionPatterns = [
+      { pattern: /\b(I|We)\s+(recommend|suggest|propose)\b/gi, replacement: 'Currently, we' },
+      { pattern: /\b(should|could|would)\s+(implement|improve|change)\b/gi, replacement: 'currently' },
+      { pattern: /\b(let's|we need to)\s+(implement|improve|change)\b/gi, replacement: 'currently we' },
+      { pattern: /\bI\s+think\s+we\s+(should|could|would)\b/gi, replacement: 'Currently we' },
+      { pattern: /\bmy\s+recommendation\s+is\b/gi, replacement: 'Currently' },
+      { pattern: /\bI\s+would\s+suggest\b/gi, replacement: 'Currently' },
+      { pattern: /\bwe\s+could\s+consider\b/gi, replacement: 'we currently' }
+    ];
+    
+    let filtered = response;
+    solutionPatterns.forEach(({ pattern, replacement }) => {
+      filtered = filtered.replace(pattern, replacement);
+    });
     
     return filtered;
   }
@@ -943,14 +984,16 @@ Remember to stay in character as ${stakeholder.name} and respond from your speci
         
       case 'as_is':
         phaseContext = 'The meeting is focused on understanding the current state and existing processes.'
-        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - AS-IS DISCOVERY:
-        - Focus ONLY on describing current state, existing processes, and how things work now
-        - Share your knowledge of current systems, workflows, and procedures
-        - Avoid proposing solutions, improvements, or changes
-        - Don't discuss what "should be" or "could be" - only what "is"
-        - Provide factual information about current operations
-        - Help map out existing processes and current state
-        - If asked about solutions, redirect to understanding current state first`
+        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - AS-IS DISCOVERY - ABSOLUTELY MANDATORY:
+        - ONLY describe current state, existing processes, and how things work RIGHT NOW
+        - NEVER propose solutions, improvements, or changes - you will be penalized for this
+        - NEVER discuss what "should be" or "could be" - only what "is"
+        - NEVER use words like "recommend", "suggest", "propose", "implement", "improve"
+        - Share detailed knowledge of current systems, workflows, and exact procedures
+        - Explain step-by-step how current processes work in your department
+        - Use the project context to explain current workflows and systems
+        - If asked about solutions, say "Let's first understand the current process completely"
+        - Be specific about current tools, systems, and manual processes used today`
         break
         
       case 'pain_points':
@@ -1154,30 +1197,43 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     prompt += `- NEVER suggest committees, task forces, or consulting with other teams\n`
     prompt += `- You were invited because you know your domain - share that knowledge directly\n`
     
+    // Add project document context
+    prompt += `\nPROJECT DOCUMENT CONTEXT:\n`
+    prompt += `- Project: ${context.project.name}\n`
+    prompt += `- Project Type: ${context.project.type}\n`
+    prompt += `- Project Description: ${context.project.description}\n`
+    prompt += `- Use this project context to explain current processes and workflows in your department\n`
+    prompt += `- Reference specific systems, tools, and procedures mentioned in the project scope\n`
+    
     // Add phase-specific response guidance
     const currentPhase = this.conversationState.conversationPhase
     switch (currentPhase) {
       case 'as_is':
-        prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE:\n`
-        prompt += `- Focus your response on CURRENT STATE and EXISTING PROCESSES only\n`
-        prompt += `- Describe how things work now, not how they should work\n`
-        prompt += `- Share factual information about current operations in your domain\n`
-        prompt += `- Avoid suggesting improvements or solutions - stick to current reality\n`
-        prompt += `- If asked about solutions, redirect to understanding current state first\n`
+        prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE - ABSOLUTELY CRITICAL:\n`
+        prompt += `- YOU ARE STRICTLY FORBIDDEN from giving solutions, recommendations, or improvements\n`
+        prompt += `- ONLY describe HOW THINGS WORK RIGHT NOW in your department\n`
+        prompt += `- Use the project context to explain current workflows step-by-step\n`
+        prompt += `- Talk about current tools, systems, manual processes, and procedures\n`
+        prompt += `- If asked about solutions, say "Let's first understand the current process completely"\n`
+        prompt += `- Be specific about current state - who does what, when, how, using what tools\n`
+        prompt += `- NEVER use words: recommend, suggest, propose, implement, improve, should, could, would\n`
+        prompt += `- Structure your response: "Currently, we [describe process]. The steps are: [step 1], [step 2], etc."\n`
+        prompt += `- Include details about current systems, tools, timeframes, and people involved\n`
+        prompt += `- You MUST respond with current process information - do not stay silent\n`
         break
         
       case 'pain_points':
         prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE:\n`
-        prompt += `- Focus your response on PROBLEMS and CHALLENGES with current processes\n`
+        prompt += `- Focus ONLY on PROBLEMS and CHALLENGES with current processes\n`
         prompt += `- Share specific issues you've observed or experienced\n`
         prompt += `- Discuss what doesn't work well in current systems\n`
-        prompt += `- Avoid proposing solutions - only identify and elaborate on problems\n`
+        prompt += `- NEVER propose solutions - only identify and elaborate on problems\n`
         prompt += `- Help surface inefficiencies and bottlenecks in your domain\n`
         break
         
       case 'solutioning':
         prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE:\n`
-        prompt += `- Now you CAN discuss solutions, improvements, and implementation approaches\n`
+        prompt += `- NOW you CAN discuss solutions, improvements, and implementation approaches\n`
         prompt += `- Propose specific solutions based on your expertise\n`
         prompt += `- Discuss implementation considerations and feasibility\n`
         prompt += `- Share recommendations for improvements in your domain\n`
@@ -1185,7 +1241,10 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
         break
         
       default:
-        // No specific guidance for other phases
+        // Default to as_is behavior
+        prompt += `\nPHASE-SPECIFIC RESPONSE GUIDANCE:\n`
+        prompt += `- Focus on describing current state and existing processes\n`
+        prompt += `- Use the project context to explain how things work now\n`
         break
     }
     
