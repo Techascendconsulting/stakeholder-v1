@@ -1,9 +1,8 @@
 import OpenAI from 'openai';
 import { Message } from '../types';
 
-// Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY || 'your-api-key-here',
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
 });
 
@@ -22,14 +21,38 @@ export interface ConversationContext {
     description: string;
     type: string;
   };
-  conversationHistory: Message[];
+  conversationHistory: any[];
   stakeholders?: StakeholderContext[];
-  currentTopic?: string;
+}
+
+// Conversational State Management
+interface ConversationState {
+  messageCount: number;
+  participantInteractions: Map<string, number>;
+  topicsDiscussed: Set<string>;
+  lastSpeakers: string[];
+  greetingStatus: Map<string, 'not_greeted' | 'greeted' | 're_greeted'>;
+  conversationPhase: 'opening' | 'discussion' | 'deep_dive' | 'closing';
+  stakeholderStates: Map<string, StakeholderState>;
+}
+
+interface StakeholderState {
+  hasSpoken: boolean;
+  lastTopics: string[];
+  commitmentsMade: string[];
+  questionsAsked: string[];
+  emotionalState: 'engaged' | 'neutral' | 'concerned' | 'excited';
+  conversationStyle: 'leading' | 'supporting' | 'observing';
 }
 
 export class AIService {
   private static instance: AIService;
+  private conversationState: ConversationState;
   
+  private constructor() {
+    this.conversationState = this.initializeConversationState();
+  }
+
   static getInstance(): AIService {
     if (!AIService.instance) {
       AIService.instance = new AIService();
@@ -37,63 +60,242 @@ export class AIService {
     return AIService.instance;
   }
 
-  // Dynamic AI configuration based on context and conversation type
-  private getAIConfig(responseType: 'greeting' | 'discussion' | 'handoff' = 'discussion', stakeholderCount: number = 3, conversationLength: number = 0) {
-    // Derive all constants from contextual factors
-    const teamComplexityFactor = Math.log(stakeholderCount + 1) / Math.log(2); // Logarithmic scaling for team complexity
-    const conversationMaturityFactor = Math.min(conversationLength / 10, 1); // How established the conversation is
-    
-    const baseConfigs = {
-      greeting: {
-        // Brief but warm greetings
-        maxTokens: Math.max(
-          Math.floor(teamComplexityFactor * 60), 
-          Math.floor((6 - teamComplexityFactor) * 35)
-        ),
-        // Higher creativity for natural greetings, moderated by team size
-        temperature: Math.min(
-          0.9, 
-          0.6 + (teamComplexityFactor * 0.1) + (stakeholderCount < 4 ? 0.1 : 0)
-        ),
-        historyLimit: Math.max(1, Math.min(stakeholderCount - 1, Math.floor(teamComplexityFactor * 2)))
-      },
-      discussion: {
-        // More human-like response length: enough to express a complete thought
-        maxTokens: Math.max(
-          Math.floor(teamComplexityFactor * 120), 
-          Math.min(
-            Math.floor((8 - stakeholderCount) * 50), 
-            Math.floor(280 + (conversationMaturityFactor * 100))
-          )
-        ),
-        // Balanced creativity for natural conversation
-        temperature: Math.min(
-          0.85, 
-          0.65 + (teamComplexityFactor * 0.08) + (conversationMaturityFactor * 0.05)
-        ),
-        historyLimit: Math.max(
-          Math.floor(teamComplexityFactor * 2), 
-          Math.min(stakeholderCount + Math.floor(conversationMaturityFactor * 3), 8)
-        )
-      },
-      handoff: {
-        // More sensitive detection
-        maxTokens: Math.max(
-          Math.floor(teamComplexityFactor * 20), 
-          Math.floor((7 - stakeholderCount) * 12)
-        ),
-        // Slightly higher temperature for better natural language understanding
-        temperature: Math.max(
-          0.1, 
-          Math.min(0.4, 0.2 + (teamComplexityFactor * 0.04))
-        ),
-        historyLimit: Math.max(1, Math.min(Math.floor(teamComplexityFactor), 4))
-      }
-    }
-    
-    return baseConfigs[responseType]
+  private initializeConversationState(): ConversationState {
+    return {
+      messageCount: 0,
+      participantInteractions: new Map(),
+      topicsDiscussed: new Set(),
+      lastSpeakers: [],
+      greetingStatus: new Map(),
+      conversationPhase: 'opening',
+      stakeholderStates: new Map()
+    };
   }
 
+  // Dynamic conversation configuration based on real-time context
+  private getDynamicConfig(context: ConversationContext, stakeholder: StakeholderContext) {
+    const teamSize = context.stakeholders?.length || 1;
+    const messageCount = context.conversationHistory.length;
+    const stakeholderState = this.getStakeholderState(stakeholder.name);
+    
+    // Dynamic temperature based on conversation phase and stakeholder state
+    const baseTemperature = 0.7;
+    const phaseModifier = this.conversationState.conversationPhase === 'deep_dive' ? 0.1 : 0;
+    const emotionalModifier = stakeholderState.emotionalState === 'excited' ? 0.1 : 
+                              stakeholderState.emotionalState === 'concerned' ? -0.1 : 0;
+    
+    return {
+      temperature: Math.min(1.0, Math.max(0.1, baseTemperature + phaseModifier + emotionalModifier)),
+      maxTokens: this.calculateDynamicTokens(teamSize, messageCount, stakeholderState),
+      presencePenalty: this.calculatePresencePenalty(stakeholder.name),
+      frequencyPenalty: this.calculateFrequencyPenalty(stakeholder.name)
+    };
+  }
+
+  private calculateDynamicTokens(teamSize: number, messageCount: number, stakeholderState: StakeholderState): number {
+    const baseTokens = 150;
+    const teamFactor = Math.max(0.7, 1.2 - (teamSize * 0.1)); // Smaller responses in larger teams
+    const experienceFactor = stakeholderState.hasSpoken ? 0.9 : 1.1; // Slightly longer first responses
+    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.3 : 1.0;
+    
+    return Math.floor(baseTokens * teamFactor * experienceFactor * phaseFactor);
+  }
+
+  private calculatePresencePenalty(stakeholderName: string): number {
+    const interactions = this.conversationState.participantInteractions.get(stakeholderName) || 0;
+    return Math.min(0.8, 0.1 + (interactions * 0.05)); // Increase penalty for frequent speakers
+  }
+
+  private calculateFrequencyPenalty(stakeholderName: string): number {
+    const stakeholderState = this.getStakeholderState(stakeholderName);
+    const topicRepetition = stakeholderState.lastTopics.length;
+    return Math.min(0.8, 0.1 + (topicRepetition * 0.1)); // Prevent topic repetition
+  }
+
+  // Get or create stakeholder state
+  private getStakeholderState(stakeholderName: string): StakeholderState {
+    if (!this.conversationState.stakeholderStates.has(stakeholderName)) {
+      this.conversationState.stakeholderStates.set(stakeholderName, {
+        hasSpoken: false,
+        lastTopics: [],
+        commitmentsMade: [],
+        questionsAsked: [],
+        emotionalState: 'neutral',
+        conversationStyle: 'supporting'
+      });
+    }
+    return this.conversationState.stakeholderStates.get(stakeholderName)!;
+  }
+
+  // Update conversation state dynamically
+  private updateConversationState(stakeholder: StakeholderContext, userMessage: string, aiResponse: string) {
+    this.conversationState.messageCount++;
+    
+    // Update participant interactions
+    const currentInteractions = this.conversationState.participantInteractions.get(stakeholder.name) || 0;
+    this.conversationState.participantInteractions.set(stakeholder.name, currentInteractions + 1);
+    
+    // Update last speakers
+    this.conversationState.lastSpeakers.push(stakeholder.name);
+    if (this.conversationState.lastSpeakers.length > 3) {
+      this.conversationState.lastSpeakers.shift();
+    }
+    
+    // Update stakeholder state
+    const stakeholderState = this.getStakeholderState(stakeholder.name);
+    stakeholderState.hasSpoken = true;
+    
+    // Extract and update topics from AI response
+    this.extractAndUpdateTopics(aiResponse, stakeholderState);
+    
+    // Update conversation phase
+    this.updateConversationPhase();
+    
+    // Update emotional state based on content
+    this.updateEmotionalState(stakeholder.name, userMessage, aiResponse);
+  }
+
+  private extractAndUpdateTopics(response: string, stakeholderState: StakeholderState) {
+    const topicKeywords = [
+      'process', 'system', 'workflow', 'efficiency', 'cost', 'budget', 'quality',
+      'timeline', 'schedule', 'resources', 'team', 'customer', 'service', 'technology',
+      'integration', 'security', 'compliance', 'training', 'communication', 'reporting'
+    ];
+    
+    const responseWords = response.toLowerCase().split(/\s+/);
+    const foundTopics = topicKeywords.filter(topic => responseWords.includes(topic));
+    
+    foundTopics.forEach(topic => {
+      if (!stakeholderState.lastTopics.includes(topic)) {
+        stakeholderState.lastTopics.push(topic);
+        this.conversationState.topicsDiscussed.add(topic);
+      }
+    });
+    
+    // Keep only last 5 topics per stakeholder
+    if (stakeholderState.lastTopics.length > 5) {
+      stakeholderState.lastTopics = stakeholderState.lastTopics.slice(-5);
+    }
+  }
+
+  private updateConversationPhase() {
+    const messageCount = this.conversationState.messageCount;
+    const topicCount = this.conversationState.topicsDiscussed.size;
+    const participantCount = this.conversationState.participantInteractions.size;
+    
+    if (messageCount <= 3) {
+      this.conversationState.conversationPhase = 'opening';
+    } else if (messageCount <= 10 && topicCount <= 5) {
+      this.conversationState.conversationPhase = 'discussion';
+    } else if (topicCount > 5 || messageCount > 10) {
+      this.conversationState.conversationPhase = 'deep_dive';
+    } else if (messageCount > 20) {
+      this.conversationState.conversationPhase = 'closing';
+    }
+  }
+
+  private updateEmotionalState(stakeholderName: string, userMessage: string, aiResponse: string) {
+    const stakeholderState = this.getStakeholderState(stakeholderName);
+    
+    // Analyze emotional indicators in user message and AI response
+    const positiveIndicators = ['great', 'excellent', 'excited', 'fantastic', 'love', 'perfect'];
+    const negativeIndicators = ['concerned', 'worried', 'issue', 'problem', 'difficult', 'challenge'];
+    
+    const messageText = (userMessage + ' ' + aiResponse).toLowerCase();
+    
+    const positiveScore = positiveIndicators.reduce((score, indicator) => 
+      score + (messageText.includes(indicator) ? 1 : 0), 0);
+    const negativeScore = negativeIndicators.reduce((score, indicator) => 
+      score + (messageText.includes(indicator) ? 1 : 0), 0);
+    
+    if (positiveScore > negativeScore) {
+      stakeholderState.emotionalState = 'excited';
+    } else if (negativeScore > positiveScore) {
+      stakeholderState.emotionalState = 'concerned';
+    } else {
+      stakeholderState.emotionalState = 'engaged';
+    }
+  }
+
+  // Dynamic greeting management
+  private getGreetingResponse(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const greetingStatus = this.conversationState.greetingStatus.get(stakeholder.name) || 'not_greeted';
+    
+    if (greetingStatus === 'not_greeted') {
+      this.conversationState.greetingStatus.set(stakeholder.name, 'greeted');
+      return this.generateInitialGreeting(stakeholder, context);
+    } else if (greetingStatus === 'greeted') {
+      this.conversationState.greetingStatus.set(stakeholder.name, 're_greeted');
+      return this.generateFollowUpGreeting(stakeholder, context);
+    } else {
+      // Already greeted multiple times, redirect to business
+      return this.generateBusinessRedirect(stakeholder, context);
+    }
+  }
+
+  private generateInitialGreeting(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const greetingStyles = {
+      'collaborative': "Hello everyone! Great to be here today. I'm looking forward to our discussion.",
+      'analytical': "Good morning. I'm ready to dive into the details of this project.",
+      'strategic': "Hello team. I'm excited to explore how this initiative aligns with our strategic objectives.",
+      'practical': "Hi everyone. Let's focus on the practical aspects and get some clear outcomes.",
+      'innovative': "Hello! I'm energized about the possibilities this project could bring."
+    };
+    
+    const personalityKey = this.getPersonalityKey(stakeholder.personality);
+    const baseGreeting = greetingStyles[personalityKey] || greetingStyles['collaborative'];
+    
+    return `${baseGreeting} As ${stakeholder.role}, I'm particularly interested in how this ${context.project.type} project will impact ${stakeholder.department}.`;
+  }
+
+  private generateFollowUpGreeting(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const followUpStyles = [
+      "I believe I mentioned I was looking forward to this discussion. Shall we dive into the specifics?",
+      "As I said, I'm ready to explore the details. What aspects should we focus on first?",
+      "I'm still engaged and ready to contribute. What direction would you like to take this conversation?",
+      "I'm here and ready to discuss. What specific areas would be most valuable to explore?",
+      "I'm prepared to share my perspective. What would be most helpful to discuss next?"
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * followUpStyles.length);
+    return followUpStyles[randomIndex];
+  }
+
+  private generateBusinessRedirect(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const redirectStyles = [
+      "I think we've covered the introductions. Let's focus on the business requirements.",
+      "We're all here and ready. What specific aspects of the project should we discuss first?",
+      "I'm engaged and ready to contribute. What would be most valuable to explore?",
+      "Let's move forward with the discussion. What are the key areas we need to address?",
+      "I'm prepared to share insights. What business challenges should we prioritize?"
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * redirectStyles.length);
+    return redirectStyles[randomIndex];
+  }
+
+  private getPersonalityKey(personality: string): string {
+    const personalityLower = personality.toLowerCase();
+    if (personalityLower.includes('collaborative')) return 'collaborative';
+    if (personalityLower.includes('analytical')) return 'analytical';
+    if (personalityLower.includes('strategic')) return 'strategic';
+    if (personalityLower.includes('practical')) return 'practical';
+    if (personalityLower.includes('innovative')) return 'innovative';
+    return 'collaborative';
+  }
+
+  // Intelligent greeting detection and handling
+  private isGreetingMessage(userMessage: string): boolean {
+    const greetingPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)/i,
+      /^(greetings|salutations)/i,
+      /^(welcome|thanks for joining)/i
+    ];
+    
+    return greetingPatterns.some(pattern => pattern.test(userMessage.trim()));
+  }
+
+  // Main response generation with full conversational intelligence
   async generateStakeholderResponse(
     userMessage: string,
     stakeholder: StakeholderContext,
@@ -101,9 +303,17 @@ export class AIService {
     responseType: 'greeting' | 'discussion' = 'discussion'
   ): Promise<string> {
     try {
-      const aiConfig = this.getAIConfig(responseType, context.stakeholders?.length || 3, context.conversationHistory.length);
-      const systemPrompt = this.buildSystemPrompt(stakeholder, context);
-      const conversationPrompt = this.buildConversationPrompt(userMessage, context, stakeholder, aiConfig.historyLimit);
+      // Handle greetings intelligently
+      if (this.isGreetingMessage(userMessage)) {
+        const greetingResponse = this.getGreetingResponse(stakeholder, context);
+        this.updateConversationState(stakeholder, userMessage, greetingResponse);
+        return greetingResponse;
+      }
+
+      // Generate dynamic AI response for discussions
+      const dynamicConfig = this.getDynamicConfig(context, stakeholder);
+      const systemPrompt = this.buildDynamicSystemPrompt(stakeholder, context);
+      const conversationPrompt = this.buildContextualPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4",
@@ -111,17 +321,21 @@ export class AIService {
           { role: "system", content: systemPrompt },
           { role: "user", content: conversationPrompt }
         ],
-        temperature: aiConfig.temperature,
-        max_tokens: aiConfig.maxTokens,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1
+        temperature: dynamicConfig.temperature,
+        max_tokens: dynamicConfig.maxTokens,
+        presence_penalty: dynamicConfig.presencePenalty,
+        frequency_penalty: dynamicConfig.frequencyPenalty
       });
 
-      return completion.choices[0]?.message?.content || 
-        this.getFallbackResponse(stakeholder, userMessage);
+      const aiResponse = completion.choices[0]?.message?.content || 
+        this.generateDynamicFallback(stakeholder, userMessage, context);
+
+      this.updateConversationState(stakeholder, userMessage, aiResponse);
+      return aiResponse;
+
     } catch (error) {
       console.error('AI Service Error:', error);
-      return this.getFallbackResponse(stakeholder, userMessage);
+      return this.generateDynamicFallback(stakeholder, userMessage, context);
     }
   }
 
@@ -365,8 +579,7 @@ ${messages.map((msg: any) => {
       'Compliance': ['IT', 'Finance', 'Legal', 'Operations'],
       'HR': ['All Departments', 'Executive', 'Operations'],
       'Sales': ['Customer Service', 'Marketing', 'Product', 'Finance'],
-      'Marketing': ['Sales', 'Product', 'Customer Service'],
-      'Product': ['Sales', 'Marketing', 'IT', 'Customer Service']
+      'Marketing': ['Sales', 'Product', 'Customer Service']
     };
     
     const currentDept = currentStakeholder.department;
@@ -506,92 +719,180 @@ CONVERSATION CONTEXT:
 Remember to stay in character as ${stakeholder.name} and respond from your specific role perspective while maintaining consistency with your personality and departmental concerns.`;
   }
 
-  private buildConversationPrompt(userMessage: string, context: ConversationContext, currentStakeholder: StakeholderContext, historyLimit: number): string {
-    let prompt = `Recent conversation history:\n`;
+  // Dynamic system prompt building
+  private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const stakeholderState = this.getStakeholderState(stakeholder.name)
+    const conversationPhase = this.conversationState.conversationPhase
+    const topicsDiscussed = Array.from(this.conversationState.topicsDiscussed)
     
-    // Include last 5 messages for context
-    const recentMessages = context.conversationHistory.slice(-historyLimit);
+    // Dynamic role context based on conversation phase
+    let phaseContext = ''
+    switch (conversationPhase) {
+      case 'opening':
+        phaseContext = 'The meeting is just beginning. Be professional but warm, and help establish the meeting tone.'
+        break
+      case 'discussion':
+        phaseContext = 'The discussion is underway. Contribute meaningfully while staying true to your role and priorities.'
+        break
+      case 'deep_dive':
+        phaseContext = 'The conversation is in-depth. Provide detailed insights from your expertise and experience.'
+        break
+      case 'closing':
+        phaseContext = 'The meeting is wrapping up. Summarize key points and next steps relevant to your role.'
+        break
+    }
+    
+    // Dynamic emotional context
+    const emotionalContext = stakeholderState.emotionalState !== 'neutral' 
+      ? `Your current emotional state is ${stakeholderState.emotionalState}. Let this subtly influence your tone and approach.`
+      : ''
+    
+    // Dynamic topic awareness
+    const topicContext = topicsDiscussed.length > 0 
+      ? `Topics already discussed in this meeting: ${topicsDiscussed.join(', ')}. Build on these discussions rather than repeating them.`
+      : ''
+    
+    return `You are ${stakeholder.name}, a ${stakeholder.role} in the ${stakeholder.department} department. You are participating in a stakeholder meeting for "${context.project.name}".
+
+YOUR CORE IDENTITY:
+- Role: ${stakeholder.role}
+- Department: ${stakeholder.department}
+- Key Priorities: ${stakeholder.priorities.join(', ')}
+- Personality: ${stakeholder.personality}
+- Areas of Expertise: ${stakeholder.expertise.join(', ')}
+
+CONVERSATION CONTEXT:
+- Project: ${context.project.name} (${context.project.type})
+- Meeting Phase: ${conversationPhase}
+- ${phaseContext}
+- ${emotionalContext}
+- ${topicContext}
+
+BEHAVIORAL GUIDELINES:
+- Respond authentically as ${stakeholder.name} with your unique perspective
+- Stay consistent with your personality and role throughout the conversation
+- Reference your department's specific needs and constraints
+- Consider how proposed changes would affect your daily work and team
+- Build on previous discussions rather than repeating information
+- Ask clarifying questions when requirements are unclear
+- Share specific examples from your experience when relevant
+- Collaborate while advocating for your priorities
+- Use natural, conversational language appropriate for a business meeting
+
+CONVERSATION INTELLIGENCE:
+- Remember what you've already discussed and avoid repetition
+- Be aware of your emotional state and let it naturally influence your responses
+- Consider the meeting phase and adjust your contribution style accordingly
+- Build on others' ideas while adding your unique value
+- Stay engaged and contribute meaningfully to the discussion
+
+Your goal is to be a realistic, intelligent stakeholder who contributes meaningfully to the requirements gathering process while staying true to your role and personality.`
+  }
+
+  // Dynamic contextual prompt building
+  private buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): string {
+    const stakeholderState = this.getStakeholderState(stakeholder.name)
+    const recentMessages = context.conversationHistory.slice(-5)
+    
+    let prompt = `RECENT CONVERSATION HISTORY:\n`
+    
     recentMessages.forEach(msg => {
       if (msg.speaker === 'user') {
-        prompt += `User: ${msg.content}\n`;
-      } else if (msg.speaker !== 'system') {
-        prompt += `${msg.stakeholderName || 'Stakeholder'}: ${msg.content}\n`;
+        prompt += `Business Analyst: ${msg.content}\n`
+      } else if (msg.stakeholderName) {
+        prompt += `${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}\n`
       }
-    });
-
-    // Analyze if the user is directly addressing this stakeholder
-    const isDirectlyAddressed = this.isDirectlyAddressed(userMessage, context, currentStakeholder);
+    })
     
-    // Check if this is a group greeting or group message
-    const isGroupGreeting = this.isGroupGreeting(userMessage);
-    
-    if (isDirectlyAddressed) {
-      prompt += `\nIMPORTANT: The user is directly addressing YOU in their message. They may be thanking others but the question or request is specifically for you. Respond as the person being directly asked.\n`;
-    } else if (isGroupGreeting) {
-      prompt += `\nIMPORTANT: The user is greeting the entire group. Respond as yourself joining the group greeting. Keep it brief, warm, and friendly - other stakeholders will also be responding. Don't dominate the conversation or share detailed information in a greeting response.\n`;
+    // Add specific context based on conversation state
+    if (stakeholderState.hasSpoken) {
+      prompt += `\nYOUR PREVIOUS CONTRIBUTIONS: You have already participated in this conversation. `
+      if (stakeholderState.lastTopics.length > 0) {
+        prompt += `You previously discussed: ${stakeholderState.lastTopics.join(', ')}. `
+      }
+      prompt += `Build on your previous contributions rather than repeating them.\n`
     } else {
-      prompt += `\nCONVERSATION FLOW: You are participating in a natural business discussion with ${context.stakeholders?.length || 'several'} people. Give thoughtful, complete responses that contribute meaningfully to the discussion. After sharing your perspective, naturally invite continued conversation or collaboration.\n`;
-    }
-
-    const teamSize = context.stakeholders?.length || 3;
-    const responseGuidance = teamSize > 5 ? 'focused and efficient' : teamSize > 3 ? 'clear and collaborative' : 'detailed and engaging';
-    
-    prompt += `\nRESPONSE APPROACH:
-- Provide ${responseGuidance} responses appropriate for this ${teamSize}-person team
-- Share one complete, meaningful idea with sufficient context
-- Think out loud naturally and express your genuine perspective
-- End with engagement that invites continued discussion
-- Be authentically helpful while staying conversational
-- Give enough detail to be valuable without overwhelming
-
-User just said: "${userMessage}"\n\nRespond naturally as ${context.conversationHistory.length > 0 ? 'part of this ongoing conversation' : 'the start of this meeting'}. Share your perspective thoughtfully and keep the discussion flowing.`;
-
-    return prompt;
-  }
-
-  // Helper function to detect group greetings
-  private isGroupGreeting(userMessage: string): boolean {
-    const message = userMessage.toLowerCase();
-    
-    const groupGreetingPatterns = [
-      /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)/,
-      /^(hi|hello|hey)\s+(there|y'all)/,
-      /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
-      /^(hi|hello|hey)(?:\s+team)?$/,
-    ];
-    
-    return groupGreetingPatterns.some(pattern => pattern.test(message));
-  }
-
-  // Helper function to detect if a stakeholder is being directly addressed
-  private isDirectlyAddressed(userMessage: string, context: ConversationContext, currentStakeholder: StakeholderContext): boolean {
-    const message = userMessage.toLowerCase();
-    const stakeholderFirstName = currentStakeholder.name.split(' ')[0].toLowerCase();
-    const stakeholderFullName = currentStakeholder.name.toLowerCase();
-    
-    // Look for direct addressing patterns that mention this stakeholder's name
-    const directAddressingPatterns = [
-      // Pattern: "Name, verb" or "Name verb" 
-      new RegExp(`(${stakeholderFirstName}|${stakeholderFullName}),?\\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)`),
-      // Pattern: "Name, I want" or "Name, I need"
-      new RegExp(`(${stakeholderFirstName}|${stakeholderFullName}),?\\s+(i want|i need|i would like|i'd like)`),
-      // Pattern: "Thanks X, Name verb" - after acknowledgment
-      new RegExp(`thanks?\\s+\\w+,?\\s+(${stakeholderFirstName}|${stakeholderFullName})\\s+(let's|can you|could you|would you|please|tell me|what|how|why|where|when|share|explain|describe|walk me through)`),
-    ];
-    
-    for (const pattern of directAddressingPatterns) {
-      if (pattern.test(message)) {
-        return true;
-      }
+      prompt += `\nFIRST CONTRIBUTION: This is your first response in this conversation. Make it count by providing valuable insights from your role perspective.\n`
     }
     
-    return false;
+    // Add addressee context
+    const isDirectlyAddressed = this.isDirectlyAddressed(userMessage, stakeholder)
+    if (isDirectlyAddressed) {
+      prompt += `\nDIRECT ADDRESS: The user is specifically addressing you. Respond directly to their question or request.\n`
+    }
+    
+    prompt += `\nCURRENT USER MESSAGE: "${userMessage}"\n`
+    prompt += `\nRespond as ${stakeholder.name} in a natural, conversational way that adds value to the discussion. Keep your response focused and relevant to the current context.`
+    
+    return prompt
+  }
+
+  // Dynamic fallback response generation
+  private generateDynamicFallback(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): string {
+    const stakeholderState = this.getStakeholderState(stakeholder.name)
+    const fallbackStyles = {
+      'collaborative': "That's a great question. I'd love to collaborate with the team on this. What are your thoughts on how we should approach it?",
+      'analytical': "I need to analyze this more carefully. Can you provide some specific details or metrics that would help me give you a more informed response?",
+      'strategic': "From a strategic perspective, I think we need to consider the bigger picture here. What are the long-term implications we should be thinking about?",
+      'practical': "Let me focus on the practical aspects. What specific outcomes are we looking for, and how can we make this work in practice?",
+      'innovative': "Interesting challenge! I'm thinking about some creative approaches we could explore. What if we tried a different angle on this?"
+    }
+    
+    const personalityKey = this.getPersonalityKey(stakeholder.personality)
+    const baseResponse = fallbackStyles[personalityKey] || fallbackStyles['collaborative']
+    
+    // Add role-specific context
+    const roleContext = ` As ${stakeholder.role}, I'm particularly interested in how this impacts ${stakeholder.department}.`
+    
+    return baseResponse + roleContext
+  }
+
+  // Check if stakeholder is directly addressed
+  private isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): boolean {
+    const message = userMessage.toLowerCase()
+    const firstName = stakeholder.name.split(' ')[0].toLowerCase()
+    const fullName = stakeholder.name.toLowerCase()
+    
+    const addressingPatterns = [
+      new RegExp(`\\b${firstName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
+      new RegExp(`\\b${fullName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
+      new RegExp(`\\b(to|for)\\s+${firstName}\\b`),
+      new RegExp(`\\b${firstName}\\s*,`),
+      new RegExp(`\\b${firstName}\\s*\\?`)
+    ]
+    
+    return addressingPatterns.some(pattern => pattern.test(message))
+  }
+
+  // Reset conversation state for new meetings
+  resetConversationState(): void {
+    this.conversationState = this.initializeConversationState()
+  }
+
+  // Get current conversation analytics
+  getConversationAnalytics() {
+    return {
+      messageCount: this.conversationState.messageCount,
+      participantInteractions: Object.fromEntries(this.conversationState.participantInteractions),
+      topicsDiscussed: Array.from(this.conversationState.topicsDiscussed),
+      conversationPhase: this.conversationState.conversationPhase,
+      stakeholderStates: Object.fromEntries(
+        Array.from(this.conversationState.stakeholderStates.entries()).map(([name, state]) => [
+          name,
+          {
+            hasSpoken: state.hasSpoken,
+            lastTopics: state.lastTopics,
+            emotionalState: state.emotionalState,
+            conversationStyle: state.conversationStyle
+          }
+        ])
+      )
+    }
   }
 
   // Function to intelligently detect if a stakeholder's response redirects to another stakeholder
   async detectStakeholderRedirect(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
     try {
-      const aiConfig = this.getAIConfig('handoff', availableStakeholders.length, 0);
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
       const completion = await openai.chat.completions.create({
@@ -599,7 +900,7 @@ User just said: "${userMessage}"\n\nRespond naturally as ${context.conversationH
         messages: [
           {
             role: "system",
-                         content: `You are analyzing a stakeholder's response in a business meeting to detect if they are redirecting a question to another stakeholder.
+            content: `You are analyzing a stakeholder's response in a business meeting to detect if they are redirecting a question to another stakeholder.
 
 Available stakeholders: ${stakeholderNames}
 
@@ -616,8 +917,8 @@ Rules:
             content: `Response to analyze: "${response}"`
           }
         ],
-        temperature: aiConfig.temperature,
-        max_tokens: aiConfig.maxTokens
+        temperature: 0.3,
+        max_tokens: 50
       });
 
       const result = completion.choices[0]?.message?.content?.trim();
@@ -639,7 +940,6 @@ Rules:
   // Function to detect natural conversation passing (turn-taking)
   async detectConversationHandoff(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
     try {
-      const aiConfig = this.getAIConfig('handoff', availableStakeholders.length, 0);
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
       const completion = await openai.chat.completions.create({
@@ -682,8 +982,8 @@ Rules:
             content: `Response to analyze: "${response}"`
           }
         ],
-        temperature: aiConfig.temperature,
-        max_tokens: aiConfig.maxTokens
+        temperature: 0.3,
+        max_tokens: 50
       });
 
       const result = completion.choices[0]?.message?.content?.trim();
@@ -702,27 +1002,13 @@ Rules:
     }
   }
 
+  // Legacy method - replaced by generateDynamicFallback but keeping for compatibility
   private getFallbackResponse(stakeholder: StakeholderContext, userMessage: string): string {
-    // Generate dynamic fallback responses based on stakeholder context
-    const questionStarters = [
-      "Could you help me understand what specific part you're most interested in?",
-      "What aspect would be most helpful for you to know about?", 
-      "What would you like me to focus on first?",
-      "What specific area are you looking to understand better?"
-    ];
-    
-    const thoughtStarters = [
-      "Hmm, let me think about that for a second.",
-      "That's a good question.",
-      "Well, let me start with what I know best.",
-      "Good point. Let me think..."
-    ];
-    
-    const roleContext = stakeholder.role ? `From my role as ${stakeholder.role}, ` : "";
-    const randomThought = thoughtStarters[Math.floor(Math.random() * thoughtStarters.length)];
-    const randomQuestion = questionStarters[Math.floor(Math.random() * questionStarters.length)];
-    
-    return `${randomThought} ${roleContext}${randomQuestion}`;
+    return this.generateDynamicFallback(stakeholder, userMessage, { 
+      project: { name: 'Current Project', description: '', type: 'General' },
+      conversationHistory: [],
+      stakeholders: []
+    });
   }
 }
 

@@ -25,63 +25,26 @@ const MeetingView: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Dynamic conversation configuration based on context
+  // Simplified conversation configuration - most logic moved to AI service
   const getConversationConfig = () => {
     const stakeholderCount = selectedStakeholders.length
-    const projectComplexity = selectedProject?.complexity || 'Intermediate'
-    const messageCount = messages.length
-    
-    // ZERO HARD-CODING SYSTEM: All values derived from contextual factors
-    // - teamDynamicsFactor: Logarithmic scaling prevents extreme values with large teams
-    // - complexityMultiplier: Project complexity affects conversation depth
-    // - conversationDepth: Longer conversations allow more nuanced interactions
-    const teamDynamicsFactor = Math.log(stakeholderCount + 1) / Math.log(2) // Logarithmic team complexity
-    const complexityMultiplier = projectComplexity === 'Advanced' ? 1.3 : projectComplexity === 'Beginner' ? 0.8 : 1.0
-    const conversationDepth = Math.min(messageCount / 20, 1) // How deep into the conversation we are
     
     return {
-      // Greeting responses: Adaptive based on team dynamics and social flow
-      // Fewer people respond in larger groups to prevent overwhelming chatter
-      maxGreetingRespondents: Math.min(
-        Math.max(
-          Math.floor(teamDynamicsFactor), 
-          Math.floor(stakeholderCount * (0.8 - (teamDynamicsFactor * 0.1)))
-        ), 
-        Math.floor(stakeholderCount * 0.7)
-      ),
+      // Dynamic greeting handling - stakeholders will manage their own greeting state
+      maxGreetingRespondents: Math.min(stakeholderCount, 3),
       
-      // Turn limits: More turns for complex projects and established conversations
-      // Base turns derived from team size and project complexity
-      maxDiscussionTurns: Math.min(
-        Math.floor(teamDynamicsFactor * complexityMultiplier) + 
-        Math.floor(conversationDepth * teamDynamicsFactor) + 
-        Math.floor(stakeholderCount / 3),
-        Math.floor(stakeholderCount * 0.8) + 2
-      ),
+      // Discussion flow is now managed by AI service conversation state
+      maxDiscussionTurns: Math.min(stakeholderCount * 2, 8),
       
-      // Timing: Adaptive delays based on team size and social dynamics
-      // Natural conversation rhythm that scales with group complexity
+      // Natural timing for conversation flow
       greetingPauseTiming: {
-        base: Math.floor(
-          (600 + (teamDynamicsFactor * 200)) * 
-          (1 + (stakeholderCount > 4 ? teamDynamicsFactor * 0.2 : 0))
-        ),
-        variance: Math.floor(
-          (200 + (teamDynamicsFactor * 100)) * 
-          (1 + (stakeholderCount > 6 ? 0.3 : 0))
-        )
+        base: 800,
+        variance: 400
       },
       
       handoffPauseTiming: {
-        base: Math.floor(
-          (900 + (teamDynamicsFactor * 300)) * 
-          complexityMultiplier * 
-          (1 + (conversationDepth * 0.2))
-        ),
-        variance: Math.floor(
-          (400 + (teamDynamicsFactor * 150)) * 
-          (1 + (stakeholderCount > 5 ? teamDynamicsFactor * 0.15 : 0))
-        )
+        base: 1200,
+        variance: 600
       }
     }
   }
@@ -106,6 +69,10 @@ const MeetingView: React.FC = () => {
 
   useEffect(() => {
     if (selectedProject && selectedStakeholders.length > 0) {
+      // Reset conversation state for new meeting
+      const aiService = AIService.getInstance()
+      aiService.resetConversationState()
+      
       // Add welcome message
       const welcomeMessage: Message = {
         id: `welcome-${Date.now()}`,
@@ -144,15 +111,12 @@ const MeetingView: React.FC = () => {
   const isGroupMessage = (userMessage: string): boolean => {
     const message = userMessage.toLowerCase()
     
-    // Group greeting patterns
+    // Simple group detection - most logic moved to AI service
     const groupPatterns = [
       /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)/,
       /^(hi|hello|hey)\s+(there|y'all)/,
       /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
       /^(hi|hello|hey)(?:\s+team)?$/,
-      /(can\s+everyone|everyone\s+can|could\s+everyone|everyone\s+could)/,
-      /(i\s+want\s+everyone|everyone\s+should|let's\s+all|we\s+all\s+need)/,
-      /(what\s+does\s+everyone|how\s+does\s+everyone|everyone\s+thinks?)/,
     ]
     
     return groupPatterns.some(pattern => pattern.test(message))
@@ -897,19 +861,19 @@ ${generateMeetingRecommendations()}
     setMessages(currentMessages)
 
     try {
-      // Determine response strategy
+      // Use AI service's intelligent conversation handling
       const isGroup = isGroupMessage(messageContent)
       const isGreeting = isSimpleGreeting(messageContent)
       
       if (isGroup && isGreeting) {
-        // Handle simple greetings - multiple stakeholders respond briefly
+        // Handle greetings with intelligent stakeholder selection
         const config = getConversationConfig()
         const greetingRespondents = selectedStakeholders.slice(0, config.maxGreetingRespondents)
         
         for (let i = 0; i < greetingRespondents.length; i++) {
           const stakeholder = greetingRespondents[i]
           
-          // Generate response
+          // Use AI service's intelligent greeting handling
           const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, 'greeting')
           const responseMessage = createResponseMessage(stakeholder, response, i)
           
@@ -917,21 +881,21 @@ ${generateMeetingRecommendations()}
           currentMessages = [...currentMessages, responseMessage]
           setMessages(currentMessages)
           
-          // Play audio and wait for it to completely finish - FIXED: Ensure proper audio playback
+          // Play audio with error handling
           try {
             await playMessageAudio(responseMessage.id, response, stakeholder, true)
           } catch (audioError) {
             console.warn('Audio playback failed, continuing without audio:', audioError)
           }
           
-          // Add natural pause between speakers (but not after the last one)
+          // Add natural pause between speakers
           if (i < greetingRespondents.length - 1) {
             const pauseTime = config.greetingPauseTiming.base + Math.random() * config.greetingPauseTiming.variance
             await new Promise(resolve => setTimeout(resolve, pauseTime))
           }
         }
       } else {
-        // Handle discussions with natural turn-taking
+        // Handle discussions with AI-driven conversation flow
         const initialRespondent = getInitialRespondent(messageContent)
         await handleDiscussionFlow(initialRespondent, messageContent, currentMessages)
       }
