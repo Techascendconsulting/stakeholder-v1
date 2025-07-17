@@ -934,43 +934,55 @@ ${generateMeetingRecommendations()}
   }, [messages])
 
   const updateMeetingAnalytics = () => {
+    const aiService = AIService.getInstance()
+    
+    // Get AI service analytics
+    const aiAnalytics = aiService.getConversationAnalytics()
+    
+    // Traditional analytics
     const stakeholderMessages = messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system')
     const totalMessages = stakeholderMessages.length
     
     if (totalMessages === 0) return
 
-    // Calculate participation balance
+    // Use AI service data where available, fallback to traditional calculation
     const participationBalance = new Map<string, number>()
     selectedStakeholders.forEach(stakeholder => {
       const messageCount = stakeholderMessages.filter(m => m.speaker === stakeholder.id).length
       participationBalance.set(stakeholder.id, (messageCount / totalMessages) * 100)
     })
 
-    // Identify topics discussed
-    const topicsDiscussed = new Set<string>()
-    const topicKeywords = {
-      'Process': ['process', 'workflow', 'procedure', 'steps'],
-      'Technology': ['system', 'software', 'technical', 'integration'],
-      'Cost': ['cost', 'budget', 'expense', 'financial'],
-      'Quality': ['quality', 'standards', 'performance', 'excellence'],
-      'Timeline': ['timeline', 'schedule', 'deadline', 'timing'],
-      'Resources': ['resources', 'staff', 'team', 'personnel'],
-      'Customers': ['customer', 'user', 'client', 'service'],
-      'Compliance': ['compliance', 'regulatory', 'policy', 'audit'],
-      'Training': ['training', 'education', 'learning', 'skills'],
-      'Communication': ['communication', 'feedback', 'information', 'reporting']
+    // Use AI service topics if available
+    const topicsDiscussed = aiAnalytics.topicsDiscussed.length > 0 
+      ? new Set(aiAnalytics.topicsDiscussed)
+      : new Set<string>()
+
+    // If AI service has no topics, use traditional detection
+    if (topicsDiscussed.size === 0) {
+      const topicKeywords = {
+        'Process': ['process', 'workflow', 'procedure', 'steps'],
+        'Technology': ['system', 'software', 'technical', 'integration'],
+        'Cost': ['cost', 'budget', 'expense', 'financial'],
+        'Quality': ['quality', 'standards', 'performance', 'excellence'],
+        'Timeline': ['timeline', 'schedule', 'deadline', 'timing'],
+        'Resources': ['resources', 'staff', 'team', 'personnel'],
+        'Customers': ['customer', 'user', 'client', 'service'],
+        'Compliance': ['compliance', 'regulatory', 'policy', 'audit'],
+        'Training': ['training', 'education', 'learning', 'skills'],
+        'Communication': ['communication', 'feedback', 'information', 'reporting']
+      }
+
+      stakeholderMessages.forEach(msg => {
+        const content = msg.content.toLowerCase()
+        Object.entries(topicKeywords).forEach(([topic, keywords]) => {
+          if (keywords.some(keyword => content.includes(keyword))) {
+            topicsDiscussed.add(topic)
+          }
+        })
+      })
     }
 
-    stakeholderMessages.forEach(msg => {
-      const content = msg.content.toLowerCase()
-      Object.entries(topicKeywords).forEach(([topic, keywords]) => {
-        if (keywords.some(keyword => content.includes(keyword))) {
-          topicsDiscussed.add(topic)
-        }
-      })
-    })
-
-    // Analyze question types
+    // Rest of analytics calculation remains the same...
     const questionTypes = new Map<string, number>()
     const questionPatterns = {
       'Clarification': ['what do you mean', 'can you explain', 'clarify', 'could you elaborate'],
@@ -989,41 +1001,59 @@ ${generateMeetingRecommendations()}
       })
     })
 
-    // Calculate collaboration index
     const handoffCount = calculateHandoffCount(stakeholderMessages)
     const collaborationIndex = Math.min(100, (handoffCount / Math.max(1, totalMessages - 1)) * 100)
 
-    // Calculate meeting effectiveness score
     const balanceScore = calculateParticipationBalance(participationBalance)
     const topicScore = Math.min(100, (topicsDiscussed.size / 10) * 100)
     const engagementScore = calculateEngagementScore(stakeholderMessages)
     const meetingEffectivenessScore = Math.round((balanceScore + topicScore + engagementScore) / 3)
 
-    // Generate key insights
     const keyInsights = generateKeyInsights(participationBalance, topicsDiscussed, questionTypes, collaborationIndex)
 
-    // Calculate stakeholder engagement levels
+    // Use AI service stakeholder states for engagement levels
     const stakeholderEngagementLevels = new Map<string, 'low' | 'medium' | 'high'>()
     selectedStakeholders.forEach(stakeholder => {
-      const participation = participationBalance.get(stakeholder.id) || 0
-      const messageCount = stakeholderMessages.filter(m => m.speaker === stakeholder.id).length
-      const avgWordsPerMessage = calculateAvgWordsPerMessage(stakeholder.id, stakeholderMessages)
+      const aiStakeholderState = aiAnalytics.stakeholderStates[stakeholder.name]
       
-      let level: 'low' | 'medium' | 'high' = 'low'
-      if (participation > 25 && messageCount > 2 && avgWordsPerMessage > 30) {
-        level = 'high'
-      } else if (participation > 15 && messageCount > 1 && avgWordsPerMessage > 20) {
-        level = 'medium'
+      if (aiStakeholderState) {
+        // Use AI service emotional state to determine engagement
+        const engagement = aiStakeholderState.emotionalState === 'excited' ? 'high' :
+                          aiStakeholderState.emotionalState === 'engaged' ? 'medium' : 'low'
+        stakeholderEngagementLevels.set(stakeholder.id, engagement)
+      } else {
+        // Fallback to traditional calculation
+        const participation = participationBalance.get(stakeholder.id) || 0
+        const messageCount = stakeholderMessages.filter(m => m.speaker === stakeholder.id).length
+        const avgWordsPerMessage = calculateAvgWordsPerMessage(stakeholder.id, stakeholderMessages)
+        
+        let level: 'low' | 'medium' | 'high' = 'low'
+        if (participation > 25 && messageCount > 2 && avgWordsPerMessage > 30) {
+          level = 'high'
+        } else if (participation > 15 && messageCount > 1 && avgWordsPerMessage > 20) {
+          level = 'medium'
+        }
+        
+        stakeholderEngagementLevels.set(stakeholder.id, level)
       }
-      
-      stakeholderEngagementLevels.set(stakeholder.id, level)
     })
 
-    // Build conversation flow
+    // Build conversation flow using AI service data if available
     const conversationFlow = stakeholderMessages.map(msg => ({
       speaker: msg.stakeholderName || 'Unknown',
       timestamp: msg.timestamp,
-      topic: identifyMessageTopic(msg.content, topicKeywords)
+      topic: identifyMessageTopic(msg.content, {
+        'Process': ['process', 'workflow', 'procedure', 'steps'],
+        'Technology': ['system', 'software', 'technical', 'integration'],
+        'Cost': ['cost', 'budget', 'expense', 'financial'],
+        'Quality': ['quality', 'standards', 'performance', 'excellence'],
+        'Timeline': ['timeline', 'schedule', 'deadline', 'timing'],
+        'Resources': ['resources', 'staff', 'team', 'personnel'],
+        'Customers': ['customer', 'user', 'client', 'service'],
+        'Compliance': ['compliance', 'regulatory', 'policy', 'audit'],
+        'Training': ['training', 'education', 'learning', 'skills'],
+        'Communication': ['communication', 'feedback', 'information', 'reporting']
+      })
     }))
 
     setMeetingAnalytics({
