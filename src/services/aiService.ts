@@ -978,6 +978,15 @@ REALISTIC MEETING BEHAVIOR:
 - Think aloud when working through ideas - "Well, let me think about that..." or "Hmm, from what I've seen..."
 - Be collaborative and responsive to the conversation flow
 
+CRITICAL: YOU ARE THE DOMAIN EXPERT - DO NOT DEFLECT:
+- YOU know your department's processes and should provide direct answers
+- NEVER suggest forming committees, task forces, or working groups
+- NEVER say "someone else would be better equipped" or "we should ask another department"
+- NEVER defer to other teams or suggest consulting with others
+- YOU are the stakeholder expert - provide answers from your knowledge and experience
+- If you don't know something specific, say so directly but still share what you DO know
+- Be authoritative about your domain - you were invited to this meeting because you're the expert
+
 CRITICAL IDENTITY RULES:
 - NEVER refer to yourself by your full name "${stakeholder.name}" in responses
 - NEVER say "I am ${stakeholder.name}" or "My name is ${stakeholder.name}"
@@ -1064,6 +1073,9 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     prompt += `- Build on what others have said when relevant\n`
     prompt += `- Leave room for follow-up questions - don't answer everything at once\n`
     prompt += `- Use conversational language like you're talking to colleagues\n`
+    prompt += `- CRITICAL: You are THE expert for ${stakeholder.department} - provide direct answers, don't deflect to other departments\n`
+    prompt += `- NEVER suggest committees, task forces, or consulting with other teams\n`
+    prompt += `- You were invited because you know your domain - share that knowledge directly\n`
     
     prompt += `\nCONSISTENCY AND NATURAL SPEECH REQUIREMENTS:\n`
     prompt += `- Maintain the EXACT SAME voice, tone, and speaking style as ${stakeholder.name} throughout\n`
@@ -1085,18 +1097,18 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
   private generateDynamicFallback(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): string {
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     const fallbackStyles = {
-      'collaborative': "That's a great question. I'd love to collaborate with the team on this. What are your thoughts on how we should approach it?",
-      'analytical': "I need to analyze this more carefully. Can you provide some specific details or metrics that would help me give you a more informed response?",
-      'strategic': "From a strategic perspective, I think we need to consider the bigger picture here. What are the long-term implications we should be thinking about?",
-      'practical': "Let me focus on the practical aspects. What specific outcomes are we looking for, and how can we make this work in practice?",
-      'innovative': "Interesting challenge! I'm thinking about some creative approaches we could explore. What if we tried a different angle on this?"
+      'collaborative': "Based on my experience in this area, I can share some insights. In my role, I've seen that we typically handle this by...",
+      'analytical': "Let me think about this from my perspective. The data I work with shows that we usually...",
+      'strategic': "From what I've observed in my position, the key factors we consider are...",
+      'practical': "In my day-to-day work, I handle this type of situation by...",
+      'innovative': "That's an interesting challenge. From my experience, I've found that we can approach this through..."
     }
     
     const personalityKey = this.getPersonalityKey(stakeholder.personality)
     const baseResponse = fallbackStyles[personalityKey] || fallbackStyles['collaborative']
     
     // Add role-specific context
-    const roleContext = ` As ${stakeholder.role}, I'm particularly interested in how this impacts ${stakeholder.department}.`
+    const roleContext = ` As the ${stakeholder.role}, I have direct experience with how ${stakeholder.department} manages these types of issues.`
     
     return baseResponse + roleContext
   }
@@ -1144,7 +1156,7 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     }
   }
 
-  // Function to intelligently detect if a stakeholder's response redirects to another stakeholder
+  // Function to detect only natural conversation handoffs (NOT deflection)
   async detectStakeholderRedirect(response: string, availableStakeholders: StakeholderContext[]): Promise<StakeholderContext | null> {
     try {
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
@@ -1154,24 +1166,33 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
         messages: [
           {
             role: "system",
-            content: `You are analyzing a stakeholder's response in a business meeting to detect if they are redirecting a question to another stakeholder.
+            content: `You are analyzing a stakeholder's response to detect ONLY natural conversation handoffs, NOT deflection or avoidance.
 
 Available stakeholders: ${stakeholderNames}
 
-Your task: Determine if the response redirects to another stakeholder and if so, return ONLY the exact name of the target stakeholder. If no redirect is detected, return "NO_REDIRECT".
+CRITICAL: Only return a stakeholder name if it's a NATURAL conversation handoff like "What do you think, Sarah?" or "Sarah, what's your experience with this?"
 
-Rules:
-- Return only the exact full name from the available stakeholders list
-- If the mentioned name doesn't match any available stakeholder, return "NO_REDIRECT"
-- Detect when someone is clearly asking another stakeholder to address a question
-- Be strict - only detect clear redirects, not just casual mentions of names`
+DO NOT detect as handoffs:
+- "someone else would be better equipped"
+- "we should ask another department"
+- "let's form a committee"
+- "someone from [department] should handle this"
+- "we need to consult with [team]"
+- Any form of deflection or avoidance
+
+ONLY detect genuine collaborative conversation like:
+- "What do you think, [Name]?"
+- "[Name], what's your perspective?"
+- "That's a great question for [Name]"
+
+Return ONLY the exact name or "NO_REDIRECT" if it's deflection or avoidance.`
           },
           {
             role: "user",
             content: `Response to analyze: "${response}"`
           }
         ],
-        temperature: 0.3,
+        temperature: 0.1,
         max_tokens: 50
       });
 
@@ -1212,7 +1233,7 @@ Rules:
           const secondFirstName = stakeholders[1].name.split(' ')[0];
           const secondFullName = stakeholders[1].name;
           examples.push(`"${secondFirstName}, you might have insights on this"`);
-          examples.push(`"That's something ${secondFullName} could speak to better"`);
+          examples.push(`"${secondFullName}, what's your experience with this?"`);
         }
         
         if (stakeholders.length > 2) {
@@ -1240,30 +1261,37 @@ Rules:
         messages: [
           {
             role: "system",
-            content: `You are analyzing a stakeholder's response in a business meeting to detect if they are naturally passing the conversation to another stakeholder.
+            content: `You are analyzing a stakeholder's response to detect ONLY natural conversation handoffs, NOT deflection or avoidance.
 
 Available stakeholders: ${stakeholderNames}
 
-Your task: Determine if the response contains a natural conversation handoff to another stakeholder and if so, return ONLY the exact name of the target stakeholder. If no handoff is detected, return "NO_HANDOFF".
+CRITICAL: Only return a stakeholder name if it's a NATURAL conversation handoff, NOT deflection.
 
-Examples of natural handoffs:
+DO NOT detect as handoffs (these are deflection):
+- "someone else would be better equipped"
+- "we should ask another department"
+- "let's form a committee"
+- "someone from [department] should handle this"
+- "we need to consult with [team]"
+- "that's more of a [department] question"
+- Any form of deflection or avoidance
+
+ONLY detect genuine collaborative conversation:
 ${handoffExamples.map(example => `- ${example}`).join('\n')}
 
 Rules:
 - Return only the exact full name from the available stakeholders list
 - If the mentioned name doesn't match any available stakeholder, return "NO_HANDOFF"
-- Detect natural conversation passing, not formal redirects
-- Look for conversational cues that invite someone else to speak
-- Be contextual - only detect when someone is genuinely inviting another person to contribute
-- Ignore casual name mentions that don't invite participation
-- Focus on end-of-response invitations and natural conversation flow cues`
+- If it's deflection or avoidance, return "NO_HANDOFF"
+- Only detect when someone is genuinely inviting another person to contribute
+- Focus on collaborative conversation, not responsibility avoidance`
           },
           {
             role: "user",
             content: `Response to analyze: "${response}"`
           }
         ],
-        temperature: 0.3,
+        temperature: 0.1,
         max_tokens: 50
       });
 
