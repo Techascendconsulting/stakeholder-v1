@@ -306,7 +306,7 @@ export class AIService {
     userMessage: string,
     stakeholder: StakeholderContext,
     context: ConversationContext,
-    responseType: 'greeting' | 'discussion' = 'discussion'
+    responseType: 'greeting' | 'discussion' | 'baton_pass' = 'discussion'
   ): Promise<string> {
     try {
       // Handle greetings intelligently
@@ -318,7 +318,7 @@ export class AIService {
 
       // Generate dynamic AI response for discussions
       const dynamicConfig = this.getDynamicConfig(context, stakeholder);
-      const systemPrompt = this.buildDynamicSystemPrompt(stakeholder, context);
+      const systemPrompt = this.buildDynamicSystemPrompt(stakeholder, context, responseType);
       const conversationPrompt = this.buildContextualPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
@@ -805,7 +805,7 @@ Remember to stay in character as ${stakeholder.name} and respond from your speci
   }
 
   // Dynamic system prompt building
-  private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext): string {
+  private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext, responseType: string = 'discussion'): string {
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     const conversationPhase = this.conversationState.conversationPhase
     const topicsDiscussed = Array.from(this.conversationState.topicsDiscussed)
@@ -837,6 +837,11 @@ Remember to stay in character as ${stakeholder.name} and respond from your speci
       ? `Topics already discussed in this meeting: ${topicsDiscussed.join(', ')}. Build on these discussions rather than repeating them.`
       : ''
     
+    // Baton passing context
+    const batonContext = responseType === 'baton_pass' 
+      ? `IMPORTANT: Another stakeholder has specifically suggested you should address this question or provide input on this topic. They have "passed the baton" to you. Acknowledge this naturally and provide your perspective on the topic.`
+      : ''
+    
     return `You are ${stakeholder.name}, a ${stakeholder.role} in the ${stakeholder.department} department. You are participating in a stakeholder meeting for "${context.project.name}".
 
 YOUR CORE IDENTITY:
@@ -852,6 +857,7 @@ CONVERSATION CONTEXT:
 - ${phaseContext}
 - ${emotionalContext}
 - ${topicContext}
+- ${batonContext}
 
 RESPONSE STYLE - CRITICAL:
 - Keep responses CONCISE and NATURAL (1-3 sentences maximum)

@@ -498,7 +498,7 @@ const MeetingView: React.FC = () => {
   }
 
   // Generate stakeholder response with context
-  const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: 'greeting' | 'discussion') => {
+  const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: 'greeting' | 'discussion' | 'baton_pass') => {
     const stakeholderContext = {
       name: stakeholder.name,
       role: stakeholder.role,
@@ -1038,9 +1038,24 @@ These notes were generated using a fallback system due to extended AI processing
 
   // Old hard-coded greeting flow removed - replaced by dynamic handleAdaptiveGreeting
 
-  // Dynamic stakeholder response processing - NO HARD-CODING
+  // Conversation queue to prevent simultaneous speaking
+  const [conversationQueue, setConversationQueue] = useState<string[]>([])
+  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null)
+
+  // Dynamic stakeholder response processing with conversation control
   const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string) => {
     try {
+      // Add to conversation queue to prevent simultaneous speaking
+      setConversationQueue(prev => [...prev, stakeholder.id])
+      
+      // Wait for turn if someone else is speaking
+      while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      
+      // Start speaking
+      setCurrentSpeaking(stakeholder.id)
+      
       // Dynamic thinking state management
       addStakeholderToThinking(stakeholder.id)
       
@@ -1072,10 +1087,17 @@ These notes were generated using a fallback system due to extended AI processing
         setDynamicFeedback(null)
       }, 100)
       
+      // Check for baton passing in the response
+      const batonPassedStakeholder = detectBatonPassing(response, updatedMessages)
+      
       // Dynamic audio handling based on user preferences and context
       if (globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id)) {
-        playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
+        await playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
       }
+      
+      // Finish speaking
+      setCurrentSpeaking(null)
+      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id))
       
       // Auto-focus input field when stakeholder response is complete
       setTimeout(() => {
@@ -1084,11 +1106,23 @@ These notes were generated using a fallback system due to extended AI processing
         }
       }, 500) // Small delay to ensure message is rendered
       
+      // Handle baton passing if detected
+      if (batonPassedStakeholder) {
+        console.log(`Baton passed to ${batonPassedStakeholder.name}`)
+        setTimeout(async () => {
+          await processDynamicStakeholderResponse(batonPassedStakeholder, messageContent, updatedMessages, 'baton_pass')
+        }, 1000) // Small delay for natural flow
+      }
+      
       return updatedMessages
     } catch (error) {
       console.error('Error processing stakeholder response:', error)
       removeStakeholderFromThinking(stakeholder.id)
       setDynamicFeedback(null)
+      
+      // Clean up conversation state on error
+      setCurrentSpeaking(null)
+      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id))
       
       // Force cleanup of thinking state on error
       setTimeout(() => {
@@ -1100,7 +1134,7 @@ These notes were generated using a fallback system due to extended AI processing
     }
   }
 
-  // Dynamic discussion flow management - NO HARD-CODING
+  // Dynamic discussion flow management with conversation control
   const handleAdaptiveDiscussion = async (messageContent: string, currentMessages: Message[]) => {
     // Dynamic context analysis for response strategy
     const context = {
@@ -1116,10 +1150,15 @@ These notes were generated using a fallback system due to extended AI processing
     if (primaryRespondent) {
       await processDynamicStakeholderResponse(primaryRespondent, messageContent, currentMessages, 'discussion_primary')
       
-      // Dynamic assessment of follow-up need
+      // Wait for primary response to complete before considering follow-up
+      while (currentSpeaking !== null) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      
+      // Dynamic assessment of follow-up need (only after primary response is complete)
       const followUpAssessment = await assessFollowUpNeed(messageContent, currentMessages, primaryRespondent)
       
-      if (followUpAssessment.shouldFollowUp) {
+      if (followUpAssessment.shouldFollowUp && currentSpeaking === null) {
         // Dynamic delay calculation for follow-up
         const followUpDelay = calculateDynamicPause({ 
           ...context, 
@@ -1128,9 +1167,12 @@ These notes were generated using a fallback system due to extended AI processing
         })
         
         setTimeout(async () => {
-          const followUpStakeholder = selectDynamicFollowUp(messageContent, currentMessages, primaryRespondent, followUpAssessment)
-          if (followUpStakeholder) {
-            await processDynamicStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'discussion_followup')
+          // Double-check no one is speaking before starting follow-up
+          if (currentSpeaking === null) {
+            const followUpStakeholder = selectDynamicFollowUp(messageContent, currentMessages, primaryRespondent, followUpAssessment)
+            if (followUpStakeholder) {
+              await processDynamicStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'discussion_followup')
+            }
           }
         }, followUpDelay)
       }
@@ -1976,7 +2018,89 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
    return null
  }
 
- // Dynamic contextual respondent selection - NO HARD-CODING
+   // Detect baton passing in stakeholder responses
+  const detectBatonPassing = (response: string, conversationHistory: Message[]) => {
+    const responseLower = response.toLowerCase()
+    
+    // Common baton passing patterns
+    const batonPatterns = [
+      // Direct suggestions
+      /([a-zA-Z]+)\s+(?:might|could|would|should)\s+be\s+(?:better|more)\s+(?:equipped|suited|able)/,
+      /someone\s+from\s+([a-zA-Z]+)\s+(?:might|could|would|should)/,
+      /([a-zA-Z]+)\s+(?:can|could|would|should)\s+(?:help|assist|answer|explain|walk|guide)/,
+      /(?:ask|check with|speak to|talk to)\s+([a-zA-Z]+)/,
+      /([a-zA-Z]+)\s+(?:knows|understands|handles)\s+(?:this|that|these)/,
+      /([a-zA-Z]+)\s+(?:is|would be)\s+(?:the|a)\s+(?:right|best|better)\s+(?:person|one)/,
+      
+      // Department/role suggestions
+      /someone\s+from\s+(?:the\s+)?([a-zA-Z]+)\s+(?:team|department|group)/,
+      /(?:our|the)\s+([a-zA-Z]+)\s+(?:team|department|group)\s+(?:should|could|might)/,
+      /(?:talk to|ask)\s+(?:the\s+)?([a-zA-Z]+)\s+(?:team|department|group)/,
+      
+      // Name-based suggestions
+      /([A-Z][a-z]+)\s+(?:might|could|would|should)\s+be\s+(?:better|able|more)/,
+      /([A-Z][a-z]+)\s+(?:can|could|would|should)\s+(?:help|handle|explain|answer)/,
+      /(?:ask|check with|speak to|talk to)\s+([A-Z][a-z]+)/,
+      /([A-Z][a-z]+)\s+(?:knows|understands|handles)\s+(?:this|that|these)/,
+      /([A-Z][a-z]+)\s+(?:is|would be)\s+(?:the|a)\s+(?:right|best|better)\s+(?:person|one)/
+    ]
+    
+    for (const pattern of batonPatterns) {
+      const match = responseLower.match(pattern)
+      if (match && match[1]) {
+        const suggestion = match[1].toLowerCase()
+        
+        // Try to find stakeholder by name first
+        const stakeholderByName = selectedStakeholders.find(s => 
+          s.name.toLowerCase().includes(suggestion) || 
+          s.name.toLowerCase().split(' ').some(part => part.includes(suggestion))
+        )
+        
+        if (stakeholderByName) {
+          return stakeholderByName
+        }
+        
+        // Try to find stakeholder by department/role
+        const stakeholderByRole = selectedStakeholders.find(s => 
+          s.department?.toLowerCase().includes(suggestion) || 
+          s.role?.toLowerCase().includes(suggestion)
+        )
+        
+        if (stakeholderByRole) {
+          return stakeholderByRole
+        }
+        
+        // Try to find stakeholder by expertise domain
+        const expertiseDomains = {
+          'operations': ['operations', 'process', 'workflow', 'efficiency'],
+          'technical': ['technical', 'development', 'engineering', 'system'],
+          'business': ['business', 'strategy', 'management', 'commercial'],
+          'product': ['product', 'design', 'user', 'customer'],
+          'financial': ['financial', 'budget', 'accounting', 'finance'],
+          'marketing': ['marketing', 'sales', 'promotion', 'communication'],
+          'security': ['security', 'compliance', 'risk', 'audit'],
+          'data': ['data', 'analytics', 'reporting', 'intelligence']
+        }
+        
+        for (const [domain, keywords] of Object.entries(expertiseDomains)) {
+          if (keywords.some(keyword => keyword.includes(suggestion) || suggestion.includes(keyword))) {
+            const expertStakeholder = selectedStakeholders.find(s => 
+              s.department?.toLowerCase().includes(domain) || 
+              s.role?.toLowerCase().includes(domain) ||
+              s.expertise?.some((exp: string) => exp.toLowerCase().includes(domain))
+            )
+            if (expertStakeholder) {
+              return expertStakeholder
+            }
+          }
+        }
+      }
+    }
+    
+    return null
+  }
+
+  // Dynamic contextual respondent selection - NO HARD-CODING
  const selectContextualRespondent = (messageContent: string, currentMessages: Message[]) => {
    const aiService = AIService.getInstance()
    const analytics = aiService.getConversationAnalytics()
@@ -2538,11 +2662,35 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
 
           {/* Direct Addressing Guidance */}
           <div className="border-t border-b bg-blue-50 p-3 flex-shrink-0">
-            <div className="flex items-center space-x-2 text-sm text-blue-700">
-              <HelpCircle className="w-4 h-4 flex-shrink-0" />
-              <span>
-                <strong>Tip:</strong> To get input from a specific stakeholder, address them directly (e.g., "David, what are your thoughts?" or "Sarah, can you help with...")
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-sm text-blue-700">
+                <HelpCircle className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  <strong>Tip:</strong> To get input from a specific stakeholder, address them directly (e.g., "David, what are your thoughts?" or "Sarah, can you help with...")
+                </span>
+              </div>
+              
+              {/* Conversation Queue Indicator */}
+              {conversationQueue.length > 0 && (
+                <div className="flex items-center space-x-2 text-xs text-gray-600">
+                  <span>Speaking queue:</span>
+                  <div className="flex space-x-1">
+                    {conversationQueue.map((stakeholderId, index) => {
+                      const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+                      return stakeholder ? (
+                        <span 
+                          key={stakeholderId}
+                          className={`px-2 py-1 rounded text-xs ${
+                            index === 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {stakeholder.name}
+                        </span>
+                      ) : null
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
