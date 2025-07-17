@@ -93,12 +93,15 @@ export class AIService {
   }
 
   private calculateDynamicTokens(teamSize: number, messageCount: number, stakeholderState: StakeholderState): number {
-    const baseTokens = 150;
-    const teamFactor = Math.max(0.7, 1.2 - (teamSize * 0.1)); // Smaller responses in larger teams
-    const experienceFactor = stakeholderState.hasSpoken ? 0.9 : 1.1; // Slightly longer first responses
-    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.3 : 1.0;
+    // MUCH shorter responses for natural conversation - NO MORE LONG RAMBLING
+    const baseTokens = 60; // Reduced from 150 to 60 for natural conversation
+    const teamFactor = Math.max(0.8, 1.1 - (teamSize * 0.05)); // Smaller adjustment for teams
+    const experienceFactor = stakeholderState.hasSpoken ? 0.95 : 1.05; // Minimal difference for experience
+    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.2 : 1.0; // Reduced multiplier
     
-    return Math.floor(baseTokens * teamFactor * experienceFactor * phaseFactor);
+    // Cap maximum tokens to prevent rambling
+    const calculatedTokens = Math.floor(baseTokens * teamFactor * experienceFactor * phaseFactor);
+    return Math.min(calculatedTokens, 100); // Hard cap at 100 tokens (about 2-3 sentences max)
   }
 
   private calculatePresencePenalty(stakeholderName: string): number {
@@ -330,8 +333,11 @@ export class AIService {
         frequency_penalty: dynamicConfig.frequencyPenalty
       });
 
-      const aiResponse = completion.choices[0]?.message?.content || 
+      let aiResponse = completion.choices[0]?.message?.content || 
         this.generateDynamicFallback(stakeholder, userMessage, context);
+
+      // Ensure response is complete and not cut off mid-sentence
+      aiResponse = this.ensureCompleteResponse(aiResponse);
 
       this.updateConversationState(stakeholder, userMessage, aiResponse);
       return aiResponse;
@@ -340,6 +346,44 @@ export class AIService {
       console.error('AI Service Error:', error);
       return this.generateDynamicFallback(stakeholder, userMessage, context);
     }
+  }
+
+  // Ensure AI responses are complete and not cut off mid-sentence
+  private ensureCompleteResponse(response: string): string {
+    if (!response || response.length === 0) {
+      return "I'd be happy to discuss this further.";
+    }
+
+    // Trim whitespace
+    let cleanResponse = response.trim();
+
+    // Check if response ends abruptly (incomplete sentence)
+    const endsWithIncomplete = /\b(and|but|so|however|therefore|because|since|when|while|if|unless|although|whereas|we|i|the|a|an|this|that|these|those|our|your|their|will|would|should|could|can|may|might)\s*$/i.test(cleanResponse);
+    
+    // Check if ends with incomplete phrase
+    const endsWithPrepOrConjunction = /\b(to|for|with|by|from|in|on|at|of|or|and|but)\s*$/i.test(cleanResponse);
+    
+    if (endsWithIncomplete || endsWithPrepOrConjunction) {
+      // Find the last complete sentence
+      const sentences = cleanResponse.split(/[.!?]+/);
+      if (sentences.length > 1) {
+        // Return the complete sentences only
+        const completeSentences = sentences.slice(0, -1).join('. ').trim();
+        if (completeSentences.length > 10) {
+          return completeSentences + '.';
+        }
+      }
+      
+      // If no complete sentences, return a safe fallback
+      return "I'd be happy to discuss this in more detail.";
+    }
+
+    // Check if ends properly with punctuation
+    if (!/[.!?]$/.test(cleanResponse)) {
+      cleanResponse += '.';
+    }
+
+    return cleanResponse;
   }
 
   // Generate comprehensive interview notes from meeting data
@@ -771,14 +815,21 @@ CONVERSATION CONTEXT:
 - ${emotionalContext}
 - ${topicContext}
 
+RESPONSE STYLE - CRITICAL:
+- Keep responses CONCISE and NATURAL (1-3 sentences maximum)
+- Speak like a real person in a business meeting, NOT like an essay
+- Make ONE main point per response, don't ramble
+- If you have multiple points, make them briefly or save for follow-up
+- Use conversational language, avoid corporate jargon overload
+- End responses naturally, don't add unnecessary elaboration
+
 BEHAVIORAL GUIDELINES:
 - Respond authentically as ${stakeholder.name} with your unique perspective
 - Stay consistent with your personality and role throughout the conversation
-- Reference your department's specific needs and constraints
-- Consider how proposed changes would affect your daily work and team
+- Reference your department's specific needs and constraints when relevant
 - Build on previous discussions rather than repeating information
 - Ask clarifying questions when requirements are unclear
-- Share specific examples from your experience when relevant
+- Share ONE specific example if relevant, don't list multiple
 - Collaborate while advocating for your priorities
 - Use natural, conversational language appropriate for a business meeting
 
@@ -789,7 +840,7 @@ CONVERSATION INTELLIGENCE:
 - Build on others' ideas while adding your unique value
 - Stay engaged and contribute meaningfully to the discussion
 
-Your goal is to be a realistic, intelligent stakeholder who contributes meaningfully to the requirements gathering process while staying true to your role and personality.`
+Your goal is to be a realistic, intelligent stakeholder who contributes meaningfully with CONCISE, NATURAL responses that feel like real business conversation.`
   }
 
   // Dynamic contextual prompt building

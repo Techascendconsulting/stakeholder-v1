@@ -1844,6 +1844,38 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
        return prioritized[0]
  }
 
+ // Detect direct addressing by name or role
+ const detectDirectAddressing = (message: string) => {
+   const messageLower = message.toLowerCase()
+   
+   // Check for name mentions (first name, last name, or full name)
+   for (const stakeholder of selectedStakeholders) {
+     const fullName = stakeholder.name.toLowerCase()
+     const firstName = fullName.split(' ')[0]
+     const lastName = fullName.split(' ').slice(-1)[0]
+     
+     // Direct name addressing patterns
+     const namePatterns = [
+       // Direct addressing: "David, what do you think?"
+       new RegExp(`\\b${firstName}[,\\s]`, 'i'),
+       new RegExp(`\\b${lastName}[,\\s]`, 'i'),
+       new RegExp(`\\b${fullName}[,\\s]`, 'i'),
+       // Question patterns: "What do you think, David?"
+       new RegExp(`[,\\s]${firstName}[?\\s]*$`, 'i'),
+       new RegExp(`[,\\s]${lastName}[?\\s]*$`, 'i'),
+       // Role-based: "David what are your thoughts"
+       new RegExp(`\\b${firstName}\\s+what`, 'i'),
+       new RegExp(`\\b${lastName}\\s+what`, 'i')
+     ]
+     
+     if (namePatterns.some(pattern => pattern.test(message))) {
+       return stakeholder
+     }
+   }
+   
+   return null
+ }
+
  // Dynamic contextual respondent selection - NO HARD-CODING
  const selectContextualRespondent = (messageContent: string, currentMessages: Message[]) => {
    const aiService = AIService.getInstance()
