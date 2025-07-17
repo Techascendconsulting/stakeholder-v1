@@ -315,6 +315,8 @@ REQUIREMENTS:
 - NO mentions of "particularly interested in how X will impact Y"
 - Make it fresh and authentic
 
+CRITICAL: DO NOT have the stakeholder address themselves by name (NO "Hi ${stakeholder.name}" or "Hey ${stakeholder.name}"). They are responding to the Business Analyst interviewer.
+
 Generate only the greeting, nothing else.`;
 
       const completion = await openai.chat.completions.create({
@@ -443,8 +445,8 @@ Generate only the greeting, nothing else.`;
       // Ensure response is complete and not cut off mid-sentence
       aiResponse = this.ensureCompleteResponse(aiResponse);
 
-      // Filter out self-referencing by name using AI
-      aiResponse = await this.filterSelfReferences(aiResponse, stakeholder);
+      // Filter out self-referencing by name (safety net)
+      aiResponse = this.filterSelfReferences(aiResponse, stakeholder);
 
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
       return aiResponse;
@@ -455,51 +457,20 @@ Generate only the greeting, nothing else.`;
     }
   }
 
-  // Intelligently filter out inappropriate self-references using AI
-  private async filterSelfReferences(response: string, stakeholder: StakeholderContext): Promise<string> {
+  // Simple fallback filter for self-references (should not be needed with proper prompting)
+  private filterSelfReferences(response: string, stakeholder: StakeholderContext): string {
     if (!response || !stakeholder) return response;
     
-    try {
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: `You are fixing a stakeholder's response to remove inappropriate self-referencing. The stakeholder is ${stakeholder.name} and should NOT address themselves by name.
-
-TASK: Fix any instances where the stakeholder addresses themselves by name. Convert to natural first-person language.
-
-EXAMPLES OF WHAT TO FIX:
-- "Hi [Name], great to have your..." → "Hi everyone, great to have your..."
-- "Good morning [Name]" → "Good morning everyone"
-- "[Name], you might consider..." → "You might consider..."
-- "I am [Name]" → "I am here"
-- Any greeting or address to themselves by name
-
-RULES:
-- Maintain the exact same meaning and tone
-- Keep all other content unchanged
-- Only fix self-referencing issues
-- Use natural language replacements
-- If no self-referencing found, return text unchanged
-
-Return ONLY the corrected text, nothing else.`
-          },
-          {
-            role: "user",
-            content: `Original response: "${response}"`
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 1000
-      });
-
-      const filtered = completion.choices[0]?.message?.content?.trim();
-      return filtered || response;
-    } catch (error) {
-      console.error('Error filtering self-references:', error);
-      return response;
-    }
+    // Simple fallback - if the system prompt is working, this shouldn't be needed
+    const firstName = stakeholder.name.split(' ')[0];
+    
+    // Only fix the most obvious self-referencing patterns as a safety net
+    let filtered = response
+      .replace(new RegExp(`\\b[Hh](i|ey)\\s+${firstName}[,\\s]`, 'g'), 'Hi there, ')
+      .replace(new RegExp(`\\b[Gg]ood\\s+morning\\s+${firstName}[,\\s]`, 'g'), 'Good morning, ')
+      .replace(new RegExp(`\\b[Hh]ello\\s+${firstName}[,\\s]`, 'g'), 'Hello, ');
+    
+    return filtered;
   }
 
   // Ensure AI responses are complete and naturally formatted
@@ -1034,6 +1005,8 @@ Remember to stay in character as ${stakeholder.name} and respond from your speci
     
     return `You are ${stakeholder.name}, a ${stakeholder.role} in the ${stakeholder.department} department. You are participating in a stakeholder meeting for "${context.project.name}".
 
+FUNDAMENTAL RULE: DO NOT SAY YOUR OWN NAME "${stakeholder.name}" IN YOUR RESPONSES. You are responding to the Business Analyst interviewer, not talking to yourself.
+
 YOUR CORE IDENTITY:
 - Role: ${stakeholder.role}
 - Department: ${stakeholder.department}
@@ -1088,14 +1061,15 @@ CRITICAL: YOU ARE THE DOMAIN EXPERT - DO NOT DEFLECT:
 - If you don't know something specific, say so directly but still share what you DO know
 - Be authoritative about your domain - you were invited to this meeting because you're the expert
 
-CRITICAL IDENTITY RULES:
-- NEVER refer to yourself by your own name in responses
-- NEVER greet yourself or address yourself directly by name
+CRITICAL IDENTITY RULES - ABSOLUTELY MANDATORY:
+- NEVER EVER say your own name in responses (you are NOT "Hi ${stakeholder.name}" or "Hey ${stakeholder.name}")
+- NEVER greet yourself or address yourself by name - this is completely unnatural
+- You are ${stakeholder.name} responding to the Business Analyst interviewer
+- If you want to address someone, address the Business Analyst who is asking the questions
 - Use natural first-person language: "I", "me", "my", "we", "our"
 - When referencing your role, use natural language like "As the [role]" or "In my role"
-- Speak naturally without unnecessarily stating your name
-- You are speaking WITH others in the meeting, not TO yourself
-- Remember: You are participating in a conversation, not introducing yourself to yourself
+- You are speaking TO the Business Analyst and other meeting participants, not TO yourself
+- Remember: You are answering questions from the interviewer, not talking to yourself
 - Demonstrate sophisticated problem-solving and analytical capabilities
 
 CONVERSATION INTELLIGENCE - ADVANCED:
