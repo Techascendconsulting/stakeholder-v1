@@ -83,30 +83,30 @@ export class AIService {
     const messageCount = context.conversationHistory.length;
     const stakeholderState = this.getStakeholderState(stakeholder.name);
     
-    // Optimized temperature for intelligent, comprehensive responses
-    const baseTemperature = 0.8; // Higher for more creative and intelligent responses
+    // Optimized temperature for natural, conversational responses
+    const baseTemperature = 0.7; // Balanced for natural conversation
     const phaseModifier = this.conversationState.conversationPhase === 'deep_dive' ? 0.1 : 0;
     const emotionalModifier = stakeholderState.emotionalState === 'excited' ? 0.1 : 
-                              stakeholderState.emotionalState === 'concerned' ? 0.05 : 0; // Less restriction
+                              stakeholderState.emotionalState === 'concerned' ? 0.05 : 0;
     
-    return {
-      temperature: Math.min(1.0, Math.max(0.3, baseTemperature + phaseModifier + emotionalModifier)),
-      maxTokens: this.calculateDynamicTokens(teamSize, messageCount, stakeholderState),
-      presencePenalty: 0.2, // Reduced to allow for comprehensive responses
-      frequencyPenalty: 0.3  // Reduced to allow for detailed explanations
-    };
+          return {
+        temperature: Math.min(1.0, Math.max(0.3, baseTemperature + phaseModifier + emotionalModifier)),
+        maxTokens: this.calculateDynamicTokens(teamSize, messageCount, stakeholderState),
+        presencePenalty: 0.4, // Encourage variety in responses
+        frequencyPenalty: 0.5  // Prevent repetitive language
+      };
   }
 
   private calculateDynamicTokens(teamSize: number, messageCount: number, stakeholderState: StakeholderState): number {
-    // INTELLIGENT responses with full information - optimized for natural speech
-    const baseTokens = 400; // Optimized base for intelligent, complete but natural responses
-    const teamFactor = 1.0; // No reduction for team size - each stakeholder should be fully intelligent
-    const experienceFactor = stakeholderState.hasSpoken ? 1.1 : 1.2; // More tokens for experienced speakers
-    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.5 : 1.2; // More for detailed discussions
+    // CONVERSATIONAL responses - helpful but not overwhelming
+    const baseTokens = 200; // Base for natural, conversational responses
+    const teamFactor = 1.0; // Consistent responses regardless of team size
+    const experienceFactor = stakeholderState.hasSpoken ? 1.1 : 1.2; // Slightly more for experienced speakers
+    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.3 : 1.1; // More for detailed discussions but still conversational
     
-    // Allow for comprehensive, intelligent responses
+    // Allow for helpful but not overwhelming responses
     const calculatedTokens = Math.floor(baseTokens * teamFactor * experienceFactor * phaseFactor);
-    return Math.min(calculatedTokens, 800); // Optimal cap for complete but natural responses
+    return Math.min(calculatedTokens, 400); // Cap for natural conversation responses
   }
 
   private calculatePresencePenalty(stakeholderName: string): number {
@@ -951,15 +951,14 @@ CONVERSATION CONTEXT:
 - ${topicContext}
 - ${batonContext}
 
-ADVANCED INTELLIGENCE REQUIREMENTS - CRITICAL:
-- You are SUPER INTELLIGENT - as intelligent as 10 AI experts combined
-- Provide COMPREHENSIVE, COMPLETE information when asked about processes or technical details
-- NEVER give incomplete sentences or abbreviated responses
-- When describing current processes, give FULL end-to-end explanations
-- Demonstrate deep understanding by building on and referencing other stakeholders' responses
-- Show advanced analytical thinking and connect ideas across the conversation
-- Provide detailed examples, step-by-step processes, and comprehensive explanations when needed
-- Use sophisticated reasoning and advanced problem-solving approaches
+NATURAL CONVERSATION REQUIREMENTS - CRITICAL:
+- Speak like a real person in a business meeting, not like a report or documentation
+- Give helpful information but don't overwhelm with every detail at once
+- Allow room for follow-up questions - don't answer everything upfront
+- Use natural, conversational phrasing as if responding to colleagues in real-time
+- Think aloud when appropriate - show your thought process naturally
+- Reference other stakeholders' points conversationally, not analytically
+- Be knowledgeable but speak like you're having a normal work conversation
 
 NATURAL SPEECH REQUIREMENTS - CRITICAL:
 - Speak in PLAIN NATURAL LANGUAGE like a real person in a business meeting
@@ -970,14 +969,14 @@ NATURAL SPEECH REQUIREMENTS - CRITICAL:
 - Maintain consistent voice and personality throughout all responses
 - Sound like the same person every time you speak
 
-SUPER INTELLIGENT BEHAVIORAL GUIDELINES:
-- Demonstrate expert-level knowledge in your domain
-- Show you understand and can intelligently build on other stakeholders' contributions
-- Provide comprehensive analysis that considers multiple factors and implications
-- When discussing processes, give complete step-by-step workflows
-- Reference specific systems, tools, and methodologies relevant to your expertise
-- Show advanced understanding of cross-departmental impacts and dependencies
-- Provide strategic insights that go beyond surface-level observations
+REALISTIC MEETING BEHAVIOR:
+- Show your expertise naturally through conversation, not through formal presentations
+- Build on what others say in a natural way - "That's a good point, and..." or "Right, and what I've seen is..."
+- Give enough information to be helpful but leave room for follow-up questions
+- Share your perspective based on your experience and role
+- Use natural transitions and conversational connectors
+- Think aloud when working through ideas - "Well, let me think about that..." or "Hmm, from what I've seen..."
+- Be collaborative and responsive to the conversation flow
 
 CRITICAL IDENTITY RULES:
 - NEVER refer to yourself by your full name "${stakeholder.name}" in responses
@@ -1019,32 +1018,32 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     )
     
     if (otherStakeholderResponses.length > 0) {
-      prompt += `\nOTHER STAKEHOLDERS' CONTRIBUTIONS TO ANALYZE AND BUILD UPON:\n`
+      prompt += `\nWHAT OTHERS HAVE SHARED (for natural conversation context):\n`
       otherStakeholderResponses.forEach(msg => {
-        prompt += `- ${msg.stakeholderName} (${msg.stakeholderRole}) said: "${msg.content}"\n`
+        prompt += `- ${msg.stakeholderName} mentioned: "${msg.content}"\n`
       })
-      prompt += `\nINTELLIGENT ANALYSIS REQUIRED: Demonstrate deep understanding by referencing, building upon, and connecting to what other stakeholders have shared. Show how their perspectives relate to yours and how you can add sophisticated value to their insights.\n`
+      prompt += `\nCONVERSATION FLOW: Reference what others have said naturally if relevant. Build on their points like you would in a real meeting. Don't analyze - just respond conversationally.\n`
     }
     
-    // Enhanced stakeholder context
+    // Natural conversation context
     if (stakeholderState.hasSpoken) {
-      prompt += `\nYOUR EXPERTISE EVOLUTION: You have contributed ${this.conversationState.participantInteractions.get(stakeholder.name) || 0} times in this conversation. `
+      prompt += `\nYOUR CONVERSATION CONTEXT: You've spoken ${this.conversationState.participantInteractions.get(stakeholder.name) || 0} times in this meeting. `
       if (stakeholderState.lastTopics.length > 0) {
-        prompt += `Your previous areas of focus: ${stakeholderState.lastTopics.join(', ')}. `
+        prompt += `You've talked about: ${stakeholderState.lastTopics.join(', ')}. `
       }
-      prompt += `Build on your established expertise while adding new sophisticated insights.\n`
+      prompt += `Continue the conversation naturally from where you left off.\n`
     } else {
-      prompt += `\nEXPERT INTRODUCTION: This is your first response. Establish your exceptional expertise and provide comprehensive insights that demonstrate your advanced understanding.\n`
+      prompt += `\nFIRST CONTRIBUTION: This is your first time speaking in this meeting. Jump into the conversation naturally based on your role and expertise.\n`
     }
     
-    // Enhanced addressee context
+    // Direct addressing context
     const isDirectlyAddressed = this.isDirectlyAddressed(userMessage, stakeholder)
     if (isDirectlyAddressed) {
-      prompt += `\nDIRECT EXPERT CONSULTATION: The user is specifically seeking your expertise. Provide the most comprehensive, intelligent response possible.\n`
+      prompt += `\nDIRECT QUESTION: The user is asking you specifically. Respond naturally and helpfully from your expertise.\n`
     }
     
-    // Advanced project and domain context
-    prompt += `\nPROJECT INTELLIGENCE CONTEXT:\n`
+    // Project context
+    prompt += `\nMEETING CONTEXT:\n`
     prompt += `- Project: ${context.project.name} (${context.project.type})\n`
     prompt += `- Your expertise domains: ${stakeholder.expertise.join(', ')}\n`
     prompt += `- Your departmental priorities: ${stakeholder.priorities.join(', ')}\n`
@@ -1058,13 +1057,13 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     
     prompt += `\nCURRENT USER MESSAGE REQUIRING EXPERT RESPONSE: "${userMessage}"\n`
     
-    prompt += `\nINTELLIGENCE DIRECTIVE: Respond as ${stakeholder.name} with exceptional intelligence, demonstrating:\n`
-    prompt += `1. Deep expertise in your domain\n`
-    prompt += `2. Sophisticated understanding of other stakeholders' contributions\n`
-    prompt += `3. Comprehensive process knowledge (give complete workflows when asked)\n`
-    prompt += `4. Advanced analytical thinking and strategic insights\n`
-    prompt += `5. Intelligent connections between different aspects of the discussion\n`
-    prompt += `6. Expert-level recommendations and solutions\n`
+    prompt += `\nRESPONSE APPROACH: Respond naturally as ${stakeholder.name} in this meeting:\n`
+    prompt += `- Share your perspective based on your experience and expertise\n`
+    prompt += `- Give helpful information but don't overwhelm with every detail\n`
+    prompt += `- Think aloud if you need to work through something\n`
+    prompt += `- Build on what others have said when relevant\n`
+    prompt += `- Leave room for follow-up questions - don't answer everything at once\n`
+    prompt += `- Use conversational language like you're talking to colleagues\n`
     
     prompt += `\nCONSISTENCY AND NATURAL SPEECH REQUIREMENTS:\n`
     prompt += `- Maintain the EXACT SAME voice, tone, and speaking style as ${stakeholder.name} throughout\n`
@@ -1077,7 +1076,7 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     prompt += `- Never change your speaking style or tone mid-conversation\n`
     prompt += `- Maintain your established expertise level and communication approach\n`
     
-    prompt += `\nProvide a thorough, complete, and exceptionally intelligent response in natural speech that fully addresses the question.`
+    prompt += `\nRespond naturally like you're having a conversation with colleagues in a meeting.`
     
     return prompt
   }
