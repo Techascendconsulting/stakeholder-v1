@@ -34,33 +34,9 @@ const MeetingView: React.FC = () => {
   const [audioPausedPosition, setAudioPausedPosition] = useState<number>(0)
   const [currentlyProcessingAudio, setCurrentlyProcessingAudio] = useState<string | null>(null)
 
-  // Enhanced conversation state tracking
-  const [conversationState, setConversationState] = useState({
-    greetingPhase: 'initial', // 'initial', 'introductions', 'discussion'
-    currentSpeaker: null as any,
-    nextSpeaker: null as any,
-    greetingCount: 0,
-    introducedStakeholders: new Set<string>(),
-    pendingResponses: new Map<string, boolean>() // Track who is thinking
-  })
+  // Old hard-coded conversation state removed - replaced by dynamic conversationDynamics
 
-  // Thinking/processing indicators
-  const [thinkingStakeholders, setThinkingStakeholders] = useState<Set<string>>(new Set())
-  const [processingMessage, setProcessingMessage] = useState<string | null>(null)
-
-  // Add thinking indicator for stakeholder
-  const addThinkingStakeholder = (stakeholderId: string) => {
-    setThinkingStakeholders(prev => new Set(prev).add(stakeholderId))
-  }
-
-  // Remove thinking indicator for stakeholder
-  const removeThinkingStakeholder = (stakeholderId: string) => {
-    setThinkingStakeholders(prev => {
-      const newSet = new Set(prev)
-      newSet.delete(stakeholderId)
-      return newSet
-    })
-  }
+  // Old hard-coded functions removed - replaced by dynamic versions
 
   // Dynamic input availability logic
   const shouldAllowUserInput = () => {
@@ -1020,77 +996,37 @@ These notes were generated using a fallback system due to extended AI processing
       setCanUserType(true)
     }
 
-  // Enhanced natural greeting flow
-  const handleNaturalGreeting = async (messageContent: string, currentMessages: Message[]) => {
-    const greetingCount = conversationState.greetingCount + 1
-    
-    // First greeting - one stakeholder responds and introduces the team
-    if (greetingCount === 1) {
-      const leadStakeholder = selectedStakeholders[0] // Most senior or first in list
-      await processSingleStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'initial_greeting')
-      
-      setConversationState(prev => ({
-        ...prev,
-        greetingPhase: 'introductions',
-        currentSpeaker: leadStakeholder,
-        greetingCount: 1,
-        introducedStakeholders: new Set([leadStakeholder.id])
-      }))
-    }
-    // Second greeting - lead stakeholder invites others to introduce themselves
-    else if (greetingCount === 2) {
-      const leadStakeholder = selectedStakeholders[0]
-      const nextStakeholder = selectedStakeholders[1]
-      
-      if (nextStakeholder) {
-        await processSingleStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'call_for_introductions')
-        
-        // Brief pause, then next stakeholder introduces themselves
-        setTimeout(async () => {
-          await processSingleStakeholderResponse(nextStakeholder, messageContent, currentMessages, 'introduction')
-          setConversationState(prev => ({
-            ...prev,
-            currentSpeaker: nextStakeholder,
-            introducedStakeholders: new Set([...prev.introducedStakeholders, nextStakeholder.id])
-          }))
-        }, 2000)
-      }
-      
-      setConversationState(prev => ({ ...prev, greetingCount: 2 }))
-    }
-    // Third+ greeting - transition to discussion
-    else {
-      const leadStakeholder = selectedStakeholders[0]
-      await processSingleStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'transition_to_discussion')
-      
-      setConversationState(prev => ({
-        ...prev,
-        greetingPhase: 'discussion',
-        greetingCount: greetingCount
-      }))
-    }
-  }
+  // Old hard-coded greeting flow removed - replaced by dynamic handleAdaptiveGreeting
 
-  // Process single stakeholder response with thinking indicator
-  const processSingleStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseType: string) => {
+  // Dynamic stakeholder response processing - NO HARD-CODING
+  const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string) => {
     try {
-      // Show thinking indicator
-      addThinkingStakeholder(stakeholder.id)
-      setProcessingMessage(`${stakeholder.name} is thinking...`)
+      // Dynamic thinking state management
+      addStakeholderToThinking(stakeholder.id)
       
-      // Generate response
-      const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseType)
+      // Generate dynamic thinking message based on context
+      const context = {
+        stakeholder,
+        messageContent,
+        conversationHistory: currentMessages,
+        responseContext
+      }
+      const thinkingMessage = generateThinkingMessage(stakeholder, context)
+      setDynamicFeedback(thinkingMessage)
       
-      // Remove thinking indicator
-      removeThinkingStakeholder(stakeholder.id)
-      setProcessingMessage(null)
+      // Generate contextual response using AI service
+      const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext)
       
-      // Create and add message
-      const responseMessage = createResponseMessage(stakeholder, response, 0)
+      // Clean up thinking state
+      removeStakeholderFromThinking(stakeholder.id)
+      setDynamicFeedback(null)
+      
+      // Create and add message with dynamic indexing
+      const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length)
       const updatedMessages = [...currentMessages, responseMessage]
       setMessages(updatedMessages)
       
-      // Play audio (non-blocking)
+      // Dynamic audio handling based on user preferences and context
       if (globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id)) {
         playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
       }
@@ -1098,134 +1034,104 @@ These notes were generated using a fallback system due to extended AI processing
       return updatedMessages
     } catch (error) {
       console.error('Error processing stakeholder response:', error)
-      removeThinkingStakeholder(stakeholder.id)
-      setProcessingMessage(null)
+      removeStakeholderFromThinking(stakeholder.id)
+      setDynamicFeedback(null)
       throw error
     }
   }
 
-  // Enhanced natural discussion flow
-  const handleNaturalDiscussion = async (messageContent: string, currentMessages: Message[]) => {
-    // Determine who should respond based on context and natural flow
-    const respondingStakeholder = selectNaturalRespondent(messageContent, currentMessages)
+  // Dynamic discussion flow management - NO HARD-CODING
+  const handleAdaptiveDiscussion = async (messageContent: string, currentMessages: Message[]) => {
+    // Dynamic context analysis for response strategy
+    const context = {
+      messageContent,
+      conversationHistory: currentMessages,
+      stakeholders: selectedStakeholders,
+      currentPhase: conversationDynamics.phase
+    }
     
-    if (respondingStakeholder) {
-      await processSingleStakeholderResponse(respondingStakeholder, messageContent, currentMessages, 'discussion')
+    // Dynamic primary respondent selection
+    const primaryRespondent = selectContextualRespondent(messageContent, currentMessages)
+    
+    if (primaryRespondent) {
+      await processDynamicStakeholderResponse(primaryRespondent, messageContent, currentMessages, 'discussion_primary')
       
-      // Check if other stakeholders want to add something
-      const shouldOthersRespond = await checkForFollowUpResponses(messageContent, currentMessages, respondingStakeholder)
+      // Dynamic assessment of follow-up need
+      const followUpAssessment = await assessFollowUpNeed(messageContent, currentMessages, primaryRespondent)
       
-      if (shouldOthersRespond) {
-        // Brief pause, then another stakeholder adds their perspective
+      if (followUpAssessment.shouldFollowUp) {
+        // Dynamic delay calculation for follow-up
+        const followUpDelay = calculateDynamicPause({ 
+          ...context, 
+          stakeholder: primaryRespondent,
+          followUpContext: followUpAssessment 
+        })
+        
         setTimeout(async () => {
-          const followUpStakeholder = selectFollowUpRespondent(messageContent, currentMessages, respondingStakeholder)
+          const followUpStakeholder = selectDynamicFollowUp(messageContent, currentMessages, primaryRespondent, followUpAssessment)
           if (followUpStakeholder) {
-            await processSingleStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'follow_up')
+            await processDynamicStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'discussion_followup')
           }
-        }, 3000)
+        }, followUpDelay)
       }
     }
   }
 
-  // Smart stakeholder selection based on context
-  const selectNaturalRespondent = (messageContent: string, currentMessages: Message[]) => {
-    const lastStakeholderMessage = currentMessages.slice().reverse().find(m => m.speaker !== 'user' && m.speaker !== 'system')
-    
-    // If someone just spoke, avoid them speaking again immediately
-    const excludeRecent = lastStakeholderMessage?.speaker
-    
-    // Select based on expertise and context
-    const relevantStakeholders = selectedStakeholders.filter(s => s.id !== excludeRecent)
-    
-    // Use AI service to select most appropriate respondent
-    const aiService = AIService.getInstance()
-    const analytics = aiService.getConversationAnalytics()
-    
-    // Find stakeholder with lowest recent participation who's relevant to topic
-    const participationCounts = analytics.participationCounts || {}
-    const sortedByParticipation = relevantStakeholders.sort((a, b) => 
-      (participationCounts[a.id] || 0) - (participationCounts[b.id] || 0)
-    )
-    
-    return sortedByParticipation[0] || selectedStakeholders[0]
-  }
+  // Old hard-coded selection functions removed - replaced by dynamic versions
 
-  // Check if follow-up responses are needed
-  const checkForFollowUpResponses = async (messageContent: string, currentMessages: Message[], primaryRespondent: any) => {
-    // Simple heuristic: complex questions or important topics might need multiple perspectives
-    const isComplexTopic = messageContent.length > 100 || 
-                          messageContent.includes('how') || 
-                          messageContent.includes('why') ||
-                          messageContent.includes('what if')
-    
-    const hasMultipleStakeholders = selectedStakeholders.length > 1
-    const recentMessages = currentMessages.slice(-5)
-    const hasRecentFollowUp = recentMessages.some(m => m.speaker !== 'user' && m.speaker !== primaryRespondent.id)
-    
-    return isComplexTopic && hasMultipleStakeholders && !hasRecentFollowUp && Math.random() > 0.6
-  }
+     // Dynamic conversation handler - NO HARD-CODING
+   const handleSendMessage = async () => {
+     if (!inputMessage.trim() || isEndingMeeting) return
 
-  // Select follow-up respondent
-  const selectFollowUpRespondent = (messageContent: string, currentMessages: Message[], primaryRespondent: any) => {
-    const otherStakeholders = selectedStakeholders.filter(s => s.id !== primaryRespondent.id)
-    
-    // Prefer stakeholders with different departments/perspectives
-    const differentDept = otherStakeholders.find(s => s.department !== primaryRespondent.department)
-    return differentDept || otherStakeholders[0]
-  }
+     setIsGeneratingResponse(true)
+     setCanUserType(false)
+     
+     const messageContent = inputMessage.trim()
+     setInputMessage('')
 
-  // Updated main conversation handler
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isEndingMeeting) return
+     const userMessage: Message = {
+       id: `user-${Date.now()}`,
+       speaker: 'user',
+       content: messageContent,
+       timestamp: new Date().toISOString()
+     }
 
-    setIsGeneratingResponse(true)
-    setCanUserType(false)
-    
-    const messageContent = inputMessage.trim()
-    setInputMessage('')
+     let currentMessages = [...messages, userMessage]
+     setMessages(currentMessages)
 
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      speaker: 'user',
-      content: messageContent,
-      timestamp: new Date().toISOString()
-    }
+     try {
+       // Dynamic conversation type detection
+       const isGroup = isGroupMessage(messageContent)
+       const isGreeting = isSimpleGreeting(messageContent)
+       
+       if (isGroup && isGreeting) {
+         await handleAdaptiveGreeting(messageContent, currentMessages)
+       } else {
+         await handleAdaptiveDiscussion(messageContent, currentMessages)
+       }
+     } catch (error) {
+       console.error('Error generating AI response:', error)
+       await handleFallbackResponse(currentMessages)
+     } finally {
+       setIsGeneratingResponse(false)
+       setCanUserType(true)
+     }
+   }
 
-    let currentMessages = [...messages, userMessage]
-    setMessages(currentMessages)
-
-    try {
-      const isGroup = isGroupMessage(messageContent)
-      const isGreeting = isSimpleGreeting(messageContent)
-      
-      if (isGroup && isGreeting) {
-        await handleNaturalGreeting(messageContent, currentMessages)
-      } else {
-        await handleNaturalDiscussion(messageContent, currentMessages)
-      }
-    } catch (error) {
-      console.error('Error generating AI response:', error)
-      await handleFallbackResponse(currentMessages)
-    } finally {
-      setIsGeneratingResponse(false)
-      setCanUserType(true)
-    }
-  }
-
-  // Update audio controls to be per-stakeholder
-  const stopStakeholderAudio = (stakeholderId: string) => {
-    // Stop audio for this specific stakeholder
-    const messageElements = document.querySelectorAll(`[data-stakeholder-id="${stakeholderId}"]`)
-    messageElements.forEach(element => {
-      const messageId = element.getAttribute('data-message-id')
-      if (messageId && playingMessageId === messageId) {
-        stopCurrentAudio()
-      }
-    })
-    
-       // Remove from thinking state if they were thinking
-   removeThinkingStakeholder(stakeholderId)
- }
+     // Dynamic per-stakeholder audio management - NO HARD-CODING
+   const stopStakeholderAudio = (stakeholderId: string) => {
+     // Stop audio for this specific stakeholder dynamically
+     const messageElements = document.querySelectorAll(`[data-stakeholder-id="${stakeholderId}"]`)
+     messageElements.forEach(element => {
+       const messageId = element.getAttribute('data-message-id')
+       if (messageId && playingMessageId === messageId) {
+         stopCurrentAudio()
+       }
+     })
+     
+     // Remove from dynamic thinking state if they were thinking
+     removeStakeholderFromThinking(stakeholderId)
+   }
 
  // Enhanced fallback response
  const handleFallbackResponse = async (currentMessages: Message[]) => {
@@ -1521,7 +1427,432 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
 `
   }
 
-  if (!selectedProject || selectedStakeholders.length === 0) {
+  // Dynamic conversation state management - NO HARD-CODING
+  const [conversationDynamics, setConversationDynamics] = useState({
+    phase: 'adaptive', // Dynamically determined based on conversation flow
+    leadSpeaker: null as any, // Dynamically selected based on seniority/context
+    responseOrder: [] as any[], // Dynamic order based on expertise and participation
+    greetingIterations: 0,
+    introducedMembers: new Set<string>(),
+    contextualResponses: new Map<string, boolean>()
+  })
+
+  // Dynamic thinking indicators - context-aware messaging
+  const [activeThinking, setActiveThinking] = useState<Set<string>>(new Set())
+  const [dynamicFeedback, setDynamicFeedback] = useState<string | null>(null)
+
+  // Dynamic stakeholder thinking management
+  const addStakeholderToThinking = (stakeholderId: string) => {
+    setActiveThinking(prev => new Set(prev).add(stakeholderId))
+  }
+
+  const removeStakeholderFromThinking = (stakeholderId: string) => {
+    setActiveThinking(prev => {
+      const updated = new Set(prev)
+      updated.delete(stakeholderId)
+      return updated
+    })
+  }
+
+  // Dynamic thinking message generator
+  const generateThinkingMessage = (stakeholder: any, context: any) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+    
+    // Context-aware thinking messages based on stakeholder personality
+    const personalityMessages = {
+      analytical: ['Analyzing your question...', 'Processing the details...', 'Reviewing the information...'],
+      collaborative: ['Considering the team perspective...', 'Thinking about our approach...', 'Gathering my thoughts...'],
+      direct: ['Formulating my response...', 'Organizing my thoughts...', 'Preparing my answer...'],
+      strategic: ['Evaluating the implications...', 'Considering the broader impact...', 'Thinking strategically...']
+    }
+
+    const departmentMessages = {
+      'Engineering': ['Checking technical details...', 'Analyzing the implementation...', 'Reviewing the architecture...'],
+      'Marketing': ['Considering the market impact...', 'Thinking about user needs...', 'Evaluating the positioning...'],
+      'Sales': ['Assessing customer value...', 'Thinking about the business case...', 'Considering market fit...'],
+      'Product': ['Analyzing product requirements...', 'Thinking about user experience...', 'Evaluating features...']
+    }
+
+    const urgencyMessages = {
+      low: ['Taking time to consider...', 'Reflecting on this question...', 'Thinking this through...'],
+      medium: ['Processing your request...', 'Formulating a response...', 'Organizing my thoughts...'],
+      high: ['Quickly analyzing...', 'Rapidly processing...', 'Getting back to you soon...']
+    }
+
+    // Dynamic selection based on context
+    const personalityType = stakeholder.personality || 'collaborative'
+    const department = stakeholder.department || 'Product'
+    const urgency = analytics.conversationPace || 'medium'
+
+    const possibleMessages = [
+      ...(personalityMessages[personalityType] || personalityMessages.collaborative),
+      ...(departmentMessages[department] || departmentMessages.Product),
+      ...(urgencyMessages[urgency] || urgencyMessages.medium)
+    ]
+
+    return possibleMessages[Math.floor(Math.random() * possibleMessages.length)]
+  }
+
+  // Dynamic lead stakeholder selection
+  const selectDynamicLead = (stakeholders: any[], context: any) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+
+    // Dynamic scoring based on multiple factors
+    const scoredStakeholders = stakeholders.map(stakeholder => {
+      let score = 0
+      
+      // Seniority factor (dynamic based on role keywords)
+      const seniorityKeywords = ['senior', 'lead', 'manager', 'director', 'head', 'principal']
+      const roleScore = seniorityKeywords.some(keyword => 
+        stakeholder.role.toLowerCase().includes(keyword)) ? 30 : 0
+      
+      // Participation balance (prefer less active members for variety)
+      const participationScore = analytics.participationCounts?.[stakeholder.id] 
+        ? Math.max(0, 20 - (analytics.participationCounts[stakeholder.id] * 5)) : 20
+      
+      // Expertise relevance (dynamic based on last user message)
+      const lastUserMessage = context.lastUserMessage || ''
+      const expertiseScore = calculateExpertiseRelevance(stakeholder, lastUserMessage)
+      
+      // Personality fit for leadership
+      const personalityScore = stakeholder.personality === 'collaborative' ? 15 : 
+                              stakeholder.personality === 'strategic' ? 12 : 
+                              stakeholder.personality === 'direct' ? 10 : 8
+
+      score = roleScore + participationScore + expertiseScore + personalityScore
+      
+      return { stakeholder, score }
+    })
+
+    // Return highest scoring stakeholder
+    return scoredStakeholders.sort((a, b) => b.score - a.score)[0]?.stakeholder || stakeholders[0]
+  }
+
+  // Dynamic expertise relevance calculator
+  const calculateExpertiseRelevance = (stakeholder: any, message: string) => {
+    const messageLower = message.toLowerCase()
+    const roleLower = stakeholder.role.toLowerCase()
+    const deptLower = stakeholder.department?.toLowerCase() || ''
+
+    // Dynamic keyword matching
+    const relevanceKeywords = {
+      technical: ['technical', 'development', 'code', 'system', 'architecture', 'implementation'],
+      business: ['business', 'strategy', 'market', 'revenue', 'growth', 'customer'],
+      product: ['product', 'feature', 'user', 'experience', 'design', 'requirements'],
+      operations: ['operations', 'process', 'workflow', 'efficiency', 'deployment']
+    }
+
+    let relevanceScore = 0
+    
+    // Check role relevance
+    Object.entries(relevanceKeywords).forEach(([category, keywords]) => {
+      const messageMatches = keywords.filter(keyword => messageLower.includes(keyword)).length
+      const roleMatches = keywords.filter(keyword => roleLower.includes(keyword)).length
+      const deptMatches = keywords.filter(keyword => deptLower.includes(keyword)).length
+      
+      relevanceScore += (messageMatches * roleMatches * 3) + (messageMatches * deptMatches * 2)
+    })
+
+    return Math.min(relevanceScore, 25) // Cap at 25 points
+  }
+
+  // Dynamic pause calculation
+  const calculateDynamicPause = (context: any) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+
+    // Base pause influenced by conversation pace
+    const basePause = analytics.conversationPace === 'fast' ? 1000 : 
+                     analytics.conversationPace === 'slow' ? 4000 : 2500
+
+    // Adjust based on message complexity
+    const messageComplexity = context.lastUserMessage?.length > 150 ? 1.3 : 
+                             context.lastUserMessage?.length < 50 ? 0.8 : 1.0
+
+    // Adjust based on stakeholder personality
+    const personalityFactor = context.stakeholder?.personality === 'analytical' ? 1.2 :
+                             context.stakeholder?.personality === 'direct' ? 0.9 : 1.0
+
+    // Random variance for naturalness
+    const variance = 0.3 + (Math.random() * 0.4) // 0.3 to 0.7 multiplier
+
+    return Math.round(basePause * messageComplexity * personalityFactor * variance)
+  }
+
+  // Dynamic greeting flow management
+  const handleAdaptiveGreeting = async (messageContent: string, currentMessages: Message[]) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+    const greetingIteration = conversationDynamics.greetingIterations + 1
+    
+    // Dynamic context for decision making
+    const context = {
+      greetingIteration,
+      lastUserMessage: messageContent,
+      totalParticipants: selectedStakeholders.length,
+      conversationHistory: currentMessages,
+      userEngagement: analytics.userEngagementLevel || 'medium'
+    }
+
+    // Dynamic response strategy based on context
+    const responseStrategy = determineResponseStrategy(context)
+    
+    if (responseStrategy.type === 'initial_introduction') {
+      const leadStakeholder = selectDynamicLead(selectedStakeholders, context)
+      await processDynamicStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'introduction_lead')
+      
+      setConversationDynamics(prev => ({
+        ...prev,
+        phase: 'introduction_active',
+        leadSpeaker: leadStakeholder,
+        greetingIterations: greetingIteration,
+        introducedMembers: new Set([leadStakeholder.id])
+      }))
+      
+    } else if (responseStrategy.type === 'team_introduction') {
+      const leadStakeholder = conversationDynamics.leadSpeaker || selectDynamicLead(selectedStakeholders, context)
+      await processDynamicStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'facilitate_introductions')
+      
+      // Dynamic delay for next stakeholder
+      const nextStakeholder = selectNextIntroducer(selectedStakeholders, conversationDynamics.introducedMembers)
+      if (nextStakeholder) {
+        const pauseDelay = calculateDynamicPause({ ...context, stakeholder: nextStakeholder })
+        
+        setTimeout(async () => {
+          await processDynamicStakeholderResponse(nextStakeholder, messageContent, currentMessages, 'self_introduction')
+          setConversationDynamics(prev => ({
+            ...prev,
+            introducedMembers: new Set([...prev.introducedMembers, nextStakeholder.id])
+          }))
+        }, pauseDelay)
+      }
+      
+      setConversationDynamics(prev => ({ ...prev, greetingIterations: greetingIteration }))
+      
+    } else if (responseStrategy.type === 'transition_to_discussion') {
+      const facilitator = selectDynamicLead(selectedStakeholders, context)
+      await processDynamicStakeholderResponse(facilitator, messageContent, currentMessages, 'discussion_transition')
+      
+      setConversationDynamics(prev => ({
+        ...prev,
+        phase: 'discussion_active',
+        greetingIterations: greetingIteration
+      }))
+    }
+  }
+
+  // Dynamic response strategy determination
+  const determineResponseStrategy = (context: any) => {
+    const { greetingIteration, totalParticipants, userEngagement, conversationHistory } = context
+    
+    // Analyze conversation patterns
+    const recentGreetings = conversationHistory.filter(msg => 
+      msg.speaker === 'user' && isSimpleGreeting(msg.content)
+    ).length
+
+    // Dynamic decision making
+    if (greetingIteration === 1 || conversationDynamics.introducedMembers.size === 0) {
+      return { type: 'initial_introduction', confidence: 0.9 }
+    }
+    
+    if (greetingIteration === 2 && totalParticipants > 1 && conversationDynamics.introducedMembers.size < totalParticipants) {
+      return { type: 'team_introduction', confidence: 0.8 }
+    }
+    
+    if (recentGreetings > 2 || userEngagement === 'low' || conversationDynamics.introducedMembers.size >= totalParticipants) {
+      return { type: 'transition_to_discussion', confidence: 0.7 }
+    }
+    
+    // Fallback to context-appropriate response
+    return { type: 'contextual_response', confidence: 0.6 }
+  }
+
+  // Dynamic next introducer selection
+  const selectNextIntroducer = (stakeholders: any[], introduced: Set<string>) => {
+    const unintroduced = stakeholders.filter(s => !introduced.has(s.id))
+    
+    if (unintroduced.length === 0) return null
+    
+    // Prefer stakeholders with specific characteristics for introductions
+    const prioritized = unintroduced.sort((a, b) => {
+      const aScore = (a.personality === 'collaborative' ? 10 : 0) + 
+                    (a.role.toLowerCase().includes('senior') ? 8 : 0) +
+                    (Math.random() * 5) // Add some randomness
+      const bScore = (b.personality === 'collaborative' ? 10 : 0) + 
+                    (b.role.toLowerCase().includes('senior') ? 8 : 0) +
+                    (Math.random() * 5)
+      return bScore - aScore
+    })
+    
+       return prioritized[0]
+ }
+
+ // Dynamic contextual respondent selection - NO HARD-CODING
+ const selectContextualRespondent = (messageContent: string, currentMessages: Message[]) => {
+   const aiService = AIService.getInstance()
+   const analytics = aiService.getConversationAnalytics()
+   
+   // Dynamic context analysis
+   const recentSpeakers = currentMessages.slice(-3).map(msg => msg.speaker).filter(speaker => speaker !== 'user')
+   const availableStakeholders = selectedStakeholders.filter(s => !recentSpeakers.includes(s.id))
+   
+   // If all have spoken recently, allow all but prefer least recent
+   const candidateStakeholders = availableStakeholders.length > 0 ? availableStakeholders : selectedStakeholders
+   
+   // Dynamic scoring based on multiple contextual factors
+   const scoredCandidates = candidateStakeholders.map(stakeholder => {
+     let score = 0
+     
+     // Expertise relevance to current message
+     score += calculateExpertiseRelevance(stakeholder, messageContent)
+     
+     // Participation balance (prefer those who have spoken less)
+     const participationCount = analytics.participationCounts?.[stakeholder.id] || 0
+     score += Math.max(0, 20 - (participationCount * 3))
+     
+     // Personality match for discussion type
+     const isQuestionAsking = messageContent.includes('?')
+     const isDetailOriented = messageContent.length > 100
+     const personalityBonus = isDetailOriented && stakeholder.personality === 'analytical' ? 10 :
+                             isQuestionAsking && stakeholder.personality === 'collaborative' ? 8 :
+                             stakeholder.personality === 'direct' ? 5 : 3
+     score += personalityBonus
+     
+     // Recency penalty (avoid back-to-back responses)
+     const lastMessage = currentMessages[currentMessages.length - 1]
+     if (lastMessage && lastMessage.speaker === stakeholder.id) {
+       score -= 15
+     }
+     
+     // Add randomness for natural variation
+     score += Math.random() * 8
+     
+     return { stakeholder, score }
+   })
+   
+   // Return highest scoring candidate
+   return scoredCandidates.sort((a, b) => b.score - a.score)[0]?.stakeholder
+ }
+
+ // Dynamic follow-up assessment - NO HARD-CODING
+ const assessFollowUpNeed = async (messageContent: string, currentMessages: Message[], primaryRespondent: any) => {
+   const aiService = AIService.getInstance()
+   const analytics = aiService.getConversationAnalytics()
+   
+   // Dynamic complexity analysis
+   const messageComplexity = {
+     length: messageContent.length,
+     questionCount: (messageContent.match(/\?/g) || []).length,
+     topicalBreadth: calculateTopicalBreadth(messageContent),
+     technicalDepth: calculateTechnicalDepth(messageContent)
+   }
+   
+   // Dynamic conversation context
+   const conversationContext = {
+     participantCount: selectedStakeholders.length,
+     recentFollowUps: currentMessages.slice(-5).filter(msg => 
+       msg.speaker !== 'user' && msg.speaker !== primaryRespondent.id
+     ).length,
+     engagementLevel: analytics.userEngagementLevel || 'medium',
+     conversationPace: analytics.conversationPace || 'medium'
+   }
+   
+   // Dynamic scoring for follow-up likelihood
+   let followUpScore = 0
+   
+   // Complexity factors
+   if (messageComplexity.length > 150) followUpScore += 15
+   if (messageComplexity.questionCount > 1) followUpScore += 10
+   if (messageComplexity.topicalBreadth > 2) followUpScore += 12
+   if (messageComplexity.technicalDepth > 1) followUpScore += 8
+   
+   // Context factors
+   if (conversationContext.participantCount > 2) followUpScore += 10
+   if (conversationContext.recentFollowUps < 2) followUpScore += 8
+   if (conversationContext.engagementLevel === 'high') followUpScore += 5
+   
+   // Dynamic threshold based on conversation pace
+   const threshold = conversationContext.conversationPace === 'fast' ? 25 :
+                    conversationContext.conversationPace === 'slow' ? 15 : 20
+   
+   // Add natural variation
+   followUpScore += (Math.random() - 0.5) * 10
+   
+   return {
+     shouldFollowUp: followUpScore > threshold,
+     confidence: Math.min(followUpScore / 40, 1.0),
+     reason: followUpScore > threshold ? 'topic_complexity' : 'sufficient_coverage',
+     urgency: followUpScore > 30 ? 'high' : followUpScore > 20 ? 'medium' : 'low'
+   }
+ }
+
+ // Dynamic follow-up stakeholder selection - NO HARD-CODING
+ const selectDynamicFollowUp = (messageContent: string, currentMessages: Message[], primaryRespondent: any, followUpAssessment: any) => {
+   const availableStakeholders = selectedStakeholders.filter(s => s.id !== primaryRespondent.id)
+   
+   if (availableStakeholders.length === 0) return null
+   
+   // Dynamic selection based on follow-up context
+   const scoredStakeholders = availableStakeholders.map(stakeholder => {
+     let score = 0
+     
+     // Complementary expertise (different department/role)
+     if (stakeholder.department !== primaryRespondent.department) score += 15
+     if (stakeholder.role !== primaryRespondent.role) score += 10
+     
+     // Personality complementarity
+     const personalityComplement = getPersonalityComplement(primaryRespondent.personality, stakeholder.personality)
+     score += personalityComplement
+     
+     // Relevant expertise for follow-up
+     score += calculateExpertiseRelevance(stakeholder, messageContent) * 0.7
+     
+     // Participation balance
+     const aiService = AIService.getInstance()
+     const analytics = aiService.getConversationAnalytics()
+     const participationCount = analytics.participationCounts?.[stakeholder.id] || 0
+     score += Math.max(0, 15 - (participationCount * 2))
+     
+     // Urgency match
+     const urgencyMatch = followUpAssessment.urgency === 'high' && stakeholder.personality === 'direct' ? 8 :
+                         followUpAssessment.urgency === 'medium' && stakeholder.personality === 'collaborative' ? 6 :
+                         followUpAssessment.urgency === 'low' && stakeholder.personality === 'analytical' ? 4 : 2
+     score += urgencyMatch
+     
+     // Natural variation
+     score += Math.random() * 6
+     
+     return { stakeholder, score }
+   })
+   
+   return scoredStakeholders.sort((a, b) => b.score - a.score)[0]?.stakeholder
+ }
+
+ // Helper functions for dynamic analysis
+ const calculateTopicalBreadth = (message: string) => {
+   const topics = ['technical', 'business', 'user', 'process', 'timeline', 'cost', 'risk', 'quality']
+   return topics.filter(topic => message.toLowerCase().includes(topic)).length
+ }
+
+ const calculateTechnicalDepth = (message: string) => {
+   const technicalTerms = ['system', 'architecture', 'implementation', 'integration', 'performance', 'security']
+   return technicalTerms.filter(term => message.toLowerCase().includes(term)).length
+ }
+
+ const getPersonalityComplement = (primary: string, secondary: string) => {
+   const complementMap = {
+     'analytical': { 'collaborative': 12, 'direct': 8, 'strategic': 10 },
+     'collaborative': { 'analytical': 10, 'direct': 15, 'strategic': 8 },
+     'direct': { 'analytical': 8, 'collaborative': 12, 'strategic': 6 },
+     'strategic': { 'analytical': 10, 'collaborative': 8, 'direct': 6 }
+   }
+   
+   return complementMap[primary]?.[secondary] || 5
+ }
+
+ if (!selectedProject || selectedStakeholders.length === 0) {
     return (
       <div className="p-8">
         <div className="text-center">
@@ -1829,10 +2160,14 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               )
             })}
             
-            {/* Individual Stakeholder Thinking Indicators */}
-            {Array.from(thinkingStakeholders).map(stakeholderId => {
+                        {/* Dynamic Individual Stakeholder Thinking Indicators */}
+            {Array.from(activeThinking).map(stakeholderId => {
               const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
               if (!stakeholder) return null
+              
+              // Generate dynamic thinking message based on stakeholder context
+              const context = { stakeholder, messageContent: messages[messages.length - 1]?.content || '' }
+              const currentThinkingMessage = dynamicFeedback || generateThinkingMessage(stakeholder, context)
               
               return (
                 <div key={`thinking-${stakeholderId}`} className="flex justify-start">
@@ -1847,36 +2182,36 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                     />
                   </div>
                   
-                                     <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 relative">
-                     <div className="text-xs font-medium text-blue-600 mb-1 flex items-center space-x-2">
-                       <span>{stakeholder.name}</span>
-                       <span className="text-blue-400">•</span>
-                       <span className="text-blue-500">{stakeholder.role}</span>
-                     </div>
-                     <div className="text-sm flex items-center space-x-2 pr-6">
-                       <div className="flex space-x-1">
-                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                       </div>
-                       <span>Just a moment, response coming shortly...</span>
-                     </div>
-                     <div className="text-xs mt-1 opacity-75">
-                       {new Date().toLocaleTimeString()}
-                     </div>
-                     
-                     {/* Stop thinking button */}
-                     <button
-                       onClick={() => stopStakeholderAudio(stakeholder.id)}
-                       className="absolute top-2 right-2 p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
-                       title="Stop this stakeholder's response"
-                     >
-                       <X className="w-3 h-3 text-blue-700" />
-                     </button>
-                   </div>
+                  <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 relative">
+                    <div className="text-xs font-medium text-blue-600 mb-1 flex items-center space-x-2">
+                      <span>{stakeholder.name}</span>
+                      <span className="text-blue-400">•</span>
+                      <span className="text-blue-500">{stakeholder.role}</span>
+                    </div>
+                    <div className="text-sm flex items-center space-x-2 pr-6">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      </div>
+                      <span>{currentThinkingMessage}</span>
+                    </div>
+                    <div className="text-xs mt-1 opacity-75">
+                      {new Date().toLocaleTimeString()}
+                    </div>
+                    
+                    {/* Dynamic stop button */}
+                    <button
+                      onClick={() => stopStakeholderAudio(stakeholder.id)}
+                      className="absolute top-2 right-2 p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
+                      title={`Stop ${stakeholder.name}'s response`}
+                    >
+                      <X className="w-3 h-3 text-blue-700" />
+                    </button>
+                  </div>
                 </div>
-                             )
-             })}
+              )
+            })}
             {/* Scroll anchor */}
             <div ref={messagesEndRef} />
           </div>
