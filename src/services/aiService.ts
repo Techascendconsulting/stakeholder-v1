@@ -423,7 +423,7 @@ Generate only the greeting, nothing else.`;
       // Generate dynamic AI response for discussions
       const dynamicConfig = this.getDynamicConfig(context, stakeholder);
       const systemPrompt = this.buildDynamicSystemPrompt(stakeholder, context, responseType);
-      const conversationPrompt = this.buildContextualPrompt(userMessage, context, stakeholder);
+      const conversationPrompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -443,8 +443,8 @@ Generate only the greeting, nothing else.`;
       // Ensure response is complete and not cut off mid-sentence
       aiResponse = this.ensureCompleteResponse(aiResponse);
 
-      // Filter out self-referencing by name
-      aiResponse = this.filterSelfReferences(aiResponse, stakeholder);
+      // Filter out self-referencing by name using AI
+      aiResponse = await this.filterSelfReferences(aiResponse, stakeholder);
 
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
       return aiResponse;
@@ -455,52 +455,51 @@ Generate only the greeting, nothing else.`;
     }
   }
 
-  // Filter out inappropriate self-references by name
-  private filterSelfReferences(response: string, stakeholder: StakeholderContext): string {
+  // Intelligently filter out inappropriate self-references using AI
+  private async filterSelfReferences(response: string, stakeholder: StakeholderContext): Promise<string> {
     if (!response || !stakeholder) return response;
     
-    const fullName = stakeholder.name;
-    const firstName = stakeholder.name.split(' ')[0];
-    const lastName = stakeholder.name.split(' ')[1] || '';
-    
-    // Remove instances where stakeholder refers to themselves by name
-    let filtered = response
-      // Remove "I am [Full Name]" patterns
-      .replace(new RegExp(`\\b[Ii]\\s+am\\s+${fullName}\\b`, 'g'), 'I')
-      .replace(new RegExp(`\\b[Ii]'m\\s+${fullName}\\b`, 'g'), 'I')
-      
-      // Remove "My name is [Name]" patterns
-      .replace(new RegExp(`\\b[Mm]y\\s+name\\s+is\\s+${fullName}\\b`, 'g'), 'I')
-      .replace(new RegExp(`\\b[Mm]y\\s+name\\s+is\\s+${firstName}\\b`, 'g'), 'I')
-      
-      // Remove greetings to self - CRITICAL FIX
-      .replace(new RegExp(`\\b[Hh]i\\s+${firstName}[,!]?\\s*`, 'g'), 'Hi everyone, ')
-      .replace(new RegExp(`\\b[Hh]ello\\s+${firstName}[,!]?\\s*`, 'g'), 'Hello everyone, ')
-      .replace(new RegExp(`\\b[Gg]ood\\s+morning\\s+${firstName}[,!]?\\s*`, 'g'), 'Good morning everyone, ')
-      .replace(new RegExp(`\\b[Gg]ood\\s+afternoon\\s+${firstName}[,!]?\\s*`, 'g'), 'Good afternoon everyone, ')
-      
-      // Remove direct addressing to self - CRITICAL FIX
-      .replace(new RegExp(`\\b${firstName}[,]\\s+(great|good|nice|wonderful|excellent)\\s+to\\s+`, 'g'), 'It\\'s great to ')
-      .replace(new RegExp(`\\b${firstName}[,]\\s+(you|your)\\s+`, 'g'), 'My ')
-      .replace(new RegExp(`\\b${firstName}[,]\\s+`, 'g'), '')
-      
-      // Remove awkward third-person self-references
-      .replace(new RegExp(`\\b${fullName}\\s+thinks?\\b`, 'g'), 'I think')
-      .replace(new RegExp(`\\b${fullName}\\s+believes?\\b`, 'g'), 'I believe')
-      .replace(new RegExp(`\\b${fullName}\\s+suggests?\\b`, 'g'), 'I suggest')
-      .replace(new RegExp(`\\b${fullName}\\s+recommends?\\b`, 'g'), 'I recommend')
-      
-      // Remove unnecessary name introductions in middle of responses
-      .replace(new RegExp(`\\b${fullName}\\s+here[,.]?\\s*`, 'g'), '')
-      .replace(new RegExp(`\\b${firstName}\\s+here[,.]?\\s*`, 'g'), '')
-      
-      // Clean up any double spaces or awkward punctuation from replacements
-      .replace(/\s+/g, ' ')
-      .replace(/\s*,\s*,/g, ',')
-      .replace(/\s*\.\s*\./g, '.')
-      .trim();
-    
-    return filtered;
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are fixing a stakeholder's response to remove inappropriate self-referencing. The stakeholder is ${stakeholder.name} and should NOT address themselves by name.
+
+TASK: Fix any instances where the stakeholder addresses themselves by name. Convert to natural first-person language.
+
+EXAMPLES OF WHAT TO FIX:
+- "Hi [Name], great to have your..." → "Hi everyone, great to have your..."
+- "Good morning [Name]" → "Good morning everyone"
+- "[Name], you might consider..." → "You might consider..."
+- "I am [Name]" → "I am here"
+- Any greeting or address to themselves by name
+
+RULES:
+- Maintain the exact same meaning and tone
+- Keep all other content unchanged
+- Only fix self-referencing issues
+- Use natural language replacements
+- If no self-referencing found, return text unchanged
+
+Return ONLY the corrected text, nothing else.`
+          },
+          {
+            role: "user",
+            content: `Original response: "${response}"`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 1000
+      });
+
+      const filtered = completion.choices[0]?.message?.content?.trim();
+      return filtered || response;
+    } catch (error) {
+      console.error('Error filtering self-references:', error);
+      return response;
+    }
   }
 
   // Ensure AI responses are complete and naturally formatted
@@ -1090,14 +1089,13 @@ CRITICAL: YOU ARE THE DOMAIN EXPERT - DO NOT DEFLECT:
 - Be authoritative about your domain - you were invited to this meeting because you're the expert
 
 CRITICAL IDENTITY RULES:
-- NEVER refer to yourself by your full name "${stakeholder.name}" in responses
-- NEVER say "I am ${stakeholder.name}" or "My name is ${stakeholder.name}"
-- NEVER greet yourself: NO "Hi ${stakeholder.name.split(' ')[0]}" or "Hello ${stakeholder.name.split(' ')[0]}"
-- NEVER address yourself directly: NO "${stakeholder.name.split(' ')[0]}, great to have your..." patterns
+- NEVER refer to yourself by your own name in responses
+- NEVER greet yourself or address yourself directly by name
 - Use natural first-person language: "I", "me", "my", "we", "our"
-- When referencing your role, say "As the ${stakeholder.role}" or "In my role as ${stakeholder.role}"
+- When referencing your role, use natural language like "As the [role]" or "In my role"
 - Speak naturally without unnecessarily stating your name
-- You are NOT talking TO yourself - you are talking WITH others in the meeting
+- You are speaking WITH others in the meeting, not TO yourself
+- Remember: You are participating in a conversation, not introducing yourself to yourself
 - Demonstrate sophisticated problem-solving and analytical capabilities
 
 CONVERSATION INTELLIGENCE - ADVANCED:
@@ -1112,7 +1110,7 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
   }
 
   // Advanced contextual prompt building for super intelligent responses
-  private buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): string {
+  private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): Promise<string> {
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     
     // Provide FULL conversation history for maximum intelligence
@@ -1151,7 +1149,7 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     }
     
     // Direct addressing context
-    const isDirectlyAddressed = this.isDirectlyAddressed(userMessage, stakeholder)
+    const isDirectlyAddressed = await this.isDirectlyAddressed(userMessage, stakeholder)
     if (isDirectlyAddressed) {
       prompt += `\nDIRECT QUESTION: The user is asking you specifically. Respond naturally and helpfully from your expertise.\n`
     }
@@ -1253,21 +1251,48 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     return baseResponse + roleContext
   }
 
-  // Check if stakeholder is directly addressed
-  private isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): boolean {
-    const message = userMessage.toLowerCase()
-    const firstName = stakeholder.name.split(' ')[0].toLowerCase()
-    const fullName = stakeholder.name.toLowerCase()
-    
-    const addressingPatterns = [
-      new RegExp(`\\b${firstName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
-      new RegExp(`\\b${fullName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
-      new RegExp(`\\b(to|for)\\s+${firstName}\\b`),
-      new RegExp(`\\b${firstName}\\s*,`),
-      new RegExp(`\\b${firstName}\\s*\\?`)
-    ]
-    
-    return addressingPatterns.some(pattern => pattern.test(message))
+  // Check if stakeholder is directly addressed using AI
+  private async isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): Promise<boolean> {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are analyzing a user message to determine if it directly addresses a specific stakeholder.
+
+Stakeholder: ${stakeholder.name}
+
+TASK: Determine if the user message is directly addressing this stakeholder by name.
+
+EXAMPLES OF DIRECT ADDRESSING:
+- "[Name], what are your thoughts?"
+- "What do you think, [Name]?"
+- "[Name], can you help with this?"
+- "I have a question for [Name]"
+
+NOT DIRECT ADDRESSING:
+- General questions not mentioning the stakeholder
+- Casual mentions without direct addressing
+- Questions to the group
+
+Return "YES" if directly addressed, "NO" if not.`
+          },
+          {
+            role: "user",
+            content: `Message: "${userMessage}"`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 10
+      });
+
+      const result = completion.choices[0]?.message?.content?.trim().toUpperCase();
+      return result === 'YES';
+    } catch (error) {
+      console.error('Error detecting direct addressing:', error);
+      return false;
+    }
   }
 
   // Reset conversation state for new meetings
@@ -1310,22 +1335,28 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
 
 Available stakeholders: ${stakeholderNames}
 
-CRITICAL: Only return a stakeholder name if it's a NATURAL conversation handoff like "What do you think, Sarah?" or "Sarah, what's your experience with this?"
+TASK: Determine if the stakeholder is naturally redirecting the conversation to another specific stakeholder by name.
 
-DO NOT detect as handoffs:
+WHAT TO DETECT (Natural handoffs):
+- Directly asking someone by name for their opinion or perspective
+- Inviting someone specific to contribute to the conversation
+- Natural conversation flow where someone suggests another person should respond
+
+WHAT NOT TO DETECT (Deflection - these are NOT redirects):
 - "someone else would be better equipped"
 - "we should ask another department"
 - "let's form a committee"
 - "someone from [department] should handle this"
 - "we need to consult with [team]"
-- Any form of deflection or avoidance
+- Any form of deflection or responsibility avoidance
 
-ONLY detect genuine collaborative conversation like:
-- "What do you think, [Name]?"
-- "[Name], what's your perspective?"
-- "That's a great question for [Name]"
+RULES:
+- Return only the exact full name from the available stakeholders list if it's a genuine handoff
+- If the mentioned name doesn't match any available stakeholder, return "NO_REDIRECT"
+- If it's deflection or avoidance, return "NO_REDIRECT"
+- Only detect when someone is genuinely inviting another person to contribute
 
-Return ONLY the exact name or "NO_REDIRECT" if it's deflection or avoidance.`
+Return ONLY the stakeholder name or "NO_REDIRECT".`
           },
           {
             role: "user",
@@ -1357,45 +1388,6 @@ Return ONLY the exact name or "NO_REDIRECT" if it's deflection or avoidance.`
     try {
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
-      // Generate dynamic examples using actual stakeholder names
-      const generateHandoffExamples = (stakeholders: StakeholderContext[]): string[] => {
-        const examples = [];
-        
-        if (stakeholders.length > 0) {
-          const firstName = stakeholders[0].name.split(' ')[0];
-          const fullName = stakeholders[0].name;
-          examples.push(`"What do you think, ${firstName}?"`);
-          examples.push(`"${fullName}, what's your take on this?"`);
-          examples.push(`"${firstName}, could you please shed some light on what we cover in this call?"`);
-        }
-        
-        if (stakeholders.length > 1) {
-          const secondFirstName = stakeholders[1].name.split(' ')[0];
-          const secondFullName = stakeholders[1].name;
-          examples.push(`"${secondFirstName}, you might have insights on this"`);
-          examples.push(`"${secondFullName}, what's your experience with this?"`);
-        }
-        
-        if (stakeholders.length > 2) {
-          const thirdFirstName = stakeholders[2].name.split(' ')[0];
-          const thirdFullName = stakeholders[2].name;
-          examples.push(`"I'd love to hear ${thirdFirstName}'s perspective on this"`);
-          examples.push(`"${thirdFullName}, could you help us understand..."`);
-        }
-        
-        // Add generic examples
-        examples.push(`"What would you add to this, [Name]?"`);
-        examples.push(`"[Name], from your experience..."`);
-        examples.push(`"I think [Name] would know more about this"`);
-        examples.push(`"[Name], what's your view?"`);
-        examples.push(`"[Name], care to elaborate?"`);
-        examples.push(`"Over to you, [Name]"`);
-        
-        return examples;
-      };
-      
-      const handoffExamples = generateHandoffExamples(availableStakeholders);
-      
       const completion = await openai.chat.completions.create({
         model: "gpt-4",
         messages: [
@@ -1405,26 +1397,31 @@ Return ONLY the exact name or "NO_REDIRECT" if it's deflection or avoidance.`
 
 Available stakeholders: ${stakeholderNames}
 
-CRITICAL: Only return a stakeholder name if it's a NATURAL conversation handoff, NOT deflection.
+TASK: Determine if the stakeholder is naturally passing the conversation to another specific stakeholder by name.
 
-DO NOT detect as handoffs (these are deflection):
+WHAT TO DETECT (Natural handoffs):
+- Directly asking someone by name for their opinion or perspective
+- Inviting someone specific to contribute to the conversation
+- Natural conversation flow where someone suggests another person should respond
+- Collaborative conversation where someone genuinely wants another person's input
+
+WHAT NOT TO DETECT (Deflection - these are NOT handoffs):
 - "someone else would be better equipped"
 - "we should ask another department"
 - "let's form a committee"
 - "someone from [department] should handle this"
 - "we need to consult with [team]"
 - "that's more of a [department] question"
-- Any form of deflection or avoidance
+- Any form of deflection or responsibility avoidance
 
-ONLY detect genuine collaborative conversation:
-${handoffExamples.map(example => `- ${example}`).join('\n')}
-
-Rules:
-- Return only the exact full name from the available stakeholders list
+RULES:
+- Return only the exact full name from the available stakeholders list if it's a genuine handoff
 - If the mentioned name doesn't match any available stakeholder, return "NO_HANDOFF"
 - If it's deflection or avoidance, return "NO_HANDOFF"
 - Only detect when someone is genuinely inviting another person to contribute
-- Focus on collaborative conversation, not responsibility avoidance`
+- Focus on collaborative conversation, not responsibility avoidance
+
+Return ONLY the stakeholder name or "NO_HANDOFF".`
           },
           {
             role: "user",
