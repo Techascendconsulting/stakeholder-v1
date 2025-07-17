@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic } from 'lucide-react'
+import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic, X } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import { Message } from '../../types'
@@ -862,16 +862,118 @@ These notes were generated using a fallback system due to extended AI processing
     }
   }
 
-     const resumeCurrentAudio = () => {
-     if (currentAudio && !isAudioPlaying) {
-       currentAudio.currentTime = audioPausedPosition
-       currentAudio.play()
-       setIsAudioPlaying(true)
-       setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'playing' }))
-     }
-   }
+         const resumeCurrentAudio = () => {
+      if (currentAudio && !isAudioPlaying) {
+        currentAudio.currentTime = audioPausedPosition
+        currentAudio.play()
+        setIsAudioPlaying(true)
+        setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'playing' }))
+      }
+    }
 
-   // Enhanced toggle audio with proper pause/resume
+    // Dynamic, non-blocking audio playback
+    const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
+      console.log('Audio playback attempt:', { messageId, stakeholder: stakeholder.name, globalAudioEnabled, autoPlay })
+      
+      if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
+        console.log('Audio disabled for stakeholder:', stakeholder.name)
+        return Promise.resolve()
+      }
+
+      try {
+        if (userInterruptRequested) {
+          console.log('User interrupted audio, skipping playback')
+          setUserInterruptRequested(false)
+          return Promise.resolve()
+        }
+
+        stopCurrentAudio()
+        
+        if (!autoPlay) {
+          return Promise.resolve()
+        }
+
+        setCurrentSpeaker(stakeholder)
+        setCurrentlyProcessingAudio(messageId)
+        setIsAudioPlaying(true)
+
+        const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
+        console.log('Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
+        
+        if (isAzureTTSAvailable()) {
+          console.log('Using Azure TTS for audio synthesis')
+          const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName)
+          const audioUrl = URL.createObjectURL(audioBlob)
+          const audio = new Audio(audioUrl)
+          
+          setCurrentAudio(audio)
+          setPlayingMessageId(messageId)
+          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+          
+          return new Promise((resolve) => {
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              resolve()
+            }
+            
+            audio.onerror = (error) => {
+              console.error('Audio element error:', error)
+              URL.revokeObjectURL(audioUrl)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              resolve()
+            }
+            
+            audio.play().then(() => {
+              // Audio started successfully
+            }).catch((playError) => {
+              console.error('Audio play error:', playError)
+              URL.revokeObjectURL(audioUrl)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              resolve()
+            })
+          })
+        } else {
+          console.log('Using browser TTS for audio synthesis')
+          setPlayingMessageId(messageId)
+          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+          
+          await playBrowserTTS(text)
+          
+          setPlayingMessageId(null)
+          setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+          setCurrentSpeaker(null)
+          setIsAudioPlaying(false)
+          setCurrentlyProcessingAudio(null)
+          return Promise.resolve()
+        }
+      } catch (error) {
+        console.error('Audio playback failed:', error)
+        setPlayingMessageId(null)
+        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+        setCurrentSpeaker(null)
+        setIsAudioPlaying(false)
+        setCurrentlyProcessingAudio(null)
+        return Promise.resolve()
+      }
+    }
+
+    // Enhanced toggle audio with proper pause/resume
    const toggleMessageAudio = async (messageId: string, text: string, stakeholder: any) => {
      if (playingMessageId === messageId && isAudioPlaying) {
        pauseCurrentAudio()
@@ -882,15 +984,97 @@ These notes were generated using a fallback system due to extended AI processing
      }
    }
 
-   const stopMessageAudio = (messageId: string) => {
-     if (playingMessageId === messageId) {
-       stopCurrentAudio()
-     }
-     setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-     setCanUserType(true)
-   }
+       const stopMessageAudio = (messageId: string) => {
+      if (playingMessageId === messageId) {
+        stopCurrentAudio()
+      }
+      setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+      setCanUserType(true)
+    }
 
-   // Enhanced meeting analytics
+    // Dynamic conversation flow with user interruption support
+    const handleSendMessage = async () => {
+      if (!inputMessage.trim() || isEndingMeeting) return
+
+      setIsGeneratingResponse(true)
+      setCanUserType(false) 
+      
+      const messageContent = inputMessage.trim()
+      setInputMessage('')
+
+      const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        speaker: 'user',
+        content: messageContent,
+        timestamp: new Date().toISOString()
+      }
+
+      let currentMessages = [...messages, userMessage]
+      setMessages(currentMessages)
+
+      try {
+        const isGroup = isGroupMessage(messageContent)
+        const isGreeting = isSimpleGreeting(messageContent)
+        
+        if (isGroup && isGreeting) {
+          await handleDynamicGreeting(messageContent, currentMessages)
+        } else {
+          await handleDynamicDiscussion(messageContent, currentMessages)
+        }
+      } catch (error) {
+        console.error('Error generating AI response:', error)
+        await handleFallbackResponse(currentMessages)
+      } finally {
+        setIsGeneratingResponse(false)
+        setCanUserType(true)
+      }
+    }
+
+    const handleDynamicGreeting = async (messageContent: string, currentMessages: Message[]) => {
+      const config = getConversationConfig()
+      const greetingRespondents = selectedStakeholders.slice(0, config.maxGreetingRespondents)
+      
+      for (let i = 0; i < greetingRespondents.length; i++) {
+        if (userInterruptRequested) break
+        
+        const stakeholder = greetingRespondents[i]
+        
+        try {
+          const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, 'greeting')
+          const responseMessage = createResponseMessage(stakeholder, response, i)
+          
+          currentMessages = [...currentMessages, responseMessage]
+          setMessages(currentMessages)
+          
+          playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
+          
+          if (i < greetingRespondents.length - 1) {
+            const aiAnalytics = AIService.getInstance().getConversationAnalytics()
+            const pauseFactor = aiAnalytics.conversationPhase === 'opening' ? 1.0 : 0.7
+            const pauseTime = (config.greetingPauseTiming.base * pauseFactor) + (Math.random() * config.greetingPauseTiming.variance)
+            await new Promise(resolve => setTimeout(resolve, pauseTime))
+          }
+        } catch (error) {
+          console.warn('Error in greeting response:', error)
+          continue
+        }
+      }
+    }
+
+    const handleDynamicDiscussion = async (messageContent: string, currentMessages: Message[]) => {
+      const initialRespondent = getInitialRespondent(messageContent)
+      await manageConversationFlow(initialRespondent, messageContent, currentMessages)
+    }
+
+    const handleFallbackResponse = async (currentMessages: Message[]) => {
+      const fallbackStakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
+      const fallbackResponse = `I apologize, but I'm having some technical difficulties. Could you please rephrase your question?`
+      
+      const fallbackMessage = createResponseMessage(fallbackStakeholder, fallbackResponse, 0)
+      setMessages(prev => [...prev, fallbackMessage])
+    }
+
+    // Enhanced meeting analytics
   const [meetingAnalytics, setMeetingAnalytics] = useState({
     participationBalance: new Map<string, number>(),
     topicsDiscussed: new Set<string>(),
@@ -1258,6 +1442,20 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               
+              {/* Audio/AI Status and Control */}
+              {(isGeneratingResponse || isAudioPlaying || isEndingMeeting) && (
+                <button
+                  onClick={handleUserInterruption}
+                  className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+                  title="Press Escape or click to interrupt and enable typing"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:inline">
+                    {isEndingMeeting ? 'Stop Ending' : isGeneratingResponse ? 'Stop Thinking' : 'Stop Audio'}
+                  </span>
+                </button>
+              )}
+
               {/* End Meeting Button */}
               <button
                 onClick={handleEndMeeting}
