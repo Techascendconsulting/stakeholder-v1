@@ -43,6 +43,11 @@ interface StakeholderState {
   questionsAsked: string[];
   emotionalState: 'engaged' | 'neutral' | 'concerned' | 'excited';
   conversationStyle: 'leading' | 'supporting' | 'observing';
+  voiceConsistency: {
+    tonePattern: string;
+    vocabularyLevel: 'technical' | 'business' | 'conversational';
+    responseLength: 'concise' | 'detailed' | 'comprehensive';
+  };
 }
 
 export class AIService {
@@ -93,15 +98,15 @@ export class AIService {
   }
 
   private calculateDynamicTokens(teamSize: number, messageCount: number, stakeholderState: StakeholderState): number {
-    // INTELLIGENT responses with full information - NO TOKEN LIMITS for comprehensive answers
-    const baseTokens = 800; // Much higher base for intelligent, complete responses
+    // INTELLIGENT responses with full information - optimized for natural speech
+    const baseTokens = 400; // Optimized base for intelligent, complete but natural responses
     const teamFactor = 1.0; // No reduction for team size - each stakeholder should be fully intelligent
     const experienceFactor = stakeholderState.hasSpoken ? 1.1 : 1.2; // More tokens for experienced speakers
     const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.5 : 1.2; // More for detailed discussions
     
     // Allow for comprehensive, intelligent responses
     const calculatedTokens = Math.floor(baseTokens * teamFactor * experienceFactor * phaseFactor);
-    return Math.min(calculatedTokens, 1500); // High cap to allow full process explanations and intelligent responses
+    return Math.min(calculatedTokens, 800); // Optimal cap for complete but natural responses
   }
 
   private calculatePresencePenalty(stakeholderName: string): number {
@@ -124,7 +129,12 @@ export class AIService {
         commitmentsMade: [],
         questionsAsked: [],
         emotionalState: 'neutral',
-        conversationStyle: 'supporting'
+        conversationStyle: 'supporting',
+        voiceConsistency: {
+          tonePattern: 'professional and collaborative',
+          vocabularyLevel: 'business',
+          responseLength: 'detailed'
+        }
       });
     }
     return this.conversationState.stakeholderStates.get(stakeholderName)!;
@@ -394,7 +404,7 @@ Generate only the greeting, nothing else.`;
     }
   }
 
-  // Ensure AI responses are complete - minimal processing to preserve intelligence
+  // Ensure AI responses are complete and naturally formatted
   private ensureCompleteResponse(response: string): string {
     if (!response || response.length === 0) {
       return "I'd be happy to discuss this further.";
@@ -402,6 +412,17 @@ Generate only the greeting, nothing else.`;
 
     // Trim whitespace but preserve the intelligent response
     let cleanResponse = response.trim();
+    
+    // Remove any markdown formatting to ensure natural speech
+    cleanResponse = cleanResponse
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove bold **text**
+      .replace(/\*(.*?)\*/g, '$1')      // Remove italic *text*
+      .replace(/__(.*?)__/g, '$1')      // Remove bold __text__
+      .replace(/_(.*?)_/g, '$1')        // Remove italic _text_
+      .replace(/`(.*?)`/g, '$1')        // Remove code `text`
+      .replace(/#{1,6}\s/g, '')         // Remove heading markers
+      .replace(/^\s*[-*+]\s/gm, '')     // Remove bullet points
+      .replace(/^\s*\d+\.\s/gm, '')     // Remove numbered lists
     
     // Only handle truly broken responses - let intelligent, comprehensive responses through
     if (cleanResponse.length < 10) {
@@ -413,7 +434,7 @@ Generate only the greeting, nothing else.`;
       cleanResponse += '.';
     }
 
-    // Return the full intelligent response without cutting it down
+    // Return the full intelligent response in natural speech format
     return cleanResponse;
   }
 
@@ -900,14 +921,14 @@ ADVANCED INTELLIGENCE REQUIREMENTS - CRITICAL:
 - Provide detailed examples, step-by-step processes, and comprehensive explanations when needed
 - Use sophisticated reasoning and advanced problem-solving approaches
 
-INTELLIGENT RESPONSE STYLE:
-- Give COMPLETE, thorough responses that fully address the question
-- When asked about current processes, explain the ENTIRE workflow with all steps
-- Build intelligently on what other stakeholders have said - reference and expand on their points
-- Show deep understanding of interconnections between departments and processes
-- Provide multiple perspectives and consider various scenarios
-- Use advanced vocabulary and sophisticated analysis appropriate for an expert in your field
-- Connect current discussion to broader business implications and strategic considerations
+NATURAL SPEECH REQUIREMENTS - CRITICAL:
+- Speak in PLAIN NATURAL LANGUAGE like a real person in a business meeting
+- NEVER use markdown formatting, asterisks, or special characters for emphasis
+- NO bold text (**text**), italics (*text*), or any formatting markup
+- Use natural verbal emphasis through word choice and sentence structure
+- Speak conversationally and professionally without text formatting
+- Maintain consistent voice and personality throughout all responses
+- Sound like the same person every time you speak
 
 SUPER INTELLIGENT BEHAVIORAL GUIDELINES:
 - Demonstrate expert-level knowledge in your domain
@@ -997,7 +1018,19 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     prompt += `4. Advanced analytical thinking and strategic insights\n`
     prompt += `5. Intelligent connections between different aspects of the discussion\n`
     prompt += `6. Expert-level recommendations and solutions\n`
-    prompt += `Provide a thorough, complete, and exceptionally intelligent response that fully addresses the question.`
+    
+    prompt += `\nCONSISTENCY AND NATURAL SPEECH REQUIREMENTS:\n`
+    prompt += `- Maintain the EXACT SAME voice, tone, and speaking style as ${stakeholder.name} throughout\n`
+    prompt += `- Your voice pattern: ${stakeholderState.voiceConsistency.tonePattern}\n`
+    prompt += `- Your vocabulary level: ${stakeholderState.voiceConsistency.vocabularyLevel}\n`
+    prompt += `- Speak naturally without ANY markdown formatting (no ** or * characters)\n`
+    prompt += `- Use plain text only - no bold, italics, bullets, or special formatting\n`
+    prompt += `- Be consistent with your personality: ${stakeholder.personality}\n`
+    prompt += `- Sound like the SAME real person speaking in every response\n`
+    prompt += `- Never change your speaking style or tone mid-conversation\n`
+    prompt += `- Maintain your established expertise level and communication approach\n`
+    
+    prompt += `\nProvide a thorough, complete, and exceptionally intelligent response in natural speech that fully addresses the question.`
     
     return prompt
   }
