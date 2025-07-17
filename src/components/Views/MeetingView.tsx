@@ -34,6 +34,34 @@ const MeetingView: React.FC = () => {
   const [audioPausedPosition, setAudioPausedPosition] = useState<number>(0)
   const [currentlyProcessingAudio, setCurrentlyProcessingAudio] = useState<string | null>(null)
 
+  // Enhanced conversation state tracking
+  const [conversationState, setConversationState] = useState({
+    greetingPhase: 'initial', // 'initial', 'introductions', 'discussion'
+    currentSpeaker: null as any,
+    nextSpeaker: null as any,
+    greetingCount: 0,
+    introducedStakeholders: new Set<string>(),
+    pendingResponses: new Map<string, boolean>() // Track who is thinking
+  })
+
+  // Thinking/processing indicators
+  const [thinkingStakeholders, setThinkingStakeholders] = useState<Set<string>>(new Set())
+  const [processingMessage, setProcessingMessage] = useState<string | null>(null)
+
+  // Add thinking indicator for stakeholder
+  const addThinkingStakeholder = (stakeholderId: string) => {
+    setThinkingStakeholders(prev => new Set(prev).add(stakeholderId))
+  }
+
+  // Remove thinking indicator for stakeholder
+  const removeThinkingStakeholder = (stakeholderId: string) => {
+    setThinkingStakeholders(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(stakeholderId)
+      return newSet
+    })
+  }
+
   // Dynamic input availability logic
   const shouldAllowUserInput = () => {
     // Users can always type unless they explicitly choose to wait
@@ -992,89 +1020,223 @@ These notes were generated using a fallback system due to extended AI processing
       setCanUserType(true)
     }
 
-    // Dynamic conversation flow with user interruption support
-    const handleSendMessage = async () => {
-      if (!inputMessage.trim() || isEndingMeeting) return
-
-      setIsGeneratingResponse(true)
-      setCanUserType(false) 
+  // Enhanced natural greeting flow
+  const handleNaturalGreeting = async (messageContent: string, currentMessages: Message[]) => {
+    const greetingCount = conversationState.greetingCount + 1
+    
+    // First greeting - one stakeholder responds and introduces the team
+    if (greetingCount === 1) {
+      const leadStakeholder = selectedStakeholders[0] // Most senior or first in list
+      await processSingleStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'initial_greeting')
       
-      const messageContent = inputMessage.trim()
-      setInputMessage('')
-
-      const userMessage: Message = {
-        id: `user-${Date.now()}`,
-        speaker: 'user',
-        content: messageContent,
-        timestamp: new Date().toISOString()
-      }
-
-      let currentMessages = [...messages, userMessage]
-      setMessages(currentMessages)
-
-      try {
-        const isGroup = isGroupMessage(messageContent)
-        const isGreeting = isSimpleGreeting(messageContent)
-        
-        if (isGroup && isGreeting) {
-          await handleDynamicGreeting(messageContent, currentMessages)
-        } else {
-          await handleDynamicDiscussion(messageContent, currentMessages)
-        }
-      } catch (error) {
-        console.error('Error generating AI response:', error)
-        await handleFallbackResponse(currentMessages)
-      } finally {
-        setIsGeneratingResponse(false)
-        setCanUserType(true)
-      }
+      setConversationState(prev => ({
+        ...prev,
+        greetingPhase: 'introductions',
+        currentSpeaker: leadStakeholder,
+        greetingCount: 1,
+        introducedStakeholders: new Set([leadStakeholder.id])
+      }))
     }
-
-    const handleDynamicGreeting = async (messageContent: string, currentMessages: Message[]) => {
-      const config = getConversationConfig()
-      const greetingRespondents = selectedStakeholders.slice(0, config.maxGreetingRespondents)
+    // Second greeting - lead stakeholder invites others to introduce themselves
+    else if (greetingCount === 2) {
+      const leadStakeholder = selectedStakeholders[0]
+      const nextStakeholder = selectedStakeholders[1]
       
-      for (let i = 0; i < greetingRespondents.length; i++) {
-        if (userInterruptRequested) break
+      if (nextStakeholder) {
+        await processSingleStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'call_for_introductions')
         
-        const stakeholder = greetingRespondents[i]
-        
-        try {
-          const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, 'greeting')
-          const responseMessage = createResponseMessage(stakeholder, response, i)
-          
-          currentMessages = [...currentMessages, responseMessage]
-          setMessages(currentMessages)
-          
-          playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
-          
-          if (i < greetingRespondents.length - 1) {
-            const aiAnalytics = AIService.getInstance().getConversationAnalytics()
-            const pauseFactor = aiAnalytics.conversationPhase === 'opening' ? 1.0 : 0.7
-            const pauseTime = (config.greetingPauseTiming.base * pauseFactor) + (Math.random() * config.greetingPauseTiming.variance)
-            await new Promise(resolve => setTimeout(resolve, pauseTime))
+        // Brief pause, then next stakeholder introduces themselves
+        setTimeout(async () => {
+          await processSingleStakeholderResponse(nextStakeholder, messageContent, currentMessages, 'introduction')
+          setConversationState(prev => ({
+            ...prev,
+            currentSpeaker: nextStakeholder,
+            introducedStakeholders: new Set([...prev.introducedStakeholders, nextStakeholder.id])
+          }))
+        }, 2000)
+      }
+      
+      setConversationState(prev => ({ ...prev, greetingCount: 2 }))
+    }
+    // Third+ greeting - transition to discussion
+    else {
+      const leadStakeholder = selectedStakeholders[0]
+      await processSingleStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'transition_to_discussion')
+      
+      setConversationState(prev => ({
+        ...prev,
+        greetingPhase: 'discussion',
+        greetingCount: greetingCount
+      }))
+    }
+  }
+
+  // Process single stakeholder response with thinking indicator
+  const processSingleStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseType: string) => {
+    try {
+      // Show thinking indicator
+      addThinkingStakeholder(stakeholder.id)
+      setProcessingMessage(`${stakeholder.name} is thinking...`)
+      
+      // Generate response
+      const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseType)
+      
+      // Remove thinking indicator
+      removeThinkingStakeholder(stakeholder.id)
+      setProcessingMessage(null)
+      
+      // Create and add message
+      const responseMessage = createResponseMessage(stakeholder, response, 0)
+      const updatedMessages = [...currentMessages, responseMessage]
+      setMessages(updatedMessages)
+      
+      // Play audio (non-blocking)
+      if (globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id)) {
+        playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
+      }
+      
+      return updatedMessages
+    } catch (error) {
+      console.error('Error processing stakeholder response:', error)
+      removeThinkingStakeholder(stakeholder.id)
+      setProcessingMessage(null)
+      throw error
+    }
+  }
+
+  // Enhanced natural discussion flow
+  const handleNaturalDiscussion = async (messageContent: string, currentMessages: Message[]) => {
+    // Determine who should respond based on context and natural flow
+    const respondingStakeholder = selectNaturalRespondent(messageContent, currentMessages)
+    
+    if (respondingStakeholder) {
+      await processSingleStakeholderResponse(respondingStakeholder, messageContent, currentMessages, 'discussion')
+      
+      // Check if other stakeholders want to add something
+      const shouldOthersRespond = await checkForFollowUpResponses(messageContent, currentMessages, respondingStakeholder)
+      
+      if (shouldOthersRespond) {
+        // Brief pause, then another stakeholder adds their perspective
+        setTimeout(async () => {
+          const followUpStakeholder = selectFollowUpRespondent(messageContent, currentMessages, respondingStakeholder)
+          if (followUpStakeholder) {
+            await processSingleStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'follow_up')
           }
-        } catch (error) {
-          console.warn('Error in greeting response:', error)
-          continue
-        }
+        }, 3000)
       }
     }
+  }
 
-    const handleDynamicDiscussion = async (messageContent: string, currentMessages: Message[]) => {
-      const initialRespondent = getInitialRespondent(messageContent)
-      await manageConversationFlow(initialRespondent, messageContent, currentMessages)
+  // Smart stakeholder selection based on context
+  const selectNaturalRespondent = (messageContent: string, currentMessages: Message[]) => {
+    const lastStakeholderMessage = currentMessages.slice().reverse().find(m => m.speaker !== 'user' && m.speaker !== 'system')
+    
+    // If someone just spoke, avoid them speaking again immediately
+    const excludeRecent = lastStakeholderMessage?.speaker
+    
+    // Select based on expertise and context
+    const relevantStakeholders = selectedStakeholders.filter(s => s.id !== excludeRecent)
+    
+    // Use AI service to select most appropriate respondent
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+    
+    // Find stakeholder with lowest recent participation who's relevant to topic
+    const participationCounts = analytics.participationCounts || {}
+    const sortedByParticipation = relevantStakeholders.sort((a, b) => 
+      (participationCounts[a.id] || 0) - (participationCounts[b.id] || 0)
+    )
+    
+    return sortedByParticipation[0] || selectedStakeholders[0]
+  }
+
+  // Check if follow-up responses are needed
+  const checkForFollowUpResponses = async (messageContent: string, currentMessages: Message[], primaryRespondent: any) => {
+    // Simple heuristic: complex questions or important topics might need multiple perspectives
+    const isComplexTopic = messageContent.length > 100 || 
+                          messageContent.includes('how') || 
+                          messageContent.includes('why') ||
+                          messageContent.includes('what if')
+    
+    const hasMultipleStakeholders = selectedStakeholders.length > 1
+    const recentMessages = currentMessages.slice(-5)
+    const hasRecentFollowUp = recentMessages.some(m => m.speaker !== 'user' && m.speaker !== primaryRespondent.id)
+    
+    return isComplexTopic && hasMultipleStakeholders && !hasRecentFollowUp && Math.random() > 0.6
+  }
+
+  // Select follow-up respondent
+  const selectFollowUpRespondent = (messageContent: string, currentMessages: Message[], primaryRespondent: any) => {
+    const otherStakeholders = selectedStakeholders.filter(s => s.id !== primaryRespondent.id)
+    
+    // Prefer stakeholders with different departments/perspectives
+    const differentDept = otherStakeholders.find(s => s.department !== primaryRespondent.department)
+    return differentDept || otherStakeholders[0]
+  }
+
+  // Updated main conversation handler
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isEndingMeeting) return
+
+    setIsGeneratingResponse(true)
+    setCanUserType(false)
+    
+    const messageContent = inputMessage.trim()
+    setInputMessage('')
+
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      speaker: 'user',
+      content: messageContent,
+      timestamp: new Date().toISOString()
     }
 
-    const handleFallbackResponse = async (currentMessages: Message[]) => {
-      const fallbackStakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
-      const fallbackResponse = `I apologize, but I'm having some technical difficulties. Could you please rephrase your question?`
+    let currentMessages = [...messages, userMessage]
+    setMessages(currentMessages)
+
+    try {
+      const isGroup = isGroupMessage(messageContent)
+      const isGreeting = isSimpleGreeting(messageContent)
       
-      const fallbackMessage = createResponseMessage(fallbackStakeholder, fallbackResponse, 0)
-      setMessages(prev => [...prev, fallbackMessage])
+      if (isGroup && isGreeting) {
+        await handleNaturalGreeting(messageContent, currentMessages)
+      } else {
+        await handleNaturalDiscussion(messageContent, currentMessages)
+      }
+    } catch (error) {
+      console.error('Error generating AI response:', error)
+      await handleFallbackResponse(currentMessages)
+    } finally {
+      setIsGeneratingResponse(false)
+      setCanUserType(true)
     }
+  }
 
-    // Enhanced meeting analytics
+  // Update audio controls to be per-stakeholder
+  const stopStakeholderAudio = (stakeholderId: string) => {
+    // Stop audio for this specific stakeholder
+    const messageElements = document.querySelectorAll(`[data-stakeholder-id="${stakeholderId}"]`)
+    messageElements.forEach(element => {
+      const messageId = element.getAttribute('data-message-id')
+      if (messageId && playingMessageId === messageId) {
+        stopCurrentAudio()
+      }
+    })
+    
+       // Remove from thinking state if they were thinking
+   removeThinkingStakeholder(stakeholderId)
+ }
+
+ // Enhanced fallback response
+ const handleFallbackResponse = async (currentMessages: Message[]) => {
+   const fallbackStakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
+   const fallbackResponse = `I apologize, but I'm having some technical difficulties. Could you please rephrase your question?`
+   
+   const fallbackMessage = createResponseMessage(fallbackStakeholder, fallbackResponse, 0)
+   setMessages(prev => [...prev, fallbackMessage])
+ }
+
+ // Enhanced meeting analytics
   const [meetingAnalytics, setMeetingAnalytics] = useState({
     participationBalance: new Map<string, number>(),
     topicsDiscussed: new Set<string>(),
@@ -1442,17 +1604,27 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               
-              {/* Audio/AI Status and Control */}
-              {(isGeneratingResponse || isAudioPlaying || isEndingMeeting) && (
+              {/* Global Status Indicator */}
+              {isGeneratingResponse && (
+                <div className="flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-lg border border-blue-200">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                  <span className="text-sm">Stakeholders are responding...</span>
+                </div>
+              )}
+              
+              {/* End Meeting Status */}
+              {isEndingMeeting && (
                 <button
                   onClick={handleUserInterruption}
                   className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
-                  title="Press Escape or click to interrupt and enable typing"
+                  title="Press Escape or click to interrupt meeting end"
                 >
                   <X className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    {isEndingMeeting ? 'Stop Ending' : isGeneratingResponse ? 'Stop Thinking' : 'Stop Audio'}
-                  </span>
+                  <span className="hidden sm:inline">Stop Ending</span>
                 </button>
               )}
 
@@ -1585,6 +1757,8 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 <div
                   key={message.id}
                   className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
+                  data-stakeholder-id={stakeholder?.id}
+                  data-message-id={message.id}
                 >
                   {/* Stakeholder Avatar for non-user messages */}
                   {isStakeholderMessage && stakeholder && (
@@ -1639,11 +1813,11 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                             <Play className="w-3 h-3 text-gray-700" />
                           )}
                         </button>
-                        {audioState !== 'stopped' && (
+                        {(audioState !== 'stopped' || isCurrentlyPlaying) && (
                           <button
-                            onClick={() => stopMessageAudio(message.id)}
+                            onClick={() => stopStakeholderAudio(stakeholder.id)}
                             className="p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
-                            title="Stop"
+                            title="Stop this stakeholder's audio"
                           >
                             <Square className="w-3 h-3 text-gray-700" />
                           </button>
@@ -1654,13 +1828,55 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 </div>
               )
             })}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">
-                  <div className="text-sm">Thinking...</div>
+            
+            {/* Individual Stakeholder Thinking Indicators */}
+            {Array.from(thinkingStakeholders).map(stakeholderId => {
+              const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+              if (!stakeholder) return null
+              
+              return (
+                <div key={`thinking-${stakeholderId}`} className="flex justify-start">
+                  <div className="flex-shrink-0 mr-3 mt-1">
+                    <img 
+                      src={stakeholder.photo} 
+                      alt={stakeholder.name}
+                      className="w-8 h-8 rounded-full object-cover border-2 border-blue-300 animate-pulse"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                      }}
+                    />
+                  </div>
+                  
+                                     <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 relative">
+                     <div className="text-xs font-medium text-blue-600 mb-1 flex items-center space-x-2">
+                       <span>{stakeholder.name}</span>
+                       <span className="text-blue-400">•</span>
+                       <span className="text-blue-500">{stakeholder.role}</span>
+                     </div>
+                     <div className="text-sm flex items-center space-x-2 pr-6">
+                       <div className="flex space-x-1">
+                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                       </div>
+                       <span>Just a moment, response coming shortly...</span>
+                     </div>
+                     <div className="text-xs mt-1 opacity-75">
+                       {new Date().toLocaleTimeString()}
+                     </div>
+                     
+                     {/* Stop thinking button */}
+                     <button
+                       onClick={() => stopStakeholderAudio(stakeholder.id)}
+                       className="absolute top-2 right-2 p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
+                       title="Stop this stakeholder's response"
+                     >
+                       <X className="w-3 h-3 text-blue-700" />
+                     </button>
+                   </div>
                 </div>
-              </div>
-            )}
+                             )
+             })}
             {/* Scroll anchor */}
             <div ref={messagesEndRef} />
           </div>
@@ -1674,7 +1890,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={shouldAllowUserInput() ? "Type your message..." : isGeneratingResponse ? "AI is thinking..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
+                placeholder={shouldAllowUserInput() ? "Type your message..." : isGeneratingResponse ? "Stakeholders are responding..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
                 className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={!shouldAllowUserInput()}
               />
