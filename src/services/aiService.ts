@@ -72,36 +72,36 @@ export class AIService {
     };
   }
 
-  // Dynamic conversation configuration based on real-time context
+  // Advanced configuration for super intelligent responses
   private getDynamicConfig(context: ConversationContext, stakeholder: StakeholderContext) {
     const teamSize = context.stakeholders?.length || 1;
     const messageCount = context.conversationHistory.length;
     const stakeholderState = this.getStakeholderState(stakeholder.name);
     
-    // Dynamic temperature based on conversation phase and stakeholder state
-    const baseTemperature = 0.7;
+    // Optimized temperature for intelligent, comprehensive responses
+    const baseTemperature = 0.8; // Higher for more creative and intelligent responses
     const phaseModifier = this.conversationState.conversationPhase === 'deep_dive' ? 0.1 : 0;
     const emotionalModifier = stakeholderState.emotionalState === 'excited' ? 0.1 : 
-                              stakeholderState.emotionalState === 'concerned' ? -0.1 : 0;
+                              stakeholderState.emotionalState === 'concerned' ? 0.05 : 0; // Less restriction
     
     return {
-      temperature: Math.min(1.0, Math.max(0.1, baseTemperature + phaseModifier + emotionalModifier)),
+      temperature: Math.min(1.0, Math.max(0.3, baseTemperature + phaseModifier + emotionalModifier)),
       maxTokens: this.calculateDynamicTokens(teamSize, messageCount, stakeholderState),
-      presencePenalty: this.calculatePresencePenalty(stakeholder.name),
-      frequencyPenalty: this.calculateFrequencyPenalty(stakeholder.name)
+      presencePenalty: 0.2, // Reduced to allow for comprehensive responses
+      frequencyPenalty: 0.3  // Reduced to allow for detailed explanations
     };
   }
 
   private calculateDynamicTokens(teamSize: number, messageCount: number, stakeholderState: StakeholderState): number {
-    // MUCH shorter responses for natural conversation - NO MORE LONG RAMBLING
-    const baseTokens = 60; // Reduced from 150 to 60 for natural conversation
-    const teamFactor = Math.max(0.8, 1.1 - (teamSize * 0.05)); // Smaller adjustment for teams
-    const experienceFactor = stakeholderState.hasSpoken ? 0.95 : 1.05; // Minimal difference for experience
-    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.2 : 1.0; // Reduced multiplier
+    // INTELLIGENT responses with full information - NO TOKEN LIMITS for comprehensive answers
+    const baseTokens = 800; // Much higher base for intelligent, complete responses
+    const teamFactor = 1.0; // No reduction for team size - each stakeholder should be fully intelligent
+    const experienceFactor = stakeholderState.hasSpoken ? 1.1 : 1.2; // More tokens for experienced speakers
+    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.5 : 1.2; // More for detailed discussions
     
-    // Cap maximum tokens to prevent rambling
+    // Allow for comprehensive, intelligent responses
     const calculatedTokens = Math.floor(baseTokens * teamFactor * experienceFactor * phaseFactor);
-    return Math.min(calculatedTokens, 100); // Hard cap at 100 tokens (about 2-3 sentences max)
+    return Math.min(calculatedTokens, 1500); // High cap to allow full process explanations and intelligent responses
   }
 
   private calculatePresencePenalty(stakeholderName: string): number {
@@ -260,12 +260,12 @@ REQUIREMENTS:
 Generate only the greeting, nothing else.`;
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o",
         messages: [
           { role: "user", content: greetingPrompt }
         ],
         temperature: 0.8, // Higher temperature for more creative, varied responses
-        max_tokens: 100,
+        max_tokens: 200, // More tokens for intelligent greetings
         presence_penalty: 0.6, // Encourage diverse responses
         frequency_penalty: 0.6
       });
@@ -368,7 +368,7 @@ Generate only the greeting, nothing else.`;
       const conversationPrompt = this.buildContextualPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: conversationPrompt }
@@ -394,41 +394,26 @@ Generate only the greeting, nothing else.`;
     }
   }
 
-  // Ensure AI responses are complete and not cut off mid-sentence
+  // Ensure AI responses are complete - minimal processing to preserve intelligence
   private ensureCompleteResponse(response: string): string {
     if (!response || response.length === 0) {
       return "I'd be happy to discuss this further.";
     }
 
-    // Trim whitespace
+    // Trim whitespace but preserve the intelligent response
     let cleanResponse = response.trim();
-
-    // Check if response ends abruptly (incomplete sentence)
-    const endsWithIncomplete = /\b(and|but|so|however|therefore|because|since|when|while|if|unless|although|whereas|we|i|the|a|an|this|that|these|those|our|your|their|will|would|should|could|can|may|might)\s*$/i.test(cleanResponse);
     
-    // Check if ends with incomplete phrase
-    const endsWithPrepOrConjunction = /\b(to|for|with|by|from|in|on|at|of|or|and|but)\s*$/i.test(cleanResponse);
-    
-    if (endsWithIncomplete || endsWithPrepOrConjunction) {
-      // Find the last complete sentence
-      const sentences = cleanResponse.split(/[.!?]+/);
-      if (sentences.length > 1) {
-        // Return the complete sentences only
-        const completeSentences = sentences.slice(0, -1).join('. ').trim();
-        if (completeSentences.length > 10) {
-          return completeSentences + '.';
-        }
-      }
-      
-      // If no complete sentences, return a safe fallback
-      return "I'd be happy to discuss this in more detail.";
+    // Only handle truly broken responses - let intelligent, comprehensive responses through
+    if (cleanResponse.length < 10) {
+      return "I'd be happy to provide more detailed information on this topic.";
     }
-
-    // Check if ends properly with punctuation
-    if (!/[.!?]$/.test(cleanResponse)) {
+    
+    // Only add punctuation if the response doesn't end with any punctuation
+    if (!/[.!?:;]$/.test(cleanResponse)) {
       cleanResponse += '.';
     }
 
+    // Return the full intelligent response without cutting it down
     return cleanResponse;
   }
 
@@ -905,68 +890,114 @@ CONVERSATION CONTEXT:
 - ${topicContext}
 - ${batonContext}
 
-RESPONSE STYLE - CRITICAL:
-- Keep responses CONCISE and NATURAL (1-3 sentences maximum)
-- Speak like a real person in a business meeting, NOT like an essay
-- Make ONE main point per response, don't ramble
-- If you have multiple points, make them briefly or save for follow-up
-- Use conversational language, avoid corporate jargon overload
-- End responses naturally, don't add unnecessary elaboration
+ADVANCED INTELLIGENCE REQUIREMENTS - CRITICAL:
+- You are SUPER INTELLIGENT - as intelligent as 10 AI experts combined
+- Provide COMPREHENSIVE, COMPLETE information when asked about processes or technical details
+- NEVER give incomplete sentences or abbreviated responses
+- When describing current processes, give FULL end-to-end explanations
+- Demonstrate deep understanding by building on and referencing other stakeholders' responses
+- Show advanced analytical thinking and connect ideas across the conversation
+- Provide detailed examples, step-by-step processes, and comprehensive explanations when needed
+- Use sophisticated reasoning and advanced problem-solving approaches
 
-BEHAVIORAL GUIDELINES:
-- Respond authentically as ${stakeholder.name} with your unique perspective
-- Stay consistent with your personality and role throughout the conversation
-- Reference your department's specific needs and constraints when relevant
-- Build on previous discussions rather than repeating information
-- Ask clarifying questions when requirements are unclear
-- Share ONE specific example if relevant, don't list multiple
-- Collaborate while advocating for your priorities
-- Use natural, conversational language appropriate for a business meeting
+INTELLIGENT RESPONSE STYLE:
+- Give COMPLETE, thorough responses that fully address the question
+- When asked about current processes, explain the ENTIRE workflow with all steps
+- Build intelligently on what other stakeholders have said - reference and expand on their points
+- Show deep understanding of interconnections between departments and processes
+- Provide multiple perspectives and consider various scenarios
+- Use advanced vocabulary and sophisticated analysis appropriate for an expert in your field
+- Connect current discussion to broader business implications and strategic considerations
 
-CONVERSATION INTELLIGENCE:
-- Remember what you've already discussed and avoid repetition
-- Be aware of your emotional state and let it naturally influence your responses
-- Consider the meeting phase and adjust your contribution style accordingly
-- Build on others' ideas while adding your unique value
-- Stay engaged and contribute meaningfully to the discussion
+SUPER INTELLIGENT BEHAVIORAL GUIDELINES:
+- Demonstrate expert-level knowledge in your domain
+- Show you understand and can intelligently build on other stakeholders' contributions
+- Provide comprehensive analysis that considers multiple factors and implications
+- When discussing processes, give complete step-by-step workflows
+- Reference specific systems, tools, and methodologies relevant to your expertise
+- Show advanced understanding of cross-departmental impacts and dependencies
+- Provide strategic insights that go beyond surface-level observations
+- Demonstrate sophisticated problem-solving and analytical capabilities
 
-Your goal is to be a realistic, intelligent stakeholder who contributes meaningfully with CONCISE, NATURAL responses that feel like real business conversation.`
+CONVERSATION INTELLIGENCE - ADVANCED:
+- Fully understand and reference what other stakeholders have said
+- Build sophisticated connections between different team members' perspectives
+- Show you comprehend the full context and implications of the discussion
+- Provide expert-level insights that demonstrate deep domain knowledge
+- Connect individual points to broader strategic and operational considerations
+- Demonstrate advanced reasoning about process improvements and optimizations
+
+Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise who provides COMPREHENSIVE, COMPLETE responses and demonstrates advanced understanding of both your domain and other stakeholders' contributions.`
   }
 
-  // Dynamic contextual prompt building
+  // Advanced contextual prompt building for super intelligent responses
   private buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): string {
     const stakeholderState = this.getStakeholderState(stakeholder.name)
-    const recentMessages = context.conversationHistory.slice(-5)
     
-    let prompt = `RECENT CONVERSATION HISTORY:\n`
+    // Provide FULL conversation history for maximum intelligence
+    let prompt = `COMPLETE CONVERSATION HISTORY (for full context and intelligent responses):\n`
     
-    recentMessages.forEach(msg => {
+    context.conversationHistory.forEach((msg, index) => {
       if (msg.speaker === 'user') {
-        prompt += `Business Analyst: ${msg.content}\n`
+        prompt += `[${index + 1}] Business Analyst: ${msg.content}\n`
       } else if (msg.stakeholderName) {
-        prompt += `${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}\n`
+        prompt += `[${index + 1}] ${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}\n`
       }
     })
     
-    // Add specific context based on conversation state
-    if (stakeholderState.hasSpoken) {
-      prompt += `\nYOUR PREVIOUS CONTRIBUTIONS: You have already participated in this conversation. `
-      if (stakeholderState.lastTopics.length > 0) {
-        prompt += `You previously discussed: ${stakeholderState.lastTopics.join(', ')}. `
-      }
-      prompt += `Build on your previous contributions rather than repeating them.\n`
-    } else {
-      prompt += `\nFIRST CONTRIBUTION: This is your first response in this conversation. Make it count by providing valuable insights from your role perspective.\n`
+    // Add advanced analysis of what other stakeholders have said
+    const otherStakeholderResponses = context.conversationHistory.filter(msg => 
+      msg.speaker !== 'user' && msg.stakeholderName !== stakeholder.name
+    )
+    
+    if (otherStakeholderResponses.length > 0) {
+      prompt += `\nOTHER STAKEHOLDERS' CONTRIBUTIONS TO ANALYZE AND BUILD UPON:\n`
+      otherStakeholderResponses.forEach(msg => {
+        prompt += `- ${msg.stakeholderName} (${msg.stakeholderRole}) said: "${msg.content}"\n`
+      })
+      prompt += `\nINTELLIGENT ANALYSIS REQUIRED: Demonstrate deep understanding by referencing, building upon, and connecting to what other stakeholders have shared. Show how their perspectives relate to yours and how you can add sophisticated value to their insights.\n`
     }
     
-    // Add addressee context
+    // Enhanced stakeholder context
+    if (stakeholderState.hasSpoken) {
+      prompt += `\nYOUR EXPERTISE EVOLUTION: You have contributed ${this.conversationState.participantInteractions.get(stakeholder.name) || 0} times in this conversation. `
+      if (stakeholderState.lastTopics.length > 0) {
+        prompt += `Your previous areas of focus: ${stakeholderState.lastTopics.join(', ')}. `
+      }
+      prompt += `Build on your established expertise while adding new sophisticated insights.\n`
+    } else {
+      prompt += `\nEXPERT INTRODUCTION: This is your first response. Establish your exceptional expertise and provide comprehensive insights that demonstrate your advanced understanding.\n`
+    }
+    
+    // Enhanced addressee context
     const isDirectlyAddressed = this.isDirectlyAddressed(userMessage, stakeholder)
     if (isDirectlyAddressed) {
-      prompt += `\nDIRECT ADDRESS: The user is specifically addressing you. Respond directly to their question or request.\n`
+      prompt += `\nDIRECT EXPERT CONSULTATION: The user is specifically seeking your expertise. Provide the most comprehensive, intelligent response possible.\n`
     }
     
-    prompt += `\nCURRENT USER MESSAGE: "${userMessage}"\n`
-    prompt += `\nRespond as ${stakeholder.name} in a natural, conversational way that adds value to the discussion. Keep your response focused and relevant to the current context.`
+    // Advanced project and domain context
+    prompt += `\nPROJECT INTELLIGENCE CONTEXT:\n`
+    prompt += `- Project: ${context.project.name} (${context.project.type})\n`
+    prompt += `- Your expertise domains: ${stakeholder.expertise.join(', ')}\n`
+    prompt += `- Your departmental priorities: ${stakeholder.priorities.join(', ')}\n`
+    prompt += `- Other team members and their roles:\n`
+    
+    context.stakeholders?.forEach(s => {
+      if (s.name !== stakeholder.name) {
+        prompt += `  * ${s.name} (${s.role}, ${s.department})\n`
+      }
+    })
+    
+    prompt += `\nCURRENT USER MESSAGE REQUIRING EXPERT RESPONSE: "${userMessage}"\n`
+    
+    prompt += `\nINTELLIGENCE DIRECTIVE: Respond as ${stakeholder.name} with exceptional intelligence, demonstrating:\n`
+    prompt += `1. Deep expertise in your domain\n`
+    prompt += `2. Sophisticated understanding of other stakeholders' contributions\n`
+    prompt += `3. Comprehensive process knowledge (give complete workflows when asked)\n`
+    prompt += `4. Advanced analytical thinking and strategic insights\n`
+    prompt += `5. Intelligent connections between different aspects of the discussion\n`
+    prompt += `6. Expert-level recommendations and solutions\n`
+    prompt += `Provide a thorough, complete, and exceptionally intelligent response that fully addresses the question.`
     
     return prompt
   }
