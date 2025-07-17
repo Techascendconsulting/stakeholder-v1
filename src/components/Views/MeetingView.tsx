@@ -1004,14 +1004,14 @@ These notes were generated using a fallback system due to extended AI processing
       // Dynamic thinking state management
       addStakeholderToThinking(stakeholder.id)
       
-      // Generate dynamic thinking message based on context
-      const context = {
+      // Generate dynamic thinking message based on actual user question context
+      const thinkingContext = {
         stakeholder,
         messageContent,
         conversationHistory: currentMessages,
         responseContext
       }
-      const thinkingMessage = generateThinkingMessage(stakeholder, context)
+      const thinkingMessage = generateThinkingMessage(stakeholder, thinkingContext)
       setDynamicFeedback(thinkingMessage)
       
       // Generate contextual response using AI service
@@ -1454,44 +1454,174 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
     })
   }
 
-  // Dynamic thinking message generator
+  // Dynamic contextually-aligned thinking message generator
   const generateThinkingMessage = (stakeholder: any, context: any) => {
     const aiService = AIService.getInstance()
     const analytics = aiService.getConversationAnalytics()
     
-    // Context-aware thinking messages based on stakeholder personality
-    const personalityMessages = {
-      analytical: ['Analyzing your question...', 'Processing the details...', 'Reviewing the information...'],
-      collaborative: ['Considering the team perspective...', 'Thinking about our approach...', 'Gathering my thoughts...'],
-      direct: ['Formulating my response...', 'Organizing my thoughts...', 'Preparing my answer...'],
-      strategic: ['Evaluating the implications...', 'Considering the broader impact...', 'Thinking strategically...']
+    // Extract user question content and context
+    const userQuestion = context.messageContent || ''
+    const conversationHistory = context.conversationHistory || []
+    const responseContext = context.responseContext || ''
+    
+    // Analyze question content for key topics and themes
+    const questionAnalysis = analyzeQuestionContent(userQuestion)
+    const stakeholderExpertise = mapStakeholderExpertise(stakeholder)
+    
+    // Generate contextually aligned thinking message
+    const contextualMessage = generateContextualThinkingMessage(
+      questionAnalysis,
+      stakeholderExpertise,
+      stakeholder,
+      analytics.conversationPace
+    )
+    
+    return contextualMessage
+  }
+
+  // Analyze user question to extract key topics and intent
+  const analyzeQuestionContent = (question: string) => {
+    const questionLower = question.toLowerCase()
+    
+    // Extract key topics dynamically
+    const topicKeywords = {
+      budget: ['budget', 'cost', 'price', 'expense', 'financial', 'money', 'funding', 'investment'],
+      timeline: ['timeline', 'schedule', 'deadline', 'when', 'time', 'duration', 'delivery', 'launch'],
+      technical: ['technical', 'technology', 'system', 'architecture', 'implementation', 'development', 'code'],
+      process: ['process', 'workflow', 'procedure', 'steps', 'method', 'approach', 'how'],
+      requirements: ['requirements', 'features', 'functionality', 'specifications', 'needs', 'what'],
+      users: ['user', 'customer', 'client', 'experience', 'interface', 'usability', 'feedback'],
+      team: ['team', 'resources', 'people', 'staff', 'roles', 'responsibilities', 'collaboration'],
+      risks: ['risk', 'challenge', 'problem', 'issue', 'concern', 'difficulty', 'obstacle'],
+      goals: ['goal', 'objective', 'target', 'outcome', 'result', 'success', 'achievement'],
+      integration: ['integration', 'connect', 'interface', 'api', 'compatibility', 'sync'],
+      performance: ['performance', 'speed', 'efficiency', 'optimization', 'scalability', 'capacity'],
+      security: ['security', 'privacy', 'protection', 'access', 'authentication', 'authorization'],
+      data: ['data', 'database', 'storage', 'information', 'analytics', 'reporting'],
+      quality: ['quality', 'testing', 'validation', 'standards', 'compliance', 'review']
     }
-
-    const departmentMessages = {
-      'Engineering': ['Checking technical details...', 'Analyzing the implementation...', 'Reviewing the architecture...'],
-      'Marketing': ['Considering the market impact...', 'Thinking about user needs...', 'Evaluating the positioning...'],
-      'Sales': ['Assessing customer value...', 'Thinking about the business case...', 'Considering market fit...'],
-      'Product': ['Analyzing product requirements...', 'Thinking about user experience...', 'Evaluating features...']
+    
+    // Find matching topics
+    const matchedTopics = []
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+      if (keywords.some(keyword => questionLower.includes(keyword))) {
+        matchedTopics.push(topic)
+      }
     }
-
-    const urgencyMessages = {
-      low: ['Taking time to consider...', 'Reflecting on this question...', 'Thinking this through...'],
-      medium: ['Processing your request...', 'Formulating a response...', 'Organizing my thoughts...'],
-      high: ['Quickly analyzing...', 'Rapidly processing...', 'Getting back to you soon...']
+    
+    // Determine question type
+    const questionType = questionLower.includes('how') ? 'process' :
+                        questionLower.includes('what') ? 'definition' :
+                        questionLower.includes('why') ? 'reasoning' :
+                        questionLower.includes('when') ? 'timeline' :
+                        questionLower.includes('who') ? 'responsibility' :
+                        questionLower.includes('where') ? 'location' :
+                        'general'
+    
+    return {
+      topics: matchedTopics,
+      questionType,
+      complexity: question.length > 100 ? 'high' : question.length > 50 ? 'medium' : 'low',
+      isSpecific: matchedTopics.length > 0
     }
+  }
 
-    // Dynamic selection based on context
-    const personalityType = stakeholder.personality || 'collaborative'
-    const department = stakeholder.department || 'Product'
-    const urgency = analytics.conversationPace || 'medium'
+  // Map stakeholder expertise to response domains
+  const mapStakeholderExpertise = (stakeholder: any) => {
+    const role = stakeholder.role?.toLowerCase() || ''
+    const department = stakeholder.department?.toLowerCase() || ''
+    
+    const expertiseMap = {
+      'technical': ['engineer', 'developer', 'architect', 'technical', 'engineering', 'development'],
+      'business': ['manager', 'director', 'executive', 'business', 'operations', 'strategy'],
+      'product': ['product', 'design', 'ux', 'ui', 'user', 'customer'],
+      'financial': ['financial', 'budget', 'accounting', 'finance', 'cost'],
+      'marketing': ['marketing', 'sales', 'communication', 'promotion', 'brand'],
+      'operations': ['operations', 'process', 'workflow', 'efficiency', 'logistics'],
+      'security': ['security', 'compliance', 'risk', 'audit', 'governance'],
+      'data': ['data', 'analytics', 'reporting', 'insights', 'intelligence']
+    }
+    
+    const stakeholderExpertise = []
+    for (const [domain, keywords] of Object.entries(expertiseMap)) {
+      if (keywords.some(keyword => role.includes(keyword) || department.includes(keyword))) {
+        stakeholderExpertise.push(domain)
+      }
+    }
+    
+    return stakeholderExpertise.length > 0 ? stakeholderExpertise : ['general']
+  }
 
-    const possibleMessages = [
-      ...(personalityMessages[personalityType] || personalityMessages.collaborative),
-      ...(departmentMessages[department] || departmentMessages.Product),
-      ...(urgencyMessages[urgency] || urgencyMessages.medium)
-    ]
-
-    return possibleMessages[Math.floor(Math.random() * possibleMessages.length)]
+  // Generate contextually aligned thinking message
+  const generateContextualThinkingMessage = (questionAnalysis: any, stakeholderExpertise: any, stakeholder: any, conversationPace: string) => {
+    const { topics, questionType, complexity, isSpecific } = questionAnalysis
+    const personality = stakeholder.personality || 'collaborative'
+    
+    // Base thinking patterns by personality
+    const thinkingPatterns = {
+      analytical: ['Analyzing', 'Examining', 'Evaluating', 'Reviewing', 'Assessing'],
+      collaborative: ['Considering', 'Thinking about', 'Reflecting on', 'Discussing', 'Exploring'],
+      direct: ['Addressing', 'Tackling', 'Focusing on', 'Handling', 'Dealing with'],
+      strategic: ['Evaluating', 'Strategizing about', 'Planning for', 'Considering', 'Analyzing']
+    }
+    
+    // Get appropriate thinking pattern
+    const patterns = thinkingPatterns[personality] || thinkingPatterns.collaborative
+    const thinkingPattern = patterns[Math.floor(Math.random() * patterns.length)]
+    
+    // Generate contextual subject based on question topics and stakeholder expertise
+    let subject = ''
+    
+    if (topics.length > 0) {
+      // Find the most relevant topic based on stakeholder expertise
+      const relevantTopic = topics.find(topic => 
+        stakeholderExpertise.some(expertise => topic.includes(expertise) || expertise.includes(topic))
+      ) || topics[0]
+      
+      // Create contextual subject
+      const subjectMap = {
+        budget: ['the budget requirements', 'financial implications', 'cost considerations', 'funding needs'],
+        timeline: ['the project timeline', 'scheduling requirements', 'delivery expectations', 'timing constraints'],
+        technical: ['the technical approach', 'implementation details', 'system architecture', 'technical feasibility'],
+        process: ['the workflow process', 'procedural requirements', 'implementation steps', 'process optimization'],
+        requirements: ['the requirements', 'feature specifications', 'functional needs', 'project scope'],
+        users: ['user experience', 'customer needs', 'user requirements', 'interface design'],
+        team: ['team structure', 'resource allocation', 'collaboration approach', 'team dynamics'],
+        risks: ['potential risks', 'challenges ahead', 'mitigation strategies', 'risk factors'],
+        goals: ['project objectives', 'success criteria', 'target outcomes', 'achievement metrics'],
+        integration: ['integration requirements', 'connectivity options', 'system interfaces', 'compatibility needs'],
+        performance: ['performance requirements', 'optimization strategies', 'scalability needs', 'efficiency goals'],
+        security: ['security considerations', 'protection measures', 'access controls', 'compliance requirements'],
+        data: ['data requirements', 'information needs', 'storage solutions', 'data flow'],
+        quality: ['quality standards', 'testing approach', 'validation methods', 'quality assurance']
+      }
+      
+      const subjectOptions = subjectMap[relevantTopic] || [`the ${relevantTopic} aspects`, `${relevantTopic} considerations`]
+      subject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)]
+    } else {
+      // Fallback to expertise-based subject
+      const expertiseSubjects = {
+        technical: ['the technical aspects', 'implementation details', 'system considerations'],
+        business: ['the business implications', 'strategic considerations', 'operational aspects'],
+        product: ['the product requirements', 'user experience', 'feature considerations'],
+        financial: ['the financial aspects', 'budget considerations', 'cost implications'],
+        marketing: ['the market implications', 'customer impact', 'positioning aspects'],
+        operations: ['the operational requirements', 'process considerations', 'workflow aspects'],
+        security: ['the security implications', 'compliance requirements', 'risk factors'],
+        data: ['the data requirements', 'information needs', 'analytics aspects'],
+        general: ['your question', 'this topic', 'the requirements']
+      }
+      
+      const primaryExpertise = stakeholderExpertise[0] || 'general'
+      const subjectOptions = expertiseSubjects[primaryExpertise] || expertiseSubjects.general
+      subject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)]
+    }
+    
+    // Add complexity modifier based on question complexity
+    const complexityModifier = complexity === 'high' ? 'carefully ' : 
+                              complexity === 'medium' ? 'thoroughly ' : ''
+    
+    return `${thinkingPattern} ${complexityModifier}${subject}...`
   }
 
   // Dynamic lead stakeholder selection
@@ -2165,9 +2295,15 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
               if (!stakeholder) return null
               
-              // Generate dynamic thinking message based on stakeholder context
-              const context = { stakeholder, messageContent: messages[messages.length - 1]?.content || '' }
-              const currentThinkingMessage = dynamicFeedback || generateThinkingMessage(stakeholder, context)
+              // Generate dynamic thinking message based on actual user question and stakeholder context
+              const lastUserMessage = messages.slice().reverse().find(msg => msg.speaker === 'user')?.content || ''
+              const thinkingContext = { 
+                stakeholder, 
+                messageContent: lastUserMessage,
+                conversationHistory: messages,
+                responseContext: 'display_thinking'
+              }
+              const currentThinkingMessage = dynamicFeedback || generateThinkingMessage(stakeholder, thinkingContext)
               
               return (
                 <div key={`thinking-${stakeholderId}`} className="flex justify-start">
