@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic, X } from 'lucide-react'
+import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic, X, FileDown } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
 import VoiceInputModal from '../VoiceInputModal'
+import { PDFExportService } from '../../lib/pdfExport'
 
 const MeetingView: React.FC = () => {
-  const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
+  const { selectedProject, selectedStakeholders, user, setCurrentView, saveMeetingToDatabase } = useApp()
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice()
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -717,14 +718,62 @@ ${generateMeetingRecommendations()}
         }
       };
 
-      // Save to localStorage
+      // Save to database and localStorage (for backup)
+      setNoteGenerationProgress('Saving to database...');
+      const stakeholderIds = selectedStakeholders.map(s => s.id);
+      const rawChatTranscript = messages.filter(m => m.speaker !== 'system');
+      
+      const dbSaveSuccess = await saveMeetingToDatabase(
+        selectedProject?.id || 'unknown',
+        stakeholderIds,
+        [notesObject], // transcript
+        rawChatTranscript, // raw chat
+        enhancedInterviewNotes, // meeting notes
+        duration
+      );
+
+      // Also save to localStorage as backup
       const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
       existingNotes.push(notesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
 
+      // Generate and export PDF
+      setNoteGenerationProgress('Generating PDF export...');
+      try {
+        const pdfData = {
+          title: notesObject.title,
+          project: {
+            name: selectedProject?.name || 'Unknown Project',
+            description: selectedProject?.description
+          },
+          participants: selectedStakeholders.map(s => ({
+            name: s.name,
+            role: s.role,
+            department: s.department
+          })),
+          date: meetingEndTime.toISOString(),
+          duration: `${duration} minutes`,
+          meetingNotes: enhancedInterviewNotes,
+          rawChat: rawChatTranscript,
+          analytics: notesObject.analytics
+        };
+
+        await PDFExportService.exportMeetingTranscript(pdfData);
+        console.log('PDF export completed successfully');
+      } catch (pdfError) {
+        console.error('PDF export failed:', pdfError);
+        // Don't fail the whole process if PDF export fails
+      }
+
       // Show success notification
       setNoteGenerationProgress('Meeting ended successfully!');
       setMeetingEndedSuccess(true);
+      
+      if (dbSaveSuccess) {
+        console.log('Meeting successfully saved to database');
+      } else {
+        console.warn('Database save failed, but meeting data preserved in localStorage');
+      }
       
       // Navigate to notes view
       setTimeout(() => {
@@ -735,12 +784,13 @@ ${generateMeetingRecommendations()}
       console.error('Error ending meeting:', error);
       setNoteGenerationProgress('Error occurred - saving basic notes...');
       alert('Error generating meeting notes. The meeting has been saved with available data.');
+      
       // Still try to save basic notes even if AI generation fails
       const basicNotes = createFallbackNotes({
         project: { name: selectedProject?.name || 'Current Project' },
         participants: selectedStakeholders,
         messages: messages.filter(m => m.speaker !== 'system'),
-        duration: 0
+        duration: duration || 0
       });
       
       const basicNotesObject = {
@@ -751,10 +801,49 @@ ${generateMeetingRecommendations()}
         meetingType: 'stakeholder-interview',
         participants: selectedStakeholders.map(s => s.name).join(', '),
         date: new Date().toISOString(),
-        duration: '0 minutes',
+        duration: `${duration || 0} minutes`,
         createdBy: user?.email || 'Business Analyst'
       };
       
+      // Try to save to database even with basic notes
+      try {
+        const stakeholderIds = selectedStakeholders.map(s => s.id);
+        const rawChatTranscript = messages.filter(m => m.speaker !== 'system');
+        
+        await saveMeetingToDatabase(
+          selectedProject?.id || 'unknown',
+          stakeholderIds,
+          [basicNotesObject],
+          rawChatTranscript,
+          basicNotes,
+          duration || 0
+        );
+        
+        // Generate basic PDF
+        const pdfData = {
+          title: basicNotesObject.title,
+          project: {
+            name: selectedProject?.name || 'Unknown Project',
+            description: selectedProject?.description
+          },
+          participants: selectedStakeholders.map(s => ({
+            name: s.name,
+            role: s.role,
+            department: s.department
+          })),
+          date: new Date().toISOString(),
+          duration: `${duration || 0} minutes`,
+          meetingNotes: basicNotes,
+          rawChat: rawChatTranscript
+        };
+        
+        await PDFExportService.exportMeetingTranscript(pdfData);
+        console.log('Basic PDF export completed');
+      } catch (fallbackError) {
+        console.error('Fallback database/PDF save also failed:', fallbackError);
+      }
+      
+      // Always save to localStorage as final backup
       const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
       existingNotes.push(basicNotesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
@@ -795,6 +884,60 @@ These notes were generated using a fallback system due to extended AI processing
 
 ---
 *Generated automatically on ${new Date().toLocaleString()}*`;
+  }
+
+  // Manual PDF export function
+  const handleExportCurrentChat = async () => {
+    if (messages.length <= 1) {
+      alert('No conversation to export. Start a discussion with the stakeholders first.');
+      return;
+    }
+
+    try {
+      const currentDate = new Date();
+      const rawChatTranscript = messages.filter(m => m.speaker !== 'system');
+      
+      const pdfData = {
+        title: `Live Chat Export: ${selectedProject?.name} - ${currentDate.toLocaleDateString()}`,
+        project: {
+          name: selectedProject?.name || 'Unknown Project',
+          description: selectedProject?.description
+        },
+        participants: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department
+        })),
+        date: currentDate.toISOString(),
+        duration: 'In Progress',
+        meetingNotes: `This is a live export of the ongoing conversation as of ${currentDate.toLocaleString()}.\n\nTotal messages exchanged: ${rawChatTranscript.length}\nParticipants: ${selectedStakeholders.map(s => s.name).join(', ')}\n\nFor complete meeting notes with AI analysis, please end the meeting to generate comprehensive notes.`,
+        rawChat: rawChatTranscript,
+        analytics: {
+          effectivenessScore: 0,
+          collaborationIndex: 0,
+          topicsDiscussed: [],
+          participationBalance: {},
+          keyInsights: [`Live export generated at ${currentDate.toLocaleString()}`, `${rawChatTranscript.length} messages captured`, 'Meeting still in progress']
+        }
+      };
+
+      await PDFExportService.exportMeetingTranscript(pdfData);
+      
+      // Show brief success message
+      const originalPlaceholder = inputRef.current?.placeholder;
+      if (inputRef.current) {
+        inputRef.current.placeholder = '✅ PDF exported successfully!';
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.placeholder = originalPlaceholder || 'Type your message...';
+          }
+        }, 3000);
+      }
+      
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
   }
 
   // User interruption controls
@@ -2469,15 +2612,30 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 )}
               </div>
               
-              {/* Question Helper Toggle */}
-              <button
-                onClick={() => setShowQuestionHelper(!showQuestionHelper)}
-                className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-              >
-                <HelpCircle className="w-5 h-5" />
-                <span className="hidden sm:inline">Question Helper</span>
-                {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
+              <div className="flex items-center space-x-2">
+                {/* Export PDF Button */}
+                {messages.length > 1 && (
+                  <button
+                    onClick={handleExportCurrentChat}
+                    disabled={isLoading}
+                    className="flex items-center space-x-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg hover:bg-green-100 transition-colors border border-green-200 disabled:opacity-50"
+                    title="Export current conversation as PDF"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    <span className="hidden lg:inline">Export PDF</span>
+                  </button>
+                )}
+                
+                {/* Question Helper Toggle */}
+                <button
+                  onClick={() => setShowQuestionHelper(!showQuestionHelper)}
+                  className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+                >
+                  <HelpCircle className="w-5 h-5" />
+                  <span className="hidden sm:inline">Question Helper</span>
+                  {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
               
               {/* Global Status Indicator */}
               {isGeneratingResponse && (
