@@ -1489,6 +1489,98 @@ Return ONLY the stakeholder name or "NO_HANDOFF".`
       stakeholders: []
     });
   }
+
+  // Generate responses from multiple stakeholders (for greetings and group discussions)
+  async generateStakeholderResponses(
+    userMessage: string,
+    context: ConversationContext,
+    availableStakeholders: any[]
+  ): Promise<Array<{stakeholderName: string, stakeholderRole: string, content: string}>> {
+    try {
+      // Determine how many stakeholders should respond
+      const isGreeting = this.isGreetingMessage(userMessage)
+      const maxResponders = isGreeting ? Math.min(3, availableStakeholders.length) : Math.min(2, availableStakeholders.length)
+      
+      // Select stakeholders to respond based on participation balance and relevance
+      const selectedStakeholders = this.selectRespondingStakeholders(userMessage, availableStakeholders, maxResponders)
+      
+      const responses = []
+      
+      for (const stakeholder of selectedStakeholders) {
+        const stakeholderContext: StakeholderContext = {
+          name: stakeholder.name,
+          role: stakeholder.role,
+          department: stakeholder.department,
+          priorities: stakeholder.priorities,
+          personality: stakeholder.personality,
+          expertise: stakeholder.expertise
+        }
+        
+        const responseType = isGreeting ? 'greeting' : 'discussion'
+        const content = await this.generateStakeholderResponse(
+          userMessage,
+          stakeholderContext,
+          context,
+          responseType
+        )
+        
+        responses.push({
+          stakeholderName: stakeholder.name,
+          stakeholderRole: stakeholder.role,
+          content: content
+        })
+      }
+      
+      return responses
+      
+    } catch (error) {
+      console.error('Error generating stakeholder responses:', error)
+      
+      // Fallback to a single response
+      const fallbackStakeholder = availableStakeholders[0]
+      return [{
+        stakeholderName: fallbackStakeholder.name,
+        stakeholderRole: fallbackStakeholder.role,
+        content: `Thank you for that. I'd be happy to discuss this further.`
+      }]
+    }
+  }
+
+  // Select which stakeholders should respond to a message
+  private selectRespondingStakeholders(userMessage: string, availableStakeholders: any[], maxResponders: number): any[] {
+    const messageLower = userMessage.toLowerCase()
+    
+    // Score stakeholders based on relevance and participation balance
+    const scoredStakeholders = availableStakeholders.map(stakeholder => {
+      let score = 0
+      
+      // Expertise relevance
+      const roleKeywords = stakeholder.role.toLowerCase().split(' ')
+      const deptKeywords = stakeholder.department?.toLowerCase().split(' ') || []
+      
+      roleKeywords.forEach(keyword => {
+        if (messageLower.includes(keyword)) score += 10
+      })
+      deptKeywords.forEach(keyword => {
+        if (messageLower.includes(keyword)) score += 8
+      })
+      
+      // Participation balance (prefer less active participants)
+      const participationCount = this.conversationState.participantInteractions.get(stakeholder.name) || 0
+      score += Math.max(0, 15 - (participationCount * 3))
+      
+      // Add some randomness for variety
+      score += Math.random() * 5
+      
+      return { stakeholder, score }
+    })
+    
+    // Sort by score and return top stakeholders
+    return scoredStakeholders
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxResponders)
+      .map(item => item.stakeholder)
+  }
 }
 
 export default AIService;

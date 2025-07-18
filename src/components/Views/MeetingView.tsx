@@ -7,6 +7,8 @@ import AIService, { StakeholderContext, ConversationContext } from '../../servic
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
 import VoiceInputModal from '../VoiceInputModal'
 import { PDFExportService } from '../../lib/pdfExport'
+import { messageQueue, QueuedMessage } from '../../lib/messageQueue'
+import { audioOrchestrator } from '../../lib/audioOrchestrator'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, user, setCurrentView, saveMeetingToDatabase } = useApp()
@@ -52,7 +54,7 @@ const MeetingView: React.FC = () => {
 
   // Dynamic input availability logic
   const shouldAllowUserInput = () => {
-    return canUserType && !isEndingMeeting
+    return canUserType && !isEndingMeeting && !isAudioPlaying
   }
 
   // Get stakeholder color for consistent avatar colors
@@ -93,6 +95,51 @@ const MeetingView: React.FC = () => {
     }
   }, [selectedProject, selectedStakeholders])
 
+  // Set up message queue callbacks
+  useEffect(() => {
+    const handleQueuedMessage = (queuedMessage: QueuedMessage) => {
+      // Convert queued message to regular message format
+      const message: Message = {
+        id: queuedMessage.id,
+        speaker: queuedMessage.speakerId,
+        content: queuedMessage.content,
+        timestamp: queuedMessage.timestamp,
+        stakeholderName: queuedMessage.stakeholderName,
+        stakeholderRole: queuedMessage.stakeholderRole
+      }
+
+      // Add to messages
+      setMessages(prev => [...prev, message])
+
+      // Update current speaker for UI
+      const stakeholder = selectedStakeholders.find(s => s.id === queuedMessage.speakerId)
+      if (stakeholder) {
+        setCurrentSpeaker(stakeholder)
+      }
+    }
+
+    // Subscribe to message queue
+    messageQueue.onMessageProcessed(handleQueuedMessage)
+
+    // Set up audio orchestrator state monitoring
+    const checkAudioState = () => {
+      const audioState = audioOrchestrator.getState()
+      setIsAudioPlaying(audioState.isPlaying)
+      setCurrentlyProcessingAudio(audioState.currentMessageId)
+      
+      if (!audioState.isPlaying) {
+        setCurrentSpeaker(null)
+      }
+    }
+
+    const audioInterval = setInterval(checkAudioState, 500)
+
+    return () => {
+      messageQueue.offMessageProcessed(handleQueuedMessage)
+      clearInterval(audioInterval)
+    }
+  }, [selectedStakeholders])
+
   // Focus input when component mounts or after sending message
   useEffect(() => {
     if (inputRef.current && !isLoading) {
@@ -115,7 +162,36 @@ const MeetingView: React.FC = () => {
     }
   }, [currentSpeaker])
 
-  // Enhanced message handling with improved AI service integration
+  // Function to detect if a message is addressed to the group
+  const isGroupMessage = (userMessage: string): boolean => {
+    const message = userMessage.toLowerCase()
+    
+    // Simple group detection - most logic moved to AI service
+    const groupPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)/,
+      /^(hi|hello|hey)\s+(there|y'all)/,
+      /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
+      /^(hi|hello|hey)(?:\s+team)?$/,
+    ]
+    
+    return groupPatterns.some(pattern => pattern.test(message))
+  }
+
+  // Function to detect if this is a simple greeting (multiple responses OK)
+  const isSimpleGreeting = (userMessage: string): boolean => {
+    const message = userMessage.toLowerCase()
+    
+    const greetingPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)$/,
+      /^(hi|hello|hey)\s+(there|y'all)$/,
+      /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
+      /^(hi|hello|hey)(?:\s+team)?$/,
+    ]
+    
+    return greetingPatterns.some(pattern => pattern.test(message))
+  }
+
+  // Enhanced message handling with improved AI service integration and orchestration
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !shouldAllowUserInput()) return
 
@@ -130,6 +206,7 @@ const MeetingView: React.FC = () => {
     setInputMessage('')
     setIsLoading(true)
     setIsGeneratingResponse(true)
+    setCanUserType(false)
 
     try {
       const aiService = AIService.getInstance()
@@ -152,59 +229,78 @@ const MeetingView: React.FC = () => {
         }))
       }
 
-      // Determine which stakeholder should respond
-      const respondingStakeholder = selectRespondingStakeholder(userMessage.content)
-      
-      if (respondingStakeholder) {
-        // Update current speaker
-        setCurrentSpeaker(respondingStakeholder)
-
-        // Create stakeholder context
-        const stakeholderContext: StakeholderContext = {
-          name: respondingStakeholder.name,
-          role: respondingStakeholder.role,
-          department: respondingStakeholder.department,
-          priorities: respondingStakeholder.priorities,
-          personality: respondingStakeholder.personality,
-          expertise: respondingStakeholder.expertise
-        }
-
-        // Get AI response using the correct method name
-        const aiResponse = await aiService.generateStakeholderResponse(
+      // Check if this is a group greeting or discussion
+      if (isGroupMessage(userMessage.content) || isSimpleGreeting(userMessage.content)) {
+        // For group messages, use the orchestrator to get multiple responses
+        const responses = await aiService.generateStakeholderResponses(
           userMessage.content,
-          stakeholderContext,
           conversationContext,
-          'discussion'
+          selectedStakeholders
         )
 
-        // Add response to messages
-        const responseMessage: Message = {
-          id: `response-${Date.now()}`,
-          speaker: respondingStakeholder.id,
-          content: aiResponse,
-          timestamp: new Date().toISOString(),
-          stakeholderName: respondingStakeholder.name,
-          stakeholderRole: respondingStakeholder.role
+        // Process multiple responses through the message queue
+        for (let i = 0; i < responses.length; i++) {
+          const response = responses[i]
+          
+          const responseMessage = {
+            id: `response-${Date.now()}-${i}`,
+            content: response.content,
+            speaker: response.stakeholderName,
+            stakeholderName: response.stakeholderName,
+            stakeholderRole: response.stakeholderRole,
+            timestamp: new Date().toISOString()
+          }
+
+          // Queue the response through the message queue system
+          await messageQueue.parseAndQueueResponse(
+            responseMessage,
+            selectedStakeholders,
+            globalAudioEnabled
+          )
         }
+      } else {
+        // For direct questions, get a single targeted response
+        const respondingStakeholder = selectRespondingStakeholder(userMessage.content)
+        
+        if (respondingStakeholder) {
+          // Create stakeholder context
+          const stakeholderContext: StakeholderContext = {
+            name: respondingStakeholder.name,
+            role: respondingStakeholder.role,
+            department: respondingStakeholder.department,
+            priorities: respondingStakeholder.priorities,
+            personality: respondingStakeholder.personality,
+            expertise: respondingStakeholder.expertise
+          }
 
-        setMessages(prev => [...prev, responseMessage])
+          // Get AI response using the correct method name
+          const aiResponse = await aiService.generateStakeholderResponse(
+            userMessage.content,
+            stakeholderContext,
+            conversationContext,
+            'discussion'
+          )
 
-        // Handle audio playback if enabled
-        if (globalAudioEnabled && isStakeholderVoiceEnabled(respondingStakeholder.name)) {
-          await handleAudioPlayback(responseMessage)
+          const responseMessage = {
+            id: `response-${Date.now()}`,
+            content: aiResponse,
+            speaker: respondingStakeholder.id,
+            stakeholderName: respondingStakeholder.name,
+            stakeholderRole: respondingStakeholder.role,
+            timestamp: new Date().toISOString()
+          }
+
+          // Queue the single response
+          await messageQueue.parseAndQueueResponse(
+            responseMessage,
+            selectedStakeholders,
+            globalAudioEnabled
+          )
         }
-
-        // Clear current speaker after response
-        setTimeout(() => {
-          setCurrentSpeaker(null)
-        }, 2000)
-
-        // Update meeting analytics
-        updateMeetingAnalytics(userMessage, [{ 
-          stakeholderName: respondingStakeholder.name, 
-          content: aiResponse 
-        }])
       }
+
+      // Update meeting analytics
+      updateMeetingAnalytics(userMessage, [])
 
     } catch (error) {
       console.error('Error generating response:', error)
@@ -220,11 +316,12 @@ const MeetingView: React.FC = () => {
     } finally {
       setIsLoading(false)
       setIsGeneratingResponse(false)
+      setCanUserType(true)
       setUserInterruptRequested(false)
     }
   }
 
-  // Intelligent stakeholder selection
+  // Intelligent stakeholder selection for single responses
   const selectRespondingStakeholder = (messageContent: string) => {
     // Check for direct addressing first
     const directAddress = detectDirectAddressing(messageContent)
@@ -277,72 +374,6 @@ const MeetingView: React.FC = () => {
     }
     
     return null
-  }
-
-  // Enhanced audio playback with better error handling
-  const handleAudioPlayback = async (message: Message) => {
-    try {
-      setCurrentlyProcessingAudio(message.id)
-      
-      const stakeholder = selectedStakeholders.find(s => s.name === message.stakeholderName)
-      if (!stakeholder) return
-
-      const voice = getStakeholderVoice(stakeholder.name)
-      
-      if (isAzureTTSAvailable() && voice) {
-        const audioUrl = await azureTTS(message.content, voice)
-        if (audioUrl) {
-          await playAudio(audioUrl, message.id)
-        }
-      } else {
-        // Fallback to browser TTS
-        await playBrowserTTS(message.content, stakeholder.voice)
-      }
-    } catch (error) {
-      console.error('Audio playback error:', error)
-    } finally {
-      setCurrentlyProcessingAudio(null)
-    }
-  }
-
-  // Enhanced audio controls
-  const playAudio = (audioUrl: string, messageId: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (currentAudio) {
-        currentAudio.pause()
-        currentAudio.currentTime = 0
-      }
-
-      const audio = new Audio(audioUrl)
-      setCurrentAudio(audio)
-      setPlayingMessageId(messageId)
-      setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
-
-      audio.onended = () => {
-        setPlayingMessageId(null)
-        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-        resolve()
-      }
-
-      audio.onerror = (error) => {
-        console.error('Audio playback error:', error)
-        setPlayingMessageId(null)
-        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-        reject(error)
-      }
-
-      audio.play().catch(reject)
-    })
-  }
-
-  const stopCurrentAudio = () => {
-    if (currentAudio) {
-      currentAudio.pause()
-      currentAudio.currentTime = 0
-      setCurrentAudio(null)
-      setPlayingMessageId(null)
-      setAudioStates({})
-    }
   }
 
   // Enhanced meeting analytics
@@ -407,6 +438,25 @@ const MeetingView: React.FC = () => {
     return Math.max(0, 100 - (variance * 10))
   }
 
+  // Audio control functions
+  const stopCurrentAudio = () => {
+    audioOrchestrator.stop()
+  }
+
+  const pauseAudio = () => {
+    audioOrchestrator.pause()
+  }
+
+  const resumeAudio = () => {
+    if (audioOrchestrator.isPaused()) {
+      audioOrchestrator.resume()
+    }
+  }
+
+  const skipToNext = () => {
+    audioOrchestrator.skipToNext()
+  }
+
   // Handle key press for sending messages
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -425,7 +475,26 @@ const MeetingView: React.FC = () => {
     setIsTranscribing(isTranscribing)
   }
 
-  // Enhanced end meeting functionality [keeping the existing implementation]
+  // User interruption controls
+  const handleUserInterruption = () => {
+    setUserInterruptRequested(true)
+    stopCurrentAudio()
+    setCanUserType(true)
+  }
+
+  // Add escape key listener for interruption
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleUserInterruption()
+      }
+    }
+
+    document.addEventListener('keydown', handleEscapeKey)
+    return () => document.removeEventListener('keydown', handleEscapeKey)
+  }, [])
+
+  // Enhanced end meeting functionality
   const handleEndMeeting = async () => {
     if (messages.length <= 1) {
       alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
@@ -633,6 +702,21 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
           </div>
           
           <div className="flex items-center space-x-4">
+            {/* Audio Controls */}
+            {isAudioPlaying && (
+              <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/30">
+                <button onClick={pauseAudio} className="text-white hover:text-purple-200">
+                  <Pause className="w-4 h-4" />
+                </button>
+                <button onClick={stopCurrentAudio} className="text-white hover:text-purple-200">
+                  <Square className="w-4 h-4" />
+                </button>
+                <button onClick={skipToNext} className="text-white hover:text-purple-200">
+                  <SkipForward className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            
             {/* Current Speaker Display */}
             {currentSpeaker && (
               <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/30">
@@ -685,7 +769,7 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {messages.map((message) => {
-            const stakeholder = selectedStakeholders.find(s => s.name === message.stakeholderName)
+            const stakeholder = selectedStakeholders.find(s => s.name === message.stakeholderName || s.id === message.speaker)
             
             if (message.speaker === 'user') {
               return (
@@ -728,7 +812,7 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
                         minute: '2-digit'
                       })}
                     </span>
-                    {playingMessageId === message.id && (
+                    {currentlyProcessingAudio === message.id && (
                       <div className="flex items-center space-x-1 text-green-500">
                         <div className="w-1 h-2 bg-green-500 rounded-full animate-pulse"></div>
                         <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
@@ -757,7 +841,7 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={shouldAllowUserInput() ? "Type a message..." : isGeneratingResponse ? "Stakeholders are responding..." : "Please wait..."}
+              placeholder={shouldAllowUserInput() ? "Type a message..." : isGeneratingResponse ? "Stakeholders are responding..." : isAudioPlaying ? "Audio playing... Press ESC to interrupt" : "Please wait..."}
               className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={!shouldAllowUserInput()}
             />
