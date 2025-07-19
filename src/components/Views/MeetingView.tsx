@@ -89,27 +89,35 @@ const MeetingView: React.FC = () => {
       }
     }
 
-    // Check for introduction prompts
+    // Check for introduction prompts - MORE CONTROLLED
     if (introductionPhase && !introducedStakeholders.has(nextItem.stakeholder.id)) {
-      setIntroducedStakeholders(prev => new Set(prev).add(nextItem.stakeholder.id))
+      const newIntroducedSet = new Set(introducedStakeholders)
+      newIntroducedSet.add(nextItem.stakeholder.id)
+      setIntroducedStakeholders(newIntroducedSet)
       
-      // If not all stakeholders have introduced themselves, prompt the next one
-      const remainingStakeholders = selectedStakeholders.filter(s => 
-        !introducedStakeholders.has(s.id) && s.id !== nextItem.stakeholder.id
-      )
+      console.log(`${nextItem.stakeholder.name} has introduced themselves. Total introduced: ${newIntroducedSet.size}/${selectedStakeholders.length}`)
       
-      if (remainingStakeholders.length > 0) {
-        const nextStakeholder = remainingStakeholders[0]
-        setTimeout(() => {
-          addToConversationQueue(nextStakeholder, `Hello everyone! I'm ${nextStakeholder.name}, ${nextStakeholder.role}. I'm excited to be part of this discussion about ${selectedProject?.name}.`)
-        }, 1000)
-      } else {
-        // All introductions complete
+      // Check if ALL stakeholders have introduced themselves
+      if (newIntroducedSet.size >= selectedStakeholders.length) {
+        // ALL DONE - END INTRODUCTION PHASE IMMEDIATELY
+        console.log('🎉 All stakeholders have introduced themselves! Ending introduction phase.')
         setIntroductionPhase(false)
-        const facilitator = selectedStakeholders.find(s => s.role.toLowerCase().includes('manager') || s.role.toLowerCase().includes('lead')) || selectedStakeholders[0]
-        setTimeout(() => {
-          addToConversationQueue(facilitator, "Great! Now that we've all introduced ourselves, let's dive into our discussion. What would you like to explore first?")
-        }, 1500)
+      } else {
+        // Find the NEXT stakeholder who hasn't introduced themselves yet
+        const nextToIntroduce = selectedStakeholders.find(s => 
+          !newIntroducedSet.has(s.id)
+        )
+        
+        if (nextToIntroduce) {
+          console.log(`Next to introduce: ${nextToIntroduce.name}`)
+          setTimeout(() => {
+            addToConversationQueue(nextToIntroduce, `Hello everyone! I'm ${nextToIntroduce.name}, ${nextToIntroduce.role}. I'm excited to be part of this discussion about ${selectedProject?.name}.`)
+          }, 1500)
+        } else {
+          // Safety fallback - end introduction phase
+          console.log('Safety fallback: ending introduction phase')
+          setIntroductionPhase(false)
+        }
       }
     }
 
@@ -121,9 +129,10 @@ const MeetingView: React.FC = () => {
     }, 500)
   }
 
-  // Add stakeholder response to queue
+  // Add stakeholder response to queue (only during controlled flows)
   const addToConversationQueue = (stakeholder: any, content: string) => {
     const messageId = `response-${Date.now()}-${Math.random()}`
+    console.log('Adding to conversation queue:', { stakeholder: stakeholder.name, content: content.substring(0, 50) + '...' })
     setConversationQueue(prev => [...prev, { stakeholder, content, messageId }])
   }
 
@@ -205,18 +214,19 @@ const MeetingView: React.FC = () => {
       const welcomeMessage: Message = {
         id: `welcome-${Date.now()}`,
         speaker: 'system',
-        content: `Welcome to your meeting for ${selectedProject.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}.`,
+        content: `Welcome to your meeting for ${selectedProject.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}. Please start the discussion!`,
         timestamp: new Date().toISOString()
       }
       setMessages([welcomeMessage])
       
-      // Start introduction phase
+      // Start controlled introduction phase (only once)
       setIntroductionPhase(true)
       setIntroducedStakeholders(new Set())
       
-      // Have the first stakeholder introduce themselves
+      // Have ONLY the first stakeholder introduce themselves - no auto-chain
       setTimeout(() => {
         const firstStakeholder = selectedStakeholders[0]
+        console.log('Starting introduction with first stakeholder:', firstStakeholder.name)
         addToConversationQueue(firstStakeholder, `Hello everyone! I'm ${firstStakeholder.name}, ${firstStakeholder.role}. I'm excited to be part of this discussion about ${selectedProject.name}.`)
       }, 1000)
     }
@@ -328,6 +338,7 @@ const MeetingView: React.FC = () => {
         const response = responses[i]
         const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
         if (stakeholder) {
+          console.log('Adding user-triggered response to queue:', response.stakeholderName)
           addToConversationQueue(stakeholder, response.content)
         }
       }
