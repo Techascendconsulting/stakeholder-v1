@@ -89,37 +89,8 @@ const MeetingView: React.FC = () => {
       }
     }
 
-    // Check for introduction prompts - MORE CONTROLLED
-    if (introductionPhase && !introducedStakeholders.has(nextItem.stakeholder.id)) {
-      const newIntroducedSet = new Set(introducedStakeholders)
-      newIntroducedSet.add(nextItem.stakeholder.id)
-      setIntroducedStakeholders(newIntroducedSet)
-      
-      console.log(`${nextItem.stakeholder.name} has introduced themselves. Total introduced: ${newIntroducedSet.size}/${selectedStakeholders.length}`)
-      
-      // Check if ALL stakeholders have introduced themselves
-      if (newIntroducedSet.size >= selectedStakeholders.length) {
-        // ALL DONE - END INTRODUCTION PHASE IMMEDIATELY
-        console.log('🎉 All stakeholders have introduced themselves! Ending introduction phase.')
-        setIntroductionPhase(false)
-      } else {
-        // Find the NEXT stakeholder who hasn't introduced themselves yet
-        const nextToIntroduce = selectedStakeholders.find(s => 
-          !newIntroducedSet.has(s.id)
-        )
-        
-        if (nextToIntroduce) {
-          console.log(`Next to introduce: ${nextToIntroduce.name}`)
-          setTimeout(() => {
-            addToConversationQueue(nextToIntroduce, `Hello everyone! I'm ${nextToIntroduce.name}, ${nextToIntroduce.role}. I'm excited to be part of this discussion about ${selectedProject?.name}.`)
-          }, 1500)
-        } else {
-          // Safety fallback - end introduction phase
-          console.log('Safety fallback: ending introduction phase')
-          setIntroductionPhase(false)
-        }
-      }
-    }
+    // REMOVED ALL INTRODUCTION LOGIC TO PREVENT INFINITE LOOPS
+    // No automatic responses - user must trigger all responses
 
     setCurrentSpeaking(null)
     
@@ -210,25 +181,21 @@ const MeetingView: React.FC = () => {
       const aiService = AIService.getInstance()
       aiService.resetConversationState()
       
-      // Add welcome message
+      // Add welcome message ONLY
       const welcomeMessage: Message = {
         id: `welcome-${Date.now()}`,
         speaker: 'system',
-        content: `Welcome to your meeting for ${selectedProject.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}. Please start the discussion!`,
+        content: `Welcome to your meeting for ${selectedProject.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}. Please ask a question to start the discussion.`,
         timestamp: new Date().toISOString()
       }
       setMessages([welcomeMessage])
       
-      // Start controlled introduction phase (only once)
-      setIntroductionPhase(true)
+      // DISABLE ALL AUTOMATIC INTRODUCTIONS - NO MORE AUTO RESPONSES
+      setIntroductionPhase(false)  // TURNED OFF
       setIntroducedStakeholders(new Set())
       
-      // Have ONLY the first stakeholder introduce themselves - no auto-chain
-      setTimeout(() => {
-        const firstStakeholder = selectedStakeholders[0]
-        console.log('Starting introduction with first stakeholder:', firstStakeholder.name)
-        addToConversationQueue(firstStakeholder, `Hello everyone! I'm ${firstStakeholder.name}, ${firstStakeholder.role}. I'm excited to be part of this discussion about ${selectedProject.name}.`)
-      }, 1000)
+      // DO NOT ADD ANY AUTOMATIC MESSAGES - USER MUST START
+      console.log('Meeting started - waiting for user input. NO automatic responses.')
     }
   }, [selectedProject, selectedStakeholders])
 
