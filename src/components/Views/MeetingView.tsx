@@ -7,8 +7,6 @@ import AIService, { StakeholderContext, ConversationContext } from '../../servic
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
 import VoiceInputModal from '../VoiceInputModal'
 import { PDFExportService } from '../../lib/pdfExport'
-import { messageQueue, QueuedMessage } from '../../lib/messageQueue'
-import { audioOrchestrator } from '../../lib/audioOrchestrator'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, user, setCurrentView, saveMeetingToDatabase } = useApp()
@@ -54,7 +52,7 @@ const MeetingView: React.FC = () => {
 
   // Dynamic input availability logic
   const shouldAllowUserInput = () => {
-    return canUserType && !isEndingMeeting && !isAudioPlaying
+    return canUserType && !isEndingMeeting && !playingMessageId
   }
 
   // Get stakeholder color for consistent avatar colors
@@ -94,56 +92,6 @@ const MeetingView: React.FC = () => {
       setMessages([welcomeMessage])
     }
   }, [selectedProject, selectedStakeholders])
-
-  // Set up message queue callbacks
-  useEffect(() => {
-    const handleQueuedMessage = (queuedMessage: QueuedMessage) => {
-      console.log('Received queued message:', queuedMessage)
-      // Convert queued message to regular message format
-      const message: Message = {
-        id: queuedMessage.id,
-        speaker: queuedMessage.speakerId,
-        content: queuedMessage.content,
-        timestamp: queuedMessage.timestamp,
-        stakeholderName: queuedMessage.stakeholderName,
-        stakeholderRole: queuedMessage.stakeholderRole
-      }
-
-      console.log('Adding message to UI:', message)
-      // Add to messages
-      setMessages(prev => [...prev, message])
-
-      // Update current speaker for UI
-      const stakeholder = selectedStakeholders.find(s => s.id === queuedMessage.speakerId)
-      if (stakeholder) {
-        console.log('Setting current speaker:', stakeholder.name)
-        setCurrentSpeaker(stakeholder)
-      }
-    }
-
-    console.log('Setting up message queue callback')
-    // Subscribe to message queue
-    messageQueue.onMessageProcessed(handleQueuedMessage)
-
-    // Set up audio orchestrator state monitoring
-    const checkAudioState = () => {
-      const audioState = audioOrchestrator.getState()
-      setIsAudioPlaying(audioState.isPlaying)
-      setCurrentlyProcessingAudio(audioState.currentMessageId)
-      
-      if (!audioState.isPlaying) {
-        setCurrentSpeaker(null)
-      }
-    }
-
-    const audioInterval = setInterval(checkAudioState, 500)
-
-    return () => {
-      console.log('Cleaning up message queue callback')
-      messageQueue.offMessageProcessed(handleQueuedMessage)
-      clearInterval(audioInterval)
-    }
-  }, [selectedStakeholders])
 
   // Focus input when component mounts or after sending message
   useEffect(() => {
@@ -267,7 +215,7 @@ const MeetingView: React.FC = () => {
             const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
             if (stakeholder && isStakeholderVoiceEnabled(stakeholder.name)) {
               setCurrentSpeaker(stakeholder)
-              await handleDirectAudioPlayback(responseMessage, stakeholder)
+              await handleAudioPlayback(responseMessage)
             }
             
             // Add a delay between responses
@@ -325,7 +273,7 @@ const MeetingView: React.FC = () => {
           // Handle audio playback directly
           if (globalAudioEnabled && isStakeholderVoiceEnabled(respondingStakeholder.name)) {
             setCurrentSpeaker(respondingStakeholder)
-            await handleDirectAudioPlayback(responseMessage, respondingStakeholder)
+            await handleAudioPlayback(responseMessage)
             setTimeout(() => {
               setCurrentSpeaker(null)
             }, 3000)
@@ -474,23 +422,70 @@ const MeetingView: React.FC = () => {
     return Math.max(0, 100 - (variance * 10))
   }
 
-  // Audio control functions
-  const stopCurrentAudio = () => {
-    audioOrchestrator.stop()
-  }
+  // Enhanced audio playback with better error handling
+  const handleAudioPlayback = async (message: Message) => {
+    try {
+      setCurrentlyProcessingAudio(message.id)
+      
+      const stakeholder = selectedStakeholders.find(s => s.name === message.stakeholderName)
+      if (!stakeholder) return
 
-  const pauseAudio = () => {
-    audioOrchestrator.pause()
-  }
-
-  const resumeAudio = () => {
-    if (audioOrchestrator.isPaused()) {
-      audioOrchestrator.resume()
+      const voice = getStakeholderVoice(stakeholder.name)
+      
+      if (isAzureTTSAvailable() && voice) {
+        const audioUrl = await azureTTS(message.content, voice)
+        if (audioUrl) {
+          await playAudio(audioUrl, message.id)
+        }
+      } else {
+        // Fallback to browser TTS
+        await playBrowserTTS(message.content, stakeholder.voice)
+      }
+    } catch (error) {
+      console.error('Audio playback error:', error)
+    } finally {
+      setCurrentlyProcessingAudio(null)
     }
   }
 
-  const skipToNext = () => {
-    audioOrchestrator.skipToNext()
+  // Enhanced audio controls
+  const playAudio = (audioUrl: string, messageId: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (currentAudio) {
+        currentAudio.pause()
+        currentAudio.currentTime = 0
+      }
+
+      const audio = new Audio(audioUrl)
+      setCurrentAudio(audio)
+      setPlayingMessageId(messageId)
+      setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+
+      audio.onended = () => {
+        setPlayingMessageId(null)
+        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+        resolve()
+      }
+
+      audio.onerror = (error) => {
+        console.error('Audio playback error:', error)
+        setPlayingMessageId(null)
+        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+        reject(error)
+      }
+
+      audio.play().catch(reject)
+    })
+  }
+
+  const stopCurrentAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+      setCurrentAudio(null)
+      setPlayingMessageId(null)
+      setAudioStates({})
+    }
   }
 
   // Handle key press for sending messages
@@ -738,21 +733,6 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* Audio Controls */}
-            {isAudioPlaying && (
-              <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/30">
-                <button onClick={pauseAudio} className="text-white hover:text-purple-200">
-                  <Pause className="w-4 h-4" />
-                </button>
-                <button onClick={stopCurrentAudio} className="text-white hover:text-purple-200">
-                  <Square className="w-4 h-4" />
-                </button>
-                <button onClick={skipToNext} className="text-white hover:text-purple-200">
-                  <SkipForward className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-            
             {/* Current Speaker Display */}
             {currentSpeaker && (
               <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/30">
@@ -769,6 +749,15 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
                   <div className="w-1 h-4 bg-green-300 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
                   <span className="text-xs ml-2">Speaking...</span>
                 </div>
+              </div>
+            )}
+            
+            {/* Audio Controls */}
+            {playingMessageId && (
+              <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/30">
+                <button onClick={stopCurrentAudio} className="text-white hover:text-purple-200">
+                  <Square className="w-4 h-4" />
+                </button>
               </div>
             )}
             
@@ -848,7 +837,7 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
                         minute: '2-digit'
                       })}
                     </span>
-                    {currentlyProcessingAudio === message.id && (
+                    {playingMessageId === message.id && (
                       <div className="flex items-center space-x-1 text-green-500">
                         <div className="w-1 h-2 bg-green-500 rounded-full animate-pulse"></div>
                         <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
@@ -877,7 +866,7 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={shouldAllowUserInput() ? "Type a message..." : isGeneratingResponse ? "Stakeholders are responding..." : isAudioPlaying ? "Audio playing... Press ESC to interrupt" : "Please wait..."}
+              placeholder={shouldAllowUserInput() ? "Type a message..." : isGeneratingResponse ? "Stakeholders are responding..." : playingMessageId ? "Audio playing... Press ESC to interrupt" : "Please wait..."}
               className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={!shouldAllowUserInput()}
             />
