@@ -98,6 +98,7 @@ const MeetingView: React.FC = () => {
   // Set up message queue callbacks
   useEffect(() => {
     const handleQueuedMessage = (queuedMessage: QueuedMessage) => {
+      console.log('Received queued message:', queuedMessage)
       // Convert queued message to regular message format
       const message: Message = {
         id: queuedMessage.id,
@@ -108,16 +109,19 @@ const MeetingView: React.FC = () => {
         stakeholderRole: queuedMessage.stakeholderRole
       }
 
+      console.log('Adding message to UI:', message)
       // Add to messages
       setMessages(prev => [...prev, message])
 
       // Update current speaker for UI
       const stakeholder = selectedStakeholders.find(s => s.id === queuedMessage.speakerId)
       if (stakeholder) {
+        console.log('Setting current speaker:', stakeholder.name)
         setCurrentSpeaker(stakeholder)
       }
     }
 
+    console.log('Setting up message queue callback')
     // Subscribe to message queue
     messageQueue.onMessageProcessed(handleQueuedMessage)
 
@@ -135,6 +139,7 @@ const MeetingView: React.FC = () => {
     const audioInterval = setInterval(checkAudioState, 500)
 
     return () => {
+      console.log('Cleaning up message queue callback')
       messageQueue.offMessageProcessed(handleQueuedMessage)
       clearInterval(audioInterval)
     }
@@ -231,6 +236,7 @@ const MeetingView: React.FC = () => {
 
       // Check if this is a group greeting or discussion
       if (isGroupMessage(userMessage.content) || isSimpleGreeting(userMessage.content)) {
+        console.log('Processing group message:', userMessage.content)
         // For group messages, use the orchestrator to get multiple responses
         const responses = await aiService.generateStakeholderResponses(
           userMessage.content,
@@ -238,29 +244,48 @@ const MeetingView: React.FC = () => {
           selectedStakeholders
         )
 
-        // Process multiple responses through the message queue
+        console.log('Generated responses:', responses)
+
+        // Temporarily bypass message queue and add responses directly
         for (let i = 0; i < responses.length; i++) {
           const response = responses[i]
           
-          const responseMessage = {
+          const responseMessage: Message = {
             id: `response-${Date.now()}-${i}`,
-            content: response.content,
             speaker: response.stakeholderName,
+            content: response.content,
+            timestamp: new Date().toISOString(),
             stakeholderName: response.stakeholderName,
-            stakeholderRole: response.stakeholderRole,
-            timestamp: new Date().toISOString()
+            stakeholderRole: response.stakeholderRole
           }
 
-          // Queue the response through the message queue system
-          await messageQueue.parseAndQueueResponse(
-            responseMessage,
-            selectedStakeholders,
-            globalAudioEnabled
-          )
+          console.log('Adding response directly to messages:', responseMessage)
+          setMessages(prev => [...prev, responseMessage])
+
+          // Handle audio if enabled
+          if (globalAudioEnabled) {
+            const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
+            if (stakeholder) {
+              setCurrentSpeaker(stakeholder)
+              // Add a delay between responses
+              if (i < responses.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 2000))
+              }
+            }
+          }
         }
+
+        // Clear current speaker after all responses
+        setTimeout(() => {
+          setCurrentSpeaker(null)
+        }, 3000)
+
       } else {
+        console.log('Processing direct message:', userMessage.content)
         // For direct questions, get a single targeted response
         const respondingStakeholder = selectRespondingStakeholder(userMessage.content)
+        
+        console.log('Selected responding stakeholder:', respondingStakeholder)
         
         if (respondingStakeholder) {
           // Create stakeholder context
@@ -281,21 +306,29 @@ const MeetingView: React.FC = () => {
             'discussion'
           )
 
-          const responseMessage = {
+          console.log('Generated AI response:', aiResponse)
+
+          const responseMessage: Message = {
             id: `response-${Date.now()}`,
-            content: aiResponse,
             speaker: respondingStakeholder.id,
+            content: aiResponse,
+            timestamp: new Date().toISOString(),
             stakeholderName: respondingStakeholder.name,
-            stakeholderRole: respondingStakeholder.role,
-            timestamp: new Date().toISOString()
+            stakeholderRole: respondingStakeholder.role
           }
 
-          // Queue the single response
-          await messageQueue.parseAndQueueResponse(
-            responseMessage,
-            selectedStakeholders,
-            globalAudioEnabled
-          )
+          console.log('Adding single response directly to messages:', responseMessage)
+          setMessages(prev => [...prev, responseMessage])
+
+          // Set current speaker and handle audio
+          if (globalAudioEnabled) {
+            setCurrentSpeaker(respondingStakeholder)
+            setTimeout(() => {
+              setCurrentSpeaker(null)
+            }, 3000)
+          }
+        } else {
+          console.log('No stakeholder selected to respond')
         }
       }
 

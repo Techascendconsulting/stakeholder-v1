@@ -430,6 +430,12 @@ Generate only the greeting, nothing else.`;
     responseType: 'greeting' | 'discussion' | 'baton_pass' = 'discussion'
   ): Promise<string> {
     try {
+      console.log('generateStakeholderResponse called with:', {
+        userMessage: userMessage.substring(0, 50) + '...',
+        stakeholder: stakeholder.name,
+        responseType
+      })
+
       // Handle greetings intelligently
       if (this.isGreetingMessage(userMessage)) {
         const greetingResponse = await this.getGreetingResponse(stakeholder, context);
@@ -442,6 +448,8 @@ Generate only the greeting, nothing else.`;
       const systemPrompt = this.buildDynamicSystemPrompt(stakeholder, context, responseType);
       const conversationPrompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
 
+      console.log('Making OpenAI API call...')
+
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -453,6 +461,8 @@ Generate only the greeting, nothing else.`;
         presence_penalty: dynamicConfig.presencePenalty,
         frequency_penalty: dynamicConfig.frequencyPenalty
       });
+
+      console.log('OpenAI API response received')
 
       let aiResponse = completion.choices[0]?.message?.content || 
         this.generateDynamicFallback(stakeholder, userMessage, context);
@@ -467,10 +477,19 @@ Generate only the greeting, nothing else.`;
       aiResponse = this.filterSolutionsInAsIsPhase(aiResponse, this.conversationState.conversationPhase);
 
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
+      
+      console.log('Generated response:', aiResponse.substring(0, 100) + '...')
       return aiResponse;
 
     } catch (error) {
-      console.error('AI Service Error:', error);
+      console.error('AI Service Error Details:', {
+        error: error,
+        message: error.message,
+        stack: error.stack,
+        stakeholder: stakeholder.name,
+        userMessage: userMessage.substring(0, 50)
+      });
+      
       return this.generateDynamicFallback(stakeholder, userMessage, context);
     }
   }
@@ -1264,24 +1283,140 @@ Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise 
     return prompt
   }
 
-  // Dynamic fallback response generation
+  // Enhanced dynamic fallback with realistic responses
   private generateDynamicFallback(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): string {
-    const stakeholderState = this.getStakeholderState(stakeholder.name)
-    const fallbackStyles = {
-      'collaborative': "Based on my experience in this area, I can share some insights. In my role, I've seen that we typically handle this by...",
-      'analytical': "Let me think about this from my perspective. The data I work with shows that we usually...",
-      'strategic': "From what I've observed in my position, the key factors we consider are...",
-      'practical': "In my day-to-day work, I handle this type of situation by...",
-      'innovative': "That's an interesting challenge. From my experience, I've found that we can approach this through..."
+    console.log('Generating fallback response for:', stakeholder.name)
+    
+    // Check if OpenAI API key is missing/invalid and provide helpful mock responses
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+    if (!apiKey || apiKey === 'test-key-placeholder') {
+      console.log('Using mock response due to missing/test API key')
+      return this.generateMockResponse(stakeholder, userMessage, context)
+    }
+
+    // Original fallback logic for other cases
+    const roleBasedResponses = {
+      'Project Manager': [
+        "Thank you for bringing that up. Let me consider how this impacts our project timeline and deliverables.",
+        "That's an important point. We should ensure this aligns with our project objectives.",
+        "I appreciate your input. How do you see this fitting into our current project scope?"
+      ],
+      'Business Analyst': [
+        "Interesting perspective. I'd like to explore the business requirements around this further.",
+        "That raises some good questions about our process requirements.",
+        "Thanks for sharing that. What are the key business drivers behind this?"
+      ],
+      'Developer': [
+        "From a technical standpoint, that's definitely something we need to consider.",
+        "I can see some implementation considerations we should discuss.",
+        "That's a good point. Let me think about the technical feasibility."
+      ],
+      'QA Tester': [
+        "That's something we'll need to test thoroughly. What are the expected outcomes?",
+        "From a quality perspective, we should consider the testing implications.",
+        "Good point. We'll want to make sure our test cases cover that scenario."
+      ]
+    }
+
+    // Get responses based on role keywords
+    for (const [role, responses] of Object.entries(roleBasedResponses)) {
+      if (stakeholder.role.toLowerCase().includes(role.toLowerCase())) {
+        return responses[Math.floor(Math.random() * responses.length)]
+      }
+    }
+
+    // Generic fallbacks based on message content
+    const messageLower = userMessage.toLowerCase()
+    if (messageLower.includes('hello') || messageLower.includes('hi')) {
+      return `Hello! I'm ${stakeholder.name}, ${stakeholder.role}. Good to be here for this discussion.`
     }
     
-    const personalityKey = this.getPersonalityKey(stakeholder.personality)
-    const baseResponse = fallbackStyles[personalityKey] || fallbackStyles['collaborative']
+    if (messageLower.includes('process') || messageLower.includes('workflow')) {
+      return `That's a great question about our processes. From my perspective as ${stakeholder.role}, I think we need to examine this carefully.`
+    }
     
-    // Add role-specific context
-    const roleContext = ` As the ${stakeholder.role}, I have direct experience with how ${stakeholder.department} manages these types of issues.`
+    if (messageLower.includes('problem') || messageLower.includes('issue')) {
+      return `I understand your concerns. As ${stakeholder.role}, I've seen similar challenges before. Let's work through this together.`
+    }
+
+    // Default fallback
+    return `Thank you for that insight. As ${stakeholder.role}, I believe this deserves careful consideration in our discussion.`
+  }
+
+  // Generate realistic mock responses for testing
+  private generateMockResponse(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): string {
+    const messageLower = userMessage.toLowerCase()
     
-    return baseResponse + roleContext
+    // Greeting responses
+    if (this.isGreetingMessage(userMessage)) {
+      const greetings = [
+        `Hello everyone! I'm ${stakeholder.name}, ${stakeholder.role}. Looking forward to our discussion.`,
+        `Hi there! ${stakeholder.name} here. As ${stakeholder.role}, I'm excited to contribute to this meeting.`,
+        `Good to see everyone. I'm ${stakeholder.name} from ${stakeholder.department || 'the team'}. Ready to dive in!`,
+        `Hello! ${stakeholder.name}, ${stakeholder.role}. Thanks for including me in this important discussion.`
+      ]
+      return greetings[Math.floor(Math.random() * greetings.length)]
+    }
+
+    // Role-specific responses based on stakeholder type
+    const roleResponses = {
+      'manager': [
+        `From a management perspective, we need to ensure this aligns with our strategic objectives. What are the key success metrics we should track?`,
+        `This is definitely something we should prioritize. How does this impact our current resource allocation and timeline?`,
+        `I appreciate everyone's input on this. Let's make sure we're considering the broader business impact and stakeholder needs.`
+      ],
+      'analyst': [
+        `This is an interesting requirement. I'd like to understand the underlying business drivers and user needs better.`,
+        `From an analysis standpoint, we should map out the current state before proposing solutions. What pain points are users experiencing?`,
+        `Great point. We need to gather more detailed requirements and understand the process flow from end to end.`
+      ],
+      'developer': [
+        `From a technical implementation perspective, this seems feasible. What are the integration requirements and technical constraints?`,
+        `I can see some technical challenges here, but they're definitely solvable. We'll need to consider performance and scalability.`,
+        `That's a good technical question. We should evaluate different implementation approaches and their trade-offs.`
+      ],
+      'designer': [
+        `From a UX perspective, we need to ensure this provides a seamless user experience. What are the user journey touchpoints?`,
+        `This is a great opportunity to improve user satisfaction. Have we conducted any user research on this workflow?`,
+        `I'm thinking about the visual design and interaction patterns. We should prototype this to validate the user experience.`
+      ],
+      'tester': [
+        `From a quality assurance standpoint, we'll need comprehensive test cases for this. What are the acceptance criteria?`,
+        `This introduces some interesting testing scenarios. We should consider edge cases and error handling pathways.`,
+        `Good point about testing. We'll want to validate this across different user roles and system configurations.`
+      ]
+    }
+
+    // Find matching role responses
+    const roleLower = stakeholder.role.toLowerCase()
+    for (const [roleKey, responses] of Object.entries(roleResponses)) {
+      if (roleLower.includes(roleKey)) {
+        return responses[Math.floor(Math.random() * responses.length)]
+      }
+    }
+
+    // Content-based responses
+    if (messageLower.includes('process') || messageLower.includes('workflow')) {
+      return `That's a crucial aspect of our process optimization. As ${stakeholder.role}, I think we should map out the current workflow and identify improvement opportunities.`
+    }
+    
+    if (messageLower.includes('user') || messageLower.includes('customer')) {
+      return `User experience is definitely important here. From my role as ${stakeholder.role}, I believe we need to keep the end-user perspective at the center of our solution.`
+    }
+    
+    if (messageLower.includes('time') || messageLower.includes('schedule')) {
+      return `Timeline is always a key consideration. As ${stakeholder.role}, I think we need to balance speed with quality and ensure realistic expectations.`
+    }
+
+    // Default engaging response
+    const defaultResponses = [
+      `That's a really good point. From my experience as ${stakeholder.role}, I think we should explore this further and consider all the implications.`,
+      `I appreciate you bringing this up. As ${stakeholder.role}, I see several opportunities and challenges we should discuss.`,
+      `This is definitely worth investigating. From my perspective as ${stakeholder.role}, we need to ensure we're addressing the root cause.`,
+      `Thanks for sharing that insight. As ${stakeholder.role}, I think this could have significant impact on our project outcomes.`
+    ]
+    
+    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)]
   }
 
   // Check if stakeholder is directly addressed using AI
@@ -1497,16 +1632,27 @@ Return ONLY the stakeholder name or "NO_HANDOFF".`
     availableStakeholders: any[]
   ): Promise<Array<{stakeholderName: string, stakeholderRole: string, content: string}>> {
     try {
+      console.log('generateStakeholderResponses called with:', {
+        userMessage: userMessage.substring(0, 50) + '...',
+        stakeholderCount: availableStakeholders.length
+      })
+
       // Determine how many stakeholders should respond
       const isGreeting = this.isGreetingMessage(userMessage)
       const maxResponders = isGreeting ? Math.min(3, availableStakeholders.length) : Math.min(2, availableStakeholders.length)
       
+      console.log('Max responders:', maxResponders, 'Is greeting:', isGreeting)
+
       // Select stakeholders to respond based on participation balance and relevance
       const selectedStakeholders = this.selectRespondingStakeholders(userMessage, availableStakeholders, maxResponders)
       
+      console.log('Selected stakeholders:', selectedStakeholders.map(s => s.name))
+
       const responses = []
       
       for (const stakeholder of selectedStakeholders) {
+        console.log('Generating response for stakeholder:', stakeholder.name)
+        
         const stakeholderContext: StakeholderContext = {
           name: stakeholder.name,
           role: stakeholder.role,
@@ -1524,6 +1670,8 @@ Return ONLY the stakeholder name or "NO_HANDOFF".`
           responseType
         )
         
+        console.log('Generated content for', stakeholder.name, ':', content.substring(0, 50) + '...')
+        
         responses.push({
           stakeholderName: stakeholder.name,
           stakeholderRole: stakeholder.role,
@@ -1531,16 +1679,24 @@ Return ONLY the stakeholder name or "NO_HANDOFF".`
         })
       }
       
+      console.log('Total responses generated:', responses.length)
       return responses
       
     } catch (error) {
       console.error('Error generating stakeholder responses:', error)
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        userMessage: userMessage.substring(0, 50)
+      })
       
       // Fallback to a single response
       const fallbackStakeholder = availableStakeholders[0]
+      console.log('Using fallback response for:', fallbackStakeholder?.name)
+      
       return [{
-        stakeholderName: fallbackStakeholder.name,
-        stakeholderRole: fallbackStakeholder.role,
+        stakeholderName: fallbackStakeholder?.name || 'Stakeholder',
+        stakeholderRole: fallbackStakeholder?.role || 'Team Member',
         content: `Thank you for that. I'd be happy to discuss this further.`
       }]
     }
