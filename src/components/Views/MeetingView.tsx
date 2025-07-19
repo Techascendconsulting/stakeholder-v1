@@ -262,15 +262,17 @@ const MeetingView: React.FC = () => {
           console.log('Adding response directly to messages:', responseMessage)
           setMessages(prev => [...prev, responseMessage])
 
-          // Handle audio if enabled
+          // Handle audio playback directly
           if (globalAudioEnabled) {
             const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
-            if (stakeholder) {
+            if (stakeholder && isStakeholderVoiceEnabled(stakeholder.name)) {
               setCurrentSpeaker(stakeholder)
-              // Add a delay between responses
-              if (i < responses.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 2000))
-              }
+              await handleDirectAudioPlayback(responseMessage, stakeholder)
+            }
+            
+            // Add a delay between responses
+            if (i < responses.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 2000))
             }
           }
         }
@@ -320,9 +322,10 @@ const MeetingView: React.FC = () => {
           console.log('Adding single response directly to messages:', responseMessage)
           setMessages(prev => [...prev, responseMessage])
 
-          // Set current speaker and handle audio
-          if (globalAudioEnabled) {
+          // Handle audio playback directly
+          if (globalAudioEnabled && isStakeholderVoiceEnabled(respondingStakeholder.name)) {
             setCurrentSpeaker(respondingStakeholder)
+            await handleDirectAudioPlayback(responseMessage, respondingStakeholder)
             setTimeout(() => {
               setCurrentSpeaker(null)
             }, 3000)
