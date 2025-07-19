@@ -225,16 +225,21 @@ const MeetingView: React.FC = () => {
           stakeholderRole: response.stakeholderRole
         }
 
-        console.log('Adding single response directly to messages:', responseMessage)
+        console.log('Adding response directly to messages:', responseMessage)
         setMessages(prev => [...prev, responseMessage])
 
         // Handle audio playback directly
-        if (globalAudioEnabled && isStakeholderVoiceEnabled(response.stakeholderName)) {
-          setCurrentSpeaker(response.stakeholder)
-          await handleAudioPlayback(responseMessage)
-          setTimeout(() => {
-            setCurrentSpeaker(null)
-          }, 2000)
+        if (globalAudioEnabled) {
+          const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
+          if (stakeholder && isStakeholderVoiceEnabled(stakeholder.name)) {
+            setCurrentSpeaker(stakeholder)
+            await playMessageAudio(responseMessage.id, response.content, stakeholder, true)
+          }
+        }
+        
+        // Add a delay between responses
+        if (i < responses.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
         }
       }
 
@@ -261,70 +266,165 @@ const MeetingView: React.FC = () => {
     }
   }
 
-  // Enhanced audio playback with better error handling
-  const handleAudioPlayback = async (message: Message) => {
-    try {
-      setCurrentlyProcessingAudio(message.id)
-      
-      const stakeholder = selectedStakeholders.find(s => s.name === message.stakeholderName)
-      if (!stakeholder) return
+  // Enhanced audio playback with proper state management
+  const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
+    console.log('Audio playback attempt:', { messageId, stakeholder: stakeholder.name, globalAudioEnabled, autoPlay })
+    
+    if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
+      console.log('Audio disabled for stakeholder:', stakeholder.name)
+      return Promise.resolve()
+    }
 
-      const voice = getStakeholderVoice(stakeholder.name)
+    try {
+      if (userInterruptRequested) {
+        console.log('User interrupted audio, skipping playback')
+        setUserInterruptRequested(false)
+        return Promise.resolve()
+      }
+
+      stopCurrentAudio()
       
-      if (isAzureTTSAvailable() && voice) {
-        const audioUrl = await azureTTS(message.content, voice)
+      if (!autoPlay) {
+        return Promise.resolve()
+      }
+
+      setCurrentSpeaker(stakeholder)
+      setCurrentlyProcessingAudio(messageId)
+      setIsAudioPlaying(true)
+
+      const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
+      console.log('Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
+      
+      if (isAzureTTSAvailable()) {
+        console.log('Using Azure TTS for audio synthesis')
+        const audioUrl = await azureTTS(text, voiceName)
         if (audioUrl) {
-          await playAudio(audioUrl, message.id)
+          const audio = new Audio(audioUrl)
+          
+          setCurrentAudio(audio)
+          setPlayingMessageId(messageId)
+          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+          
+          return new Promise((resolve) => {
+            audio.onended = () => {
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              
+              // Auto-focus input field when audio completes
+              setTimeout(() => {
+                if (inputRef.current) {
+                  inputRef.current.focus()
+                }
+              }, 100)
+              
+              resolve()
+            }
+            
+            audio.onerror = (error) => {
+              console.error('Audio element error:', error)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              resolve()
+            }
+            
+            audio.play().then(() => {
+              // Audio started successfully
+            }).catch((playError) => {
+              console.error('Audio play error:', playError)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              resolve()
+            })
+          })
         }
       } else {
-        // Fallback to browser TTS
-        await playBrowserTTS(message.content, stakeholder.voice)
+        console.log('Using browser TTS for audio synthesis')
+        setPlayingMessageId(messageId)
+        setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+        
+        await playBrowserTTS(text)
+        
+        setPlayingMessageId(null)
+        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+        setCurrentSpeaker(null)
+        setIsAudioPlaying(false)
+        setCurrentlyProcessingAudio(null)
+        
+        // Auto-focus input field when browser TTS completes
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+          }
+        }, 100)
+        
+        return Promise.resolve()
       }
     } catch (error) {
-      console.error('Audio playback error:', error)
-    } finally {
+      console.error('Audio playback failed:', error)
+      setPlayingMessageId(null)
+      setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+      setCurrentSpeaker(null)
+      setIsAudioPlaying(false)
       setCurrentlyProcessingAudio(null)
+      
+      // Auto-focus input field even on audio error
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }, 100)
+      
+      return Promise.resolve()
     }
   }
 
   // Enhanced audio controls
-  const playAudio = (audioUrl: string, messageId: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (currentAudio) {
-        currentAudio.pause()
-        currentAudio.currentTime = 0
-      }
-
-      const audio = new Audio(audioUrl)
-      setCurrentAudio(audio)
-      setPlayingMessageId(messageId)
-      setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
-
-      audio.onended = () => {
-        setPlayingMessageId(null)
-        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-        resolve()
-      }
-
-      audio.onerror = (error) => {
-        console.error('Audio playback error:', error)
-        setPlayingMessageId(null)
-        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-        reject(error)
-      }
-
-      audio.play().catch(reject)
-    })
+  const pauseCurrentAudio = () => {
+    if (currentAudio && isAudioPlaying) {
+      setAudioPausedPosition(currentAudio.currentTime)
+      currentAudio.pause()
+      setIsAudioPlaying(false)
+      setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'paused' }))
+    }
   }
 
-  const stopCurrentAudio = () => {
-    if (currentAudio) {
-      currentAudio.pause()
-      currentAudio.currentTime = 0
-      setCurrentAudio(null)
-      setPlayingMessageId(null)
-      setAudioStates({})
+  const resumeCurrentAudio = () => {
+    if (currentAudio && !isAudioPlaying) {
+      currentAudio.currentTime = audioPausedPosition
+      currentAudio.play()
+      setIsAudioPlaying(true)
+      setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'playing' }))
     }
+  }
+
+  // Enhanced toggle audio with proper pause/resume
+  const toggleMessageAudio = async (messageId: string, text: string, stakeholder: any) => {
+    if (playingMessageId === messageId && isAudioPlaying) {
+      pauseCurrentAudio()
+    } else if (playingMessageId === messageId && !isAudioPlaying) {
+      resumeCurrentAudio()
+    } else {
+      await playMessageAudio(messageId, text, stakeholder, true)
+    }
+  }
+
+  const stopMessageAudio = (messageId: string) => {
+    if (playingMessageId === messageId) {
+      stopCurrentAudio()
+    }
+    setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
   }
 
   // Enhanced meeting analytics
@@ -1061,52 +1161,140 @@ ${meetingAnalytics.keyInsights.map(insight => `- ${insight}`).join('\n') || '- P
           </div>
         )}
 
-        {/* Chat Area */}
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-4xl mx-auto space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${
-                    message.speaker === 'user' 
-                      ? 'bg-indigo-600 text-white' 
-                      : message.speaker === 'system'
-                      ? 'bg-gray-100 text-gray-700'
-                      : 'bg-white text-gray-900 border border-gray-200'
-                  } rounded-lg p-3 shadow-sm`}>
-                    {message.speaker !== 'user' && message.speaker !== 'system' && (
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-indigo-600">
-                            {message.stakeholderName?.split(' ').map(n => n[0]).join('') || 'ST'}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {message.stakeholderName} • {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                        {playingMessageId === message.id && (
-                          <div className="flex items-center space-x-1">
-                            <div className="w-1 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                            <div className="w-1 h-3 bg-indigo-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
-                            <div className="w-1 h-2 bg-indigo-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          {messages.map((message) => {
+            const stakeholder = selectedStakeholders.find(s => s.name === message.stakeholderName || s.id === message.speaker)
+            
+            if (message.speaker === 'user') {
+              return (
+                <div key={message.id} className="flex justify-end">
+                  <div className="max-w-2xl bg-blue-600 text-white rounded-lg px-4 py-3">
+                    <div className="text-sm">{message.content}</div>
+                    <div className="text-xs text-blue-100 mt-1">
+                      {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            if (message.speaker === 'system') {
+              return (
+                <div key={message.id} className="flex justify-center">
+                  <div className="max-w-2xl bg-gray-100 text-gray-700 rounded-lg px-4 py-2 text-sm text-center">
+                    {message.content}
+                  </div>
+                </div>
+              )
+            }
+
+            // Stakeholder message
+            return (
+              <div key={message.id} className="flex items-start space-x-3">
+                {/* Stakeholder Avatar */}
+                <div className="flex-shrink-0 relative">
+                  <img 
+                    src={stakeholder?.photo || "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"} 
+                    alt={stakeholder?.name || 'Stakeholder'}
+                    className={`w-10 h-10 rounded-full object-cover border-2 transition-all duration-200 ${
+                      playingMessageId === message.id 
+                        ? 'border-green-400 shadow-lg scale-110' 
+                        : 'border-gray-300'
+                    }`}
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                    }}
+                  />
+                  {/* Speaking indicator */}
+                  {playingMessageId === message.id && (
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border border-white animate-pulse"></div>
+                  )}
+                </div>
+                
+                <div className="flex-1 max-w-2xl">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="font-medium text-gray-900">{message.stakeholderName}</span>
+                    <span className="text-xs text-gray-500">{message.stakeholderRole}</span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    
+                    {/* Audio controls */}
+                    {stakeholder && (
+                      <div className="flex items-center space-x-1">
+                        {playingMessageId === message.id ? (
+                          <>
+                            {isAudioPlaying ? (
+                              <button 
+                                onClick={() => pauseCurrentAudio()}
+                                className="text-blue-500 hover:text-blue-700"
+                                title="Pause audio"
+                              >
+                                <Pause className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={() => resumeCurrentAudio()}
+                                className="text-green-500 hover:text-green-700"
+                                title="Resume audio"
+                              >
+                                <Play className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => stopCurrentAudio()}
+                              className="text-red-500 hover:text-red-700"
+                              title="Stop audio"
+                            >
+                              <Square className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <button 
+                            onClick={() => playMessageAudio(message.id, message.content, stakeholder, true)}
+                            className="text-gray-500 hover:text-blue-700"
+                            title="Play audio"
+                          >
+                            <Play className="w-4 h-4" />
+                          </button>
+                        )}
+                        
+                        {/* Voice enabled indicator */}
+                        {isStakeholderVoiceEnabled(stakeholder.name) ? (
+                          <Volume2 className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <VolumeX className="w-3 h-3 text-gray-400" />
+                        )}
+                        
+                        {/* Playing animation */}
+                        {playingMessageId === message.id && isAudioPlaying && (
+                          <div className="flex items-center space-x-1 text-green-500">
+                            <div className="w-1 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                            <div className="w-1 h-2 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
                           </div>
                         )}
                       </div>
                     )}
-                    <div className="text-sm">{message.content}</div>
+                  </div>
+                  <div className="bg-gray-100 rounded-lg px-4 py-3">
+                    <div className="text-sm text-gray-900">{message.content}</div>
                   </div>
                 </div>
-              ))}
-              {/* Scroll anchor */}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
+              </div>
+            )
+          })}
+          
+          {/* Scroll anchor */}
+          <div ref={messagesEndRef} />
+        </div>
 
           {/* Input Area */}
           <div className="border-t border-gray-200 p-4 bg-white">
@@ -1144,7 +1332,6 @@ ${meetingAnalytics.keyInsights.map(insight => `- ${insight}`).join('\n') || '- P
             </div>
           </div>
         </div>
-      </div>
 
       {/* Voice Input Modal */}
       <VoiceInputModal
