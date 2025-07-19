@@ -26,7 +26,7 @@ const MeetingView: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Dynamic UX state management - no hard-coding
+  // Dynamic UX state management
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const [canUserType, setCanUserType] = useState(true)
@@ -212,17 +212,10 @@ const MeetingView: React.FC = () => {
         selectedStakeholders
       )
 
-      // Process responses with improved timing and speaker management
+      // Temporarily bypass message queue and add responses directly
       for (let i = 0; i < responses.length; i++) {
         const response = responses[i]
         
-        // Update current speaker
-        const speakingStakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
-        if (speakingStakeholder) {
-          setCurrentSpeaker(speakingStakeholder)
-        }
-
-        // Add response to messages
         const responseMessage: Message = {
           id: `response-${Date.now()}-${i}`,
           speaker: response.stakeholderName,
@@ -232,16 +225,16 @@ const MeetingView: React.FC = () => {
           stakeholderRole: response.stakeholderRole
         }
 
+        console.log('Adding single response directly to messages:', responseMessage)
         setMessages(prev => [...prev, responseMessage])
 
-        // Handle audio playback if enabled
+        // Handle audio playback directly
         if (globalAudioEnabled && isStakeholderVoiceEnabled(response.stakeholderName)) {
+          setCurrentSpeaker(response.stakeholder)
           await handleAudioPlayback(responseMessage)
-        }
-
-        // Add realistic pause between responses
-        if (i < responses.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
+          setTimeout(() => {
+            setCurrentSpeaker(null)
+          }, 2000)
         }
       }
 
@@ -249,9 +242,6 @@ const MeetingView: React.FC = () => {
       setTimeout(() => {
         setCurrentSpeaker(null)
       }, 2000)
-
-      // Update meeting analytics
-      updateMeetingAnalytics(userMessage, responses)
 
     } catch (error) {
       console.error('Error generating response:', error)
