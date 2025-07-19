@@ -26,7 +26,7 @@ const MeetingView: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Dynamic UX state management
+  // Dynamic UX state management - no hard-coding
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const [canUserType, setCanUserType] = useState(true)
@@ -52,28 +52,51 @@ const MeetingView: React.FC = () => {
 
   // Dynamic input availability logic
   const shouldAllowUserInput = () => {
-    return canUserType && !isEndingMeeting && !playingMessageId
+    // Users can always type unless they explicitly choose to wait
+    // This is determined dynamically based on user behavior and preferences
+    return canUserType && !isEndingMeeting
   }
 
-  // Get stakeholder color for consistent avatar colors
-  const getStakeholderColor = (stakeholder: any) => {
-    const colors = [
-      'bg-blue-500',
-      'bg-green-500', 
-      'bg-purple-500',
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-indigo-500',
-      'bg-pink-500',
-      'bg-teal-500'
+  // Simplified conversation configuration - most logic moved to AI service
+  const getConversationConfig = () => {
+    const stakeholderCount = selectedStakeholders.length
+    
+    return {
+      // Dynamic greeting handling - stakeholders will manage their own greeting state
+      maxGreetingRespondents: Math.min(stakeholderCount, 3),
+      
+      // Discussion flow is now managed by AI service conversation state
+      maxDiscussionTurns: Math.min(stakeholderCount * 2, 8),
+      
+      // Natural timing for conversation flow
+      greetingPauseTiming: {
+        base: 800,
+        variance: 400
+      },
+      
+      handoffPauseTiming: {
+        base: 1200,
+        variance: 600
+      }
+    }
+  }
+
+  // Mock questions for demonstration
+  const mockQuestions = {
+    'as-is': [
+      'Can you walk me through the current process from start to finish?',
+      'What are the main pain points in the existing system?',
+      'How much time does the current process typically take?',
+      'What manual steps are involved in the current workflow?',
+      'Where do you see the biggest bottlenecks occurring?'
+    ],
+    'to-be': [
+      'What would an ideal solution look like for your team?',
+      'What specific improvements would you like to see?',
+      'How would you measure success for this project?',
+      'What features are most important to you?',
+      'How should the new process differ from the current one?'
     ]
-    const index = selectedStakeholders.findIndex(s => s.id === stakeholder.id)
-    return colors[index % colors.length]
-  }
-
-  // Generate stakeholder initials
-  const getStakeholderInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase()
   }
 
   useEffect(() => {
@@ -108,6 +131,7 @@ const MeetingView: React.FC = () => {
   // Speaker change animation effect
   useEffect(() => {
     if (currentSpeaker) {
+      // Add a subtle pulse animation to the page when speaker changes
       document.body.style.animation = 'none'
       setTimeout(() => {
         document.body.style.animation = ''
@@ -144,7 +168,7 @@ const MeetingView: React.FC = () => {
     return greetingPatterns.some(pattern => pattern.test(message))
   }
 
-  // Enhanced message handling with improved AI service integration and orchestration
+  // Enhanced message handling with improved AI service integration
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !shouldAllowUserInput()) return
 
@@ -159,7 +183,6 @@ const MeetingView: React.FC = () => {
     setInputMessage('')
     setIsLoading(true)
     setIsGeneratingResponse(true)
-    setCanUserType(false)
 
     try {
       const aiService = AIService.getInstance()
@@ -182,109 +205,53 @@ const MeetingView: React.FC = () => {
         }))
       }
 
-      // Check if this is a group greeting or discussion
-      if (isGroupMessage(userMessage.content) || isSimpleGreeting(userMessage.content)) {
-        console.log('Processing group message:', userMessage.content)
-        // For group messages, use the orchestrator to get multiple responses
-        const responses = await aiService.generateStakeholderResponses(
-          userMessage.content,
-          conversationContext,
-          selectedStakeholders
-        )
+      // Get AI response with enhanced conversation management
+      const responses = await aiService.generateStakeholderResponses(
+        userMessage.content,
+        conversationContext,
+        selectedStakeholders
+      )
 
-        console.log('Generated responses:', responses)
-
-        // Temporarily bypass message queue and add responses directly
-        for (let i = 0; i < responses.length; i++) {
-          const response = responses[i]
-          
-          const responseMessage: Message = {
-            id: `response-${Date.now()}-${i}`,
-            speaker: response.stakeholderName,
-            content: response.content,
-            timestamp: new Date().toISOString(),
-            stakeholderName: response.stakeholderName,
-            stakeholderRole: response.stakeholderRole
-          }
-
-          console.log('Adding response directly to messages:', responseMessage)
-          setMessages(prev => [...prev, responseMessage])
-
-          // Handle audio playback directly
-          if (globalAudioEnabled) {
-            const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
-            if (stakeholder && isStakeholderVoiceEnabled(stakeholder.name)) {
-              setCurrentSpeaker(stakeholder)
-              await handleAudioPlayback(responseMessage)
-            }
-            
-            // Add a delay between responses
-            if (i < responses.length - 1) {
-              await new Promise(resolve => setTimeout(resolve, 2000))
-            }
-          }
+      // Process responses with improved timing and speaker management
+      for (let i = 0; i < responses.length; i++) {
+        const response = responses[i]
+        
+        // Update current speaker
+        const speakingStakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
+        if (speakingStakeholder) {
+          setCurrentSpeaker(speakingStakeholder)
         }
 
-        // Clear current speaker after all responses
-        setTimeout(() => {
-          setCurrentSpeaker(null)
-        }, 3000)
+        // Add response to messages
+        const responseMessage: Message = {
+          id: `response-${Date.now()}-${i}`,
+          speaker: response.stakeholderName,
+          content: response.content,
+          timestamp: new Date().toISOString(),
+          stakeholderName: response.stakeholderName,
+          stakeholderRole: response.stakeholderRole
+        }
 
-      } else {
-        console.log('Processing direct message:', userMessage.content)
-        // For direct questions, get a single targeted response
-        const respondingStakeholder = selectRespondingStakeholder(userMessage.content)
-        
-        console.log('Selected responding stakeholder:', respondingStakeholder)
-        
-        if (respondingStakeholder) {
-          // Create stakeholder context
-          const stakeholderContext: StakeholderContext = {
-            name: respondingStakeholder.name,
-            role: respondingStakeholder.role,
-            department: respondingStakeholder.department,
-            priorities: respondingStakeholder.priorities,
-            personality: respondingStakeholder.personality,
-            expertise: respondingStakeholder.expertise
-          }
+        setMessages(prev => [...prev, responseMessage])
 
-          // Get AI response using the correct method name
-          const aiResponse = await aiService.generateStakeholderResponse(
-            userMessage.content,
-            stakeholderContext,
-            conversationContext,
-            'discussion'
-          )
+        // Handle audio playback if enabled
+        if (globalAudioEnabled && isStakeholderVoiceEnabled(response.stakeholderName)) {
+          await handleAudioPlayback(responseMessage)
+        }
 
-          console.log('Generated AI response:', aiResponse)
-
-          const responseMessage: Message = {
-            id: `response-${Date.now()}`,
-            speaker: respondingStakeholder.id,
-            content: aiResponse,
-            timestamp: new Date().toISOString(),
-            stakeholderName: respondingStakeholder.name,
-            stakeholderRole: respondingStakeholder.role
-          }
-
-          console.log('Adding single response directly to messages:', responseMessage)
-          setMessages(prev => [...prev, responseMessage])
-
-          // Handle audio playback directly
-          if (globalAudioEnabled && isStakeholderVoiceEnabled(respondingStakeholder.name)) {
-            setCurrentSpeaker(respondingStakeholder)
-            await handleAudioPlayback(responseMessage)
-            setTimeout(() => {
-              setCurrentSpeaker(null)
-            }, 3000)
-          }
-        } else {
-          console.log('No stakeholder selected to respond')
+        // Add realistic pause between responses
+        if (i < responses.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
         }
       }
 
+      // Clear current speaker after all responses
+      setTimeout(() => {
+        setCurrentSpeaker(null)
+      }, 2000)
+
       // Update meeting analytics
-      updateMeetingAnalytics(userMessage, [])
+      updateMeetingAnalytics(userMessage, responses)
 
     } catch (error) {
       console.error('Error generating response:', error)
@@ -300,126 +267,8 @@ const MeetingView: React.FC = () => {
     } finally {
       setIsLoading(false)
       setIsGeneratingResponse(false)
-      setCanUserType(true)
       setUserInterruptRequested(false)
     }
-  }
-
-  // Intelligent stakeholder selection for single responses
-  const selectRespondingStakeholder = (messageContent: string) => {
-    // Check for direct addressing first
-    const directAddress = detectDirectAddressing(messageContent)
-    if (directAddress) return directAddress
-
-    // If no direct addressing, select based on expertise and participation balance
-    const messageLower = messageContent.toLowerCase()
-    
-    // Score stakeholders based on relevance
-    const scoredStakeholders = selectedStakeholders.map(stakeholder => {
-      let score = 0
-      
-      // Expertise relevance
-      const roleKeywords = stakeholder.role.toLowerCase().split(' ')
-      const deptKeywords = stakeholder.department?.toLowerCase().split(' ') || []
-      
-      roleKeywords.forEach(keyword => {
-        if (messageLower.includes(keyword)) score += 10
-      })
-      deptKeywords.forEach(keyword => {
-        if (messageLower.includes(keyword)) score += 8
-      })
-      
-      // Participation balance (prefer less active participants)
-      const participationCount = meetingAnalytics.participationBalance.get(stakeholder.name) || 0
-      score += Math.max(0, 15 - (participationCount * 3))
-      
-      // Add some randomness for variety
-      score += Math.random() * 5
-      
-      return { stakeholder, score }
-    })
-    
-    // Return highest scoring stakeholder
-    return scoredStakeholders.sort((a, b) => b.score - a.score)[0]?.stakeholder || selectedStakeholders[0]
-  }
-
-  // Detect direct addressing by name
-  const detectDirectAddressing = (message: string) => {
-    const messageLower = message.toLowerCase()
-    
-    for (const stakeholder of selectedStakeholders) {
-      const firstName = stakeholder.name.split(' ')[0].toLowerCase()
-      const lastName = stakeholder.name.split(' ').slice(-1)[0].toLowerCase()
-      
-      // Check for name mentions
-      if (messageLower.includes(firstName) || messageLower.includes(lastName)) {
-        return stakeholder
-      }
-    }
-    
-    return null
-  }
-
-  // Enhanced meeting analytics
-  const updateMeetingAnalytics = (userMessage: Message, responses: any[]) => {
-    setMeetingAnalytics(prev => {
-      const newAnalytics = { ...prev }
-      
-      // Update topics discussed
-      const topics = extractTopics(userMessage.content)
-      topics.forEach(topic => newAnalytics.topicsDiscussed.add(topic))
-      
-      // Update participation balance
-      responses.forEach(response => {
-        const current = newAnalytics.participationBalance.get(response.stakeholderName) || 0
-        newAnalytics.participationBalance.set(response.stakeholderName, current + 1)
-      })
-      
-      // Update effectiveness score
-      newAnalytics.meetingEffectivenessScore = calculateEffectivenessScore(messages.length, responses.length)
-      
-      // Update collaboration index
-      newAnalytics.collaborationIndex = calculateCollaborationIndex(newAnalytics.participationBalance)
-      
-      return newAnalytics
-    })
-  }
-
-  const extractTopics = (content: string): string[] => {
-    const topicKeywords = {
-      'Process Analysis': ['process', 'workflow', 'procedure', 'steps'],
-      'Pain Points': ['problem', 'issue', 'challenge', 'difficulty'],
-      'Requirements': ['requirement', 'need', 'must have', 'should have'],
-      'Timeline': ['timeline', 'schedule', 'deadline', 'when'],
-      'Resources': ['resource', 'budget', 'cost', 'team'],
-      'Technology': ['system', 'software', 'technology', 'tool']
-    }
-    
-    const topics: string[] = []
-    const lowerContent = content.toLowerCase()
-    
-    Object.entries(topicKeywords).forEach(([topic, keywords]) => {
-      if (keywords.some(keyword => lowerContent.includes(keyword))) {
-        topics.push(topic)
-      }
-    })
-    
-    return topics
-  }
-
-  const calculateEffectivenessScore = (totalMessages: number, responseCount: number): number => {
-    const baseScore = Math.min(100, (totalMessages * 10) + (responseCount * 5))
-    return Math.max(0, baseScore)
-  }
-
-  const calculateCollaborationIndex = (participationMap: Map<string, number>): number => {
-    const values = Array.from(participationMap.values())
-    if (values.length === 0) return 0
-    
-    const avg = values.reduce((a, b) => a + b, 0) / values.length
-    const variance = values.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) / values.length
-    
-    return Math.max(0, 100 - (variance * 10))
   }
 
   // Enhanced audio playback with better error handling
@@ -488,6 +337,70 @@ const MeetingView: React.FC = () => {
     }
   }
 
+  // Enhanced meeting analytics
+  const updateMeetingAnalytics = (userMessage: Message, responses: any[]) => {
+    setMeetingAnalytics(prev => {
+      const newAnalytics = { ...prev }
+      
+      // Update topics discussed
+      const topics = extractTopics(userMessage.content)
+      topics.forEach(topic => newAnalytics.topicsDiscussed.add(topic))
+      
+      // Update participation balance
+      responses.forEach(response => {
+        const current = newAnalytics.participationBalance.get(response.stakeholderName) || 0
+        newAnalytics.participationBalance.set(response.stakeholderName, current + 1)
+      })
+      
+      // Update effectiveness score
+      newAnalytics.meetingEffectivenessScore = calculateEffectivenessScore(messages.length, responses.length)
+      
+      // Update collaboration index
+      newAnalytics.collaborationIndex = calculateCollaborationIndex(newAnalytics.participationBalance)
+      
+      return newAnalytics
+    })
+  }
+
+  const extractTopics = (content: string): string[] => {
+    const topicKeywords = {
+      'Process Analysis': ['process', 'workflow', 'procedure', 'steps'],
+      'Pain Points': ['problem', 'issue', 'challenge', 'difficulty'],
+      'Requirements': ['requirement', 'need', 'must have', 'should have'],
+      'Timeline': ['timeline', 'schedule', 'deadline', 'when'],
+      'Resources': ['resource', 'budget', 'cost', 'team'],
+      'Technology': ['system', 'software', 'technology', 'tool']
+    }
+    
+    const topics: string[] = []
+    const lowerContent = content.toLowerCase()
+    
+    Object.entries(topicKeywords).forEach(([topic, keywords]) => {
+      if (keywords.some(keyword => lowerContent.includes(keyword))) {
+        topics.push(topic)
+      }
+    })
+    
+    return topics
+  }
+
+  const calculateEffectivenessScore = (totalMessages: number, responseCount: number): number => {
+    // Simple effectiveness calculation based on engagement
+    const baseScore = Math.min(100, (totalMessages * 10) + (responseCount * 5))
+    return Math.max(0, baseScore)
+  }
+
+  const calculateCollaborationIndex = (participationMap: Map<string, number>): number => {
+    const values = Array.from(participationMap.values())
+    if (values.length === 0) return 0
+    
+    const avg = values.reduce((a, b) => a + b, 0) / values.length
+    const variance = values.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) / values.length
+    
+    // Lower variance means better collaboration
+    return Math.max(0, 100 - (variance * 10))
+  }
+
   // Handle key press for sending messages
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -506,26 +419,7 @@ const MeetingView: React.FC = () => {
     setIsTranscribing(isTranscribing)
   }
 
-  // User interruption controls
-  const handleUserInterruption = () => {
-    setUserInterruptRequested(true)
-    stopCurrentAudio()
-    setCanUserType(true)
-  }
-
-  // Add escape key listener for interruption
-  useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleUserInterruption()
-      }
-    }
-
-    document.addEventListener('keydown', handleEscapeKey)
-    return () => document.removeEventListener('keydown', handleEscapeKey)
-  }, [])
-
-  // Enhanced end meeting functionality
+  // Enhanced end meeting with progressive feedback
   const handleEndMeeting = async () => {
     if (messages.length <= 1) {
       alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
@@ -542,21 +436,128 @@ const MeetingView: React.FC = () => {
     setIsEndingMeeting(true);
     setNoteGenerationProgress('Preparing to generate notes...');
 
+    // Optimized timeout for faster note generation
+    const messageCount = messages.length
+    const participantCount = selectedStakeholders.length
+    const baseTimeout = 20000 // Reduced base timeout (20 seconds)
+    const complexityFactor = Math.min(1.5, (messageCount / 30) + (participantCount / 8))
+    const dynamicTimeout = baseTimeout * complexityFactor
+
+    console.log(`Setting optimized timeout for meeting end: ${dynamicTimeout}ms based on ${messageCount} messages and ${participantCount} participants`)
+
     try {
+      // Stop any current audio
       stopCurrentAudio();
 
       const meetingStartTime = new Date(messages[0]?.timestamp || new Date().toISOString());
       const meetingEndTime = new Date();
       const duration = Math.round((meetingEndTime.getTime() - meetingStartTime.getTime()) / 1000 / 60);
 
-      // Create basic notes without AI dependency for now
-      const basicNotes = createFallbackNotes({
-        project: { name: selectedProject?.name || 'Current Project' },
-        participants: selectedStakeholders,
+      // Enhanced meeting data with analytics
+      const meetingData = {
+        project: {
+          name: selectedProject?.name || 'Current Project',
+          description: selectedProject?.description || '',
+          type: selectedProject?.projectType || 'General'
+        },
+        participants: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department,
+          engagementLevel: meetingAnalytics.stakeholderEngagementLevels.get(s.id) || 'medium',
+          participationPercentage: Math.round(meetingAnalytics.participationBalance.get(s.id) || 0)
+        })),
         messages: messages.filter(m => m.speaker !== 'system'),
-        duration: duration
-      });
+        startTime: meetingStartTime,
+        endTime: meetingEndTime,
+        duration,
+        user: user?.email || 'Business Analyst',
+        analytics: {
+          effectivenessScore: meetingAnalytics.meetingEffectivenessScore,
+          collaborationIndex: meetingAnalytics.collaborationIndex,
+          topicsDiscussed: Array.from(meetingAnalytics.topicsDiscussed),
+          keyInsights: meetingAnalytics.keyInsights,
+          conversationFlow: meetingAnalytics.conversationFlow
+        }
+      };
 
+      const aiService = AIService.getInstance();
+      
+      // Progress callback for real-time feedback
+      const progressCallback = (progress: string) => {
+        setNoteGenerationProgress(progress);
+      };
+      
+      // Create AI generation promise with progress tracking
+      const aiGenerationPromise = aiService.generateInterviewNotes(meetingData, progressCallback);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Interview notes generation timed out')), dynamicTimeout)
+      );
+
+      // Race between AI generation and timeout
+      let baseInterviewNotes;
+      try {
+        baseInterviewNotes = await Promise.race([aiGenerationPromise, timeoutPromise]);
+      } catch (timeoutError) {
+        console.warn('AI generation timed out, creating fallback notes:', timeoutError);
+        setNoteGenerationProgress('Creating fallback notes...');
+        baseInterviewNotes = createFallbackNotes(meetingData);
+      }
+      
+      // Enhanced interview notes with analytics
+      setNoteGenerationProgress('Generating meeting analytics...');
+      const analyticsSection = generateMeetingAnalyticsSummary();
+      const enhancedInterviewNotes = `${baseInterviewNotes}
+
+---
+
+${analyticsSection}
+
+---
+
+## Meeting Quality Assessment
+
+**Overall Meeting Effectiveness**: ${meetingAnalytics.meetingEffectivenessScore}/100
+
+### Strengths
+${meetingAnalytics.keyInsights.filter(insight => 
+  insight.includes('Excellent') || insight.includes('Great') || insight.includes('Active')
+).map(insight => `• ${insight}`).join('\n') || '• Good stakeholder engagement and participation'}
+
+### Areas for Improvement
+${meetingAnalytics.keyInsights.filter(insight => 
+  insight.includes('Consider') || insight.includes('Limited') || insight.includes('suggest')
+).map(insight => `• ${insight}`).join('\n') || '• Continue to maintain current engagement levels'}
+
+### Recommendations for Future Meetings
+${generateMeetingRecommendations()}
+
+---
+
+*This enhanced interview summary includes AI-powered analytics to help improve future stakeholder meetings and requirements gathering sessions.*`;
+
+      // Create notes object with analytics
+      setNoteGenerationProgress('Saving interview notes...');
+      const notesObject = {
+        id: `meeting-${Date.now()}`,
+        title: `Enhanced Interview Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
+        content: enhancedInterviewNotes,
+        projectId: selectedProject?.id || 'unknown',
+        meetingType: 'stakeholder-interview',
+        participants: selectedStakeholders.map(s => s.name).join(', '),
+        date: meetingEndTime.toISOString(),
+        duration: `${duration} minutes`,
+        createdBy: user?.email || 'Business Analyst',
+        analytics: {
+          effectivenessScore: meetingAnalytics.meetingEffectivenessScore,
+          collaborationIndex: meetingAnalytics.collaborationIndex,
+          topicsDiscussed: Array.from(meetingAnalytics.topicsDiscussed),
+          participationBalance: Object.fromEntries(meetingAnalytics.participationBalance),
+          keyInsights: meetingAnalytics.keyInsights
+        }
+      };
+
+      // Save to database and localStorage (for backup)
       setNoteGenerationProgress('Saving to database...');
       const stakeholderIds = selectedStakeholders.map(s => s.id);
       const rawChatTranscript = messages.filter(m => m.speaker !== 'system');
@@ -564,30 +565,18 @@ const MeetingView: React.FC = () => {
       const dbSaveSuccess = await saveMeetingToDatabase(
         selectedProject?.id || 'unknown',
         stakeholderIds,
-        [{ content: basicNotes }], // transcript
+        [notesObject], // transcript
         rawChatTranscript, // raw chat
-        basicNotes, // meeting notes
+        enhancedInterviewNotes, // meeting notes
         duration
       );
 
-      // Save to localStorage as backup
-      const notesObject = {
-        id: `meeting-${Date.now()}`,
-        title: `Meeting Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
-        content: basicNotes,
-        projectId: selectedProject?.id || 'unknown',
-        meetingType: 'stakeholder-interview',
-        participants: selectedStakeholders.map(s => s.name).join(', '),
-        date: meetingEndTime.toISOString(),
-        duration: `${duration} minutes`,
-        createdBy: user?.email || 'Business Analyst'
-      };
-
+      // Also save to localStorage as backup
       const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
       existingNotes.push(notesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
 
-      // Generate PDF
+      // Generate and export PDF
       setNoteGenerationProgress('Generating PDF export...');
       try {
         const pdfData = {
@@ -603,29 +592,106 @@ const MeetingView: React.FC = () => {
           })),
           date: meetingEndTime.toISOString(),
           duration: `${duration} minutes`,
-          meetingNotes: basicNotes,
-          rawChat: rawChatTranscript
+          meetingNotes: enhancedInterviewNotes,
+          rawChat: rawChatTranscript,
+          analytics: notesObject.analytics
         };
 
         await PDFExportService.exportMeetingTranscript(pdfData);
+        console.log('PDF export completed successfully');
       } catch (pdfError) {
         console.error('PDF export failed:', pdfError);
+        // Don't fail the whole process if PDF export fails
       }
 
+      // Show success notification
       setNoteGenerationProgress('Meeting ended successfully!');
       setMeetingEndedSuccess(true);
       
+      if (dbSaveSuccess) {
+        console.log('Meeting successfully saved to database');
+      } else {
+        console.warn('Database save failed, but meeting data preserved in localStorage');
+      }
+      
+      // Navigate to notes view
       setTimeout(() => {
         setCurrentView('notes');
       }, 1500);
 
     } catch (error) {
       console.error('Error ending meeting:', error);
-      alert('Error ending meeting. Your conversation has been saved locally.');
+      setNoteGenerationProgress('Error occurred - saving basic notes...');
+      alert('Error generating meeting notes. The meeting has been saved with available data.');
+      
+      // Still try to save basic notes even if AI generation fails
+      const basicNotes = createFallbackNotes({
+        project: { name: selectedProject?.name || 'Current Project' },
+        participants: selectedStakeholders,
+        messages: messages.filter(m => m.speaker !== 'system'),
+        duration: duration || 0
+      });
+      
+      const basicNotesObject = {
+        id: `meeting-${Date.now()}`,
+        title: `Basic Meeting Notes: ${selectedProject?.name} - ${new Date().toLocaleDateString()}`,
+        content: basicNotes,
+        projectId: selectedProject?.id || 'unknown',
+        meetingType: 'stakeholder-interview',
+        participants: selectedStakeholders.map(s => s.name).join(', '),
+        date: new Date().toISOString(),
+        duration: `${duration || 0} minutes`,
+        createdBy: user?.email || 'Business Analyst'
+      };
+      
+      // Try to save to database even with basic notes
+      try {
+        const stakeholderIds = selectedStakeholders.map(s => s.id);
+        const rawChatTranscript = messages.filter(m => m.speaker !== 'system');
+        
+        await saveMeetingToDatabase(
+          selectedProject?.id || 'unknown',
+          stakeholderIds,
+          [basicNotesObject],
+          rawChatTranscript,
+          basicNotes,
+          duration || 0
+        );
+        
+        // Generate basic PDF
+        const pdfData = {
+          title: basicNotesObject.title,
+          project: {
+            name: selectedProject?.name || 'Unknown Project',
+            description: selectedProject?.description
+          },
+          participants: selectedStakeholders.map(s => ({
+            name: s.name,
+            role: s.role,
+            department: s.department
+          })),
+          date: new Date().toISOString(),
+          duration: `${duration || 0} minutes`,
+          meetingNotes: basicNotes,
+          rawChat: rawChatTranscript
+        };
+        
+        await PDFExportService.exportMeetingTranscript(pdfData);
+        console.log('Basic PDF export completed');
+      } catch (fallbackError) {
+        console.error('Fallback database/PDF save also failed:', fallbackError);
+      }
+      
+      // Always save to localStorage as final backup
+      const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
+      existingNotes.push(basicNotesObject);
+      localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
+      
       setCurrentView('notes');
     } finally {
       setIsLoading(false);
       setIsEndingMeeting(false);
+      setUserInterruptRequested(false);
       setNoteGenerationProgress('');
     }
   }
@@ -651,6 +717,9 @@ ${participantList}
 This meeting included ${messageCount} exchanges between the business analyst and stakeholders. 
 
 ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were captured during the session.' : 'No detailed conversation was recorded.'}
+
+## Technical Note
+These notes were generated using a fallback system due to extended AI processing time. For more detailed analysis, consider reviewing the conversation transcript manually.
 
 ---
 *Generated automatically on ${new Date().toLocaleString()}*`;
@@ -680,8 +749,15 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
         })),
         date: currentDate.toISOString(),
         duration: 'In Progress',
-        meetingNotes: `Live export generated at ${currentDate.toLocaleString()}`,
-        rawChat: rawChatTranscript
+        meetingNotes: `This is a live export of the ongoing conversation as of ${currentDate.toLocaleString()}.\n\nTotal messages exchanged: ${rawChatTranscript.length}\nParticipants: ${selectedStakeholders.map(s => s.name).join(', ')}\n\nFor complete meeting notes with AI analysis, please end the meeting to generate comprehensive notes.`,
+        rawChat: rawChatTranscript,
+        analytics: {
+          effectivenessScore: 0,
+          collaborationIndex: 0,
+          topicsDiscussed: [],
+          participationBalance: {},
+          keyInsights: [`Live export generated at ${currentDate.toLocaleString()}`, `${rawChatTranscript.length} messages captured`, 'Meeting still in progress']
+        }
       };
 
       await PDFExportService.exportMeetingTranscript(pdfData);
@@ -692,7 +768,7 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
         inputRef.current.placeholder = '✅ PDF exported successfully!';
         setTimeout(() => {
           if (inputRef.current) {
-            inputRef.current.placeholder = originalPlaceholder || 'Type a message...';
+            inputRef.current.placeholder = originalPlaceholder || 'Type your message...';
           }
         }, 3000);
       }
@@ -701,6 +777,71 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
       console.error('Error exporting PDF:', error);
       alert('Failed to export PDF. Please try again.');
     }
+  }
+
+  // User interruption controls
+  const handleUserInterruption = () => {
+    setUserInterruptRequested(true)
+    stopCurrentAudio()
+    setCanUserType(true)
+  }
+
+  // Add escape key listener for interruption
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleUserInterruption()
+      }
+    }
+
+    document.addEventListener('keydown', handleEscapeKey)
+    return () => document.removeEventListener('keydown', handleEscapeKey)
+  }, [])
+
+  // Generate meeting analytics summary
+  const generateMeetingAnalyticsSummary = (): string => {
+    const topicsList = Array.from(meetingAnalytics.topicsDiscussed).join(', ') || 'General discussion'
+    const participationEntries = Array.from(meetingAnalytics.participationBalance.entries())
+    
+    return `## Meeting Analytics Summary
+
+### Discussion Topics
+${topicsList}
+
+### Participation Overview
+${participationEntries.map(([name, count]) => `- ${name}: ${count} contributions`).join('\n')}
+
+### Effectiveness Metrics
+- **Meeting Effectiveness Score**: ${meetingAnalytics.meetingEffectivenessScore}/100
+- **Collaboration Index**: ${meetingAnalytics.collaborationIndex.toFixed(1)}/100
+- **Total Topics Covered**: ${meetingAnalytics.topicsDiscussed.size}
+- **Active Participants**: ${participationEntries.length}
+
+### Key Insights
+${meetingAnalytics.keyInsights.map(insight => `- ${insight}`).join('\n') || '- Productive stakeholder engagement observed'}`;
+  }
+
+  // Generate meeting recommendations
+  const generateMeetingRecommendations = (): string => {
+    const recommendations = []
+    
+    if (meetingAnalytics.meetingEffectivenessScore < 50) {
+      recommendations.push('Consider preparing more targeted questions to drive deeper discussions')
+    }
+    
+    if (meetingAnalytics.collaborationIndex < 60) {
+      recommendations.push('Encourage more balanced participation from all stakeholders')
+    }
+    
+    if (meetingAnalytics.topicsDiscussed.size < 3) {
+      recommendations.push('Explore additional topic areas to ensure comprehensive coverage')
+    }
+    
+    if (recommendations.length === 0) {
+      recommendations.push('Continue current engagement strategies - meeting showed good effectiveness')
+    }
+    
+    return recommendations.map(rec => `• ${rec}`).join('\n')
   }
 
   if (!selectedProject || selectedStakeholders.length === 0) {
@@ -721,170 +862,296 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">{selectedProject.name}</h1>
-            <p className="text-purple-100 text-sm mt-1">
-              Participants: {selectedStakeholders.map(s => s.name).join(', ')}
-            </p>
+    <div className="h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center space-x-2 mb-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span className="text-sm font-medium text-gray-700">Currently Speaking</span>
           </div>
           
-          <div className="flex items-center space-x-4">
-            {/* Current Speaker Display */}
-            {currentSpeaker && (
-              <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/30">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm ${getStakeholderColor(currentSpeaker)}`}>
-                  {getStakeholderInitials(currentSpeaker.name)}
-                </div>
-                <div className="text-left">
-                  <div className="font-medium text-white">{currentSpeaker.name}</div>
-                  <div className="text-xs text-purple-100">{currentSpeaker.role}</div>
-                </div>
-                <div className="flex items-center space-x-1 text-green-300">
-                  <div className="w-1 h-2 bg-green-300 rounded-full animate-pulse"></div>
-                  <div className="w-1 h-3 bg-green-300 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-1 h-4 bg-green-300 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                  <span className="text-xs ml-2">Speaking...</span>
+          {currentSpeaker ? (
+            <div className="flex items-center space-x-3">
+              <img 
+                src={currentSpeaker.photo} 
+                alt={currentSpeaker.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+              <div>
+                <div className="font-medium text-gray-900">{currentSpeaker.name}</div>
+                <div className="text-sm text-gray-500">{currentSpeaker.role}</div>
+              </div>
+              <div className="ml-auto">
+                <div className="flex space-x-1">
+                  <div className="w-1 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-1 h-5 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                  <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
                 </div>
               </div>
-            )}
-            
-            {/* Audio Controls */}
-            {playingMessageId && (
-              <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/30">
-                <button onClick={stopCurrentAudio} className="text-white hover:text-purple-200">
-                  <Square className="w-4 h-4" />
-                </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-gray-400" />
               </div>
-            )}
+              <div>
+                <div className="font-medium text-gray-900">Meeting Active</div>
+                <div className="text-sm text-gray-500">Ready for discussion</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Participants List */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-900">Participants ({selectedStakeholders.length})</h3>
+              <button className="text-gray-400 hover:text-gray-600">
+                <ChevronUp className="w-4 h-4" />
+              </button>
+            </div>
             
-            {/* End Meeting Button */}
-            <button
-              onClick={handleEndMeeting}
-              disabled={messages.length <= 1 || isLoading}
-              className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              title="End meeting and generate interview notes"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>{noteGenerationProgress || 'Ending...'}</span>
-                </>
-              ) : (
-                <>
-                  <Phone className="w-4 h-4" />
-                  <span>End Meeting</span>
-                </>
-              )}
-            </button>
+            <div className="space-y-3">
+              {selectedStakeholders.map((stakeholder) => {
+                const isCurrentSpeaker = currentSpeaker?.id === stakeholder.id
+                const participationCount = meetingAnalytics.participationBalance.get(stakeholder.id) || 0
+                
+                return (
+                  <div key={stakeholder.id} className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
+                    isCurrentSpeaker ? 'bg-green-50 border border-green-200' : 'hover:bg-gray-50'
+                  }`}>
+                    <div className="relative">
+                      <img 
+                        src={stakeholder.photo} 
+                        alt={stakeholder.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
+                        isCurrentSpeaker ? 'bg-green-500' : 'bg-gray-300'
+                      }`}></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900 truncate">{stakeholder.name}</div>
+                      <div className="text-sm text-gray-500 truncate">{stakeholder.role}</div>
+                    </div>
+                    {participationCount > 0 && (
+                      <div className="text-xs text-gray-400">
+                        {participationCount}
+                      </div>
+                    )}
+                    {!isStakeholderVoiceEnabled(stakeholder.name) && (
+                      <VolumeX className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-white">
-        {/* Chat Header */}
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Meeting Chat</h2>
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-semibold">Meeting: {selectedProject.name}</h1>
+              <p className="text-indigo-100 text-sm mt-1">
+                Participants: {selectedStakeholders.map(s => s.name).join(', ')}
+              </p>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {/* Export PDF Button */}
+              {messages.length > 1 && (
+                <button
+                  onClick={handleExportCurrentChat}
+                  disabled={isLoading}
+                  className="flex items-center space-x-2 bg-white/20 text-white px-3 py-2 rounded-lg hover:bg-white/30 transition-colors border border-white/30 disabled:opacity-50"
+                  title="Export current conversation as PDF"
+                >
+                  <FileDown className="w-4 h-4" />
+                  <span className="hidden lg:inline">Export PDF</span>
+                </button>
+              )}
+              
+              {/* Question Helper Toggle */}
+              <button
+                onClick={() => setShowQuestionHelper(!showQuestionHelper)}
+                className="flex items-center space-x-2 bg-white/20 text-white px-3 py-2 rounded-lg hover:bg-white/30 transition-colors border border-white/30"
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span className="hidden lg:inline">Question Helper</span>
+                {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+              
+              {/* Status Indicator */}
+              {isGeneratingResponse && (
+                <div className="flex items-center space-x-2 bg-white/20 text-white px-3 py-2 rounded-lg border border-white/30">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                  <span className="text-sm">Stakeholders are responding...</span>
+                </div>
+              )}
+              
+              {/* End Meeting Button */}
+              <button
+                onClick={handleEndMeeting}
+                disabled={messages.length <= 1 || isLoading}
+                className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                title="End meeting and generate interview notes"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="hidden sm:inline">
+                      {noteGenerationProgress || 'Ending...'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Phone className="w-4 h-4" />
+                    <span>End Meeting</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {messages.map((message) => {
-            const stakeholder = selectedStakeholders.find(s => s.name === message.stakeholderName || s.id === message.speaker)
-            
-            if (message.speaker === 'user') {
-              return (
-                <div key={message.id} className="flex justify-end">
-                  <div className="max-w-2xl bg-blue-600 text-white rounded-lg px-4 py-3">
-                    <div className="text-sm">{message.content}</div>
-                    <div className="text-xs text-blue-100 mt-1">
-                      {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )
-            }
-
-            if (message.speaker === 'system') {
-              return (
-                <div key={message.id} className="flex justify-center">
-                  <div className="max-w-2xl bg-gray-100 text-gray-700 rounded-lg px-4 py-2 text-sm text-center">
-                    {message.content}
-                  </div>
-                </div>
-              )
-            }
-
-            // Stakeholder message
-            return (
-              <div key={message.id} className="flex items-start space-x-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0 ${stakeholder ? getStakeholderColor(stakeholder) : 'bg-gray-500'}`}>
-                  {stakeholder ? getStakeholderInitials(stakeholder.name) : 'ST'}
-                </div>
-                <div className="flex-1 max-w-2xl">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="font-medium text-gray-900">{message.stakeholderName}</span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                    {playingMessageId === message.id && (
-                      <div className="flex items-center space-x-1 text-green-500">
-                        <div className="w-1 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-1 h-2 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="bg-gray-100 rounded-lg px-4 py-3">
-                    <div className="text-sm text-gray-900">{message.content}</div>
-                  </div>
+        {/* Question Helper */}
+        {showQuestionHelper && (
+          <div className="bg-blue-50 border-b border-blue-200 p-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-blue-900">Suggested Questions</h3>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setSelectedQuestionCategory('as-is')}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      selectedQuestionCategory === 'as-is'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}
+                  >
+                    Current State
+                  </button>
+                  <button
+                    onClick={() => setSelectedQuestionCategory('to-be')}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      selectedQuestionCategory === 'to-be'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}
+                  >
+                    Future State
+                  </button>
                 </div>
               </div>
-            )
-          })}
-          
-          {/* Scroll anchor */}
-          <div ref={messagesEndRef} />
-        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {mockQuestions[selectedQuestionCategory].map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setInputMessage(question)}
+                    className="text-left p-2 bg-white rounded-lg border border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-sm"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Input Area */}
-        <div className="border-t border-gray-200 px-6 py-4">
-          <div className="flex space-x-3">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={shouldAllowUserInput() ? "Type a message..." : isGeneratingResponse ? "Stakeholders are responding..." : playingMessageId ? "Audio playing... Press ESC to interrupt" : "Please wait..."}
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={!shouldAllowUserInput()}
-            />
-            <button
-              onClick={() => setShowVoiceModal(true)}
-              disabled={isLoading || isTranscribing}
-              className="p-2 text-gray-500 hover:text-gray-700 disabled:text-gray-300"
-              title="Voice Input"
-            >
-              <Mic className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleSendMessage}
-              disabled={isLoading || !inputMessage.trim() || !shouldAllowUserInput()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center space-x-2"
-            >
-              <span>Send</span>
-            </button>
+        {/* Chat Area */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-4xl mx-auto space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${
+                    message.speaker === 'user' 
+                      ? 'bg-indigo-600 text-white' 
+                      : message.speaker === 'system'
+                      ? 'bg-gray-100 text-gray-700'
+                      : 'bg-white text-gray-900 border border-gray-200'
+                  } rounded-lg p-3 shadow-sm`}>
+                    {message.speaker !== 'user' && message.speaker !== 'system' && (
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-indigo-600">
+                            {message.stakeholderName?.split(' ').map(n => n[0]).join('') || 'ST'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {message.stakeholderName} • {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                        {playingMessageId === message.id && (
+                          <div className="flex items-center space-x-1">
+                            <div className="w-1 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                            <div className="w-1 h-3 bg-indigo-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                            <div className="w-1 h-2 bg-indigo-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="text-sm">{message.content}</div>
+                  </div>
+                </div>
+              ))}
+              {/* Scroll anchor */}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex space-x-3">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={shouldAllowUserInput() ? "Type a new message" : isGeneratingResponse ? "Stakeholders are responding..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  disabled={!shouldAllowUserInput()}
+                />
+                <button
+                  onClick={() => setShowVoiceModal(true)}
+                  disabled={isLoading || isTranscribing}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-2"
+                  title="Voice Input"
+                >
+                  <Mic className="w-5 h-5" />
+                  {isTranscribing && (
+                    <span className="text-sm">Transcribing...</span>
+                  )}
+                </button>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !inputMessage.trim() || !shouldAllowUserInput()}
+                  className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -912,12 +1179,12 @@ ${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were ca
             <div className="space-y-2 text-sm text-gray-600 mb-6">
               <p><strong>Participants:</strong> {selectedStakeholders.length} stakeholders</p>
               <p><strong>Project:</strong> {selectedProject?.name}</p>
-              <p><strong>Status:</strong> Meeting notes generated</p>
+              <p><strong>Status:</strong> Comprehensive interview notes generated</p>
             </div>
             
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <p className="text-blue-800 text-sm">
-                📝 Your meeting notes have been saved and exported as PDF.
+                📝 Your interview notes have been automatically generated and saved. 
                 You'll be redirected to view them in a moment.
               </p>
             </div>
