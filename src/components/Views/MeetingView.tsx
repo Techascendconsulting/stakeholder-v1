@@ -46,15 +46,111 @@ const MeetingView: React.FC = () => {
     stakeholderEngagementLevels: new Map<string, 'low' | 'medium' | 'high'>()
   })
 
-  // Conversation queue for managing speaker turns
-  const [conversationQueue, setConversationQueue] = useState<string[]>([])
+  // Conversation queue and speaking state
+  const [conversationQueue, setConversationQueue] = useState<{stakeholder: any, content: string, messageId: string}[]>([])
+  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null)
+  const [queuedMessages, setQueuedMessages] = useState<Message[]>([])
+  const [introductionPhase, setIntroductionPhase] = useState(false)
+  const [introducedStakeholders, setIntroducedStakeholders] = useState<Set<string>>(new Set())
   const [noteGenerationProgress, setNoteGenerationProgress] = useState<string>('')
-
-  // Dynamic input availability logic
+  
+  // Dynamic input availability logic - blocked during audio unless stopped
   const shouldAllowUserInput = () => {
-    // Users can always type unless they explicitly choose to wait
-    // This is determined dynamically based on user behavior and preferences
-    return canUserType && !isEndingMeeting
+    return canUserType && !isEndingMeeting && !isAudioPlaying && !currentSpeaking
+  }
+
+  // Enhanced queue system to prevent talking over each other
+  const processConversationQueue = async () => {
+    if (conversationQueue.length === 0 || currentSpeaking) return
+
+    const nextItem = conversationQueue[0]
+    setConversationQueue(prev => prev.slice(1))
+    setCurrentSpeaking(nextItem.stakeholder.id)
+
+    // Add message to UI immediately when processing starts
+    const message: Message = {
+      id: nextItem.messageId,
+      speaker: nextItem.stakeholder.id,
+      content: nextItem.content,
+      timestamp: new Date().toISOString(),
+      stakeholderName: nextItem.stakeholder.name,
+      stakeholderRole: nextItem.stakeholder.role
+    }
+
+    setMessages(prev => [...prev, message])
+    setCurrentSpeaker(nextItem.stakeholder)
+
+    // Play audio if enabled
+    if (globalAudioEnabled && isStakeholderVoiceEnabled(nextItem.stakeholder.name)) {
+      try {
+        await playMessageAudio(nextItem.messageId, nextItem.content, nextItem.stakeholder, true)
+      } catch (error) {
+        console.error('Audio playback failed:', error)
+      }
+    }
+
+    // Check for introduction prompts
+    if (introductionPhase && !introducedStakeholders.has(nextItem.stakeholder.id)) {
+      setIntroducedStakeholders(prev => new Set(prev).add(nextItem.stakeholder.id))
+      
+      // If not all stakeholders have introduced themselves, prompt the next one
+      const remainingStakeholders = selectedStakeholders.filter(s => 
+        !introducedStakeholders.has(s.id) && s.id !== nextItem.stakeholder.id
+      )
+      
+      if (remainingStakeholders.length > 0) {
+        const nextStakeholder = remainingStakeholders[0]
+        setTimeout(() => {
+          addToConversationQueue(nextStakeholder, `Hello everyone! I'm ${nextStakeholder.name}, ${nextStakeholder.role}. I'm excited to be part of this discussion about ${selectedProject?.name}.`)
+        }, 1000)
+      } else {
+        // All introductions complete
+        setIntroductionPhase(false)
+        const facilitator = selectedStakeholders.find(s => s.role.toLowerCase().includes('manager') || s.role.toLowerCase().includes('lead')) || selectedStakeholders[0]
+        setTimeout(() => {
+          addToConversationQueue(facilitator, "Great! Now that we've all introduced ourselves, let's dive into our discussion. What would you like to explore first?")
+        }, 1500)
+      }
+    }
+
+    setCurrentSpeaking(null)
+    
+    // Process next item in queue
+    setTimeout(() => {
+      processConversationQueue()
+    }, 500)
+  }
+
+  // Add stakeholder response to queue
+  const addToConversationQueue = (stakeholder: any, content: string) => {
+    const messageId = `response-${Date.now()}-${Math.random()}`
+    setConversationQueue(prev => [...prev, { stakeholder, content, messageId }])
+  }
+
+  // Stop all audio and show all queued messages immediately
+  const stopAllAudioAndShowQueue = () => {
+    // Stop current audio
+    stopCurrentAudio()
+    setCurrentSpeaking(null)
+    setIsAudioPlaying(false)
+    
+    // Show all queued messages immediately
+    const queuedToShow = conversationQueue.map(item => ({
+      id: item.messageId,
+      speaker: item.stakeholder.id,
+      content: item.content,
+      timestamp: new Date().toISOString(),
+      stakeholderName: item.stakeholder.name,
+      stakeholderRole: item.stakeholder.role
+    }))
+    
+    if (queuedToShow.length > 0) {
+      setMessages(prev => [...prev, ...queuedToShow])
+    }
+    
+    // Clear the queue
+    setConversationQueue([])
+    setCanUserType(true)
   }
 
   // Simplified conversation configuration - most logic moved to AI service
@@ -113,8 +209,23 @@ const MeetingView: React.FC = () => {
         timestamp: new Date().toISOString()
       }
       setMessages([welcomeMessage])
+      
+      // Start introduction phase
+      setIntroductionPhase(true)
+      setIntroducedStakeholders(new Set())
+      
+      // Have the first stakeholder introduce themselves
+      setTimeout(() => {
+        const firstStakeholder = selectedStakeholders[0]
+        addToConversationQueue(firstStakeholder, `Hello everyone! I'm ${firstStakeholder.name}, ${firstStakeholder.role}. I'm excited to be part of this discussion about ${selectedProject.name}.`)
+      }, 1000)
     }
   }, [selectedProject, selectedStakeholders])
+
+  // Process conversation queue
+  useEffect(() => {
+    processConversationQueue()
+  }, [conversationQueue, currentSpeaking])
 
   // Focus input when component mounts or after sending message
   useEffect(() => {
@@ -212,41 +323,17 @@ const MeetingView: React.FC = () => {
         selectedStakeholders
       )
 
-      // Temporarily bypass message queue and add responses directly
+      // Process responses through the queue system
       for (let i = 0; i < responses.length; i++) {
         const response = responses[i]
-        
-        const responseMessage: Message = {
-          id: `response-${Date.now()}-${i}`,
-          speaker: response.stakeholderName,
-          content: response.content,
-          timestamp: new Date().toISOString(),
-          stakeholderName: response.stakeholderName,
-          stakeholderRole: response.stakeholderRole
-        }
-
-        console.log('Adding response directly to messages:', responseMessage)
-        setMessages(prev => [...prev, responseMessage])
-
-        // Handle audio playback directly
-        if (globalAudioEnabled) {
-          const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
-          if (stakeholder && isStakeholderVoiceEnabled(stakeholder.name)) {
-            setCurrentSpeaker(stakeholder)
-            await playMessageAudio(responseMessage.id, response.content, stakeholder, true)
-          }
-        }
-        
-        // Add a delay between responses
-        if (i < responses.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
+        const stakeholder = selectedStakeholders.find(s => s.name === response.stakeholderName)
+        if (stakeholder) {
+          addToConversationQueue(stakeholder, response.content)
         }
       }
 
-      // Clear current speaker after all responses
-      setTimeout(() => {
-        setCurrentSpeaker(null)
-      }, 2000)
+      // Update meeting analytics
+      updateMeetingAnalytics(userMessage, responses)
 
     } catch (error) {
       console.error('Error generating response:', error)
@@ -270,7 +357,7 @@ const MeetingView: React.FC = () => {
   const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
     console.log('Audio playback attempt:', { messageId, stakeholder: stakeholder.name, globalAudioEnabled, autoPlay })
     
-    if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
+    if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.name)) {
       console.log('Audio disabled for stakeholder:', stakeholder.name)
       return Promise.resolve()
     }
@@ -292,69 +379,74 @@ const MeetingView: React.FC = () => {
       setCurrentlyProcessingAudio(messageId)
       setIsAudioPlaying(true)
 
-      const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
+      const voiceName = getStakeholderVoice(stakeholder.name, stakeholder.role)
       console.log('Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
       
-      if (isAzureTTSAvailable()) {
-        console.log('Using Azure TTS for audio synthesis')
-        const audioUrl = await azureTTS(text, voiceName)
-        if (audioUrl) {
-          const audio = new Audio(audioUrl)
-          
-          setCurrentAudio(audio)
-          setPlayingMessageId(messageId)
-          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
-          
-          return new Promise((resolve) => {
-            audio.onended = () => {
-              setCurrentAudio(null)
-              setPlayingMessageId(null)
-              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-              setCurrentSpeaker(null)
-              setIsAudioPlaying(false)
-              setCurrentlyProcessingAudio(null)
-              
-              // Auto-focus input field when audio completes
-              setTimeout(() => {
-                if (inputRef.current) {
-                  inputRef.current.focus()
-                }
-              }, 100)
-              
-              resolve()
-            }
+      try {
+        if (isAzureTTSAvailable()) {
+          console.log('Attempting Azure TTS for audio synthesis')
+          const audioUrl = await azureTTS(text, voiceName)
+          if (audioUrl) {
+            const audio = new Audio(audioUrl)
             
-            audio.onerror = (error) => {
-              console.error('Audio element error:', error)
-              setCurrentAudio(null)
-              setPlayingMessageId(null)
-              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-              setCurrentSpeaker(null)
-              setIsAudioPlaying(false)
-              setCurrentlyProcessingAudio(null)
-              resolve()
-            }
+            setCurrentAudio(audio)
+            setPlayingMessageId(messageId)
+            setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
             
-            audio.play().then(() => {
-              // Audio started successfully
-            }).catch((playError) => {
-              console.error('Audio play error:', playError)
-              setCurrentAudio(null)
-              setPlayingMessageId(null)
-              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
-              setCurrentSpeaker(null)
-              setIsAudioPlaying(false)
-              setCurrentlyProcessingAudio(null)
-              resolve()
+            return new Promise((resolve) => {
+              audio.onended = () => {
+                setCurrentAudio(null)
+                setPlayingMessageId(null)
+                setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+                setCurrentSpeaker(null)
+                setIsAudioPlaying(false)
+                setCurrentlyProcessingAudio(null)
+                
+                // Auto-focus input field when audio completes
+                setTimeout(() => {
+                  if (inputRef.current) {
+                    inputRef.current.focus()
+                  }
+                }, 100)
+                
+                resolve()
+              }
+              
+              audio.onerror = (error) => {
+                console.error('Azure TTS audio error, falling back to browser TTS:', error)
+                // Fallback to browser TTS
+                useBrowserTTS()
+                resolve()
+              }
+              
+              audio.play().catch((playError) => {
+                console.error('Azure TTS play error, falling back to browser TTS:', playError)
+                // Fallback to browser TTS
+                useBrowserTTS()
+                resolve()
+              })
             })
-          })
+          } else {
+            throw new Error('No audio URL returned from Azure TTS')
+          }
+        } else {
+          throw new Error('Azure TTS not available')
         }
-      } else {
+      } catch (azureError) {
+        console.log('Azure TTS failed, using browser TTS fallback:', azureError)
+        await useBrowserTTS()
+      }
+
+      async function useBrowserTTS() {
         console.log('Using browser TTS for audio synthesis')
         setPlayingMessageId(messageId)
         setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
         
-        await playBrowserTTS(text)
+        try {
+          await playBrowserTTS(text)
+        } catch (browserError) {
+          console.error('Browser TTS also failed:', browserError)
+        }
         
         setPlayingMessageId(null)
         setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
@@ -368,18 +460,17 @@ const MeetingView: React.FC = () => {
             inputRef.current.focus()
           }
         }, 100)
-        
-        return Promise.resolve()
       }
+        
     } catch (error) {
-      console.error('Audio playback failed:', error)
+      console.error('All audio playback methods failed:', error)
       setPlayingMessageId(null)
       setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
       setCurrentSpeaker(null)
       setIsAudioPlaying(false)
       setCurrentlyProcessingAudio(null)
       
-      // Auto-focus input field even on audio error
+      // Auto-focus input field even on complete audio failure
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus()
@@ -952,168 +1043,97 @@ ${meetingAnalytics.keyInsights.map(insight => `- ${insight}`).join('\n') || '- P
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center space-x-2 mb-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-sm font-medium text-gray-700">Currently Speaking</span>
+    <div className="h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold">{selectedProject.name}</h1>
+            <p className="text-purple-100 text-sm mt-1">
+              Participants: {selectedStakeholders.map(s => s.name).join(', ')}
+            </p>
           </div>
           
-          {currentSpeaker ? (
-            <div className="flex items-center space-x-3">
-              <img 
-                src={currentSpeaker.photo} 
-                alt={currentSpeaker.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <div className="font-medium text-gray-900">{currentSpeaker.name}</div>
-                <div className="text-sm text-gray-500">{currentSpeaker.role}</div>
-              </div>
-              <div className="ml-auto">
-                <div className="flex space-x-1">
-                  <div className="w-1 h-4 bg-green-500 rounded-full animate-pulse"></div>
-                  <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-1 h-5 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                  <div className="w-1 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
+          <div className="flex items-center space-x-4">
+            {/* Current Speaker Display */}
+            {currentSpeaker && (
+              <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/30">
+                <img 
+                  src={currentSpeaker.photo || "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"} 
+                  alt={currentSpeaker.name}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-white/50"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                  }}
+                />
+                <div className="text-left">
+                  <div className="font-medium text-white">{currentSpeaker.name}</div>
+                  <div className="text-xs text-purple-100">{currentSpeaker.role}</div>
+                </div>
+                <div className="flex items-center space-x-1 text-green-300">
+                  <div className="w-1 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                  <div className="w-1 h-3 bg-green-300 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-1 h-4 bg-green-300 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                  <span className="text-xs ml-2">Speaking...</span>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <Users className="w-5 h-5 text-gray-400" />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">Meeting Active</div>
-                <div className="text-sm text-gray-500">Ready for discussion</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Participants List */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-gray-900">Participants ({selectedStakeholders.length})</h3>
-              <button className="text-gray-400 hover:text-gray-600">
-                <ChevronUp className="w-4 h-4" />
-              </button>
-            </div>
+            )}
             
-            <div className="space-y-3">
-              {selectedStakeholders.map((stakeholder) => {
-                const isCurrentSpeaker = currentSpeaker?.id === stakeholder.id
-                const participationCount = meetingAnalytics.participationBalance.get(stakeholder.id) || 0
-                
-                return (
-                  <div key={stakeholder.id} className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
-                    isCurrentSpeaker ? 'bg-green-50 border border-green-200' : 'hover:bg-gray-50'
-                  }`}>
-                    <div className="relative">
-                      <img 
-                        src={stakeholder.photo} 
-                        alt={stakeholder.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-                        isCurrentSpeaker ? 'bg-green-500' : 'bg-gray-300'
-                      }`}></div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">{stakeholder.name}</div>
-                      <div className="text-sm text-gray-500 truncate">{stakeholder.role}</div>
-                    </div>
-                    {participationCount > 0 && (
-                      <div className="text-xs text-gray-400">
-                        {participationCount}
-                      </div>
-                    )}
-                    {!isStakeholderVoiceEnabled(stakeholder.name) && (
-                      <VolumeX className="w-4 h-4 text-gray-400" />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+            {/* Queue Status */}
+            {conversationQueue.length > 0 && (
+              <div className="flex items-center space-x-2 bg-yellow-500/20 backdrop-blur-sm rounded-xl px-3 py-2 border border-yellow-300/30">
+                <div className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
+                <span className="text-xs text-yellow-100">{conversationQueue.length} responses queued</span>
+              </div>
+            )}
+            
+            {/* Stop All Audio Button */}
+            {(isAudioPlaying || currentSpeaking || conversationQueue.length > 0) && (
+              <button
+                onClick={stopAllAudioAndShowQueue}
+                className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                title="Stop audio and show all responses"
+              >
+                <Square className="w-4 h-4" />
+                <span>Stop All</span>
+              </button>
+            )}
+            
+            {/* End Meeting Button */}
+            <button
+              onClick={handleEndMeeting}
+              disabled={messages.length <= 1 || isLoading}
+              className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              title="End meeting and generate interview notes"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Ending...</span>
+                </>
+              ) : (
+                <>
+                  <Phone className="w-4 h-4" />
+                  <span>End Meeting</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+      <div className="flex-1 flex flex-col bg-white">
+        {/* Chat Header */}
+        <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold">Meeting: {selectedProject.name}</h1>
-              <p className="text-indigo-100 text-sm mt-1">
-                Participants: {selectedStakeholders.map(s => s.name).join(', ')}
-              </p>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              {/* Export PDF Button */}
-              {messages.length > 1 && (
-                <button
-                  onClick={handleExportCurrentChat}
-                  disabled={isLoading}
-                  className="flex items-center space-x-2 bg-white/20 text-white px-3 py-2 rounded-lg hover:bg-white/30 transition-colors border border-white/30 disabled:opacity-50"
-                  title="Export current conversation as PDF"
-                >
-                  <FileDown className="w-4 h-4" />
-                  <span className="hidden lg:inline">Export PDF</span>
-                </button>
-              )}
-              
-              {/* Question Helper Toggle */}
-              <button
-                onClick={() => setShowQuestionHelper(!showQuestionHelper)}
-                className="flex items-center space-x-2 bg-white/20 text-white px-3 py-2 rounded-lg hover:bg-white/30 transition-colors border border-white/30"
-              >
-                <HelpCircle className="w-4 h-4" />
-                <span className="hidden lg:inline">Question Helper</span>
-                {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              
-              {/* Status Indicator */}
-              {isGeneratingResponse && (
-                <div className="flex items-center space-x-2 bg-white/20 text-white px-3 py-2 rounded-lg border border-white/30">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                  </div>
-                  <span className="text-sm">Stakeholders are responding...</span>
-                </div>
-              )}
-              
-              {/* End Meeting Button */}
-              <button
-                onClick={handleEndMeeting}
-                disabled={messages.length <= 1 || isLoading}
-                className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                title="End meeting and generate interview notes"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span className="hidden sm:inline">
-                      {noteGenerationProgress || 'Ending...'}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Phone className="w-4 h-4" />
-                    <span>End Meeting</span>
-                  </>
-                )}
-              </button>
-            </div>
+            <h2 className="text-lg font-medium text-gray-900">Meeting Chat</h2>
+            {!shouldAllowUserInput() && (
+              <div className="text-sm text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+                {currentSpeaking ? "Stakeholder speaking..." : isAudioPlaying ? "Audio playing..." : "Processing..."}
+                <span className="ml-2 text-xs">Press "Stop All" to interrupt</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1297,38 +1317,47 @@ ${meetingAnalytics.keyInsights.map(insight => `- ${insight}`).join('\n') || '- P
         </div>
 
           {/* Input Area */}
-          <div className="border-t border-gray-200 p-4 bg-white">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex space-x-3">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={shouldAllowUserInput() ? "Type a new message" : isGeneratingResponse ? "Stakeholders are responding..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  disabled={!shouldAllowUserInput()}
-                />
-                <button
-                  onClick={() => setShowVoiceModal(true)}
-                  disabled={isLoading || isTranscribing}
-                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-2"
-                  title="Voice Input"
-                >
-                  <Mic className="w-5 h-5" />
-                  {isTranscribing && (
-                    <span className="text-sm">Transcribing...</span>
-                  )}
-                </button>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !inputMessage.trim() || !shouldAllowUserInput()}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400"
-                >
-                  Send
-                </button>
-              </div>
+          <div className="border-t border-gray-200 px-6 py-4">
+            <div className="flex space-x-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={
+                  shouldAllowUserInput() 
+                    ? "Type a message..." 
+                    : currentSpeaking 
+                      ? "Stakeholder is speaking... Click 'Stop All' to interrupt"
+                      : isAudioPlaying 
+                        ? "Audio playing... Click 'Stop All' to interrupt"
+                        : isGeneratingResponse 
+                          ? "Generating response..."
+                          : "Please wait..."
+                }
+                className={`flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 transition-colors ${
+                  shouldAllowUserInput() 
+                    ? 'border-gray-300 focus:ring-blue-500 focus:border-transparent' 
+                    : 'border-red-300 bg-red-50 text-red-500 cursor-not-allowed'
+                }`}
+                disabled={!shouldAllowUserInput()}
+              />
+              <button
+                onClick={() => setShowVoiceModal(true)}
+                disabled={isLoading || isTranscribing || !shouldAllowUserInput()}
+                className="p-2 text-gray-500 hover:text-gray-700 disabled:text-gray-300"
+                title="Voice Input"
+              >
+                <Mic className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleSendMessage}
+                disabled={isLoading || !inputMessage.trim() || !shouldAllowUserInput()}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center space-x-2"
+              >
+                <span>Send</span>
+              </button>
             </div>
           </div>
         </div>
