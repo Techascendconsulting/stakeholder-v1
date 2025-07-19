@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useAuth } from './AuthContext'
 import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
+import { DatabaseService, DatabaseProgress } from '../lib/database'
 
 interface AppContextType {
   // Current view
@@ -21,6 +22,7 @@ interface AppContextType {
   // Meeting data
   meetings: Meeting[]
   currentMeeting: Meeting | null
+  setCurrentMeeting: (meeting: Meeting | null) => void
   
   // Deliverables
   deliverables: Deliverable[]
@@ -33,8 +35,19 @@ interface AppContextType {
   
   // User data
   user: any
-  userProgress: any
+  userProgress: DatabaseProgress | null
   studentSubscription: any
+  
+  // Real database functions
+  loadUserData: () => Promise<void>
+  saveMeetingToDatabase: (
+    projectId: string, 
+    stakeholderIds: string[], 
+    transcript: any[], 
+    rawChat: any[], 
+    meetingNotes: string, 
+    duration: number
+  ) => Promise<boolean>
   
   // Utility functions
   canAccessProject: (projectId: string) => boolean
@@ -65,17 +78,95 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [customProject, setCustomProject] = useState<Project | null>(null)
+  
+  // Real user data states
+  const [userProgress, setUserProgress] = useState<DatabaseProgress | null>(null)
+  const [userMeetings, setUserMeetings] = useState<any[]>([])
+  const [userDeliverables, setUserDeliverables] = useState<any[]>([])
 
-  // Mock user progress data
-  const userProgress = {
-    total_projects_started: 1,
-    total_projects_completed: 0,
-    total_meetings_conducted: 2,
-    total_deliverables_created: 1,
-    achievements: ['First Meeting', 'Note Taker']
+  // Load real user data from database
+  const loadUserData = async () => {
+    if (!user?.id) return
+    
+    setIsLoading(true)
+    try {
+      // Load user progress
+      let progress = await DatabaseService.getUserProgress(user.id)
+      if (!progress) {
+        progress = await DatabaseService.initializeUserProgress(user.id)
+      }
+      setUserProgress(progress)
+
+      // Load user meetings
+      const meetings = await DatabaseService.getUserMeetings(user.id)
+      setUserMeetings(meetings)
+
+      // Load user deliverables  
+      const deliverables = await DatabaseService.getUserDeliverables(user.id)
+      setUserDeliverables(deliverables)
+
+      console.log('Loaded real user data:', { progress, meetings: meetings.length, deliverables: deliverables.length })
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  // Mock subscription data
+  // Save meeting to database
+  const saveMeetingToDatabase = async (
+    projectId: string,
+    stakeholderIds: string[],
+    transcript: any[],
+    rawChat: any[],
+    meetingNotes: string,
+    duration: number
+  ): Promise<boolean> => {
+    if (!user?.id) return false
+
+    try {
+      // Create meeting record
+      const meetingId = await DatabaseService.createMeeting(
+        user.id,
+        projectId,
+        stakeholderIds,
+        'group'
+      )
+
+      if (!meetingId) return false
+
+      // Save meeting data
+      const success = await DatabaseService.saveMeetingData(
+        meetingId,
+        transcript,
+        rawChat,
+        meetingNotes,
+        duration
+      )
+
+      if (success) {
+        // Update user progress
+        await DatabaseService.incrementMeetingCount(user.id)
+        
+        // Reload user data to refresh UI
+        await loadUserData()
+      }
+
+      return success
+    } catch (error) {
+      console.error('Error saving meeting to database:', error)
+      return false
+    }
+  }
+
+  // Load user data when user changes
+  useEffect(() => {
+    if (user?.id) {
+      loadUserData()
+    }
+  }, [user?.id])
+
+  // Enhanced subscription data with real progress
   const studentSubscription = {
     id: user?.id || '',
     name: user?.email || '',
@@ -83,7 +174,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     subscription_tier: 'free' as const,
     subscription_status_active: true,
     selected_project_id: selectedProject?.id || null,
-    meeting_count: 2,
+    meeting_count: userProgress?.total_meetings_conducted || 0,
     stripe_customer_id: null,
     subscription_expires_at: null,
     created_at: new Date().toISOString(),
@@ -93,42 +184,82 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const selectProject = async (project: Project) => {
     setSelectedProject(project)
     setCurrentView('project-brief')
+    
+    // Track project selection in database
+    if (user?.id) {
+      await DatabaseService.createUserProject(user.id, project.id)
+      await loadUserData() // Refresh user data
+    }
   }
 
-  const addDeliverable = (deliverable: Deliverable) => {
+  const addDeliverable = async (deliverable: Deliverable) => {
     setDeliverables(prev => [...prev, deliverable])
+    
+    // Save to database
+    if (user?.id && selectedProject?.id) {
+      await DatabaseService.createDeliverable(
+        user.id,
+        selectedProject.id,
+        deliverable.type,
+        deliverable.title,
+        deliverable.content
+      )
+      await DatabaseService.incrementDeliverableCount(user.id)
+      await loadUserData() // Refresh user data
+    }
   }
 
-  const updateDeliverable = (id: string, updates: Partial<Deliverable>) => {
+  const updateDeliverable = async (id: string, updates: Partial<Deliverable>) => {
     setDeliverables(prev => 
       prev.map(d => d.id === id ? { ...d, ...updates } : d)
     )
+    
+    // Update in database
+    if (updates.content) {
+      await DatabaseService.updateDeliverable(id, updates.content)
+    }
   }
 
-  // Utility functions
-  const canAccessProject = (projectId: string) => true // Allow all projects for now
-  const canSaveNotes = () => true
-  const canCreateMoreMeetings = () => true
+  // Utility functions with real data consideration
+  const canAccessProject = (projectId: string) => {
+    // Allow access to all mock projects, but in production this could check subscription
+    return true
+  }
+  
+  const canSaveNotes = () => {
+    // In production, this might check subscription limits
+    return true
+  }
+  
+  const canCreateMoreMeetings = () => {
+    // In production, this might check subscription limits
+    const meetingCount = userProgress?.total_meetings_conducted || 0
+    // For free tier, maybe limit to 5 meetings
+    return meetingCount < 50 // Generous limit for demo
+  }
 
   const value = {
     currentView,
     setCurrentView,
-    projects: mockProjects,
+    projects: mockProjects, // Still using mock projects for the training scenarios
     selectedProject,
     selectProject,
-    stakeholders: mockStakeholders,
+    stakeholders: mockStakeholders, // Still using mock stakeholders for consistency
     selectedStakeholders,
     setSelectedStakeholders,
     meetings,
     currentMeeting,
+    setCurrentMeeting,
     deliverables,
     addDeliverable,
     updateDeliverable,
     customProject,
     setCustomProject,
     user,
-    userProgress,
-    studentSubscription,
+    userProgress, // Now real data from database
+    studentSubscription, // Enhanced with real meeting count
+    loadUserData,
+    saveMeetingToDatabase,
     canAccessProject,
     canSaveNotes,
     canCreateMoreMeetings,

@@ -12,12 +12,13 @@ import {
 } from 'lucide-react'
 
 const Dashboard: React.FC = () => {
-  const { projects, meetings, deliverables, setCurrentView, userProgress, isLoading } = useApp()
+  const { projects, meetings, deliverables, setCurrentView, userProgress, isLoading, user } = useApp()
 
   // Use real data from userProgress if available, otherwise fall back to calculated values
-  const completedMeetings = userProgress?.total_meetings_conducted || meetings.filter(m => m.status === 'completed').length
-  const totalDeliverables = userProgress?.total_deliverables_created || deliverables.length
+  const completedMeetings = userProgress?.total_meetings_conducted || 0
+  const totalDeliverables = userProgress?.total_deliverables_created || 0
   const activeProjects = userProgress?.total_projects_started || 0
+  const achievements = userProgress?.achievements || []
 
   const stats = [
     {
@@ -54,18 +55,83 @@ const Dashboard: React.FC = () => {
     }
   ]
 
-  const recentActivity = [
-    { action: 'Completed stakeholder interview with', target: 'James Walker (Head of Operations)', time: '2 hours ago', type: 'meeting' },
-    { action: 'Updated business requirements for', target: 'Customer Onboarding Optimization', time: '4 hours ago', type: 'deliverable' },
-    { action: 'Reviewed project brief for', target: 'Digital Expense Management System', time: '1 day ago', type: 'project' },
-    { action: 'Created user stories for', target: 'Inventory Management Enhancement', time: '2 days ago', type: 'deliverable' }
-  ]
+  // Generate dynamic recent activity based on user progress
+  const generateRecentActivity = () => {
+    const activities = []
+    
+    if (completedMeetings > 0) {
+      activities.push({
+        action: 'Completed stakeholder interviews',
+        target: `${completedMeetings} session${completedMeetings > 1 ? 's' : ''} total`,
+        time: 'Recent activity',
+        type: 'meeting'
+      })
+    }
+    
+    if (totalDeliverables > 0) {
+      activities.push({
+        action: 'Created deliverables',
+        target: `${totalDeliverables} document${totalDeliverables > 1 ? 's' : ''} generated`,
+        time: 'Professional output',
+        type: 'deliverable'
+      })
+    }
+    
+    if (activeProjects > 0) {
+      activities.push({
+        action: 'Engaged with projects',
+        target: `${activeProjects} training scenario${activeProjects > 1 ? 's' : ''}`,
+        time: 'Learning progress',
+        type: 'project'
+      })
+    }
+    
+    // Add achievements
+    achievements.forEach(achievement => {
+      activities.push({
+        action: 'Earned achievement',
+        target: achievement,
+        time: 'Well done!',
+        type: 'achievement'
+      })
+    })
+    
+    // If no real activity, show getting started messages
+    if (activities.length === 0) {
+      activities.push(
+        { action: 'Welcome to', target: 'Business Analyst Training Platform', time: 'Getting started', type: 'welcome' },
+        { action: 'Ready to explore', target: 'Professional training scenarios', time: 'Begin your journey', type: 'project' },
+        { action: 'Build skills with', target: 'Realistic stakeholder interactions', time: 'Start learning', type: 'meeting' }
+      )
+    }
+    
+    return activities.slice(0, 4) // Limit to 4 activities
+  }
+  
+  const recentActivity = generateRecentActivity()
 
+  // Dynamic learning path based on actual progress
   const learningPath = [
-    { title: 'Project Analysis', description: 'Review business context and requirements', completed: true },
-    { title: 'Stakeholder Engagement', description: 'Conduct professional interviews', completed: false },
-    { title: 'Requirements Documentation', description: 'Create comprehensive deliverables', completed: false },
-    { title: 'Solution Presentation', description: 'Present findings to stakeholders', completed: false }
+    { 
+      title: 'Project Analysis', 
+      description: 'Review business context and requirements', 
+      completed: activeProjects > 0 
+    },
+    { 
+      title: 'Stakeholder Engagement', 
+      description: 'Conduct professional interviews', 
+      completed: completedMeetings > 0 
+    },
+    { 
+      title: 'Requirements Documentation', 
+      description: 'Create comprehensive deliverables', 
+      completed: totalDeliverables > 0 
+    },
+    { 
+      title: 'Advanced Practice', 
+      description: 'Multiple projects and complex scenarios', 
+      completed: completedMeetings >= 3 && totalDeliverables >= 2 
+    }
   ]
 
   return (
@@ -76,7 +142,22 @@ const Dashboard: React.FC = () => {
           <p className="text-lg text-gray-600">
             Welcome to your professional development platform. Track your progress and continue building essential BA skills.
           </p>
+          {user?.email && (
+            <p className="text-sm text-gray-500 mt-2">
+              Logged in as: {user.email}
+            </p>
+          )}
         </div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gray-600">Loading your progress data...</span>
+            </div>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -113,10 +194,15 @@ const Dashboard: React.FC = () => {
                   <div className="flex items-start space-x-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       activity.type === 'meeting' ? 'bg-blue-100' :
-                      activity.type === 'deliverable' ? 'bg-purple-100' : 'bg-emerald-100'
+                      activity.type === 'deliverable' ? 'bg-purple-100' :
+                      activity.type === 'achievement' ? 'bg-yellow-100' :
+                      activity.type === 'welcome' ? 'bg-indigo-100' :
+                      'bg-emerald-100'
                     }`}>
                       {activity.type === 'meeting' ? <Users className="w-5 h-5 text-blue-600" /> :
                        activity.type === 'deliverable' ? <FileText className="w-5 h-5 text-purple-600" /> :
+                       activity.type === 'achievement' ? <Award className="w-5 h-5 text-yellow-600" /> :
+                       activity.type === 'welcome' ? <Target className="w-5 h-5 text-indigo-600" /> :
                        <FolderOpen className="w-5 h-5 text-emerald-600" />}
                     </div>
                     <div className="flex-1">

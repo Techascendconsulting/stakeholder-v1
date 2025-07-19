@@ -24,6 +24,7 @@ export interface Stakeholder {
   personality: string
   priorities: string[]
   voice: string
+  expertise: string[]
   isCustom?: boolean
 }
 
