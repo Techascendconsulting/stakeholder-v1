@@ -542,6 +542,32 @@ Generate only the greeting, nothing else.`;
         return greetingResponse;
       }
 
+      // Handle direct mentions specially
+      if (responseType === 'direct_mention') {
+        const directMentionPrompt = this.buildDirectMentionPrompt(userMessage, stakeholder, context);
+        
+        const completion = await openai.chat.completions.create({
+          model: AIService.CONFIG.ai_models.primary,
+          messages: [
+            { role: "system", content: this.buildDynamicSystemPrompt(stakeholder, context, responseType) },
+            { role: "user", content: directMentionPrompt }
+          ],
+          temperature: AIService.CONFIG.conversation.baseTemperature,
+          max_tokens: AIService.CONFIG.tokens.maxTokens,
+          presence_penalty: AIService.CONFIG.conversation.presencePenalty,
+          frequency_penalty: AIService.CONFIG.conversation.frequencyPenalty
+        });
+
+        let directResponse = completion.choices[0]?.message?.content || 
+          this.generateDynamicFallback(stakeholder, userMessage, context);
+
+        directResponse = this.ensureCompleteResponse(directResponse);
+        directResponse = this.filterSelfReferences(directResponse, stakeholder);
+        
+        await this.updateConversationState(stakeholder, userMessage, directResponse, context);
+        return directResponse;
+      }
+
       // Generate dynamic AI response for discussions
       const dynamicConfig = this.getDynamicConfig(context, stakeholder);
       const systemPrompt = this.buildDynamicSystemPrompt(stakeholder, context, responseType);
@@ -1073,6 +1099,26 @@ Remember to stay in character as ${stakeholder.name} and respond from your speci
 
   // Dynamic system prompt building
   private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext, responseType: string = 'discussion'): string {
+    if (responseType === 'direct_mention') {
+      return `You are ${stakeholder.name}, ${stakeholder.role} at ${stakeholder.department}.
+
+You have been DIRECTLY MENTIONED or ADDRESSED by name in this business meeting. You should respond naturally and helpfully as the expert in your domain.
+
+KEY TRAITS:
+- Personality: ${stakeholder.personality}
+- Expertise: ${stakeholder.expertise.join(', ')}
+- Priorities: ${stakeholder.priorities.join(', ')}
+
+RESPONSE STYLE:
+- Respond directly since you were specifically addressed
+- Be helpful and share your expertise
+- Stay in character as ${stakeholder.name}
+- Use natural, conversational language
+- No markdown formatting
+- Be specific and actionable based on your role
+
+You are the expert they're asking, so provide valuable insights from your ${stakeholder.role} perspective.`;
+    }
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     const conversationPhase = this.conversationState.conversationPhase
     const topicsDiscussed = Array.from(this.conversationState.topicsDiscussed)
@@ -1456,18 +1502,22 @@ Detailed info: ${stakeholderRoles}
 TASK: Detect if this response mentions another stakeholder in a way that naturally calls for their input.
 
 MENTION TYPES TO DETECT:
-1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?")
+1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?", "aisha what is your process?")
 2. "at_mention" - Using @ symbol (e.g., "@David, your thoughts?")
 3. "name_question" - Name followed by question (e.g., "Emily might know this better?", "Has David looked at this?")
 4. "expertise_request" - Requesting someone's expertise (e.g., "the IT team should weigh in", "someone from Finance")
 
 EXAMPLES OF WHAT TO DETECT:
 - "Sarah, what's your perspective on this?"
+- "aisha what is your current process that interacts with the onboarding process"
+- "david can you explain the technical aspects"
 - "@David, can you help with technical aspects?"
 - "Emily, have you considered the compliance implications?"
 - "I think James would know more about this"
 - "We should ask the IT team about security"
 - "Finance would need to approve this"
+- "james what are your thoughts on this"
+- "sarah, how does this impact customer service"
 
 EXAMPLES OF WHAT NOT TO DETECT:
 - "We need to consult with another department" (too vague)
@@ -1817,6 +1867,85 @@ Return ONLY the stakeholder name or "NO_HANDOFF".`
       conversationHistory: [],
       stakeholders: []
     });
+  }
+
+  // Build prompt for direct mentions (user directly addressing a stakeholder)
+  private buildDirectMentionPrompt(userMessage: string, stakeholder: StakeholderContext, context: ConversationContext): string {
+    const stakeholderState = this.getStakeholderState(stakeholder.name);
+    
+    let prompt = `DIRECT MENTION RESPONSE - YOU WERE SPECIFICALLY ADDRESSED
+
+YOU ARE: ${stakeholder.name} (${stakeholder.role}, ${stakeholder.department})
+
+SITUATION: You were directly mentioned/addressed in this message: "${userMessage}"
+
+CONTEXT: This is a business stakeholder meeting for project "${context.project.name}". The Business Analyst or another stakeholder has specifically addressed you by name or role, so you should respond directly and helpfully.
+
+YOUR EXPERTISE AREAS: ${stakeholder.expertise.join(', ')}
+YOUR PRIORITIES: ${stakeholder.priorities.join(', ')}
+YOUR PERSONALITY: ${stakeholder.personality}
+
+CONVERSATION HISTORY FOR CONTEXT:
+${context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMessagesCount).map((msg, i) => {
+  if (msg.speaker === 'user') {
+    return `[${i + 1}] Business Analyst: ${msg.content}`;
+  } else if (msg.stakeholderName) {
+    return `[${i + 1}] ${msg.stakeholderName}: ${msg.content}`;
+  }
+  return '';
+}).filter(Boolean).join('\n')}
+
+RESPONSE REQUIREMENTS:
+- You were specifically mentioned/addressed, so respond directly and helpfully
+- Acknowledge that you're responding to their question/request naturally
+- Provide your expert perspective based on your role as ${stakeholder.role}
+- Be conversational and collaborative
+- Focus on your domain expertise: ${stakeholder.expertise.join(', ')}
+- Keep your response relevant to your department (${stakeholder.department}) perspective
+- Use natural language without any markdown formatting
+- Be helpful and specific in your response
+
+CRITICAL - PHASE-SPECIFIC GUIDANCE:`;
+
+    // Add phase-specific guidance
+    const currentPhase = this.conversationState.conversationPhase;
+    switch (currentPhase) {
+      case 'as_is':
+        prompt += `
+- Focus ONLY on describing HOW THINGS WORK NOW in your department
+- Explain current processes, tools, systems, and workflows step-by-step
+- Do NOT suggest solutions or improvements
+- Be specific about current state operations`;
+        break;
+        
+      case 'pain_points':
+        prompt += `
+- Focus on PROBLEMS and CHALLENGES with current processes
+- Share specific issues you've observed in your domain
+- Discuss what doesn't work well currently
+- Do NOT propose solutions - only identify problems`;
+        break;
+        
+      case 'solutioning':
+        prompt += `
+- NOW you CAN discuss solutions and improvements
+- Propose specific solutions based on your expertise
+- Share recommendations for your domain
+- Discuss implementation considerations`;
+        break;
+        
+      default:
+        prompt += `
+- Focus on describing current state and processes
+- Share your domain expertise naturally`;
+        break;
+    }
+
+    prompt += `
+
+Respond naturally as ${stakeholder.name} addressing the specific question or request you were asked about:`;
+
+    return prompt;
   }
 }
 
