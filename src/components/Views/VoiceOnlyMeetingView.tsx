@@ -162,10 +162,285 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     upcoming: { name: string; id?: string }[];
   }>({ current: null, upcoming: [] });
   
-  // Speaking queue management - like transcript meeting
-  const [conversationQueue, setConversationQueue] = useState<any[]>([]);
-  const [isProcessingQueue, setIsProcessingQueue] = useState(false);
-  
+  // Speaking queue management - EXACT REPLICA of transcript meeting
+  const [conversationQueue, setConversationQueue] = useState<string[]>([]);
+  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
+
+  // Enhanced stakeholder response processing - EXACT REPLICA of transcript meeting
+  const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string): Promise<Message[]> => {
+    try {
+      // Add to conversation queue to prevent simultaneous speaking
+      setConversationQueue(prev => [...prev, stakeholder.id]);
+      
+      // Wait for turn if someone else is speaking
+      while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Start speaking
+      setCurrentSpeaking(stakeholder.id);
+      
+      // Dynamic thinking state management
+      addStakeholderToThinking(stakeholder.name);
+      setDynamicFeedback(`${stakeholder.name} is thinking...`);
+      
+      try {
+        const aiService = AIService.getInstance();
+        
+        const stakeholderContext: StakeholderContext = {
+          name: stakeholder.name,
+          role: stakeholder.role,
+          department: stakeholder.department,
+          priorities: stakeholder.priorities,
+          personality: stakeholder.personality,
+          expertise: stakeholder.expertise || []
+        };
+
+        const conversationContext: ConversationContext = {
+          project: {
+            name: selectedProject?.name || '',
+            description: selectedProject?.description || '',
+            type: selectedProject?.type || ''
+          },
+          conversationHistory: currentMessages,
+          stakeholders: selectedStakeholders.map(s => ({
+            name: s.name,
+            role: s.role,
+            department: s.department || '',
+            priorities: s.priorities || [],
+            personality: s.personality || '',
+            expertise: s.expertise || []
+          }))
+        };
+
+        const response = await aiService.generateStakeholderResponse(
+          messageContent,
+          stakeholderContext,
+          conversationContext
+        );
+
+        // Clean up thinking state
+        removeStakeholderFromThinking(stakeholder.name);
+        setDynamicFeedback(null);
+
+        if (response) {
+          const responseMessage: Message = {
+            id: `${stakeholder.id}-${Date.now()}`,
+            speaker: stakeholder.name,
+            content: response,
+            timestamp: new Date().toISOString(),
+            stakeholderName: stakeholder.name,
+            stakeholderRole: stakeholder.role
+          };
+
+          const updatedMessages = [...currentMessages, responseMessage];
+          setMessages(updatedMessages);
+
+          // Auto-play the response
+          if (globalAudioEnabled) {
+            await speakMessage(responseMessage);
+          }
+
+          // Remove from queue and set next speaker
+          setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+          setCurrentSpeaking(null);
+
+          return updatedMessages;
+        }
+      } catch (error) {
+        console.error(`Error generating response for ${stakeholder.name}:`, error);
+        removeStakeholderFromThinking(stakeholder.name);
+        setDynamicFeedback(null);
+        
+        // Remove from queue on error
+        setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+        setCurrentSpeaking(null);
+      }
+
+      return currentMessages;
+    } catch (error) {
+      console.error('Error in processDynamicStakeholderResponse:', error);
+      
+      // Clean up on any error
+      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+      setCurrentSpeaking(null);
+      removeStakeholderFromThinking(stakeholder.name);
+      setDynamicFeedback(null);
+      
+      return currentMessages;
+    }
+  };
+
+  // Process conversation queue sequentially - FIXED to prevent overlap
+  const processConversationQueue = async () => {
+    if (isProcessingQueue || conversationQueue.length === 0) return;
+    
+    setIsProcessingQueue(true);
+    console.log(`📝 Processing conversation queue: ${conversationQueue.length} stakeholders`);
+    
+    // Update response queue for UI
+    setResponseQueue({
+      current: conversationQueue[0]?.name || null,
+      upcoming: conversationQueue.slice(1).map(s => ({ name: s.name, id: s.id }))
+    });
+    
+    let workingMessages = messages;
+    
+    for (let i = 0; i < conversationQueue.length; i++) {
+      const stakeholder = conversationQueue[i];
+      const messageToRespond = stakeholder.messageToRespond;
+      
+      console.log(`🎯 Queue position ${i + 1}/${conversationQueue.length}: ${stakeholder.name} responding`);
+      
+      // Update current speaker in queue
+      setResponseQueue(prev => ({
+        current: stakeholder.name,
+        upcoming: conversationQueue.slice(i + 1).map(s => ({ name: s.name, id: s.id }))
+      }));
+      
+      // Generate response first
+      workingMessages = await processDynamicStakeholderResponse(
+        stakeholder,
+        messageToRespond,
+        workingMessages,
+        'queue_response'
+      );
+      
+      // Wait for current audio to finish before next speaker
+      console.log(`⏳ Waiting for ${stakeholder.name} to finish speaking...`);
+      
+      // Wait for audio to complete (polling approach)
+      while (isAudioPlaying) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Additional delay between speakers
+      if (i < conversationQueue.length - 1) {
+        console.log(`⏳ Pause between speakers...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    
+    // Clear queue
+    setConversationQueue([]);
+    setResponseQueue({ current: null, upcoming: [] });
+    setIsProcessingQueue(false);
+    console.log(`✅ Conversation queue completed`);
+  };
+
+  // Process queue when items are added
+  useEffect(() => {
+    if (conversationQueue.length > 0 && !isProcessingQueue) {
+      const timer = setTimeout(() => {
+        processConversationQueue();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [conversationQueue, isProcessingQueue]);
+
+  // Message handling with EXACT transcript meeting queue logic
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const messageContent = inputMessage.trim();
+    setInputMessage('');
+    setIsGeneratingResponse(true);
+
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      speaker: 'user',
+      content: messageContent,
+      timestamp: new Date().toISOString()
+    };
+
+    let currentMessages = [...messages, userMessage];
+    setMessages(currentMessages);
+
+    // User messages should NEVER be spoken - remove auto-speak completely
+    // Only stakeholder responses will be spoken
+
+    try {
+      const aiService = AIService.getInstance();
+      const availableStakeholders = selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }));
+
+      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
+      
+      console.log(`🔍 Mention detection result:`, {
+        stakeholders: userMentionResult.mentionedStakeholders.map(s => s.name),
+        type: userMentionResult.mentionType,
+        confidence: userMentionResult.confidence
+      });
+
+      if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
+        console.log(`🎯 User mentioned: ${mentionedNames} (${userMentionResult.mentionType})`);
+        
+        // Set feedback message
+        if (userMentionResult.mentionType === 'group_greeting') {
+          setDynamicFeedback(`👋 Everyone will greet you back...`);
+        } else {
+          setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
+        }
+        
+        setTimeout(() => setDynamicFeedback(null), 3000);
+        
+        // Process each mentioned stakeholder using transcript meeting logic
+        for (const mentionedStakeholderContext of userMentionResult.mentionedStakeholders) {
+          const fullStakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholderContext.name);
+          
+          if (fullStakeholder) {
+            // Use the exact same approach as transcript meeting
+            await processDynamicStakeholderResponse(
+              fullStakeholder,
+              messageContent,
+              currentMessages,
+              'user_mention'
+            );
+          }
+        }
+      } else {
+        console.log(`📋 No specific mentions detected, selecting random stakeholder`);
+        // Handle general questions - pick one random stakeholder
+        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+        await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages, 'general_question');
+      }
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+    } finally {
+      setIsGeneratingResponse(false);
+    }
+  };
+
+  const handleVoiceInput = (text: string) => {
+    setInputMessage(text);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleTranscribingChange = (transcribing: boolean) => {
+    setIsTranscribing(transcribing);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleEndMeeting = () => {
+    stopAllAudio();
+    setCurrentView('stakeholders');
+  };
+
   // Meeting timer
   const [meetingStartTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -289,9 +564,32 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
+  // FIXED Stop button - stops current speaker and moves to next
+  const handleStopCurrent = () => {
+    console.log('🛑 Stop button clicked - stopping current speaker');
+    
+    // Stop current audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setCurrentAudio(null);
+    }
+    
+    // Reset current speaker states
+    setCurrentSpeaker(null);
+    setIsAudioPlaying(false);
+    setPlayingMessageId(null);
+    
+    // Move to next in queue by removing current speaker
+    if (currentSpeaking) {
+      setConversationQueue(prev => prev.filter(id => id !== currentSpeaking));
+      setCurrentSpeaking(null);
+    }
+  };
+
   // Stop all audio and clear all states
   const stopAllAudio = () => {
-    console.log('🛑 Stopping all audio');
+    console.log('🛑 Stopping all audio and clearing queue');
     
     if (currentAudio) {
       currentAudio.pause();
@@ -304,10 +602,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setPlayingMessageId(null);
     setAudioStates({});
     
-    // Clear conversation queue to stop pending speakers
+    // Clear conversation queue to stop all pending speakers
     setConversationQueue([]);
+    setCurrentSpeaking(null);
     setResponseQueue({ current: null, upcoming: [] });
-    setIsProcessingQueue(false);
     setThinkingStakeholders(new Set());
     setDynamicFeedback(null);
   };
@@ -323,256 +621,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       newSet.delete(stakeholderName);
       return newSet;
     });
-  };
-
-  // Process stakeholder response (same logic as before)
-  const processDynamicStakeholderResponse = async (
-    stakeholder: any,
-    originalMessage: string,
-    currentMessages: Message[],
-    responseType: string = 'mention'
-  ): Promise<Message[]> => {
-    console.log(`🤖 Processing ${responseType} response for ${stakeholder.name}`);
-    
-    addStakeholderToThinking(stakeholder.name);
-    setDynamicFeedback(`${stakeholder.name} is thinking...`);
-
-    try {
-      const aiService = AIService.getInstance();
-      
-      const stakeholderContext: StakeholderContext = {
-        name: stakeholder.name,
-        role: stakeholder.role,
-        department: stakeholder.department,
-        priorities: stakeholder.priorities,
-        personality: stakeholder.personality,
-        expertise: stakeholder.expertise || []
-      };
-
-      const conversationContext: ConversationContext = {
-        project: {
-          name: selectedProject?.name || '',
-          description: selectedProject?.description || '',
-          type: selectedProject?.type || ''
-        },
-        conversationHistory: currentMessages,
-        stakeholders: selectedStakeholders.map(s => ({
-          name: s.name,
-          role: s.role,
-          department: s.department || '',
-          priorities: s.priorities || [],
-          personality: s.personality || '',
-          expertise: s.expertise || []
-        }))
-      };
-
-      const response = await aiService.generateStakeholderResponse(
-        originalMessage,
-        stakeholderContext,
-        conversationContext
-      );
-
-      removeStakeholderFromThinking(stakeholder.name);
-      setDynamicFeedback(null);
-
-      if (response) {
-        const responseMessage: Message = {
-          id: `${stakeholder.id}-${Date.now()}`,
-          speaker: stakeholder.name,
-          content: response,
-          timestamp: new Date().toISOString(),
-          stakeholderName: stakeholder.name,
-          stakeholderRole: stakeholder.role
-        };
-
-        const updatedMessages = [...currentMessages, responseMessage];
-        setMessages(updatedMessages);
-
-        // Auto-play the response
-        if (globalAudioEnabled) {
-          await speakMessage(responseMessage);
-        }
-
-        return updatedMessages;
-      }
-    } catch (error) {
-      console.error(`Error generating response for ${stakeholder.name}:`, error);
-      removeStakeholderFromThinking(stakeholder.name);
-      setDynamicFeedback(null);
-    }
-
-    return currentMessages;
-  };
-
-  // Process conversation queue sequentially - FIXED to prevent overlap
-  const processConversationQueue = async () => {
-    if (isProcessingQueue || conversationQueue.length === 0) return;
-    
-    setIsProcessingQueue(true);
-    console.log(`📝 Processing conversation queue: ${conversationQueue.length} stakeholders`);
-    
-    // Update response queue for UI
-    setResponseQueue({
-      current: conversationQueue[0]?.name || null,
-      upcoming: conversationQueue.slice(1).map(s => ({ name: s.name, id: s.id }))
-    });
-    
-    let workingMessages = messages;
-    
-    for (let i = 0; i < conversationQueue.length; i++) {
-      const stakeholder = conversationQueue[i];
-      const messageToRespond = stakeholder.messageToRespond;
-      
-      console.log(`🎯 Queue position ${i + 1}/${conversationQueue.length}: ${stakeholder.name} responding`);
-      
-      // Update current speaker in queue
-      setResponseQueue(prev => ({
-        current: stakeholder.name,
-        upcoming: conversationQueue.slice(i + 1).map(s => ({ name: s.name, id: s.id }))
-      }));
-      
-      // Generate response first
-      workingMessages = await processDynamicStakeholderResponse(
-        stakeholder,
-        messageToRespond,
-        workingMessages,
-        'queue_response'
-      );
-      
-      // Wait for current audio to finish before next speaker
-      console.log(`⏳ Waiting for ${stakeholder.name} to finish speaking...`);
-      
-      // Wait for audio to complete (polling approach)
-      while (isAudioPlaying) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      
-      // Additional delay between speakers
-      if (i < conversationQueue.length - 1) {
-        console.log(`⏳ Pause between speakers...`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-    }
-    
-    // Clear queue
-    setConversationQueue([]);
-    setResponseQueue({ current: null, upcoming: [] });
-    setIsProcessingQueue(false);
-    console.log(`✅ Conversation queue completed`);
-  };
-
-  // Process queue when items are added
-  useEffect(() => {
-    if (conversationQueue.length > 0 && !isProcessingQueue) {
-      const timer = setTimeout(() => {
-        processConversationQueue();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [conversationQueue, isProcessingQueue]);
-
-  // Message handling with proper queue system
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
-
-    const messageContent = inputMessage.trim();
-    setInputMessage('');
-    setIsGeneratingResponse(true);
-
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      speaker: 'user',
-      content: messageContent,
-      timestamp: new Date().toISOString()
-    };
-
-    let currentMessages = [...messages, userMessage];
-    setMessages(currentMessages);
-
-    // User messages should NEVER be spoken - remove auto-speak completely
-    // Only stakeholder responses will be spoken
-
-    try {
-      const aiService = AIService.getInstance();
-      const availableStakeholders = selectedStakeholders.map(s => ({
-        name: s.name,
-        role: s.role,
-        department: s.department,
-        priorities: s.priorities,
-        personality: s.personality,
-        expertise: s.expertise || []
-      }));
-
-      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
-      
-      console.log(`🔍 Mention detection result:`, {
-        stakeholders: userMentionResult.mentionedStakeholders.map(s => s.name),
-        type: userMentionResult.mentionType,
-        confidence: userMentionResult.confidence
-      });
-
-      if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-        const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
-        console.log(`🎯 User mentioned: ${mentionedNames} (${userMentionResult.mentionType})`);
-        
-        // Create queue of stakeholders to respond
-        const stakeholderQueue = userMentionResult.mentionedStakeholders.map(mentionedStakeholder => {
-          const fullStakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholder.name);
-          return fullStakeholder ? {
-            ...fullStakeholder,
-            messageToRespond: messageContent
-          } : null;
-        }).filter(Boolean);
-
-        if (stakeholderQueue.length > 0) {
-          console.log(`📝 Adding ${stakeholderQueue.length} stakeholders to conversation queue`);
-          
-          // Set feedback message
-          if (userMentionResult.mentionType === 'group_greeting') {
-            setDynamicFeedback(`👋 Everyone will greet you back...`);
-          } else {
-            setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
-          }
-          
-          setTimeout(() => setDynamicFeedback(null), 3000);
-          
-          // Add to conversation queue
-          setConversationQueue(stakeholderQueue);
-        }
-      } else {
-        console.log(`📋 No specific mentions detected, selecting random stakeholder`);
-        // Handle general questions - pick one random stakeholder
-        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-        await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages);
-      }
-    } catch (error) {
-      console.error('Error generating AI response:', error);
-    } finally {
-      setIsGeneratingResponse(false);
-    }
-  };
-
-  const handleVoiceInput = (text: string) => {
-    setInputMessage(text);
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  };
-
-  const handleTranscribingChange = (transcribing: boolean) => {
-    setIsTranscribing(transcribing);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleEndMeeting = () => {
-    stopAllAudio();
-    setCurrentView('stakeholders');
   };
 
   // Early return with debug info
@@ -640,7 +688,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             />
           </div>
 
-          {/* Right section */}
+          {/* Right section - Timer, participants, and controls */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center text-gray-400 space-x-2">
               <Clock className="h-4 w-4" />
@@ -649,6 +697,29 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             <div className="flex items-center text-gray-400 space-x-2">
               <Users className="h-4 w-4" />
               <span className="text-sm">{allParticipants.length}</span>
+            </div>
+            
+            {/* Meeting Controls - Moved to top right */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleStopCurrent}
+                className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-lg transition-colors"
+                title="Stop current speaker"
+              >
+                <Square className="h-4 w-4" />
+              </button>
+              
+              <button
+                onClick={handleEndMeeting}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-1"
+              >
+                <PhoneOff className="h-4 w-4" />
+                <span>End</span>
+              </button>
+              
+              <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-lg transition-colors">
+                <MoreVertical className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -684,71 +755,46 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         {/* Bottom Controls - Fixed height */}
         <div className="bg-gray-800 border-t border-gray-700 p-4 flex-shrink-0">
           {/* Question Input */}
-          <div className="mb-4">
-            <div className="flex space-x-3">
-              <input
-                ref={inputRef}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask a question or start the discussion..."
-                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          <div className="flex space-x-3">
+            <input
+              ref={inputRef}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask a question or start the discussion..."
+              className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isLoading}
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setShowVoiceModal(true)}
+                className={`p-3 rounded-lg transition-colors ${
+                  isTranscribing 
+                    ? 'bg-red-600 text-white hover:bg-red-700' 
+                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                }`}
                 disabled={isLoading}
-              />
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setShowVoiceModal(true)}
-                  className={`p-3 rounded-lg transition-colors ${
-                    isTranscribing 
-                      ? 'bg-red-600 text-white hover:bg-red-700' 
-                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                  }`}
-                  disabled={isLoading}
-                  title="Voice input"
-                >
-                  {isTranscribing ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                </button>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isLoading}
-                  className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                  title="Send message"
-                >
-                  <Send className="h-5 w-5" />
-                </button>
-              </div>
+                title="Voice input"
+              >
+                {isTranscribing ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </button>
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                title="Send message"
+              >
+                <Send className="h-5 w-5" />
+              </button>
             </div>
-            
-            {isGeneratingResponse && (
-              <div className="flex items-center justify-center mt-3 text-gray-400">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
-                Generating response...
-              </div>
-            )}
           </div>
-
-          {/* Meeting Controls */}
-          <div className="flex items-center justify-center space-x-4">
-            <button
-              onClick={stopAllAudio}
-              className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-3 rounded-full transition-colors"
-              title="Stop audio"
-            >
-              <Square className="h-5 w-5" />
-            </button>
-            
-            <button
-              onClick={handleEndMeeting}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium transition-colors flex items-center space-x-2"
-            >
-              <PhoneOff className="h-5 w-5" />
-              <span>End Meeting</span>
-            </button>
-            
-            <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-3 rounded-full transition-colors">
-              <MoreVertical className="h-5 w-5" />
-            </button>
-          </div>
+          
+          {isGeneratingResponse && (
+            <div className="flex items-center justify-center mt-3 text-gray-400">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
+              Generating response...
+            </div>
+          )}
         </div>
       </div>
 
