@@ -13,7 +13,7 @@ import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
 import MeetingModeSelection from '../Views/MeetingModeSelection'
-import VoiceOnlyMeetingView from '../Views/VoiceOnlyMeetingView'
+import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView'
 
 const MainLayout: React.FC = () => {
   const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
