@@ -101,7 +101,8 @@ export class AIService {
     ai_models: {
       primary: "gpt-4o",
       phaseDetection: "gpt-4",
-      noteGeneration: "gpt-3.5-turbo"
+      noteGeneration: "gpt-3.5-turbo",
+      greeting: "gpt-4o"
     },
     ai_params: {
       phaseDetection: { temperature: 0.1, maxTokens: 20 },
@@ -1578,7 +1579,9 @@ Return format: stakeholder_names|mention_type|confidence`
         stakeholderNamesStr,
         mentionType,
         confidence,
-        threshold: AIService.CONFIG.mention.confidenceThreshold
+        threshold: AIService.CONFIG.mention.confidenceThreshold,
+        noMentionToken: AIService.CONFIG.mention.noMentionToken,
+        willPass: stakeholderNamesStr !== AIService.CONFIG.mention.noMentionToken && confidence >= AIService.CONFIG.mention.confidenceThreshold
       });
 
       if (stakeholderNamesStr === AIService.CONFIG.mention.noMentionToken || confidence < AIService.CONFIG.mention.confidenceThreshold) {
