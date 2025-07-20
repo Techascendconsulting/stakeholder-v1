@@ -1,22 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
+import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
+import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
+import VoiceInputModal from '../VoiceInputModal';
 
 interface SpeakerGridProps {
   currentSpeaker: string | null;
   stakeholders: any[];
   user: { name: string; role: string };
+  thinkingStakeholders: Set<string>;
 }
 
-const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders, user }) => {
+const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders, user, thinkingStakeholders }) => {
   const allParticipants = [user, ...stakeholders];
   
   return (
     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
       {allParticipants.map((participant) => {
         const isCurrentSpeaker = currentSpeaker === participant.name;
+        const isThinking = thinkingStakeholders.has(participant.name);
         const avatarColor = participant.name === user.name ? 'bg-blue-500' : 'bg-purple-500';
         
         return (
@@ -25,13 +30,22 @@ const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders,
             className={`relative p-3 rounded-lg border-2 transition-all duration-300 ${
               isCurrentSpeaker 
                 ? 'border-green-400 bg-green-50 scale-105 shadow-lg' 
+                : isThinking
+                ? 'border-yellow-400 bg-yellow-50'
                 : 'border-gray-200 bg-white'
             }`}
           >
-            {/* Speaking indicator */}
+            {/* Speaking/Thinking indicator */}
             {isCurrentSpeaker && (
               <div className="absolute -top-1 -right-1 bg-green-400 rounded-full p-1 animate-pulse">
                 <Volume2 className="h-3 w-3 text-white" />
+              </div>
+            )}
+            {isThinking && !isCurrentSpeaker && (
+              <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1 animate-pulse">
+                <div className="h-3 w-3 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
+                </div>
               </div>
             )}
             
@@ -42,7 +56,11 @@ const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders,
             
             {/* Name and Role */}
             <div className="text-center">
-              <div className={`font-medium text-sm ${isCurrentSpeaker ? 'text-green-700' : 'text-gray-900'}`}>
+              <div className={`font-medium text-sm ${
+                isCurrentSpeaker ? 'text-green-700' : 
+                isThinking ? 'text-yellow-700' : 
+                'text-gray-900'
+              }`}>
                 {participant.name}
               </div>
               <div className="text-xs text-gray-500">{participant.role}</div>
@@ -56,6 +74,15 @@ const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders,
                 <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             )}
+            
+            {/* Thinking animation */}
+            {isThinking && !isCurrentSpeaker && (
+              <div className="flex justify-center mt-1 space-x-1">
+                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '600ms' }}></div>
+              </div>
+            )}
           </div>
         );
       })}
@@ -64,7 +91,7 @@ const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders,
 };
 
 interface MeetingQueueProps {
-  queue: string[];
+  queue: { name: string; id?: string }[];
   currentSpeaker: string | null;
 }
 
@@ -95,7 +122,7 @@ const MeetingQueue: React.FC<MeetingQueueProps> = ({ queue, currentSpeaker }) =>
               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mr-2">
                 {index + 1}
               </span>
-              <span className="text-blue-900 text-sm">{speaker}</span>
+              <span className="text-blue-900 text-sm">{speaker.name}</span>
             </div>
           ))}
         </div>
@@ -106,22 +133,34 @@ const MeetingQueue: React.FC<MeetingQueueProps> = ({ queue, currentSpeaker }) =>
 
 export const VoiceOnlyMeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView } = useApp();
-  const { isSpeaking, setIsSpeaking, speakText, stopSpeaking } = useVoice();
+  const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
   
-  // Debug logging
-  console.log('🔍 VoiceOnlyMeetingView DEBUG:', {
-    selectedProject: selectedProject ? selectedProject.name : 'null',
-    selectedStakeholders: selectedStakeholders ? selectedStakeholders.length : 0,
-    hasSetCurrentView: typeof setCurrentView === 'function'
-  });
+  // State management (same as MeetingView)
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+  const [audioStates, setAudioStates] = useState<{[key: string]: 'playing' | 'paused' | 'stopped'}>({});
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [currentSpeaker, setCurrentSpeaker] = useState<any>(null);
   
+  // Dynamic UX state management
+  const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [thinkingStakeholders, setThinkingStakeholders] = useState<Set<string>>(new Set());
+  const [dynamicFeedback, setDynamicFeedback] = useState<string | null>(null);
+  const [responseQueue, setResponseQueue] = useState<{
+    current: string | null;
+    upcoming: { name: string; id?: string }[];
+  }>({ current: null, upcoming: [] });
+  
+  // Meeting timer
   const [meetingStartTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [question, setQuestion] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [currentSpeaker, setCurrentSpeaker] = useState<string | null>(null);
-  const [speakingQueue, setSpeakingQueue] = useState<string[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Timer effect
   useEffect(() => {
@@ -130,6 +169,27 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, [meetingStartTime]);
+
+  // Initialize conversation
+  useEffect(() => {
+    if (selectedProject && selectedStakeholders.length > 0) {
+      const aiService = AIService.getInstance();
+      aiService.resetConversationState();
+      
+      const welcomeMessage: Message = {
+        id: `welcome-${Date.now()}`,
+        speaker: 'system',
+        content: `Welcome to your voice meeting for ${selectedProject?.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}.`,
+        timestamp: new Date().toISOString()
+      };
+      setMessages([welcomeMessage]);
+      
+      // Auto-play welcome message
+      if (globalAudioEnabled) {
+        speakMessage(welcomeMessage);
+      }
+    }
+  }, [selectedProject, selectedStakeholders]);
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -142,148 +202,289 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
   };
 
-  const user = {
-    name: 'You',
-    role: 'Meeting Participant'
-  };
+  // Audio management (same as MeetingView)
+  const speakMessage = async (message: Message) => {
+    if (!globalAudioEnabled) return;
 
-  const handleQuestionSubmit = async () => {
-    if (!question.trim() || isProcessing) return;
-    
-    const userQuestion = question.trim();
-    setQuestion('');
-    setIsProcessing(true);
+    const stakeholder = selectedStakeholders.find(s => s.name === message.speaker);
+    const voiceId = stakeholder ? getStakeholderVoice(stakeholder.name) : null;
     
     try {
-      // Set user as current speaker for the question
-      setCurrentSpeaker('You');
-      
-      // Speak the user's question
-      await speakText(userQuestion, 'You');
-      
-      // Get AI service instance
-      const aiService = AIService.getInstance();
-      
-      // Detect mentions and get responses
-      const mentionResult = await aiService.detectStakeholderMentions(userQuestion, selectedStakeholders);
-      
-      if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-        // Add stakeholders to speaking queue
-        setSpeakingQueue(mentionResult.mentionedStakeholders.map(s => s.name));
-        
-        // Process each stakeholder response
-        for (const stakeholder of mentionResult.mentionedStakeholders) {
-          // Update current speaker
-          setCurrentSpeaker(stakeholder.name);
-          
-          // Remove from queue
-          setSpeakingQueue(prev => prev.filter(name => name !== stakeholder.name));
-          
-          // Convert stakeholder to context format
-          const stakeholderContext: StakeholderContext = {
-            name: stakeholder.name,
-            role: stakeholder.role,
-            department: stakeholder.department || '',
-            priorities: stakeholder.priorities || [],
-            personality: stakeholder.personality || '',
-            expertise: stakeholder.expertise || []
-          };
-          
-          // Create conversation context
-          const conversationContext: ConversationContext = {
-            project: {
-              name: selectedProject?.name || '',
-              description: selectedProject?.description || '',
-              type: selectedProject?.type || ''
-            },
-            conversationHistory: [],
-            stakeholders: selectedStakeholders.map(s => ({
-              name: s.name,
-              role: s.role,
-              department: s.department || '',
-              priorities: s.priorities || [],
-              personality: s.personality || '',
-              expertise: s.expertise || []
-            }))
-          };
-          
-          // Generate and speak response
-          const response = await aiService.generateStakeholderResponse(
-            userQuestion,
-            stakeholderContext,
-            conversationContext
-          );
-          
-          if (response) {
-            await speakText(response, stakeholder.name);
-          }
-          
-          // Small pause between speakers
-          await new Promise(resolve => setTimeout(resolve, 1000));
+      setCurrentSpeaker(stakeholder || { name: message.speaker });
+      setIsAudioPlaying(true);
+      setPlayingMessageId(message.id);
+      setAudioStates(prev => ({ ...prev, [message.id]: 'playing' }));
+
+      let audioElement: HTMLAudioElement | null = null;
+
+      if (voiceId && isAzureTTSAvailable() && isStakeholderVoiceEnabled(stakeholder?.name || '')) {
+        try {
+          const audioBlob = await azureTTS(message.content, voiceId);
+          const audioUrl = URL.createObjectURL(audioBlob);
+          audioElement = new Audio(audioUrl);
+        } catch (azureError) {
+          console.warn('Azure TTS failed, falling back to browser TTS:', azureError);
+          audioElement = await playBrowserTTS(message.content);
         }
       } else {
-        // No mentions - have a random stakeholder respond
-        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-        setCurrentSpeaker(randomStakeholder.name);
-        
-        // Convert stakeholder to context format
-        const stakeholderContext: StakeholderContext = {
-          name: randomStakeholder.name,
-          role: randomStakeholder.role,
-          department: randomStakeholder.department || '',
-          priorities: randomStakeholder.priorities || [],
-          personality: randomStakeholder.personality || '',
-          expertise: randomStakeholder.expertise || []
-        };
-        
-        // Create conversation context
-        const conversationContext: ConversationContext = {
-          project: {
-            name: selectedProject?.name || '',
-            description: selectedProject?.description || '',
-            type: selectedProject?.type || ''
-          },
-          conversationHistory: [],
-          stakeholders: selectedStakeholders.map(s => ({
-            name: s.name,
-            role: s.role,
-            department: s.department || '',
-            priorities: s.priorities || [],
-            personality: s.personality || '',
-            expertise: s.expertise || []
-          }))
-        };
-        
-        const response = await aiService.generateStakeholderResponse(
-          userQuestion,
-          stakeholderContext,
-          conversationContext
-        );
-        
-        if (response) {
-          await speakText(response, randomStakeholder.name);
-        }
+        audioElement = await playBrowserTTS(message.content);
       }
-      
+
+      if (audioElement) {
+        setCurrentAudio(audioElement);
+        
+        audioElement.onended = () => {
+          setCurrentSpeaker(null);
+          setIsAudioPlaying(false);
+          setPlayingMessageId(null);
+          setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
+          setCurrentAudio(null);
+        };
+
+        audioElement.onerror = () => {
+          console.error('Audio playback error for message:', message.id);
+          setCurrentSpeaker(null);
+          setIsAudioPlaying(false);
+          setPlayingMessageId(null);
+          setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
+          setCurrentAudio(null);
+        };
+
+        await audioElement.play();
+      }
     } catch (error) {
-      console.error('Error processing question:', error);
-    } finally {
+      console.error('Error playing message audio:', error);
       setCurrentSpeaker(null);
-      setSpeakingQueue([]);
-      setIsProcessing(false);
+      setIsAudioPlaying(false);
+      setPlayingMessageId(null);
+      setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
+    }
+  };
+
+  const stopCurrentAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setCurrentAudio(null);
+      setCurrentSpeaker(null);
+      setIsAudioPlaying(false);
+      setPlayingMessageId(null);
+    }
+  };
+
+  // Add thinking state management
+  const addStakeholderToThinking = (stakeholderName: string) => {
+    setThinkingStakeholders(prev => new Set([...prev, stakeholderName]));
+  };
+
+  const removeStakeholderFromThinking = (stakeholderName: string) => {
+    setThinkingStakeholders(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(stakeholderName);
+      return newSet;
+    });
+  };
+
+  // Process stakeholder response (same logic as MeetingView)
+  const processDynamicStakeholderResponse = async (
+    stakeholder: any,
+    originalMessage: string,
+    currentMessages: Message[],
+    responseType: string = 'mention'
+  ): Promise<Message[]> => {
+    console.log(`🤖 Processing ${responseType} response for ${stakeholder.name}`);
+    
+    addStakeholderToThinking(stakeholder.name);
+    setDynamicFeedback(`${stakeholder.name} is thinking...`);
+
+    try {
+      const aiService = AIService.getInstance();
+      
+      const stakeholderContext: StakeholderContext = {
+        name: stakeholder.name,
+        role: stakeholder.role,
+        department: stakeholder.department,
+        priorities: stakeholder.priorities,
+        personality: stakeholder.personality,
+        expertise: stakeholder.expertise || []
+      };
+
+      const conversationContext: ConversationContext = {
+        project: {
+          name: selectedProject?.name || '',
+          description: selectedProject?.description || '',
+          type: selectedProject?.type || ''
+        },
+        conversationHistory: currentMessages,
+        stakeholders: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department || '',
+          priorities: s.priorities || [],
+          personality: s.personality || '',
+          expertise: s.expertise || []
+        }))
+      };
+
+      const response = await aiService.generateStakeholderResponse(
+        originalMessage,
+        stakeholderContext,
+        conversationContext
+      );
+
+      removeStakeholderFromThinking(stakeholder.name);
+      setDynamicFeedback(null);
+
+      if (response) {
+        const responseMessage: Message = {
+          id: `${stakeholder.id}-${Date.now()}`,
+          speaker: stakeholder.name,
+          content: response,
+          timestamp: new Date().toISOString(),
+          stakeholderName: stakeholder.name,
+          stakeholderRole: stakeholder.role
+        };
+
+        const updatedMessages = [...currentMessages, responseMessage];
+        setMessages(updatedMessages);
+
+        // Auto-play the response
+        if (globalAudioEnabled) {
+          await speakMessage(responseMessage);
+        }
+
+        return updatedMessages;
+      }
+    } catch (error) {
+      console.error(`Error generating response for ${stakeholder.name}:`, error);
+      removeStakeholderFromThinking(stakeholder.name);
+      setDynamicFeedback(null);
+    }
+
+    return currentMessages;
+  };
+
+  // Message handling (same as MeetingView)
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const messageContent = inputMessage.trim();
+    setInputMessage('');
+    setIsGeneratingResponse(true);
+
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      speaker: 'user',
+      content: messageContent,
+      timestamp: new Date().toISOString()
+    };
+
+    let currentMessages = [...messages, userMessage];
+    setMessages(currentMessages);
+
+    // Auto-speak user message
+    if (globalAudioEnabled) {
+      await speakMessage(userMessage);
+    }
+
+    try {
+      const aiService = AIService.getInstance();
+      const availableStakeholders = selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }));
+
+      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
+      
+      if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
+        console.log(`🎯 User mentioned: ${mentionedNames}`);
+        
+        setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
+        setTimeout(() => setDynamicFeedback(null), 2000);
+        
+        const responseQueueData = userMentionResult.mentionedStakeholders.map(s => ({
+          name: s.name,
+          id: selectedStakeholders.find(st => st.name === s.name)?.id || 'unknown'
+        }));
+        
+        setResponseQueue({
+          current: responseQueueData[0]?.name || null,
+          upcoming: responseQueueData.slice(1)
+        });
+        
+        let workingMessages = currentMessages;
+        for (let i = 0; i < userMentionResult.mentionedStakeholders.length; i++) {
+          const mentionedStakeholderContext = userMentionResult.mentionedStakeholders[i];
+          const mentionedStakeholder = selectedStakeholders.find(s => 
+            s.name === mentionedStakeholderContext.name
+          );
+          
+          if (mentionedStakeholder) {
+            workingMessages = await processDynamicStakeholderResponse(
+              mentionedStakeholder, 
+              messageContent, 
+              workingMessages, 
+              'direct_mention'
+            );
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            if (i < userMentionResult.mentionedStakeholders.length - 1) {
+              setResponseQueue(prev => {
+                const remaining = prev.upcoming.slice(1);
+                return {
+                  current: prev.upcoming[0]?.name || null,
+                  upcoming: remaining
+                };
+              });
+              
+              await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+          }
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setResponseQueue({ current: null, upcoming: [] });
+      } else {
+        // Handle group greetings or general questions
+        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+        await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages);
+      }
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+    } finally {
+      setIsGeneratingResponse(false);
+    }
+  };
+
+  const handleVoiceInput = (text: string) => {
+    setInputMessage(text);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleTranscribingChange = (transcribing: boolean) => {
+    setIsTranscribing(transcribing);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
   const handleEndMeeting = () => {
-    stopSpeaking();
+    stopCurrentAudio();
     setCurrentSpeaker(null);
-    setSpeakingQueue([]);
+    setResponseQueue({ current: null, upcoming: [] });
     setCurrentView('stakeholders');
-  };
-
-  const handleVoiceInput = () => {
-    // Toggle voice input (placeholder for now)
-    setIsListening(!isListening);
   };
 
   // Early return with debug info
@@ -325,7 +526,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               <h1 className="text-lg font-semibold text-gray-900">
                 Voice Meeting: {selectedProject?.name}
               </h1>
-              <p className="text-xs text-gray-600">Listen & Learn Mode</p>
+              <p className="text-xs text-gray-600">Listen & Learn Mode - {formatTime(elapsedTime)}</p>
             </div>
           </div>
           
@@ -344,24 +545,32 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content - Flexbox Layout */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col p-4 space-y-4 overflow-hidden">
         {/* Speaker Grid */}
         <div className="flex-shrink-0">
           <SpeakerGrid 
-            currentSpeaker={currentSpeaker}
+            currentSpeaker={currentSpeaker?.name || null}
             stakeholders={selectedStakeholders}
-            user={user}
+            user={{ name: 'You', role: 'Meeting Participant' }}
+            thinkingStakeholders={thinkingStakeholders}
           />
         </div>
         
         {/* Meeting Queue */}
         <div className="flex-shrink-0">
           <MeetingQueue 
-            queue={speakingQueue}
-            currentSpeaker={currentSpeaker}
+            queue={responseQueue.upcoming}
+            currentSpeaker={responseQueue.current}
           />
         </div>
+        
+        {/* Dynamic Feedback */}
+        {dynamicFeedback && (
+          <div className="flex-shrink-0 bg-blue-100 border border-blue-300 rounded-lg p-3 text-center">
+            <p className="text-blue-800 font-medium">{dynamicFeedback}</p>
+          </div>
+        )}
         
         {/* Question Input Area */}
         <div className="flex-1 bg-white rounded-lg border border-gray-200 p-4 flex flex-col min-h-0">
@@ -371,29 +580,32 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             </label>
             <div className="flex-1 flex space-x-3">
               <div className="flex-1 flex">
-                <textarea
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   placeholder="Type your question here..."
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  disabled={isProcessing}
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isLoading}
                 />
               </div>
               <div className="flex flex-col space-y-2">
                 <button
-                  onClick={handleVoiceInput}
+                  onClick={() => setShowVoiceModal(true)}
                   className={`p-3 rounded-lg transition-colors ${
-                    isListening 
+                    isTranscribing 
                       ? 'bg-red-600 text-white' 
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
-                  disabled={isProcessing}
+                  disabled={isLoading}
                 >
-                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                  {isTranscribing ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </button>
                 <button
-                  onClick={handleQuestionSubmit}
-                  disabled={!question.trim() || isProcessing}
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isLoading}
                   className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                 >
                   <Send className="h-5 w-5" />
@@ -402,16 +614,24 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             </div>
           </div>
           
-          {isProcessing && (
+          {isGeneratingResponse && (
             <div className="text-center text-gray-600 mt-3">
               <div className="inline-flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                Processing your question...
+                Generating response...
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Voice Input Modal */}
+      <VoiceInputModal
+        isOpen={showVoiceModal}
+        onClose={() => setShowVoiceModal(false)}
+        onSave={handleVoiceInput}
+        onTranscribingChange={handleTranscribingChange}
+      />
     </div>
   );
 };
