@@ -980,9 +980,10 @@ These notes were generated using a fallback system due to extended AI processing
 
         const voiceName = stakeholder.voice
         console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
+        console.log('🔧 Azure TTS Available:', isAzureTTSAvailable())
         
         if (isAzureTTSAvailable()) {
-          console.log('Using Azure TTS for audio synthesis')
+          console.log('✅ Using Azure TTS for audio synthesis')
           const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName)
           const audioUrl = URL.createObjectURL(audioBlob)
           const audio = new Audio(audioUrl)
@@ -1038,7 +1039,7 @@ These notes were generated using a fallback system due to extended AI processing
             })
           })
         } else {
-          console.log('Using browser TTS for audio synthesis')
+          console.log('⚠️ Azure TTS not available (check environment variables), using browser TTS')
           setPlayingMessageId(messageId)
           setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
           

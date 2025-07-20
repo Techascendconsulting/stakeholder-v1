@@ -209,6 +209,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     const voiceId = stakeholder?.voice || null;
     
     console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${stakeholder?.name}`);
+    console.log(`🔧 Azure TTS Available: ${isAzureTTSAvailable()}`);
     
     try {
       setCurrentSpeaker(stakeholder || { name: message.speaker });
@@ -220,14 +221,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       if (voiceId && isAzureTTSAvailable()) {
         try {
+          console.log(`✅ Using Azure TTS with voice: ${voiceId}`);
           const audioBlob = await azureTTS(message.content, voiceId);
           const audioUrl = URL.createObjectURL(audioBlob);
           audioElement = new Audio(audioUrl);
         } catch (azureError) {
-          console.warn('Azure TTS failed, falling back to browser TTS:', azureError);
+          console.warn('❌ Azure TTS failed, falling back to browser TTS:', azureError);
           audioElement = await playBrowserTTS(message.content);
         }
       } else {
+        if (!voiceId) {
+          console.log(`⚠️ No voice ID found for stakeholder, using browser TTS`);
+        } else {
+          console.log(`⚠️ Azure TTS not available (check environment variables), using browser TTS`);
+        }
         audioElement = await playBrowserTTS(message.content);
       }
 
