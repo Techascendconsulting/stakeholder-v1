@@ -1089,99 +1089,111 @@ These notes were generated using a fallback system due to extended AI processing
       // Enhanced stakeholder mention detection
       const mentionResult = await aiService.detectStakeholderMentions(response, availableStakeholders)
       
-      if (mentionResult.mentionedStakeholder && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-        console.log(`🎯 Stakeholder mention detected: ${mentionResult.mentionedStakeholder.name} (${mentionResult.mentionType}, confidence: ${mentionResult.confidence})`)
-        
-        // Track the mention for UI feedback
-        const mentionNotification = {
-          mentioner: speakingStakeholder.name,
-          mentioned: mentionResult.mentionedStakeholder.name,
-          type: mentionResult.mentionType,
-          timestamp: new Date().toISOString()
-        }
+      if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        const mentionedNames = mentionResult.mentionedStakeholders.map(s => s.name).join(', ')
+        console.log(`🎯 Stakeholder mention detected: ${mentionedNames} (${mentionResult.mentionType}, confidence: ${mentionResult.confidence})`)
         
         // Show brief notification
-        setDynamicFeedback(`💬 ${speakingStakeholder.name} mentioned ${mentionResult.mentionedStakeholder.name}`)
+        const notificationText = mentionResult.mentionedStakeholders.length > 1
+          ? `💬 ${speakingStakeholder.name} mentioned ${mentionedNames}`
+          : `💬 ${speakingStakeholder.name} mentioned ${mentionResult.mentionedStakeholders[0].name}`
+        setDynamicFeedback(notificationText)
         setTimeout(() => setDynamicFeedback(null), 2000)
         
-        // Find the full stakeholder object
-        const mentionedStakeholder = selectedStakeholders.find(s => 
-          s.name === mentionResult.mentionedStakeholder?.name
-        )
+        let updatedMessages = currentMessages
         
-        if (mentionedStakeholder) {
-          // Natural pause before the mentioned stakeholder responds
-          const pauseConfig = AIService.getMentionPauseConfig()
-          await new Promise(resolve => setTimeout(resolve, pauseConfig.base + Math.random() * pauseConfig.variance))
-          
-          // Convert speaking stakeholder to context format
-          const speakingStakeholderContext = {
-            name: speakingStakeholder.name,
-            role: speakingStakeholder.role,
-            department: speakingStakeholder.department,
-            priorities: speakingStakeholder.priorities,
-            personality: speakingStakeholder.personality,
-            expertise: speakingStakeholder.expertise || []
-          }
-          
-          // Generate mention response
-          const mentionResponse = await aiService.generateMentionResponse(
-            mentionResult.mentionedStakeholder,
-            mentionResult.mentionType,
-            response,
-            speakingStakeholderContext,
-            userMessage,
-            {
-              project: {
-                name: selectedProject?.name || 'Current Project',
-                description: selectedProject?.description || 'Project description',
-                type: selectedProject?.projectType || 'General'
-              },
-              conversationHistory: currentMessages,
-              stakeholders: selectedStakeholders.map(s => ({
-                name: s.name,
-                role: s.role,
-                department: s.department,
-                priorities: s.priorities,
-                personality: s.personality,
-                expertise: s.expertise || []
-              }))
-            }
-          )
-          
-          // Create response message
-          const mentionResponseMessage: Message = {
-            id: `mention-response-${Date.now()}`,
-            speaker: mentionedStakeholder.id,
-            content: mentionResponse,
-            timestamp: new Date().toISOString(),
-            stakeholderName: mentionedStakeholder.name,
-            stakeholderRole: mentionedStakeholder.role
-          }
-          
-          // Add to messages
-          const updatedMessages = [...currentMessages, mentionResponseMessage]
-          setMessages(updatedMessages)
-          
-          // Play audio for the mention response
-          if (globalAudioEnabled && isStakeholderVoiceEnabled(mentionedStakeholder.id)) {
-            try {
-              await playMessageAudio(mentionResponseMessage.id, mentionResponse, mentionedStakeholder, true)
-            } catch (audioError) {
-              console.warn('Audio playback failed for mention response:', audioError)
-            }
-          }
-          
-          // Check for cascading mentions (if the mentioned stakeholder mentions someone else)
-          const cascadingMessages = await handleStakeholderMentions(
-            mentionResponse,
-            mentionedStakeholder,
-            userMessage,
-            updatedMessages
-          )
-          
-          return cascadingMessages
+        // Convert speaking stakeholder to context format
+        const speakingStakeholderContext = {
+          name: speakingStakeholder.name,
+          role: speakingStakeholder.role,
+          department: speakingStakeholder.department,
+          priorities: speakingStakeholder.priorities,
+          personality: speakingStakeholder.personality,
+          expertise: speakingStakeholder.expertise || []
         }
+        
+        // Handle all mentioned stakeholders
+        for (const mentionedStakeholderContext of mentionResult.mentionedStakeholders) {
+          const mentionedStakeholder = selectedStakeholders.find(s => 
+            s.name === mentionedStakeholderContext.name
+          )
+          
+          if (mentionedStakeholder) {
+            // Natural pause before the mentioned stakeholder responds
+            const pauseConfig = AIService.getMentionPauseConfig()
+            await new Promise(resolve => setTimeout(resolve, pauseConfig.base + Math.random() * pauseConfig.variance))
+            
+            // Generate mention response
+            const mentionResponse = await aiService.generateMentionResponse(
+              mentionedStakeholderContext,
+              mentionResult.mentionType,
+              response,
+              speakingStakeholderContext,
+              userMessage,
+              {
+                project: {
+                  name: selectedProject?.name || 'Current Project',
+                  description: selectedProject?.description || 'Project description',
+                  type: selectedProject?.projectType || 'General'
+                },
+                conversationHistory: updatedMessages,
+                stakeholders: selectedStakeholders.map(s => ({
+                  name: s.name,
+                  role: s.role,
+                  department: s.department,
+                  priorities: s.priorities,
+                  personality: s.personality,
+                  expertise: s.expertise || []
+                }))
+              }
+            )
+            
+            // Create response message
+            const mentionResponseMessage: Message = {
+              id: `mention-response-${Date.now()}-${mentionedStakeholder.id}`,
+              speaker: mentionedStakeholder.id,
+              content: mentionResponse,
+              timestamp: new Date().toISOString(),
+              stakeholderName: mentionedStakeholder.name,
+              stakeholderRole: mentionedStakeholder.role
+            }
+            
+            // Add to messages
+            updatedMessages = [...updatedMessages, mentionResponseMessage]
+            setMessages(updatedMessages)
+            
+            // Play audio for the mention response
+            if (globalAudioEnabled && isStakeholderVoiceEnabled(mentionedStakeholder.id)) {
+              try {
+                await playMessageAudio(mentionResponseMessage.id, mentionResponse, mentionedStakeholder, true)
+              } catch (audioError) {
+                console.warn('Audio playbook failed for mention response:', audioError)
+              }
+            }
+            
+            // Small pause between multiple responses
+            if (mentionResult.mentionedStakeholders.length > 1) {
+              await new Promise(resolve => setTimeout(resolve, 1000))
+            }
+          }
+        }
+        
+        // Check for cascading mentions in the last response
+        if (updatedMessages.length > currentMessages.length) {
+          const lastResponse = updatedMessages[updatedMessages.length - 1]
+          const lastRespondingStakeholder = selectedStakeholders.find(s => s.id === lastResponse.speaker)
+          if (lastRespondingStakeholder) {
+            const cascadingMessages = await handleStakeholderMentions(
+              lastResponse.content,
+              lastRespondingStakeholder,
+              userMessage,
+              updatedMessages
+            )
+            return cascadingMessages
+          }
+        }
+        
+        return updatedMessages
       }
     } catch (error) {
       console.error('Error handling stakeholder mentions:', error)
@@ -1390,24 +1402,34 @@ These notes were generated using a fallback system due to extended AI processing
 
        const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders)
        
-       if (userMentionResult.mentionedStakeholder && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-         console.log(`🎯 User directly mentioned stakeholder: ${userMentionResult.mentionedStakeholder.name} (${userMentionResult.mentionType}, confidence: ${userMentionResult.confidence})`)
+       if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+         const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ')
+         console.log(`🎯 User directly mentioned stakeholder(s): ${mentionedNames} (${userMentionResult.mentionType}, confidence: ${userMentionResult.confidence})`)
          
-         // Find the mentioned stakeholder
-         const mentionedStakeholder = selectedStakeholders.find(s => 
-           s.name === userMentionResult.mentionedStakeholder?.name
-         )
+         // Show feedback that we detected the mention(s)
+         const feedbackText = userMentionResult.mentionedStakeholders.length > 1 
+           ? `🎯 Directing question to ${mentionedNames}`
+           : `🎯 Directing question to ${userMentionResult.mentionedStakeholders[0].name}`
+         setDynamicFeedback(feedbackText)
+         setTimeout(() => setDynamicFeedback(null), 3000)
          
-         if (mentionedStakeholder) {
-           // Show feedback that we detected the mention
-           setDynamicFeedback(`🎯 Directing question to ${mentionedStakeholder.name}`)
-           setTimeout(() => setDynamicFeedback(null), 2000)
+         // Trigger all mentioned stakeholders to respond
+         for (const mentionedStakeholderContext of userMentionResult.mentionedStakeholders) {
+           const mentionedStakeholder = selectedStakeholders.find(s => 
+             s.name === mentionedStakeholderContext.name
+           )
            
-           // Directly trigger the mentioned stakeholder to respond
-           await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, currentMessages, 'direct_mention')
-           setIsGeneratingResponse(false)
-           return // Exit early - don't go through normal conversation flow
+           if (mentionedStakeholder) {
+             await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, currentMessages, 'direct_mention')
+             // Small pause between multiple responses
+             if (userMentionResult.mentionedStakeholders.length > 1) {
+               await new Promise(resolve => setTimeout(resolve, 1500))
+             }
+           }
          }
+         
+         setIsGeneratingResponse(false)
+         return // Exit early - don't go through normal conversation flow
        }
 
        // If no direct mention detected, proceed with normal conversation flow

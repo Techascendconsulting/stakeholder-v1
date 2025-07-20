@@ -1481,8 +1481,8 @@ Return "YES" if directly addressed, "NO" if not.`
 
   // Enhanced stakeholder mention detection for cross-references
   async detectStakeholderMentions(response: string, availableStakeholders: StakeholderContext[]): Promise<{
-    mentionedStakeholder: StakeholderContext | null,
-    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'none',
+    mentionedStakeholders: StakeholderContext[],
+    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'none',
     confidence: number
   }> {
     try {
@@ -1499,13 +1499,14 @@ Return "YES" if directly addressed, "NO" if not.`
 Available stakeholders: ${stakeholderNames}
 Detailed info: ${stakeholderRoles}
 
-TASK: Detect if this response mentions another stakeholder in a way that naturally calls for their input.
+TASK: Detect if this response mentions stakeholder(s) in a way that naturally calls for their input.
 
 MENTION TYPES TO DETECT:
 1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?", "aisha what is your process?")
 2. "at_mention" - Using @ symbol (e.g., "@David, your thoughts?")
 3. "name_question" - Name followed by question (e.g., "Emily might know this better?", "Has David looked at this?")
 4. "expertise_request" - Requesting someone's expertise (e.g., "the IT team should weigh in", "someone from Finance")
+5. "multiple_mention" - Multiple stakeholders mentioned (e.g., "aisha and david how are you?", "Sarah and James, what do you think?")
 
 EXAMPLES OF WHAT TO DETECT:
 - "Sarah, what's your perspective on this?"
@@ -1518,6 +1519,9 @@ EXAMPLES OF WHAT TO DETECT:
 - "Finance would need to approve this"
 - "james what are your thoughts on this"
 - "sarah, how does this impact customer service"
+- "aisha and david how are you?"
+- "Sarah and James, what are your thoughts?"
+- "How are you doing today, David?"
 
 EXAMPLES OF WHAT NOT TO DETECT:
 - "We need to consult with another department" (too vague)
@@ -1525,13 +1529,14 @@ EXAMPLES OF WHAT NOT TO DETECT:
 - "Let's form a committee" (not specific)
 
 RESPONSE FORMAT:
-- stakeholder_name: exact name from list or "NONE"
+- stakeholder_names: comma-separated list of exact names from list or "${AIService.CONFIG.mention.noMentionToken}"
 - mention_type: one of the types above or "none" 
 - confidence: 0.0-1.0 (how confident you are this needs a response)
 
-Example: stakeholder_name="Sarah Patel" mention_type="direct_question" confidence=0.9
+Example: stakeholder_names="Sarah Patel,David Thompson" mention_type="multiple_mention" confidence=0.9
+Single example: stakeholder_names="Sarah Patel" mention_type="direct_question" confidence=0.9
 
-Return format: stakeholder_name|mention_type|confidence`
+Return format: stakeholder_names|mention_type|confidence`
           },
           {
             role: "user",
@@ -1545,41 +1550,51 @@ Return format: stakeholder_name|mention_type|confidence`
       const result = completion.choices[0]?.message?.content?.trim();
       
       if (!result) {
-        return { mentionedStakeholder: null, mentionType: 'none', confidence: 0 };
+        return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
       }
 
       const parts = result.split('|');
       if (parts.length !== 3) {
-        return { mentionedStakeholder: null, mentionType: 'none', confidence: 0 };
+        return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
       }
 
-      const [stakeholderName, mentionType, confidenceStr] = parts;
+      const [stakeholderNamesStr, mentionType, confidenceStr] = parts;
       const confidence = parseFloat(confidenceStr) || 0;
 
-      if (stakeholderName === AIService.CONFIG.mention.noMentionToken || confidence < AIService.CONFIG.mention.confidenceThreshold) {
-        return { mentionedStakeholder: null, mentionType: 'none', confidence };
+      if (stakeholderNamesStr === AIService.CONFIG.mention.noMentionToken || confidence < AIService.CONFIG.mention.confidenceThreshold) {
+        return { mentionedStakeholders: [], mentionType: 'none', confidence };
       }
 
-      // Find the stakeholder by exact name match
-      const mentionedStakeholder = availableStakeholders.find(s => 
-        s.name === stakeholderName || 
-        s.name.toLowerCase() === stakeholderName.toLowerCase() ||
-        stakeholderName.toLowerCase().includes(s.name.split(' ')[0].toLowerCase())
-      );
+             // Parse multiple stakeholder names
+       const parsedStakeholderNames = stakeholderNamesStr.split(',').map(name => name.trim());
+      const mentionedStakeholders: StakeholderContext[] = [];
 
-      if (!mentionedStakeholder) {
-        return { mentionedStakeholder: null, mentionType: 'none', confidence };
+             for (const stakeholderName of parsedStakeholderNames) {
+        const foundStakeholder = availableStakeholders.find(s => 
+          s.name === stakeholderName || 
+          s.name.toLowerCase() === stakeholderName.toLowerCase() ||
+          stakeholderName.toLowerCase().includes(s.name.split(' ')[0].toLowerCase()) ||
+          s.name.split(' ')[0].toLowerCase().includes(stakeholderName.toLowerCase())
+        );
+        
+        if (foundStakeholder) {
+          mentionedStakeholders.push(foundStakeholder);
+        }
+      }
+
+      if (mentionedStakeholders.length === 0) {
+        return { mentionedStakeholders: [], mentionType: 'none', confidence };
       }
 
       return { 
-        mentionedStakeholder, 
-        mentionType: mentionType as 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'none', 
+        mentionedStakeholders, 
+        mentionType: mentionType as 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'none', 
         confidence 
       };
 
     } catch (error) {
       console.error('Error detecting stakeholder mentions:', error);
-      return { mentionedStakeholder: null, mentionType: 'none', confidence: 0 };
+      return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
     }
   }
 
