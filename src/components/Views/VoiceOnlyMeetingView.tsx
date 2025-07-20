@@ -26,8 +26,8 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
 
   // Consistent color scheme - no multiple colors
   const getAvatarColor = () => {
-    if (isUser) return 'bg-blue-600';
-    return 'bg-gray-700'; // Consistent gray for all stakeholders
+    // All participants should have the same background color
+    return 'bg-gray-700'; // Consistent gray for everyone including user
   };
 
   return (
@@ -171,13 +171,16 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     try {
       // Add to conversation queue to prevent simultaneous speaking
       setConversationQueue(prev => [...prev, stakeholder.id]);
+      console.log(`🎯 ${stakeholder.name} added to queue. Current speaker: ${currentSpeaking}`);
       
       // Wait for turn if someone else is speaking
       while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
+        console.log(`⏳ ${stakeholder.name} waiting for ${currentSpeaking} to finish speaking...`);
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       
       // Start speaking
+      console.log(`🗣️ ${stakeholder.name} now speaking`);
       setCurrentSpeaking(stakeholder.id);
       
       // Dynamic thinking state management
@@ -242,6 +245,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           }
 
           // Remove from queue and set next speaker
+          console.log(`✅ ${stakeholder.name} finished speaking, removing from queue`);
           setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
           setCurrentSpeaking(null);
 
@@ -324,13 +328,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         setTimeout(() => setDynamicFeedback(null), 3000);
         
-        // Process each mentioned stakeholder using transcript meeting logic
+        // Process each mentioned stakeholder using transcript meeting logic - SEQUENTIALLY
         for (const mentionedStakeholderContext of userMentionResult.mentionedStakeholders) {
           const fullStakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholderContext.name);
           
           if (fullStakeholder) {
-            // Use the exact same approach as transcript meeting
-            await processDynamicStakeholderResponse(
+            // CRITICAL: Update currentMessages after each response to prevent overlap
+            currentMessages = await processDynamicStakeholderResponse(
               fullStakeholder,
               messageContent,
               currentMessages,
@@ -342,7 +346,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`📋 No specific mentions detected, selecting random stakeholder`);
         // Handle general questions - pick one random stakeholder
         const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-        await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages, 'general_question');
+        currentMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages, 'general_question');
       }
     } catch (error) {
       console.error('Error generating AI response:', error);
