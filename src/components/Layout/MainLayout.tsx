@@ -12,6 +12,8 @@ import ProfileView from '../Views/ProfileView'
 import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
+import MeetingModeSelection from '../Views/MeetingModeSelection'
+import VoiceOnlyMeetingView from '../Views/VoiceOnlyMeetingView'
 
 const MainLayout: React.FC = () => {
   const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
@@ -43,6 +45,8 @@ const MainLayout: React.FC = () => {
         return <ProjectBrief />
       case 'stakeholders':
         return <StakeholdersView />
+      case 'meeting-mode-selection':
+        return <MeetingModeSelection />
       case 'meeting':
         console.log('🔍 DEBUG: Rendering MeetingView with props:', {
           selectedProject: selectedProject?.name,
@@ -54,6 +58,8 @@ const MainLayout: React.FC = () => {
           selectedStakeholders={selectedStakeholders}
           currentUser={user}
         />
+      case 'voice-only-meeting':
+        return <VoiceOnlyMeetingView />
       case 'notes':
         return <NotesView />
       case 'deliverables':

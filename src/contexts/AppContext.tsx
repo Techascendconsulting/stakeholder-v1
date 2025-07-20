@@ -21,6 +21,7 @@ interface AppContextType {
   // Meeting data
   meetings: Meeting[]
   currentMeeting: Meeting | null
+  setCurrentMeeting: (meeting: Meeting | null) => void
   
   // Deliverables
   deliverables: Deliverable[]
@@ -121,6 +122,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSelectedStakeholders,
     meetings,
     currentMeeting,
+    setCurrentMeeting,
     deliverables,
     addDeliverable,
     updateDeliverable,

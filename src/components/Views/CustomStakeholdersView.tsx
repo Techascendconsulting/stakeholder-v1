@@ -423,7 +423,7 @@ const CustomStakeholdersView: React.FC = () => {
       selectedStakeholderIds.includes(s.id)
     )
     setSelectedStakeholders(selectedStakeholders)
-    setCurrentView('meeting')
+          setCurrentView('meeting-mode-selection')
   }
 
   if (!customProject) {

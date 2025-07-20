@@ -38,8 +38,8 @@ const StakeholdersView: React.FC = () => {
     )
     console.log('🎯 DEBUG: Starting meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
     setSelectedStakeholders(selectedStakeholderObjects)
-    console.log('🎯 DEBUG: Setting current view to meeting')
-    setCurrentView('meeting')
+    console.log('🎯 DEBUG: Setting current view to meeting mode selection')
+    setCurrentView('meeting-mode-selection')
   }
 
   const isStakeholderSelected = (stakeholderId: string) => {
