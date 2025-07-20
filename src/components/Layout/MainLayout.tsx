@@ -59,6 +59,10 @@ const MainLayout: React.FC = () => {
           currentUser={user}
         />
       case 'voice-only-meeting':
+        console.log('🔍 DEBUG: Rendering VoiceOnlyMeetingView with:', {
+          selectedProject: selectedProject?.name || 'null',
+          selectedStakeholders: selectedStakeholders?.length || 0
+        });
         return <VoiceOnlyMeetingView />
       case 'notes':
         return <NotesView />

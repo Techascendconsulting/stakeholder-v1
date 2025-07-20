@@ -105,8 +105,15 @@ const MeetingQueue: React.FC<MeetingQueueProps> = ({ queue, currentSpeaker }) =>
 };
 
 export const VoiceOnlyMeetingView: React.FC = () => {
-  const { currentProject, selectedStakeholders, setCurrentView } = useApp();
+  const { selectedProject, selectedStakeholders, setCurrentView } = useApp();
   const { isSpeaking, setIsSpeaking, speakText, stopSpeaking } = useVoice();
+  
+  // Debug logging
+  console.log('🔍 VoiceOnlyMeetingView DEBUG:', {
+    selectedProject: selectedProject ? selectedProject.name : 'null',
+    selectedStakeholders: selectedStakeholders ? selectedStakeholders.length : 0,
+    hasSetCurrentView: typeof setCurrentView === 'function'
+  });
   
   const [meetingStartTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -279,12 +286,24 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setIsListening(!isListening);
   };
 
-  if (!selectedProject || !selectedStakeholders.length) {
+  // Early return with debug info
+  if (!selectedProject || !selectedStakeholders?.length) {
+    console.log('🚨 VoiceOnlyMeetingView: Missing data', {
+      selectedProject: selectedProject ? 'exists' : 'null',
+      selectedStakeholders: selectedStakeholders ? `${selectedStakeholders.length} items` : 'null'
+    });
+    
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">No meeting configured</h2>
           <p className="text-gray-600">Please select a project and stakeholders first.</p>
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go to Dashboard
+          </button>
         </div>
       </div>
     );
