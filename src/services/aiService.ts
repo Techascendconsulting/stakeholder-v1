@@ -532,7 +532,7 @@ Generate only the greeting, nothing else.`;
     userMessage: string,
     stakeholder: StakeholderContext,
     context: ConversationContext,
-    responseType: 'greeting' | 'discussion' | 'baton_pass' = 'discussion'
+    responseType: 'greeting' | 'discussion' | 'baton_pass' | 'direct_mention' = 'discussion'
   ): Promise<string> {
     try {
       // Handle greetings intelligently

@@ -1377,6 +1377,40 @@ These notes were generated using a fallback system due to extended AI processing
      setMessages(currentMessages)
 
      try {
+       // Check for direct stakeholder mentions in user message FIRST
+       const aiService = AIService.getInstance()
+       const availableStakeholders = selectedStakeholders.map(s => ({
+         name: s.name,
+         role: s.role,
+         department: s.department,
+         priorities: s.priorities,
+         personality: s.personality,
+         expertise: s.expertise || []
+       }))
+
+       const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders)
+       
+       if (userMentionResult.mentionedStakeholder && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+         console.log(`🎯 User directly mentioned stakeholder: ${userMentionResult.mentionedStakeholder.name} (${userMentionResult.mentionType}, confidence: ${userMentionResult.confidence})`)
+         
+         // Find the mentioned stakeholder
+         const mentionedStakeholder = selectedStakeholders.find(s => 
+           s.name === userMentionResult.mentionedStakeholder?.name
+         )
+         
+         if (mentionedStakeholder) {
+           // Show feedback that we detected the mention
+           setDynamicFeedback(`🎯 Directing question to ${mentionedStakeholder.name}`)
+           setTimeout(() => setDynamicFeedback(null), 2000)
+           
+           // Directly trigger the mentioned stakeholder to respond
+           await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, currentMessages, 'direct_mention')
+           setIsGeneratingResponse(false)
+           return // Exit early - don't go through normal conversation flow
+         }
+       }
+
+       // If no direct mention detected, proceed with normal conversation flow
        // Dynamic conversation type detection
        const isGroup = isGroupMessage(messageContent)
        const isGreeting = isSimpleGreeting(messageContent)
