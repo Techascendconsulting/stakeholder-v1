@@ -1089,7 +1089,7 @@ These notes were generated using a fallback system due to extended AI processing
       // Enhanced stakeholder mention detection
       const mentionResult = await aiService.detectStakeholderMentions(response, availableStakeholders)
       
-      if (mentionResult.mentionedStakeholder && mentionResult.confidence >= 0.6) {
+      if (mentionResult.mentionedStakeholder && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
         console.log(`🎯 Stakeholder mention detected: ${mentionResult.mentionedStakeholder.name} (${mentionResult.mentionType}, confidence: ${mentionResult.confidence})`)
         
         // Track the mention for UI feedback
@@ -1111,7 +1111,8 @@ These notes were generated using a fallback system due to extended AI processing
         
         if (mentionedStakeholder) {
           // Natural pause before the mentioned stakeholder responds
-          await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 800))
+          const pauseConfig = AIService.getMentionPauseConfig()
+          await new Promise(resolve => setTimeout(resolve, pauseConfig.base + Math.random() * pauseConfig.variance))
           
           // Convert speaking stakeholder to context format
           const speakingStakeholderContext = {

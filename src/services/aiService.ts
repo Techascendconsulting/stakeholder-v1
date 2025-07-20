@@ -54,6 +54,62 @@ export class AIService {
   private static instance: AIService;
   private conversationState: ConversationState;
   
+  // Comprehensive configuration system - all values easily adjustable
+  private static readonly CONFIG = {
+    mention: {
+      confidenceThreshold: 0.6,
+      pauseBase: 1200,
+      pauseVariance: 800,
+      noMentionToken: "NONE"
+    },
+    conversation: {
+      baseTemperature: 0.7,
+      phaseModifiers: {
+        deepDive: 0.1,
+        normal: 0
+      },
+      emotionalModifiers: {
+        excited: 0.1,
+        concerned: 0.05,
+        neutral: 0
+      },
+      temperatureBounds: { min: 0.3, max: 1.0 },
+      presencePenalty: 0.4,
+      frequencyPenalty: 0.5
+    },
+    tokens: {
+      base: 200,
+      teamFactor: 1.0,
+      experienceFactors: { spoken: 1.1, newSpeaker: 1.2 },
+      phaseFactors: { deepDive: 1.3, normal: 1.1 },
+      maxTokens: 400
+    },
+    penalties: {
+      presenceBase: 0.1,
+      presenceIncrement: 0.05,
+      frequencyBase: 0.1,
+      frequencyIncrement: 0.1,
+      maxPenalty: 0.8
+    },
+    conversation_flow: {
+      maxLastSpeakers: 3,
+      maxTopicsPerStakeholder: 5,
+      openingPhaseMessages: 3,
+      closingPhaseMessages: 25,
+      recentMessagesCount: 5
+    },
+    ai_models: {
+      primary: "gpt-4o",
+      phaseDetection: "gpt-4",
+      noteGeneration: "gpt-3.5-turbo"
+    },
+    ai_params: {
+      phaseDetection: { temperature: 0.1, maxTokens: 20 },
+      greeting: { temperature: 0.8, maxTokens: 200, presencePenalty: 0.6, frequencyPenalty: 0.6 },
+      noteGeneration: { temperature: 0.2, maxTokens: 1200 }
+    }
+  };
+  
   private constructor() {
     this.conversationState = this.initializeConversationState();
   }
@@ -63,6 +119,52 @@ export class AIService {
       AIService.instance = new AIService();
     }
     return AIService.instance;
+  }
+
+  // Getter for configuration values
+  static getMentionConfidenceThreshold(): number {
+    return AIService.CONFIG.mention.confidenceThreshold;
+  }
+
+  static getMentionPauseConfig(): { base: number; variance: number } {
+    return {
+      base: AIService.CONFIG.mention.pauseBase,
+      variance: AIService.CONFIG.mention.pauseVariance
+    };
+  }
+
+  // Additional configuration getters for external customization
+  static getConversationConfig() {
+    return { ...AIService.CONFIG.conversation };
+  }
+
+  static getTokenConfig() {
+    return { ...AIService.CONFIG.tokens };
+  }
+
+  static getPenaltyConfig() {
+    return { ...AIService.CONFIG.penalties };
+  }
+
+  static getConversationFlowConfig() {
+    return { ...AIService.CONFIG.conversation_flow };
+  }
+
+  static getAIModelsConfig() {
+    return { ...AIService.CONFIG.ai_models };
+  }
+
+  static getAIParamsConfig() {
+    return { ...AIService.CONFIG.ai_params };
+  }
+
+  // Method to update configuration dynamically (if needed)
+  static updateMentionConfig(newConfig: Partial<typeof AIService.CONFIG.mention>): void {
+    Object.assign(AIService.CONFIG.mention, newConfig);
+  }
+
+  static updateConversationConfig(newConfig: Partial<typeof AIService.CONFIG.conversation>): void {
+    Object.assign(AIService.CONFIG.conversation, newConfig);
   }
 
   private initializeConversationState(): ConversationState {
@@ -84,40 +186,43 @@ export class AIService {
     const stakeholderState = this.getStakeholderState(stakeholder.name);
     
     // Optimized temperature for natural, conversational responses
-    const baseTemperature = 0.7; // Balanced for natural conversation
-    const phaseModifier = this.conversationState.conversationPhase === 'deep_dive' ? 0.1 : 0;
-    const emotionalModifier = stakeholderState.emotionalState === 'excited' ? 0.1 : 
-                              stakeholderState.emotionalState === 'concerned' ? 0.05 : 0;
+    const baseTemperature = AIService.CONFIG.conversation.baseTemperature; // Balanced for natural conversation
+    const phaseModifier = this.conversationState.conversationPhase === 'deep_dive' ? 
+      AIService.CONFIG.conversation.phaseModifiers.deepDive : 
+      AIService.CONFIG.conversation.phaseModifiers.normal;
+    const emotionalModifier = AIService.CONFIG.conversation.emotionalModifiers[stakeholderState.emotionalState] || 0;
     
           return {
-        temperature: Math.min(1.0, Math.max(0.3, baseTemperature + phaseModifier + emotionalModifier)),
+        temperature: Math.min(AIService.CONFIG.conversation.temperatureBounds.max, Math.max(AIService.CONFIG.conversation.temperatureBounds.min, baseTemperature + phaseModifier + emotionalModifier)),
         maxTokens: this.calculateDynamicTokens(teamSize, messageCount, stakeholderState),
-        presencePenalty: 0.4, // Encourage variety in responses
-        frequencyPenalty: 0.5  // Prevent repetitive language
+        presencePenalty: AIService.CONFIG.conversation.presencePenalty, // Encourage variety in responses
+        frequencyPenalty: AIService.CONFIG.conversation.frequencyPenalty  // Prevent repetitive language
       };
   }
 
   private calculateDynamicTokens(teamSize: number, messageCount: number, stakeholderState: StakeholderState): number {
     // CONVERSATIONAL responses - helpful but not overwhelming
-    const baseTokens = 200; // Base for natural, conversational responses
-    const teamFactor = 1.0; // Consistent responses regardless of team size
-    const experienceFactor = stakeholderState.hasSpoken ? 1.1 : 1.2; // Slightly more for experienced speakers
-    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 1.3 : 1.1; // More for detailed discussions but still conversational
+    const baseTokens = AIService.CONFIG.tokens.base; // Base for natural, conversational responses
+    const teamFactor = AIService.CONFIG.tokens.teamFactor; // Consistent responses regardless of team size
+    const experienceFactor = stakeholderState.hasSpoken ? AIService.CONFIG.tokens.experienceFactors.spoken : AIService.CONFIG.tokens.experienceFactors.newSpeaker; // Slightly more for experienced speakers
+    const phaseFactor = this.conversationState.conversationPhase === 'deep_dive' ? 
+      AIService.CONFIG.tokens.phaseFactors.deepDive : 
+      AIService.CONFIG.tokens.phaseFactors.normal; // More for detailed discussions but still conversational
     
     // Allow for helpful but not overwhelming responses
     const calculatedTokens = Math.floor(baseTokens * teamFactor * experienceFactor * phaseFactor);
-    return Math.min(calculatedTokens, 400); // Cap for natural conversation responses
+    return Math.min(calculatedTokens, AIService.CONFIG.tokens.maxTokens); // Cap for natural conversation responses
   }
 
   private calculatePresencePenalty(stakeholderName: string): number {
     const interactions = this.conversationState.participantInteractions.get(stakeholderName) || 0;
-    return Math.min(0.8, 0.1 + (interactions * 0.05)); // Increase penalty for frequent speakers
+    return Math.min(AIService.CONFIG.penalties.maxPenalty, AIService.CONFIG.penalties.presenceBase + (interactions * AIService.CONFIG.penalties.presenceIncrement)); // Increase penalty for frequent speakers
   }
 
   private calculateFrequencyPenalty(stakeholderName: string): number {
     const stakeholderState = this.getStakeholderState(stakeholderName);
     const topicRepetition = stakeholderState.lastTopics.length;
-    return Math.min(0.8, 0.1 + (topicRepetition * 0.1)); // Prevent topic repetition
+    return Math.min(AIService.CONFIG.penalties.maxPenalty, AIService.CONFIG.penalties.frequencyBase + (topicRepetition * AIService.CONFIG.penalties.frequencyIncrement)); // Prevent topic repetition
   }
 
   // Get or create stakeholder state
@@ -150,7 +255,7 @@ export class AIService {
     
     // Update last speakers
     this.conversationState.lastSpeakers.push(stakeholder.name);
-    if (this.conversationState.lastSpeakers.length > 3) {
+    if (this.conversationState.lastSpeakers.length > AIService.CONFIG.conversation_flow.maxLastSpeakers) {
       this.conversationState.lastSpeakers.shift();
     }
     
@@ -186,8 +291,8 @@ export class AIService {
     });
     
     // Keep only last 5 topics per stakeholder
-    if (stakeholderState.lastTopics.length > 5) {
-      stakeholderState.lastTopics = stakeholderState.lastTopics.slice(-5);
+    if (stakeholderState.lastTopics.length > AIService.CONFIG.conversation_flow.maxTopicsPerStakeholder) {
+      stakeholderState.lastTopics = stakeholderState.lastTopics.slice(-AIService.CONFIG.conversation_flow.maxTopicsPerStakeholder);
     }
   }
 
@@ -195,19 +300,19 @@ export class AIService {
     const messageCount = this.conversationState.messageCount;
     
     // Handle basic opening phase
-    if (messageCount <= 3) {
+    if (messageCount <= AIService.CONFIG.conversation_flow.openingPhaseMessages) {
       this.conversationState.conversationPhase = 'opening';
       return;
     }
     
     // Handle closing phase
-    if (messageCount > 25) {
+    if (messageCount > AIService.CONFIG.conversation_flow.closingPhaseMessages) {
       this.conversationState.conversationPhase = 'closing';
       return;
     }
     
     // Analyze conversation content to determine business analysis phase
-    const recentMessages = context.conversationHistory.slice(-5);
+    const recentMessages = context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMessagesCount);
     const conversationContent = recentMessages.map(msg => msg.content).join(' ');
     
     // Force as_is phase if explicit current process request
@@ -223,7 +328,7 @@ export class AIService {
     
     try {
       const completion = await openai.chat.completions.create({
-        model: "gpt-4",
+        model: AIService.CONFIG.ai_models.phaseDetection,
         messages: [
           {
             role: "system",
@@ -249,8 +354,8 @@ Return ONLY the phase name: "as_is", "pain_points", "solutioning", or "deep_dive
             content: `Recent conversation content: "${conversationContent}"`
           }
         ],
-        temperature: 0.1,
-        max_tokens: 20
+        temperature: AIService.CONFIG.ai_params.phaseDetection.temperature,
+        max_tokens: AIService.CONFIG.ai_params.phaseDetection.maxTokens
       });
 
       const detectedPhase = completion.choices[0]?.message?.content?.trim();
@@ -335,14 +440,14 @@ CRITICAL: DO NOT have the stakeholder address themselves by name (NO "Hi ${stake
 Generate only the greeting, nothing else.`;
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: AIService.CONFIG.ai_models.greeting,
         messages: [
           { role: "user", content: greetingPrompt }
         ],
-        temperature: 0.8, // Higher temperature for more creative, varied responses
-        max_tokens: 200, // More tokens for intelligent greetings
-        presence_penalty: 0.6, // Encourage diverse responses
-        frequency_penalty: 0.6
+        temperature: AIService.CONFIG.ai_params.greeting.temperature,
+        max_tokens: AIService.CONFIG.ai_params.greeting.maxTokens,
+        presence_penalty: AIService.CONFIG.ai_params.greeting.presencePenalty,
+        frequency_penalty: AIService.CONFIG.ai_params.greeting.frequencyPenalty
       });
 
       const aiGreeting = completion.choices[0]?.message?.content?.trim();
@@ -443,7 +548,7 @@ Generate only the greeting, nothing else.`;
       const conversationPrompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: AIService.CONFIG.ai_models.primary,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: conversationPrompt }
@@ -600,12 +705,12 @@ Be concise but comprehensive. Focus on actionable insights.`;
       }
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo", // Faster model for quicker response
+        model: AIService.CONFIG.ai_models.noteGeneration,
         messages: [
           { role: "user", content: prompt }
         ],
-        temperature: 0.2, // Lower temperature for faster, more consistent output
-        max_tokens: 1200 // Reduced tokens for faster processing
+        temperature: AIService.CONFIG.ai_params.noteGeneration.temperature,
+        max_tokens: AIService.CONFIG.ai_params.noteGeneration.maxTokens
       });
 
       const aiAnalysis = completion.choices[0]?.message?.content || '';
@@ -1401,7 +1506,7 @@ Return format: stakeholder_name|mention_type|confidence`
       const [stakeholderName, mentionType, confidenceStr] = parts;
       const confidence = parseFloat(confidenceStr) || 0;
 
-      if (stakeholderName === "NONE" || confidence < 0.6) {
+      if (stakeholderName === AIService.CONFIG.mention.noMentionToken || confidence < AIService.CONFIG.mention.confidenceThreshold) {
         return { mentionedStakeholder: null, mentionType: 'none', confidence };
       }
 
