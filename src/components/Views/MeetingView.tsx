@@ -1215,8 +1215,9 @@ These notes were generated using a fallback system due to extended AI processing
         await playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
       }
       
-      // Enhanced mention detection - check if this response mentions other stakeholders
-      updatedMessages = await handleStakeholderMentions(response, stakeholder, messageContent, updatedMessages)
+      // Enhanced mention detection - check if this response mentions other stakeholders (disabled for now to prevent false positives)
+      // TODO: Re-enable with better AI accuracy
+      // updatedMessages = await handleStakeholderMentions(response, stakeholder, messageContent, updatedMessages)
       
       // Check for traditional baton passing (keep existing functionality)
       const batonPassedStakeholder = detectBatonPassing(response, updatedMessages)
@@ -1280,9 +1281,30 @@ These notes were generated using a fallback system due to extended AI processing
       // Get multiple relevant stakeholders for this question
       const relevantStakeholders = selectMultipleRespondents(messageContent, currentMessages)
       
+      // Set up visual response queue for multiple responders
+      const responseQueueData = relevantStakeholders.map(s => ({
+        name: s.name,
+        id: s.id
+      }))
+      
+      setResponseQueue({
+        current: responseQueueData[0]?.name || null,
+        upcoming: responseQueueData.slice(1)
+      })
+      
       // Queue all relevant stakeholders to respond
-      for (const stakeholder of relevantStakeholders) {
+      for (let i = 0; i < relevantStakeholders.length; i++) {
+        const stakeholder = relevantStakeholders[i]
         await processDynamicStakeholderResponse(stakeholder, messageContent, currentMessages, 'discussion_primary')
+        
+        // Update response queue - move to next stakeholder
+        setResponseQueue(prev => {
+          const remaining = prev.upcoming.slice(1)
+          return {
+            current: prev.upcoming[0]?.name || null,
+            upcoming: remaining
+          }
+        })
         
         // Wait for current speaker to finish before next one
         while (currentSpeaking !== null) {
@@ -1290,8 +1312,13 @@ These notes were generated using a fallback system due to extended AI processing
         }
         
         // Natural pause between speakers
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        if (i < relevantStakeholders.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
       }
+      
+      // Clear the response queue when all responses are complete
+      setResponseQueue({ current: null, upcoming: [] })
     } else {
       // Single respondent for specific questions
       const primaryRespondent = selectContextualRespondent(messageContent, currentMessages)
