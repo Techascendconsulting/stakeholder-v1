@@ -1402,6 +1402,14 @@ These notes were generated using a fallback system due to extended AI processing
 
        const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders)
        
+       // Enhanced debugging for mention detection
+       console.log('🔍 DEBUG: User message analysis:', {
+         messageContent,
+         availableStakeholders: availableStakeholders.map(s => s.name),
+         mentionResult: userMentionResult,
+         threshold: AIService.getMentionConfidenceThreshold()
+       })
+       
        if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
          const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ')
          console.log(`🎯 User directly mentioned stakeholder(s): ${mentionedNames} (${userMentionResult.mentionType}, confidence: ${userMentionResult.confidence})`)

@@ -1522,6 +1522,11 @@ EXAMPLES OF WHAT TO DETECT:
 - "aisha and david how are you?"
 - "Sarah and James, what are your thoughts?"
 - "How are you doing today, David?"
+- "hi aisha and david"
+- "hello sarah and james"
+- "aisha, david, what do you think?"
+- "can aisha and david help with this?"
+- "I'd like to hear from sarah and emily"
 
 EXAMPLES OF WHAT NOT TO DETECT:
 - "We need to consult with another department" (too vague)
@@ -1549,19 +1554,35 @@ Return format: stakeholder_names|mention_type|confidence`
 
       const result = completion.choices[0]?.message?.content?.trim();
       
+      console.log('🔍 AI Detection Raw Result:', {
+        input: response,
+        rawResult: result,
+        availableNames: availableStakeholders.map(s => s.name)
+      });
+      
       if (!result) {
+        console.log('❌ No result from AI');
         return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
       }
 
       const parts = result.split('|');
       if (parts.length !== 3) {
+        console.log('❌ Invalid format from AI:', { parts, expected: 3 });
         return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
       }
 
       const [stakeholderNamesStr, mentionType, confidenceStr] = parts;
       const confidence = parseFloat(confidenceStr) || 0;
 
+      console.log('🔍 Parsed AI Response:', {
+        stakeholderNamesStr,
+        mentionType,
+        confidence,
+        threshold: AIService.CONFIG.mention.confidenceThreshold
+      });
+
       if (stakeholderNamesStr === AIService.CONFIG.mention.noMentionToken || confidence < AIService.CONFIG.mention.confidenceThreshold) {
+        console.log('❌ Below threshold or no mention token');
         return { mentionedStakeholders: [], mentionType: 'none', confidence };
       }
 
@@ -1574,11 +1595,21 @@ Return format: stakeholder_names|mention_type|confidence`
           s.name === stakeholderName || 
           s.name.toLowerCase() === stakeholderName.toLowerCase() ||
           stakeholderName.toLowerCase().includes(s.name.split(' ')[0].toLowerCase()) ||
-          s.name.split(' ')[0].toLowerCase().includes(stakeholderName.toLowerCase())
+          s.name.split(' ')[0].toLowerCase().includes(stakeholderName.toLowerCase()) ||
+          // Enhanced matching for first names
+          s.name.split(' ')[0].toLowerCase() === stakeholderName.toLowerCase() ||
+          // Enhanced matching for last names
+          s.name.split(' ').slice(-1)[0].toLowerCase() === stakeholderName.toLowerCase() ||
+          // Enhanced partial matching
+          s.name.toLowerCase().includes(stakeholderName.toLowerCase()) ||
+          stakeholderName.toLowerCase().includes(s.name.toLowerCase())
         );
         
         if (foundStakeholder) {
           mentionedStakeholders.push(foundStakeholder);
+          console.log(`✅ Matched "${stakeholderName}" to "${foundStakeholder.name}"`);
+        } else {
+          console.log(`❌ Could not match "${stakeholderName}" to any stakeholder`);
         }
       }
 
