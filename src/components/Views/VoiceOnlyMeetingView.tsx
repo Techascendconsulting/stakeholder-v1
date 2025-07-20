@@ -33,64 +33,63 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
 
   return (
     <div className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750 min-h-[200px]">
-      {/* Speaking Ring */}
+      {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10"></div>
+        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10">
+          <div className="absolute inset-0 rounded-lg border-4 border-green-400 opacity-50 animate-ping"></div>
+        </div>
       )}
       
-      {/* Thinking Ring */}
+      {/* Animated Thinking Ring */}
       {isThinking && !isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse z-10"></div>
-      )}
-      
-      {/* Background Photo or Avatar */}
-      {!isUser && participant.photo ? (
-        <div className="absolute inset-0">
-          <img 
-            src={participant.photo} 
-            alt={participant.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-        </div>
-      ) : (
-        <div className={`absolute inset-0 ${getAvatarColor()}`}></div>
-      )}
-      
-      {/* User's camera placeholder */}
-      {isUser && (
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
-          <div className="text-white text-6xl font-bold opacity-80">
-            {getInitials(participant.name)}
-          </div>
+        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse z-10">
+          <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 opacity-50 animate-ping"></div>
         </div>
       )}
+      
+      {/* Dark Background */}
+      <div className={`absolute inset-0 ${getAvatarColor()}`}></div>
       
       {/* Content Overlay */}
-      <div className="relative z-20 flex flex-col items-center justify-end h-full p-4">
+      <div className="relative z-20 flex flex-col items-center justify-center h-full p-4">
+        {/* Avatar Photo - Circular style */}
+        {!isUser && participant.photo ? (
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg mb-4">
+            <img 
+              src={participant.photo} 
+              alt={participant.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className={`w-24 h-24 rounded-full ${getAvatarColor()} flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg mb-4`}>
+            {getInitials(participant.name)}
+          </div>
+        )}
+        
         {/* Status Indicators */}
         <div className="absolute top-2 left-2">
           {isCurrentSpeaker && (
-            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg">
+            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
               <Volume2 className="w-4 h-4 mr-1" />
               Speaking
             </div>
           )}
           {isThinking && !isCurrentSpeaker && (
-            <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg">
-              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+            <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
+              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-bounce"></div>
               Thinking
             </div>
           )}
         </div>
         
         {/* Name Bar */}
-        <div className="bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg backdrop-blur-sm w-full text-center">
+        <div className="bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg backdrop-blur-sm text-center">
           <h3 className="font-medium text-sm truncate">{participant.name}</h3>
           <p className="text-xs text-gray-300 truncate">{participant.role}</p>
         </div>
         
-        {/* Speaking Animation */}
+        {/* Speaking Animation Dots */}
         {isCurrentSpeaker && (
           <div className="absolute bottom-16 right-2 flex space-x-1">
             <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
@@ -163,6 +162,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     current: string | null;
     upcoming: { name: string; id?: string }[];
   }>({ current: null, upcoming: [] });
+  
+  // Speaking queue management - like transcript meeting
+  const [conversationQueue, setConversationQueue] = useState<any[]>([]);
+  const [isProcessingQueue, setIsProcessingQueue] = useState(false);
   
   // Meeting timer
   const [meetingStartTime] = useState(Date.now());
@@ -372,7 +375,65 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return currentMessages;
   };
 
-  // Message handling (same as before)
+  // Process conversation queue sequentially
+  const processConversationQueue = async () => {
+    if (isProcessingQueue || conversationQueue.length === 0) return;
+    
+    setIsProcessingQueue(true);
+    console.log(`📝 Processing conversation queue: ${conversationQueue.length} stakeholders`);
+    
+    // Update response queue for UI
+    setResponseQueue({
+      current: conversationQueue[0]?.name || null,
+      upcoming: conversationQueue.slice(1).map(s => ({ name: s.name, id: s.id }))
+    });
+    
+    let workingMessages = messages;
+    
+    for (let i = 0; i < conversationQueue.length; i++) {
+      const stakeholder = conversationQueue[i];
+      const messageToRespond = stakeholder.messageToRespond;
+      
+      console.log(`🎯 Queue position ${i + 1}/${conversationQueue.length}: ${stakeholder.name} responding`);
+      
+      // Update current speaker in queue
+      setResponseQueue(prev => ({
+        current: stakeholder.name,
+        upcoming: conversationQueue.slice(i + 1).map(s => ({ name: s.name, id: s.id }))
+      }));
+      
+      // Generate and speak response
+      workingMessages = await processDynamicStakeholderResponse(
+        stakeholder,
+        messageToRespond,
+        workingMessages,
+        'queue_response'
+      );
+      
+      // Wait for audio to complete before next speaker
+      if (i < conversationQueue.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    }
+    
+    // Clear queue
+    setConversationQueue([]);
+    setResponseQueue({ current: null, upcoming: [] });
+    setIsProcessingQueue(false);
+    console.log(`✅ Conversation queue completed`);
+  };
+
+  // Process queue when items are added
+  useEffect(() => {
+    if (conversationQueue.length > 0 && !isProcessingQueue) {
+      const timer = setTimeout(() => {
+        processConversationQueue();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [conversationQueue, isProcessingQueue]);
+
+  // Message handling with proper queue system
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
@@ -408,58 +469,43 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
       
+      console.log(`🔍 Mention detection result:`, {
+        stakeholders: userMentionResult.mentionedStakeholders.map(s => s.name),
+        type: userMentionResult.mentionType,
+        confidence: userMentionResult.confidence
+      });
+
       if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
         const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
-        console.log(`🎯 User mentioned: ${mentionedNames}`);
+        console.log(`🎯 User mentioned: ${mentionedNames} (${userMentionResult.mentionType})`);
         
-        setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
-        setTimeout(() => setDynamicFeedback(null), 2000);
-        
-        const responseQueueData = userMentionResult.mentionedStakeholders.map(s => ({
-          name: s.name,
-          id: selectedStakeholders.find(st => st.name === s.name)?.id || 'unknown'
-        }));
-        
-        setResponseQueue({
-          current: responseQueueData[0]?.name || null,
-          upcoming: responseQueueData.slice(1)
-        });
-        
-        let workingMessages = currentMessages;
-        for (let i = 0; i < userMentionResult.mentionedStakeholders.length; i++) {
-          const mentionedStakeholderContext = userMentionResult.mentionedStakeholders[i];
-          const mentionedStakeholder = selectedStakeholders.find(s => 
-            s.name === mentionedStakeholderContext.name
-          );
+        // Create queue of stakeholders to respond
+        const stakeholderQueue = userMentionResult.mentionedStakeholders.map(mentionedStakeholder => {
+          const fullStakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholder.name);
+          return fullStakeholder ? {
+            ...fullStakeholder,
+            messageToRespond: messageContent
+          } : null;
+        }).filter(Boolean);
+
+        if (stakeholderQueue.length > 0) {
+          console.log(`📝 Adding ${stakeholderQueue.length} stakeholders to conversation queue`);
           
-          if (mentionedStakeholder) {
-            workingMessages = await processDynamicStakeholderResponse(
-              mentionedStakeholder, 
-              messageContent, 
-              workingMessages, 
-              'direct_mention'
-            );
-            
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            if (i < userMentionResult.mentionedStakeholders.length - 1) {
-              setResponseQueue(prev => {
-                const remaining = prev.upcoming.slice(1);
-                return {
-                  current: prev.upcoming[0]?.name || null,
-                  upcoming: remaining
-                };
-              });
-              
-              await new Promise(resolve => setTimeout(resolve, 1500));
-            }
+          // Set feedback message
+          if (userMentionResult.mentionType === 'group_greeting') {
+            setDynamicFeedback(`👋 Everyone will greet you back...`);
+          } else {
+            setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
           }
+          
+          setTimeout(() => setDynamicFeedback(null), 3000);
+          
+          // Add to conversation queue
+          setConversationQueue(stakeholderQueue);
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setResponseQueue({ current: null, upcoming: [] });
       } else {
-        // Handle group greetings or general questions
+        console.log(`📋 No specific mentions detected, selecting random stakeholder`);
+        // Handle general questions - pick one random stakeholder
         const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
         await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages);
       }
