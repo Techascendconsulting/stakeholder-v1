@@ -978,8 +978,8 @@ These notes were generated using a fallback system due to extended AI processing
         setCurrentlyProcessingAudio(messageId)
         setIsAudioPlaying(true)
 
-        const voiceName = getStakeholderVoice(stakeholder.id, stakeholder.role)
-        console.log('Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
+        const voiceName = stakeholder.voice
+        console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
         
         if (isAzureTTSAvailable()) {
           console.log('Using Azure TTS for audio synthesis')

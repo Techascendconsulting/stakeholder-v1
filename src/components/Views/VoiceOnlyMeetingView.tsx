@@ -200,13 +200,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
   };
 
-  // Audio management - FIXED to use stakeholder.id like transcript meeting
+  // Audio management - FIXED to use stakeholder.voice directly like it should
   const speakMessage = async (message: Message) => {
     if (!globalAudioEnabled) return;
 
     const stakeholder = selectedStakeholders.find(s => s.name === message.speaker);
-    // FIX: Use stakeholder.id instead of stakeholder.name for voice matching
-    const voiceId = stakeholder ? getStakeholderVoice(stakeholder.id, stakeholder.role) : null;
+    // FIX: Use stakeholder.voice property directly from mockData
+    const voiceId = stakeholder?.voice || null;
+    
+    console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${stakeholder?.name}`);
     
     try {
       setCurrentSpeaker(stakeholder || { name: message.speaker });
@@ -216,7 +218,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       let audioElement: HTMLAudioElement | null = null;
 
-      if (voiceId && isAzureTTSAvailable() && isStakeholderVoiceEnabled(stakeholder?.id || '')) {
+      if (voiceId && isAzureTTSAvailable()) {
         try {
           const audioBlob = await azureTTS(message.content, voiceId);
           const audioUrl = URL.createObjectURL(audioBlob);
