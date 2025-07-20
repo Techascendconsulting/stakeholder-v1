@@ -1539,8 +1539,12 @@ RESPONSE FORMAT:
 - mention_type: one of the types above or "none" 
 - confidence: 0.0-1.0 (how confident you are this needs a response)
 
-Example: stakeholder_names="Sarah Patel,David Thompson" mention_type="multiple_mention" confidence=0.9
-Single example: stakeholder_names="Sarah Patel" mention_type="direct_question" confidence=0.9
+IMPORTANT: Return ONLY the pipe-separated format below, no quotes, no equals, no extra text.
+
+Examples:
+- Multiple: Sarah Patel,David Thompson|multiple_mention|0.9
+- Single: Sarah Patel|direct_question|0.9
+- None: ${AIService.CONFIG.mention.noMentionToken}|none|0.0
 
 Return format: stakeholder_names|mention_type|confidence`
           },
@@ -1589,17 +1593,24 @@ Return format: stakeholder_names|mention_type|confidence`
         return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
       }
 
-      const [stakeholderNamesStr, mentionType, confidenceStr] = parts;
+      // Clean up the AI response format (remove quotes and key= prefixes)
+      let [stakeholderNamesStr, mentionType, confidenceStr] = parts;
+      
+      // Remove key= prefixes and quotes if present
+      stakeholderNamesStr = stakeholderNamesStr.replace(/^stakeholder_names\s*=\s*["']?/, '').replace(/["']$/, '');
+      mentionType = mentionType.replace(/^mention_type\s*=\s*["']?/, '').replace(/["']$/, '');
+      confidenceStr = confidenceStr.replace(/^confidence\s*=\s*/, '');
+      
       const confidence = parseFloat(confidenceStr) || 0;
 
-      console.log('🔍 Parsed AI Response:', {
-        stakeholderNamesStr,
-        mentionType,
-        confidence,
-        threshold: AIService.CONFIG.mention.confidenceThreshold,
-        noMentionToken: AIService.CONFIG.mention.noMentionToken,
-        willPass: stakeholderNamesStr !== AIService.CONFIG.mention.noMentionToken && confidence >= AIService.CONFIG.mention.confidenceThreshold
-      });
+      console.log('🔍 Parsed AI Response:')
+      console.log('  Original parts:', parts)
+      console.log('  Cleaned stakeholder names:', stakeholderNamesStr)
+      console.log('  Cleaned mention type:', mentionType)
+      console.log('  Cleaned confidence:', confidence)
+      console.log('  Threshold:', AIService.CONFIG.mention.confidenceThreshold)
+      console.log('  No mention token check:', stakeholderNamesStr !== AIService.CONFIG.mention.noMentionToken)
+      console.log('  Will pass:', stakeholderNamesStr !== AIService.CONFIG.mention.noMentionToken && confidence >= AIService.CONFIG.mention.confidenceThreshold)
 
       if (stakeholderNamesStr === AIService.CONFIG.mention.noMentionToken || confidence < AIService.CONFIG.mention.confidenceThreshold) {
         console.log('❌ Below threshold or no mention token');
