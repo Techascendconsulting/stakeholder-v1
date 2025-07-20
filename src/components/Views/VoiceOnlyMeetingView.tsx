@@ -24,11 +24,10 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  // Consistent color scheme - no multiple colors
   const getAvatarColor = () => {
     if (isUser) return 'bg-blue-600';
-    const colors = ['bg-purple-600', 'bg-green-600', 'bg-yellow-600', 'bg-red-600', 'bg-indigo-600', 'bg-pink-600'];
-    const index = participant.name.length % colors.length;
-    return colors[index];
+    return 'bg-gray-700'; // Consistent gray for all stakeholders
   };
 
   return (
@@ -203,15 +202,27 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
   };
 
-  // Audio management - FIXED to use stakeholder.voice directly like it should
+  // Audio management - FIXED to prevent talking over each other
   const speakMessage = async (message: Message) => {
     if (!globalAudioEnabled) return;
 
+    // Stop any current audio before starting new one
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setCurrentAudio(null);
+      setCurrentSpeaker(null);
+      setIsAudioPlaying(false);
+      setPlayingMessageId(null);
+    }
+
     const stakeholder = selectedStakeholders.find(s => s.name === message.speaker);
-    // FIX: Use stakeholder.voice property directly from mockData
-    const voiceId = stakeholder?.voice || null;
     
-    console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${stakeholder?.name}`);
+    // User messages should NEVER use Azure TTS - only browser TTS
+    const isUserMessage = message.speaker === 'user';
+    const voiceId = (!isUserMessage && stakeholder?.voice) ? stakeholder.voice : null;
+    
+    console.log(`🎵 Using voice: ${isUserMessage ? 'Browser TTS (User)' : voiceId} for speaker: ${message.speaker}`);
     console.log(`🔧 Azure TTS Available: ${isAzureTTSAvailable()}`);
     
     try {
@@ -222,7 +233,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       let audioElement: HTMLAudioElement | null = null;
 
-      if (voiceId && isAzureTTSAvailable()) {
+      // Only use Azure TTS for stakeholders, never for user
+      if (!isUserMessage && voiceId && isAzureTTSAvailable()) {
         try {
           console.log(`✅ Using Azure TTS with voice: ${voiceId}`);
           const audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceId);
@@ -233,10 +245,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           audioElement = await playBrowserTTS(message.content);
         }
       } else {
-        if (!voiceId) {
+        if (isUserMessage) {
+          console.log(`👤 Using browser TTS for user message`);
+        } else if (!voiceId) {
           console.log(`⚠️ No voice ID found for stakeholder, using browser TTS`);
         } else {
-          console.log(`⚠️ Azure TTS not available (check environment variables), using browser TTS`);
+          console.log(`⚠️ Azure TTS not available, using browser TTS`);
         }
         audioElement = await playBrowserTTS(message.content);
       }
@@ -272,15 +286,27 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  const stopCurrentAudio = () => {
+  // Stop all audio and clear all states
+  const stopAllAudio = () => {
+    console.log('🛑 Stopping all audio');
+    
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
-      setCurrentSpeaker(null);
-      setIsAudioPlaying(false);
-      setPlayingMessageId(null);
     }
+    
+    setCurrentSpeaker(null);
+    setIsAudioPlaying(false);
+    setPlayingMessageId(null);
+    setAudioStates({});
+    
+    // Clear conversation queue to stop pending speakers
+    setConversationQueue([]);
+    setResponseQueue({ current: null, upcoming: [] });
+    setIsProcessingQueue(false);
+    setThinkingStakeholders(new Set());
+    setDynamicFeedback(null);
   };
 
   // Add thinking state management
@@ -375,7 +401,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return currentMessages;
   };
 
-  // Process conversation queue sequentially
+  // Process conversation queue sequentially - FIXED to prevent overlap
   const processConversationQueue = async () => {
     if (isProcessingQueue || conversationQueue.length === 0) return;
     
@@ -402,7 +428,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         upcoming: conversationQueue.slice(i + 1).map(s => ({ name: s.name, id: s.id }))
       }));
       
-      // Generate and speak response
+      // Generate response first
       workingMessages = await processDynamicStakeholderResponse(
         stakeholder,
         messageToRespond,
@@ -410,9 +436,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         'queue_response'
       );
       
-      // Wait for audio to complete before next speaker
+      // Wait for current audio to finish before next speaker
+      console.log(`⏳ Waiting for ${stakeholder.name} to finish speaking...`);
+      
+      // Wait for audio to complete (polling approach)
+      while (isAudioPlaying) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Additional delay between speakers
       if (i < conversationQueue.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        console.log(`⏳ Pause between speakers...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     
@@ -451,7 +486,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     let currentMessages = [...messages, userMessage];
     setMessages(currentMessages);
 
-    // Auto-speak user message
+    // Auto-speak user message (will use browser TTS only)
     if (globalAudioEnabled) {
       await speakMessage(userMessage);
     }
@@ -535,9 +570,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   const handleEndMeeting = () => {
-    stopCurrentAudio();
-    setCurrentSpeaker(null);
-    setResponseQueue({ current: null, upcoming: [] });
+    stopAllAudio();
     setCurrentView('stakeholders');
   };
 
@@ -696,7 +729,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           {/* Meeting Controls */}
           <div className="flex items-center justify-center space-x-4">
             <button
-              onClick={stopCurrentAudio}
+              onClick={stopAllAudio}
               className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-3 rounded-full transition-colors"
               title="Stop audio"
             >
