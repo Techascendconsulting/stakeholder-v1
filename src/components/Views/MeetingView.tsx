@@ -1203,7 +1203,7 @@ These notes were generated using a fallback system due to extended AI processing
   }
 
   // Enhanced stakeholder response processing with mention detection
-  const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string) => {
+  const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string): Promise<Message[]> => {
     try {
       // Add to conversation queue to prevent simultaneous speaking
       setConversationQueue(prev => [...prev, stakeholder.id])
@@ -1445,10 +1445,7 @@ These notes were generated using a fallback system due to extended AI processing
              console.log(`✅ About to trigger response for: ${mentionedStakeholder.name}`)
              
              // Process the response and update working messages
-             await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, workingMessages, 'direct_mention')
-             
-             // Update working messages with the latest from state
-             workingMessages = [...messages]
+             workingMessages = await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, workingMessages, 'direct_mention')
              
              console.log(`✅ Completed response for: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`)
              
