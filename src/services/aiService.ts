@@ -1328,6 +1328,230 @@ Return "YES" if directly addressed, "NO" if not.`
     }
   }
 
+  // Enhanced stakeholder mention detection for cross-references
+  async detectStakeholderMentions(response: string, availableStakeholders: StakeholderContext[]): Promise<{
+    mentionedStakeholder: StakeholderContext | null,
+    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'none',
+    confidence: number
+  }> {
+    try {
+      const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
+      const stakeholderRoles = availableStakeholders.map(s => `${s.name} (${s.role}, ${s.department})`).join('; ');
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are analyzing a stakeholder's response to detect mentions of other stakeholders that should trigger a response.
+
+Available stakeholders: ${stakeholderNames}
+Detailed info: ${stakeholderRoles}
+
+TASK: Detect if this response mentions another stakeholder in a way that naturally calls for their input.
+
+MENTION TYPES TO DETECT:
+1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?")
+2. "at_mention" - Using @ symbol (e.g., "@David, your thoughts?")
+3. "name_question" - Name followed by question (e.g., "Emily might know this better?", "Has David looked at this?")
+4. "expertise_request" - Requesting someone's expertise (e.g., "the IT team should weigh in", "someone from Finance")
+
+EXAMPLES OF WHAT TO DETECT:
+- "Sarah, what's your perspective on this?"
+- "@David, can you help with technical aspects?"
+- "Emily, have you considered the compliance implications?"
+- "I think James would know more about this"
+- "We should ask the IT team about security"
+- "Finance would need to approve this"
+
+EXAMPLES OF WHAT NOT TO DETECT:
+- "We need to consult with another department" (too vague)
+- "Someone else should handle this" (deflection)
+- "Let's form a committee" (not specific)
+
+RESPONSE FORMAT:
+- stakeholder_name: exact name from list or "NONE"
+- mention_type: one of the types above or "none" 
+- confidence: 0.0-1.0 (how confident you are this needs a response)
+
+Example: stakeholder_name="Sarah Patel" mention_type="direct_question" confidence=0.9
+
+Return format: stakeholder_name|mention_type|confidence`
+          },
+          {
+            role: "user",
+            content: `Response to analyze: "${response}"`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 100
+      });
+
+      const result = completion.choices[0]?.message?.content?.trim();
+      
+      if (!result) {
+        return { mentionedStakeholder: null, mentionType: 'none', confidence: 0 };
+      }
+
+      const parts = result.split('|');
+      if (parts.length !== 3) {
+        return { mentionedStakeholder: null, mentionType: 'none', confidence: 0 };
+      }
+
+      const [stakeholderName, mentionType, confidenceStr] = parts;
+      const confidence = parseFloat(confidenceStr) || 0;
+
+      if (stakeholderName === "NONE" || confidence < 0.6) {
+        return { mentionedStakeholder: null, mentionType: 'none', confidence };
+      }
+
+      // Find the stakeholder by exact name match
+      const mentionedStakeholder = availableStakeholders.find(s => 
+        s.name === stakeholderName || 
+        s.name.toLowerCase() === stakeholderName.toLowerCase() ||
+        stakeholderName.toLowerCase().includes(s.name.split(' ')[0].toLowerCase())
+      );
+
+      if (!mentionedStakeholder) {
+        return { mentionedStakeholder: null, mentionType: 'none', confidence };
+      }
+
+      return { 
+        mentionedStakeholder, 
+        mentionType: mentionType as 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'none', 
+        confidence 
+      };
+
+    } catch (error) {
+      console.error('Error detecting stakeholder mentions:', error);
+      return { mentionedStakeholder: null, mentionType: 'none', confidence: 0 };
+    }
+  }
+
+  // Generate contextual response when mentioned by another stakeholder
+  async generateMentionResponse(
+    mentionedStakeholder: StakeholderContext,
+    mentionType: string,
+    originalResponse: string,
+    mentioningStakeholder: StakeholderContext,
+    userMessage: string,
+    context: ConversationContext
+  ): Promise<string> {
+    try {
+      const stakeholderState = this.getStakeholderState(mentionedStakeholder.name);
+      
+      // Build context-aware prompt for mention response
+      const mentionPrompt = this.buildMentionResponsePrompt(
+        mentionedStakeholder,
+        mentionType,
+        originalResponse,
+        mentioningStakeholder,
+        userMessage,
+        context,
+        stakeholderState
+      );
+
+      const dynamicConfig = this.getDynamicConfig(context, mentionedStakeholder);
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: this.buildDynamicSystemPrompt(mentionedStakeholder, context, 'discussion') },
+          { role: "user", content: mentionPrompt }
+        ],
+        temperature: dynamicConfig.temperature,
+        max_tokens: dynamicConfig.maxTokens,
+        presence_penalty: dynamicConfig.presencePenalty,
+        frequency_penalty: dynamicConfig.frequencyPenalty
+      });
+
+      let response = completion.choices[0]?.message?.content || 
+        this.generateDynamicFallback(mentionedStakeholder, userMessage, context);
+
+      // Ensure response is complete and properly formatted
+      response = this.ensureCompleteResponse(response);
+      response = this.filterSelfReferences(response, mentionedStakeholder);
+
+      // Update conversation state
+      await this.updateConversationState(mentionedStakeholder, userMessage, response, context);
+
+      return response;
+
+    } catch (error) {
+      console.error('Error generating mention response:', error);
+      return this.generateDynamicFallback(mentionedStakeholder, userMessage, context);
+    }
+  }
+
+  // Build specialized prompt for mention responses
+  private buildMentionResponsePrompt(
+    mentionedStakeholder: StakeholderContext,
+    mentionType: string,
+    originalResponse: string,
+    mentioningStakeholder: StakeholderContext,
+    userMessage: string,
+    context: ConversationContext,
+    stakeholderState: StakeholderState
+  ): string {
+    let prompt = `STAKEHOLDER MENTION RESPONSE - NATURAL CONVERSATION FLOW
+
+YOU ARE: ${mentionedStakeholder.name} (${mentionedStakeholder.role}, ${mentionedStakeholder.department})
+
+CONTEXT: ${mentioningStakeholder.name} just mentioned you in their response and is asking for your input.
+
+ORIGINAL QUESTION FROM BUSINESS ANALYST: "${userMessage}"
+
+${mentioningStakeholder.name}'S RESPONSE THAT MENTIONED YOU: "${originalResponse}"
+
+HOW YOU WERE MENTIONED: `;
+
+    switch (mentionType) {
+      case 'direct_question':
+        prompt += `${mentioningStakeholder.name} directly asked you a question by name.`;
+        break;
+      case 'at_mention':
+        prompt += `${mentioningStakeholder.name} used @mention to get your attention.`;
+        break;
+      case 'name_question':
+        prompt += `${mentioningStakeholder.name} suggested you might know more about this topic.`;
+        break;
+      case 'expertise_request':
+        prompt += `${mentioningStakeholder.name} suggested your department/expertise is needed.`;
+        break;
+    }
+
+    prompt += `
+
+YOUR RESPONSE APPROACH:
+- Acknowledge being mentioned naturally (e.g., "Thanks for bringing me in, ${mentioningStakeholder.name.split(' ')[0]}")
+- Build on what ${mentioningStakeholder.name} said if relevant
+- Provide your expert perspective from your role as ${mentionedStakeholder.role}
+- Address the specific aspect they mentioned or asked about
+- Keep response focused and conversational
+- Show you were listening to the conversation
+
+CONVERSATION HISTORY FOR CONTEXT:
+${context.conversationHistory.slice(-5).map((msg, i) => {
+  if (msg.speaker === 'user') {
+    return `[${i + 1}] Business Analyst: ${msg.content}`;
+  } else if (msg.stakeholderName) {
+    return `[${i + 1}] ${msg.stakeholderName}: ${msg.content}`;
+  }
+  return '';
+}).filter(Boolean).join('\n')}
+
+CRITICAL: 
+- This is a natural continuation of the conversation
+- Reference what ${mentioningStakeholder.name} said if appropriate
+- Provide your domain expertise naturally
+- Keep the collaborative meeting tone
+- DON'T repeat what was already discussed unless adding new insights
+
+Respond naturally as ${mentionedStakeholder.name} addressing the point you were asked about:`;
+
+    return prompt;
+  }
+
   // Reset conversation state for new meetings
   resetConversationState(): void {
     this.conversationState = this.initializeConversationState()

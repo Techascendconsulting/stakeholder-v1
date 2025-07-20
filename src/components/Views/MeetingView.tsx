@@ -316,7 +316,7 @@ const MeetingView: React.FC = () => {
     return leastActiveStakeholder
   }
 
-  // Enhanced conversation flow management
+  // Enhanced conversation flow management with mention detection
   const manageConversationFlow = async (initialStakeholder: any, userMessage: string, currentMessages: Message[]) => {
     const config = getConversationConfig()
     let conversationActive = true
@@ -328,7 +328,8 @@ const MeetingView: React.FC = () => {
       stakeholderParticipation: new Map<string, number>(),
       topicsCovered: new Set<string>(),
       questionsAsked: 0,
-      collaborativeExchanges: 0
+      collaborativeExchanges: 0,
+      stakeholderMentions: 0 // Track cross-references
     }
     
     while (conversationActive && turnCount < config.maxDiscussionTurns) {
@@ -344,55 +345,68 @@ const MeetingView: React.FC = () => {
         currentMessages = [...currentMessages, responseMessage]
         setMessages(currentMessages)
         
-        // Play audio response and wait for it to finish - FIXED: Ensure proper audio playback
+        // Play audio response and wait for it to finish
         try {
           await playMessageAudio(responseMessage.id, response, currentSpeaker, true)
         } catch (audioError) {
           console.warn('Audio playback failed, continuing without audio:', audioError)
         }
         
-        // Enhanced handoff detection with context
-        const handoffTarget = await detectIntelligentHandoff(response, currentSpeaker, currentMessages)
+        // Enhanced mention detection - check if this response mentions other stakeholders
+        const mentionUpdatedMessages = await handleStakeholderMentions(response, currentSpeaker, userMessage, currentMessages)
+        
+        // If mentions were processed, update our working messages
+        if (mentionUpdatedMessages.length > currentMessages.length) {
+          currentMessages = mentionUpdatedMessages
+          conversationMetrics.stakeholderMentions += (mentionUpdatedMessages.length - currentMessages.length)
+          setMessages(currentMessages)
+        }
+        
+        // Enhanced handoff detection with context (only if no mentions were processed)
+        let handoffTarget = null
+        if (mentionUpdatedMessages.length === currentMessages.length) {
+          handoffTarget = await detectIntelligentHandoff(response, currentSpeaker, currentMessages)
+        }
         
         if (handoffTarget) {
           // Natural delay before next person speaks
           const handoffPause = config.handoffPauseTiming.base + Math.random() * config.handoffPauseTiming.variance
           await new Promise(resolve => setTimeout(resolve, handoffPause))
           
-          // Generate contextual handoff response
+          // Generate handoff response
           const handoffResponse = await generateHandoffResponse(handoffTarget, currentSpeaker, response, currentMessages)
+          const handoffMessage = createResponseMessage(handoffTarget, handoffResponse, turnCount + 1)
           
-          if (handoffResponse) {
-            const handoffMessage = createResponseMessage(handoffTarget, handoffResponse, turnCount + 1)
-            
-            currentMessages = [...currentMessages, handoffMessage]
-            setMessages(currentMessages)
-            
-            // Update metrics
-            conversationMetrics.collaborativeExchanges++
-            updateConversationMetrics(conversationMetrics, handoffTarget, handoffResponse)
-            
-            // Play audio for the handoff response - FIXED: Ensure proper audio playback
-            try {
-              await playMessageAudio(handoffMessage.id, handoffResponse, handoffTarget, true)
-            } catch (audioError) {
-              console.warn('Audio playback failed, continuing without audio:', audioError)
-            }
-            
-            currentSpeaker = handoffTarget
-            turnCount += 2
-            continue
+          currentMessages = [...currentMessages, handoffMessage]
+          setMessages(currentMessages)
+          
+          // Play handoff audio
+          try {
+            await playMessageAudio(handoffMessage.id, handoffResponse, handoffTarget, true)
+          } catch (audioError) {
+            console.warn('Handoff audio playback failed:', audioError)
           }
-        }
-        
-        // Check if conversation should naturally end
-        const shouldEnd = evaluateConversationCompletion(response, conversationMetrics, turnCount)
-        if (shouldEnd) {
-          conversationActive = false
-          break
+          
+          // Update metrics for handoff
+          updateConversationMetrics(conversationMetrics, handoffTarget, handoffResponse)
+          conversationMetrics.collaborativeExchanges++
+          
+          currentSpeaker = handoffTarget
         }
         
         turnCount++
+        
+        // Enhanced completion evaluation
+        const isComplete = evaluateConversationCompletion(response, conversationMetrics, turnCount)
+        if (isComplete) {
+          conversationActive = false
+        }
+        
+        // Natural pause between turns if conversation continues
+        if (conversationActive && turnCount < config.maxDiscussionTurns) {
+          const turnPause = config.greetingPauseTiming.base + Math.random() * config.greetingPauseTiming.variance
+          await new Promise(resolve => setTimeout(resolve, turnPause))
+        }
         
       } catch (error) {
         console.error('Error in conversation flow:', error)
@@ -400,8 +414,12 @@ const MeetingView: React.FC = () => {
       }
     }
     
-    // Log conversation quality metrics for analytics
-    console.log('Conversation Quality Metrics:', conversationMetrics)
+    // Enhanced conversation quality metrics logging
+    console.log('Enhanced Conversation Quality Metrics:', {
+      ...conversationMetrics,
+      stakeholderMentions: conversationMetrics.stakeholderMentions,
+      participationBalance: conversationMetrics.stakeholderParticipation.size / selectedStakeholders.length
+    })
   }
 
   const updateConversationMetrics = (metrics: any, stakeholder: any, response: string) => {
@@ -1042,7 +1060,136 @@ These notes were generated using a fallback system due to extended AI processing
   const [conversationQueue, setConversationQueue] = useState<string[]>([])
   const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null)
 
-  // Dynamic stakeholder response processing with conversation control
+  // Enhanced mention detection and response handling
+  const handleStakeholderMentions = async (
+    response: string, 
+    speakingStakeholder: any, 
+    userMessage: string, 
+    currentMessages: Message[]
+  ): Promise<Message[]> => {
+    const aiService = AIService.getInstance()
+    
+    // Get available stakeholders (excluding current speaker)
+    const availableStakeholders = selectedStakeholders
+      .filter(s => s.id !== speakingStakeholder.id)
+      .map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }))
+
+    if (availableStakeholders.length === 0) {
+      return currentMessages
+    }
+
+    try {
+      // Enhanced stakeholder mention detection
+      const mentionResult = await aiService.detectStakeholderMentions(response, availableStakeholders)
+      
+      if (mentionResult.mentionedStakeholder && mentionResult.confidence >= 0.6) {
+        console.log(`🎯 Stakeholder mention detected: ${mentionResult.mentionedStakeholder.name} (${mentionResult.mentionType}, confidence: ${mentionResult.confidence})`)
+        
+        // Track the mention for UI feedback
+        const mentionNotification = {
+          mentioner: speakingStakeholder.name,
+          mentioned: mentionResult.mentionedStakeholder.name,
+          type: mentionResult.mentionType,
+          timestamp: new Date().toISOString()
+        }
+        
+        // Show brief notification
+        setDynamicFeedback(`💬 ${speakingStakeholder.name} mentioned ${mentionResult.mentionedStakeholder.name}`)
+        setTimeout(() => setDynamicFeedback(null), 2000)
+        
+        // Find the full stakeholder object
+        const mentionedStakeholder = selectedStakeholders.find(s => 
+          s.name === mentionResult.mentionedStakeholder?.name
+        )
+        
+        if (mentionedStakeholder) {
+          // Natural pause before the mentioned stakeholder responds
+          await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 800))
+          
+          // Convert speaking stakeholder to context format
+          const speakingStakeholderContext = {
+            name: speakingStakeholder.name,
+            role: speakingStakeholder.role,
+            department: speakingStakeholder.department,
+            priorities: speakingStakeholder.priorities,
+            personality: speakingStakeholder.personality,
+            expertise: speakingStakeholder.expertise || []
+          }
+          
+          // Generate mention response
+          const mentionResponse = await aiService.generateMentionResponse(
+            mentionResult.mentionedStakeholder,
+            mentionResult.mentionType,
+            response,
+            speakingStakeholderContext,
+            userMessage,
+            {
+              project: {
+                name: selectedProject?.name || 'Current Project',
+                description: selectedProject?.description || 'Project description',
+                type: selectedProject?.projectType || 'General'
+              },
+              conversationHistory: currentMessages,
+              stakeholders: selectedStakeholders.map(s => ({
+                name: s.name,
+                role: s.role,
+                department: s.department,
+                priorities: s.priorities,
+                personality: s.personality,
+                expertise: s.expertise || []
+              }))
+            }
+          )
+          
+          // Create response message
+          const mentionResponseMessage: Message = {
+            id: `mention-response-${Date.now()}`,
+            speaker: mentionedStakeholder.id,
+            content: mentionResponse,
+            timestamp: new Date().toISOString(),
+            stakeholderName: mentionedStakeholder.name,
+            stakeholderRole: mentionedStakeholder.role
+          }
+          
+          // Add to messages
+          const updatedMessages = [...currentMessages, mentionResponseMessage]
+          setMessages(updatedMessages)
+          
+          // Play audio for the mention response
+          if (globalAudioEnabled && isStakeholderVoiceEnabled(mentionedStakeholder.id)) {
+            try {
+              await playMessageAudio(mentionResponseMessage.id, mentionResponse, mentionedStakeholder, true)
+            } catch (audioError) {
+              console.warn('Audio playback failed for mention response:', audioError)
+            }
+          }
+          
+          // Check for cascading mentions (if the mentioned stakeholder mentions someone else)
+          const cascadingMessages = await handleStakeholderMentions(
+            mentionResponse,
+            mentionedStakeholder,
+            userMessage,
+            updatedMessages
+          )
+          
+          return cascadingMessages
+        }
+      }
+    } catch (error) {
+      console.error('Error handling stakeholder mentions:', error)
+    }
+    
+    return currentMessages
+  }
+
+  // Enhanced stakeholder response processing with mention detection
   const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string) => {
     try {
       // Add to conversation queue to prevent simultaneous speaking
@@ -1078,7 +1225,7 @@ These notes were generated using a fallback system due to extended AI processing
       
       // Create and add message with dynamic indexing
       const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length)
-      const updatedMessages = [...currentMessages, responseMessage]
+      let updatedMessages = [...currentMessages, responseMessage]
       setMessages(updatedMessages)
       
       // Force cleanup of thinking state to prevent display issues
@@ -1087,13 +1234,16 @@ These notes were generated using a fallback system due to extended AI processing
         setDynamicFeedback(null)
       }, 100)
       
-      // Check for baton passing in the response
-      const batonPassedStakeholder = detectBatonPassing(response, updatedMessages)
-      
       // Dynamic audio handling based on user preferences and context
       if (globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id)) {
         await playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
       }
+      
+      // Enhanced mention detection - check if this response mentions other stakeholders
+      updatedMessages = await handleStakeholderMentions(response, stakeholder, messageContent, updatedMessages)
+      
+      // Check for traditional baton passing (keep existing functionality)
+      const batonPassedStakeholder = detectBatonPassing(response, updatedMessages)
       
       // Finish speaking
       setCurrentSpeaking(null)
@@ -1106,9 +1256,12 @@ These notes were generated using a fallback system due to extended AI processing
         }
       }, 500) // Small delay to ensure message is rendered
       
-      // Handle baton passing if detected
-      if (batonPassedStakeholder) {
-        console.log(`Baton passed to ${batonPassedStakeholder.name}`)
+      // Handle traditional baton passing if detected and no mentions were processed
+      if (batonPassedStakeholder && !updatedMessages.find(msg => 
+        msg.id.startsWith('mention-response') && 
+        msg.timestamp > responseMessage.timestamp
+      )) {
+        console.log(`📋 Traditional baton passed to ${batonPassedStakeholder.name}`)
         setTimeout(async () => {
           await processDynamicStakeholderResponse(batonPassedStakeholder, messageContent, updatedMessages, 'baton_pass')
         }, 1000) // Small delay for natural flow
