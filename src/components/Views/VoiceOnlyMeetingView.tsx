@@ -32,52 +32,73 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   };
 
   return (
-    <div className="relative bg-gray-800 rounded-lg p-4 aspect-video flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750">
+    <div className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750 min-h-[200px]">
       {/* Speaking Ring */}
       {isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse"></div>
+        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10"></div>
       )}
       
       {/* Thinking Ring */}
       {isThinking && !isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse"></div>
+        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse z-10"></div>
       )}
       
-      {/* Avatar */}
-      <div className={`w-16 h-16 rounded-full ${getAvatarColor()} flex items-center justify-center text-white text-xl font-bold mb-3 shadow-lg`}>
-        {getInitials(participant.name)}
-      </div>
+      {/* Background Photo or Avatar */}
+      {!isUser && participant.photo ? (
+        <div className="absolute inset-0">
+          <img 
+            src={participant.photo} 
+            alt={participant.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+        </div>
+      ) : (
+        <div className={`absolute inset-0 ${getAvatarColor()}`}></div>
+      )}
       
-      {/* Name */}
-      <div className="text-center">
-        <h3 className="text-white font-medium text-sm mb-1">{participant.name}</h3>
-        <p className="text-gray-400 text-xs">{participant.role}</p>
-      </div>
-      
-      {/* Status Indicators */}
-      <div className="absolute top-2 left-2">
-        {isCurrentSpeaker && (
-          <div className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
-            <Volume2 className="w-3 h-3 mr-1" />
-            Speaking
+      {/* User's camera placeholder */}
+      {isUser && (
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+          <div className="text-white text-6xl font-bold opacity-80">
+            {getInitials(participant.name)}
           </div>
-        )}
-        {isThinking && !isCurrentSpeaker && (
-          <div className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
-            <div className="w-2 h-2 bg-white rounded-full mr-1 animate-pulse"></div>
-            Thinking
-          </div>
-        )}
-      </div>
-      
-      {/* Speaking Animation */}
-      {isCurrentSpeaker && (
-        <div className="absolute bottom-2 right-2 flex space-x-1">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
         </div>
       )}
+      
+      {/* Content Overlay */}
+      <div className="relative z-20 flex flex-col items-center justify-end h-full p-4">
+        {/* Status Indicators */}
+        <div className="absolute top-2 left-2">
+          {isCurrentSpeaker && (
+            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg">
+              <Volume2 className="w-4 h-4 mr-1" />
+              Speaking
+            </div>
+          )}
+          {isThinking && !isCurrentSpeaker && (
+            <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg">
+              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+              Thinking
+            </div>
+          )}
+        </div>
+        
+        {/* Name Bar */}
+        <div className="bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg backdrop-blur-sm w-full text-center">
+          <h3 className="font-medium text-sm truncate">{participant.name}</h3>
+          <p className="text-xs text-gray-300 truncate">{participant.role}</p>
+        </div>
+        
+        {/* Speaking Animation */}
+        {isCurrentSpeaker && (
+          <div className="absolute bottom-16 right-2 flex space-x-1">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -91,7 +112,7 @@ const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({ currentSpeake
   if (!currentSpeaker && upcomingQueue.length === 0) return null;
   
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg px-4 py-2 flex items-center space-x-4">
+    <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 flex items-center space-x-4">
       {currentSpeaker && (
         <div className="flex items-center space-x-2">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -157,24 +178,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return () => clearInterval(timer);
   }, [meetingStartTime]);
 
-  // Initialize conversation
+  // Initialize conversation WITHOUT artificial welcome message
   useEffect(() => {
     if (selectedProject && selectedStakeholders.length > 0) {
       const aiService = AIService.getInstance();
       aiService.resetConversationState();
       
-      const welcomeMessage: Message = {
-        id: `welcome-${Date.now()}`,
-        speaker: 'system',
-        content: `Welcome to your voice meeting for ${selectedProject?.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}.`,
-        timestamp: new Date().toISOString()
-      };
-      setMessages([welcomeMessage]);
-      
-      // Auto-play welcome message
-      if (globalAudioEnabled) {
-        speakMessage(welcomeMessage);
-      }
+      // No welcome message - let the meeting start naturally
+      setMessages([]);
     }
   }, [selectedProject, selectedStakeholders]);
 
@@ -189,12 +200,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
   };
 
-  // Audio management (same as before)
+  // Audio management - FIXED to use stakeholder.id like transcript meeting
   const speakMessage = async (message: Message) => {
     if (!globalAudioEnabled) return;
 
     const stakeholder = selectedStakeholders.find(s => s.name === message.speaker);
-    const voiceId = stakeholder ? getStakeholderVoice(stakeholder.name) : null;
+    // FIX: Use stakeholder.id instead of stakeholder.name for voice matching
+    const voiceId = stakeholder ? getStakeholderVoice(stakeholder.id, stakeholder.role) : null;
     
     try {
       setCurrentSpeaker(stakeholder || { name: message.speaker });
@@ -204,7 +216,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       let audioElement: HTMLAudioElement | null = null;
 
-      if (voiceId && isAzureTTSAvailable() && isStakeholderVoiceEnabled(stakeholder?.name || '')) {
+      if (voiceId && isAzureTTSAvailable() && isStakeholderVoiceEnabled(stakeholder?.id || '')) {
         try {
           const audioBlob = await azureTTS(message.content, voiceId);
           const audioUrl = URL.createObjectURL(audioBlob);
@@ -502,10 +514,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     ...selectedStakeholders
   ];
 
+  // Calculate optimal grid layout based on participant count
+  const getGridCols = (count: number) => {
+    if (count <= 2) return 'grid-cols-1 md:grid-cols-2';
+    if (count <= 4) return 'grid-cols-2 md:grid-cols-2';
+    if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
+    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+  };
+
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex-shrink-0">
+      <div className="bg-gray-800 border-b border-gray-700 px-6 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           {/* Left section */}
           <div className="flex items-center space-x-4">
@@ -547,9 +567,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Participant Grid */}
-        <div className="flex-1 p-6 overflow-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 h-full">
+        {/* Participant Grid - IMPROVED to fill page like Teams */}
+        <div className="flex-1 p-4 overflow-auto">
+          <div className={`grid ${getGridCols(allParticipants.length)} gap-4 h-full`}>
             {allParticipants.map((participant, index) => (
               <ParticipantCard
                 key={participant.name}
@@ -572,19 +592,16 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         )}
 
         {/* Bottom Controls */}
-        <div className="bg-gray-800 border-t border-gray-700 p-6 flex-shrink-0">
+        <div className="bg-gray-800 border-t border-gray-700 p-4 flex-shrink-0">
           {/* Question Input */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Ask a Question
-            </label>
             <div className="flex space-x-3">
               <textarea
                 ref={inputRef}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your question here..."
+                placeholder="Ask a question or start the discussion..."
                 className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 rows={2}
                 disabled={isLoading}
