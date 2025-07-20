@@ -1414,6 +1414,12 @@ These notes were generated using a fallback system due to extended AI processing
          const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ')
          console.log(`🎯 User directly mentioned stakeholder(s): ${mentionedNames} (${userMentionResult.mentionType}, confidence: ${userMentionResult.confidence})`)
          
+         console.log(`🔍 Detailed detection results:`, {
+           totalDetected: userMentionResult.mentionedStakeholders.length,
+           stakeholders: userMentionResult.mentionedStakeholders.map(s => ({ name: s.name, role: s.role, department: s.department })),
+           availableStakeholders: selectedStakeholders.map(s => ({ id: s.id, name: s.name, role: s.role }))
+         })
+         
          // Show feedback that we detected the mention(s)
          const feedbackText = userMentionResult.mentionedStakeholders.length > 1 
            ? `🎯 Directing question to ${mentionedNames}`
@@ -1422,17 +1428,37 @@ These notes were generated using a fallback system due to extended AI processing
          setTimeout(() => setDynamicFeedback(null), 3000)
          
          // Trigger all mentioned stakeholders to respond
+         let workingMessages = currentMessages
          for (const mentionedStakeholderContext of userMentionResult.mentionedStakeholders) {
            const mentionedStakeholder = selectedStakeholders.find(s => 
              s.name === mentionedStakeholderContext.name
            )
            
+           console.log(`🔍 Processing stakeholder: ${mentionedStakeholderContext.name}`, {
+             found: !!mentionedStakeholder,
+             stakeholderId: mentionedStakeholder?.id,
+             stakeholderName: mentionedStakeholder?.name,
+             currentMessageCount: workingMessages.length
+           })
+           
            if (mentionedStakeholder) {
-             await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, currentMessages, 'direct_mention')
+             console.log(`✅ About to trigger response for: ${mentionedStakeholder.name}`)
+             
+             // Process the response and update working messages
+             await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, workingMessages, 'direct_mention')
+             
+             // Update working messages with the latest from state
+             workingMessages = [...messages]
+             
+             console.log(`✅ Completed response for: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`)
+             
              // Small pause between multiple responses
              if (userMentionResult.mentionedStakeholders.length > 1) {
+               console.log(`⏸️ Pausing 1.5s before next stakeholder response`)
                await new Promise(resolve => setTimeout(resolve, 1500))
              }
+           } else {
+             console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`)
            }
          }
          
