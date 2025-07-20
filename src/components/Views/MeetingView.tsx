@@ -899,8 +899,9 @@ These notes were generated using a fallback system due to extended AI processing
     setActiveThinking(new Set())
     setDynamicFeedback(null)
     
-    // Clear any pending mentions to avoid stuck state
+    // Clear any pending mentions and response queue to avoid stuck state
     setPendingStakeholderMentions(null)
+    setResponseQueue({ current: null, upcoming: [] })
     
     console.log('🔄 Audio stopped - conversation state reset')
   }
@@ -919,8 +920,9 @@ These notes were generated using a fallback system due to extended AI processing
     setActiveThinking(new Set())
     setDynamicFeedback(null)
     
-    // Clear pending mentions
+    // Clear pending mentions and response queue
     setPendingStakeholderMentions(null)
+    setResponseQueue({ current: null, upcoming: [] })
     
     // Enable user input
     setCanUserType(true)
@@ -1337,6 +1339,17 @@ These notes were generated using a fallback system due to extended AI processing
     
     console.log(`🎯 Processing approved mentions for: ${mentionedStakeholders.map(s => s.name).join(', ')}`)
     
+    // Set up response queue for stakeholder-to-stakeholder mentions
+    const responseQueueData = mentionedStakeholders.map(s => ({
+      name: s.name,
+      id: selectedStakeholders.find(st => st.name === s.name)?.id || 'unknown'
+    }))
+    
+    setResponseQueue({
+      current: responseQueueData[0]?.name || null,
+      upcoming: responseQueueData.slice(1)
+    })
+    
     let currentMessages = [...messages]
     const aiService = AIService.getInstance()
     
@@ -1351,7 +1364,8 @@ These notes were generated using a fallback system due to extended AI processing
     }
     
     // Handle all mentioned stakeholders
-    for (const mentionedStakeholderContext of mentionedStakeholders) {
+    for (let i = 0; i < mentionedStakeholders.length; i++) {
+      const mentionedStakeholderContext = mentionedStakeholders[i]
       const mentionedStakeholder = selectedStakeholders.find(s => 
         s.name === mentionedStakeholderContext.name
       )
@@ -1410,8 +1424,17 @@ These notes were generated using a fallback system due to extended AI processing
             }
           }
           
+          // Update response queue - move to next stakeholder
+          setResponseQueue(prev => {
+            const remaining = prev.upcoming.slice(1)
+            return {
+              current: prev.upcoming[0]?.name || null,
+              upcoming: remaining
+            }
+          })
+          
           // Small pause between multiple responses
-          if (mentionedStakeholders.length > 1) {
+          if (i < mentionedStakeholders.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 1500))
           }
         } catch (error) {
@@ -1420,8 +1443,9 @@ These notes were generated using a fallback system due to extended AI processing
       }
     }
     
-    // Clear pending mentions
+    // Clear pending mentions and response queue
     setPendingStakeholderMentions(null)
+    setResponseQueue({ current: null, upcoming: [] })
     console.log('✅ Completed processing all approved mentions')
   }
 
@@ -1518,9 +1542,21 @@ These notes were generated using a fallback system due to extended AI processing
          setDynamicFeedback(feedbackText)
          setTimeout(() => setDynamicFeedback(null), 2000)
          
+         // Set up the response queue to show users what to expect
+         const responseQueueData = userMentionResult.mentionedStakeholders.map(s => ({
+           name: s.name,
+           id: selectedStakeholders.find(st => st.name === s.name)?.id || 'unknown'
+         }))
+         
+         setResponseQueue({
+           current: responseQueueData[0]?.name || null,
+           upcoming: responseQueueData.slice(1)
+         })
+         
          // Trigger all mentioned stakeholders to respond
          let workingMessages = currentMessages
-         for (const mentionedStakeholderContext of userMentionResult.mentionedStakeholders) {
+         for (let i = 0; i < userMentionResult.mentionedStakeholders.length; i++) {
+           const mentionedStakeholderContext = userMentionResult.mentionedStakeholders[i]
            const mentionedStakeholder = selectedStakeholders.find(s => 
              s.name === mentionedStakeholderContext.name
            )
@@ -1540,8 +1576,17 @@ These notes were generated using a fallback system due to extended AI processing
              
              console.log(`✅ Completed response for: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`)
              
+             // Update response queue - move to next stakeholder
+             setResponseQueue(prev => {
+               const remaining = prev.upcoming.slice(1)
+               return {
+                 current: prev.upcoming[0]?.name || null,
+                 upcoming: remaining
+               }
+             })
+             
              // Small pause between multiple responses
-             if (userMentionResult.mentionedStakeholders.length > 1) {
+             if (i < userMentionResult.mentionedStakeholders.length - 1) {
                console.log(`⏸️ Pausing 1.5s before next stakeholder response`)
                await new Promise(resolve => setTimeout(resolve, 1500))
              }
@@ -1549,6 +1594,9 @@ These notes were generated using a fallback system due to extended AI processing
              console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`)
            }
          }
+         
+         // Clear the response queue when all responses are complete
+         setResponseQueue({ current: null, upcoming: [] })
          
          setIsGeneratingResponse(false)
          return // Exit early - don't go through normal conversation flow
@@ -1936,6 +1984,10 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
     userMessage: string,
     mentionType: string
   } | null>(null)
+  const [responseQueue, setResponseQueue] = useState<{
+    current: string | null,
+    upcoming: { name: string, id: string }[]
+  }>({ current: null, upcoming: [] })
 
   // Dynamic stakeholder thinking management
   const addStakeholderToThinking = (stakeholderId: string) => {
@@ -3176,6 +3228,43 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               )}
             </div>
           </div>
+
+          {/* Response Queue Indicator */}
+          {(responseQueue.current || responseQueue.upcoming.length > 0) && (
+            <div className="bg-gradient-to-r from-green-50 to-green-100 border-t border-l-4 border-l-green-400 p-3 flex-shrink-0">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-800 font-semibold text-sm">Response Queue:</span>
+                </div>
+                
+                {responseQueue.current && (
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-medium border border-green-300">
+                      🎙️ {responseQueue.current} responding...
+                    </span>
+                  </div>
+                )}
+                
+                {responseQueue.upcoming.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-green-700 text-sm font-medium">Up next:</span>
+                    <div className="flex space-x-2">
+                      {responseQueue.upcoming.map((stakeholder, index) => (
+                        <span 
+                          key={stakeholder.id}
+                          className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium border border-yellow-300 flex items-center space-x-1"
+                        >
+                          <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                          <span>{stakeholder.name}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Dynamic Feedback Notification */}
           {dynamicFeedback && (
