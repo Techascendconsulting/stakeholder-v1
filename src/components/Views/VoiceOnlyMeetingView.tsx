@@ -222,7 +222,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (voiceId && isAzureTTSAvailable()) {
         try {
           console.log(`✅ Using Azure TTS with voice: ${voiceId}`);
-          const audioBlob = await azureTTS(message.content, voiceId);
+          const audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceId);
           const audioUrl = URL.createObjectURL(audioBlob);
           audioElement = new Audio(audioUrl);
         } catch (azureError) {
