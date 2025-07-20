@@ -14,7 +14,7 @@ const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders,
   const allParticipants = [user, ...stakeholders];
   
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
       {allParticipants.map((participant) => {
         const isCurrentSpeaker = currentSpeaker === participant.name;
         const avatarColor = participant.name === user.name ? 'bg-blue-500' : 'bg-purple-500';
@@ -22,7 +22,7 @@ const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders,
         return (
           <div
             key={participant.name}
-            className={`relative p-4 rounded-lg border-2 transition-all duration-300 ${
+            className={`relative p-3 rounded-lg border-2 transition-all duration-300 ${
               isCurrentSpeaker 
                 ? 'border-green-400 bg-green-50 scale-105 shadow-lg' 
                 : 'border-gray-200 bg-white'
@@ -30,30 +30,30 @@ const SpeakerGrid: React.FC<SpeakerGridProps> = ({ currentSpeaker, stakeholders,
           >
             {/* Speaking indicator */}
             {isCurrentSpeaker && (
-              <div className="absolute -top-2 -right-2 bg-green-400 rounded-full p-1 animate-pulse">
-                <Volume2 className="h-4 w-4 text-white" />
+              <div className="absolute -top-1 -right-1 bg-green-400 rounded-full p-1 animate-pulse">
+                <Volume2 className="h-3 w-3 text-white" />
               </div>
             )}
             
             {/* Avatar */}
-            <div className={`w-16 h-16 mx-auto mb-2 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-xl`}>
+            <div className={`w-12 h-12 mx-auto mb-2 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-lg`}>
               {participant.name.charAt(0).toUpperCase()}
             </div>
             
             {/* Name and Role */}
             <div className="text-center">
-              <div className={`font-medium ${isCurrentSpeaker ? 'text-green-700' : 'text-gray-900'}`}>
+              <div className={`font-medium text-sm ${isCurrentSpeaker ? 'text-green-700' : 'text-gray-900'}`}>
                 {participant.name}
               </div>
-              <div className="text-sm text-gray-500">{participant.role}</div>
+              <div className="text-xs text-gray-500">{participant.role}</div>
             </div>
             
             {/* Speaking animation */}
             {isCurrentSpeaker && (
-              <div className="flex justify-center mt-2 space-x-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              <div className="flex justify-center mt-1 space-x-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             )}
           </div>
@@ -72,30 +72,30 @@ const MeetingQueue: React.FC<MeetingQueueProps> = ({ queue, currentSpeaker }) =>
   if (!currentSpeaker && queue.length === 0) return null;
   
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
       <div className="flex items-center mb-2">
-        <Users className="h-5 w-5 text-blue-600 mr-2" />
-        <span className="font-medium text-blue-900">Speaking Queue</span>
+        <Users className="h-4 w-4 text-blue-600 mr-2" />
+        <span className="font-medium text-blue-900 text-sm">Speaking Queue</span>
       </div>
       
       {currentSpeaker && (
-        <div className="bg-green-100 border border-green-200 rounded-lg p-3 mb-2">
+        <div className="bg-green-100 border border-green-200 rounded-lg p-2 mb-2">
           <div className="flex items-center">
             <Volume2 className="h-4 w-4 text-green-600 mr-2" />
-            <span className="text-green-800 font-medium">Currently Speaking: {currentSpeaker}</span>
+            <span className="text-green-800 font-medium text-sm">Speaking: {currentSpeaker}</span>
           </div>
         </div>
       )}
       
       {queue.length > 0 && (
         <div>
-          <div className="text-sm text-blue-700 mb-2">Up Next:</div>
+          <div className="text-xs text-blue-700 mb-1">Up Next:</div>
           {queue.map((speaker, index) => (
             <div key={index} className="bg-white border border-blue-200 rounded p-2 mb-1 flex items-center">
               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mr-2">
                 {index + 1}
               </span>
-              <span className="text-blue-900">{speaker}</span>
+              <span className="text-blue-900 text-sm">{speaker}</span>
             </div>
           ))}
         </div>
@@ -185,9 +185,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           // Create conversation context
           const conversationContext: ConversationContext = {
             project: {
-              name: currentProject?.name || '',
-              description: currentProject?.description || '',
-              type: currentProject?.type || ''
+              name: selectedProject?.name || '',
+              description: selectedProject?.description || '',
+              type: selectedProject?.type || ''
             },
             conversationHistory: [],
             stakeholders: selectedStakeholders.map(s => ({
@@ -232,9 +232,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         // Create conversation context
         const conversationContext: ConversationContext = {
           project: {
-            name: currentProject?.name || '',
-            description: currentProject?.description || '',
-            type: currentProject?.type || ''
+            name: selectedProject?.name || '',
+            description: selectedProject?.description || '',
+            type: selectedProject?.type || ''
           },
           conversationHistory: [],
           stakeholders: selectedStakeholders.map(s => ({
@@ -279,7 +279,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setIsListening(!isListening);
   };
 
-  if (!currentProject || !selectedStakeholders.length) {
+  if (!selectedProject || !selectedStakeholders.length) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -291,33 +291,33 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Compact Header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <button
               onClick={handleEndMeeting}
-              className="mr-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="mr-3 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Voice Meeting: {currentProject?.name}
+              <h1 className="text-lg font-semibold text-gray-900">
+                Voice Meeting: {selectedProject?.name}
               </h1>
-              <p className="text-sm text-gray-600">Listen & Learn Mode</p>
+              <p className="text-xs text-gray-600">Listen & Learn Mode</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-4">
             <div className="flex items-center text-gray-600">
               <Clock className="h-4 w-4 mr-1" />
-              <span className="font-mono">{formatTime(elapsedTime)}</span>
+              <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
             </div>
             <button
               onClick={handleEndMeeting}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
             >
               End Meeting
             </button>
@@ -325,35 +325,38 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto p-6">
+      {/* Main Content - Flexbox Layout */}
+      <div className="flex-1 flex flex-col p-4 space-y-4 overflow-hidden">
         {/* Speaker Grid */}
-        <SpeakerGrid 
-          currentSpeaker={currentSpeaker}
-          stakeholders={selectedStakeholders}
-          user={user}
-        />
+        <div className="flex-shrink-0">
+          <SpeakerGrid 
+            currentSpeaker={currentSpeaker}
+            stakeholders={selectedStakeholders}
+            user={user}
+          />
+        </div>
         
         {/* Meeting Queue */}
-        <MeetingQueue 
-          queue={speakingQueue}
-          currentSpeaker={currentSpeaker}
-        />
+        <div className="flex-shrink-0">
+          <MeetingQueue 
+            queue={speakingQueue}
+            currentSpeaker={currentSpeaker}
+          />
+        </div>
         
         {/* Question Input Area */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="mb-4">
+        <div className="flex-1 bg-white rounded-lg border border-gray-200 p-4 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Ask a Question
             </label>
-            <div className="flex space-x-3">
-              <div className="flex-1">
+            <div className="flex-1 flex space-x-3">
+              <div className="flex-1 flex">
                 <textarea
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="Type your question here..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  rows={3}
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   disabled={isProcessing}
                 />
               </div>
@@ -381,7 +384,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           </div>
           
           {isProcessing && (
-            <div className="text-center text-gray-600">
+            <div className="text-center text-gray-600 mt-3">
               <div className="inline-flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
                 Processing your question...
