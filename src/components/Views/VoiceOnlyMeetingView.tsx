@@ -205,6 +205,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Audio management - FIXED to prevent talking over each other
   const speakMessage = async (message: Message) => {
     if (!globalAudioEnabled) return;
+    
+    // SAFETY CHECK: Never speak user messages
+    if (message.speaker === 'user') {
+      console.log(`🚫 Skipping audio for user message - user messages should not be spoken`);
+      return;
+    }
 
     // Stop any current audio before starting new one
     if (currentAudio) {
@@ -218,11 +224,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
     const stakeholder = selectedStakeholders.find(s => s.name === message.speaker);
     
-    // User messages should NEVER use Azure TTS - only browser TTS
-    const isUserMessage = message.speaker === 'user';
-    const voiceId = (!isUserMessage && stakeholder?.voice) ? stakeholder.voice : null;
+    // Only stakeholder messages should use Azure TTS
+    const voiceId = stakeholder?.voice || null;
     
-    console.log(`🎵 Using voice: ${isUserMessage ? 'Browser TTS (User)' : voiceId} for speaker: ${message.speaker}`);
+    console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${message.speaker}`);
     console.log(`🔧 Azure TTS Available: ${isAzureTTSAvailable()}`);
     
     try {
@@ -233,8 +238,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       let audioElement: HTMLAudioElement | null = null;
 
-      // Only use Azure TTS for stakeholders, never for user
-      if (!isUserMessage && voiceId && isAzureTTSAvailable()) {
+      // Use Azure TTS for stakeholders when available
+      if (voiceId && isAzureTTSAvailable()) {
         try {
           console.log(`✅ Using Azure TTS with voice: ${voiceId}`);
           const audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceId);
@@ -245,9 +250,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           audioElement = await playBrowserTTS(message.content);
         }
       } else {
-        if (isUserMessage) {
-          console.log(`👤 Using browser TTS for user message`);
-        } else if (!voiceId) {
+        if (!voiceId) {
           console.log(`⚠️ No voice ID found for stakeholder, using browser TTS`);
         } else {
           console.log(`⚠️ Azure TTS not available, using browser TTS`);
@@ -486,10 +489,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     let currentMessages = [...messages, userMessage];
     setMessages(currentMessages);
 
-    // Auto-speak user message (will use browser TTS only)
-    if (globalAudioEnabled) {
-      await speakMessage(userMessage);
-    }
+    // User messages should NEVER be spoken - remove auto-speak completely
+    // Only stakeholder responses will be spoken
 
     try {
       const aiService = AIService.getInstance();
