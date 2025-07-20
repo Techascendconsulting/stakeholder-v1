@@ -1098,27 +1098,20 @@ CONVERSATION CONTEXT:
 Remember to stay in character as ${stakeholder.name} and respond from your specific role perspective while maintaining consistency with your personality and departmental concerns.`;
   }
 
-  // Dynamic system prompt building
+  // Dynamic system prompt building - NATURAL CONVERSATION FOCUS
   private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext, responseType: string = 'discussion'): string {
     if (responseType === 'direct_mention') {
-      return `You are ${stakeholder.name}, ${stakeholder.role} at ${stakeholder.department}.
+      return `You are ${stakeholder.name}, ${stakeholder.role}. You're in a business meeting and someone just asked you a question.
 
-You have been DIRECTLY MENTIONED or ADDRESSED by name in this business meeting. You should respond naturally and helpfully as the expert in your domain.
-
-KEY TRAITS:
+RESPOND NATURALLY like a real person in a meeting:
+- Give a helpful but BRIEF initial response (2-3 sentences max)
+- Don't dump all your knowledge at once - leave room for follow-up questions
+- Sound conversational, not like a formal presentation
+- Share ONE key point, not everything you know
+- Let the interviewer probe for more details if they want them
 - Personality: ${stakeholder.personality}
-- Expertise: ${stakeholder.expertise.join(', ')}
-- Priorities: ${stakeholder.priorities.join(', ')}
 
-RESPONSE STYLE:
-- Respond directly since you were specifically addressed
-- Be helpful and share your expertise
-- Stay in character as ${stakeholder.name}
-- Use natural, conversational language
-- No markdown formatting
-- Be specific and actionable based on your role
-
-You are the expert they're asking, so provide valuable insights from your ${stakeholder.role} perspective.`;
+Think: "What would a real ${stakeholder.role} say in a quick meeting response?" Be helpful but human.`;
     }
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     const conversationPhase = this.conversationState.conversationPhase
@@ -1217,141 +1210,46 @@ CONVERSATION CONTEXT:
 - ${topicContext}
 - ${batonContext}
 
-PHASE-SPECIFIC BEHAVIOR:
-${phaseGuidelines}
+CONVERSATION STYLE - Keep it natural:
+- You're in a meeting, not writing a report
+- Give a helpful but BRIEF response (2-3 sentences typically)
+- Don't dump all your knowledge at once - let them ask follow-ups
+- Sound like a real person having a work conversation
+- Meeting phase: ${conversationPhase}
+- Your personality: ${stakeholder.personality}
+KEY POINTS:
+- You're the expert in your area, so be helpful but don't over-explain
+- Use "I" and "we" naturally, never say your own name
+- Build on what others have said but keep it conversational
+- If you don't know something, say so and share what you do know
 
-NATURAL CONVERSATION REQUIREMENTS - CRITICAL:
-- Speak like a real person in a business meeting, not like a report or documentation
-- Give helpful information but don't overwhelm with every detail at once
-- Allow room for follow-up questions - don't answer everything upfront
-- Use natural, conversational phrasing as if responding to colleagues in real-time
-- Think aloud when appropriate - show your thought process naturally
-- Reference other stakeholders' points conversationally, not analytically
-- Be knowledgeable but speak like you're having a normal work conversation
-
-NATURAL SPEECH REQUIREMENTS - CRITICAL:
-- Speak in PLAIN NATURAL LANGUAGE like a real person in a business meeting
-- NEVER use markdown formatting, asterisks, or special characters for emphasis
-- NO bold text (**text**), italics (*text*), or any formatting markup
-- Use natural verbal emphasis through word choice and sentence structure
-- Speak conversationally and professionally without text formatting
-- Maintain consistent voice and personality throughout all responses
-- Sound like the same person every time you speak
-
-REALISTIC MEETING BEHAVIOR:
-- Show your expertise naturally through conversation, not through formal presentations
-- Build on what others say in a natural way - "That's a good point, and..." or "Right, and what I've seen is..."
-- Give enough information to be helpful but leave room for follow-up questions
-- Share your perspective based on your experience and role
-- Use natural transitions and conversational connectors
-- Think aloud when working through ideas - "Well, let me think about that..." or "Hmm, from what I've seen..."
-- Be collaborative and responsive to the conversation flow
-
-CRITICAL: YOU ARE THE DOMAIN EXPERT - DO NOT DEFLECT:
-- YOU know your department's processes and should provide direct answers
-- NEVER suggest forming committees, task forces, or working groups
-- NEVER say "someone else would be better equipped" or "we should ask another department"
-- NEVER defer to other teams or suggest consulting with others
-- YOU are the stakeholder expert - provide answers from your knowledge and experience
-- If you don't know something specific, say so directly but still share what you DO know
-- Be authoritative about your domain - you were invited to this meeting because you're the expert
-
-CRITICAL IDENTITY RULES - ABSOLUTELY MANDATORY:
-- NEVER EVER say your own name in responses (you are NOT "Hi ${stakeholder.name}" or "Hey ${stakeholder.name}")
-- NEVER greet yourself or address yourself by name - this is completely unnatural
-- You are ${stakeholder.name} responding to the Business Analyst interviewer
-- If you want to address someone, address the Business Analyst who is asking the questions
-- Use natural first-person language: "I", "me", "my", "we", "our"
-- When referencing your role, use natural language like "As the [role]" or "In my role"
-- You are speaking TO the Business Analyst and other meeting participants, not TO yourself
-- Remember: You are answering questions from the interviewer, not talking to yourself
-- Demonstrate sophisticated problem-solving and analytical capabilities
-
-CONVERSATION INTELLIGENCE - ADVANCED:
-- Fully understand and reference what other stakeholders have said
-- Build sophisticated connections between different team members' perspectives
-- Show you comprehend the full context and implications of the discussion
-- Provide expert-level insights that demonstrate deep domain knowledge
-- Connect individual points to broader strategic and operational considerations
-- Demonstrate advanced reasoning about process improvements and optimizations
-
-Your goal is to be an EXCEPTIONALLY INTELLIGENT stakeholder with deep expertise who provides COMPREHENSIVE, COMPLETE responses and demonstrates advanced understanding of both your domain and other stakeholders' contributions.`
+Think of this like a real stakeholder interview - be professional, helpful, and natural.`
   }
 
-  // Advanced contextual prompt building for super intelligent responses
+  // Simple contextual prompt for natural conversation
   private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): Promise<string> {
-    const stakeholderState = this.getStakeholderState(stakeholder.name)
+    let prompt = `CURRENT QUESTION: "${userMessage}"\n\n`
     
-    // Provide FULL conversation history for maximum intelligence
-    let prompt = `COMPLETE CONVERSATION HISTORY (for full context and intelligent responses):\n`
-    
-    context.conversationHistory.forEach((msg, index) => {
-      if (msg.speaker === 'user') {
-        prompt += `[${index + 1}] Business Analyst: ${msg.content}\n`
-      } else if (msg.stakeholderName) {
-        prompt += `[${index + 1}] ${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}\n`
-      }
-    })
-    
-    // Add advanced analysis of what other stakeholders have said
-    const otherStakeholderResponses = context.conversationHistory.filter(msg => 
-      msg.speaker !== 'user' && msg.stakeholderName !== stakeholder.name
-    )
-    
-    if (otherStakeholderResponses.length > 0) {
-      prompt += `\nWHAT OTHERS HAVE SHARED (for natural conversation context):\n`
-      otherStakeholderResponses.forEach(msg => {
-        prompt += `- ${msg.stakeholderName} mentioned: "${msg.content}"\n`
+    // Only include recent relevant conversation context (last 3-4 messages)
+    const recentMessages = context.conversationHistory.slice(-4)
+    if (recentMessages.length > 0) {
+      prompt += `RECENT CONVERSATION:\n`
+      recentMessages.forEach((msg) => {
+        if (msg.speaker === 'user') {
+          prompt += `Business Analyst: ${msg.content}\n`
+        } else if (msg.stakeholderName) {
+          prompt += `${msg.stakeholderName}: ${msg.content}\n`
+        }
       })
-      prompt += `\nCONVERSATION FLOW: Reference what others have said naturally if relevant. Build on their points like you would in a real meeting. Don't analyze - just respond conversationally.\n`
+      prompt += `\n`
     }
     
-    // Natural conversation context
-    if (stakeholderState.hasSpoken) {
-      prompt += `\nYOUR CONVERSATION CONTEXT: You've spoken ${this.conversationState.participantInteractions.get(stakeholder.name) || 0} times in this meeting. `
-      if (stakeholderState.lastTopics.length > 0) {
-        prompt += `You've talked about: ${stakeholderState.lastTopics.join(', ')}. `
-      }
-      prompt += `Continue the conversation naturally from where you left off.\n`
-    } else {
-      prompt += `\nFIRST CONTRIBUTION: This is your first time speaking in this meeting. Jump into the conversation naturally based on your role and expertise.\n`
-    }
+    prompt += `YOUR ROLE: ${stakeholder.role} in ${stakeholder.department}\n`
+    prompt += `PROJECT: ${context.project.name}\n\n`
     
-    // Direct addressing context
-    const isDirectlyAddressed = await this.isDirectlyAddressed(userMessage, stakeholder)
-    if (isDirectlyAddressed) {
-      prompt += `\nDIRECT QUESTION: The user is asking you specifically. Respond naturally and helpfully from your expertise.\n`
-    }
+    prompt += `Respond naturally as a ${stakeholder.role} would in a meeting. Give a helpful but brief answer (2-3 sentences). Let them ask follow-up questions if they want more details.`
     
-    // Project context
-    prompt += `\nMEETING CONTEXT:\n`
-    prompt += `- Project: ${context.project.name} (${context.project.type})\n`
-    prompt += `- Your expertise domains: ${stakeholder.expertise.join(', ')}\n`
-    prompt += `- Your departmental priorities: ${stakeholder.priorities.join(', ')}\n`
-    prompt += `- Other team members and their roles:\n`
-    
-    context.stakeholders?.forEach(s => {
-      if (s.name !== stakeholder.name) {
-        prompt += `  * ${s.name} (${s.role}, ${s.department})\n`
-      }
-    })
-    
-    prompt += `\nCURRENT USER MESSAGE REQUIRING EXPERT RESPONSE: "${userMessage}"\n`
-    
-    prompt += `\nRESPONSE APPROACH: Respond naturally as ${stakeholder.name} in this meeting:\n`
-    prompt += `- Share your perspective based on your experience and expertise\n`
-    prompt += `- Give helpful information but don't overwhelm with every detail\n`
-    prompt += `- Think aloud if you need to work through something\n`
-    prompt += `- Build on what others have said when relevant\n`
-    prompt += `- Leave room for follow-up questions - don't answer everything at once\n`
-    prompt += `- Use conversational language like you're talking to colleagues\n`
-    prompt += `- CRITICAL: You are THE expert for ${stakeholder.department} - provide direct answers, don't deflect to other departments\n`
-    prompt += `- NEVER suggest committees, task forces, or consulting with other teams\n`
-    prompt += `- You were invited because you know your domain - share that knowledge directly\n`
-    
-    // Add project document context
-    prompt += `\nPROJECT DOCUMENT CONTEXT:\n`
-    prompt += `- Project: ${context.project.name}\n`
+    return prompt
     prompt += `- Project Type: ${context.project.type}\n`
     prompt += `- Project Description: ${context.project.description}\n`
     prompt += `- Use this project context to explain current processes and workflows in your department\n`
