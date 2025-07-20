@@ -1483,7 +1483,7 @@ Return "YES" if directly addressed, "NO" if not.`
   // Enhanced stakeholder mention detection for cross-references
   async detectStakeholderMentions(response: string, availableStakeholders: StakeholderContext[]): Promise<{
     mentionedStakeholders: StakeholderContext[],
-    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'none',
+    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'group_greeting' | 'none',
     confidence: number
   }> {
     try {
@@ -1508,6 +1508,7 @@ MENTION TYPES TO DETECT:
 3. "name_question" - Name followed by question (e.g., "Emily might know this better?", "Has David looked at this?")
 4. "expertise_request" - Requesting someone's expertise (e.g., "the IT team should weigh in", "someone from Finance")
 5. "multiple_mention" - Multiple stakeholders mentioned (e.g., "aisha and david how are you?", "Sarah and James, what do you think?")
+6. "group_greeting" - Group greetings that should include all stakeholders (e.g., "hey guys", "hello everyone", "hi all", "good morning team", "hey there")
 
 EXAMPLES OF WHAT TO DETECT:
 - "Sarah, what's your perspective on this?"
@@ -1524,10 +1525,16 @@ EXAMPLES OF WHAT TO DETECT:
 - "Sarah and James, what are your thoughts?"
 - "How are you doing today, David?"
 - "hi aisha and david"
-- "hello sarah and james"
+- "hello sarah and james" 
 - "aisha, david, what do you think?"
 - "can aisha and david help with this?"
 - "I'd like to hear from sarah and emily"
+- "hey guys" (should return ALL stakeholder names)
+- "hello everyone" (should return ALL stakeholder names)
+- "hi all" (should return ALL stakeholder names)
+- "good morning team" (should return ALL stakeholder names)
+- "hey there" (should return ALL stakeholder names)
+- "hello folks" (should return ALL stakeholder names)
 
 EXAMPLES OF WHAT NOT TO DETECT:
 - "We need to consult with another department" (too vague)
@@ -1542,9 +1549,12 @@ RESPONSE FORMAT:
 IMPORTANT: Return ONLY the pipe-separated format below, no quotes, no equals, no extra text.
 
 Examples:
-- Multiple: Sarah Patel,David Thompson|multiple_mention|0.9
+- Multiple specific: Sarah Patel,David Thompson|multiple_mention|0.9
 - Single: Sarah Patel|direct_question|0.9
+- Group greeting: ${stakeholderNames}|group_greeting|0.9
 - None: ${AIService.CONFIG.mention.noMentionToken}|none|0.0
+
+SPECIAL RULE: For group greetings like "hey guys", "hello everyone", "hi all" - return ALL available stakeholder names separated by commas.
 
 Return format: stakeholder_names|mention_type|confidence`
           },
@@ -1650,7 +1660,7 @@ Return format: stakeholder_names|mention_type|confidence`
 
       return { 
         mentionedStakeholders, 
-        mentionType: mentionType as 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'none', 
+        mentionType: mentionType as 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'group_greeting' | 'none', 
         confidence 
       };
 
@@ -1672,11 +1682,27 @@ Return format: stakeholder_names|mention_type|confidence`
   // Simple backup detection method
   private simpleStakeholderDetection(response: string, availableStakeholders: StakeholderContext[]): {
     mentionedStakeholders: StakeholderContext[],
-    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'none',
+    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'group_greeting' | 'none',
     confidence: number
   } {
     const foundStakeholders: StakeholderContext[] = [];
     const responseLower = response.toLowerCase();
+    
+    // Check for group greetings first
+    const groupGreetingPatterns = [
+      /\b(hey|hi|hello)\s+(guys|everyone|all|team|folks|there|y'all)\b/i,
+      /\b(good\s+(morning|afternoon|evening))\s*(everyone|team|all)?\b/i,
+      /\b(hey|hi|hello)\s*$/i  // Just "hey", "hi", "hello" alone
+    ];
+    
+    if (groupGreetingPatterns.some(pattern => pattern.test(response))) {
+      console.log('✅ Simple detection found: Group greeting detected, including all stakeholders');
+      return {
+        mentionedStakeholders: availableStakeholders,
+        mentionType: 'group_greeting',
+        confidence: 0.9
+      };
+    }
     
     // Simple name detection
     for (const stakeholder of availableStakeholders) {
