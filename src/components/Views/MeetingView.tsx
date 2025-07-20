@@ -877,7 +877,7 @@ These notes were generated using a fallback system due to extended AI processing
          return recommendations.join('\n');
   }
 
-  // Enhanced audio management system
+  // Enhanced audio management system with conversation state cleanup
   const stopCurrentAudio = () => {
     if (currentAudio) {
       currentAudio.pause()
@@ -889,6 +889,47 @@ These notes were generated using a fallback system due to extended AI processing
       setCurrentlyProcessingAudio(null)
       setAudioPausedPosition(0)
     }
+    
+    // CRITICAL: Reset conversation state when audio is stopped
+    setCurrentSpeaking(null)
+    setConversationQueue([])
+    setIsGeneratingResponse(false)
+    
+    // Clear any thinking states
+    setActiveThinking(new Set())
+    setDynamicFeedback(null)
+    
+    // Clear any pending mentions to avoid stuck state
+    setPendingStakeholderMentions(null)
+    
+    console.log('🔄 Audio stopped - conversation state reset')
+  }
+
+  // Manual conversation state reset function
+  const resetConversationState = () => {
+    // Stop any audio
+    stopCurrentAudio()
+    
+    // Reset all conversation state
+    setCurrentSpeaking(null)
+    setConversationQueue([])
+    setIsGeneratingResponse(false)
+    
+    // Clear thinking and feedback states
+    setActiveThinking(new Set())
+    setDynamicFeedback(null)
+    
+    // Clear pending mentions
+    setPendingStakeholderMentions(null)
+    
+    // Enable user input
+    setCanUserType(true)
+    
+    // Show feedback to user
+    setDynamicFeedback('✅ Conversation state reset - ready for new questions')
+    setTimeout(() => setDynamicFeedback(null), 3000)
+    
+    console.log('🔄 Manual conversation state reset completed')
   }
 
   const pauseCurrentAudio = () => {
@@ -1389,6 +1430,16 @@ These notes were generated using a fallback system due to extended AI processing
      if (!inputMessage.trim() || isEndingMeeting) return
 
      const messageContent = inputMessage.trim()
+     
+     // Check for conversation reset commands
+     if (messageContent.toLowerCase().includes('reset conversation') ||
+         messageContent.toLowerCase().includes('restart chat') ||
+         messageContent.toLowerCase().includes('clear queue')) {
+       console.log('🔄 User requested conversation reset')
+       resetConversationState()
+       setInputMessage('')
+       return
+     }
      
      // Check for user control commands for pending stakeholder mentions
      if (pendingStakeholderMentions && (
