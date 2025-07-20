@@ -97,7 +97,7 @@ const MeetingView: React.FC = () => {
       const welcomeMessage: Message = {
         id: `welcome-${Date.now()}`,
         speaker: 'system',
-        content: `Welcome to your meeting for ${selectedProject.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}.`,
+        content: `Welcome to your meeting for ${selectedProject?.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}.`,
         timestamp: new Date().toISOString()
       }
       setMessages([welcomeMessage])
@@ -2867,7 +2867,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               <div className="flex items-center space-x-4">
                 <div>
                   <h2 className="text-xl font-semibold text-white">
-                    Meeting: {selectedProject.name}
+                    Meeting: {selectedProject?.name}
                   </h2>
                   <p className="text-sm text-blue-100 mt-1">
                     Participants: {selectedStakeholders.map(s => s.name).join(', ')}
