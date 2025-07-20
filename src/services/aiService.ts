@@ -1555,11 +1555,12 @@ Return format: stakeholder_names|mention_type|confidence`
 
       const result = completion.choices[0]?.message?.content?.trim();
       
-      console.log('🔍 AI Detection Raw Result:', {
-        input: response,
-        rawResult: result,
-        availableNames: availableStakeholders.map(s => s.name)
-      });
+      console.log('🔍 AI Detection Raw Result:')
+      console.log('  Input:', response)
+      console.log('  Raw AI Result:', result)
+      console.log('  Available Names:', availableStakeholders.map(s => s.name))
+      console.log('  Result Type:', typeof result)
+      console.log('  Result Length:', result?.length)
       
       if (!result) {
         console.log('❌ No result from AI');
@@ -1567,8 +1568,24 @@ Return format: stakeholder_names|mention_type|confidence`
       }
 
       const parts = result.split('|');
+      console.log('🔍 Splitting result by |:')
+      console.log('  Parts:', parts)
+      console.log('  Parts length:', parts.length)
+      console.log('  Expected: 3 parts')
+      
       if (parts.length !== 3) {
-        console.log('❌ Invalid format from AI:', { parts, expected: 3 });
+        console.log('❌ Invalid format from AI - Expected format: stakeholder_names|mention_type|confidence')
+        console.log('  Got:', result)
+        console.log('  Parts:', parts)
+        
+        // Try backup detection when AI format fails
+        console.log('🔄 AI format failed, trying backup detection...');
+        const backupResult = this.simpleStakeholderDetection(response, availableStakeholders);
+        if (backupResult.mentionedStakeholders.length > 0) {
+          console.log('✅ Backup detection succeeded:', backupResult.mentionedStakeholders.map(s => s.name));
+          return backupResult;
+        }
+        
         return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
       }
 
@@ -1628,8 +1645,59 @@ Return format: stakeholder_names|mention_type|confidence`
 
     } catch (error) {
       console.error('Error detecting stakeholder mentions:', error);
+      
+      // Backup simple detection method
+      console.log('🔄 Attempting backup simple detection...');
+      const backupResult = this.simpleStakeholderDetection(response, availableStakeholders);
+      if (backupResult.mentionedStakeholders.length > 0) {
+        console.log('✅ Backup detection found:', backupResult.mentionedStakeholders.map(s => s.name));
+        return backupResult;
+      }
+      
       return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
     }
+  }
+
+  // Simple backup detection method
+  private simpleStakeholderDetection(response: string, availableStakeholders: StakeholderContext[]): {
+    mentionedStakeholders: StakeholderContext[],
+    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'none',
+    confidence: number
+  } {
+    const foundStakeholders: StakeholderContext[] = [];
+    const responseLower = response.toLowerCase();
+    
+    // Simple name detection
+    for (const stakeholder of availableStakeholders) {
+      const firstName = stakeholder.name.split(' ')[0].toLowerCase();
+      const lastName = stakeholder.name.split(' ').slice(-1)[0].toLowerCase();
+      const fullName = stakeholder.name.toLowerCase();
+      
+      // Check for various mention patterns
+      const patterns = [
+        new RegExp(`\\b${firstName}\\b`, 'i'),
+        new RegExp(`\\b${lastName}\\b`, 'i'),
+        new RegExp(`\\b${fullName}\\b`, 'i'),
+        new RegExp(`\\b${firstName}\\s+and\\b`, 'i'),
+        new RegExp(`\\band\\s+${firstName}\\b`, 'i')
+      ];
+      
+      if (patterns.some(pattern => pattern.test(response))) {
+        foundStakeholders.push(stakeholder);
+        console.log(`✅ Simple detection found: ${stakeholder.name} via pattern matching`);
+      }
+    }
+    
+    if (foundStakeholders.length === 0) {
+      return { mentionedStakeholders: [], mentionType: 'none', confidence: 0 };
+    }
+    
+    const mentionType = foundStakeholders.length > 1 ? 'multiple_mention' : 'direct_question';
+    return { 
+      mentionedStakeholders: foundStakeholders, 
+      mentionType, 
+      confidence: 0.8 // High confidence for simple pattern matching
+    };
   }
 
   // Generate contextual response when mentioned by another stakeholder
