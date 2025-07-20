@@ -1111,7 +1111,9 @@ RESPOND NATURALLY like a real person in a meeting:
 - Let the interviewer probe for more details if they want them
 - Personality: ${stakeholder.personality}
 
-Think: "What would a real ${stakeholder.role} say in a quick meeting response?" Be helpful but human.`;
+Think: "What would a real ${stakeholder.role} say in a quick meeting response?" Be helpful but human.
+
+AVOID ROBOTIC ENDINGS: Don't end with "feel free to ask", "let me know if you need anything", or similar generic closings. End naturally like a real person.`;
     }
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     const conversationPhase = this.conversationState.conversationPhase
@@ -1223,7 +1225,9 @@ KEY POINTS:
 - Build on what others have said but keep it conversational
 - If you don't know something, say so and share what you do know
 
-Think of this like a real stakeholder interview - be professional, helpful, and natural.`
+Think of this like a real stakeholder interview - be professional, helpful, and natural.
+
+AVOID ROBOTIC ENDINGS: Don't end with "feel free to ask", "let me know if you need anything", "if you have any questions", or similar generic closings. Just end naturally like a real person would in conversation.`
   }
 
   // Simple contextual prompt for natural conversation

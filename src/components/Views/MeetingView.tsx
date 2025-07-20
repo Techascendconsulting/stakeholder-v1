@@ -1511,12 +1511,12 @@ These notes were generated using a fallback system due to extended AI processing
            availableStakeholders: selectedStakeholders.map(s => ({ id: s.id, name: s.name, role: s.role }))
          })
          
-         // Show feedback that we detected the mention(s)
+         // Show prominent feedback that stakeholders will respond
          const feedbackText = userMentionResult.mentionedStakeholders.length > 1 
-           ? `🎯 Directing question to ${mentionedNames}`
-           : `🎯 Directing question to ${userMentionResult.mentionedStakeholders[0].name}`
+           ? `🎯 ${mentionedNames} will respond shortly...`
+           : `🎯 ${userMentionResult.mentionedStakeholders[0].name} will respond shortly...`
          setDynamicFeedback(feedbackText)
-         setTimeout(() => setDynamicFeedback(null), 3000)
+         setTimeout(() => setDynamicFeedback(null), 2000)
          
          // Trigger all mentioned stakeholders to respond
          let workingMessages = currentMessages
@@ -3108,19 +3108,20 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                     />
                   </div>
                   
-                  <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 relative">
+                  <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 text-blue-800 relative shadow-md animate-pulse">
                     <div className="text-xs font-medium text-blue-600 mb-1 flex items-center space-x-2">
                       <span>{stakeholder.name}</span>
                       <span className="text-blue-400">•</span>
                       <span className="text-blue-500">{stakeholder.role}</span>
+                      <span className="bg-blue-200 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">preparing response</span>
                     </div>
                     <div className="text-sm flex items-center space-x-2 pr-6">
                       <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                       </div>
-                      <span>{currentThinkingMessage}</span>
+                      <span className="font-medium">{currentThinkingMessage}</span>
                     </div>
                     <div className="text-xs mt-1 opacity-75">
                       {new Date().toLocaleTimeString()}
@@ -3175,6 +3176,20 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               )}
             </div>
           </div>
+
+          {/* Dynamic Feedback Notification */}
+          {dynamicFeedback && (
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-t border-l-4 border-l-blue-400 p-3 flex-shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
+                <span className="text-blue-800 font-medium text-sm">{dynamicFeedback}</span>
+              </div>
+            </div>
+          )}
 
           {/* Input */}
           <div className="border-t p-4 flex-shrink-0">
