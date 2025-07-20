@@ -1295,30 +1295,44 @@ These notes were generated using a fallback system due to extended AI processing
       // Queue all relevant stakeholders to respond
       for (let i = 0; i < relevantStakeholders.length; i++) {
         const stakeholder = relevantStakeholders[i]
+        
+        // Show current speaker is about to respond
+        console.log(`🎙️ Now responding: ${stakeholder.name}`)
+        
         await processDynamicStakeholderResponse(stakeholder, messageContent, currentMessages, 'discussion_primary')
         
-        // Update response queue - move to next stakeholder
-        setResponseQueue(prev => {
-          const remaining = prev.upcoming.slice(1)
-          return {
-            current: prev.upcoming[0]?.name || null,
-            upcoming: remaining
-          }
-        })
+        // Keep the current speaker visible for a moment after they finish
+        console.log(`✅ ${stakeholder.name} finished responding`)
         
         // Wait for current speaker to finish before next one
         while (currentSpeaking !== null) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
         
-        // Natural pause between speakers
+        // Show the completed response for 2 seconds before moving to next
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Update response queue - move to next stakeholder (only if there are more)
         if (i < relevantStakeholders.length - 1) {
+          setResponseQueue(prev => {
+            const remaining = prev.upcoming.slice(1)
+            return {
+              current: prev.upcoming[0]?.name || null,
+              upcoming: remaining
+            }
+          })
+          
+          // Natural pause before next speaker
           await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
       
+      // Keep the final speaker visible for a moment, then clear
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
       // Clear the response queue when all responses are complete
       setResponseQueue({ current: null, upcoming: [] })
+      console.log('🏁 All responses complete - queue cleared')
     } else {
       // Single respondent for specific questions
       const primaryRespondent = selectContextualRespondent(messageContent, currentMessages)
@@ -1451,17 +1465,20 @@ These notes were generated using a fallback system due to extended AI processing
             }
           }
           
-          // Update response queue - move to next stakeholder
-          setResponseQueue(prev => {
-            const remaining = prev.upcoming.slice(1)
-            return {
-              current: prev.upcoming[0]?.name || null,
-              upcoming: remaining
-            }
-          })
+          // Keep the current speaker visible for a moment after they finish
+          await new Promise(resolve => setTimeout(resolve, 2000))
           
-          // Small pause between multiple responses
+          // Update response queue - move to next stakeholder (only if there are more)
           if (i < mentionedStakeholders.length - 1) {
+            setResponseQueue(prev => {
+              const remaining = prev.upcoming.slice(1)
+              return {
+                current: prev.upcoming[0]?.name || null,
+                upcoming: remaining
+              }
+            })
+            
+            // Pause before next response
             await new Promise(resolve => setTimeout(resolve, 1500))
           }
         } catch (error) {
@@ -1469,6 +1486,9 @@ These notes were generated using a fallback system due to extended AI processing
         }
       }
     }
+    
+    // Keep the final speaker visible for a moment, then clear
+    await new Promise(resolve => setTimeout(resolve, 2000))
     
     // Clear pending mentions and response queue
     setPendingStakeholderMentions(null)
@@ -1603,17 +1623,19 @@ These notes were generated using a fallback system due to extended AI processing
              
              console.log(`✅ Completed response for: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`)
              
-             // Update response queue - move to next stakeholder
-             setResponseQueue(prev => {
-               const remaining = prev.upcoming.slice(1)
-               return {
-                 current: prev.upcoming[0]?.name || null,
-                 upcoming: remaining
-               }
-             })
+             // Keep the current speaker visible for a moment after they finish
+             await new Promise(resolve => setTimeout(resolve, 2000))
              
-             // Small pause between multiple responses
+             // Update response queue - move to next stakeholder (only if there are more)
              if (i < userMentionResult.mentionedStakeholders.length - 1) {
+               setResponseQueue(prev => {
+                 const remaining = prev.upcoming.slice(1)
+                 return {
+                   current: prev.upcoming[0]?.name || null,
+                   upcoming: remaining
+                 }
+               })
+               
                console.log(`⏸️ Pausing 1.5s before next stakeholder response`)
                await new Promise(resolve => setTimeout(resolve, 1500))
              }
@@ -1622,8 +1644,12 @@ These notes were generated using a fallback system due to extended AI processing
            }
          }
          
+         // Keep the final speaker visible for a moment, then clear
+         await new Promise(resolve => setTimeout(resolve, 2000))
+         
          // Clear the response queue when all responses are complete
          setResponseQueue({ current: null, upcoming: [] })
+         console.log('🏁 All direct mention responses complete - queue cleared')
          
          setIsGeneratingResponse(false)
          return // Exit early - don't go through normal conversation flow
