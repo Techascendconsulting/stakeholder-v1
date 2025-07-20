@@ -31,7 +31,7 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   };
 
   return (
-    <div className="relative bg-gray-800 rounded-lg overflow-hidden aspect-video flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750 min-h-[200px]">
+    <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
         <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10">
@@ -170,7 +170,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [meetingStartTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
   
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Timer effect
   useEffect(() => {
@@ -653,48 +653,48 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Participant Grid - IMPROVED to fill page like Teams */}
-        <div className="flex-1 p-4 overflow-auto">
+      {/* Main Content - Fixed height, no scrolling */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Participant Grid - Fixed height with equal-sized cards */}
+        <div className="flex-1 p-4 min-h-0">
           <div className={`grid ${getGridCols(allParticipants.length)} gap-4 h-full`}>
             {allParticipants.map((participant, index) => (
-              <ParticipantCard
-                key={participant.name}
-                participant={participant}
-                isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                isThinking={thinkingStakeholders.has(participant.name)}
-                isUser={index === 0}
-              />
+              <div key={participant.name} className="h-full min-h-[200px] max-h-[300px]">
+                <ParticipantCard
+                  participant={participant}
+                  isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                  isThinking={thinkingStakeholders.has(participant.name)}
+                  isUser={index === 0}
+                />
+              </div>
             ))}
           </div>
         </div>
 
         {/* Dynamic Feedback */}
         {dynamicFeedback && (
-          <div className="px-6 pb-2">
+          <div className="px-6 pb-2 flex-shrink-0">
             <div className="bg-blue-600 text-white px-4 py-2 rounded-lg text-center text-sm">
               {dynamicFeedback}
             </div>
           </div>
         )}
 
-        {/* Bottom Controls */}
+        {/* Bottom Controls - Fixed height */}
         <div className="bg-gray-800 border-t border-gray-700 p-4 flex-shrink-0">
           {/* Question Input */}
           <div className="mb-4">
             <div className="flex space-x-3">
-              <textarea
+              <input
                 ref={inputRef}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask a question or start the discussion..."
-                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                rows={2}
+                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={isLoading}
               />
-              <div className="flex flex-col space-y-2">
+              <div className="flex space-x-2">
                 <button
                   onClick={() => setShowVoiceModal(true)}
                   className={`p-3 rounded-lg transition-colors ${
