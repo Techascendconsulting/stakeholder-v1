@@ -10,14 +10,12 @@ import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 interface ParticipantCardProps {
   participant: any;
   isCurrentSpeaker: boolean;
-  isThinking: boolean;
   isUser?: boolean;
 }
 
 const ParticipantCard: React.FC<ParticipantCardProps> = ({ 
   participant, 
   isCurrentSpeaker, 
-  isThinking, 
   isUser = false 
 }) => {
   const getInitials = (name: string) => {
@@ -46,13 +44,6 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
       {isCurrentSpeaker && (
         <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
           <div className="absolute inset-0 rounded-xl border-4 border-green-400 opacity-50 animate-ping"></div>
-        </div>
-      )}
-      
-      {/* Animated Thinking Ring */}
-      {isThinking && !isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-xl border-4 border-yellow-400 animate-pulse z-10">
-          <div className="absolute inset-0 rounded-xl border-4 border-yellow-400 opacity-50 animate-ping"></div>
         </div>
       )}
       
@@ -90,13 +81,6 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
            )}
          </div>
        )}
-
-               {/* Thinking indicator */}
-        {isThinking && !isCurrentSpeaker && (
-          <div className="absolute top-2 right-2 bg-orange-500 p-1 rounded-full animate-pulse">
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-          </div>
-        )}
     </div>
   );
 };
@@ -203,7 +187,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Dynamic UX state management
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [thinkingStakeholders, setThinkingStakeholders] = useState<Set<string>>(new Set());
   const [dynamicFeedback, setDynamicFeedback] = useState<string | null>(null);
   const [responseQueue, setResponseQueue] = useState<{
     current: string | null;
@@ -323,9 +306,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} now taking turn to speak`);
       setCurrentSpeaking(stakeholder.id);
       
-      // Dynamic thinking state management
-      addStakeholderToThinking(stakeholder.id);
-      
       // Generate dynamic thinking message based on actual user question context
       const thinkingContext = {
         stakeholder,
@@ -340,7 +320,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
       
       // Clean up thinking state - ensure proper cleanup
-      removeStakeholderFromThinking(stakeholder.id);
       setDynamicFeedback(null);
       
       // Create and add message with dynamic indexing
@@ -355,7 +334,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Force cleanup of thinking state to prevent display issues
       setTimeout(() => {
-        removeStakeholderFromThinking(stakeholder.id);
         setDynamicFeedback(null);
       }, 100);
       
@@ -390,7 +368,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       return updatedMessages;
           } catch (error) {
         console.error(`🚨 QUEUE ERROR: Error in ${stakeholder.name} response:`, error);
-        removeStakeholderFromThinking(stakeholder.id);
         setDynamicFeedback(null);
         
         // Clean up conversation state on error
@@ -404,7 +381,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Force cleanup of thinking state on error
       setTimeout(() => {
-        removeStakeholderFromThinking(stakeholder.id);
         setDynamicFeedback(null);
       }, 100);
       
@@ -1010,21 +986,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setConversationQueue([]);
     setCurrentSpeaking(null);
     setResponseQueue({ current: null, upcoming: [] });
-    setThinkingStakeholders(new Set());
     setDynamicFeedback(null);
-  };
-
-  // Add thinking state management
-  const addStakeholderToThinking = (stakeholderId: string) => {
-    setThinkingStakeholders(prev => new Set([...prev, stakeholderId]));
-  };
-
-  const removeStakeholderFromThinking = (stakeholderId: string) => {
-    setThinkingStakeholders(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(stakeholderId);
-      return newSet;
-    });
   };
 
   // Baton passing detection - EXACT copy from transcript meeting
@@ -1329,7 +1291,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                         key={participant.name}
                         participant={participant}
                         isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                        isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                         isUser={index === 0}
                       />
                     ))}
@@ -1345,7 +1306,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                           key={participant.name}
                           participant={participant}
                           isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                           isUser={index === 0}
                         />
                       ))}
@@ -1356,7 +1316,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                           key={participant.name}
                           participant={participant}
                           isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                           isUser={index + 3 === 0}
                         />
                       ))}
@@ -1373,7 +1332,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                           key={participant.name}
                           participant={participant}
                           isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                           isUser={index === 0}
                         />
                       ))}
@@ -1384,7 +1342,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                           key={participant.name}
                           participant={participant}
                           isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                           isUser={index + 3 === 0}
                         />
                       ))}
@@ -1401,7 +1358,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                           key={participant.name}
                           participant={participant}
                           isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                           isUser={index === 0}
                         />
                       ))}
@@ -1412,7 +1368,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                           key={participant.name}
                           participant={participant}
                           isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                           isUser={index + 3 === 0}
                         />
                       ))}
