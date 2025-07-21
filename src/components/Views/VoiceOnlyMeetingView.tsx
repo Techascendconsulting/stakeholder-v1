@@ -252,16 +252,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     const initializeMeeting = async () => {
       console.log('🎯 INIT MEETING - Checking conditions:', {
         hasSelectedProject: !!selectedProject,
-        stakeholdersCount: selectedStakeholders.length,
+        stakeholdersCount: selectedStakeholders?.length || 0,
         hasUserId: !!user?.id,
         hasExistingMeetingId: !!meetingId
       });
       
-      if (selectedProject && selectedStakeholders.length > 0 && user?.id && !meetingId) {
+      // More lenient conditions - even if stakeholders is empty, try to create meeting
+      if (selectedProject && user?.id && !meetingId) {
         try {
-          const stakeholderIds = selectedStakeholders.map(s => s.id);
-          const stakeholderNames = selectedStakeholders.map(s => s.name);
-          const stakeholderRoles = selectedStakeholders.map(s => s.role);
+          // Use fallback values if stakeholders are missing
+          const stakeholderIds = selectedStakeholders?.map(s => s.id) || ['default-stakeholder'];
+          const stakeholderNames = selectedStakeholders?.map(s => s.name) || ['Default Stakeholder'];
+          const stakeholderRoles = selectedStakeholders?.map(s => s.role) || ['Business Stakeholder'];
           
           console.log('🎯 INIT MEETING - Creating meeting with:', {
             userId: user.id,
@@ -295,11 +297,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           console.error('🎯 INIT MEETING - Error initializing meeting:', error);
         }
       } else {
-        console.log('🎯 INIT MEETING - Conditions not met, skipping initialization');
+        console.log('🎯 INIT MEETING - Conditions not met:', {
+          hasSelectedProject: !!selectedProject,
+          hasUserId: !!user?.id,
+          alreadyHasMeetingId: !!meetingId
+        });
       }
     };
 
-    initializeMeeting();
+    // Small delay to ensure all context is loaded
+    const timeoutId = setTimeout(initializeMeeting, 500);
+    return () => clearTimeout(timeoutId);
   }, [selectedProject, selectedStakeholders, user?.id, meetingId]);
 
   // Generate stakeholder response with context - EXACT COPY from transcript meeting
@@ -1140,7 +1148,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         .map(msg => `${msg.stakeholderName || msg.speaker}: ${msg.content}`)
         .join('\n');
       
-      const aiService = AIService.getInstance();
+      // Use direct OpenAI API call for summary generation
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({
+        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        dangerouslyAllowBrowser: true
+      });
+
       const prompt = `Please provide a concise meeting summary of this stakeholder interview:
 
 ${conversationText}
@@ -1153,7 +1167,23 @@ Focus on:
 
 Keep it professional and under 300 words.`;
 
-      const summary = await aiService.generateResponse(prompt, [], {});
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional business analyst assistant. Generate clear, concise meeting summaries."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      });
+
+      const summary = completion.choices[0]?.message?.content;
       return summary || 'Unable to generate meeting summary.';
     } catch (error) {
       console.error('Error generating meeting summary:', error);

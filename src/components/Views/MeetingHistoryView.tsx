@@ -6,7 +6,7 @@ import { Message } from '../../types';
 
 export const MeetingHistoryView: React.FC = () => {
   const { setCurrentView, selectedMeeting } = useApp();
-  const [activeTab, setActiveTab] = useState<'summary' | 'transcript'>('summary');
+  const [activeTab, setActiveTab] = useState<'overview' | 'summary' | 'transcript' | 'insights'>('overview');
 
   // Scroll to top on mount
   useEffect(() => {
