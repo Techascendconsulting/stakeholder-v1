@@ -36,6 +36,30 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     return colors[index];
   };
 
+  // Get local image path for participant
+  const getParticipantImage = (participant: any) => {
+    if (isUser) return null;
+    
+    // If participant already has a photo URL, use it
+    if (participant.photo && participant.photo.startsWith('http')) {
+      return participant.photo;
+    }
+    
+    // Try to get local image based on participant name
+    const imageName = participant.name.toLowerCase().replace(/\s+/g, '-');
+    
+    // Try different image formats
+    const imageFormats = ['jpg', 'jpeg', 'png', 'webp'];
+    for (const format of imageFormats) {
+      const imagePath = `/images/participants/${imageName}.${format}`;
+      // In a real implementation, you might want to check if the file exists
+      // For now, we'll return the first format and let the onError handle fallbacks
+      return imagePath;
+    }
+    
+    return null;
+  };
+
   return (
     <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full flex flex-col justify-between border-2 transition-all duration-300 hover:bg-gray-750">
       {/* Animated Speaking Ring */}
@@ -55,19 +79,31 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
       {/* Main Content Area */}
       <div className="flex-1 flex items-center justify-center p-4">
         {/* Profile Photo or Initials */}
-        {!isUser && participant.photo ? (
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
-            <img 
-              src={participant.photo} 
-              alt={participant.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}`}>
-            {getInitials(participant.name)}
-          </div>
-        )}
+        {(() => {
+          const imagePath = getParticipantImage(participant);
+          return !isUser && imagePath ? (
+            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+              <img 
+                src={imagePath} 
+                alt={participant.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to initials if image fails to load
+                  e.currentTarget.style.display = 'none';
+                  const fallbackDiv = e.currentTarget.parentElement?.nextElementSibling;
+                  if (fallbackDiv) fallbackDiv.style.display = 'flex';
+                }}
+              />
+            </div>
+          ) : (
+            <div 
+              className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}`}
+              style={{ display: !isUser && imagePath ? 'none' : 'flex' }}
+            >
+              {getInitials(participant.name)}
+            </div>
+          );
+        })()}
       </div>
       
       {/* Status Indicators */}
