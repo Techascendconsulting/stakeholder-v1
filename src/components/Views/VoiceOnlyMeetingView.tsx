@@ -24,73 +24,78 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  // Get stakeholder photo from selectedStakeholders or participant data
+  const getParticipantPhoto = () => {
+    if (isUser) return null;
+    
+    // Try participant.photo first
+    if (participant.photo) return participant.photo;
+    
+    // Try to find in selectedStakeholders
+    const stakeholder = selectedStakeholders?.find(s => 
+      s.name === participant.name || s.id === participant.id
+    );
+    return stakeholder?.photo || null;
+  };
+
+  const photo = getParticipantPhoto();
+
   return (
-    <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750">
+    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-64 h-48">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10">
-          <div className="absolute inset-0 rounded-lg border-4 border-green-400 opacity-50 animate-ping"></div>
+        <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
+          <div className="absolute inset-0 rounded-xl border-4 border-green-400 opacity-50 animate-ping"></div>
         </div>
       )}
       
       {/* Animated Thinking Ring */}
       {isThinking && !isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse z-10">
-          <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 opacity-50 animate-ping"></div>
+        <div className="absolute inset-0 rounded-xl border-4 border-yellow-400 animate-pulse z-10">
+          <div className="absolute inset-0 rounded-xl border-4 border-yellow-400 opacity-50 animate-ping"></div>
         </div>
       )}
       
-      {/* Dark Background */}
-      <div className="absolute inset-0 bg-gray-700"></div>
-      
-      {/* Content Overlay */}
-      <div className="relative z-20 flex flex-col items-center justify-center h-full p-4">
-        {/* Full Photo Portrait */}
-        {!isUser && participant.photo ? (
-          <div className="w-32 h-40 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-4">
-            <img 
-              src={participant.photo} 
-              alt={participant.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="w-32 h-40 rounded-lg bg-gray-700 flex items-center justify-center text-white text-3xl font-bold border-4 border-white shadow-lg mb-4">
+      {/* Video/Photo Content */}
+      {!isUser && photo ? (
+        <img
+          src={photo}
+          alt={participant.name}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-red-500">
+          <span className="text-white text-6xl font-bold">
             {getInitials(participant.name)}
-          </div>
-        )}
-        
-        {/* Status Indicators */}
-        <div className="absolute top-2 left-2">
-          {isCurrentSpeaker && (
-            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
-              <Volume2 className="w-4 h-4 mr-1" />
-              Speaking
-            </div>
-          )}
-          {isThinking && !isCurrentSpeaker && (
-            <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
-              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-bounce"></div>
-              Thinking
-            </div>
-          )}
+          </span>
         </div>
-        
-        {/* Name Bar */}
-        <div className="bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg backdrop-blur-sm text-center">
-          <h3 className="font-medium text-sm truncate">{participant.name}</h3>
-          <p className="text-xs text-gray-300 truncate">{participant.role}</p>
-        </div>
-        
-        {/* Speaking Animation Dots */}
-        {isCurrentSpeaker && (
-          <div className="absolute bottom-16 right-2 flex space-x-1">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '300ms' }}></div>
-          </div>
-        )}
+      )}
+      
+      {/* Name overlay */}
+      <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-sm">
+        {participant.name}
       </div>
+
+      {/* Mute indicator - always show for non-users */}
+      {!isUser && (
+        <div className="absolute top-2 left-2 bg-red-600 p-1 rounded-full">
+          <MicOff className="w-3 h-3 text-white" />
+        </div>
+      )}
+
+      {/* Speaking indicator */}
+      {isCurrentSpeaker && (
+        <div className="absolute top-2 right-2 bg-green-500 p-1 rounded-full animate-pulse">
+          <Volume2 className="w-3 h-3 text-white" />
+        </div>
+      )}
+
+      {/* Thinking indicator */}
+      {isThinking && !isCurrentSpeaker && (
+        <div className="absolute top-2 right-2 bg-yellow-500 p-1 rounded-full animate-pulse">
+          <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+        </div>
+      )}
     </div>
   );
 };
@@ -992,85 +997,50 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          {/* Left section */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handleEndMeeting}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <h1 className="text-lg font-semibold text-white">
-                {selectedProject?.name}
-              </h1>
-              <p className="text-sm text-gray-400">Voice Meeting</p>
-            </div>
-          </div>
-
-          {/* Center section - Speaking Queue */}
-          <div className="flex-1 mx-8">
-            <SpeakingQueueHeader 
-              currentSpeaker={responseQueue.current}
-              upcomingQueue={responseQueue.upcoming}
-            />
-          </div>
-
-          {/* Right section - Timer, participants, and controls */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-gray-400 space-x-2">
-              <Clock className="h-4 w-4" />
-              <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
-            </div>
-            <div className="flex items-center text-gray-400 space-x-2">
-              <Users className="h-4 w-4" />
-              <span className="text-sm">{allParticipants.length}</span>
-            </div>
-            
-            {/* Meeting Controls - Moved to top right */}
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleStopCurrent}
-                className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-lg transition-colors"
-                title="Stop current speaker"
-              >
-                <Square className="h-4 w-4" />
-              </button>
-              
-              <button
-                onClick={handleEndMeeting}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-1"
-              >
-                <PhoneOff className="h-4 w-4" />
-                <span>End</span>
-              </button>
-              
-              <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-lg transition-colors">
-                <MoreVertical className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+      {/* Top Bar */}
+      <div className="bg-gray-900 px-4 py-2 flex items-center justify-between text-white text-sm">
+        <div className="flex items-center space-x-4">
+          <span className="font-medium">Team Meeting</span>
+          <span className="text-gray-400">{formatTime(elapsedTime)}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Users className="w-4 h-4" />
+          <span>{allParticipants.length}</span>
         </div>
       </div>
 
       {/* Main Content - Fixed height, no scrolling */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Participant Grid - Fixed height with equal-sized cards */}
-        <div className="flex-1 p-4 min-h-0">
-          <div className={`grid ${getGridCols(allParticipants.length)} gap-4 h-full`}>
-            {allParticipants.map((participant, index) => (
-              <div key={participant.name} className="h-full min-h-[280px] max-h-[380px]">
+        {/* Main Video Area */}
+        <div className="flex-1 p-4 flex items-center justify-center">
+          <div className="flex flex-col gap-4 max-h-[calc(100vh-280px)] items-center">
+            {/* First row - up to 3 people */}
+            <div className="flex gap-4">
+              {allParticipants.slice(0, 3).map((participant, index) => (
                 <ParticipantCard
+                  key={participant.name}
                   participant={participant}
                   isCurrentSpeaker={currentSpeaker?.name === participant.name}
                   isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                   isUser={index === 0}
                 />
+              ))}
+            </div>
+            
+            {/* Second row - remaining people centered */}
+            {allParticipants.length > 3 && (
+              <div className="flex gap-4 justify-center">
+                {allParticipants.slice(3).map((participant, index) => (
+                  <ParticipantCard
+                    key={participant.name}
+                    participant={participant}
+                    isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                    isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                    isUser={index + 3 === 0} // Adjust index for user detection
+                  />
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
 
