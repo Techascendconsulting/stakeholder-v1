@@ -223,7 +223,7 @@ export const MeetingHistoryView: React.FC = () => {
             <div key={index} className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
-                  {name.charAt(0)}
+                  {name?.charAt(0) || 'S'}
                 </span>
               </div>
               <div>

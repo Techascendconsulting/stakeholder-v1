@@ -45,10 +45,33 @@ const Dashboard: React.FC = () => {
 
       // Load recent meetings
       const meetings = await DatabaseService.getUserMeetings(user.id);
-      setRecentMeetings(meetings.slice(0, 3)); // Show last 3 meetings
+      // Filter out any meetings with missing data
+      const validMeetings = meetings.filter(meeting => 
+        meeting && 
+        meeting.project_name && 
+        meeting.created_at && 
+        meeting.stakeholder_names &&
+        Array.isArray(meeting.stakeholder_names)
+      );
+      setRecentMeetings(validMeetings.slice(0, 3)); // Show last 3 meetings
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Set empty arrays to prevent undefined errors
+      setProgress({
+        id: '',
+        user_id: user.id,
+        total_projects_started: 0,
+        total_projects_completed: 0,
+        total_meetings_conducted: 0,
+        total_deliverables_created: 0,
+        total_voice_meetings: 0,
+        total_transcript_meetings: 0,
+        achievements: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+      setRecentMeetings([]);
     } finally {
       setLoading(false);
     }
@@ -236,11 +259,11 @@ const Dashboard: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                       <span className="text-white text-sm font-medium">
-                        {meeting.project_name.charAt(0)}
+                        {meeting.project_name?.charAt(0) || 'P'}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{meeting.project_name}</p>
+                      <p className="font-medium text-gray-900">{meeting.project_name || 'Untitled Project'}</p>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <span className="flex items-center space-x-1">
                           <Calendar size={12} />
