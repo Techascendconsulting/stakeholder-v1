@@ -166,6 +166,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
 
+  // Add conversation dynamics from transcript meeting for adaptive responses
+  const [conversationDynamics, setConversationDynamics] = useState({
+    phase: 'initial' as 'initial' | 'introduction_active' | 'discussion_active',
+    greetingIterations: 0,
+    leadSpeaker: null as any,
+    introducedMembers: new Set<string>()
+  });
+
   // Enhanced stakeholder response processing - EXACT REPLICA of transcript meeting
   const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string): Promise<Message[]> => {
     try {
@@ -244,10 +252,24 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             await speakMessage(responseMessage);
           }
 
+          // Check for baton passing - CRITICAL missing feature from transcript meeting
+          const batonPassedStakeholder = detectBatonPassing(response, updatedMessages);
+          
           // Remove from queue and set next speaker
           console.log(`✅ ${stakeholder.name} finished speaking, removing from queue`);
           setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
           setCurrentSpeaking(null);
+
+          // Handle baton passing if detected
+          if (batonPassedStakeholder && !updatedMessages.find(msg => 
+            msg.id.startsWith('baton-response') && 
+            msg.timestamp > responseMessage.timestamp
+          )) {
+            console.log(`🎯 Baton passed from ${stakeholder.name} to ${batonPassedStakeholder.name}`);
+            setTimeout(async () => {
+              await processDynamicStakeholderResponse(batonPassedStakeholder, messageContent, updatedMessages, 'baton_pass');
+            }, 1000); // Natural delay for baton passing
+          }
 
           return updatedMessages;
         }
@@ -319,13 +341,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
         console.log(`🎯 User mentioned: ${mentionedNames} (${userMentionResult.mentionType})`);
         
-        // Set feedback message
+        // Check if this is a group greeting for adaptive handling
         if (userMentionResult.mentionType === 'group_greeting') {
           setDynamicFeedback(`👋 Everyone will greet you back...`);
-        } else {
-          setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
+          setTimeout(() => setDynamicFeedback(null), 3000);
+          
+          // Use adaptive greeting system instead of hard-coded responses
+          await handleAdaptiveGreeting(messageContent, currentMessages);
+          return; // Exit early - adaptive greeting handles the flow
         }
         
+        // Handle specific stakeholder mentions
+        setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
         setTimeout(() => setDynamicFeedback(null), 3000);
         
         // Process each mentioned stakeholder using EXACT transcript meeting logic
@@ -357,11 +384,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           }
         }
       } else {
-        console.log(`📋 No specific mentions detected, selecting random stakeholder`);
-        // Handle general questions - pick one random stakeholder
-        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-        let workingMessages = currentMessages;
-        workingMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, workingMessages, 'general_question');
+        // Check if this is a general greeting for adaptive handling
+        const isGroup = isGroupMessage(messageContent);
+        const isGreeting = isSimpleGreeting(messageContent);
+        
+        if (isGroup && isGreeting) {
+          console.log(`👋 Detected general greeting: "${messageContent}"`);
+          await handleAdaptiveGreeting(messageContent, currentMessages);
+        } else {
+          console.log(`📋 No specific mentions detected, selecting random stakeholder`);
+          // Handle general questions - pick one random stakeholder
+          const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+          let workingMessages = currentMessages;
+          workingMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, workingMessages, 'general_question');
+        }
       }
     } catch (error) {
       console.error('Error generating AI response:', error);
@@ -573,6 +609,156 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       newSet.delete(stakeholderId);
       return newSet;
     });
+  };
+
+  // Baton passing detection - EXACT copy from transcript meeting
+  const detectBatonPassing = (response: string, conversationHistory: Message[]) => {
+    const responseLower = response.toLowerCase();
+    
+    // Common baton passing patterns
+    const batonPatterns = [
+      // Direct suggestions
+      /([a-zA-Z]+)\s+(?:might|could|would|should)\s+be\s+(?:better|more)\s+(?:equipped|suited|able)/,
+      /someone\s+from\s+([a-zA-Z]+)\s+(?:might|could|would|should)/,
+      /([a-zA-Z]+)\s+(?:can|could|would|should)\s+(?:help|assist|answer|explain|walk|guide)/,
+      /(?:ask|check with|speak to|talk to)\s+([a-zA-Z]+)/,
+      /([a-zA-Z]+)\s+(?:knows|understands|handles)\s+(?:this|that|these)/,
+      /([a-zA-Z]+)\s+(?:is|would be)\s+(?:the|a)\s+(?:right|best|better)\s+(?:person|one)/,
+      
+      // Department/role suggestions
+      /someone\s+from\s+(?:the\s+)?([a-zA-Z]+)\s+(?:team|department|group)/,
+      /(?:our|the)\s+([a-zA-Z]+)\s+(?:team|department|group)\s+(?:should|could|might)/,
+      /(?:talk to|ask)\s+(?:the\s+)?([a-zA-Z]+)\s+(?:team|department|group)/,
+      
+      // Name-based suggestions
+      /([A-Z][a-z]+)\s+(?:might|could|would|should)\s+be\s+(?:better|able|more)/,
+      /([A-Z][a-z]+)\s+(?:can|could|would|should)\s+(?:help|handle|explain|answer)/,
+      /(?:ask|check with|speak to|talk to)\s+([A-Z][a-z]+)/,
+      /([A-Z][a-z]+)\s+(?:knows|understands|handles)\s+(?:this|that|these)/,
+      /([A-Z][a-z]+)\s+(?:is|would be)\s+(?:the|a)\s+(?:right|best|better)\s+(?:person|one)/
+    ];
+    
+    for (const pattern of batonPatterns) {
+      const match = responseLower.match(pattern);
+      if (match && match[1]) {
+        const suggestion = match[1].toLowerCase();
+        
+        // Try to find stakeholder by name first
+        const stakeholderByName = selectedStakeholders.find(s => 
+          s.name.toLowerCase().includes(suggestion) || 
+          s.name.toLowerCase().split(' ').some(part => part.includes(suggestion))
+        );
+        
+        if (stakeholderByName) {
+          return stakeholderByName;
+        }
+        
+        // Try to find stakeholder by department/role
+        const stakeholderByRole = selectedStakeholders.find(s => 
+          s.department?.toLowerCase().includes(suggestion) || 
+          s.role?.toLowerCase().includes(suggestion)
+        );
+        
+        if (stakeholderByRole) {
+          return stakeholderByRole;
+        }
+        
+        // Try to find stakeholder by expertise domain
+        const expertiseDomains = {
+          'operations': ['operations', 'process', 'workflow', 'efficiency'],
+          'technical': ['technical', 'development', 'engineering', 'system'],
+          'business': ['business', 'strategy', 'management', 'commercial'],
+          'product': ['product', 'design', 'user', 'customer'],
+          'financial': ['financial', 'budget', 'accounting', 'finance'],
+          'marketing': ['marketing', 'sales', 'promotion', 'communication'],
+          'security': ['security', 'compliance', 'risk', 'audit'],
+          'data': ['data', 'analytics', 'reporting', 'intelligence']
+        };
+        
+        for (const [domain, keywords] of Object.entries(expertiseDomains)) {
+          if (keywords.some(keyword => keyword.includes(suggestion) || suggestion.includes(keyword))) {
+            const expertStakeholder = selectedStakeholders.find(s => 
+              s.department?.toLowerCase().includes(domain) || 
+              s.role?.toLowerCase().includes(domain) ||
+              s.expertise?.some((exp: string) => exp.toLowerCase().includes(domain))
+            );
+            if (expertStakeholder) {
+              return expertStakeholder;
+            }
+          }
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  // Adaptive greeting system - EXACT copy from transcript meeting
+  const isSimpleGreeting = (message: string): boolean => {
+    const greetingPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)(\s+(all|everyone|team))?$/i,
+      /^(hi|hello|hey)\s+(there|folks)$/i
+    ];
+    return greetingPatterns.some(pattern => pattern.test(message.trim()));
+  };
+
+  const isGroupMessage = (message: string): boolean => {
+    const groupIndicators = ['all', 'everyone', 'team', 'group', 'folks', 'colleagues'];
+    return groupIndicators.some(indicator => message.toLowerCase().includes(indicator));
+  };
+
+  const handleAdaptiveGreeting = async (messageContent: string, currentMessages: Message[]) => {
+    const aiService = AIService.getInstance();
+    const greetingIteration = conversationDynamics.greetingIterations + 1;
+    
+    // Dynamic context for decision making
+    const context = {
+      greetingIteration,
+      lastUserMessage: messageContent,
+      totalParticipants: selectedStakeholders.length,
+      conversationHistory: currentMessages
+    };
+
+    console.log(`👋 Adaptive greeting - iteration ${greetingIteration}, phase: ${conversationDynamics.phase}`);
+
+    // Dynamic response strategy based on context
+    if (greetingIteration === 1 || conversationDynamics.introducedMembers.size === 0) {
+      // Initial introduction
+      const leadStakeholder = selectedStakeholders[0]; // Simple lead selection
+      let workingMessages = await processDynamicStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'introduction_lead');
+      
+      setConversationDynamics(prev => ({
+        ...prev,
+        phase: 'introduction_active',
+        leadSpeaker: leadStakeholder,
+        greetingIterations: greetingIteration,
+        introducedMembers: new Set([leadStakeholder.id])
+      }));
+
+      // Dynamic delay for next stakeholder if multiple stakeholders
+      if (selectedStakeholders.length > 1) {
+        setTimeout(async () => {
+          const nextStakeholder = selectedStakeholders.find(s => s.id !== leadStakeholder.id);
+          if (nextStakeholder) {
+            await processDynamicStakeholderResponse(nextStakeholder, messageContent, workingMessages, 'self_introduction');
+            setConversationDynamics(prev => ({
+              ...prev,
+              introducedMembers: new Set([...prev.introducedMembers, nextStakeholder.id])
+            }));
+          }
+        }, 2000);
+      }
+    } else {
+      // Transition to discussion or continued introduction
+      const facilitator = conversationDynamics.leadSpeaker || selectedStakeholders[0];
+      await processDynamicStakeholderResponse(facilitator, messageContent, currentMessages, 'discussion_transition');
+      
+      setConversationDynamics(prev => ({
+        ...prev,
+        phase: 'discussion_active',
+        greetingIterations: greetingIteration
+      }));
+    }
   };
 
   // Early return with debug info
