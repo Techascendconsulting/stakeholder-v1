@@ -46,32 +46,66 @@ const Dashboard: React.FC = () => {
   }, [user?.id]);
 
   const loadDashboardData = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('🚫 Dashboard - No user ID available');
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log('🔄 Dashboard - Loading data for user:', user.id);
       
       // Load user progress
+      console.log('📊 Dashboard - Loading user progress...');
       let userProgress = await DatabaseService.getUserProgress(user.id);
       if (!userProgress) {
+        console.log('📊 Dashboard - No existing progress, initializing...');
         userProgress = await DatabaseService.initializeUserProgress(user.id);
       }
+      console.log('📊 Dashboard - User progress loaded:', userProgress);
       setProgress(userProgress);
 
-      // Load recent meetings
+      // Load ALL meetings (not just recent)
+      console.log('📋 Dashboard - Loading all user meetings...');
       const meetings = await DatabaseService.getUserMeetings(user.id);
-      // Filter out any meetings with missing data
-      const validMeetings = meetings.filter(meeting => 
-        meeting && 
-        meeting.project_name && 
-        meeting.created_at && 
-        meeting.stakeholder_names &&
-        Array.isArray(meeting.stakeholder_names)
-      );
-      setRecentMeetings(validMeetings.slice(0, 3)); // Show last 3 meetings
+      console.log('📋 Dashboard - Raw meetings from database:', meetings);
+      
+      // Filter out any meetings with missing data but be more lenient
+      const validMeetings = meetings.filter(meeting => {
+        const isValid = meeting && 
+          meeting.id && 
+          meeting.user_id === user.id;
+        
+        if (!isValid) {
+          console.warn('📋 Dashboard - Invalid meeting filtered out:', meeting);
+        }
+        return isValid;
+      });
+      
+      console.log('📋 Dashboard - Valid meetings after filtering:', validMeetings);
+      console.log('📋 Dashboard - Setting recent meetings (last 5):', validMeetings.slice(0, 5));
+      setRecentMeetings(validMeetings.slice(0, 5)); // Show last 5 meetings instead of 3
+
+      // Also check localStorage for any temporary meetings
+      console.log('💾 Dashboard - Checking localStorage for temporary meetings...');
+      const tempMeetings: any[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('temp-meeting-')) {
+          try {
+            const tempMeetingData = JSON.parse(localStorage.getItem(key) || '{}');
+            if (tempMeetingData.user_id === user.id) {
+              tempMeetings.push(tempMeetingData);
+            }
+          } catch (error) {
+            console.warn('💾 Dashboard - Error parsing temporary meeting:', key, error);
+          }
+        }
+      }
+      console.log('💾 Dashboard - Temporary meetings found:', tempMeetings);
 
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.error('❌ Dashboard - Error loading dashboard data:', error);
       // Set empty arrays to prevent undefined errors
       setProgress({
         id: '',
@@ -405,6 +439,71 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Debug Panel - Remove this after fixing the issue */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mt-6">
+        <h3 className="text-lg font-semibold text-yellow-800 mb-4">🐛 Debug Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <h4 className="font-medium text-yellow-800 mb-2">User Information:</h4>
+            <p><strong>User ID:</strong> {user?.id || 'Not available'}</p>
+            <p><strong>Email:</strong> {user?.email || 'Not available'}</p>
+            <p><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</p>
+          </div>
+          <div>
+            <h4 className="font-medium text-yellow-800 mb-2">Data Counts:</h4>
+            <p><strong>Progress Object:</strong> {progress ? 'Loaded' : 'Not loaded'}</p>
+            <p><strong>Total Meetings:</strong> {progress?.total_meetings_conducted || 0}</p>
+            <p><strong>Meetings Displayed:</strong> {recentMeetings.length}</p>
+            <p><strong>Voice Meetings:</strong> {progress?.total_voice_meetings || 0}</p>
+          </div>
+        </div>
+        
+        <div className="mt-4">
+          <h4 className="font-medium text-yellow-800 mb-2">Recent Meetings Data:</h4>
+          <div className="bg-white rounded p-2 max-h-32 overflow-y-auto">
+            <pre className="text-xs text-gray-700">
+              {JSON.stringify(recentMeetings.map(m => ({
+                id: m.id,
+                project: m.project_name,
+                created: m.created_at,
+                status: m.status
+              })), null, 2)}
+            </pre>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button 
+            onClick={loadDashboardData}
+            className="px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700"
+          >
+            🔄 Reload Data
+          </button>
+          <button 
+            onClick={() => {
+              console.log('🔍 Full user object:', user);
+              console.log('🔍 Full progress object:', progress);
+              console.log('🔍 Full meetings array:', recentMeetings);
+              console.log('🔍 LocalStorage contents:', localStorage);
+            }}
+            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+          >
+            🔍 Log All Data
+          </button>
+          <button 
+            onClick={async () => {
+              if (user?.id) {
+                const verification = await DatabaseService.verifyDataPersistence(user.id);
+                alert(`Data Persistence Check:\nMeetings in DB: ${verification.meetings}\nProgress exists: ${verification.progress}\nCheck console for details.`);
+              }
+            }}
+            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+          >
+            🔍 Verify DB
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

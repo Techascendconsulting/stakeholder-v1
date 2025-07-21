@@ -305,17 +305,59 @@ export class DatabaseService {
 
   static async getUserMeetings(userId: string): Promise<DatabaseMeeting[]> {
     try {
+      console.log('🗃️ DATABASE - Fetching meetings for user:', userId);
+      
       const { data, error } = await supabase
         .from('user_meetings')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
+      console.log('🗃️ DATABASE - Query result:', { data, error, count: data?.length || 0 });
+
       if (error) throw error
       return data || []
     } catch (error) {
-      console.error('Error fetching user meetings:', error)
+      console.error('🗃️ DATABASE - Error fetching user meetings:', error)
       return []
+    }
+  }
+
+  // Debug function to verify data persistence
+  static async verifyDataPersistence(userId: string): Promise<{ meetings: number; progress: boolean; raw_data: any }> {
+    try {
+      console.log('🔍 DATABASE - Verifying data persistence for user:', userId);
+      
+      // Check meetings
+      const { data: meetings, error: meetingsError } = await supabase
+        .from('user_meetings')
+        .select('*')
+        .eq('user_id', userId);
+
+      // Check progress
+      const { data: progress, error: progressError } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId);
+
+      const result = {
+        meetings: meetings?.length || 0,
+        progress: !!progress && progress.length > 0,
+        raw_data: {
+          meetings: meetings,
+          progress: progress,
+          errors: {
+            meetings: meetingsError,
+            progress: progressError
+          }
+        }
+      };
+
+      console.log('🔍 DATABASE - Verification result:', result);
+      return result;
+    } catch (error) {
+      console.error('🔍 DATABASE - Error during verification:', error);
+      return { meetings: 0, progress: false, raw_data: { error } };
     }
   }
 
