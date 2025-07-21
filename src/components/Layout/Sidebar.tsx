@@ -72,8 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           )}
 
           {isCollapsed && (
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shadow-sm mx-auto">
-              <GraduationCap className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-sm mx-auto">
+              <GraduationCap className="w-8 h-8 text-white" />
             </div>
           )}
 
@@ -83,9 +83,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? (
-              <ChevronRight size={16} className="text-white" />
+              <ChevronRight size={20} className="text-white" />
             ) : (
-              <ChevronLeft size={16} className="text-white" />
+              <ChevronLeft size={20} className="text-white" />
             )}
           </button>
         </div>
@@ -102,14 +102,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => setCurrentView(item.id as any)}
-                  className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-sm font-medium ${
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-3' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
                   }`}
                   title={isCollapsed ? item.label : ''}
                 >
-                  <Icon size={18} className={isActive ? 'text-white' : 'text-purple-200'} />
+                  <Icon size={isCollapsed ? 24 : 20} className={isActive ? 'text-white' : 'text-purple-200'} />
                   {!isCollapsed && <span>{item.label}</span>}
                 </button>
 
@@ -134,8 +134,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm group`}
             title={isCollapsed ? user?.email?.split('@')[0] || 'User' : ''}
           >
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+            <div className={`${isCollapsed ? 'w-10 h-10' : 'w-8 h-8'} bg-white/20 rounded-full flex items-center justify-center transition-all duration-200`}>
+              <User className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} text-white`} />
             </div>
             {!isCollapsed && (
               <>
