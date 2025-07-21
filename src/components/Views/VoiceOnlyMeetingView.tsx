@@ -184,7 +184,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setCurrentSpeaking(stakeholder.id);
       
       // Dynamic thinking state management
-      addStakeholderToThinking(stakeholder.name);
+      addStakeholderToThinking(stakeholder.id);
       setDynamicFeedback(`${stakeholder.name} is thinking...`);
       
       try {
@@ -223,7 +223,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         );
 
         // Clean up thinking state
-        removeStakeholderFromThinking(stakeholder.name);
+        removeStakeholderFromThinking(stakeholder.id);
         setDynamicFeedback(null);
 
         if (response) {
@@ -253,7 +253,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         }
       } catch (error) {
         console.error(`Error generating response for ${stakeholder.name}:`, error);
-        removeStakeholderFromThinking(stakeholder.name);
+        removeStakeholderFromThinking(stakeholder.id);
         setDynamicFeedback(null);
         
         // Remove from queue on error
@@ -268,7 +268,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // Clean up on any error
       setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
       setCurrentSpeaking(null);
-      removeStakeholderFromThinking(stakeholder.name);
+      removeStakeholderFromThinking(stakeholder.id);
       setDynamicFeedback(null);
       
       return currentMessages;
@@ -328,25 +328,40 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         setTimeout(() => setDynamicFeedback(null), 3000);
         
-        // Process each mentioned stakeholder using transcript meeting logic - SEQUENTIALLY
+        // Process each mentioned stakeholder using EXACT transcript meeting logic
+        let workingMessages = currentMessages;
         for (const mentionedStakeholderContext of userMentionResult.mentionedStakeholders) {
           const fullStakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholderContext.name);
           
           if (fullStakeholder) {
-            // CRITICAL: Update currentMessages after each response to prevent overlap
-            currentMessages = await processDynamicStakeholderResponse(
+            console.log(`✅ About to trigger response for: ${fullStakeholder.name}`);
+            
+            // Process the response and update working messages - EXACT transcript meeting approach
+            workingMessages = await processDynamicStakeholderResponse(
               fullStakeholder,
               messageContent,
-              currentMessages,
+              workingMessages,
               'user_mention'
             );
+            
+            console.log(`✅ Completed response for: ${fullStakeholder.name}, messages now: ${workingMessages.length}`);
+            
+            // Keep the current speaker visible for a moment after they finish
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Pause before next stakeholder if there are more
+            if (userMentionResult.mentionedStakeholders.indexOf(mentionedStakeholderContext) < userMentionResult.mentionedStakeholders.length - 1) {
+              console.log(`⏸️ Pausing 1.5s before next stakeholder response`);
+              await new Promise(resolve => setTimeout(resolve, 1500));
+            }
           }
         }
       } else {
         console.log(`📋 No specific mentions detected, selecting random stakeholder`);
         // Handle general questions - pick one random stakeholder
         const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-        currentMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages, 'general_question');
+        let workingMessages = currentMessages;
+        workingMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, workingMessages, 'general_question');
       }
     } catch (error) {
       console.error('Error generating AI response:', error);
@@ -548,14 +563,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   // Add thinking state management
-  const addStakeholderToThinking = (stakeholderName: string) => {
-    setThinkingStakeholders(prev => new Set([...prev, stakeholderName]));
+  const addStakeholderToThinking = (stakeholderId: string) => {
+    setThinkingStakeholders(prev => new Set([...prev, stakeholderId]));
   };
 
-  const removeStakeholderFromThinking = (stakeholderName: string) => {
+  const removeStakeholderFromThinking = (stakeholderId: string) => {
     setThinkingStakeholders(prev => {
       const newSet = new Set(prev);
-      newSet.delete(stakeholderName);
+      newSet.delete(stakeholderId);
       return newSet;
     });
   };
@@ -672,7 +687,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                 <ParticipantCard
                   participant={participant}
                   isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                  isThinking={thinkingStakeholders.has(participant.name)}
+                  isThinking={thinkingStakeholders.has(participant.id || participant.name)}
                   isUser={index === 0}
                 />
               </div>
