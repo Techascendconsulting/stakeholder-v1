@@ -76,26 +76,27 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
         {participant.name}
       </div>
 
-      {/* Mute indicator - always show for non-users */}
-      {!isUser && (
-        <div className="absolute top-2 left-2 bg-red-600 p-1 rounded-full">
-          <MicOff className="w-3 h-3 text-white" />
-        </div>
-      )}
+             {/* Speaking/Mute indicator */}
+       {!isUser && (
+         <div className="absolute top-2 left-2">
+           {isCurrentSpeaker ? (
+             <div className="bg-green-500 p-1 rounded-full animate-pulse">
+               <Volume2 className="w-3 h-3 text-white" />
+             </div>
+           ) : (
+             <div className="bg-gray-600 p-1 rounded-full">
+               <MicOff className="w-3 h-3 text-white" />
+             </div>
+           )}
+         </div>
+       )}
 
-      {/* Speaking indicator */}
-      {isCurrentSpeaker && (
-        <div className="absolute top-2 right-2 bg-green-500 p-1 rounded-full animate-pulse">
-          <Volume2 className="w-3 h-3 text-white" />
-        </div>
-      )}
-
-      {/* Thinking indicator */}
-      {isThinking && !isCurrentSpeaker && (
-        <div className="absolute top-2 right-2 bg-yellow-500 p-1 rounded-full animate-pulse">
-          <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-        </div>
-      )}
+       {/* Thinking indicator */}
+       {isThinking && !isCurrentSpeaker && (
+         <div className="absolute top-2 right-2 bg-yellow-500 p-1 rounded-full animate-pulse">
+           <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+         </div>
+       )}
     </div>
   );
 };
