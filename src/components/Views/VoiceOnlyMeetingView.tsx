@@ -326,13 +326,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // Message handling with EXACT transcript meeting queue logic
+  // EXACT COPY of transcript meeting's handleSendMessage - NO MODIFICATIONS
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+    if (!inputMessage.trim()) return;
 
     const messageContent = inputMessage.trim();
-    setInputMessage('');
     setIsGeneratingResponse(true);
+    setInputMessage('');
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -344,10 +344,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     let currentMessages = [...messages, userMessage];
     setMessages(currentMessages);
 
-    // User messages should NEVER be spoken - remove auto-speak completely
-    // Only stakeholder responses will be spoken
-
     try {
+      // Check for direct stakeholder mentions in user message FIRST
       const aiService = AIService.getInstance();
       const availableStakeholders = selectedStakeholders.map(s => ({
         name: s.name,
@@ -360,73 +358,109 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
       
-      console.log(`🔍 Mention detection result:`, {
-        stakeholders: userMentionResult.mentionedStakeholders.map(s => s.name),
-        type: userMentionResult.mentionType,
-        confidence: userMentionResult.confidence
+      // Enhanced debugging for mention detection
+      console.log('🔍 DEBUG: User message analysis:', {
+        messageContent,
+        availableStakeholders: availableStakeholders.map(s => s.name),
+        mentionResult: userMentionResult,
+        threshold: AIService.getMentionConfidenceThreshold()
       });
-
+      
       if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
         const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
-        console.log(`🎯 User mentioned: ${mentionedNames} (${userMentionResult.mentionType})`);
+        console.log(`🎯 User directly mentioned stakeholder(s): ${mentionedNames} (${userMentionResult.mentionType}, confidence: ${userMentionResult.confidence})`);
         
-        // Check if this is a group greeting for adaptive handling
-        if (userMentionResult.mentionType === 'group_greeting') {
-          setDynamicFeedback(`👋 Everyone will greet you back...`);
-          setTimeout(() => setDynamicFeedback(null), 3000);
-          
-          // Use adaptive greeting system instead of hard-coded responses
-          await handleAdaptiveGreeting(messageContent, currentMessages);
-          return; // Exit early - adaptive greeting handles the flow
-        }
+        console.log(`🔍 Detailed detection results:`, {
+          totalDetected: userMentionResult.mentionedStakeholders.length,
+          stakeholders: userMentionResult.mentionedStakeholders.map(s => ({ name: s.name, role: s.role, department: s.department })),
+          availableStakeholders: selectedStakeholders.map(s => ({ id: s.id, name: s.name, role: s.role }))
+        });
         
-        // Handle specific stakeholder mentions
-        setDynamicFeedback(`🎯 ${mentionedNames} will respond...`);
-        setTimeout(() => setDynamicFeedback(null), 3000);
+        // Show prominent feedback that stakeholders will respond
+        const feedbackText = userMentionResult.mentionedStakeholders.length > 1 
+          ? `🎯 ${mentionedNames} will respond shortly...`
+          : `🎯 ${userMentionResult.mentionedStakeholders[0].name} will respond shortly...`;
+        setDynamicFeedback(feedbackText);
+        setTimeout(() => setDynamicFeedback(null), 2000);
         
-        // Process each mentioned stakeholder using EXACT transcript meeting logic
+        // Set up the response queue to show users what to expect
+        const responseQueueData = userMentionResult.mentionedStakeholders.map(s => ({
+          name: s.name,
+          id: selectedStakeholders.find(st => st.name === s.name)?.id || 'unknown'
+        }));
+        
+        setResponseQueue({
+          current: responseQueueData[0]?.name || null,
+          upcoming: responseQueueData.slice(1)
+        });
+        
+        // Trigger all mentioned stakeholders to respond
         let workingMessages = currentMessages;
-        for (const mentionedStakeholderContext of userMentionResult.mentionedStakeholders) {
-          const fullStakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholderContext.name);
+        for (let i = 0; i < userMentionResult.mentionedStakeholders.length; i++) {
+          const mentionedStakeholderContext = userMentionResult.mentionedStakeholders[i];
+          const mentionedStakeholder = selectedStakeholders.find(s => 
+            s.name === mentionedStakeholderContext.name
+          );
           
-          if (fullStakeholder) {
-            console.log(`✅ About to trigger response for: ${fullStakeholder.name}`);
+          console.log(`🔍 Processing stakeholder: ${mentionedStakeholderContext.name}`, {
+            found: !!mentionedStakeholder,
+            stakeholderId: mentionedStakeholder?.id,
+            stakeholderName: mentionedStakeholder?.name,
+            currentMessageCount: workingMessages.length
+          });
+          
+          if (mentionedStakeholder) {
+            console.log(`✅ About to trigger response for: ${mentionedStakeholder.name}`);
             
-            // Process the response and update working messages - EXACT transcript meeting approach
-            workingMessages = await processDynamicStakeholderResponse(
-              fullStakeholder,
-              messageContent,
-              workingMessages,
-              'user_mention'
-            );
+            // Process the response and update working messages
+            workingMessages = await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, workingMessages, 'direct_mention');
             
-            console.log(`✅ Completed response for: ${fullStakeholder.name}, messages now: ${workingMessages.length}`);
+            console.log(`✅ Completed response for: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`);
             
             // Keep the current speaker visible for a moment after they finish
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Pause before next stakeholder if there are more
-            if (userMentionResult.mentionedStakeholders.indexOf(mentionedStakeholderContext) < userMentionResult.mentionedStakeholders.length - 1) {
+            // Update response queue - move to next stakeholder (only if there are more)
+            if (i < userMentionResult.mentionedStakeholders.length - 1) {
+              setResponseQueue(prev => {
+                const remaining = prev.upcoming.slice(1);
+                return {
+                  current: prev.upcoming[0]?.name || null,
+                  upcoming: remaining
+                };
+              });
+              
               console.log(`⏸️ Pausing 1.5s before next stakeholder response`);
               await new Promise(resolve => setTimeout(resolve, 1500));
             }
+          } else {
+            console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`);
           }
         }
-      } else {
-        // Check if this is a general greeting for adaptive handling
-        const isGroup = isGroupMessage(messageContent);
-        const isGreeting = isSimpleGreeting(messageContent);
         
-        if (isGroup && isGreeting) {
-          console.log(`👋 Detected general greeting: "${messageContent}"`);
-          await handleAdaptiveGreeting(messageContent, currentMessages);
-        } else {
-          console.log(`📋 No specific mentions detected, selecting random stakeholder`);
-          // Handle general questions - pick one random stakeholder
-          const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-          let workingMessages = currentMessages;
-          workingMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, workingMessages, 'general_question');
-        }
+        // Keep the final speaker visible for a moment, then clear
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Clear the response queue when all responses are complete
+        setResponseQueue({ current: null, upcoming: [] });
+        console.log('🏁 All direct mention responses complete - queue cleared');
+        
+        setIsGeneratingResponse(false);
+        return; // Exit early - don't go through normal conversation flow
+      }
+
+      // If no direct mention detected, proceed with normal conversation flow
+      // Dynamic conversation type detection
+      const isGroup = isGroupMessage(messageContent);
+      const isGreeting = isSimpleGreeting(messageContent);
+      
+      if (isGroup && isGreeting) {
+        await handleAdaptiveGreeting(messageContent, currentMessages);
+      } else {
+        // Handle general questions - pick one random stakeholder
+        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+        let workingMessages = currentMessages;
+        workingMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, workingMessages, 'general_question');
       }
     } catch (error) {
       console.error('Error generating AI response:', error);
