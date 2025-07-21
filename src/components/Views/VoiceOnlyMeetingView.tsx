@@ -5,7 +5,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
-import { transcribeAudio } from '../../lib/whisper';
+import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 
 interface ParticipantCardProps {
   participant: any;
@@ -629,7 +629,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: getSupportedAudioFormat() });
         await transcribeAndSend(audioBlob);
         
         // Clean up
@@ -641,11 +641,31 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       mediaRecorder.start();
       setIsRecording(true);
-      setIsTranscribing(true);
+      setIsTranscribing(false); // Only set to true when actually transcribing
+      setDynamicFeedback('🎤 Recording... Click mic again to stop');
     } catch (error) {
       console.error('Error starting recording:', error);
       setIsRecording(false);
       setIsTranscribing(false);
+      
+      // Show user-friendly error message
+      let errorMessage = '❌ Recording failed. ';
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          errorMessage += 'Microphone permission denied. Please allow microphone access.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage += 'No microphone found. Please check your audio devices.';
+        } else if (error.name === 'NotSupportedError') {
+          errorMessage += 'Recording not supported in this browser.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      setDynamicFeedback(errorMessage);
+      setTimeout(() => setDynamicFeedback(null), 5000);
     }
   };
 
@@ -653,12 +673,31 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setDynamicFeedback('🔄 Processing your message...');
     }
   };
 
   const transcribeAndSend = async (audioBlob: Blob) => {
     try {
       setIsTranscribing(true);
+      
+      // Check if OpenAI is configured
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      if (!apiKey || apiKey === 'your-openai-api-key-here') {
+        // Test mode - simulate transcription
+        console.log('🧪 Test mode: Simulating transcription');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
+        
+        const testTranscription = "Hello, this is a test message from the voice recorder.";
+        setDynamicFeedback('🧪 Test mode: Simulated transcription');
+        setTimeout(() => setDynamicFeedback(null), 2000);
+        
+        // Send the test message
+        setInputMessage(testTranscription);
+        await handleSendMessageWithText(testTranscription);
+        return;
+      }
+      
       const transcription = await transcribeAudio(audioBlob);
       
       if (transcription && transcription.trim()) {
@@ -666,9 +705,32 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         setInputMessage(transcription);
         // Trigger the send message with the transcribed text
         await handleSendMessageWithText(transcription);
+      } else {
+        console.warn('No transcription received or transcription was empty');
+        setDynamicFeedback('❌ No speech detected. Please try again.');
+        setTimeout(() => setDynamicFeedback(null), 3000);
       }
     } catch (error) {
       console.error('Error transcribing audio:', error);
+      
+      // Show user-friendly error message
+      let errorMessage = '❌ Transcription failed. ';
+      if (error instanceof Error) {
+        if (error.message.includes('API key')) {
+          errorMessage += 'OpenAI API key not configured.';
+        } else if (error.message.includes('quota')) {
+          errorMessage += 'API quota exceeded.';
+        } else if (error.message.includes('network')) {
+          errorMessage += 'Network error. Check your connection.';
+        } else {
+          errorMessage += 'Please try again.';
+        }
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      setDynamicFeedback(errorMessage);
+      setTimeout(() => setDynamicFeedback(null), 5000);
     } finally {
       setIsTranscribing(false);
     }
@@ -677,21 +739,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const handleSendMessageWithText = async (messageText: string) => {
     if (!messageText.trim()) return;
     
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      speaker: 'user',
-      content: messageText,
-      timestamp: new Date().toISOString(),
-      stakeholderName: 'You',
-      stakeholderRole: 'Meeting Host'
-    };
-
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
-    setInputMessage(''); // Clear the input
-
-    // Process stakeholder responses (existing logic)
-    await processDynamicStakeholderResponses(messageText, updatedMessages);
+    // Set the input message and trigger the existing handleSendMessage logic
+    setInputMessage(messageText);
+    
+    // Use the existing handleSendMessage function which has all the proper logic
+    await handleSendMessage();
   };
 
   const handleMicClick = () => {
@@ -1220,6 +1272,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
         {/* Message Input Area */}
         <div className="px-6 py-4">
+          {/* Dynamic Feedback Display */}
+          {dynamicFeedback && (
+            <div className="mb-4 bg-blue-900/80 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
+              <span className="text-blue-200 text-sm">{dynamicFeedback}</span>
+            </div>
+          )}
+          
           <div className="flex space-x-3">
             <input
               ref={inputRef}
