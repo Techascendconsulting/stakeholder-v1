@@ -104,35 +104,83 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
 interface SpeakingQueueHeaderProps {
   currentSpeaker: string | null;
   upcomingQueue: { name: string; id?: string }[];
+  selectedStakeholders: any[];
 }
 
-const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({ currentSpeaker, upcomingQueue }) => {
+const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({ 
+  currentSpeaker, 
+  upcomingQueue, 
+  selectedStakeholders 
+}) => {
   if (!currentSpeaker && upcomingQueue.length === 0) return null;
   
+  const getCurrentSpeakerInfo = () => {
+    if (!currentSpeaker) return null;
+    return selectedStakeholders.find(s => s.name === currentSpeaker) || { name: currentSpeaker, role: 'Participant' };
+  };
+
+  const getUpcomingSpeakerInfo = (speakerName: string) => {
+    return selectedStakeholders.find(s => s.name === speakerName) || { name: speakerName, role: 'Participant' };
+  };
+
+  const currentSpeakerInfo = getCurrentSpeakerInfo();
+  
   return (
-    <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg px-4 py-2 flex items-center space-x-4">
-      {currentSpeaker && (
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-green-400 text-sm font-medium">Speaking: {currentSpeaker}</span>
-        </div>
-      )}
-      
-      {upcomingQueue.length > 0 && (
-        <div className="flex items-center space-x-2">
-          <span className="text-gray-400 text-sm">Up next:</span>
-          <div className="flex space-x-2">
-            {upcomingQueue.slice(0, 3).map((speaker, index) => (
-              <div key={index} className="bg-gray-700 text-gray-300 px-2 py-1 rounded text-xs">
-                {speaker.name}
+    <div className="bg-gradient-to-r from-gray-800/90 to-gray-700/90 backdrop-blur-sm rounded-xl px-6 py-4 mx-6 mb-4 border border-gray-600/50 shadow-lg">
+      <div className="flex items-center justify-between">
+        {/* Current Speaker */}
+        {currentSpeakerInfo && (
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <div className="relative">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping opacity-50"></div>
               </div>
-            ))}
-            {upcomingQueue.length > 3 && (
-              <div className="text-gray-400 text-xs">+{upcomingQueue.length - 3} more</div>
-            )}
+              <div className="flex flex-col">
+                <span className="text-green-400 text-sm font-semibold">Currently Speaking</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-white font-medium">{currentSpeakerInfo.name}</span>
+                  <span className="text-gray-300 text-xs">•</span>
+                  <span className="text-gray-300 text-xs">{currentSpeakerInfo.role}</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        
+        {/* Speaking Queue */}
+        {upcomingQueue.length > 0 && (
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span className="text-blue-400 text-sm font-medium">Up Next:</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              {upcomingQueue.slice(0, 3).map((speaker, index) => {
+                const speakerInfo = getUpcomingSpeakerInfo(speaker.name);
+                return (
+                  <div key={index} className="flex items-center space-x-1">
+                    <div className="bg-gray-600/80 rounded-lg px-3 py-1.5 border border-gray-500/50">
+                      <div className="flex flex-col">
+                        <span className="text-white text-xs font-medium">{speakerInfo.name}</span>
+                        <span className="text-gray-300 text-xs">{speakerInfo.role}</span>
+                      </div>
+                    </div>
+                    {index < Math.min(upcomingQueue.length - 1, 2) && (
+                      <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+                    )}
+                  </div>
+                );
+              })}
+              {upcomingQueue.length > 3 && (
+                <div className="bg-gray-600/60 rounded-lg px-2 py-1.5 border border-gray-500/30">
+                  <span className="text-gray-400 text-xs">+{upcomingQueue.length - 3} more</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -642,7 +690,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       mediaRecorder.start();
       setIsRecording(true);
       setIsTranscribing(false); // Only set to true when actually transcribing
-      setDynamicFeedback('🎤 Recording... Click mic again to stop');
+      setDynamicFeedback('🎤 Recording your message... Click microphone to stop');
     } catch (error) {
       console.error('Error starting recording:', error);
       setIsRecording(false);
@@ -673,7 +721,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      setDynamicFeedback('🔄 Processing your message...');
+      setDynamicFeedback('🔄 Processing and transcribing your message...');
     }
   };
 
@@ -690,11 +738,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         const testTranscription = "Hello, this is a test message from the voice recorder.";
         setDynamicFeedback('🧪 Test mode: Simulated transcription');
-        setTimeout(() => setDynamicFeedback(null), 2000);
         
         // Send the test message
         setInputMessage(testTranscription);
         await handleSendMessageWithText(testTranscription);
+        
+        // Clear feedback after message is fully processed
+        setDynamicFeedback(null);
         return;
       }
       
@@ -705,6 +755,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         setInputMessage(transcription);
         // Trigger the send message with the transcribed text
         await handleSendMessageWithText(transcription);
+        
+        // Clear feedback after message is fully processed
+        setDynamicFeedback(null);
       } else {
         console.warn('No transcription received or transcription was empty');
         setDynamicFeedback('❌ No speech detected. Please try again.');
@@ -1144,18 +1197,34 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   return (
     <div className="h-screen bg-black flex flex-col overflow-hidden">
       {/* Top Bar */}
-      <div className="bg-gray-900 px-4 py-2 flex items-center justify-between text-white text-sm">
-        <div className="flex items-center space-x-4">
-          <span className="font-medium">Team Meeting</span>
-          <span className="text-gray-400">{formatTime(elapsedTime)}</span>
+      <div className="bg-gray-900 px-6 py-3 flex items-center justify-between text-white border-b border-gray-700">
+        <div className="flex items-center space-x-6">
+          <div className="flex flex-col">
+            <span className="font-semibold text-lg">{selectedProject?.name || 'Stakeholder Meeting'}</span>
+            <div className="flex items-center space-x-3 text-sm">
+              <span className="text-green-400 flex items-center">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                Live Meeting
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-300">{formatTime(elapsedTime)}</span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Users className="w-4 h-4" />
-          <span>{allParticipants.length}</span>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 bg-gray-800 rounded-lg px-3 py-1.5">
+            <Users className="w-4 h-4 text-gray-300" />
+            <span className="text-gray-200">{allParticipants.length} participants</span>
+          </div>
         </div>
       </div>
 
-
+      {/* Speaking Queue Header */}
+      <SpeakingQueueHeader 
+        currentSpeaker={currentSpeaker?.name || null}
+        upcomingQueue={responseQueue.upcoming}
+        selectedStakeholders={selectedStakeholders}
+      />
 
       {/* Main Content - Fixed height, no scrolling */}
       <div className="flex-1 flex flex-col min-h-0">
@@ -1274,8 +1343,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         <div className="px-6 py-4">
           {/* Dynamic Feedback Display */}
           {dynamicFeedback && (
-            <div className="mb-4 bg-blue-900/80 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
-              <span className="text-blue-200 text-sm">{dynamicFeedback}</span>
+            <div className="mb-4 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-xl px-4 py-3 text-center border border-purple-500/30 shadow-lg">
+              <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
             </div>
           )}
           
@@ -1309,9 +1378,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               onClick={handleMicClick}
               className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
                 isRecording 
-                  ? 'bg-red-600 hover:bg-red-700 animate-pulse' 
+                  ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
                   : isTranscribing
-                  ? 'bg-yellow-500 hover:bg-yellow-600'
+                  ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
                   : 'bg-gray-700 hover:bg-gray-600'
               }`}
               title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
