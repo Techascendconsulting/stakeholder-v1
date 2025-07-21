@@ -173,6 +173,16 @@ const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({
 export const VoiceOnlyMeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView, user, setSelectedMeeting } = useApp();
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
+
+  // Debug component mount
+  useEffect(() => {
+    console.log('🚀 VoiceOnlyMeetingView MOUNTED - Initial state:', {
+      selectedProject: selectedProject?.name || 'NONE',
+      selectedStakeholdersCount: selectedStakeholders?.length || 0,
+      user: user?.email || 'NONE',
+      userId: user?.id || 'NONE'
+    });
+  }, []);
   
   // State management (same as before)
   const [messages, setMessages] = useState<Message[]>([]);
@@ -999,7 +1009,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     });
     
     if (!meetingId || !user?.id) {
-      console.warn('❌ Cannot save meeting: missing meetingId or user', { meetingId, userId: user?.id });
+      console.warn('❌ Cannot save meeting: missing meetingId or user', { 
+        meetingId, 
+        userId: user?.id,
+        userObject: user,
+        hasUser: !!user,
+        hasUserId: !!user?.id,
+        hasMeetingId: !!meetingId
+      });
       return null;
     }
 
@@ -1661,6 +1678,52 @@ Keep it professional and under 300 words.`;
             >
               <span className="text-white text-xs">?</span>
             </button>
+
+            {/* Manual Initialize Meeting Button */}
+            {!meetingId && (
+              <button
+                onClick={async () => {
+                  console.log('🔧 MANUAL INIT - Attempting to initialize meeting');
+                  if (selectedProject && selectedStakeholders.length > 0 && user?.id) {
+                    try {
+                      const stakeholderIds = selectedStakeholders.map(s => s.id);
+                      const stakeholderNames = selectedStakeholders.map(s => s.name);
+                      const stakeholderRoles = selectedStakeholders.map(s => s.role);
+                      
+                      const newMeetingId = await DatabaseService.createMeeting(
+                        user.id,
+                        selectedProject.id,
+                        selectedProject.name,
+                        stakeholderIds,
+                        stakeholderNames,
+                        stakeholderRoles,
+                        'voice-only'
+                      );
+                      
+                      if (newMeetingId) {
+                        setMeetingId(newMeetingId);
+                        setMeetingStartTime(Date.now());
+                        console.log('✅ MANUAL INIT - Meeting created:', newMeetingId);
+                      } else {
+                        console.error('❌ MANUAL INIT - Failed to create meeting');
+                      }
+                    } catch (error) {
+                      console.error('❌ MANUAL INIT - Error:', error);
+                    }
+                  } else {
+                    console.warn('❌ MANUAL INIT - Missing requirements:', {
+                      selectedProject: !!selectedProject,
+                      selectedStakeholders: selectedStakeholders.length,
+                      user: !!user?.id
+                    });
+                  }
+                }}
+                className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center transition-colors"
+                title="Initialize meeting manually"
+              >
+                <span className="text-white text-xs">!</span>
+              </button>
+            )}
 
             {/* End Call */}
             <button 
