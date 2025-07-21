@@ -19,6 +19,8 @@ interface VoiceInputModalProps {
   onSave: (transcription: string) => void
   onTranscribingChange?: (isTranscribing: boolean) => void
   initialText?: string
+  darkMode?: boolean // For voice only meeting
+  compact?: boolean // For smaller modal
 }
 
 const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
@@ -26,7 +28,9 @@ const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
   onClose,
   onSave,
   onTranscribingChange,
-  initialText = ''
+  initialText = '',
+  darkMode = false,
+  compact = false
 }) => {
   const [isRecording, setIsRecording] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
@@ -206,9 +210,27 @@ const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+      <div 
+        className={`${
+          darkMode 
+            ? 'bg-gray-900 bg-opacity-95' 
+            : 'bg-white'
+        } rounded-2xl shadow-2xl w-full ${
+          compact ? 'max-w-md max-h-[70vh]' : 'max-w-2xl max-h-[85vh]'
+        } flex flex-col`}
+        style={darkMode ? {
+          backgroundImage: 'url(/audio-image.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'overlay'
+        } : {}}
+      >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl flex-shrink-0">
+        <div className={`${
+          darkMode 
+            ? 'bg-black bg-opacity-70 text-white' 
+            : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+        } ${compact ? 'p-4' : 'p-6'} rounded-t-2xl flex-shrink-0`}>
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">Voice Input</h2>
@@ -224,8 +246,8 @@ const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6">
+        <div className={`flex-1 overflow-y-auto ${compact ? 'p-4' : 'p-6'} ${darkMode ? 'bg-black bg-opacity-30' : ''}`}>
+          <div className={`${compact ? 'space-y-4' : 'space-y-6'}`}>
             {/* Recording Controls */}
             <div className="text-center space-y-6">
               {/* Main Recording Interface */}
@@ -367,8 +389,12 @@ const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
         </div>
 
         {/* Footer Actions - Always Visible */}
-        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200 rounded-b-2xl flex-shrink-0">
-          <div className="text-sm text-gray-600">
+        <div className={`${
+          darkMode 
+            ? 'bg-black bg-opacity-70 border-gray-700' 
+            : 'bg-gray-50 border-gray-200'
+        } ${compact ? 'px-4 py-3' : 'px-6 py-4'} flex items-center justify-between border-t rounded-b-2xl flex-shrink-0`}>
+          <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             {transcription.length > 0 && `${transcription.length} characters`}
           </div>
           

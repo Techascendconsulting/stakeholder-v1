@@ -1195,6 +1195,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         onClose={() => setShowVoiceModal(false)}
         onSave={handleVoiceInput}
         onTranscribingChange={handleTranscribingChange}
+        darkMode={true}
+        compact={true}
       />
     </div>
   );
