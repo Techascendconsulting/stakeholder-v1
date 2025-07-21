@@ -1,16 +1,17 @@
 import React from 'react'
-import Sidebar from './Sidebar'
+import { Sidebar } from './Sidebar'
 import { useApp } from '../../contexts/AppContext'
 import Dashboard from '../Views/Dashboard'
-import { ProjectsView } from '../Views/ProjectsView';
-import { ProjectBrief } from '../Views/ProjectBrief';
-import { StakeholdersView } from '../Views/StakeholdersView';
-import { MeetingModeSelection } from '../Views/MeetingModeSelection';
-import { MeetingView } from '../Views/MeetingView';
-import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView';
-import { MyMeetingsView } from '../Views/MyMeetingsView';
-import { MeetingHistoryView } from '../Views/MeetingHistoryView';
-import { DeliverablesView } from '../Views/DeliverablesView';
+import ProjectsView from '../Views/ProjectsView'
+import ProjectBrief from '../Views/ProjectBrief'
+import StakeholdersView from '../Views/StakeholdersView'
+import MeetingModeSelection from '../Views/MeetingModeSelection'
+import MeetingView from '../Views/MeetingView'
+import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView'
+import { MyMeetingsView } from '../Views/MyMeetingsView'
+import { MeetingHistoryView } from '../Views/MeetingHistoryView'
+import DeliverablesView from '../Views/DeliverablesView'
+import NotesView from '../Views/NotesView'
 import ProfileView from '../Views/ProfileView'
 import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'

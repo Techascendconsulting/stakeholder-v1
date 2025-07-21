@@ -10,7 +10,10 @@ import { AlertCircle } from 'lucide-react'
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
 
+  console.log('🔍 AppContent render:', { user: !!user, loading })
+
   if (loading) {
+    console.log('🔍 Showing loading screen')
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
@@ -21,7 +24,25 @@ const AppContent: React.FC = () => {
     )
   }
 
-  return user ? <MainLayout /> : <LandingPage />
+  console.log('🔍 Rendering:', user ? 'MainLayout' : 'LandingPage')
+  return (
+    <div>
+      {/* Debug test div */}
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        background: 'red', 
+        color: 'white', 
+        padding: '10px', 
+        zIndex: 9999,
+        fontSize: '12px'
+      }}>
+        APP LOADED - User: {user ? 'YES' : 'NO'} - Loading: {loading ? 'YES' : 'NO'}
+      </div>
+      {user ? <MainLayout /> : <LandingPage />}
+    </div>
+  )
 }
 
 const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {

@@ -11,6 +11,7 @@ interface AppContextType {
   // Project data
   projects: Project[]
   selectedProject: Project | null
+  setSelectedProject: (project: Project | null) => void
   selectProject: (project: Project) => Promise<void>
   
   // Stakeholder data
@@ -119,6 +120,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCurrentView,
     projects: mockProjects,
     selectedProject,
+    setSelectedProject,
     selectProject,
     stakeholders: mockStakeholders,
     selectedStakeholders,
