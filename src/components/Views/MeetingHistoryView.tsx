@@ -6,7 +6,6 @@ import { Message } from '../../types';
 
 export const MeetingHistoryView: React.FC = () => {
   const { setCurrentView, selectedMeeting } = useApp();
-  const [activeTab, setActiveTab] = useState<'summary' | 'transcript'>('summary');
 
   // Scroll to top on mount
   useEffect(() => {
@@ -69,41 +68,7 @@ export const MeetingHistoryView: React.FC = () => {
     });
   };
 
-  // Component for rendering individual transcript messages
-  const TranscriptMessage: React.FC<{ message: Message }> = ({ message }) => {
-    const isUser = message.speaker === 'user';
-    const stakeholderName = message.stakeholderName || message.speaker;
-    
-    return (
-      <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`max-w-[80%] rounded-lg p-4 ${
-          isUser 
-            ? 'bg-purple-600 text-white' 
-            : 'bg-gray-100 border border-gray-200'
-        }`}>
-          {!isUser && (
-            <span className="text-xs font-medium text-gray-600 mb-1 block">
-              {stakeholderName?.charAt(0)?.toUpperCase() + (stakeholderName?.slice(1) || '')}
-            </span>
-          )}
-          <p className={`text-sm ${isUser ? 'text-white' : 'text-gray-800'}`}>
-            {message.content}
-          </p>
-          {message.timestamp && (
-            <p className={`text-xs mt-1 ${
-              isUser ? 'text-purple-200' : 'text-gray-500'
-            }`}>
-              {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-              })}
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  };
+
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -122,33 +87,21 @@ export const MeetingHistoryView: React.FC = () => {
           </div>
         </div>
         
-        {/* Tab Navigation in Header */}
-        <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+        {/* Navigation Buttons to Separate Pages */}
+        <div className="flex items-center space-x-3">
           <button
-            onClick={() => setActiveTab('summary')}
-            className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-              activeTab === 'summary'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
+            onClick={() => setCurrentView('meeting-summary')}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 shadow-md font-medium"
           >
-            <div className="flex items-center space-x-2">
-              <FileText size={16} />
-              <span>Meeting Summary</span>
-            </div>
+            <FileText size={18} />
+            <span>Meeting Summary</span>
           </button>
           <button
-            onClick={() => setActiveTab('transcript')}
-            className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-              activeTab === 'transcript'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
+            onClick={() => setCurrentView('raw-transcript')}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2 shadow-md font-medium"
           >
-            <div className="flex items-center space-x-2">
-              <MessageSquare size={16} />
-              <span>Raw Transcript</span>
-            </div>
+            <MessageSquare size={18} />
+            <span>Raw Transcript</span>
           </button>
         </div>
       </div>
@@ -375,59 +328,7 @@ export const MeetingHistoryView: React.FC = () => {
         </div>
       )}
 
-      {/* Tab Content Area */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-        {activeTab === 'summary' ? (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <FileText className="mr-2" size={20} />
-              AI-Generated Meeting Summary
-            </h3>
-            
-            {meeting.meeting_summary ? (
-              <div className="prose max-w-none">
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {meeting.meeting_summary}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Summary Available</h3>
-                <p className="text-gray-600">The meeting summary could not be generated or is still processing.</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-                <MessageSquare className="mr-2" size={20} />
-                Complete Conversation Transcript
-              </h3>
-              <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                {meeting.transcript?.length || 0} messages • {formatDuration(meeting.duration)}
-              </span>
-            </div>
 
-            {meeting.transcript && meeting.transcript.length > 0 ? (
-              <div className="space-y-3 max-h-[700px] overflow-y-auto border rounded-lg p-4 bg-gray-50">
-                {meeting.transcript.map((message, index) => (
-                  <TranscriptMessage key={index} message={message} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Transcript Available</h3>
-                <p className="text-gray-600">The conversation transcript could not be recorded or is empty.</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 };
