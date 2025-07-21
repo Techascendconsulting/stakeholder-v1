@@ -1014,33 +1014,83 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         {/* Main Video Area */}
         <div className="flex-1 p-4 flex items-center justify-center">
           <div className="flex flex-col gap-4 max-h-[calc(100vh-280px)] items-center">
-            {/* First row - up to 3 people */}
-            <div className="flex gap-4">
-              {allParticipants.slice(0, 3).map((participant, index) => (
-                <ParticipantCard
-                  key={participant.name}
-                  participant={participant}
-                  isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                  isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                  isUser={index === 0}
-                />
-              ))}
-            </div>
-            
-            {/* Second row - remaining people centered */}
-            {allParticipants.length > 3 && (
-              <div className="flex gap-4 justify-center">
-                {allParticipants.slice(3).map((participant, index) => (
-                  <ParticipantCard
-                    key={participant.name}
-                    participant={participant}
-                    isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                    isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                    isUser={index + 3 === 0} // Adjust index for user detection
-                  />
-                ))}
-              </div>
-            )}
+            {(() => {
+              const totalParticipants = allParticipants.length;
+              
+              // Layout logic based on number of participants
+              if (totalParticipants <= 3) {
+                // 1-3 people: single row
+                return (
+                  <div className="flex gap-4 justify-center">
+                    {allParticipants.map((participant, index) => (
+                      <ParticipantCard
+                        key={participant.name}
+                        participant={participant}
+                        isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                        isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                        isUser={index === 0}
+                      />
+                    ))}
+                  </div>
+                );
+              } else if (totalParticipants === 4) {
+                // 4 people: 2x2 grid
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(0, 2).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index === 0}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(2, 4).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index + 2 === 0}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
+              } else {
+                // 5+ people: 3 in first row, rest centered in second row
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(0, 3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index === 0}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                      {allParticipants.slice(3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index + 3 === 0}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
+              }
+            })()}
           </div>
         </div>
 
