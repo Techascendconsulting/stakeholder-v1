@@ -1,246 +1,297 @@
-import React, { useEffect } from 'react'
-import { useApp } from '../../contexts/AppContext'
-import { 
-  FolderOpen, 
-  Users, 
-  FileText, 
-  Clock,
-  TrendingUp,
-  CheckCircle,
-  Target,
-  Award
-} from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Users, MessageSquare, FileText, Clock, Award, Target, Calendar, ChevronRight, Play } from 'lucide-react';
+import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { DatabaseService, DatabaseProgress, DatabaseMeeting } from '../../lib/database';
 
 const Dashboard: React.FC = () => {
-  const { projects, meetings, deliverables, setCurrentView, userProgress, isLoading } = useApp()
+  const { setCurrentView, setSelectedProject } = useApp();
+  const { user } = useAuth();
+  const [progress, setProgress] = useState<DatabaseProgress | null>(null);
+  const [recentMeetings, setRecentMeetings] = useState<DatabaseMeeting[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Scroll to top when component mounts
+  // Scroll to top on mount
   useEffect(() => {
-    // The main content area is the scrolling container, not the window
     const scrollToTop = () => {
-      // Find the main scrolling container
-      const mainContainer = document.querySelector('main')
+      const mainContainer = document.querySelector('main');
       if (mainContainer) {
-        mainContainer.scrollTo({
-          top: 0,
-          left: 0,
-          behavior: 'instant'
-        })
-        // Fallback
-        mainContainer.scrollTop = 0
+        mainContainer.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        mainContainer.scrollTop = 0;
       }
-      
-      // Also scroll window just in case
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'instant'
-      })
-    }
-    
-    // Execute immediately and after short delays to ensure it works
-    scrollToTop()
-    setTimeout(scrollToTop, 0)
-    setTimeout(scrollToTop, 50)
-  }, [])
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    };
+    scrollToTop();
+    setTimeout(scrollToTop, 0);
+    setTimeout(scrollToTop, 50);
+  }, []);
 
-  // Use real data from userProgress if available, otherwise fall back to calculated values
-  const completedMeetings = userProgress?.total_meetings_conducted || meetings.filter(m => m.status === 'completed').length
-  const totalDeliverables = userProgress?.total_deliverables_created || deliverables.length
-  const activeProjects = userProgress?.total_projects_started || 0
+  useEffect(() => {
+    loadDashboardData();
+  }, [user?.id]);
+
+  const loadDashboardData = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoading(true);
+      
+      // Load user progress
+      let userProgress = await DatabaseService.getUserProgress(user.id);
+      if (!userProgress) {
+        userProgress = await DatabaseService.initializeUserProgress(user.id);
+      }
+      setProgress(userProgress);
+
+      // Load recent meetings
+      const meetings = await DatabaseService.getUserMeetings(user.id);
+      setRecentMeetings(meetings.slice(0, 3)); // Show last 3 meetings
+
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes} min`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
 
   const stats = [
     {
-      title: 'Available Projects',
-      value: projects.length.toString(),
-      icon: FolderOpen,
-      color: 'from-blue-500 to-blue-600',
-      change: '5 comprehensive scenarios',
-      description: 'Real-world BA projects'
+      title: 'Projects Started',
+      value: progress?.total_projects_started || 0,
+      icon: Target,
+      color: 'bg-blue-500',
+      change: '+12%',
+      changeType: 'positive' as const
     },
     {
-      title: 'Stakeholder Interviews',
-      value: completedMeetings.toString(),
+      title: 'Meetings Conducted',
+      value: progress?.total_meetings_conducted || 0,
       icon: Users,
-      color: 'from-emerald-500 to-emerald-600',
-      change: 'Professional development',
-      description: 'Completed sessions'
+      color: 'bg-purple-500',
+      change: '+8%',
+      changeType: 'positive' as const
+    },
+    {
+      title: 'Voice-Only Meetings',
+      value: progress?.total_voice_meetings || 0,
+      icon: MessageSquare,
+      color: 'bg-green-500',
+      change: '+15%',
+      changeType: 'positive' as const
     },
     {
       title: 'Deliverables Created',
-      value: totalDeliverables.toString(),
+      value: progress?.total_deliverables_created || 0,
       icon: FileText,
-      color: 'from-purple-500 to-purple-600',
-      change: 'Industry-standard formats',
-      description: 'Professional documents'
-    },
-    {
-      title: 'Training Hours',
-      value: (completedMeetings * 2 + totalDeliverables * 3).toString(),
-      icon: Clock,
-      color: 'from-orange-500 to-orange-600',
-      change: 'Continuous learning',
-      description: 'Skill development time'
+      color: 'bg-orange-500',
+      change: '+6%',
+      changeType: 'positive' as const
     }
-  ]
-
-  const recentActivity = [
-    { action: 'Completed stakeholder interview with', target: 'James Walker (Head of Operations)', time: '2 hours ago', type: 'meeting' },
-    { action: 'Updated business requirements for', target: 'Customer Onboarding Optimization', time: '4 hours ago', type: 'deliverable' },
-    { action: 'Reviewed project brief for', target: 'Digital Expense Management System', time: '1 day ago', type: 'project' },
-    { action: 'Created user stories for', target: 'Inventory Management Enhancement', time: '2 days ago', type: 'deliverable' }
-  ]
-
-  const learningPath = [
-    { title: 'Project Analysis', description: 'Review business context and requirements', completed: true },
-    { title: 'Stakeholder Engagement', description: 'Conduct professional interviews', completed: false },
-    { title: 'Requirements Documentation', description: 'Create comprehensive deliverables', completed: false },
-    { title: 'Solution Presentation', description: 'Present findings to stakeholders', completed: false }
-  ]
+  ];
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Business Analyst Training Dashboard</h1>
-          <p className="text-lg text-gray-600">
-            Welcome to your professional development platform. Track your progress and continue building essential BA skills.
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋
+        </h1>
+        <p className="text-gray-600">
+          Here's your stakeholder interview progress and recent activity
+        </p>
+      </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-14 h-14 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center`}>
-                  <stat.icon className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                </div>
-              </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => (
+          <div key={index} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-900 mb-1">{stat.title}</p>
-                <p className="text-xs text-gray-500 mb-2">{stat.description}</p>
-                <span className="text-xs text-emerald-600 font-medium">{stat.change}</span>
+                <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
+                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                {/* <div className="flex items-center mt-2">
+                  <span className={`text-sm font-medium ${
+                    stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {stat.change}
+                  </span>
+                  <span className="text-sm text-gray-500 ml-1">from last week</span>
+                </div> */}
+              </div>
+              <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
+                <stat.icon className="w-6 h-6 text-white" />
               </div>
             </div>
-          ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="space-y-3">
+            <button
+              onClick={() => setCurrentView('projects')}
+              className="w-full flex items-center justify-between p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                  <Play className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-gray-900">Start New Meeting</p>
+                  <p className="text-sm text-gray-600">Begin a stakeholder interview</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600" />
+            </button>
+
+            <button
+              onClick={() => setCurrentView('my-meetings')}
+              className="w-full flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-gray-900">Review Meetings</p>
+                  <p className="text-sm text-gray-600">View summaries and transcripts</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
+            </button>
+
+            <button
+              onClick={() => setCurrentView('deliverables')}
+              className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-gray-900">View Deliverables</p>
+                  <p className="text-sm text-gray-600">Access generated documents</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-green-600" />
+            </button>
+          </div>
         </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">Recent Training Activity</h3>
-              <p className="text-sm text-gray-600 mt-1">Your latest learning progress and achievements</p>
+        {/* Recent Meetings */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Recent Meetings</h3>
+            {recentMeetings.length > 0 && (
+              <button
+                onClick={() => setCurrentView('my-meetings')}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                View All
+              </button>
+            )}
+          </div>
+
+          {recentMeetings.length === 0 ? (
+            <div className="text-center py-8">
+              <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h4 className="text-lg font-medium text-gray-900 mb-2">No meetings yet</h4>
+              <p className="text-gray-600 mb-4">Start your first stakeholder interview</p>
+              <button
+                onClick={() => setCurrentView('projects')}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Start First Meeting
+              </button>
             </div>
-            <div className="divide-y divide-gray-100">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="p-6 hover:bg-gray-50 transition-colors duration-200">
-                  <div className="flex items-start space-x-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      activity.type === 'meeting' ? 'bg-blue-100' :
-                      activity.type === 'deliverable' ? 'bg-purple-100' : 'bg-emerald-100'
-                    }`}>
-                      {activity.type === 'meeting' ? <Users className="w-5 h-5 text-blue-600" /> :
-                       activity.type === 'deliverable' ? <FileText className="w-5 h-5 text-purple-600" /> :
-                       <FolderOpen className="w-5 h-5 text-emerald-600" />}
+          ) : (
+            <div className="space-y-3">
+              {recentMeetings.map((meeting, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">
+                        {meeting.project_name.charAt(0)}
+                      </span>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {activity.action} <span className="text-blue-600">{activity.target}</span>
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                    <div>
+                      <p className="font-medium text-gray-900">{meeting.project_name}</p>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <span className="flex items-center space-x-1">
+                          <Calendar size={12} />
+                          <span>{formatDate(meeting.created_at)}</span>
+                        </span>
+                        <span className="flex items-center space-x-1">
+                          <Clock size={12} />
+                          <span>{formatDuration(meeting.duration)}</span>
+                        </span>
+                        <span className="flex items-center space-x-1">
+                          <Users size={12} />
+                          <span>{meeting.stakeholder_names.length}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    meeting.meeting_type === 'voice-only' 
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {meeting.meeting_type === 'voice-only' ? 'Voice' : 'Transcript'}
+                  </span>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Learning Path & Quick Actions */}
-          <div className="space-y-6">
-            {/* Learning Path */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Learning Path</h3>
-                <p className="text-sm text-gray-600 mt-1">Your structured BA development journey</p>
-              </div>
-              <div className="p-6 space-y-4">
-                {learningPath.map((step, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
-                      step.completed ? 'bg-emerald-100' : 'bg-gray-100'
-                    }`}>
-                      {step.completed ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className={`text-sm font-medium ${step.completed ? 'text-emerald-900' : 'text-gray-900'}`}>
-                        {step.title}
-                      </p>
-                      <p className={`text-xs ${step.completed ? 'text-emerald-600' : 'text-gray-500'}`}>
-                        {step.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
-                <p className="text-sm text-gray-600 mt-1">Continue your professional development</p>
-              </div>
-              <div className="p-6 space-y-3">
-                <button 
-                  onClick={() => setCurrentView('projects')}
-                  className="w-full text-left p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl hover:from-blue-100 hover:to-purple-100 transition-all duration-200 border border-blue-100"
-                >
-                  <div className="flex items-center space-x-3">
-                    <FolderOpen className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <span className="font-semibold text-gray-900 block">Browse Projects</span>
-                      <span className="text-xs text-gray-600">Select training scenarios</span>
-                    </div>
-                  </div>
-                </button>
-                <button 
-                  onClick={() => setCurrentView('notes')}
-                  className="w-full text-left p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl hover:from-emerald-100 hover:to-teal-100 transition-all duration-200 border border-emerald-100"
-                >
-                  <div className="flex items-center space-x-3">
-                    <FileText className="w-5 h-5 text-emerald-600" />
-                    <div>
-                      <span className="font-semibold text-gray-900 block">Review Notes</span>
-                      <span className="text-xs text-gray-600">Meeting transcripts</span>
-                    </div>
-                  </div>
-                </button>
-                <button className="w-full text-left p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl hover:from-orange-100 hover:to-red-100 transition-all duration-200 border border-orange-100">
-                  <div className="flex items-center space-x-3">
-                    <Award className="w-5 h-5 text-orange-600" />
-                    <div>
-                      <span className="font-semibold text-gray-900 block">View Progress</span>
-                      <span className="text-xs text-gray-600">Track achievements</span>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
-    </div>
-  )
-}
 
-export default Dashboard
+      {/* Achievements Section */}
+      {progress?.achievements && progress.achievements.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Award className="mr-2" size={20} />
+            Recent Achievements
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {progress.achievements.map((achievement, index) => (
+              <span
+                key={index}
+                className="px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium border border-yellow-200"
+              >
+                🏆 {achievement}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Dashboard;

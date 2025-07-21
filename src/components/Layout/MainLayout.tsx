@@ -2,18 +2,19 @@ import React from 'react'
 import Sidebar from './Sidebar'
 import { useApp } from '../../contexts/AppContext'
 import Dashboard from '../Views/Dashboard'
-import ProjectsView from '../Views/ProjectsView'
-import ProjectBrief from '../Views/ProjectBrief'
-import StakeholdersView from '../Views/StakeholdersView'
-import MeetingView from '../Views/MeetingView'
-import NotesView from '../Views/NotesView'
-import DeliverablesView from '../Views/DeliverablesView'
+import { ProjectsView } from '../Views/ProjectsView';
+import { ProjectBrief } from '../Views/ProjectBrief';
+import { StakeholdersView } from '../Views/StakeholdersView';
+import { MeetingModeSelection } from '../Views/MeetingModeSelection';
+import { MeetingView } from '../Views/MeetingView';
+import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView';
+import { MyMeetingsView } from '../Views/MyMeetingsView';
+import { MeetingHistoryView } from '../Views/MeetingHistoryView';
+import { DeliverablesView } from '../Views/DeliverablesView';
 import ProfileView from '../Views/ProfileView'
 import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
-import MeetingModeSelection from '../Views/MeetingModeSelection'
-import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView'
 
 const MainLayout: React.FC = () => {
   const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
@@ -48,22 +49,13 @@ const MainLayout: React.FC = () => {
       case 'meeting-mode-selection':
         return <MeetingModeSelection />
       case 'meeting':
-        console.log('🔍 DEBUG: Rendering MeetingView with props:', {
-          selectedProject: selectedProject?.name,
-          selectedStakeholders: selectedStakeholders?.map(s => s.name),
-          currentUser: user?.email
-        })
-        return <MeetingView 
-          selectedProject={selectedProject}
-          selectedStakeholders={selectedStakeholders}
-          currentUser={user}
-        />
+        return <MeetingView />
       case 'voice-only-meeting':
-        console.log('🔍 DEBUG: Rendering VoiceOnlyMeetingView with:', {
-          selectedProject: selectedProject?.name || 'null',
-          selectedStakeholders: selectedStakeholders?.length || 0
-        });
         return <VoiceOnlyMeetingView />
+      case 'my-meetings':
+        return <MyMeetingsView />
+      case 'meeting-history':
+        return <MeetingHistoryView />
       case 'notes':
         return <NotesView />
       case 'deliverables':

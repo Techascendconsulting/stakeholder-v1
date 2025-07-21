@@ -22,6 +22,8 @@ interface AppContextType {
   meetings: Meeting[]
   currentMeeting: Meeting | null
   setCurrentMeeting: (meeting: Meeting | null) => void
+  selectedMeeting: any | null
+  setSelectedMeeting: (meeting: any | null) => void
   
   // Deliverables
   deliverables: Deliverable[]
@@ -61,6 +63,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentView, setCurrentView] = useState<AppView>('dashboard')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([])
+  const [selectedMeeting, setSelectedMeeting] = useState<any | null>(null)
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
@@ -134,7 +137,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     canAccessProject,
     canSaveNotes,
     canCreateMoreMeetings,
-    isLoading
+    isLoading,
+    selectedMeeting,
+    setSelectedMeeting
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

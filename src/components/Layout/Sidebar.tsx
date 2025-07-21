@@ -1,88 +1,74 @@
-import React from 'react'
-import { useApp } from '../../contexts/AppContext'
-import { useAuth } from '../../contexts/AuthContext'
-import { 
-  LayoutDashboard, 
-  FolderOpen, 
-  FileText, 
-  User, 
-  LogOut,
-  GraduationCap,
-  Plus
-} from 'lucide-react'
-import { AppView } from '../../types'
+import React from 'react';
+import { LayoutDashboard, FolderOpen, Users, FileText, MessageSquare, Settings, LogOut } from 'lucide-react';
+import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
 
-const Sidebar: React.FC = () => {
-  const { currentView, setCurrentView } = useApp()
-  const { user, signOut } = useAuth()
+interface SidebarProps {
+  className?: string;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
+  const { currentView, setCurrentView } = useApp();
+  const { signOut } = useAuth();
 
   const menuItems = [
-    { id: 'dashboard' as AppView, label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'projects' as AppView, label: 'Training Projects', icon: FolderOpen },
-    { id: 'custom-project' as AppView, label: 'Create Your Own Project', icon: Plus },
-    { id: 'notes' as AppView, label: 'Interview Notes', icon: FileText },
-    { id: 'profile' as AppView, label: 'Profile', icon: User },
-  ]
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'projects', label: 'Projects', icon: FolderOpen },
+    { id: 'my-meetings', label: 'My Meetings', icon: MessageSquare },
+    { id: 'deliverables', label: 'Deliverables', icon: FileText },
+  ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
-    <div className="w-72 bg-white border-r border-gray-200 h-screen flex flex-col shadow-sm">
-      {/* Logo */}
-      <div className="p-8 border-b border-gray-200">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-            <GraduationCap className="w-7 h-7 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">BA Training Platform</h1>
-            <p className="text-sm text-gray-600">Professional Development</p>
-          </div>
-        </div>
+    <div className={`bg-gray-900 text-white w-64 min-h-screen flex flex-col ${className}`}>
+      {/* Logo/Brand */}
+      <div className="p-6 border-b border-gray-700">
+        <h1 className="text-xl font-bold text-purple-400">BA Stakeholder App</h1>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-6">
-        <ul className="space-y-3">
-          {menuItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => setCurrentView(item.id)}
-                className={`w-full flex items-center space-x-4 px-4 py-3 rounded-xl text-left transition-all duration-200 font-medium ${
-                  currentView === item.id
-                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </button>
-            </li>
-          ))}
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentView === item.id;
+            
+            return (
+              <li key={item.id}>
+                <button
+                  onClick={() => setCurrentView(item.id as any)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    isActive
+                      ? 'bg-purple-600 text-white'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
-      {/* User Info & Sign Out */}
-      <div className="p-6 border-t border-gray-200">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-gray-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">
-              {user?.email}
-            </p>
-            <p className="text-xs text-gray-600">Business Analyst Trainee</p>
-          </div>
-        </div>
+      {/* Bottom actions */}
+      <div className="p-4 border-t border-gray-700">
         <button
-          onClick={signOut}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-colors duration-200"
+          onClick={handleSignOut}
+          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut size={20} />
           <span>Sign Out</span>
         </button>
       </div>
     </div>
-  )
-}
-
-export default Sidebar
+  );
+};
