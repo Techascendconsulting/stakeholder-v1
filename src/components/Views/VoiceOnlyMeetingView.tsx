@@ -980,23 +980,23 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     ...selectedStakeholders
   ];
 
-  // Teams-style grid layout: 1-4 stakeholders in one row, 5 stakeholders with 3+2 centered layout
-  const getGridLayout = (count: number) => {
+  // Teams-style row layout: 1-4 stakeholders in one row, 5 stakeholders with 3+2 centered rows
+  const getRowLayout = (count: number) => {
     if (count <= 4) {
       return {
         containerClass: 'flex justify-center items-center h-full',
-        gridClass: `grid grid-cols-${count} gap-6 max-w-6xl`
+        rowClass: 'flex gap-6'
       };
     } else if (count === 5) {
       return {
         containerClass: 'flex flex-col justify-center items-center h-full space-y-6',
-        gridClass: 'grid'
+        rowClass: 'flex gap-6'
       };
     }
-    // For more than 5, fall back to flexible grid
+    // For more than 5, fall back to flexible rows
     return {
-      containerClass: 'flex justify-center items-center h-full',
-      gridClass: 'grid grid-cols-3 gap-6 max-w-6xl'
+      containerClass: 'flex flex-wrap justify-center items-center h-full gap-6',
+      rowClass: 'flex gap-6'
     };
   };
 
@@ -1071,9 +1071,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         {/* Teams-style Participant Grid */}
         <div className="flex-1 p-4 min-h-0">
           {allParticipants.length <= 4 ? (
-            // 1-4 participants: Single row, centered
-            <div className={getGridLayout(allParticipants.length).containerClass}>
-              <div className={`${getGridLayout(allParticipants.length).gridClass}`}>
+            // 1-4 participants: Single row, side-by-side
+            <div className={getRowLayout(allParticipants.length).containerClass}>
+              <div className={getRowLayout(allParticipants.length).rowClass}>
                 {allParticipants.map((participant, index) => (
                   <div key={participant.name} className="w-80 h-60">
                     <ParticipantCard
@@ -1087,10 +1087,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               </div>
             </div>
           ) : allParticipants.length === 5 ? (
-            // 5 participants: 3 on top row, 2 centered below
-            <div className={getGridLayout(5).containerClass}>
+            // 5 participants: 3 on top row, 2 centered on bottom row
+            <div className={getRowLayout(5).containerClass}>
               {/* Top row - 3 participants */}
-              <div className="grid grid-cols-3 gap-6">
+              <div className="flex gap-6">
                 {allParticipants.slice(0, 3).map((participant, index) => (
                   <div key={participant.name} className="w-80 h-60">
                     <ParticipantCard
@@ -1103,7 +1103,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                 ))}
               </div>
               {/* Bottom row - 2 participants, centered */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="flex gap-6 justify-center">
                 {allParticipants.slice(3, 5).map((participant, index) => (
                   <div key={participant.name} className="w-80 h-60">
                     <ParticipantCard
@@ -1117,20 +1117,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               </div>
             </div>
           ) : (
-            // More than 5: Flexible grid
-            <div className={getGridLayout(allParticipants.length).containerClass}>
-              <div className={`${getGridLayout(allParticipants.length).gridClass}`}>
-                {allParticipants.map((participant, index) => (
-                  <div key={participant.name} className="w-80 h-60">
-                    <ParticipantCard
-                      participant={participant}
-                      isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                      isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                      isUser={index === 0}
-                    />
-                  </div>
-                ))}
-              </div>
+            // More than 5: Flexible rows
+            <div className={getRowLayout(allParticipants.length).containerClass}>
+              {allParticipants.map((participant, index) => (
+                <div key={participant.name} className="w-80 h-60">
+                  <ParticipantCard
+                    participant={participant}
+                    isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                    isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                    isUser={index === 0}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
