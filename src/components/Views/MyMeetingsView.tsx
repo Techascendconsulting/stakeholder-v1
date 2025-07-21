@@ -171,9 +171,23 @@ export const MyMeetingsView: React.FC = () => {
     try {
       setLoading(true);
       const userMeetings = await DatabaseService.getUserMeetings(user.id);
-      setMeetings(userMeetings);
+      
+      // Filter out meetings with missing or invalid data
+      const validMeetings = userMeetings.filter(meeting => {
+        return meeting &&
+               typeof meeting.project_name === 'string' &&
+               meeting.project_name.trim() !== '' &&
+               Array.isArray(meeting.stakeholder_names) &&
+               meeting.stakeholder_names.every(name => typeof name === 'string') &&
+               meeting.created_at &&
+               meeting.status &&
+               typeof meeting.meeting_type === 'string';
+      });
+      
+      setMeetings(validMeetings);
     } catch (error) {
       console.error('Error loading meetings:', error);
+      setMeetings([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -185,9 +199,9 @@ export const MyMeetingsView: React.FC = () => {
   };
 
   const filteredMeetings = meetings.filter(meeting => {
-    const matchesSearch = meeting.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         meeting.stakeholder_names.some(name => 
-                           name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (meeting.project_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (meeting.stakeholder_names || []).some(name => 
+                           (name || '').toLowerCase().includes(searchTerm.toLowerCase())
                          );
     
     const matchesType = filterType === 'all' || 
