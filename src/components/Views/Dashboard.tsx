@@ -401,7 +401,7 @@ const Dashboard: React.FC = () => {
                         </span>
                         <span className="flex items-center space-x-1">
                           <Users size={12} />
-                          <span>{meeting.stakeholder_names.length}</span>
+                          <span>{meeting.stakeholder_names?.length || 0}</span>
                         </span>
                       </div>
                     </div>
@@ -463,12 +463,12 @@ const Dashboard: React.FC = () => {
           <h4 className="font-medium text-yellow-800 mb-2">Recent Meetings Data:</h4>
           <div className="bg-white rounded p-2 max-h-32 overflow-y-auto">
             <pre className="text-xs text-gray-700">
-              {JSON.stringify(recentMeetings.map(m => ({
-                id: m.id,
-                project: m.project_name,
-                created: m.created_at,
-                status: m.status
-              })), null, 2)}
+              {JSON.stringify(recentMeetings?.map(m => ({
+                id: m?.id || 'unknown',
+                project: m?.project_name || 'unknown',
+                created: m?.created_at || 'unknown',
+                status: m?.status || 'unknown'
+              })) || [], null, 2)}
             </pre>
           </div>
         </div>
