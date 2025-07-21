@@ -982,10 +982,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     ...selectedStakeholders
   ];
 
-  // Calculate optimal grid layout for portrait photos
+  // Calculate optimal grid layout for video call style (4 people in 2x2)
   const getGridCols = (count: number) => {
     if (count <= 2) return 'grid-cols-1 lg:grid-cols-2';
-    if (count <= 4) return 'grid-cols-2 lg:grid-cols-4';
+    if (count <= 4) return 'grid-cols-2'; // 2x2 grid for 4 people
     if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
     return 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4';
   };
