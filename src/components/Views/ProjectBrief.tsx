@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Telescope as Scope, XCircle } from 'lucide-react'
 
 const ProjectBrief: React.FC = () => {
   const { selectedProject, setCurrentView } = useApp()
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   if (!selectedProject) {
     return (

@@ -1,10 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { ArrowLeft, MessageCircle, ArrowRight, Building, Users, Check } from 'lucide-react'
 
 const StakeholdersView: React.FC = () => {
   const { selectedProject, stakeholders, selectedStakeholders, setSelectedStakeholders, setCurrentView } = useApp()
   const [localSelectedStakeholders, setLocalSelectedStakeholders] = useState<string[]>([])
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   if (!selectedProject) {
     return (

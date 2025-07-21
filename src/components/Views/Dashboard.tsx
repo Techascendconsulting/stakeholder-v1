@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { 
   FolderOpen, 
@@ -13,6 +13,11 @@ import {
 
 const Dashboard: React.FC = () => {
   const { projects, meetings, deliverables, setCurrentView, userProgress, isLoading } = useApp()
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   // Use real data from userProgress if available, otherwise fall back to calculated values
   const completedMeetings = userProgress?.total_meetings_conducted || meetings.filter(m => m.status === 'completed').length

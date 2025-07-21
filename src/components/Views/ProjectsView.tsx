@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
   const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user } = useApp()
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const handleViewBrief = async (project: any) => {
     try {
