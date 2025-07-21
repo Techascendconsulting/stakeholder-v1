@@ -16,7 +16,32 @@ const Dashboard: React.FC = () => {
 
   // Scroll to top when component mounts
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // The main content area is the scrolling container, not the window
+    const scrollToTop = () => {
+      // Find the main scrolling container
+      const mainContainer = document.querySelector('main')
+      if (mainContainer) {
+        mainContainer.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'instant'
+        })
+        // Fallback
+        mainContainer.scrollTop = 0
+      }
+      
+      // Also scroll window just in case
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant'
+      })
+    }
+    
+    // Execute immediately and after short delays to ensure it works
+    scrollToTop()
+    setTimeout(scrollToTop, 0)
+    setTimeout(scrollToTop, 50)
   }, [])
 
   // Use real data from userProgress if available, otherwise fall back to calculated values

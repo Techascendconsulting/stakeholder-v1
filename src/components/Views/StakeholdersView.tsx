@@ -8,7 +8,36 @@ const StakeholdersView: React.FC = () => {
 
   // Scroll to top when component mounts
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // The main content area is the scrolling container, not the window
+    const scrollToTop = () => {
+      // Find the main scrolling container
+      const mainContainer = document.querySelector('main')
+      if (mainContainer) {
+        mainContainer.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'instant'
+        })
+        // Fallback
+        mainContainer.scrollTop = 0
+        console.log('🔝 Scrolled main container to top - scrollTop:', mainContainer.scrollTop)
+      }
+      
+      // Also scroll window just in case
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant'
+      })
+      
+      console.log('🔝 Scroll attempt completed')
+    }
+    
+    // Execute immediately and after short delays to ensure it works
+    scrollToTop()
+    setTimeout(scrollToTop, 0)
+    setTimeout(scrollToTop, 50)
+    setTimeout(scrollToTop, 100)
   }, [])
 
   if (!selectedProject) {
