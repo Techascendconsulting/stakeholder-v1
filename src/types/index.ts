@@ -67,4 +67,8 @@ export type AppView =
   | 'voice-only-meeting'
   | 'my-meetings'
   | 'meeting-history'
-  | 'deliverables';
+  | 'notes'
+  | 'deliverables'
+  | 'profile'
+  | 'custom-project'
+  | 'custom-stakeholders';
