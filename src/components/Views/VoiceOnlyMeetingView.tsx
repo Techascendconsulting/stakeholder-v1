@@ -174,126 +174,155 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     introducedMembers: new Set<string>()
   });
 
-  // Enhanced stakeholder response processing - EXACT REPLICA of transcript meeting
+  // Generate stakeholder response with context - EXACT COPY from transcript meeting
+  const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: string) => {
+    const stakeholderContext = {
+      name: stakeholder.name,
+      role: stakeholder.role,
+      department: stakeholder.department,
+      priorities: stakeholder.priorities,
+      personality: stakeholder.personality,
+      expertise: stakeholder.expertise || []
+    };
+
+    const conversationContext = {
+      project: {
+        name: selectedProject?.name || 'Current Project',
+        description: selectedProject?.description || 'Project description',
+        type: selectedProject?.type || 'General'
+      },
+      conversationHistory: currentMessages,
+      stakeholders: selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }))
+    };
+
+    const aiService = AIService.getInstance();
+    return await aiService.generateStakeholderResponse(
+      userMessage,
+      stakeholderContext,
+      conversationContext,
+      responseType
+    );
+  };
+
+  // Create response message object - EXACT COPY from transcript meeting
+  const createResponseMessage = (stakeholder: any, response: string, index: number): Message => {
+    return {
+      id: `ai-${Date.now()}-${index}`,
+      speaker: stakeholder.id || 'stakeholder',
+      content: response,
+      timestamp: new Date().toISOString(),
+      stakeholderName: stakeholder.name,
+      stakeholderRole: stakeholder.role
+    };
+  };
+
+  // Dynamic contextually-aligned thinking message generator - EXACT COPY from transcript meeting
+  const generateThinkingMessage = (stakeholder: any, context: any) => {
+    const userQuestion = context.messageContent || '';
+    const responseContext = context.responseContext || '';
+    
+    // Simple thinking message based on context
+    if (responseContext === 'baton_pass') {
+      return `${stakeholder.name} is considering the question...`;
+    } else if (responseContext === 'introduction_lead') {
+      return `${stakeholder.name} is preparing to introduce the team...`;
+    } else {
+      return `${stakeholder.name} is thinking about your question...`;
+    }
+  };
+
+  // Enhanced stakeholder response processing - EXACT COPY from transcript meeting
   const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string): Promise<Message[]> => {
     try {
       // Add to conversation queue to prevent simultaneous speaking
       setConversationQueue(prev => [...prev, stakeholder.id]);
-      console.log(`🎯 ${stakeholder.name} added to queue. Current speaker: ${currentSpeaking}`);
       
       // Wait for turn if someone else is speaking
       while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
-        console.log(`⏳ ${stakeholder.name} waiting for ${currentSpeaking} to finish speaking...`);
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       
       // Start speaking
-      console.log(`🗣️ ${stakeholder.name} now speaking`);
       setCurrentSpeaking(stakeholder.id);
       
       // Dynamic thinking state management
       addStakeholderToThinking(stakeholder.id);
-      setDynamicFeedback(`${stakeholder.name} is thinking...`);
       
-      try {
-        const aiService = AIService.getInstance();
-        
-        const stakeholderContext: StakeholderContext = {
-          name: stakeholder.name,
-          role: stakeholder.role,
-          department: stakeholder.department,
-          priorities: stakeholder.priorities,
-          personality: stakeholder.personality,
-          expertise: stakeholder.expertise || []
-        };
-
-        const conversationContext: ConversationContext = {
-          project: {
-            name: selectedProject?.name || '',
-            description: selectedProject?.description || '',
-            type: selectedProject?.type || ''
-          },
-          conversationHistory: currentMessages,
-          stakeholders: selectedStakeholders.map(s => ({
-            name: s.name,
-            role: s.role,
-            department: s.department || '',
-            priorities: s.priorities || [],
-            personality: s.personality || '',
-            expertise: s.expertise || []
-          }))
-        };
-
-        const response = await aiService.generateStakeholderResponse(
-          messageContent,
-          stakeholderContext,
-          conversationContext
-        );
-
-        // Clean up thinking state
-        removeStakeholderFromThinking(stakeholder.id);
-        setDynamicFeedback(null);
-
-        if (response) {
-          const responseMessage: Message = {
-            id: `${stakeholder.id}-${Date.now()}`,
-            speaker: stakeholder.name,
-            content: response,
-            timestamp: new Date().toISOString(),
-            stakeholderName: stakeholder.name,
-            stakeholderRole: stakeholder.role
-          };
-
-          const updatedMessages = [...currentMessages, responseMessage];
-          setMessages(updatedMessages);
-
-          // Auto-play the response
-          if (globalAudioEnabled) {
-            await speakMessage(responseMessage);
-          }
-
-          // Check for baton passing - CRITICAL missing feature from transcript meeting
-          const batonPassedStakeholder = detectBatonPassing(response, updatedMessages);
-          
-          // Remove from queue and set next speaker
-          console.log(`✅ ${stakeholder.name} finished speaking, removing from queue`);
-          setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
-          setCurrentSpeaking(null);
-
-          // Handle baton passing if detected
-          if (batonPassedStakeholder && !updatedMessages.find(msg => 
-            msg.id.startsWith('baton-response') && 
-            msg.timestamp > responseMessage.timestamp
-          )) {
-            console.log(`🎯 Baton passed from ${stakeholder.name} to ${batonPassedStakeholder.name}`);
-            setTimeout(async () => {
-              await processDynamicStakeholderResponse(batonPassedStakeholder, messageContent, updatedMessages, 'baton_pass');
-            }, 1000); // Natural delay for baton passing
-          }
-
-          return updatedMessages;
-        }
-      } catch (error) {
-        console.error(`Error generating response for ${stakeholder.name}:`, error);
-        removeStakeholderFromThinking(stakeholder.id);
-        setDynamicFeedback(null);
-        
-        // Remove from queue on error
-        setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
-        setCurrentSpeaking(null);
-      }
-
-      return currentMessages;
-    } catch (error) {
-      console.error('Error in processDynamicStakeholderResponse:', error);
+      // Generate dynamic thinking message based on actual user question context
+      const thinkingContext = {
+        stakeholder,
+        messageContent,
+        conversationHistory: currentMessages,
+        responseContext
+      };
+      const thinkingMessage = generateThinkingMessage(stakeholder, thinkingContext);
+      setDynamicFeedback(thinkingMessage);
       
-      // Clean up on any error
-      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
-      setCurrentSpeaking(null);
+      // Generate contextual response using AI service
+      const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
+      
+      // Clean up thinking state - ensure proper cleanup
       removeStakeholderFromThinking(stakeholder.id);
       setDynamicFeedback(null);
       
-      return currentMessages;
+      // Create and add message with dynamic indexing
+      const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+      let updatedMessages = [...currentMessages, responseMessage];
+      setMessages(updatedMessages);
+      
+      // Force cleanup of thinking state to prevent display issues
+      setTimeout(() => {
+        removeStakeholderFromThinking(stakeholder.id);
+        setDynamicFeedback(null);
+      }, 100);
+      
+      // Dynamic audio handling based on user preferences and context
+      if (globalAudioEnabled) {
+        await speakMessage(responseMessage).catch(console.warn);
+      }
+      
+      // Check for traditional baton passing (keep existing functionality)
+      const batonPassedStakeholder = detectBatonPassing(response, updatedMessages);
+      
+      // Finish speaking
+      setCurrentSpeaking(null);
+      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+      
+      // Handle traditional baton passing if detected and no mentions were processed
+      if (batonPassedStakeholder && !updatedMessages.find(msg => 
+        msg.id.startsWith('mention-response') && 
+        msg.timestamp > responseMessage.timestamp
+      )) {
+        console.log(`📋 Traditional baton passed to ${batonPassedStakeholder.name}`);
+        setTimeout(async () => {
+          await processDynamicStakeholderResponse(batonPassedStakeholder, messageContent, updatedMessages, 'baton_pass');
+        }, 1000); // Small delay for natural flow
+      }
+      
+      return updatedMessages;
+    } catch (error) {
+      console.error('Error processing stakeholder response:', error);
+      removeStakeholderFromThinking(stakeholder.id);
+      setDynamicFeedback(null);
+      
+      // Clean up conversation state on error
+      setCurrentSpeaking(null);
+      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+      
+      // Force cleanup of thinking state on error
+      setTimeout(() => {
+        removeStakeholderFromThinking(stakeholder.id);
+        setDynamicFeedback(null);
+      }, 100);
+      
+      throw error;
     }
   };
 
