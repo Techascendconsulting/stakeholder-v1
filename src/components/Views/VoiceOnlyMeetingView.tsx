@@ -1146,9 +1146,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     try {
       console.log('📝 Generating summary using AIService.generateInterviewNotes...');
       
-      // Create meeting data object for AIService
+      // Create comprehensive meeting data object for AIService
       const meetingData = {
         messages: transcript,
+        startTime: new Date(meetingStartTime).toISOString(),
+        endTime: new Date().toISOString(),
+        duration: Math.floor((Date.now() - meetingStartTime) / 1000 / 60), // in minutes
+        user: user,
         project: {
           name: selectedProject?.name || 'Unknown Project',
           description: selectedProject?.description || 'Project description',
@@ -1160,7 +1164,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           department: s.department || 'Unknown',
           expertise: s.expertise || []
         })) || [],
-        duration: Math.floor((Date.now() - meetingStartTime) / 1000 / 60), // in minutes
         analytics: {
           totalMessages: transcript.length,
           userMessages: transcript.filter(m => m.speaker === 'user').length,
@@ -1168,6 +1171,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           conversationFlow: 'dynamic'
         }
       };
+
+      console.log('📝 Meeting data for AI summary:', {
+        messageCount: meetingData.messages.length,
+        duration: meetingData.duration,
+        participants: meetingData.participants.length,
+        project: meetingData.project.name,
+        hasUser: !!meetingData.user
+      });
 
       const aiService = AIService.getInstance();
       
@@ -1179,11 +1190,33 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // Generate professional interview notes using AIService
       const interviewNotes = await aiService.generateInterviewNotes(meetingData, progressCallback);
       
-      console.log('✅ Summary generated successfully');
-      return interviewNotes || 'Unable to generate meeting summary.';
+      console.log('✅ Summary generated successfully:', interviewNotes ? 'Content received' : 'Empty response');
+      return interviewNotes || 'Unable to generate meeting summary at this time.';
     } catch (error) {
-      console.error('Error generating meeting summary:', error);
-      return 'Meeting summary could not be generated due to technical issues. However, your conversation transcript is available below.';
+      console.error('❌ Error generating meeting summary:', error);
+      console.error('Error details:', {
+        name: error?.name,
+        message: error?.message,
+        type: typeof error
+      });
+      
+      // Create a fallback summary
+      const fallbackSummary = `# Meeting Summary - ${selectedProject?.name || 'Project Meeting'}
+
+**Date:** ${new Date().toLocaleDateString()}  
+**Duration:** ${Math.floor((Date.now() - meetingStartTime) / 1000 / 60)} minutes  
+**Messages:** ${transcript.length} total  
+**Participants:** ${selectedStakeholders?.map(s => s.name).join(', ') || 'Unknown'}  
+
+## Overview
+This meeting involved discussions with stakeholders regarding project requirements and objectives. 
+
+**Note:** The AI-generated summary could not be created due to technical issues, but the complete conversation transcript is available in the Raw Transcript tab.
+
+## Next Steps
+Please review the raw transcript for detailed conversation content.`;
+      
+      return fallbackSummary;
     }
   };
 
