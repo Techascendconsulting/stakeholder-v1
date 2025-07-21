@@ -56,7 +56,7 @@ export class AIService {
   
   // Helper method to get cost-effective model based on environment
   private getModel(type: 'primary' | 'phaseDetection' | 'noteGeneration' | 'greeting' = 'primary'): string {
-    return this.config.ai_models[type];
+    return AIService.CONFIG.ai_models[type];
   }
   
   // Comprehensive configuration system - all values easily adjustable
@@ -123,10 +123,10 @@ export class AIService {
     // Log model configuration for cost awareness
     const env = import.meta.env.VITE_APP_ENV || 'development';
     console.log(`🤖 AIService initialized for ${env} environment:`, {
-      primary: this.config.ai_models.primary,
-      phaseDetection: this.config.ai_models.phaseDetection,
-      noteGeneration: this.config.ai_models.noteGeneration,
-      greeting: this.config.ai_models.greeting,
+      primary: AIService.CONFIG.ai_models.primary,
+      phaseDetection: AIService.CONFIG.ai_models.phaseDetection,
+      noteGeneration: AIService.CONFIG.ai_models.noteGeneration,
+      greeting: AIService.CONFIG.ai_models.greeting,
       costSavings: env === 'development' ? '~85% cheaper than production' : 'Production costs'
     });
   }
@@ -1358,7 +1358,7 @@ AVOID ROBOTIC ENDINGS: Don't end with "feel free to ask", "let me know if you ne
   private async isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): Promise<boolean> {
     try {
       const completion = await openai.chat.completions.create({
-        model: this.getModel('phaseDetection'),
+        model: AIService.CONFIG.ai_models.phaseDetection,
         messages: [
           {
             role: "system",
@@ -1681,7 +1681,7 @@ Return format: stakeholder_names|mention_type|confidence`
       const dynamicConfig = this.getDynamicConfig(context, mentionedStakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: this.getModel('primary'),
+        model: AIService.CONFIG.ai_models.primary,
         messages: [
           { role: "system", content: this.buildDynamicSystemPrompt(mentionedStakeholder, context, 'discussion') },
           { role: "user", content: mentionPrompt }
