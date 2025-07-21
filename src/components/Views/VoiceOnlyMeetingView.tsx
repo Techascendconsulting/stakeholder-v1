@@ -303,11 +303,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Dynamic audio handling based on user preferences and context - EXACT COPY from transcript meeting
       if (globalAudioEnabled) {
-        console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} starting audio playback`);
-        await playMessageAudio(responseMessage.id, response, stakeholder, true).catch((error) => {
-          console.error(`🚨 AUDIO ERROR: ${stakeholder.name} audio failed:`, error);
-        });
-        console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} finished audio playback`);
+        await playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn);
       }
       
       // Check for traditional baton passing (keep existing functionality)
