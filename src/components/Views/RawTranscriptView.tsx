@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, MessageSquare, Download, Share2, Calendar, Clock, Users, FileText, CheckCircle } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Download, Share2, Calendar, Clock, Users, FileText, CheckCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
-import { DatabaseMeeting } from '../../lib/database';
+import { useAuth } from '../../contexts/AuthContext';
+import { DatabaseMeeting, DatabaseService } from '../../lib/database';
 import { Message } from '../../types';
 import jsPDF from 'jspdf';
 
 export const RawTranscriptView: React.FC = () => {
   const { setCurrentView, selectedMeeting } = useApp();
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { user } = useAuth();
+  const [allMeetings, setAllMeetings] = useState<DatabaseMeeting[]>([]);
+  const [expandedMeetings, setExpandedMeetings] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -24,25 +28,42 @@ export const RawTranscriptView: React.FC = () => {
     setTimeout(scrollToTop, 50);
   }, []);
 
-  if (!selectedMeeting) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No meeting selected</h3>
-          <p className="text-gray-600 mb-6">Please select a meeting to view its transcript.</p>
-          <button
-            onClick={() => setCurrentView('my-meetings')}
-            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            Back to My Meetings
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Load all meetings
+  useEffect(() => {
+    loadAllMeetings();
+  }, [user?.id]);
 
-  const meeting = selectedMeeting as DatabaseMeeting;
+  const loadAllMeetings = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      const meetings = await DatabaseService.getUserMeetings(user.id);
+      const validMeetings = meetings.filter(meeting => 
+        meeting && meeting.id && meeting.project_name && meeting.created_at
+      );
+      setAllMeetings(validMeetings);
+      
+      // Auto-expand the selected meeting if it exists
+      if (selectedMeeting) {
+        setExpandedMeetings(new Set([selectedMeeting.id]));
+      }
+    } catch (error) {
+      console.error('Error loading meetings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMeeting = (meetingId: string) => {
+    const newExpanded = new Set(expandedMeetings);
+    if (newExpanded.has(meetingId)) {
+      newExpanded.delete(meetingId);
+    } else {
+      newExpanded.add(meetingId);
+    }
+    setExpandedMeetings(newExpanded);
+  };
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -70,8 +91,7 @@ export const RawTranscriptView: React.FC = () => {
     });
   };
 
-  const generatePDF = async () => {
-    setIsGeneratingPDF(true);
+  const generatePDF = async (meeting: DatabaseMeeting) => {
     try {
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -141,8 +161,6 @@ export const RawTranscriptView: React.FC = () => {
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
-    } finally {
-      setIsGeneratingPDF(false);
     }
   };
 
@@ -152,18 +170,18 @@ export const RawTranscriptView: React.FC = () => {
     const stakeholderName = message.stakeholderName || message.speaker;
     
     return (
-      <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>
+      <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
         <div className={`max-w-[80%] rounded-xl p-4 shadow-sm ${
           isUser 
-            ? 'bg-purple-600 text-white' 
+            ? 'bg-indigo-600 text-white' 
             : 'bg-white border border-gray-200'
         }`}>
           <div className="flex items-center justify-between mb-2">
-            <span className={`text-xs font-medium ${isUser ? 'text-purple-200' : 'text-gray-500'}`}>
+            <span className={`text-xs font-medium ${isUser ? 'text-indigo-200' : 'text-gray-500'}`}>
               {isUser ? 'Business Analyst' : stakeholderName?.charAt(0)?.toUpperCase() + (stakeholderName?.slice(1) || '')}
             </span>
             {message.timestamp && (
-              <span className={`text-xs ${isUser ? 'text-purple-200' : 'text-gray-400'}`}>
+              <span className={`text-xs ${isUser ? 'text-indigo-200' : 'text-gray-400'}`}>
                 {new Date(message.timestamp).toLocaleTimeString('en-US', {
                   hour: 'numeric',
                   minute: '2-digit',
@@ -180,8 +198,31 @@ export const RawTranscriptView: React.FC = () => {
     );
   };
 
+  // Group meetings by date
+  const groupedMeetings = allMeetings.reduce((groups, meeting) => {
+    const date = new Date(meeting.created_at).toDateString();
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(meeting);
+    return groups;
+  }, {} as Record<string, DatabaseMeeting[]>);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading meeting transcripts...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
@@ -194,131 +235,180 @@ export const RawTranscriptView: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center">
               <MessageSquare className="mr-3" size={32} />
-              Raw Transcript
+              Raw Transcripts
             </h1>
-            <p className="text-gray-600">Complete conversation record</p>
+            <p className="text-gray-600">Complete conversation records for all meetings</p>
           </div>
         </div>
         
         <div className="flex items-center space-x-3">
+          <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+            {allMeetings.length} meetings
+          </div>
           <button
-            onClick={generatePDF}
-            disabled={isGeneratingPDF}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
+            onClick={() => setCurrentView('meeting-summary')}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
           >
-            <Download size={16} />
-            <span>{isGeneratingPDF ? 'Generating...' : 'Download PDF'}</span>
-          </button>
-          <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
-            <Share2 size={16} />
-            <span>Share</span>
+            <FileText size={16} />
+            <span>View Summaries</span>
           </button>
         </div>
       </div>
 
-      {/* Meeting Info Banner */}
-      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-6 mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-indigo-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-indigo-900">{meeting.project_name}</h3>
-              <p className="text-indigo-700">{formatDate(meeting.created_at)} at {formatTime(meeting.created_at)}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-6 text-sm">
-            <div className="text-center">
-              <p className="text-indigo-600 font-semibold">Duration</p>
-              <p className="text-indigo-800 font-bold text-lg">{formatDuration(meeting.duration)}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-indigo-600 font-semibold">Messages</p>
-              <p className="text-indigo-800 font-bold text-lg">{meeting.transcript?.length || 0}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-indigo-600 font-semibold">Participants</p>
-              <p className="text-indigo-800 font-bold text-lg">{meeting.stakeholder_names?.length || 0}</p>
-            </div>
-          </div>
+      {allMeetings.length === 0 ? (
+        <div className="text-center py-16">
+          <MessageSquare className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+          <h3 className="text-xl font-medium text-gray-900 mb-3">No Meeting Transcripts</h3>
+          <p className="text-gray-600 text-lg mb-6">You haven't conducted any meetings yet.</p>
+          <button
+            onClick={() => setCurrentView('projects')}
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Start Your First Meeting
+          </button>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-6">
+          {Object.entries(groupedMeetings)
+            .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime())
+            .map(([dateString, meetings]) => (
+              <div key={dateString} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Date Header */}
+                <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200 px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <Calendar className="mr-2 text-indigo-600" size={20} />
+                      {formatDate(meetings[0].created_at)}
+                    </h3>
+                    <span className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full">
+                      {meetings.length} meeting{meetings.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
 
-      {/* Transcript Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <MessageSquare className="mr-3 text-indigo-600" size={24} />
-            Complete Conversation Transcript
-          </h2>
-          <div className="flex items-center space-x-4 text-sm">
-            <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-600">
-              {meeting.transcript?.length || 0} messages
-            </span>
-            <span className="bg-indigo-100 px-3 py-1 rounded-full text-indigo-600">
-              {formatDuration(meeting.duration)}
-            </span>
-          </div>
-        </div>
-      </div>
+                {/* Meetings List */}
+                <div className="divide-y divide-gray-100">
+                  {meetings
+                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                    .map((meeting) => (
+                      <div key={meeting.id} className="p-6">
+                        {/* Meeting Header - Non-clickable Info */}
+                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
+                              <span className="text-white font-bold text-lg">
+                                {meeting.project_name?.charAt(0) || 'M'}
+                              </span>
+                            </div>
+                            <div className="text-left">
+                              <h4 className="text-lg font-semibold text-gray-900">{meeting.project_name}</h4>
+                              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                <span className="flex items-center space-x-1">
+                                  <Clock size={14} />
+                                  <span>{formatTime(meeting.created_at)}</span>
+                                </span>
+                                <span className="flex items-center space-x-1">
+                                  <Clock size={14} />
+                                  <span>{formatDuration(meeting.duration)}</span>
+                                </span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  meeting.meeting_type === 'voice-only' 
+                                    ? 'bg-purple-100 text-purple-700'
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}>
+                                  {meeting.meeting_type === 'voice-only' ? 'Voice Only' : 'With Transcript'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            {meeting.transcript && meeting.transcript.length > 0 ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                {meeting.transcript.length} messages
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+                                No Transcript
+                              </span>
+                            )}
+                            <button
+                              onClick={() => toggleMeeting(meeting.id)}
+                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2 text-sm font-medium"
+                            >
+                              <MessageSquare size={14} />
+                              <span>{expandedMeetings.has(meeting.id) ? 'Hide Transcript' : 'See Transcript'}</span>
+                              {expandedMeetings.has(meeting.id) ? (
+                                <ChevronDown size={14} />
+                              ) : (
+                                <ChevronRight size={14} />
+                              )}
+                            </button>
+                          </div>
+                        </div>
 
-      {/* Transcript Content */}
-      <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-8">
-        {meeting.transcript && meeting.transcript.length > 0 ? (
-          <div className="space-y-4 max-h-[800px] overflow-y-auto">
-            {meeting.transcript.map((message, index) => (
-              <TranscriptMessage key={index} message={message} index={index} />
+                        {/* Expanded Content */}
+                        {expandedMeetings.has(meeting.id) && (
+                          <div className="mt-6 space-y-6">
+                            {/* Transcript Content */}
+                            <div className="bg-white border border-gray-200 rounded-lg p-6">
+                              <div className="flex items-center justify-between mb-4">
+                                <h5 className="text-lg font-semibold text-gray-900 flex items-center">
+                                  <MessageSquare className="mr-2 text-indigo-600" size={18} />
+                                  Complete Conversation Transcript
+                                </h5>
+                                <button
+                                  onClick={() => generatePDF(meeting)}
+                                  className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-1 text-sm"
+                                >
+                                  <Download size={14} />
+                                  <span>PDF</span>
+                                </button>
+                              </div>
+                              
+                              {meeting.transcript && meeting.transcript.length > 0 ? (
+                                <div className="bg-gray-50 rounded-lg p-4 max-h-[600px] overflow-y-auto">
+                                  <div className="space-y-3">
+                                    {meeting.transcript.map((message, index) => (
+                                      <TranscriptMessage key={index} message={message} index={index} />
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-center py-8">
+                                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                                  <p className="text-gray-600">No transcript available for this meeting.</p>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Meeting Statistics */}
+                            {meeting.transcript && meeting.transcript.length > 0 && (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                                  <div className="text-xl font-bold text-purple-600 mb-1">{meeting.user_messages || 0}</div>
+                                  <div className="text-xs text-gray-600">Your Messages</div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                                  <div className="text-xl font-bold text-indigo-600 mb-1">{meeting.ai_messages || 0}</div>
+                                  <div className="text-xs text-gray-600">Stakeholder Messages</div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                                  <div className="text-xl font-bold text-green-600 mb-1">
+                                    {meeting.transcript ? Math.round((meeting.user_messages || 0) / meeting.transcript.length * 100) : 0}%
+                                  </div>
+                                  <div className="text-xs text-gray-600">Your Participation</div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
             ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <MessageSquare className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-            <h3 className="text-xl font-medium text-gray-900 mb-3">No Transcript Available</h3>
-            <p className="text-gray-600 text-lg">The conversation transcript could not be recorded or is empty.</p>
-            <p className="text-gray-500 mt-2">This may occur if the meeting was not properly recorded or if there were technical issues.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Meeting Statistics */}
-      {meeting.transcript && meeting.transcript.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-            <div className="text-2xl font-bold text-purple-600 mb-2">{meeting.user_messages || 0}</div>
-            <div className="text-sm text-gray-600">Your Messages</div>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-            <div className="text-2xl font-bold text-indigo-600 mb-2">{meeting.ai_messages || 0}</div>
-            <div className="text-sm text-gray-600">Stakeholder Messages</div>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-            <div className="text-2xl font-bold text-green-600 mb-2">
-              {meeting.transcript ? Math.round((meeting.user_messages || 0) / meeting.transcript.length * 100) : 0}%
-            </div>
-            <div className="text-sm text-gray-600">Your Participation</div>
-          </div>
         </div>
       )}
-
-      {/* Navigation Actions */}
-      <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-        <button
-          onClick={() => setCurrentView('meeting-history')}
-          className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center space-x-2"
-        >
-          <ArrowLeft size={16} />
-          <span>Back to Meeting Details</span>
-        </button>
-        
-        <button
-          onClick={() => setCurrentView('meeting-summary')}
-          className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
-        >
-          <FileText size={16} />
-          <span>View Meeting Summary</span>
-        </button>
-      </div>
     </div>
   );
 };

@@ -273,56 +273,59 @@ export const MeetingSummaryView: React.FC = () => {
                     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                     .map((meeting) => (
                       <div key={meeting.id} className="p-6">
-                        {/* Meeting Header - Clickable */}
-                        <button
-                          onClick={() => toggleMeeting(meeting.id)}
-                          className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                              <span className="text-white font-bold text-lg">
-                                {meeting.project_name?.charAt(0) || 'M'}
-                              </span>
-                            </div>
-                            <div className="text-left">
-                              <h4 className="text-lg font-semibold text-gray-900">{meeting.project_name}</h4>
-                              <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                <span className="flex items-center space-x-1">
-                                  <Clock size={14} />
-                                  <span>{formatTime(meeting.created_at)}</span>
-                                </span>
-                                <span className="flex items-center space-x-1">
-                                  <Clock size={14} />
-                                  <span>{formatDuration(meeting.duration)}</span>
-                                </span>
-                                <span className="flex items-center space-x-1">
-                                  <Users size={14} />
-                                  <span>{meeting.stakeholder_names?.length || 0} participants</span>
-                                </span>
-                                <span className="flex items-center space-x-1">
-                                  <MessageSquare size={14} />
-                                  <span>{meeting.total_messages} messages</span>
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {meeting.meeting_summary ? (
-                              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                Summary Available
-                              </span>
-                            ) : (
-                              <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
-                                No Summary
-                              </span>
-                            )}
-                            {expandedMeetings.has(meeting.id) ? (
-                              <ChevronDown size={20} className="text-gray-400" />
-                            ) : (
-                              <ChevronRight size={20} className="text-gray-400" />
-                            )}
-                          </div>
-                        </button>
+                                                 {/* Meeting Header - Non-clickable Info */}
+                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                           <div className="flex items-center space-x-4">
+                             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                               <span className="text-white font-bold text-lg">
+                                 {meeting.project_name?.charAt(0) || 'M'}
+                               </span>
+                             </div>
+                             <div className="text-left">
+                               <h4 className="text-lg font-semibold text-gray-900">{meeting.project_name}</h4>
+                               <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                 <span className="flex items-center space-x-1">
+                                   <Clock size={14} />
+                                   <span>{formatTime(meeting.created_at)}</span>
+                                 </span>
+                                 <span className="flex items-center space-x-1">
+                                   <Clock size={14} />
+                                   <span>{formatDuration(meeting.duration)}</span>
+                                 </span>
+                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                   meeting.meeting_type === 'voice-only' 
+                                     ? 'bg-purple-100 text-purple-700'
+                                     : 'bg-blue-100 text-blue-700'
+                                 }`}>
+                                   {meeting.meeting_type === 'voice-only' ? 'Voice Only' : 'With Transcript'}
+                                 </span>
+                               </div>
+                             </div>
+                           </div>
+                           <div className="flex items-center space-x-3">
+                             {meeting.meeting_summary ? (
+                               <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                 Summary Available
+                               </span>
+                             ) : (
+                               <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+                                 No Summary
+                               </span>
+                             )}
+                             <button
+                               onClick={() => toggleMeeting(meeting.id)}
+                               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 text-sm font-medium"
+                             >
+                               <FileText size={14} />
+                               <span>{expandedMeetings.has(meeting.id) ? 'Hide Summary' : 'See Summary'}</span>
+                               {expandedMeetings.has(meeting.id) ? (
+                                 <ChevronDown size={14} />
+                               ) : (
+                                 <ChevronRight size={14} />
+                               )}
+                             </button>
+                           </div>
+                         </div>
 
                         {/* Expanded Content */}
                         {expandedMeetings.has(meeting.id) && (
