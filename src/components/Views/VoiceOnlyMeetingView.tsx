@@ -5,7 +5,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
-import VoiceInputModal from '../VoiceInputModal';
+import { transcribeAudio } from '../../lib/whisper';
 
 interface ParticipantCardProps {
   participant: any;
@@ -148,8 +148,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [audioStates, setAudioStates] = useState<{[key: string]: 'playing' | 'paused' | 'stopped'}>({});
-  const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState<any>(null);
   
   // Dynamic UX state management
@@ -612,6 +612,96 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setIsTranscribing(transcribing);
   };
 
+  // Direct voice recording functions
+  const startDirectRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        await transcribeAndSend(audioBlob);
+        
+        // Clean up
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setIsTranscribing(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      setIsRecording(false);
+      setIsTranscribing(false);
+    }
+  };
+
+  const stopDirectRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const transcribeAndSend = async (audioBlob: Blob) => {
+    try {
+      setIsTranscribing(true);
+      const transcription = await transcribeAudio(audioBlob);
+      
+      if (transcription && transcription.trim()) {
+        // Automatically send the transcription
+        setInputMessage(transcription);
+        // Trigger the send message with the transcribed text
+        await handleSendMessageWithText(transcription);
+      }
+    } catch (error) {
+      console.error('Error transcribing audio:', error);
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  const handleSendMessageWithText = async (messageText: string) => {
+    if (!messageText.trim()) return;
+    
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      speaker: 'user',
+      content: messageText,
+      timestamp: new Date().toISOString(),
+      stakeholderName: 'You',
+      stakeholderRole: 'Meeting Host'
+    };
+
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInputMessage(''); // Clear the input
+
+    // Process stakeholder responses (existing logic)
+    await processDynamicStakeholderResponses(messageText, updatedMessages);
+  };
+
+  const handleMicClick = () => {
+    if (isRecording) {
+      stopDirectRecording();
+    } else {
+      startDirectRecording();
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -629,6 +719,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   
   const inputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Timer effect
   useEffect(() => {
@@ -1152,16 +1245,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         {/* Control Bar */}
         <div className="bg-gray-900 px-6 py-4">
           <div className="flex items-center justify-center space-x-4">
-            {/* Mute Button */}
+            {/* Mic Button */}
             <button
-              onClick={() => setShowVoiceModal(true)}
+              onClick={handleMicClick}
               className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                isTranscribing 
-                  ? 'bg-red-600 hover:bg-red-700' 
+                isRecording 
+                  ? 'bg-red-600 hover:bg-red-700 animate-pulse' 
+                  : isTranscribing
+                  ? 'bg-yellow-500 hover:bg-yellow-600'
                   : 'bg-gray-700 hover:bg-gray-600'
               }`}
+              title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
             >
-              {isTranscribing ? <MicOff className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
+              {isRecording ? <Square className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
             </button>
 
             {/* Stop Button (replacing video button) */}
@@ -1189,15 +1285,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Voice Input Modal */}
-      <VoiceInputModal
-        isOpen={showVoiceModal}
-        onClose={() => setShowVoiceModal(false)}
-        onSave={handleVoiceInput}
-        onTranscribingChange={handleTranscribingChange}
-        darkMode={true}
-        compact={true}
-      />
+
     </div>
   );
 };
