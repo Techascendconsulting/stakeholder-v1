@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Clock, Users, MessageSquare, TrendingUp, FileText, Eye, Download, Share2, Tag, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Users, MessageSquare, TrendingUp, FileText, Eye, Download, Share2, Tag, Lightbulb, CheckCircle, Award, BarChart3, Target } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { DatabaseMeeting } from '../../lib/database';
 import { Message } from '../../types';
@@ -154,6 +154,35 @@ export const MeetingHistoryView: React.FC = () => {
         </div>
       </div>
 
+      {/* Meeting Success Banner */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-green-900">Meeting Completed Successfully</h3>
+              <p className="text-green-700">All data has been captured and analyzed • Summary and transcript available</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-6 text-sm">
+            <div className="text-center">
+              <p className="text-green-600 font-semibold">Duration</p>
+              <p className="text-green-800 font-bold text-lg">{formatDuration(meeting.duration)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-green-600 font-semibold">Messages</p>
+              <p className="text-green-800 font-bold text-lg">{meeting.total_messages}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-green-600 font-semibold">Insights</p>
+              <p className="text-green-800 font-bold text-lg">{meeting.key_insights?.length || 0}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Meeting Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -208,6 +237,75 @@ export const MeetingHistoryView: React.FC = () => {
               <p className="text-sm text-gray-600">participants</p>
             </div>
             <Users className="h-8 w-8 text-orange-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Topics Discussed</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {meeting.topics_discussed?.length || 0}
+              </p>
+              <p className="text-sm text-gray-600">key topics identified</p>
+            </div>
+            <Tag className="h-8 w-8 text-blue-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Key Insights</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {meeting.key_insights?.length || 0}
+              </p>
+              <p className="text-sm text-gray-600">insights captured</p>
+            </div>
+            <Lightbulb className="h-8 w-8 text-yellow-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Meeting Type</p>
+              <p className="text-lg font-semibold text-gray-900 capitalize">
+                {meeting.meeting_type.replace('-', ' ')}
+              </p>
+              <p className="text-sm text-gray-600">interaction mode</p>
+            </div>
+            <Award className="h-8 w-8 text-indigo-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-indigo-900 mb-2">Meeting Actions</h3>
+            <p className="text-indigo-700">Export, share, or review your meeting data</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button className="px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
+              <Download size={16} />
+              <span>Export Summary</span>
+            </button>
+            <button className="px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
+              <Share2 size={16} />
+              <span>Share</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('my-meetings')}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Meetings</span>
+            </button>
           </div>
         </div>
       </div>

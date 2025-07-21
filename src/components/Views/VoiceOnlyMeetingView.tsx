@@ -171,7 +171,7 @@ const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({
 };
 
 export const VoiceOnlyMeetingView: React.FC = () => {
-  const { selectedProject, selectedStakeholders, setCurrentView, user } = useApp();
+  const { selectedProject, selectedStakeholders, setCurrentView, user, setSelectedMeeting } = useApp();
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
   
   // State management (same as before)
@@ -898,14 +898,21 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     // Wait for the meeting to be saved before navigating away
     console.log('🔚 Waiting for meeting save to complete...');
-    await saveMeetingToDatabase();
-    console.log('🔚 Meeting save completed, navigating to stakeholders view');
+    const savedMeetingData = await saveMeetingToDatabase();
+    console.log('🔚 Meeting save completed, navigating to meeting summary');
     
-    setCurrentView('stakeholders');
+    if (savedMeetingData) {
+      // Set the saved meeting data for the summary view
+      setSelectedMeeting(savedMeetingData);
+      setCurrentView('meeting-history');
+    } else {
+      // Fallback to stakeholders view if save failed
+      setCurrentView('stakeholders');
+    }
   };
 
   // Save meeting to database with complete transcript and metadata
-  const saveMeetingToDatabase = async () => {
+  const saveMeetingToDatabase = async (): Promise<any | null> => {
     console.log('💾 SAVE MEETING - Starting save process');
     console.log('💾 Save validation:', {
       meetingId,
@@ -916,7 +923,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     if (!meetingId || !user?.id) {
       console.warn('❌ Cannot save meeting: missing meetingId or user', { meetingId, userId: user?.id });
-      return;
+      return null;
     }
 
     if (backgroundTranscript.length === 0) {
@@ -979,24 +986,54 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         } catch (verifyError) {
           console.error('❌ VERIFICATION - Error fetching meeting:', verifyError);
         }
+
+        // Return the saved meeting data for the summary view
+        const savedMeetingData = {
+          id: meetingId,
+          user_id: user.id,
+          project_id: selectedProject?.id || 'unknown',
+          project_name: selectedProject?.name || 'Unknown Project',
+          stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
+          stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
+          stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
+          transcript: backgroundTranscript,
+          raw_chat: messages,
+          meeting_notes: '',
+          meeting_summary: meetingSummary,
+          status: 'completed' as const,
+          meeting_type: 'voice-only' as const,
+          duration,
+          total_messages: backgroundTranscript.length,
+          user_messages: backgroundTranscript.filter(m => m.speaker === 'user').length,
+          ai_messages: backgroundTranscript.filter(m => m.speaker !== 'user').length,
+          topics_discussed: topicsDiscussed,
+          key_insights: keyInsights,
+          effectiveness_score: undefined,
+          created_at: new Date().toISOString(),
+          completed_at: new Date().toISOString()
+        };
+
+        // Also save to localStorage as backup
+        const meetingBackup = {
+          id: meetingId,
+          project: selectedProject?.name,
+          stakeholders: selectedStakeholders?.map(s => s.name),
+          transcript: backgroundTranscript,
+          summary: meetingSummary,
+          duration,
+          date: new Date().toISOString()
+        };
+        localStorage.setItem(`meeting-${meetingId}`, JSON.stringify(meetingBackup));
+
+        return savedMeetingData;
       } else {
         console.error('❌ Failed to save meeting to database');
+        return null;
       }
-
-      // Also save to localStorage as backup
-      const meetingData = {
-        id: meetingId,
-        project: selectedProject?.name,
-        stakeholders: selectedStakeholders?.map(s => s.name),
-        transcript: backgroundTranscript,
-        summary: meetingSummary,
-        duration,
-        date: new Date().toISOString()
-      };
-      localStorage.setItem(`meeting-${meetingId}`, JSON.stringify(meetingData));
       
     } catch (error) {
       console.error('Error saving meeting:', error);
+      return null;
     }
   };
 

@@ -30,6 +30,21 @@ const Dashboard: React.FC = () => {
     loadDashboardData();
   }, [user?.id]);
 
+  // Refresh data when coming back to dashboard (e.g., after completing a meeting)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user?.id) {
+        console.log('🔄 Dashboard - Page became visible, refreshing data');
+        loadDashboardData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user?.id]);
+
   const loadDashboardData = async () => {
     if (!user?.id) return;
 
