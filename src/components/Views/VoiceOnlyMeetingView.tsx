@@ -907,39 +907,84 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setSelectedMeeting(savedMeetingData);
       setCurrentView('meeting-history');
     } else {
-      console.error('❌ Save failed - creating temporary meeting for display');
+      console.error('❌ Save failed - creating temporary meeting with AI summary');
       
-      // Create a temporary meeting object so user can still see their data
-      const tempMeeting = {
-        id: meetingId || `temp-${Date.now()}`,
-        user_id: user?.id || 'unknown',
-        project_id: selectedProject?.id || 'unknown',
-        project_name: selectedProject?.name || 'Unknown Project',
-        stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
-        stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
-        stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
-        transcript: backgroundTranscript,
-        raw_chat: messages,
-        meeting_notes: '',
-        meeting_summary: backgroundTranscript.length > 0 
-          ? 'Meeting summary could not be generated due to save failure. However, your conversation has been captured.'
-          : 'No conversation was recorded during this meeting.',
-        status: 'completed' as const,
-        meeting_type: 'voice-only' as const,
-        duration: Math.floor((Date.now() - meetingStartTime) / 1000),
-        total_messages: backgroundTranscript.length,
-        user_messages: backgroundTranscript.filter(m => m.speaker === 'user').length,
-        ai_messages: backgroundTranscript.filter(m => m.speaker !== 'user').length,
-        topics_discussed: ['Save failed - topics not extracted'],
-        key_insights: ['Meeting data could not be saved to database'],
-        effectiveness_score: undefined,
-        created_at: new Date().toISOString(),
-        completed_at: new Date().toISOString()
-      };
-      
-      console.log('⚠️ Using temporary meeting object:', tempMeeting);
-      setSelectedMeeting(tempMeeting);
-      setCurrentView('meeting-history');
+      try {
+        // Generate AI summary even for failed saves
+        const duration = Math.floor((Date.now() - meetingStartTime) / 1000);
+        
+        console.log('⚠️ Generating summary for temporary meeting...');
+        const meetingSummary = await generateMeetingSummary(backgroundTranscript);
+        const topicsDiscussed = extractTopicsFromTranscript(backgroundTranscript);
+        const keyInsights = extractKeyInsights(backgroundTranscript);
+        
+        // Create a temporary meeting object with full AI analysis
+        const tempMeeting = {
+          id: meetingId || `temp-${Date.now()}`,
+          user_id: user?.id || 'unknown',
+          project_id: selectedProject?.id || 'unknown',
+          project_name: selectedProject?.name || 'Unknown Project',
+          stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
+          stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
+          stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
+          transcript: backgroundTranscript,
+          raw_chat: messages,
+          meeting_notes: '',
+          meeting_summary: meetingSummary + '\n\n⚠️ Note: This meeting could not be saved to the database, but all data has been captured temporarily.',
+          status: 'completed' as const,
+          meeting_type: 'voice-only' as const,
+          duration,
+          total_messages: backgroundTranscript.length,
+          user_messages: backgroundTranscript.filter(m => m.speaker === 'user').length,
+          ai_messages: backgroundTranscript.filter(m => m.speaker !== 'user').length,
+          topics_discussed: topicsDiscussed.length > 0 ? topicsDiscussed : ['No topics extracted'],
+          key_insights: keyInsights.length > 0 ? keyInsights : ['No insights extracted'],
+          effectiveness_score: undefined,
+          created_at: new Date().toISOString(),
+          completed_at: new Date().toISOString()
+        };
+        
+        // Save to localStorage so it persists when navigating
+        const tempMeetingKey = `temp-meeting-${tempMeeting.id}`;
+        localStorage.setItem(tempMeetingKey, JSON.stringify(tempMeeting));
+        console.log('⚠️ Temporary meeting saved to localStorage:', tempMeetingKey);
+        
+        console.log('⚠️ Using temporary meeting object with AI summary:', tempMeeting);
+        setSelectedMeeting(tempMeeting);
+        setCurrentView('meeting-history');
+        
+      } catch (error) {
+        console.error('❌ Error creating temporary meeting:', error);
+        
+        // Fallback if even temporary meeting creation fails
+        const basicTempMeeting = {
+          id: meetingId || `temp-${Date.now()}`,
+          user_id: user?.id || 'unknown',
+          project_id: selectedProject?.id || 'unknown',
+          project_name: selectedProject?.name || 'Unknown Project',
+          stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
+          stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
+          stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
+          transcript: backgroundTranscript,
+          raw_chat: messages,
+          meeting_notes: '',
+          meeting_summary: 'Meeting summary could not be generated due to technical issues. However, your conversation transcript is available below.',
+          status: 'completed' as const,
+          meeting_type: 'voice-only' as const,
+          duration: Math.floor((Date.now() - meetingStartTime) / 1000),
+          total_messages: backgroundTranscript.length,
+          user_messages: backgroundTranscript.filter(m => m.speaker === 'user').length,
+          ai_messages: backgroundTranscript.filter(m => m.speaker !== 'user').length,
+          topics_discussed: ['Summary generation failed'],
+          key_insights: ['Please check console for technical details'],
+          effectiveness_score: undefined,
+          created_at: new Date().toISOString(),
+          completed_at: new Date().toISOString()
+        };
+        
+        setSelectedMeeting(basicTempMeeting);
+        setCurrentView('meeting-history');
+      }
     }
   };
 

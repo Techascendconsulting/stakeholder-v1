@@ -66,6 +66,11 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
           }`}>
             {meeting.status === 'completed' ? 'Completed' : 'In Progress'}
           </span>
+          {(meeting as any)._isTemporary && (
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+              Temporary
+            </span>
+          )}
         </div>
       </div>
 
@@ -183,8 +188,37 @@ export const MyMeetingsView: React.FC = () => {
                meeting.status &&
                typeof meeting.meeting_type === 'string';
       });
+
+      // Also load temporary meetings from localStorage
+      const tempMeetings: DatabaseMeeting[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('temp-meeting-')) {
+          try {
+            const tempMeetingData = JSON.parse(localStorage.getItem(key) || '{}');
+            if (tempMeetingData.user_id === user.id) {
+              // Add a flag to indicate this is a temporary meeting
+              tempMeetingData._isTemporary = true;
+              tempMeetings.push(tempMeetingData);
+            }
+          } catch (error) {
+            console.warn('Error parsing temporary meeting:', key, error);
+          }
+        }
+      }
+
+      // Combine real and temporary meetings, sort by date
+      const allMeetings = [...validMeetings, ...tempMeetings].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
       
-      setMeetings(validMeetings);
+      console.log('📋 Loaded meetings:', {
+        database: validMeetings.length,
+        temporary: tempMeetings.length,
+        total: allMeetings.length
+      });
+      
+      setMeetings(allMeetings);
     } catch (error) {
       console.error('Error loading meetings:', error);
       setMeetings([]); // Set empty array on error
