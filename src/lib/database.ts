@@ -171,45 +171,68 @@ export class DatabaseService {
   }
 
   // Meeting Management
-  static async createMeeting(
-    userId: string, 
-    projectId: string, 
+    static async createMeeting(
+    userId: string,
+    projectId: string,
     projectName: string,
-    stakeholderIds: string[], 
+    stakeholderIds: string[],
     stakeholderNames: string[],
     stakeholderRoles: string[],
     meetingType: 'individual' | 'group' | 'voice-only'
   ): Promise<string | null> {
     try {
+      console.log('🗃️ DATABASE - createMeeting called with:', {
+        userId,
+        projectId,
+        projectName,
+        stakeholderIds,
+        stakeholderNames,
+        stakeholderRoles,
+        meetingType
+      });
+
+      const meetingData = {
+        user_id: userId,
+        project_id: projectId,
+        project_name: projectName,
+        stakeholder_ids: stakeholderIds,
+        stakeholder_names: stakeholderNames,
+        stakeholder_roles: stakeholderRoles,
+        transcript: [],
+        raw_chat: [],
+        meeting_notes: '',
+        meeting_summary: '',
+        status: 'in_progress',
+        meeting_type: meetingType,
+        duration: 0,
+        total_messages: 0,
+        user_messages: 0,
+        ai_messages: 0,
+        topics_discussed: [],
+        key_insights: []
+      };
+
+      console.log('🗃️ DATABASE - Inserting meeting data:', meetingData);
+
       const { data, error } = await supabase
         .from('user_meetings')
-        .insert({
-          user_id: userId,
-          project_id: projectId,
-          project_name: projectName,
-          stakeholder_ids: stakeholderIds,
-          stakeholder_names: stakeholderNames,
-          stakeholder_roles: stakeholderRoles,
-          transcript: [],
-          raw_chat: [],
-          meeting_notes: '',
-          meeting_summary: '',
-          status: 'in_progress',
-          meeting_type: meetingType,
-          duration: 0,
-          total_messages: 0,
-          user_messages: 0,
-          ai_messages: 0,
-          topics_discussed: [],
-          key_insights: []
-        })
+        .insert(meetingData)
         .select()
         .single()
 
+      console.log('🗃️ DATABASE - Insert result:', { data, error });
+
       if (error) throw error
-      return data?.id || null
+      
+      if (!data) {
+        console.warn('🗃️ DATABASE - No data returned from insert');
+        return null;
+      }
+
+      console.log('🗃️ DATABASE - Meeting created successfully with ID:', data.id);
+      return data.id || null
     } catch (error) {
-      console.error('Error creating meeting:', error)
+      console.error('🗃️ DATABASE - Error creating meeting:', error)
       return null
     }
   }
@@ -225,31 +248,57 @@ export class DatabaseService {
     keyInsights: string[]
   ): Promise<boolean> {
     try {
+      console.log('🗃️ DATABASE - saveMeetingData called with:', {
+        meetingId,
+        transcriptLength: transcript.length,
+        rawChatLength: rawChat.length,
+        meetingSummaryLength: meetingSummary.length,
+        duration,
+        topicsCount: topicsDiscussed.length,
+        keyInsightsCount: keyInsights.length
+      });
+
       const userMessages = transcript.filter(m => m.speaker === 'user').length
       const aiMessages = transcript.filter(m => m.speaker !== 'user').length
 
-      const { error } = await supabase
+      console.log('🗃️ DATABASE - Message counts:', { userMessages, aiMessages, total: transcript.length });
+
+      const updateData = {
+        transcript: transcript,
+        raw_chat: rawChat,
+        meeting_notes: meetingNotes,
+        meeting_summary: meetingSummary,
+        status: 'completed',
+        duration: duration,
+        total_messages: transcript.length,
+        user_messages: userMessages,
+        ai_messages: aiMessages,
+        topics_discussed: topicsDiscussed,
+        key_insights: keyInsights,
+        completed_at: new Date().toISOString()
+      };
+
+      console.log('🗃️ DATABASE - Updating meeting with data:', updateData);
+
+      const { error, data } = await supabase
         .from('user_meetings')
-        .update({
-          transcript: transcript,
-          raw_chat: rawChat,
-          meeting_notes: meetingNotes,
-          meeting_summary: meetingSummary,
-          status: 'completed',
-          duration: duration,
-          total_messages: transcript.length,
-          user_messages: userMessages,
-          ai_messages: aiMessages,
-          topics_discussed: topicsDiscussed,
-          key_insights: keyInsights,
-          completed_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', meetingId)
+        .select()
+
+      console.log('🗃️ DATABASE - Update result:', { error, data });
 
       if (error) throw error
+      
+      if (!data || data.length === 0) {
+        console.warn('🗃️ DATABASE - No rows updated. Meeting may not exist:', meetingId);
+        return false;
+      }
+
+      console.log('🗃️ DATABASE - Meeting successfully updated:', data[0]);
       return true
     } catch (error) {
-      console.error('Error saving meeting data:', error)
+      console.error('🗃️ DATABASE - Error saving meeting data:', error)
       return false
     }
   }

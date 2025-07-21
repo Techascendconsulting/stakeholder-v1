@@ -218,7 +218,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   // Background transcript capture function (always captures, regardless of UI)
   const addToBackgroundTranscript = (message: Message) => {
-    setBackgroundTranscript(prev => [...prev, message]);
+    console.log('📝 BACKGROUND TRANSCRIPT - Adding message:', {
+      speaker: message.speaker,
+      stakeholderName: message.stakeholderName,
+      contentLength: message.content.length,
+      timestamp: message.timestamp
+    });
+    
+    setBackgroundTranscript(prev => {
+      const newTranscript = [...prev, message];
+      console.log('📝 BACKGROUND TRANSCRIPT - New length:', newTranscript.length);
+      return newTranscript;
+    });
     
     // Also add to visible transcript if enabled
     if (transcriptionEnabled) {
@@ -229,11 +240,27 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Initialize meeting in database
   useEffect(() => {
     const initializeMeeting = async () => {
+      console.log('🎯 INIT MEETING - Checking conditions:', {
+        hasSelectedProject: !!selectedProject,
+        stakeholdersCount: selectedStakeholders.length,
+        hasUserId: !!user?.id,
+        hasExistingMeetingId: !!meetingId
+      });
+      
       if (selectedProject && selectedStakeholders.length > 0 && user?.id && !meetingId) {
         try {
           const stakeholderIds = selectedStakeholders.map(s => s.id);
           const stakeholderNames = selectedStakeholders.map(s => s.name);
           const stakeholderRoles = selectedStakeholders.map(s => s.role);
+          
+          console.log('🎯 INIT MEETING - Creating meeting with:', {
+            userId: user.id,
+            projectId: selectedProject.id,
+            projectName: selectedProject.name,
+            stakeholderIds,
+            stakeholderNames,
+            stakeholderRoles
+          });
           
           const newMeetingId = await DatabaseService.createMeeting(
             user.id,
@@ -245,13 +272,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             'voice-only'
           );
           
+          console.log('🎯 INIT MEETING - DatabaseService.createMeeting result:', newMeetingId);
+          
           if (newMeetingId) {
             setMeetingId(newMeetingId);
+            setMeetingStartTime(Date.now());
             console.log('🎯 Meeting initialized in database:', newMeetingId);
+          } else {
+            console.error('🎯 INIT MEETING - Failed to create meeting, no ID returned');
           }
         } catch (error) {
-          console.error('Error initializing meeting:', error);
+          console.error('🎯 INIT MEETING - Error initializing meeting:', error);
         }
+      } else {
+        console.log('🎯 INIT MEETING - Conditions not met, skipping initialization');
       }
     };
 
@@ -850,6 +884,16 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   const handleEndMeeting = () => {
+    console.log('🔚 END MEETING - Starting end meeting process');
+    console.log('🔚 Meeting data before save:', {
+      meetingId,
+      userId: user?.id,
+      backgroundTranscriptLength: backgroundTranscript.length,
+      messagesLength: messages.length,
+      selectedProject: selectedProject?.name,
+      selectedStakeholders: selectedStakeholders?.length
+    });
+    
     stopAllAudio();
     saveMeetingToDatabase();
     setCurrentView('stakeholders');
@@ -857,22 +901,41 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   // Save meeting to database with complete transcript and metadata
   const saveMeetingToDatabase = async () => {
+    console.log('💾 SAVE MEETING - Starting save process');
+    console.log('💾 Save validation:', {
+      meetingId,
+      userId: user?.id,
+      backgroundTranscriptLength: backgroundTranscript.length,
+      backgroundTranscriptSample: backgroundTranscript.slice(0, 2)
+    });
+    
     if (!meetingId || !user?.id) {
-      console.warn('Cannot save meeting: missing meetingId or user');
+      console.warn('❌ Cannot save meeting: missing meetingId or user', { meetingId, userId: user?.id });
       return;
+    }
+
+    if (backgroundTranscript.length === 0) {
+      console.warn('⚠️ Warning: No background transcript captured during meeting');
     }
 
     try {
       const duration = Math.floor((Date.now() - meetingStartTime) / 1000); // in seconds
+      console.log('💾 Meeting duration calculated:', duration, 'seconds');
       
       // Generate meeting summary from background transcript
+      console.log('💾 Generating meeting summary...');
       const meetingSummary = await generateMeetingSummary(backgroundTranscript);
+      console.log('💾 Meeting summary generated:', meetingSummary.substring(0, 100) + '...');
       
       // Extract topics and insights
+      console.log('💾 Extracting topics and insights...');
       const topicsDiscussed = extractTopicsFromTranscript(backgroundTranscript);
       const keyInsights = extractKeyInsights(backgroundTranscript);
+      console.log('💾 Topics:', topicsDiscussed);
+      console.log('💾 Key insights:', keyInsights.length, 'insights extracted');
       
       // Save to database
+      console.log('💾 Calling DatabaseService.saveMeetingData...');
       const success = await DatabaseService.saveMeetingData(
         meetingId,
         backgroundTranscript, // Complete transcript (always captured)
@@ -884,8 +947,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         keyInsights
       );
 
+      console.log('💾 DatabaseService.saveMeetingData result:', success);
+
       if (success) {
         // Update user progress
+        console.log('💾 Incrementing meeting count...');
         await DatabaseService.incrementMeetingCount(user.id, 'voice-only');
         console.log('✅ Meeting saved to database successfully');
       } else {
@@ -1427,6 +1493,34 @@ Keep it professional and under 300 words.`;
               title="Stop current speaker"
             >
               <Square className="w-4 h-4 text-white" />
+            </button>
+
+            {/* Debug Button - Remove after testing */}
+            <button
+              onClick={() => {
+                console.log('🔍 DEBUG INFO:', {
+                  meetingId,
+                  userId: user?.id,
+                  userEmail: user?.email,
+                  backgroundTranscriptLength: backgroundTranscript.length,
+                  messagesLength: messages.length,
+                  selectedProject: selectedProject?.name,
+                  selectedStakeholdersCount: selectedStakeholders?.length,
+                  meetingStartTime,
+                  elapsedTime: Math.floor((Date.now() - meetingStartTime) / 1000)
+                });
+                
+                // Test database connection
+                DatabaseService.getUserProgress(user?.id || '').then(progress => {
+                  console.log('🔍 DATABASE TEST - User progress:', progress);
+                }).catch(error => {
+                  console.error('🔍 DATABASE TEST - Error:', error);
+                });
+              }}
+              className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center transition-colors"
+              title="Debug info"
+            >
+              <span className="text-white text-xs">?</span>
             </button>
 
             {/* End Call */}
