@@ -883,7 +883,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  const handleEndMeeting = () => {
+  const handleEndMeeting = async () => {
     console.log('🔚 END MEETING - Starting end meeting process');
     console.log('🔚 Meeting data before save:', {
       meetingId,
@@ -895,7 +895,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     });
     
     stopAllAudio();
-    saveMeetingToDatabase();
+    
+    // Wait for the meeting to be saved before navigating away
+    console.log('🔚 Waiting for meeting save to complete...');
+    await saveMeetingToDatabase();
+    console.log('🔚 Meeting save completed, navigating to stakeholders view');
+    
     setCurrentView('stakeholders');
   };
 
@@ -954,6 +959,26 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log('💾 Incrementing meeting count...');
         await DatabaseService.incrementMeetingCount(user.id, 'voice-only');
         console.log('✅ Meeting saved to database successfully');
+        
+        // Verify the meeting was actually saved by fetching it back
+        console.log('🔍 VERIFICATION - Fetching saved meeting...');
+        try {
+          const allMeetings = await DatabaseService.getUserMeetings(user.id);
+          const savedMeeting = allMeetings.find(m => m.id === meetingId);
+          if (savedMeeting) {
+            console.log('✅ VERIFICATION - Meeting found in database:', {
+              id: savedMeeting.id,
+              status: savedMeeting.status,
+              transcriptLength: savedMeeting.transcript?.length || 0,
+              summaryLength: savedMeeting.meeting_summary?.length || 0,
+              projectName: savedMeeting.project_name
+            });
+          } else {
+            console.error('❌ VERIFICATION - Meeting not found in database after save!');
+          }
+        } catch (verifyError) {
+          console.error('❌ VERIFICATION - Error fetching meeting:', verifyError);
+        }
       } else {
         console.error('❌ Failed to save meeting to database');
       }

@@ -232,10 +232,24 @@ export const MyMeetingsView: React.FC = () => {
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Meetings</h1>
-        <p className="text-gray-600">
-          Review your stakeholder interviews, summaries, and key insights
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Meetings</h1>
+            <p className="text-gray-600">
+              Review your stakeholder interviews, summaries, and key insights
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              console.log('🔄 Manual refresh requested');
+              loadMeetings();
+            }}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+          >
+            <TrendingUp size={16} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}

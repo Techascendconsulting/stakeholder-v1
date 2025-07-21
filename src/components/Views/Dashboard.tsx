@@ -208,69 +208,100 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* TEST BUTTON - Remove after debugging */}
-        <div className="mb-8">
-          <button
-            onClick={async () => {
-              console.log('🧪 TEST BUTTON - Starting database test');
-              console.log('🧪 User:', user);
-              
-              if (!user?.id) {
-                console.error('🧪 TEST BUTTON - No user ID');
-                return;
-              }
+                 {/* TEST BUTTON - Remove after debugging */}
+         <div className="mb-8 flex gap-4">
+           <button
+             onClick={async () => {
+               console.log('🧪 TEST BUTTON - Starting database test');
+               console.log('🧪 User:', user);
+               
+               if (!user?.id) {
+                 console.error('🧪 TEST BUTTON - No user ID');
+                 return;
+               }
 
-              try {
-                // Test 1: Check user progress
-                const progress = await DatabaseService.getUserProgress(user.id);
-                console.log('🧪 TEST 1 - User progress:', progress);
+               try {
+                 // Test 1: Check user progress
+                 const progress = await DatabaseService.getUserProgress(user.id);
+                 console.log('🧪 TEST 1 - User progress:', progress);
 
-                // Test 2: Create a test meeting
-                const testMeetingId = await DatabaseService.createMeeting(
-                  user.id,
-                  'test-project-id',
-                  'Test Project',
-                  ['test-stakeholder-1'],
-                  ['Test Stakeholder'],
-                  ['Business Analyst'],
-                  'voice-only'
-                );
-                console.log('🧪 TEST 2 - Created test meeting:', testMeetingId);
+                 // Test 2: Create a test meeting
+                 const testMeetingId = await DatabaseService.createMeeting(
+                   user.id,
+                   'test-project-id',
+                   'Test Project',
+                   ['test-stakeholder-1'],
+                   ['Test Stakeholder'],
+                   ['Business Analyst'],
+                   'voice-only'
+                 );
+                 console.log('🧪 TEST 2 - Created test meeting:', testMeetingId);
 
-                if (testMeetingId) {
-                  // Test 3: Save meeting data
-                  const testTranscript = [
-                    { id: '1', speaker: 'user', content: 'Hello', timestamp: new Date().toISOString() },
-                    { id: '2', speaker: 'stakeholder', stakeholderName: 'Test Stakeholder', content: 'Hello back', timestamp: new Date().toISOString() }
-                  ];
+                 if (testMeetingId) {
+                   // Test 3: Save meeting data
+                   const testTranscript = [
+                     { id: '1', speaker: 'user', content: 'Hello from test', timestamp: new Date().toISOString() },
+                     { id: '2', speaker: 'stakeholder', stakeholderName: 'Test Stakeholder', content: 'Hello back from test stakeholder', timestamp: new Date().toISOString() }
+                   ];
 
-                  const saveResult = await DatabaseService.saveMeetingData(
-                    testMeetingId,
-                    testTranscript,
-                    testTranscript,
-                    '',
-                    'Test meeting summary',
-                    120,
-                    ['testing'],
-                    ['This is a test insight']
-                  );
-                  console.log('🧪 TEST 3 - Save meeting result:', saveResult);
+                   const saveResult = await DatabaseService.saveMeetingData(
+                     testMeetingId,
+                     testTranscript,
+                     testTranscript,
+                     '',
+                     'This is a test meeting summary generated from the dashboard test button.',
+                     120,
+                     ['testing', 'database', 'functionality'],
+                     ['This is a test insight', 'Database connectivity confirmed']
+                   );
+                   console.log('🧪 TEST 3 - Save meeting result:', saveResult);
 
-                  // Test 4: Fetch meetings
-                  const meetings = await DatabaseService.getUserMeetings(user.id);
-                  console.log('🧪 TEST 4 - User meetings:', meetings);
-                } else {
-                  console.error('🧪 TEST FAILED - Could not create meeting');
-                }
-              } catch (error) {
-                console.error('🧪 TEST ERROR:', error);
-              }
-            }}
-            className="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-          >
-            🧪 Test Database Functions
-          </button>
-        </div>
+                   // Test 4: Fetch meetings
+                   const meetings = await DatabaseService.getUserMeetings(user.id);
+                   console.log('🧪 TEST 4 - User meetings:', meetings.length, 'meetings found');
+                   console.log('🧪 TEST 4 - Latest meeting:', meetings[0]);
+                 } else {
+                   console.error('🧪 TEST FAILED - Could not create meeting');
+                 }
+               } catch (error) {
+                 console.error('🧪 TEST ERROR:', error);
+               }
+             }}
+             className="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+           >
+             🧪 Test Database Functions
+           </button>
+
+           <button
+             onClick={async () => {
+               console.log('🔍 FETCH TEST - Fetching all meetings');
+               if (!user?.id) {
+                 console.error('🔍 FETCH TEST - No user ID');
+                 return;
+               }
+               
+               try {
+                 const meetings = await DatabaseService.getUserMeetings(user.id);
+                 console.log('🔍 FETCH TEST - Found', meetings.length, 'meetings:');
+                 meetings.forEach((meeting, index) => {
+                   console.log(`🔍 Meeting ${index + 1}:`, {
+                     id: meeting.id,
+                     projectName: meeting.project_name,
+                     status: meeting.status,
+                     createdAt: meeting.created_at,
+                     transcriptLength: meeting.transcript?.length || 0,
+                     summaryLength: meeting.meeting_summary?.length || 0
+                   });
+                 });
+               } catch (error) {
+                 console.error('🔍 FETCH TEST - Error:', error);
+               }
+             }}
+             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+           >
+             🔍 Check Saved Meetings
+           </button>
+         </div>
 
         {/* Recent Meetings */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
