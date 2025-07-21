@@ -995,8 +995,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4';
   };
 
-  return (
-    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
+      return (
+      <div className="h-screen bg-black flex flex-col overflow-hidden">
       {/* Top Bar */}
       <div className="bg-gray-900 px-4 py-2 flex items-center justify-between text-white text-sm">
         <div className="flex items-center space-x-4">
@@ -1061,8 +1061,64 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                     </div>
                   </>
                 );
+              } else if (totalParticipants === 5) {
+                // 5 people: 3 in first row, 2 centered in second row
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(0, 3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index === 0}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                      {allParticipants.slice(3, 5).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index + 3 === 0}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
+              } else if (totalParticipants === 6) {
+                // 6 people: 3 in first row, 3 in second row
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(0, 3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index === 0}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(3, 6).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index + 3 === 0}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
               } else {
-                // 5+ people: 3 in first row, rest centered in second row
+                // 7+ people: 3 in first row, rest centered in second row
                 return (
                   <>
                     <div className="flex gap-4">
@@ -1094,40 +1150,25 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Controls - Fixed height */}
-        <div className="bg-gray-800 border-t border-gray-700 p-4 flex-shrink-0">
-          {/* Question Input */}
+        {/* Message Input Area */}
+        <div className="px-6 py-4">
           <div className="flex space-x-3">
             <input
               ref={inputRef}
+              type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask a question or start the discussion..."
-              className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Type a message"
+              className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400"
             />
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setShowVoiceModal(true)}
-                className={`p-3 rounded-lg transition-colors ${
-                  isTranscribing 
-                    ? 'bg-red-600 text-white hover:bg-red-700' 
-                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-
-                title="Voice input"
-              >
-                {isTranscribing ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-              </button>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
-                className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                title="Send message"
-              >
-                <Send className="h-5 w-5" />
-              </button>
-            </div>
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputMessage.trim()}
+              className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
+            >
+              <Send className="w-4 h-4 text-white" />
+            </button>
           </div>
           
           {isGeneratingResponse && (
@@ -1136,6 +1177,45 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               Generating response...
             </div>
           )}
+        </div>
+
+        {/* Control Bar */}
+        <div className="bg-gray-900 px-6 py-4">
+          <div className="flex items-center justify-center space-x-4">
+            {/* Mute Button */}
+            <button
+              onClick={() => setShowVoiceModal(true)}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                isTranscribing 
+                  ? 'bg-red-600 hover:bg-red-700' 
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+            >
+              {isTranscribing ? <MicOff className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
+            </button>
+
+            {/* Stop Button (replacing video button) */}
+            <button
+              onClick={handleStopCurrent}
+              className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
+              title="Stop current speaker"
+            >
+              <Square className="w-5 h-5 text-white" />
+            </button>
+
+            {/* More Options */}
+            <button className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
+              <MoreVertical className="w-5 h-5 text-white" />
+            </button>
+
+            {/* End Call */}
+            <button 
+              onClick={handleEndMeeting}
+              className="w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center transition-colors ml-4"
+            >
+              <Phone className="w-5 h-5 text-white transform rotate-[135deg]" />
+            </button>
+          </div>
         </div>
       </div>
 
