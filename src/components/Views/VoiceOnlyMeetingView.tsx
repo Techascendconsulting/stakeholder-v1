@@ -1260,6 +1260,42 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               />
             </button>
           </div>
+
+          {/* Meeting Controls */}
+          <div className="flex items-center space-x-2">
+            {/* Mic Button */}
+            <button
+              onClick={handleMicClick}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                isRecording 
+                  ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
+                  : isTranscribing
+                  ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
+            >
+              {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
+            </button>
+
+            {/* Stop Button */}
+            <button
+              onClick={handleStopCurrent}
+              className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
+              title="Stop current speaker"
+            >
+              <Square className="w-4 h-4 text-white" />
+            </button>
+
+            {/* End Call */}
+            <button 
+              onClick={handleEndMeeting}
+              className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center transition-colors"
+              title="End meeting"
+            >
+              <Phone className="w-4 h-4 text-white transform rotate-[135deg]" />
+            </button>
+          </div>
           
           <div className="flex items-center space-x-2 bg-gray-800 rounded-lg px-3 py-1.5">
             <Users className="w-4 h-4 text-gray-300" />
@@ -1389,7 +1425,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         </div>
 
         {/* Message Input Area */}
-        <div className="px-6 py-4">
+        <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
           {/* Dynamic Feedback Display */}
           {dynamicFeedback && (
             <div className="mb-4 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-xl px-4 py-3 text-center border border-purple-500/30 shadow-lg">
@@ -1415,159 +1451,112 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               <Send className="w-4 h-4 text-white" />
             </button>
           </div>
-          
 
-        </div>
+          {/* Sliding Transcript Panel */}
+          {transcriptionEnabled && (
+            <>
+              {/* Floating Transcript Button (when minimized) */}
+              {!transcriptPanelOpen && (
+                <button
+                  onClick={() => setTranscriptPanelOpen(true)}
+                  className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg shadow-lg transition-all duration-200 text-xs font-medium"
+                  title="Show transcript"
+                >
+                  Transcript ({transcriptMessages.length})
+                </button>
+              )}
 
-        {/* Control Bar */}
-        <div className="bg-gray-900 px-6 py-4">
-          <div className="flex items-center justify-center space-x-4">
-            {/* Mic Button */}
-            <button
-              onClick={handleMicClick}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                isRecording 
-                  ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
-                  : isTranscribing
-                  ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-              title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
-            >
-              {isRecording ? <Square className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
-            </button>
-
-            {/* Stop Button (replacing video button) */}
-            <button
-              onClick={handleStopCurrent}
-              className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
-              title="Stop current speaker"
-            >
-              <Square className="w-5 h-5 text-white" />
-            </button>
-
-            {/* More Options */}
-            <button className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
-              <MoreVertical className="w-5 h-5 text-white" />
-            </button>
-
-            {/* End Call */}
-            <button 
-              onClick={handleEndMeeting}
-              className="w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center transition-colors ml-4"
-            >
-              <Phone className="w-5 h-5 text-white transform rotate-[135deg]" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Sliding Transcript Panel */}
-      {transcriptionEnabled && (
-        <>
-          {/* Floating Transcript Button (when minimized) */}
-          {!transcriptPanelOpen && (
-            <button
-              onClick={() => setTranscriptPanelOpen(true)}
-              className="fixed bottom-6 right-6 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 z-50"
-              title="Show transcript"
-            >
-              <div className="flex items-center space-x-2">
-                <ChevronUp className="w-5 h-5" />
-                <span className="text-sm font-medium">Transcript ({transcriptMessages.length})</span>
-              </div>
-            </button>
-          )}
-
-          <div 
-            className={`fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 transition-transform duration-300 ease-in-out z-40 ${
-              transcriptPanelOpen ? 'translate-y-0' : 'translate-y-full'
-            }`}
-            style={{ height: '300px' }}
-          >
-          {/* Transcript Header */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-700">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-              <h3 className="text-white font-semibold">Live Transcript</h3>
-              <span className="text-gray-400 text-sm">({transcriptMessages.length} messages)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
-                className="text-gray-400 hover:text-white transition-colors p-1"
-                title={transcriptPanelOpen ? "Minimize transcript" : "Show transcript"}
+              {/* Transcript Panel - slides up from text area */}
+              <div 
+                className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
+                  transcriptPanelOpen ? 'max-h-80' : 'max-h-0'
+                }`}
               >
-                {transcriptPanelOpen ? (
-                  <ChevronDown className="w-5 h-5" />
-                ) : (
-                  <ChevronUp className="w-5 h-5" />
-                )}
-              </button>
-              <button
-                onClick={() => setTranscriptMessages([])}
-                className="text-gray-400 hover:text-red-400 transition-colors p-1"
-                title="Clear transcript"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Transcript Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: '240px' }}>
-            {transcriptMessages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 opacity-50">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
+                {/* Transcript Header */}
+                <div className="flex items-center justify-between px-6 py-3 border-b border-gray-600">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                    <h3 className="text-white font-semibold">Live Transcript</h3>
+                    <span className="text-gray-400 text-sm">({transcriptMessages.length} messages)</span>
                   </div>
-                  <p className="text-sm">Transcript will appear here when conversation starts</p>
-                </div>
-              </div>
-            ) : (
-              transcriptMessages.map((message, index) => (
-                <div key={message.id} className="flex space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                      message.speaker === 'user' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-purple-600 text-white'
-                    }`}>
-                      {message.speaker === 'user' 
-                        ? 'You' 
-                        : (message.stakeholderName || message.speaker).split(' ').map(n => n[0]).join('').slice(0, 2)
-                      }
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-white font-medium text-sm">
-                        {message.speaker === 'user' ? 'You' : (message.stakeholderName || message.speaker)}
-                      </span>
-                      {message.stakeholderRole && message.speaker !== 'user' && (
-                        <>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-400 text-xs">{message.stakeholderRole}</span>
-                        </>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
+                      className="text-gray-400 hover:text-white transition-colors p-1"
+                      title={transcriptPanelOpen ? "Minimize transcript" : "Show transcript"}
+                    >
+                      {transcriptPanelOpen ? (
+                        <ChevronDown className="w-5 h-5" />
+                      ) : (
+                        <ChevronUp className="w-5 h-5" />
                       )}
-                      <span className="text-gray-500 text-xs">
-                        {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <p className="text-gray-200 text-sm leading-relaxed">{message.content}</p>
+                    </button>
+                    <button
+                      onClick={() => setTranscriptMessages([])}
+                      className="text-gray-400 hover:text-red-400 transition-colors p-1"
+                      title="Clear transcript"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              ))
-            )}
-            <div ref={transcriptEndRef} />
-          </div>
-        </div>
-        </>
-      )}
 
+                {/* Transcript Content */}
+                <div className="overflow-y-auto p-4 space-y-3" style={{ height: '240px' }}>
+                  {transcriptMessages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      <div className="text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 opacity-50">
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                          </svg>
+                        </div>
+                        <p className="text-sm">Transcript will appear here when conversation starts</p>
+                      </div>
+                    </div>
+                  ) : (
+                    transcriptMessages.map((message, index) => (
+                      <div key={message.id} className="flex space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                            message.speaker === 'user' 
+                              ? 'bg-blue-600 text-white' 
+                              : 'bg-purple-600 text-white'
+                          }`}>
+                            {message.speaker === 'user' 
+                              ? 'You' 
+                              : (message.stakeholderName || message.speaker).split(' ').map(n => n[0]).join('').slice(0, 2)
+                            }
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-white font-medium text-sm">
+                              {message.speaker === 'user' ? 'You' : (message.stakeholderName || message.speaker)}
+                            </span>
+                            {message.stakeholderRole && message.speaker !== 'user' && (
+                              <>
+                                <span className="text-gray-400">•</span>
+                                <span className="text-gray-400 text-xs">{message.stakeholderRole}</span>
+                              </>
+                            )}
+                            <span className="text-gray-500 text-xs">
+                              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-gray-200 text-sm leading-relaxed">{message.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <div ref={transcriptEndRef} />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 };
