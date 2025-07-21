@@ -301,10 +301,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         setDynamicFeedback(null);
       }, 100);
       
-      // Dynamic audio handling based on user preferences and context
+      // Dynamic audio handling based on user preferences and context - EXACT COPY from transcript meeting
       if (globalAudioEnabled) {
         console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} starting audio playback`);
-        await speakMessage(responseMessage).catch((error) => {
+        await playMessageAudio(responseMessage.id, response, stakeholder, true).catch((error) => {
           console.error(`🚨 AUDIO ERROR: ${stakeholder.name} audio failed:`, error);
         });
         console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} finished audio playback`);
@@ -355,6 +355,109 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       }, 100);
       
       throw error;
+    }
+  };
+
+  // EXACT COPY of playMessageAudio from transcript meeting
+  const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
+    console.log('Audio playback attempt:', { messageId, stakeholder: stakeholder.name, globalAudioEnabled, autoPlay });
+    
+    if (!globalAudioEnabled) {
+      console.log('Audio disabled globally');
+      return Promise.resolve();
+    }
+
+    try {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setCurrentAudio(null);
+      }
+      
+      if (!autoPlay) {
+        return Promise.resolve();
+      }
+
+      setCurrentSpeaker(stakeholder);
+      setIsAudioPlaying(true);
+
+      const voiceName = stakeholder.voice;
+      console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name);
+      console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
+      
+      if (isAzureTTSAvailable() && voiceName) {
+        console.log('✅ Using Azure TTS for audio synthesis');
+        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        setCurrentAudio(audio);
+        setPlayingMessageId(messageId);
+        setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
+        
+        return new Promise((resolve) => {
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            setCurrentAudio(null);
+            setPlayingMessageId(null);
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+            setCurrentSpeaker(null);
+            setIsAudioPlaying(false);
+            console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} audio naturally ended`);
+            resolve();
+          };
+          
+          audio.onerror = (error) => {
+            console.error('Audio element error:', error);
+            URL.revokeObjectURL(audioUrl);
+            setCurrentAudio(null);
+            setPlayingMessageId(null);
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+            setCurrentSpeaker(null);
+            setIsAudioPlaying(false);
+            resolve();
+          };
+          
+          audio.play().then(() => {
+            console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} audio started playing`);
+          }).catch((playError) => {
+            console.error('Audio play error:', playError);
+            URL.revokeObjectURL(audioUrl);
+            setCurrentAudio(null);
+            setPlayingMessageId(null);
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+            setCurrentSpeaker(null);
+            setIsAudioPlaying(false);
+            resolve();
+          });
+        });
+      } else {
+        console.log('⚠️ Azure TTS not available or no voice, using browser TTS');
+        setPlayingMessageId(messageId);
+        setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
+        
+        const browserAudio = await playBrowserTTS(text);
+        
+        return new Promise((resolve) => {
+          // Browser TTS doesn't return a promise that waits for completion
+          // So we'll use a timeout based on text length
+          const estimatedDuration = Math.max(2000, text.length * 50); // ~50ms per character
+          setTimeout(() => {
+            setPlayingMessageId(null);
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+            setCurrentSpeaker(null);
+            setIsAudioPlaying(false);
+            console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} browser TTS estimated completion`);
+            resolve();
+          }, estimatedDuration);
+        });
+      }
+    } catch (error) {
+      console.error('Audio playback error:', error);
+      setCurrentSpeaker(null);
+      setIsAudioPlaying(false);
+      setPlayingMessageId(null);
+      return Promise.resolve();
     }
   };
 
