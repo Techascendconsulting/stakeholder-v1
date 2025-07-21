@@ -899,15 +899,47 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     // Wait for the meeting to be saved before navigating away
     console.log('🔚 Waiting for meeting save to complete...');
     const savedMeetingData = await saveMeetingToDatabase();
-    console.log('🔚 Meeting save completed, navigating to meeting summary');
+    console.log('🔚 Meeting save result:', savedMeetingData);
     
     if (savedMeetingData) {
+      console.log('✅ Save successful - navigating to meeting summary');
       // Set the saved meeting data for the summary view
       setSelectedMeeting(savedMeetingData);
       setCurrentView('meeting-history');
     } else {
-      // Fallback to stakeholders view if save failed
-      setCurrentView('stakeholders');
+      console.error('❌ Save failed - creating temporary meeting for display');
+      
+      // Create a temporary meeting object so user can still see their data
+      const tempMeeting = {
+        id: meetingId || `temp-${Date.now()}`,
+        user_id: user?.id || 'unknown',
+        project_id: selectedProject?.id || 'unknown',
+        project_name: selectedProject?.name || 'Unknown Project',
+        stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
+        stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
+        stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
+        transcript: backgroundTranscript,
+        raw_chat: messages,
+        meeting_notes: '',
+        meeting_summary: backgroundTranscript.length > 0 
+          ? 'Meeting summary could not be generated due to save failure. However, your conversation has been captured.'
+          : 'No conversation was recorded during this meeting.',
+        status: 'completed' as const,
+        meeting_type: 'voice-only' as const,
+        duration: Math.floor((Date.now() - meetingStartTime) / 1000),
+        total_messages: backgroundTranscript.length,
+        user_messages: backgroundTranscript.filter(m => m.speaker === 'user').length,
+        ai_messages: backgroundTranscript.filter(m => m.speaker !== 'user').length,
+        topics_discussed: ['Save failed - topics not extracted'],
+        key_insights: ['Meeting data could not be saved to database'],
+        effectiveness_score: undefined,
+        created_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
+      };
+      
+      console.log('⚠️ Using temporary meeting object:', tempMeeting);
+      setSelectedMeeting(tempMeeting);
+      setCurrentView('meeting-history');
     }
   };
 
