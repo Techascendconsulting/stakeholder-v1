@@ -54,6 +54,11 @@ export class AIService {
   private static instance: AIService;
   private conversationState: ConversationState;
   
+  // Helper method to get cost-effective model based on environment
+  private getModel(type: 'primary' | 'phaseDetection' | 'noteGeneration' | 'greeting' = 'primary'): string {
+    return this.config.ai_models[type];
+  }
+  
   // Comprehensive configuration system - all values easily adjustable
   private static readonly CONFIG = {
     mention: {
@@ -99,10 +104,11 @@ export class AIService {
       recentMessagesCount: 5
     },
     ai_models: {
-      primary: "gpt-4o",
-      phaseDetection: "gpt-4",
-      noteGeneration: "gpt-3.5-turbo",
-      greeting: "gpt-4o"
+      // Use cheaper models for testing/development, premium models for production
+      primary: import.meta.env.VITE_APP_ENV === 'production' ? "gpt-4o" : "gpt-3.5-turbo",
+      phaseDetection: import.meta.env.VITE_APP_ENV === 'production' ? "gpt-4" : "gpt-3.5-turbo", 
+      noteGeneration: "gpt-3.5-turbo", // Always use 3.5 for notes to save costs
+      greeting: import.meta.env.VITE_APP_ENV === 'production' ? "gpt-4o" : "gpt-3.5-turbo"
     },
     ai_params: {
       phaseDetection: { temperature: 0.1, maxTokens: 20 },
@@ -113,6 +119,16 @@ export class AIService {
   
   private constructor() {
     this.conversationState = this.initializeConversationState();
+
+    // Log model configuration for cost awareness
+    const env = import.meta.env.VITE_APP_ENV || 'development';
+    console.log(`🤖 AIService initialized for ${env} environment:`, {
+      primary: this.config.ai_models.primary,
+      phaseDetection: this.config.ai_models.phaseDetection,
+      noteGeneration: this.config.ai_models.noteGeneration,
+      greeting: this.config.ai_models.greeting,
+      costSavings: env === 'development' ? '~85% cheaper than production' : 'Production costs'
+    });
   }
 
   static getInstance(): AIService {
@@ -1342,7 +1358,7 @@ AVOID ROBOTIC ENDINGS: Don't end with "feel free to ask", "let me know if you ne
   private async isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): Promise<boolean> {
     try {
       const completion = await openai.chat.completions.create({
-        model: "gpt-4",
+        model: this.getModel('phaseDetection'),
         messages: [
           {
             role: "system",
@@ -1665,7 +1681,7 @@ Return format: stakeholder_names|mention_type|confidence`
       const dynamicConfig = this.getDynamicConfig(context, mentionedStakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: this.getModel('primary'),
         messages: [
           { role: "system", content: this.buildDynamicSystemPrompt(mentionedStakeholder, context, 'discussion') },
           { role: "user", content: mentionPrompt }
