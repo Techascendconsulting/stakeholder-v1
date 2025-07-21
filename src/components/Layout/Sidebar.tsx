@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, FolderOpen, MessageSquare, FileText, Plus, User, LogOut, GraduationCap, BookOpen, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  LayoutDashboard,
+  FolderOpen,
+  MessageSquare,
+  BookOpen,
+  FileText,
+  Plus,
+  User,
+  Settings,
+  LogOut,
+  GraduationCap,
+  ChevronUp,
+  ChevronDown,
+  Menu,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -11,60 +27,67 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
   const { user, signOut } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
-    { 
-      id: 'dashboard', 
-      label: 'Dashboard', 
-      icon: LayoutDashboard
-    },
-    { 
-      id: 'projects', 
-      label: 'Training Projects', 
-      icon: FolderOpen
-    },
-    { 
-      id: 'my-meetings', 
-      label: 'My Meetings', 
-      icon: MessageSquare
-    },
-    { 
-      id: 'notes', 
-      label: 'Interview Notes', 
-      icon: BookOpen
-    },
-    { 
-      id: 'deliverables', 
-      label: 'Deliverables', 
-      icon: FileText
-    },
-    { 
-      id: 'custom-project', 
-      label: 'Create Project', 
-      icon: Plus
-    },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'projects', label: 'Training Projects', icon: FolderOpen },
+    { id: 'my-meetings', label: 'My Meetings', icon: MessageSquare },
+    { id: 'notes', label: 'Interview Notes', icon: BookOpen },
+    { id: 'deliverables', label: 'Deliverables', icon: FileText },
+    { id: 'custom-project', label: 'Create Project', icon: Plus },
   ];
 
   const handleSignOut = async () => {
     try {
       await signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Sign out error:', error);
+    }
+  };
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+    // Close user menu when collapsing
+    if (!isCollapsed) {
+      setShowUserMenu(false);
     }
   };
 
   return (
-    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white w-64 min-h-screen flex flex-col shadow-lg ${className}`}>
-      {/* Logo/Brand */}
-      <div className="p-6 border-b border-purple-500/30">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shadow-sm">
-            <GraduationCap className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white">BA Interview Pro</h1>
-            <p className="text-xs text-purple-200">Professional Development</p>
-          </div>
+    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white ${isCollapsed ? 'w-16' : 'w-64'} min-h-screen flex flex-col shadow-lg transition-all duration-300 ${className}`}>
+      {/* Logo/Brand with Toggle */}
+      <div className={`${isCollapsed ? 'p-3' : 'p-6'} border-b border-purple-500/30 transition-all duration-300`}>
+        <div className="flex items-center justify-between">
+          {!isCollapsed && (
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shadow-sm">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white">BA Interview Pro</h1>
+                <p className="text-xs text-purple-200">Professional Development</p>
+              </div>
+            </div>
+          )}
+
+          {isCollapsed && (
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shadow-sm mx-auto">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+          )}
+
+          <button
+            onClick={toggleSidebar}
+            className={`p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors ${isCollapsed ? 'mx-auto mt-2' : ''}`}
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? (
+              <ChevronRight size={16} className="text-white" />
+            ) : (
+              <ChevronLeft size={16} className="text-white" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -74,20 +97,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
-            
+
             return (
-              <li key={item.id}>
+              <li key={item.id} className="relative group">
                 <button
                   onClick={() => setCurrentView(item.id as any)}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-sm font-medium ${
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
                   }`}
+                  title={isCollapsed ? item.label : ''}
                 >
                   <Icon size={18} className={isActive ? 'text-white' : 'text-purple-200'} />
-                  <span>{item.label}</span>
+                  {!isCollapsed && <span>{item.label}</span>}
                 </button>
+
+                {/* Tooltip for collapsed mode */}
+                {isCollapsed && (
+                  <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg">
+                    {item.label}
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                  </div>
+                )}
               </li>
             );
           })}
@@ -98,51 +130,64 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       <div className="p-4 border-t border-purple-500/30">
         <div className="relative">
           <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="w-full flex items-center space-x-3 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm"
+            onClick={() => !isCollapsed && setShowUserMenu(!showUserMenu)}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm group`}
+            title={isCollapsed ? user?.email?.split('@')[0] || 'User' : ''}
           >
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-white" />
             </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium text-white truncate">
-                {user?.email?.split('@')[0] || 'User'}
-              </p>
-              <p className="text-xs text-purple-200">Business Analyst</p>
-            </div>
-            {showUserMenu ? (
-              <ChevronUp size={16} className="text-purple-200" />
-            ) : (
-              <ChevronDown size={16} className="text-purple-200" />
+            {!isCollapsed && (
+              <>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium text-white truncate">
+                    {user?.email?.split('@')[0] || 'User'}
+                  </p>
+                  <p className="text-xs text-purple-200">Business Analyst</p>
+                </div>
+                {showUserMenu ? (
+                  <ChevronUp size={16} className="text-purple-200" />
+                ) : (
+                  <ChevronDown size={16} className="text-purple-200" />
+                )}
+              </>
             )}
           </button>
 
-            {/* User Dropdown Menu */}
-            {showUserMenu && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg border border-purple-100 shadow-lg overflow-hidden">
+          {/* Tooltip for collapsed user section */}
+          {isCollapsed && (
+            <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg">
+              {user?.email?.split('@')[0] || 'User'}
+              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+            </div>
+          )}
+
+          {/* User Dropdown Menu - Only show when not collapsed */}
+          {!isCollapsed && showUserMenu && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg border border-purple-100 shadow-lg overflow-hidden">
+              <button
+                onClick={() => {
+                  setCurrentView('profile');
+                  setShowUserMenu(false);
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+              >
+                <Settings size={16} className="text-gray-500" />
+                <span>Profile & Settings</span>
+              </button>
+              <div className="border-t border-gray-100">
                 <button
-                  onClick={() => {
-                    setCurrentView('profile');
-                    setShowUserMenu(false);
-                  }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                  onClick={handleSignOut}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
                 >
-                  <Settings size={16} className="text-gray-500" />
-                  <span>Profile & Settings</span>
+                  <LogOut size={16} className="text-gray-500" />
+                  <span>Sign Out</span>
                 </button>
-                <div className="border-t border-gray-100">
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
-                  >
-                    <LogOut size={16} className="text-gray-500" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
-    );
+    </div>
+  );
 };
