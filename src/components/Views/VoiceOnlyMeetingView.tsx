@@ -1469,7 +1469,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               {/* Transcript Panel - slides up from text area */}
               <div 
                 className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
-                  transcriptPanelOpen ? 'max-h-80' : 'max-h-0'
+                  transcriptPanelOpen ? 'max-h-48' : 'max-h-0'
                 }`}
               >
                 {/* Transcript Header */}
@@ -1502,16 +1502,16 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                 </div>
 
                 {/* Transcript Content */}
-                <div className="overflow-y-auto p-4 space-y-3" style={{ height: '240px' }}>
+                <div className="overflow-y-auto p-4 space-y-3" style={{ height: '120px' }}>
                   {transcriptMessages.length === 0 ? (
                     <div className="flex items-center justify-center h-full text-gray-400">
                       <div className="text-center">
-                        <div className="w-12 h-12 mx-auto mb-3 opacity-50">
+                        <div className="w-8 h-8 mx-auto mb-2 opacity-50">
                           <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                           </svg>
                         </div>
-                        <p className="text-sm">Transcript will appear here when conversation starts</p>
+                        <p className="text-xs">Transcript will appear here</p>
                       </div>
                     </div>
                   ) : (
