@@ -25,70 +25,72 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   };
 
   return (
-    <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full">
+    <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-20">
+        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10">
           <div className="absolute inset-0 rounded-lg border-4 border-green-400 opacity-50 animate-ping"></div>
         </div>
       )}
       
       {/* Animated Thinking Ring */}
       {isThinking && !isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse z-20">
+        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse z-10">
           <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 opacity-50 animate-ping"></div>
         </div>
       )}
       
-      {/* Teams-style Full Photo Background */}
-      {!isUser && participant.photo ? (
-        <div className="absolute inset-0">
-          <img 
-            src={participant.photo} 
-            alt={participant.name}
-            className="w-full h-full object-cover"
-          />
-          {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-        </div>
-      ) : (
-        <div className="absolute inset-0 bg-gray-700 flex items-center justify-center">
-          <div className="text-white text-6xl font-bold">
+      {/* Dark Background */}
+      <div className="absolute inset-0 bg-gray-700"></div>
+      
+      {/* Content Overlay */}
+      <div className="relative z-20 flex flex-col items-center justify-center h-full p-4">
+        {/* Full Photo instead of circular avatar */}
+        {!isUser && participant.photo ? (
+          <div className="w-24 h-24 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-4">
+            <img 
+              src={participant.photo} 
+              alt={participant.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-24 h-24 rounded-lg bg-gray-700 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg mb-4">
             {getInitials(participant.name)}
           </div>
+        )}
+        
+        {/* Status Indicators */}
+        <div className="absolute top-2 left-2">
+          {isCurrentSpeaker && (
+            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
+              <Volume2 className="w-4 h-4 mr-1" />
+              Speaking
+            </div>
+          )}
+          {isThinking && !isCurrentSpeaker && (
+            <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
+              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-bounce"></div>
+              Thinking
+            </div>
+          )}
         </div>
-      )}
-      
-      {/* Status Indicators */}
-      <div className="absolute top-3 left-3 z-30">
+        
+        {/* Name Bar */}
+        <div className="bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg backdrop-blur-sm text-center">
+          <h3 className="font-medium text-sm truncate">{participant.name}</h3>
+          <p className="text-xs text-gray-300 truncate">{participant.role}</p>
+        </div>
+        
+        {/* Speaking Animation Dots */}
         {isCurrentSpeaker && (
-          <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
-            <Volume2 className="w-4 h-4 mr-1" />
-            Speaking
-          </div>
-        )}
-        {isThinking && !isCurrentSpeaker && (
-          <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
-            <div className="w-2 h-2 bg-white rounded-full mr-2 animate-bounce"></div>
-            Thinking
+          <div className="absolute bottom-16 right-2 flex space-x-1">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '300ms' }}></div>
           </div>
         )}
       </div>
-      
-      {/* Name Bar at Bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white px-4 py-3 z-30">
-        <h3 className="font-medium text-base text-center">{participant.name}</h3>
-        <p className="text-sm text-gray-300 text-center">{participant.role}</p>
-      </div>
-      
-      {/* Speaking Animation Dots */}
-      {isCurrentSpeaker && (
-        <div className="absolute bottom-20 right-3 flex space-x-1 z-30">
-          <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '300ms' }}></div>
-        </div>
-      )}
     </div>
   );
 };
@@ -980,24 +982,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     ...selectedStakeholders
   ];
 
-  // Teams-style row layout: 1-4 stakeholders in one row, 5 stakeholders with 3+2 centered rows
-  const getRowLayout = (count: number) => {
-    if (count <= 4) {
-      return {
-        containerClass: 'flex justify-center items-center h-full',
-        rowClass: 'flex gap-6'
-      };
-    } else if (count === 5) {
-      return {
-        containerClass: 'flex flex-col justify-center items-center h-full space-y-6',
-        rowClass: 'flex gap-6'
-      };
-    }
-    // For more than 5, fall back to flexible rows
-    return {
-      containerClass: 'flex flex-wrap justify-center items-center h-full gap-6',
-      rowClass: 'flex gap-6'
-    };
+  // Calculate optimal grid layout based on participant count
+  const getGridCols = (count: number) => {
+    if (count <= 2) return 'grid-cols-1 md:grid-cols-2';
+    if (count <= 4) return 'grid-cols-2 md:grid-cols-2';
+    if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
+    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
   };
 
   return (
@@ -1068,69 +1058,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       {/* Main Content - Fixed height, no scrolling */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Teams-style Participant Grid */}
+        {/* Participant Grid - Fixed height with equal-sized cards */}
         <div className="flex-1 p-4 min-h-0">
-          {allParticipants.length <= 4 ? (
-            // 1-4 participants: Single row, side-by-side
-            <div className={getRowLayout(allParticipants.length).containerClass}>
-              <div className={getRowLayout(allParticipants.length).rowClass}>
-                {allParticipants.map((participant, index) => (
-                  <div key={participant.name} className="w-80 h-60">
-                    <ParticipantCard
-                      participant={participant}
-                      isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                      isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                      isUser={index === 0}
-                    />
-                  </div>
-                ))}
+          <div className={`grid ${getGridCols(allParticipants.length)} gap-4 h-full`}>
+            {allParticipants.map((participant, index) => (
+              <div key={participant.name} className="h-full min-h-[200px] max-h-[300px]">
+                <ParticipantCard
+                  participant={participant}
+                  isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                  isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                  isUser={index === 0}
+                />
               </div>
-            </div>
-          ) : allParticipants.length === 5 ? (
-            // 5 participants: 3 on top row, 2 centered on bottom row
-            <div className={getRowLayout(5).containerClass}>
-              {/* Top row - 3 participants */}
-              <div className="flex gap-6">
-                {allParticipants.slice(0, 3).map((participant, index) => (
-                  <div key={participant.name} className="w-80 h-60">
-                    <ParticipantCard
-                      participant={participant}
-                      isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                      isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                      isUser={index === 0}
-                    />
-                  </div>
-                ))}
-              </div>
-              {/* Bottom row - 2 participants, centered */}
-              <div className="flex gap-6 justify-center">
-                {allParticipants.slice(3, 5).map((participant, index) => (
-                  <div key={participant.name} className="w-80 h-60">
-                    <ParticipantCard
-                      participant={participant}
-                      isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                      isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                      isUser={index + 3 === 0}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            // More than 5: Flexible rows
-            <div className={getRowLayout(allParticipants.length).containerClass}>
-              {allParticipants.map((participant, index) => (
-                <div key={participant.name} className="w-80 h-60">
-                  <ParticipantCard
-                    participant={participant}
-                    isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                    isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                    isUser={index === 0}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
 
         {/* Bottom Controls - Fixed height */}
