@@ -1139,55 +1139,51 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // Generate AI-powered meeting summary
+  // Generate AI-powered meeting summary using the proper AIService method
   const generateMeetingSummary = async (transcript: Message[]): Promise<string> => {
     if (transcript.length === 0) return 'No conversation recorded.';
     
     try {
-      const conversationText = transcript
-        .map(msg => `${msg.stakeholderName || msg.speaker}: ${msg.content}`)
-        .join('\n');
+      console.log('📝 Generating summary using AIService.generateInterviewNotes...');
       
-      // Use direct OpenAI API call for summary generation
-      const OpenAI = (await import('openai')).default;
-      const openai = new OpenAI({
-        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-        dangerouslyAllowBrowser: true
-      });
+      // Create meeting data object for AIService
+      const meetingData = {
+        messages: transcript,
+        project: {
+          name: selectedProject?.name || 'Unknown Project',
+          description: selectedProject?.description || 'Project description',
+          type: selectedProject?.type || 'General'
+        },
+        participants: selectedStakeholders?.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department || 'Unknown',
+          expertise: s.expertise || []
+        })) || [],
+        duration: Math.floor((Date.now() - meetingStartTime) / 1000 / 60), // in minutes
+        analytics: {
+          totalMessages: transcript.length,
+          userMessages: transcript.filter(m => m.speaker === 'user').length,
+          stakeholderMessages: transcript.filter(m => m.speaker !== 'user').length,
+          conversationFlow: 'dynamic'
+        }
+      };
 
-      const prompt = `Please provide a concise meeting summary of this stakeholder interview:
-
-${conversationText}
-
-Focus on:
-- Key topics discussed
-- Important insights shared
-- Stakeholder perspectives
-- Next steps or recommendations
-
-Keep it professional and under 300 words.`;
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are a professional business analyst assistant. Generate clear, concise meeting summaries."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
-      });
-
-      const summary = completion.choices[0]?.message?.content;
-      return summary || 'Unable to generate meeting summary.';
+      const aiService = AIService.getInstance();
+      
+      // Progress callback for real-time feedback
+      const progressCallback = (progress: string) => {
+        console.log('📝 Summary generation progress:', progress);
+      };
+      
+      // Generate professional interview notes using AIService
+      const interviewNotes = await aiService.generateInterviewNotes(meetingData, progressCallback);
+      
+      console.log('✅ Summary generated successfully');
+      return interviewNotes || 'Unable to generate meeting summary.';
     } catch (error) {
       console.error('Error generating meeting summary:', error);
-      return 'Meeting summary could not be generated due to technical issues.';
+      return 'Meeting summary could not be generated due to technical issues. However, your conversation transcript is available below.';
     }
   };
 
