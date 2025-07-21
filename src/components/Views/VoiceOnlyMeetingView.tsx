@@ -24,122 +24,76 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  // Define colors for different participants to match the image design
-  const getParticipantColor = (name: string) => {
-    const colors = [
-      'bg-yellow-500', // Sarah Chen
-      'bg-gray-600',   // Mike Johnson  
-      'bg-gray-600',   // Emily Rodriguez
-      'bg-red-500'     // Joy Nadim
-    ];
-    const index = Math.abs(name.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length;
-    return colors[index];
-  };
-
-  // Get participant image - use existing photos from stakeholder data
-  const getParticipantImage = (participant: any) => {
+  // Get stakeholder photo from selectedStakeholders or participant data
+  const getParticipantPhoto = () => {
     if (isUser) return null;
     
-    // Use the existing photo URL from stakeholder data (Pexels URLs)
-    if (participant.photo) {
-      return participant.photo;
-    }
+    // Try participant.photo first
+    if (participant.photo) return participant.photo;
     
-    // If no photo in participant data, try to find it in selectedStakeholders
+    // Try to find in selectedStakeholders
     const stakeholder = selectedStakeholders?.find(s => 
       s.name === participant.name || s.id === participant.id
     );
-    
-    if (stakeholder?.photo) {
-      return stakeholder.photo;
-    }
-    
-    return null;
+    return stakeholder?.photo || null;
   };
 
+  const photo = getParticipantPhoto();
+
   return (
-    <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full flex flex-col justify-between border-2 transition-all duration-300 hover:bg-gray-750">
+    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-64 h-48">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10">
-          <div className="absolute inset-0 rounded-lg border-4 border-green-400 opacity-50 animate-ping"></div>
+        <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
+          <div className="absolute inset-0 rounded-xl border-4 border-green-400 opacity-50 animate-ping"></div>
         </div>
       )}
       
       {/* Animated Thinking Ring */}
       {isThinking && !isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 animate-pulse z-10">
-          <div className="absolute inset-0 rounded-lg border-4 border-yellow-400 opacity-50 animate-ping"></div>
+        <div className="absolute inset-0 rounded-xl border-4 border-yellow-400 animate-pulse z-10">
+          <div className="absolute inset-0 rounded-xl border-4 border-yellow-400 opacity-50 animate-ping"></div>
         </div>
       )}
       
-      {/* Main Content Area */}
-      <div className="flex-1 flex items-center justify-center p-4">
-        {/* Profile Photo or Initials */}
-        {(() => {
-          const imagePath = getParticipantImage(participant);
-          return !isUser && imagePath ? (
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
-              <img 
-                src={imagePath} 
-                alt={participant.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Fallback to initials if image fails to load
-                  const imgElement = e.currentTarget;
-                  const container = imgElement.parentElement;
-                  if (container) {
-                    container.innerHTML = `
-                      <div class="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}">
-                        ${getInitials(participant.name)}
-                      </div>
-                    `;
-                  }
-                }}
-              />
-            </div>
-          ) : (
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}`}>
-              {getInitials(participant.name)}
-            </div>
-          );
-        })()}
-      </div>
+      {/* Video/Photo Content */}
+      {!isUser && photo ? (
+        <img
+          src={photo}
+          alt={participant.name}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-red-500">
+          <span className="text-white text-6xl font-bold">
+            {getInitials(participant.name)}
+          </span>
+        </div>
+      )}
       
-      {/* Status Indicators */}
-      <div className="absolute top-3 left-3">
-        {isCurrentSpeaker && (
-          <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center shadow-lg animate-pulse">
-            <Volume2 className="w-3 h-3 mr-1" />
-            Speaking
-          </div>
-        )}
-        {isThinking && !isCurrentSpeaker && (
-          <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center shadow-lg animate-pulse">
-            <div className="w-1.5 h-1.5 bg-white rounded-full mr-1 animate-bounce"></div>
-            Thinking
-          </div>
-        )}
+      {/* Name overlay */}
+      <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-sm">
+        {participant.name}
       </div>
 
-      {/* Mute indicator in top right */}
-      <div className="absolute top-3 right-3">
-        <div className="bg-red-600 text-white p-1.5 rounded-full shadow-lg">
-          <MicOff className="w-3 h-3" />
+      {/* Mute indicator - always show for non-users */}
+      {!isUser && (
+        <div className="absolute top-2 left-2 bg-red-600 p-1 rounded-full">
+          <MicOff className="w-3 h-3 text-white" />
         </div>
-      </div>
-      
-      {/* Name Bar at Bottom */}
-      <div className="bg-black bg-opacity-80 text-white px-3 py-2 text-center">
-        <h3 className="font-medium text-sm truncate">{participant.name}</h3>
-      </div>
-      
-      {/* Speaking Animation Dots */}
+      )}
+
+      {/* Speaking indicator */}
       {isCurrentSpeaker && (
-        <div className="absolute bottom-12 right-3 flex space-x-1">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '300ms' }}></div>
+        <div className="absolute top-2 right-2 bg-green-500 p-1 rounded-full animate-pulse">
+          <Volume2 className="w-3 h-3 text-white" />
+        </div>
+      )}
+
+      {/* Thinking indicator */}
+      {isThinking && !isCurrentSpeaker && (
+        <div className="absolute top-2 right-2 bg-yellow-500 p-1 rounded-full animate-pulse">
+          <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
         </div>
       )}
     </div>
@@ -1042,113 +996,199 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="bg-gray-900 border-b border-gray-700 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          {/* Left section */}
-          <div className="flex items-center space-x-4">
-            <div>
-              <h1 className="text-lg font-semibold text-white">
-                Team Meeting
-              </h1>
-              <p className="text-sm text-gray-400">{formatTime(elapsedTime)}</p>
-            </div>
-          </div>
-
-          {/* Center section - Meeting info */}
-          <div className="flex-1 mx-8 text-center">
-            <div className="flex items-center justify-center space-x-2 text-gray-400">
-              <Users className="h-4 w-4" />
-              <span className="text-sm">{allParticipants.length}</span>
-            </div>
-          </div>
-
-          {/* Right section - Meeting controls */}
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleStopCurrent}
-              className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-full transition-colors"
-              title="Stop current speaker"
-            >
-              <Square className="h-4 w-4" />
-            </button>
-            
-            <button
-              onClick={handleEndMeeting}
-              className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
-              title="End meeting"
-            >
-              <PhoneOff className="h-4 w-4" />
-            </button>
-            
-            <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-full transition-colors">
-              <MoreVertical className="h-4 w-4" />
-            </button>
-          </div>
+    <div className="h-screen bg-black flex flex-col overflow-hidden">
+      {/* Top Bar */}
+      <div className="bg-gray-900 px-4 py-2 flex items-center justify-between text-white text-sm">
+        <div className="flex items-center space-x-4">
+          <span className="font-medium">Team Meeting</span>
+          <span className="text-gray-400">{formatTime(elapsedTime)}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Users className="w-4 h-4" />
+          <span>{allParticipants.length}</span>
         </div>
       </div>
 
+
+
       {/* Main Content - Fixed height, no scrolling */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Participant Grid - Fixed height with equal-sized cards */}
-        <div className="flex-1 p-6 min-h-0">
-          <div className={`grid ${getGridCols(allParticipants.length)} gap-6 h-full max-w-6xl mx-auto`}>
-            {allParticipants.map((participant, index) => (
-              <div key={participant.name} className="h-full min-h-[320px] max-h-[450px]">
-                <ParticipantCard
-                  participant={participant}
-                  isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                  isThinking={thinkingStakeholders.has(participant.id || participant.name)}
-                  isUser={index === 0}
-                />
-              </div>
-            ))}
+        {/* Main Video Area */}
+        <div className="flex-1 p-4 flex items-center justify-center">
+          <div className="flex flex-col gap-4 max-h-[calc(100vh-280px)] items-center">
+            {(() => {
+              const totalParticipants = allParticipants.length;
+              
+              // Layout logic based on number of participants
+              if (totalParticipants <= 4) {
+                // 1-4 people: single row
+                return (
+                  <div className="flex gap-4 justify-center">
+                    {allParticipants.map((participant, index) => (
+                      <ParticipantCard
+                        key={participant.name}
+                        participant={participant}
+                        isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                        isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                        isUser={index === 0}
+                      />
+                    ))}
+                  </div>
+                );
+              } else if (totalParticipants === 5) {
+                // 5 people: 3 in first row, 2 centered in second row
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(0, 3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index === 0}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                      {allParticipants.slice(3, 5).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index + 3 === 0}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
+              } else if (totalParticipants === 6) {
+                // 6 people: 3 in first row, 3 in second row
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(0, 3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index === 0}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(3, 6).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index + 3 === 0}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
+              } else {
+                // 7+ people: 3 in first row, rest centered in second row
+                return (
+                  <>
+                    <div className="flex gap-4">
+                      {allParticipants.slice(0, 3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index === 0}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                      {allParticipants.slice(3).map((participant, index) => (
+                        <ParticipantCard
+                          key={participant.name}
+                          participant={participant}
+                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                          isThinking={thinkingStakeholders.has(participant.id || participant.name)}
+                          isUser={index + 3 === 0}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
+              }
+            })()}
           </div>
         </div>
 
-        {/* Bottom Controls - Fixed height */}
-        <div className="bg-gray-900 border-t border-gray-700 p-6 flex-shrink-0">
-          {/* Question Input */}
-          <div className="max-w-4xl mx-auto">
-            <div className="flex space-x-4">
-              <input
-                ref={inputRef}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type a message..."
-                className="flex-1 p-4 bg-gray-800 border border-gray-600 rounded-full text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setShowVoiceModal(true)}
-                  className={`p-4 rounded-full transition-colors ${
-                    isTranscribing 
-                      ? 'bg-red-600 text-white hover:bg-red-700' 
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
-                  title="Voice input"
-                >
-                  {isTranscribing ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                </button>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputMessage.trim()}
-                  className="p-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                  title="Send message"
-                >
-                  <Send className="h-5 w-5" />
-                </button>
-              </div>
+        {/* Message Input Area */}
+        <div className="px-6 py-4">
+          <div className="flex space-x-3">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type a message"
+              className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400"
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputMessage.trim()}
+              className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
+            >
+              <Send className="w-4 h-4 text-white" />
+            </button>
+          </div>
+          
+          {isGeneratingResponse && (
+            <div className="flex items-center justify-center mt-3 text-gray-400">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
+              Generating response...
             </div>
-            
-            {isGeneratingResponse && (
-              <div className="flex items-center justify-center mt-4 text-gray-400">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
-                Generating response...
-              </div>
-            )}
+          )}
+        </div>
+
+        {/* Control Bar */}
+        <div className="bg-gray-900 px-6 py-4">
+          <div className="flex items-center justify-center space-x-4">
+            {/* Mute Button */}
+            <button
+              onClick={() => setShowVoiceModal(true)}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                isTranscribing 
+                  ? 'bg-red-600 hover:bg-red-700' 
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+            >
+              {isTranscribing ? <MicOff className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
+            </button>
+
+            {/* Stop Button (replacing video button) */}
+            <button
+              onClick={handleStopCurrent}
+              className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
+              title="Stop current speaker"
+            >
+              <Square className="w-5 h-5 text-white" />
+            </button>
+
+            {/* More Options */}
+            <button className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
+              <MoreVertical className="w-5 h-5 text-white" />
+            </button>
+
+            {/* End Call */}
+            <button 
+              onClick={handleEndMeeting}
+              className="w-12 h-12 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center transition-colors ml-4"
+            >
+              <Phone className="w-5 h-5 text-white transform rotate-[135deg]" />
+            </button>
           </div>
         </div>
       </div>
