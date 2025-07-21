@@ -1145,12 +1145,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             </button>
           </div>
           
-          {isGeneratingResponse && (
-            <div className="flex items-center justify-center mt-3 text-gray-400">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
-              Generating response...
-            </div>
-          )}
+
         </div>
 
         {/* Control Bar */}
