@@ -36,25 +36,22 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     return colors[index];
   };
 
-  // Get local image path for participant
+  // Get participant image - use existing photos from stakeholder data
   const getParticipantImage = (participant: any) => {
     if (isUser) return null;
     
-    // If participant already has a photo URL, use it
-    if (participant.photo && participant.photo.startsWith('http')) {
+    // Use the existing photo URL from stakeholder data (Pexels URLs)
+    if (participant.photo) {
       return participant.photo;
     }
     
-    // Try to get local image based on participant name
-    const imageName = participant.name.toLowerCase().replace(/\s+/g, '-');
+    // If no photo in participant data, try to find it in selectedStakeholders
+    const stakeholder = selectedStakeholders?.find(s => 
+      s.name === participant.name || s.id === participant.id
+    );
     
-    // Try different image formats
-    const imageFormats = ['jpg', 'jpeg', 'png', 'webp'];
-    for (const format of imageFormats) {
-      const imagePath = `/images/participants/${imageName}.${format}`;
-      // In a real implementation, you might want to check if the file exists
-      // For now, we'll return the first format and let the onError handle fallbacks
-      return imagePath;
+    if (stakeholder?.photo) {
+      return stakeholder.photo;
     }
     
     return null;
@@ -89,17 +86,20 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   // Fallback to initials if image fails to load
-                  e.currentTarget.style.display = 'none';
-                  const fallbackDiv = e.currentTarget.parentElement?.nextElementSibling;
-                  if (fallbackDiv) fallbackDiv.style.display = 'flex';
+                  const imgElement = e.currentTarget;
+                  const container = imgElement.parentElement;
+                  if (container) {
+                    container.innerHTML = `
+                      <div class="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}">
+                        ${getInitials(participant.name)}
+                      </div>
+                    `;
+                  }
                 }}
               />
             </div>
           ) : (
-            <div 
-              className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}`}
-              style={{ display: !isUser && imagePath ? 'none' : 'flex' }}
-            >
+            <div className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}`}>
               {getInitials(participant.name)}
             </div>
           );
