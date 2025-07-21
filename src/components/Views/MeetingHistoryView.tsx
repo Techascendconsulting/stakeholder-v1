@@ -108,7 +108,7 @@ export const MeetingHistoryView: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setCurrentView('my-meetings')}
@@ -118,9 +118,7 @@ export const MeetingHistoryView: React.FC = () => {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{meeting.project_name}</h1>
-            <p className="text-gray-600">
-              {formatDate(meeting.created_at)} • {formatTime(meeting.created_at)} • {formatDuration(meeting.duration)}
-            </p>
+            <p className="text-gray-600">Meeting Details & Analysis</p>
           </div>
         </div>
         
@@ -142,8 +140,230 @@ export const MeetingHistoryView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Navigation - Moved to Top */}
-      <div className="bg-white rounded-lg border border-gray-200 mb-6">
+      {/* Meeting Success Banner */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-green-900">Meeting Completed Successfully</h3>
+              <p className="text-green-700">All data has been captured and analyzed • Summary and transcript available</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-6 text-sm">
+            <div className="text-center">
+              <p className="text-green-600 font-semibold">Duration</p>
+              <p className="text-green-800 font-bold text-lg">{formatDuration(meeting.duration)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-green-600 font-semibold">Messages</p>
+              <p className="text-green-800 font-bold text-lg">{meeting.total_messages}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-green-600 font-semibold">Insights</p>
+              <p className="text-green-800 font-bold text-lg">{meeting.key_insights?.length || 0}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Meeting Info Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Date & Time</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {formatDate(meeting.created_at)}
+              </p>
+              <p className="text-sm text-gray-600">
+                {formatTime(meeting.created_at)}
+              </p>
+            </div>
+            <Calendar className="h-8 w-8 text-blue-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Duration</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {formatDuration(meeting.duration)}
+              </p>
+            </div>
+            <Clock className="h-8 w-8 text-green-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Messages</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {meeting.total_messages}
+              </p>
+              <p className="text-sm text-gray-600">
+                {meeting.user_messages} from you
+              </p>
+            </div>
+            <MessageSquare className="h-8 w-8 text-purple-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Stakeholders</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {meeting.stakeholder_names?.length || 0}
+              </p>
+              <p className="text-sm text-gray-600">participants</p>
+            </div>
+            <Users className="h-8 w-8 text-orange-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Topics Discussed</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {meeting.topics_discussed?.length || 0}
+              </p>
+              <p className="text-sm text-gray-600">key topics identified</p>
+            </div>
+            <Tag className="h-8 w-8 text-blue-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Key Insights</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {meeting.key_insights?.length || 0}
+              </p>
+              <p className="text-sm text-gray-600">insights captured</p>
+            </div>
+            <Lightbulb className="h-8 w-8 text-yellow-600" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Meeting Type</p>
+              <p className="text-lg font-semibold text-gray-900 capitalize">
+                {meeting.meeting_type?.replace('-', ' ') || 'Unknown'}
+              </p>
+              <p className="text-sm text-gray-600">interaction mode</p>
+            </div>
+            <Award className="h-8 w-8 text-indigo-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-indigo-900 mb-2">Meeting Actions</h3>
+            <p className="text-indigo-700">Export, share, or review your meeting data</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button className="px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
+              <Download size={16} />
+              <span>Export Summary</span>
+            </button>
+            <button className="px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
+              <Share2 size={16} />
+              <span>Share</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('my-meetings')}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Meetings</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Stakeholders */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <Users className="mr-2" size={20} />
+          Meeting Participants
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          {meeting.stakeholder_names?.map((name, index) => (
+            <div key={index} className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {name?.charAt(0) || 'S'}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">{name}</p>
+                <p className="text-xs text-gray-600">{meeting.stakeholder_roles?.[index] || 'Stakeholder'}</p>
+              </div>
+            </div>
+          )) || (
+            <p className="text-gray-500 italic">No participants information available</p>
+          )}
+        </div>
+      </div>
+
+      {/* Topics & Insights */}
+      {((meeting.topics_discussed && meeting.topics_discussed.length > 0) || (meeting.key_insights && meeting.key_insights.length > 0)) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {meeting.topics_discussed && meeting.topics_discussed.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Tag className="mr-2" size={20} />
+                Topics Discussed
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {meeting.topics_discussed.map((topic, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium"
+                  >
+                    {topic}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {meeting.key_insights && meeting.key_insights.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Lightbulb className="mr-2" size={20} />
+                Key Insights
+              </h3>
+              <div className="space-y-2">
+                {meeting.key_insights.map((insight, index) => (
+                  <div key={index} className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-sm text-gray-700">{insight}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* NEW: Meeting Summary and Raw Transcript Tabs */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             <button
@@ -174,132 +394,51 @@ export const MeetingHistoryView: React.FC = () => {
             </button>
           </nav>
         </div>
-      </div>
 
-      {/* Quick Stats */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-green-900 font-medium">Meeting Completed Successfully</span>
-          </div>
-          <div className="flex items-center space-x-6 text-sm">
-            <div className="text-center">
-              <span className="text-green-600 font-medium">{meeting.total_messages} Messages</span>
-            </div>
-            <div className="text-center">
-              <span className="text-green-600 font-medium">{meeting.key_insights?.length || 0} Key Insights</span>
-            </div>
-            <div className="text-center">
-              <span className="text-green-600 font-medium">{meeting.stakeholder_names?.length || 0} Participants</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        {activeTab === 'summary' ? (
-          <div className="space-y-6">
-            {meeting.meeting_summary ? (
-              <div className="prose max-w-none">
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">AI-Generated Summary</h4>
-                  <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {meeting.meeting_summary}
+        <div className="p-6">
+          {activeTab === 'summary' ? (
+            <div className="space-y-6">
+              {meeting.meeting_summary ? (
+                <div className="prose max-w-none">
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">AI-Generated Summary</h4>
+                    <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {meeting.meeting_summary}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Summary Available</h3>
-                <p className="text-gray-600">The meeting summary could not be generated or is still processing.</p>
-              </div>
-            )}
-
-            {/* Additional Meeting Insights */}
-            {meeting.key_insights && meeting.key_insights.length > 0 && (
-              <div className="bg-yellow-50 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Lightbulb className="w-5 h-5 text-yellow-600 mr-2" />
-                  Key Insights
-                </h4>
-                <div className="space-y-2">
-                  {meeting.key_insights.map((insight, index) => (
-                    <div key={index} className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm text-gray-700">{insight}</p>
-                    </div>
-                  ))}
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Summary Available</h3>
+                  <p className="text-gray-600">The meeting summary could not be generated or is still processing.</p>
                 </div>
-              </div>
-            )}
-
-            {/* Topics Discussed */}
-            {meeting.topics_discussed && meeting.topics_discussed.length > 0 && (
-              <div className="bg-blue-50 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Tag className="w-5 h-5 text-blue-600 mr-2" />
-                  Topics Discussed
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {meeting.topics_discussed.map((topic, index) => (
-                    <span 
-                      key={index}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="text-lg font-semibold text-gray-900">Complete Conversation</h4>
-              <span className="text-sm text-gray-600">
-                {meeting.transcript?.length || 0} messages • {formatDuration(meeting.duration)}
-              </span>
+              )}
             </div>
-
-            {meeting.transcript && meeting.transcript.length > 0 ? (
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {meeting.transcript.map((message, index) => (
-                  <TranscriptMessage key={index} message={message} />
-                ))}
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-6">
+                <h4 className="text-lg font-semibold text-gray-900">Complete Conversation</h4>
+                <span className="text-sm text-gray-600">
+                  {meeting.transcript?.length || 0} messages • {formatDuration(meeting.duration)}
+                </span>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Transcript Available</h3>
-                <p className="text-gray-600">The conversation transcript could not be recorded or is empty.</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
-      {/* Meeting Actions */}
-      <div className="mt-6 flex items-center justify-between">
-        <button
-          onClick={() => setCurrentView('my-meetings')}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          ← Back to My Meetings
-        </button>
-        
-        <div className="flex items-center space-x-3">
-          <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
-            <Download size={16} className="inline mr-2" />
-            Export Summary
-          </button>
-          <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
-            <Share2 size={16} className="inline mr-2" />
-            Share
-          </button>
+              {meeting.transcript && meeting.transcript.length > 0 ? (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {meeting.transcript.map((message, index) => (
+                    <TranscriptMessage key={index} message={message} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Transcript Available</h3>
+                  <p className="text-gray-600">The conversation transcript could not be recorded or is empty.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
