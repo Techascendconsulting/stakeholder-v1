@@ -1315,30 +1315,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       <div className="flex-1 flex flex-col min-h-0">
         {/* Main Video Area */}
         <div className="flex-1 p-4 flex items-center justify-center">
-          {/* Thinking Indicator - appears above participants */}
-          {(thinkingStakeholders.size > 0 || dynamicFeedback) && (
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-600">
-                {dynamicFeedback ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                    <span className="text-blue-200 text-sm font-medium">{dynamicFeedback}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                    <span className="text-orange-200 text-sm font-medium">
-                      {Array.from(thinkingStakeholders).map(id => {
-                        const stakeholder = selectedStakeholders.find(s => s.id === id);
-                        return stakeholder?.name || 'Stakeholder';
-                      }).join(', ')} thinking...
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           <div className="flex flex-col gap-4 max-h-[calc(100vh-280px)] items-center">
             {(() => {
               const totalParticipants = allParticipants.length;
@@ -1450,6 +1426,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
         {/* Message Input Area */}
         <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
+          {/* Dynamic Feedback Display */}
+          {dynamicFeedback && (
+            <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+              <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
+            </div>
+          )}
+          
           <div className="flex space-x-3">
             <input
               ref={inputRef}
