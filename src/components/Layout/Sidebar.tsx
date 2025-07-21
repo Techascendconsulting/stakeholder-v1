@@ -29,6 +29,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Environment indicator for cost awareness
+  const environment = import.meta.env.VITE_APP_ENV || 'development';
+  const isTestMode = environment === 'development';
+
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'projects', label: 'Training Projects', icon: FolderOpen },
@@ -89,6 +93,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             )}
           </button>
         </div>
+
+        {/* Environment Indicator */}
+        {!isCollapsed && (
+          <div className={`mx-4 mt-3 mb-2 px-2 py-1 rounded-md text-xs font-medium flex items-center space-x-1 ${
+            isTestMode 
+              ? 'bg-green-500/20 text-green-200 border border-green-500/30' 
+              : 'bg-orange-500/20 text-orange-200 border border-orange-500/30'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${isTestMode ? 'bg-green-400' : 'bg-orange-400'}`}></div>
+            <span>{isTestMode ? '🧪 TEST MODE' : '🚀 PRODUCTION'}</span>
+            {isTestMode && <span className="text-green-300">(85% cheaper)</span>}
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
