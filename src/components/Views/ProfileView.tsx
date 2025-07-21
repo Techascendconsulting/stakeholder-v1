@@ -50,6 +50,15 @@ export const ProfileView: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (user) {
+      console.log('🔍 User object in Profile:', {
+        email: user.email,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        updated_at: user.updated_at,
+        full_user: user
+      });
+    }
     loadProfile();
   }, [user?.id]);
 
@@ -162,6 +171,30 @@ export const ProfileView: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const formatLastSignIn = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    } else if (diffInDays === 1) {
+      return 'Yesterday';
+    } else if (diffInDays < 7) {
+      return `${diffInDays} days ago`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
   };
 
   const tabs = [
@@ -428,27 +461,33 @@ export const ProfileView: React.FC = () => {
                   <Shield className="mr-2 text-indigo-600" size={20} />
                   Account Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-700">Email:</span>
-                    <span className="ml-2 text-gray-600">{user?.email}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Account Created:</span>
-                    <span className="ml-2 text-gray-600">
-                      {user?.created_at ? formatJoinDate(user.created_at) : 'Unknown'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">User ID:</span>
-                    <span className="ml-2 text-gray-600 font-mono text-xs">{user?.id}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Last Sign In:</span>
-                    <span className="ml-2 text-gray-600">
-                      {user?.last_sign_in_at ? formatJoinDate(user.last_sign_in_at) : 'Unknown'}
-                    </span>
-                  </div>
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                   <div>
+                     <span className="font-medium text-gray-700">Email:</span>
+                     <span className="ml-2 text-gray-600">{user?.email}</span>
+                   </div>
+                   <div>
+                     <span className="font-medium text-gray-700">Account Created:</span>
+                     <span className="ml-2 text-gray-600">
+                       {user?.created_at ? formatJoinDate(user.created_at) : 'Unknown'}
+                     </span>
+                   </div>
+                   <div>
+                     <span className="font-medium text-gray-700">User ID:</span>
+                     <span className="ml-2 text-gray-600 font-mono text-xs">{user?.id}</span>
+                   </div>
+                   <div>
+                     <span className="font-medium text-gray-700">Last Sign In:</span>
+                     <span className="ml-2 text-gray-600">
+                       {user?.last_sign_in_at ? formatLastSignIn(user.last_sign_in_at) : 'Current session'}
+                     </span>
+                     {/* Debug info - remove this later */}
+                     {user?.last_sign_in_at && (
+                       <div className="text-xs text-gray-400 mt-1">
+                         Raw: {user.last_sign_in_at}
+                       </div>
+                     )}
+                   </div>
                 </div>
               </div>
 
