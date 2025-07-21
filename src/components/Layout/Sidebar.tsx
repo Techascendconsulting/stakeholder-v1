@@ -1,5 +1,5 @@
-import React from 'react';
-import { LayoutDashboard, FolderOpen, MessageSquare, FileText, Plus, User, LogOut, GraduationCap, BookOpen } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutDashboard, FolderOpen, MessageSquare, FileText, Plus, User, LogOut, GraduationCap, BookOpen, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -10,49 +10,38 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
   const { user, signOut } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const menuItems = [
     { 
       id: 'dashboard', 
       label: 'Dashboard', 
-      icon: LayoutDashboard,
-      description: 'Your progress overview'
+      icon: LayoutDashboard
     },
     { 
       id: 'projects', 
       label: 'Training Projects', 
-      icon: FolderOpen,
-      description: 'Practice scenarios'
+      icon: FolderOpen
     },
     { 
       id: 'my-meetings', 
       label: 'My Meetings', 
-      icon: MessageSquare,
-      description: 'Interview history'
+      icon: MessageSquare
     },
     { 
       id: 'notes', 
       label: 'Interview Notes', 
-      icon: BookOpen,
-      description: 'Your observations'
+      icon: BookOpen
     },
     { 
       id: 'deliverables', 
       label: 'Deliverables', 
-      icon: FileText,
-      description: 'Generated documents'
+      icon: FileText
     },
     { 
       id: 'custom-project', 
       label: 'Create Project', 
-      icon: Plus,
-      description: 'Build your own scenario'
-    },
-    { 
-      id: 'profile', 
-      label: 'Profile', 
-      icon: User,
-      description: 'Settings & preferences'
+      icon: Plus
     },
   ];
 
@@ -65,23 +54,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   };
 
   return (
-    <div className={`bg-gradient-to-b from-slate-900 to-slate-800 text-white w-72 min-h-screen flex flex-col shadow-2xl ${className}`}>
+    <div className={`bg-gradient-to-b from-purple-50 to-indigo-50 border-r border-purple-100 w-64 min-h-screen flex flex-col shadow-sm ${className}`}>
       {/* Logo/Brand */}
-      <div className="p-8 border-b border-slate-700/50">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-            <GraduationCap className="w-7 h-7 text-white" />
+      <div className="p-6 border-b border-purple-100">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
+            <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">BA Interview Pro</h1>
-            <p className="text-sm text-slate-300">Professional Development</p>
+            <h1 className="text-lg font-bold text-gray-900">BA Interview Pro</h1>
+            <p className="text-xs text-purple-600">Professional Development</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-6">
-        <ul className="space-y-2">
+      <nav className="flex-1 p-4">
+        <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -90,23 +79,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
               <li key={item.id}>
                 <button
                   onClick={() => setCurrentView(item.id as any)}
-                  className={`w-full flex items-center space-x-4 px-4 py-3 rounded-xl text-left transition-all duration-300 group ${
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-[1.02]'
-                      : 'text-slate-300 hover:bg-slate-700/50 hover:text-white hover:transform hover:scale-[1.01]'
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm'
+                      : 'text-gray-700 hover:bg-purple-100 hover:text-purple-700'
                   }`}
                 >
-                  <Icon size={20} className={`transition-colors duration-300 ${
-                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <span className="font-medium">{item.label}</span>
-                    <p className={`text-xs mt-0.5 transition-colors duration-300 ${
-                      isActive ? 'text-indigo-100' : 'text-slate-500 group-hover:text-slate-300'
-                    }`}>
-                      {item.description}
-                    </p>
-                  </div>
+                  <Icon size={18} className={isActive ? 'text-white' : 'text-gray-500'} />
+                  <span>{item.label}</span>
                 </button>
               </li>
             );
@@ -114,26 +94,54 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         </ul>
       </nav>
 
-      {/* User Info & Sign Out */}
-      <div className="p-6 border-t border-slate-700/50">
-        <div className="flex items-center space-x-3 mb-4 p-3 bg-slate-800/50 rounded-lg">
-          <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white truncate">
-              {user?.email?.split('@')[0] || 'User'}
-            </p>
-            <p className="text-xs text-slate-400">Business Analyst</p>
-          </div>
+      {/* User Section with Profile */}
+      <div className="p-4 border-t border-purple-100">
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="w-full flex items-center space-x-3 p-3 bg-white rounded-lg border border-purple-100 hover:border-purple-200 transition-colors"
+          >
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.email?.split('@')[0] || 'User'}
+              </p>
+              <p className="text-xs text-gray-600">Business Analyst</p>
+            </div>
+            {showUserMenu ? (
+              <ChevronUp size={16} className="text-gray-400" />
+            ) : (
+              <ChevronDown size={16} className="text-gray-400" />
+            )}
+          </button>
+
+          {/* User Dropdown Menu */}
+          {showUserMenu && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg border border-purple-100 shadow-lg overflow-hidden">
+              <button
+                onClick={() => {
+                  setCurrentView('profile');
+                  setShowUserMenu(false);
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+              >
+                <Settings size={16} className="text-gray-500" />
+                <span>Profile & Settings</span>
+              </button>
+              <div className="border-t border-gray-100">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
+                >
+                  <LogOut size={16} className="text-gray-500" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-slate-300 hover:bg-slate-700/50 hover:text-white rounded-xl transition-all duration-300 group"
-        >
-          <LogOut size={18} className="text-slate-400 group-hover:text-white transition-colors duration-300" />
-          <span>Sign Out</span>
-        </button>
       </div>
     </div>
   );
