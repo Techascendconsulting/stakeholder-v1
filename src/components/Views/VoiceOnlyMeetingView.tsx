@@ -1486,7 +1486,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               {/* Transcript Panel - slides up from text area */}
               <div 
                 className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
-                  transcriptPanelOpen ? 'max-h-48' : 'max-h-0'
+                  transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
                 }`}
               >
                 {/* Transcript Header */}
@@ -1515,49 +1515,43 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                 </div>
 
                 {/* Transcript Content */}
-                <div className="overflow-y-auto p-4 space-y-3" style={{ height: '140px' }}>
+                <div className="overflow-y-auto p-3 space-y-2" style={{ height: '80px' }}>
                   {transcriptMessages.length === 0 ? (
                     <div className="flex items-center justify-center h-full text-gray-400">
                       <div className="text-center">
-                        <div className="w-8 h-8 mx-auto mb-2 opacity-50">
+                        <div className="w-6 h-6 mx-auto mb-1 opacity-50">
                           <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                           </svg>
                         </div>
-                        <p className="text-xs">Transcript will appear here</p>
+                        <p className="text-xs">Transcript appears here</p>
                       </div>
                     </div>
                   ) : (
                     transcriptMessages.map((message, index) => (
-                      <div key={message.id} className="flex space-x-3">
+                      <div key={message.id} className="flex space-x-2">
                         <div className="flex-shrink-0">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                             message.speaker === 'user' 
                               ? 'bg-blue-600 text-white' 
                               : 'bg-purple-600 text-white'
                           }`}>
                             {message.speaker === 'user' 
-                              ? 'You' 
-                              : (message.stakeholderName || message.speaker).split(' ').map(n => n[0]).join('').slice(0, 2)
+                              ? 'U' 
+                              : (message.stakeholderName || message.speaker).split(' ').map(n => n[0]).join('').slice(0, 1)
                             }
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="text-white font-medium text-sm">
+                          <div className="flex items-center space-x-1 mb-1">
+                            <span className="text-white font-medium text-xs">
                               {message.speaker === 'user' ? 'You' : (message.stakeholderName || message.speaker)}
                             </span>
-                            {message.stakeholderRole && message.speaker !== 'user' && (
-                              <>
-                                <span className="text-gray-400">•</span>
-                                <span className="text-gray-400 text-xs">{message.stakeholderRole}</span>
-                              </>
-                            )}
                             <span className="text-gray-500 text-xs">
                               {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-gray-200 text-sm leading-relaxed">{message.content}</p>
+                          <p className="text-gray-200 text-xs leading-relaxed">{message.content}</p>
                         </div>
                       </div>
                     ))
