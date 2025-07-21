@@ -91,12 +91,12 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
          </div>
        )}
 
-       {/* Thinking indicator */}
-       {isThinking && !isCurrentSpeaker && (
-         <div className="absolute top-2 right-2 bg-yellow-500 p-1 rounded-full animate-pulse">
-           <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-         </div>
-       )}
+               {/* Thinking indicator */}
+        {isThinking && !isCurrentSpeaker && (
+          <div className="absolute top-2 right-2 bg-orange-500 p-1 rounded-full animate-pulse">
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+          </div>
+        )}
     </div>
   );
 };
