@@ -24,8 +24,20 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  // Define colors for different participants to match the image design
+  const getParticipantColor = (name: string) => {
+    const colors = [
+      'bg-yellow-500', // Sarah Chen
+      'bg-gray-600',   // Mike Johnson  
+      'bg-gray-600',   // Emily Rodriguez
+      'bg-red-500'     // Joy Nadim
+    ];
+    const index = Math.abs(name.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length;
+    return colors[index];
+  };
+
   return (
-    <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full flex flex-col items-center justify-center border-2 transition-all duration-300 hover:bg-gray-750">
+    <div className="relative bg-gray-800 rounded-lg overflow-hidden h-full flex flex-col justify-between border-2 transition-all duration-300 hover:bg-gray-750">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
         <div className="absolute inset-0 rounded-lg border-4 border-green-400 animate-pulse z-10">
@@ -40,14 +52,11 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
         </div>
       )}
       
-      {/* Dark Background */}
-      <div className="absolute inset-0 bg-gray-700"></div>
-      
-      {/* Content Overlay */}
-      <div className="relative z-20 flex flex-col items-center justify-center h-full p-4">
-        {/* Full Photo Portrait */}
+      {/* Main Content Area */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        {/* Profile Photo or Initials */}
         {!isUser && participant.photo ? (
-          <div className="w-32 h-40 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-4">
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <img 
               src={participant.photo} 
               alt={participant.name}
@@ -55,42 +64,48 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
             />
           </div>
         ) : (
-          <div className="w-32 h-40 rounded-lg bg-gray-700 flex items-center justify-center text-white text-3xl font-bold border-4 border-white shadow-lg mb-4">
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg ${getParticipantColor(participant.name)}`}>
             {getInitials(participant.name)}
           </div>
         )}
-        
-        {/* Status Indicators */}
-        <div className="absolute top-2 left-2">
-          {isCurrentSpeaker && (
-            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
-              <Volume2 className="w-4 h-4 mr-1" />
-              Speaking
-            </div>
-          )}
-          {isThinking && !isCurrentSpeaker && (
-            <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center shadow-lg animate-pulse">
-              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-bounce"></div>
-              Thinking
-            </div>
-          )}
-        </div>
-        
-        {/* Name Bar */}
-        <div className="bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg backdrop-blur-sm text-center">
-          <h3 className="font-medium text-sm truncate">{participant.name}</h3>
-          <p className="text-xs text-gray-300 truncate">{participant.role}</p>
-        </div>
-        
-        {/* Speaking Animation Dots */}
+      </div>
+      
+      {/* Status Indicators */}
+      <div className="absolute top-3 left-3">
         {isCurrentSpeaker && (
-          <div className="absolute bottom-16 right-2 flex space-x-1">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '300ms' }}></div>
+          <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center shadow-lg animate-pulse">
+            <Volume2 className="w-3 h-3 mr-1" />
+            Speaking
+          </div>
+        )}
+        {isThinking && !isCurrentSpeaker && (
+          <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center shadow-lg animate-pulse">
+            <div className="w-1.5 h-1.5 bg-white rounded-full mr-1 animate-bounce"></div>
+            Thinking
           </div>
         )}
       </div>
+
+      {/* Mute indicator in top right */}
+      <div className="absolute top-3 right-3">
+        <div className="bg-red-600 text-white p-1.5 rounded-full shadow-lg">
+          <MicOff className="w-3 h-3" />
+        </div>
+      </div>
+      
+      {/* Name Bar at Bottom */}
+      <div className="bg-black bg-opacity-80 text-white px-3 py-2 text-center">
+        <h3 className="font-medium text-sm truncate">{participant.name}</h3>
+      </div>
+      
+      {/* Speaking Animation Dots */}
+      {isCurrentSpeaker && (
+        <div className="absolute bottom-12 right-3 flex space-x-1">
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '150ms' }}></div>
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '300ms' }}></div>
+        </div>
+      )}
     </div>
   );
 };
@@ -982,10 +997,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     ...selectedStakeholders
   ];
 
-  // Calculate optimal grid layout for portrait photos
+  // Calculate optimal grid layout for video call style
   const getGridCols = (count: number) => {
     if (count <= 2) return 'grid-cols-1 lg:grid-cols-2';
-    if (count <= 4) return 'grid-cols-2 lg:grid-cols-4';
+    if (count <= 4) return 'grid-cols-2';
     if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
     return 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4';
   };
@@ -993,65 +1008,47 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-3 flex-shrink-0">
+      <div className="bg-gray-900 border-b border-gray-700 px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           {/* Left section */}
           <div className="flex items-center space-x-4">
-            <button
-              onClick={handleEndMeeting}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
             <div>
               <h1 className="text-lg font-semibold text-white">
-                {selectedProject?.name}
+                Team Meeting
               </h1>
-              <p className="text-sm text-gray-400">Voice Meeting</p>
+              <p className="text-sm text-gray-400">{formatTime(elapsedTime)}</p>
             </div>
           </div>
 
-          {/* Center section - Speaking Queue */}
-          <div className="flex-1 mx-8">
-            <SpeakingQueueHeader 
-              currentSpeaker={responseQueue.current}
-              upcomingQueue={responseQueue.upcoming}
-            />
-          </div>
-
-          {/* Right section - Timer, participants, and controls */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-gray-400 space-x-2">
-              <Clock className="h-4 w-4" />
-              <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
-            </div>
-            <div className="flex items-center text-gray-400 space-x-2">
+          {/* Center section - Meeting info */}
+          <div className="flex-1 mx-8 text-center">
+            <div className="flex items-center justify-center space-x-2 text-gray-400">
               <Users className="h-4 w-4" />
               <span className="text-sm">{allParticipants.length}</span>
             </div>
+          </div>
+
+          {/* Right section - Meeting controls */}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleStopCurrent}
+              className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-full transition-colors"
+              title="Stop current speaker"
+            >
+              <Square className="h-4 w-4" />
+            </button>
             
-            {/* Meeting Controls - Moved to top right */}
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleStopCurrent}
-                className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-lg transition-colors"
-                title="Stop current speaker"
-              >
-                <Square className="h-4 w-4" />
-              </button>
-              
-              <button
-                onClick={handleEndMeeting}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-1"
-              >
-                <PhoneOff className="h-4 w-4" />
-                <span>End</span>
-              </button>
-              
-              <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-lg transition-colors">
-                <MoreVertical className="h-4 w-4" />
-              </button>
-            </div>
+            <button
+              onClick={handleEndMeeting}
+              className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
+              title="End meeting"
+            >
+              <PhoneOff className="h-4 w-4" />
+            </button>
+            
+            <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 p-2 rounded-full transition-colors">
+              <MoreVertical className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>
@@ -1059,10 +1056,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       {/* Main Content - Fixed height, no scrolling */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* Participant Grid - Fixed height with equal-sized cards */}
-        <div className="flex-1 p-4 min-h-0">
-          <div className={`grid ${getGridCols(allParticipants.length)} gap-4 h-full`}>
+        <div className="flex-1 p-6 min-h-0">
+          <div className={`grid ${getGridCols(allParticipants.length)} gap-6 h-full max-w-6xl mx-auto`}>
             {allParticipants.map((participant, index) => (
-              <div key={participant.name} className="h-full min-h-[280px] max-h-[380px]">
+              <div key={participant.name} className="h-full min-h-[320px] max-h-[450px]">
                 <ParticipantCard
                   participant={participant}
                   isCurrentSpeaker={currentSpeaker?.name === participant.name}
@@ -1075,47 +1072,48 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         </div>
 
         {/* Bottom Controls - Fixed height */}
-        <div className="bg-gray-800 border-t border-gray-700 p-4 flex-shrink-0">
+        <div className="bg-gray-900 border-t border-gray-700 p-6 flex-shrink-0">
           {/* Question Input */}
-          <div className="flex space-x-3">
-            <input
-              ref={inputRef}
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask a question or start the discussion..."
-              className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setShowVoiceModal(true)}
-                className={`p-3 rounded-lg transition-colors ${
-                  isTranscribing 
-                    ? 'bg-red-600 text-white hover:bg-red-700' 
-                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-
-                title="Voice input"
-              >
-                {isTranscribing ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-              </button>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
-                className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-                title="Send message"
-              >
-                <Send className="h-5 w-5" />
-              </button>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex space-x-4">
+              <input
+                ref={inputRef}
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
+                className="flex-1 p-4 bg-gray-800 border border-gray-600 rounded-full text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowVoiceModal(true)}
+                  className={`p-4 rounded-full transition-colors ${
+                    isTranscribing 
+                      ? 'bg-red-600 text-white hover:bg-red-700' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                  title="Voice input"
+                >
+                  {isTranscribing ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </button>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim()}
+                  className="p-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                  title="Send message"
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </div>
             </div>
+            
+            {isGeneratingResponse && (
+              <div className="flex items-center justify-center mt-4 text-gray-400">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
+                Generating response...
+              </div>
+            )}
           </div>
-          
-          {isGeneratingResponse && (
-            <div className="flex items-center justify-center mt-3 text-gray-400">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mr-2"></div>
-              Generating response...
-            </div>
-          )}
         </div>
       </div>
 
