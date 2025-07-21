@@ -50,15 +50,6 @@ export const ProfileView: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      console.log('🔍 User object in Profile:', {
-        email: user.email,
-        created_at: user.created_at,
-        last_sign_in_at: user.last_sign_in_at,
-        updated_at: user.updated_at,
-        full_user: user
-      });
-    }
     loadProfile();
   }, [user?.id]);
 
@@ -477,16 +468,22 @@ export const ProfileView: React.FC = () => {
                      <span className="ml-2 text-gray-600 font-mono text-xs">{user?.id}</span>
                    </div>
                    <div>
-                     <span className="font-medium text-gray-700">Last Sign In:</span>
+                     <span className="font-medium text-gray-700">Last Password Sign In:</span>
                      <span className="ml-2 text-gray-600">
-                       {user?.last_sign_in_at ? formatLastSignIn(user.last_sign_in_at) : 'Current session'}
+                       {user?.last_sign_in_at ? formatLastSignIn(user.last_sign_in_at) : 'Never'}
                      </span>
-                     {/* Debug info - remove this later */}
-                     {user?.last_sign_in_at && (
-                       <div className="text-xs text-gray-400 mt-1">
-                         Raw: {user.last_sign_in_at}
-                       </div>
-                     )}
+                     <div className="text-xs text-gray-500 mt-1">
+                       Active session • Currently signed in
+                     </div>
+                   </div>
+                   <div>
+                     <span className="font-medium text-gray-700">Session Status:</span>
+                     <span className="ml-2 text-green-600 font-medium">
+                       ✓ Active
+                     </span>
+                     <div className="text-xs text-gray-500 mt-1">
+                       Last updated: {user?.updated_at ? formatLastSignIn(user.updated_at) : 'Unknown'}
+                     </div>
                    </div>
                 </div>
               </div>
