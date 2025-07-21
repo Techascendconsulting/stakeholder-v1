@@ -45,9 +45,9 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
       
       {/* Content Overlay */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full p-4">
-        {/* Full Photo instead of circular avatar */}
+        {/* Full Photo Portrait */}
         {!isUser && participant.photo ? (
-          <div className="w-24 h-24 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-4">
+          <div className="w-32 h-40 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-4">
             <img 
               src={participant.photo} 
               alt={participant.name}
@@ -55,7 +55,7 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
             />
           </div>
         ) : (
-          <div className="w-24 h-24 rounded-lg bg-gray-700 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg mb-4">
+          <div className="w-32 h-40 rounded-lg bg-gray-700 flex items-center justify-center text-white text-3xl font-bold border-4 border-white shadow-lg mb-4">
             {getInitials(participant.name)}
           </div>
         )}
@@ -982,12 +982,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     ...selectedStakeholders
   ];
 
-  // Calculate optimal grid layout based on participant count
+  // Calculate optimal grid layout for portrait photos
   const getGridCols = (count: number) => {
-    if (count <= 2) return 'grid-cols-1 md:grid-cols-2';
-    if (count <= 4) return 'grid-cols-2 md:grid-cols-2';
+    if (count <= 2) return 'grid-cols-1 lg:grid-cols-2';
+    if (count <= 4) return 'grid-cols-2 lg:grid-cols-4';
     if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
-    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+    return 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4';
   };
 
   return (
@@ -1062,7 +1062,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         <div className="flex-1 p-4 min-h-0">
           <div className={`grid ${getGridCols(allParticipants.length)} gap-4 h-full`}>
             {allParticipants.map((participant, index) => (
-              <div key={participant.name} className="h-full min-h-[200px] max-h-[300px]">
+              <div key={participant.name} className="h-full min-h-[280px] max-h-[380px]">
                 <ParticipantCard
                   participant={participant}
                   isCurrentSpeaker={currentSpeaker?.name === participant.name}
