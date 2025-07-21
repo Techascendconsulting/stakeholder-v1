@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera } from 'lucide-react';
+import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
+import { supabase } from '../../lib/supabase';
 
 export const ProfileView: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'notifications'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'notifications' | 'security'>('profile');
 
   // Profile state
   const [displayName, setDisplayName] = useState('');
@@ -23,6 +24,15 @@ export const ProfileView: React.FC = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [meetingReminders, setMeetingReminders] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(false);
+
+  // Security state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -94,10 +104,71 @@ export const ProfileView: React.FC = () => {
     }
   };
 
+  const changePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert('Please fill in all password fields.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert('New passwords do not match.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert('New password must be at least 6 characters long.');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      // First verify the current password by attempting to sign in
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword
+      });
+
+      if (verifyError) {
+        alert('Current password is incorrect.');
+        return;
+      }
+
+      // Update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        alert('Error updating password: ' + updateError.message);
+        return;
+      }
+
+      // Clear the form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      alert('Password updated successfully!');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      alert('An error occurred while changing your password.');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const formatJoinDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'security', label: 'Security', icon: Shield },
   ];
 
   return (
@@ -126,7 +197,13 @@ export const ProfileView: React.FC = () => {
               {displayName || user?.email?.split('@')[0] || 'User'}
             </h2>
             <p className="text-indigo-100 mb-2">{user?.email}</p>
-            <p className="text-indigo-200 text-sm">{role} • {company || 'Independent'}</p>
+            <div className="flex items-center space-x-4 text-sm">
+              <p className="text-indigo-200">{role} • {company || 'Independent'}</p>
+              <span className="text-indigo-300">•</span>
+              <p className="text-indigo-200">
+                Joined {user?.created_at ? formatJoinDate(user.created_at) : 'Unknown'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -343,21 +420,170 @@ export const ProfileView: React.FC = () => {
             </div>
           )}
 
-          {/* Save Button */}
-          <div className="flex justify-end pt-6 border-t border-gray-200 mt-8">
-            <button
-              onClick={saveProfile}
-              disabled={loading}
-              className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Save size={18} />
-              )}
-              <span>{loading ? 'Saving...' : 'Save Changes'}</span>
-            </button>
-          </div>
+          {activeTab === 'security' && (
+            <div className="space-y-6">
+              {/* Account Information */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Shield className="mr-2 text-indigo-600" size={20} />
+                  Account Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-700">Email:</span>
+                    <span className="ml-2 text-gray-600">{user?.email}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Account Created:</span>
+                    <span className="ml-2 text-gray-600">
+                      {user?.created_at ? formatJoinDate(user.created_at) : 'Unknown'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">User ID:</span>
+                    <span className="ml-2 text-gray-600 font-mono text-xs">{user?.id}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Last Sign In:</span>
+                    <span className="ml-2 text-gray-600">
+                      {user?.last_sign_in_at ? formatJoinDate(user.last_sign_in_at) : 'Unknown'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Change Password */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Lock className="mr-2 text-indigo-600" size={20} />
+                  Change Password
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Enter your current password and choose a new secure password.
+                </p>
+
+                <div className="space-y-4">
+                  {/* Current Password */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Current Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showCurrentPassword ? 'text' : 'password'}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter your current password"
+                        className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* New Password */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter your new password (min. 6 characters)"
+                        className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirm New Password */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm your new password"
+                        className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Password Requirements */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-blue-900 mb-2">Password Requirements:</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li className="flex items-center">
+                        <span className={`w-2 h-2 rounded-full mr-2 ${newPassword.length >= 6 ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                        At least 6 characters long
+                      </li>
+                      <li className="flex items-center">
+                        <span className={`w-2 h-2 rounded-full mr-2 ${newPassword !== confirmPassword || !confirmPassword ? 'bg-gray-300' : newPassword === confirmPassword ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        Passwords match
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Change Password Button */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={changePassword}
+                      disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                      className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {passwordLoading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Lock size={18} />
+                      )}
+                      <span>{passwordLoading ? 'Updating...' : 'Update Password'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Save Button - Only show for non-security tabs */}
+          {activeTab !== 'security' && (
+            <div className="flex justify-end pt-6 border-t border-gray-200 mt-8">
+              <button
+                onClick={saveProfile}
+                disabled={loading}
+                className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Save size={18} />
+                )}
+                <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
