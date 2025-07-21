@@ -240,16 +240,34 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   // Enhanced stakeholder response processing - EXACT COPY from transcript meeting
   const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string): Promise<Message[]> => {
+    console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} starting processDynamicStakeholderResponse`);
+    console.log(`🚀 QUEUE DEBUG: Current speaker before: ${currentSpeaking}`);
+    console.log(`🚀 QUEUE DEBUG: Current queue before: [${conversationQueue.join(', ')}]`);
+    
     try {
       // Add to conversation queue to prevent simultaneous speaking
-      setConversationQueue(prev => [...prev, stakeholder.id]);
+      setConversationQueue(prev => {
+        const newQueue = [...prev, stakeholder.id];
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} added to queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
       
       // Wait for turn if someone else is speaking
+      let waitCount = 0;
       while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
+        waitCount++;
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
         await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Safety break after 100 attempts (10 seconds)
+        if (waitCount > 100) {
+          console.error(`🚨 QUEUE ERROR: ${stakeholder.name} waited too long! Breaking wait loop.`);
+          break;
+        }
       }
       
       // Start speaking
+      console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} now taking turn to speak`);
       setCurrentSpeaking(stakeholder.id);
       
       // Dynamic thinking state management
@@ -285,15 +303,24 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Dynamic audio handling based on user preferences and context
       if (globalAudioEnabled) {
-        await speakMessage(responseMessage).catch(console.warn);
+        console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} starting audio playback`);
+        await speakMessage(responseMessage).catch((error) => {
+          console.error(`🚨 AUDIO ERROR: ${stakeholder.name} audio failed:`, error);
+        });
+        console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} finished audio playback`);
       }
       
       // Check for traditional baton passing (keep existing functionality)
       const batonPassedStakeholder = detectBatonPassing(response, updatedMessages);
       
       // Finish speaking
+      console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} finished speaking, clearing currentSpeaking`);
       setCurrentSpeaking(null);
-      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+      setConversationQueue(prev => {
+        const newQueue = prev.filter(id => id !== stakeholder.id);
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} removed from queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
       
       // Handle traditional baton passing if detected and no mentions were processed
       if (batonPassedStakeholder && !updatedMessages.find(msg => 
@@ -307,14 +334,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       }
       
       return updatedMessages;
-    } catch (error) {
-      console.error('Error processing stakeholder response:', error);
-      removeStakeholderFromThinking(stakeholder.id);
-      setDynamicFeedback(null);
-      
-      // Clean up conversation state on error
-      setCurrentSpeaking(null);
-      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+          } catch (error) {
+        console.error(`🚨 QUEUE ERROR: Error in ${stakeholder.name} response:`, error);
+        removeStakeholderFromThinking(stakeholder.id);
+        setDynamicFeedback(null);
+        
+        // Clean up conversation state on error
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} error cleanup - clearing currentSpeaking`);
+        setCurrentSpeaking(null);
+        setConversationQueue(prev => {
+          const newQueue = prev.filter(id => id !== stakeholder.id);
+          console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} error cleanup - removed from queue. New queue: [${newQueue.join(', ')}]`);
+          return newQueue;
+        });
       
       // Force cleanup of thinking state on error
       setTimeout(() => {
@@ -395,6 +427,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         });
         
         // Trigger all mentioned stakeholders to respond
+        console.log(`🚀 MAIN DEBUG: Starting sequential processing of ${userMentionResult.mentionedStakeholders.length} stakeholders`);
         let workingMessages = currentMessages;
         for (let i = 0; i < userMentionResult.mentionedStakeholders.length; i++) {
           const mentionedStakeholderContext = userMentionResult.mentionedStakeholders[i];
@@ -410,12 +443,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           });
           
           if (mentionedStakeholder) {
-            console.log(`✅ About to trigger response for: ${mentionedStakeholder.name}`);
+            console.log(`🚀 MAIN DEBUG: About to process stakeholder ${i + 1}/${userMentionResult.mentionedStakeholders.length}: ${mentionedStakeholder.name}`);
             
             // Process the response and update working messages
             workingMessages = await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, workingMessages, 'direct_mention');
             
-            console.log(`✅ Completed response for: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`);
+            console.log(`🚀 MAIN DEBUG: Completed stakeholder ${i + 1}/${userMentionResult.mentionedStakeholders.length}: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`);
             
             // Keep the current speaker visible for a moment after they finish
             await new Promise(resolve => setTimeout(resolve, 2000));
