@@ -514,7 +514,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setPlayingMessageId(null);
     }
 
-    const stakeholder = selectedStakeholders.find(s => s.name === message.speaker);
+    const stakeholder = selectedStakeholders.find(s => s.name === message.speaker || s.id === message.speaker);
     
     // Only stakeholder messages should use Azure TTS
     const voiceId = stakeholder?.voice || null;
@@ -740,45 +740,49 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     const aiService = AIService.getInstance();
     const greetingIteration = conversationDynamics.greetingIterations + 1;
     
-    // Dynamic context for decision making
-    const context = {
-      greetingIteration,
-      lastUserMessage: messageContent,
-      totalParticipants: selectedStakeholders.length,
-      conversationHistory: currentMessages
-    };
-
     console.log(`👋 Adaptive greeting - iteration ${greetingIteration}, phase: ${conversationDynamics.phase}`);
+    console.log(`👥 Total stakeholders in meeting: ${selectedStakeholders.length}`);
 
-    // Dynamic response strategy based on context
+    // FIXED: Handle ALL stakeholders in greeting, not just first 2
     if (greetingIteration === 1 || conversationDynamics.introducedMembers.size === 0) {
-      // Initial introduction
-      const leadStakeholder = selectedStakeholders[0]; // Simple lead selection
-      let workingMessages = await processDynamicStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'introduction_lead');
+      console.log(`🎯 Processing greeting for ALL ${selectedStakeholders.length} stakeholders`);
       
-      setConversationDynamics(prev => ({
-        ...prev,
-        phase: 'introduction_active',
-        leadSpeaker: leadStakeholder,
-        greetingIterations: greetingIteration,
-        introducedMembers: new Set([leadStakeholder.id])
-      }));
-
-      // Dynamic delay for next stakeholder if multiple stakeholders
-      if (selectedStakeholders.length > 1) {
-        setTimeout(async () => {
-          const nextStakeholder = selectedStakeholders.find(s => s.id !== leadStakeholder.id);
-          if (nextStakeholder) {
-            await processDynamicStakeholderResponse(nextStakeholder, messageContent, workingMessages, 'self_introduction');
-            setConversationDynamics(prev => ({
-              ...prev,
-              introducedMembers: new Set([...prev.introducedMembers, nextStakeholder.id])
-            }));
-          }
-        }, 2000);
+      // Process all stakeholders sequentially using the exact transcript meeting pattern
+      let workingMessages = currentMessages;
+      for (let i = 0; i < selectedStakeholders.length; i++) {
+        const stakeholder = selectedStakeholders[i];
+        const responseType = i === 0 ? 'introduction_lead' : 'self_introduction';
+        
+        console.log(`✅ About to trigger greeting response for: ${stakeholder.name} (${i + 1}/${selectedStakeholders.length})`);
+        
+        workingMessages = await processDynamicStakeholderResponse(
+          stakeholder, 
+          messageContent, 
+          workingMessages, 
+          responseType
+        );
+        
+        console.log(`✅ Completed greeting response for: ${stakeholder.name}`);
+        
+        // Update conversation dynamics to track introduced members
+        setConversationDynamics(prev => ({
+          ...prev,
+          phase: 'introduction_active',
+          leadSpeaker: i === 0 ? stakeholder : prev.leadSpeaker,
+          greetingIterations: greetingIteration,
+          introducedMembers: new Set([...prev.introducedMembers, stakeholder.id])
+        }));
+        
+        // Natural pause between stakeholders (except for the last one)
+        if (i < selectedStakeholders.length - 1) {
+          console.log(`⏸️ Pausing 2s before next stakeholder greeting`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       }
+      
+      console.log(`🏁 All ${selectedStakeholders.length} stakeholders have completed their greetings`);
     } else {
-      // Transition to discussion or continued introduction
+      // Transition to discussion
       const facilitator = conversationDynamics.leadSpeaker || selectedStakeholders[0];
       await processDynamicStakeholderResponse(facilitator, messageContent, currentMessages, 'discussion_transition');
       
