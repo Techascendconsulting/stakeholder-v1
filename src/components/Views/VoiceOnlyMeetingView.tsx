@@ -6,6 +6,7 @@ import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
+import { DatabaseService } from '../../lib/database';
 
 interface ParticipantCardProps {
   participant: any;
@@ -170,7 +171,7 @@ const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({
 };
 
 export const VoiceOnlyMeetingView: React.FC = () => {
-  const { selectedProject, selectedStakeholders, setCurrentView } = useApp();
+  const { selectedProject, selectedStakeholders, setCurrentView, user } = useApp();
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
   
   // State management (same as before)
@@ -202,6 +203,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
   const [transcriptMessages, setTranscriptMessages] = useState<Message[]>([]);
 
+  // Background transcript capture (always active)
+  const [backgroundTranscript, setBackgroundTranscript] = useState<Message[]>([]);
+  const [meetingId, setMeetingId] = useState<string | null>(null);
+  const [meetingStartTime, setMeetingStartTime] = useState(Date.now());
+
   // Add conversation dynamics from transcript meeting for adaptive responses
   const [conversationDynamics, setConversationDynamics] = useState({
     phase: 'initial' as 'initial' | 'introduction_active' | 'discussion_active',
@@ -209,6 +215,48 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     leadSpeaker: null as any,
     introducedMembers: new Set<string>()
   });
+
+  // Background transcript capture function (always captures, regardless of UI)
+  const addToBackgroundTranscript = (message: Message) => {
+    setBackgroundTranscript(prev => [...prev, message]);
+    
+    // Also add to visible transcript if enabled
+    if (transcriptionEnabled) {
+      setTranscriptMessages(prev => [...prev, message]);
+    }
+  };
+
+  // Initialize meeting in database
+  useEffect(() => {
+    const initializeMeeting = async () => {
+      if (selectedProject && selectedStakeholders.length > 0 && user?.id && !meetingId) {
+        try {
+          const stakeholderIds = selectedStakeholders.map(s => s.id);
+          const stakeholderNames = selectedStakeholders.map(s => s.name);
+          const stakeholderRoles = selectedStakeholders.map(s => s.role);
+          
+          const newMeetingId = await DatabaseService.createMeeting(
+            user.id,
+            selectedProject.id,
+            selectedProject.name,
+            stakeholderIds,
+            stakeholderNames,
+            stakeholderRoles,
+            'voice-only'
+          );
+          
+          if (newMeetingId) {
+            setMeetingId(newMeetingId);
+            console.log('🎯 Meeting initialized in database:', newMeetingId);
+          }
+        } catch (error) {
+          console.error('Error initializing meeting:', error);
+        }
+      }
+    };
+
+    initializeMeeting();
+  }, [selectedProject, selectedStakeholders, user?.id, meetingId]);
 
   // Generate stakeholder response with context - EXACT COPY from transcript meeting
   const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: string) => {
@@ -327,10 +375,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       let updatedMessages = [...currentMessages, responseMessage];
       setMessages(updatedMessages);
       
-      // Add to transcript if transcription is enabled
-      if (transcriptionEnabled) {
-        setTranscriptMessages(prev => [...prev, responseMessage]);
-      }
+      // Add to background transcript (always captured)
+      addToBackgroundTranscript(responseMessage);
       
       // Force cleanup of thinking state to prevent display issues
       setTimeout(() => {
@@ -509,10 +555,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     let currentMessages = [...messages, userMessage];
     setMessages(currentMessages);
 
-    // Add user message to transcript if transcription is enabled
-    if (transcriptionEnabled) {
-      setTranscriptMessages(prev => [...prev, userMessage]);
-    }
+    // Add user message to background transcript (always captured)
+    addToBackgroundTranscript(userMessage);
 
     try {
       // Check for direct stakeholder mentions in user message FIRST
@@ -807,11 +851,147 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   const handleEndMeeting = () => {
     stopAllAudio();
+    saveMeetingToDatabase();
     setCurrentView('stakeholders');
   };
 
+  // Save meeting to database with complete transcript and metadata
+  const saveMeetingToDatabase = async () => {
+    if (!meetingId || !user?.id) {
+      console.warn('Cannot save meeting: missing meetingId or user');
+      return;
+    }
+
+    try {
+      const duration = Math.floor((Date.now() - meetingStartTime) / 1000); // in seconds
+      
+      // Generate meeting summary from background transcript
+      const meetingSummary = await generateMeetingSummary(backgroundTranscript);
+      
+      // Extract topics and insights
+      const topicsDiscussed = extractTopicsFromTranscript(backgroundTranscript);
+      const keyInsights = extractKeyInsights(backgroundTranscript);
+      
+      // Save to database
+      const success = await DatabaseService.saveMeetingData(
+        meetingId,
+        backgroundTranscript, // Complete transcript (always captured)
+        messages, // Raw chat messages
+        '', // Meeting notes (empty for voice-only)
+        meetingSummary,
+        duration,
+        topicsDiscussed,
+        keyInsights
+      );
+
+      if (success) {
+        // Update user progress
+        await DatabaseService.incrementMeetingCount(user.id, 'voice-only');
+        console.log('✅ Meeting saved to database successfully');
+      } else {
+        console.error('❌ Failed to save meeting to database');
+      }
+
+      // Also save to localStorage as backup
+      const meetingData = {
+        id: meetingId,
+        project: selectedProject?.name,
+        stakeholders: selectedStakeholders?.map(s => s.name),
+        transcript: backgroundTranscript,
+        summary: meetingSummary,
+        duration,
+        date: new Date().toISOString()
+      };
+      localStorage.setItem(`meeting-${meetingId}`, JSON.stringify(meetingData));
+      
+    } catch (error) {
+      console.error('Error saving meeting:', error);
+    }
+  };
+
+  // Generate AI-powered meeting summary
+  const generateMeetingSummary = async (transcript: Message[]): Promise<string> => {
+    if (transcript.length === 0) return 'No conversation recorded.';
+    
+    try {
+      const conversationText = transcript
+        .map(msg => `${msg.stakeholderName || msg.speaker}: ${msg.content}`)
+        .join('\n');
+      
+      const aiService = AIService.getInstance();
+      const prompt = `Please provide a concise meeting summary of this stakeholder interview:
+
+${conversationText}
+
+Focus on:
+- Key topics discussed
+- Important insights shared
+- Stakeholder perspectives
+- Next steps or recommendations
+
+Keep it professional and under 300 words.`;
+
+      const summary = await aiService.generateResponse(prompt, [], {});
+      return summary || 'Unable to generate meeting summary.';
+    } catch (error) {
+      console.error('Error generating meeting summary:', error);
+      return 'Meeting summary could not be generated due to technical issues.';
+    }
+  };
+
+  // Extract topics discussed from transcript
+  const extractTopicsFromTranscript = (transcript: Message[]): string[] => {
+    const topics = new Set<string>();
+    
+    // Simple keyword extraction (can be enhanced with NLP)
+    const topicKeywords = [
+      'process', 'workflow', 'system', 'requirements', 'goals', 'challenges',
+      'improvement', 'efficiency', 'automation', 'integration', 'data',
+      'user experience', 'performance', 'security', 'compliance', 'budget'
+    ];
+
+    transcript.forEach(msg => {
+      const content = msg.content.toLowerCase();
+      topicKeywords.forEach(keyword => {
+        if (content.includes(keyword)) {
+          topics.add(keyword);
+        }
+      });
+    });
+
+    return Array.from(topics).slice(0, 10); // Limit to top 10 topics
+  };
+
+  // Extract key insights from transcript
+  const extractKeyInsights = (transcript: Message[]): string[] => {
+    const insights: string[] = [];
+    
+    // Look for insight indicators in stakeholder responses
+    transcript.forEach(msg => {
+      if (msg.speaker !== 'user' && msg.content.length > 100) {
+        const content = msg.content;
+        
+        // Look for sentences that indicate insights
+        if (content.includes('challenge') || content.includes('issue') || 
+            content.includes('improvement') || content.includes('recommend') ||
+            content.includes('important') || content.includes('key')) {
+          
+          // Extract the sentence containing the insight
+          const sentences = content.split('.').filter(s => s.length > 20);
+          sentences.forEach(sentence => {
+            if (sentence.includes('challenge') || sentence.includes('issue') || 
+                sentence.includes('improvement') || sentence.includes('recommend')) {
+              insights.push(sentence.trim() + '.');
+            }
+          });
+        }
+      }
+    });
+
+    return insights.slice(0, 5); // Limit to top 5 insights
+  };
+
   // Meeting timer
-  const [meetingStartTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
   
   const inputRef = useRef<HTMLInputElement>(null);
