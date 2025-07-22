@@ -24,6 +24,7 @@ export interface Stakeholder {
   personality: string
   priorities: string[]
   voice: string
+  expertise: string[]
   isCustom?: boolean
 }
 
@@ -56,4 +57,21 @@ export interface Deliverable {
   lastModified: string
 }
 
-export type AppView = 'dashboard' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'
+export type AppView = 
+  | 'dashboard'
+  | 'guided-practice-hub'
+  | 'projects'
+  | 'project-brief'
+  | 'stakeholders'
+  | 'meeting-mode-selection'
+  | 'meeting'
+  | 'voice-only-meeting'
+  | 'my-meetings'
+  | 'meeting-history'
+  | 'meeting-summary'
+  | 'raw-transcript'
+  | 'notes'
+  | 'deliverables'
+  | 'profile'
+  | 'custom-project'
+  | 'custom-stakeholders';

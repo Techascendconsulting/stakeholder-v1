@@ -7,4 +7,15 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    target: 'es2022',
+    rollupOptions: {
+      output: {
+        format: 'es'
+      }
+    }
+  },
+  esbuild: {
+    target: 'es2022'
+  }
 });

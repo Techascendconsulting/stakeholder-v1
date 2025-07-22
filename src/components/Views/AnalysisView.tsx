@@ -172,8 +172,8 @@ Based on the comparison between current state and future state requirements:
       <div className="p-8">
         <div className="text-center">
           <AlertTriangle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Analysis Data</h3>
-          <p className="text-gray-600 mb-6">No meeting data available for analysis.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Analysis Data</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">No meeting data available for analysis.</p>
           <button
             onClick={() => setCurrentView('meeting')}
             className="text-blue-600 hover:text-blue-800 font-medium"
@@ -186,13 +186,13 @@ Based on the comparison between current state and future state requirements:
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center space-x-4 mb-8">
           <button
             onClick={() => setCurrentView('meeting')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+            className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white transition-colors font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back to Meeting</span>
@@ -200,7 +200,7 @@ Based on the comparison between current state and future state requirements:
         </div>
 
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Requirements Analysis</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Requirements Analysis</h1>
           <p className="text-lg text-gray-600">
             Automated analysis of stakeholder responses for <span className="font-semibold text-gray-900">{analysisData.project.name}</span>
           </p>
@@ -209,7 +209,7 @@ Based on the comparison between current state and future state requirements:
         {/* Analysis Sections */}
         <div className="space-y-8">
           {/* As-Is Process */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -264,7 +264,7 @@ Based on the comparison between current state and future state requirements:
           </div>
 
           {/* To-Be Process */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -319,7 +319,7 @@ Based on the comparison between current state and future state requirements:
           </div>
 
           {/* Gap Analysis */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -375,10 +375,10 @@ Based on the comparison between current state and future state requirements:
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Analysis Complete</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Analysis Complete</h3>
               <p className="text-gray-600">Review and refine the analysis, then proceed to create deliverables.</p>
             </div>
             <div className="flex items-center space-x-3">

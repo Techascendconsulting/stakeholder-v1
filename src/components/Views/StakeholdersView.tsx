@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { ArrowLeft, MessageCircle, ArrowRight, Building, Users, Check } from 'lucide-react'
 
@@ -6,14 +6,48 @@ const StakeholdersView: React.FC = () => {
   const { selectedProject, stakeholders, selectedStakeholders, setSelectedStakeholders, setCurrentView } = useApp()
   const [localSelectedStakeholders, setLocalSelectedStakeholders] = useState<string[]>([])
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    // The main content area is the scrolling container, not the window
+    const scrollToTop = () => {
+      // Find the main scrolling container
+      const mainContainer = document.querySelector('main')
+      if (mainContainer) {
+        mainContainer.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'instant'
+        })
+        // Fallback
+        mainContainer.scrollTop = 0
+        console.log('🔝 Scrolled main container to top - scrollTop:', mainContainer.scrollTop)
+      }
+      
+      // Also scroll window just in case
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant'
+      })
+      
+      console.log('🔝 Scroll attempt completed')
+    }
+    
+    // Execute immediately and after short delays to ensure it works
+    scrollToTop()
+    setTimeout(scrollToTop, 0)
+    setTimeout(scrollToTop, 50)
+    setTimeout(scrollToTop, 100)
+  }, [])
+
   if (!selectedProject) {
     return (
       <div className="p-8">
         <div className="text-center">
-          <p className="text-gray-600">No project selected</p>
+          <p className="text-gray-600 dark:text-gray-400">No project selected</p>
           <button 
             onClick={() => setCurrentView('projects')}
-            className="mt-4 text-blue-600 hover:text-blue-800"
+            className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
           >
             Back to Projects
           </button>
@@ -38,8 +72,8 @@ const StakeholdersView: React.FC = () => {
     )
     console.log('🎯 DEBUG: Starting meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
     setSelectedStakeholders(selectedStakeholderObjects)
-    console.log('🎯 DEBUG: Setting current view to meeting')
-    setCurrentView('meeting')
+    console.log('🎯 DEBUG: Setting current view to meeting mode selection')
+    setCurrentView('meeting-mode-selection')
   }
 
   const isStakeholderSelected = (stakeholderId: string) => {
@@ -47,13 +81,13 @@ const StakeholdersView: React.FC = () => {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center space-x-4 mb-8">
           <button
             onClick={() => setCurrentView('project-brief')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+            className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-100 transition-colors font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back to Project Brief</span>
@@ -61,16 +95,16 @@ const StakeholdersView: React.FC = () => {
         </div>
 
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Stakeholder Selection</h1>
-          <p className="text-lg text-gray-600 max-w-4xl">
-            Select stakeholders to include in your requirements gathering session for the <span className="font-semibold text-gray-900">{selectedProject.name}</span> project. 
-            You can choose to meet with individual stakeholders or conduct group meetings with multiple participants.
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Stakeholder Selection</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-4xl">
+            Select one or multiple stakeholders to include in your requirements gathering session for the <span className="font-semibold text-gray-900 dark:text-white">{selectedProject.name}</span> project. 
+            You can choose to meet with individual stakeholders or conduct group meetings oe sessions with multiple participants.
           </p>
         </div>
 
         {/* Selection Summary */}
         {localSelectedStakeholders.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Users className="w-6 h-6 text-blue-600" />
@@ -140,7 +174,7 @@ const StakeholdersView: React.FC = () => {
                       className="w-20 h-20 rounded-full object-cover border-4 border-gray-100"
                     />
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 mb-1">{stakeholder.name}</h3>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{stakeholder.name}</h3>
                       <p className="text-base font-semibold text-blue-600 mb-1">{stakeholder.role}</p>
                       <div className="flex items-center space-x-1 text-sm text-gray-600">
                         <Building className="w-4 h-4" />
@@ -151,13 +185,13 @@ const StakeholdersView: React.FC = () => {
 
                   {/* Professional Background */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Professional Background</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-2">Professional Background</h4>
                     <p className="text-sm text-gray-700 leading-relaxed">{stakeholder.bio}</p>
                   </div>
 
                   {/* Key Priorities */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">Key Priorities</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">Key Priorities</h4>
                     <div className="space-y-2">
                       {stakeholder.priorities.slice(0, 2).map((priority, index) => (
                         <div key={index} className="flex items-center space-x-2">
@@ -169,8 +203,8 @@ const StakeholdersView: React.FC = () => {
                   </div>
 
                   {/* Communication Style */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-2">Communication Style</h4>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-2">Communication Style</h4>
                     <p className="text-sm text-gray-700 italic">{stakeholder.personality}</p>
                   </div>
                 </div>
@@ -180,8 +214,8 @@ const StakeholdersView: React.FC = () => {
         </div>
 
         {/* Meeting Format Information */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Meeting Format Options</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Meeting Format Options</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
               <div className="flex items-center space-x-3 mb-4">
@@ -193,7 +227,7 @@ const StakeholdersView: React.FC = () => {
               <p className="text-gray-700 mb-4">
                 One-on-one sessions allow for deeper, more focused conversations and help build stronger stakeholder relationships.
               </p>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
                 <li>• More detailed responses and personal insights</li>
                 <li>• Reduced influence from group dynamics</li>
                 <li>• Easier to manage and control conversation flow</li>
@@ -211,7 +245,7 @@ const StakeholdersView: React.FC = () => {
               <p className="text-gray-700 mb-4">
                 Multi-stakeholder sessions enable cross-functional discussion and help identify conflicting requirements early.
               </p>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
                 <li>• Efficient way to gather multiple perspectives</li>
                 <li>• Reveals conflicts and dependencies between roles</li>
                 <li>• Encourages collaborative problem-solving</li>
@@ -223,7 +257,7 @@ const StakeholdersView: React.FC = () => {
 
         {/* Professional Guidelines */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Professional Meeting Guidelines</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Professional Meeting Guidelines</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <h4 className="text-base font-semibold text-blue-900 mb-3">Preparation</h4>

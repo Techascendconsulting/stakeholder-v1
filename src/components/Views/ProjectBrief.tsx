@@ -1,18 +1,48 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Telescope as Scope, XCircle } from 'lucide-react'
+import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Telescope as Scope, XCircle, Clock, DollarSign, TrendingUp, BarChart3 } from 'lucide-react'
 
 const ProjectBrief: React.FC = () => {
   const { selectedProject, setCurrentView } = useApp()
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    // The main content area is the scrolling container, not the window
+    const scrollToTop = () => {
+      // Find the main scrolling container
+      const mainContainer = document.querySelector('main')
+      if (mainContainer) {
+        mainContainer.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'instant'
+        })
+        // Fallback
+        mainContainer.scrollTop = 0
+      }
+      
+      // Also scroll window just in case
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant'
+      })
+    }
+    
+    // Execute immediately and after short delays to ensure it works
+    scrollToTop()
+    setTimeout(scrollToTop, 0)
+    setTimeout(scrollToTop, 50)
+  }, [])
 
   if (!selectedProject) {
     return (
       <div className="p-8">
         <div className="text-center">
-          <p className="text-gray-600">No project selected</p>
+          <p className="text-gray-600 dark:text-gray-400">No project selected</p>
           <button 
             onClick={() => setCurrentView('projects')}
-            className="mt-4 text-blue-600 hover:text-blue-800"
+            className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
           >
             Back to Projects
           </button>
@@ -54,6 +84,20 @@ const ProjectBrief: React.FC = () => {
 
   const { inScope, outOfScope, systemsInvolved } = extractScopeInfo()
 
+  // Get business impact data (moved from ProjectsView)
+  const getBusinessImpact = (projectId: string) => {
+    const impacts = {
+      'proj-1': { value: '£1.8M', type: 'Annual Cost Savings', priority: 'High', roi: '340%' },
+      'proj-2': { value: '£250K', type: 'Process Efficiency', priority: 'Critical', roi: '180%' },
+      'proj-3': { value: '£3.3M', type: 'Revenue Impact', priority: 'High', roi: '420%' },
+      'proj-4': { value: '£140K', type: 'Operational Savings', priority: 'Medium', roi: '120%' },
+      'proj-5': { value: '£300K', type: 'Strategic Investment', priority: 'High', roi: '200%' }
+    }
+    return impacts[projectId as keyof typeof impacts] || { value: 'TBD', type: 'Business Value', priority: 'Medium', roi: 'TBD' }
+  }
+
+  const businessImpact = getBusinessImpact(selectedProject.id)
+
   // Extract stakeholder information
   const stakeholderRoles = [
     { role: "Operations Leadership", concern: "Process efficiency and resource optimization" },
@@ -64,13 +108,13 @@ const ProjectBrief: React.FC = () => {
   ]
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center space-x-4 mb-8">
           <button
             onClick={() => setCurrentView('projects')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+            className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-100 transition-colors font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back to Projects</span>
@@ -78,66 +122,115 @@ const ProjectBrief: React.FC = () => {
         </div>
 
         {/* Project Title */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
           <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{selectedProject.name}</h1>
-            <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{selectedProject.name}</h1>
+            <div className="flex items-center justify-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center space-x-2">
                 <Building className="w-4 h-4" />
-                <span>Duration: {selectedProject.duration}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Target className="w-4 h-4" />
                 <span>Complexity: {selectedProject.complexity}</span>
               </div>
             </div>
           </div>
-          <p className="text-lg text-gray-700 text-center leading-relaxed">{selectedProject.description}</p>
+          <p className="text-lg text-gray-700 dark:text-gray-300 text-center leading-relaxed">{selectedProject.description}</p>
+        </div>
+
+        {/* Project Metrics */}
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl shadow-sm border border-indigo-200 dark:border-indigo-800 p-8 mb-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
+              <BarChart3 className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Project Overview</h2>
+            <p className="text-gray-600 dark:text-gray-400">Key metrics and business impact for this training scenario</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Duration */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Duration</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedProject.duration}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Training Timeline</p>
+            </div>
+
+            {/* Business Impact */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <DollarSign className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Business Impact</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{businessImpact.value}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{businessImpact.type}</p>
+            </div>
+
+            {/* Stakeholders */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Stakeholders</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">5</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Key Roles</p>
+            </div>
+
+            {/* Expected ROI */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Expected ROI</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{businessImpact.roi}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Return on Investment</p>
+            </div>
+          </div>
         </div>
 
         {/* Project Brief Sections */}
         <div className="space-y-8">
           {/* Business Context */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Building className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center">
+                <Building className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Business Context</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Business Context</h2>
             </div>
             <div className="prose max-w-none">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{selectedProject.businessContext}</p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">{selectedProject.businessContext}</p>
             </div>
           </div>
 
           {/* Problem Statement */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-red-600" />
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-xl flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Problem Statement</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Problem Statement</h2>
             </div>
             <div className="prose max-w-none">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{selectedProject.problemStatement}</p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">{selectedProject.problemStatement}</p>
             </div>
           </div>
 
           {/* Business Goals */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Business Goals</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Business Goals</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {selectedProject.businessGoals.map((goal, index) => (
-                <div key={index} className="flex items-start space-x-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                <div key={index} className="flex items-start space-x-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                   <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-sm font-bold">{index + 1}</span>
                   </div>
-                  <span className="text-gray-800 font-medium leading-relaxed">{goal}</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-medium leading-relaxed">{goal}</span>
                 </div>
               ))}
             </div>
@@ -146,44 +239,44 @@ const ProjectBrief: React.FC = () => {
           {/* Scope of Work */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* In Scope */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <Scope className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center">
+                  <Scope className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Scope of Work</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Scope of Work</h2>
               </div>
               <div className="space-y-3">
                 {inScope.map((item, index) => (
                   <div key={index} className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 font-medium">{item}</span>
+                    <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Out of Scope */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                  <XCircle className="w-6 h-6 text-red-600" />
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-xl flex items-center justify-center">
+                  <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Out of Scope</h2>
+                                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Out of Scope</h2>
               </div>
               <div className="space-y-3">
-                {outOfScope.map((item, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 font-medium">{item}</span>
-                  </div>
-                ))}
+                                  {outOfScope.map((item, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">{item}</span>
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
 
           {/* Systems Involved */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                 <GitBranch className="w-6 h-6 text-purple-600" />
@@ -203,7 +296,7 @@ const ProjectBrief: React.FC = () => {
           </div>
 
           {/* As-Is Business Process */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                 <GitBranch className="w-6 h-6 text-orange-600" />
@@ -218,7 +311,7 @@ const ProjectBrief: React.FC = () => {
           </div>
 
           {/* Stakeholder Identification */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
                 <Users className="w-6 h-6 text-indigo-600" />
@@ -233,7 +326,7 @@ const ProjectBrief: React.FC = () => {
                       <Users className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-1">{stakeholder.role}</h4>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{stakeholder.role}</h4>
                       <p className="text-gray-700">{stakeholder.concern}</p>
                     </div>
                   </div>
@@ -245,7 +338,7 @@ const ProjectBrief: React.FC = () => {
 
         {/* Next Steps */}
         <div className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Next Steps</h3>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Next Steps</h3>
           <p className="text-gray-700 mb-8 text-lg leading-relaxed">
             Now that you have reviewed the comprehensive project brief, you're ready to begin stakeholder engagement. 
             Use this information to prepare targeted questions for each stakeholder group, focusing on their specific 
@@ -263,7 +356,7 @@ const ProjectBrief: React.FC = () => {
             </button>
             <button
               onClick={() => setCurrentView('deliverables')}
-              className="flex items-center justify-center space-x-3 bg-white text-gray-700 font-semibold py-4 px-8 rounded-xl border border-gray-300 hover:bg-gray-50 transition-all duration-200"
+              className="flex items-center justify-center space-x-3 bg-white dark:bg-gray-800 text-gray-700 font-semibold py-4 px-8 rounded-xl border border-gray-300 hover:bg-gray-50 dark:bg-gray-900 transition-all duration-200"
             >
               <span>View Deliverables</span>
             </button>

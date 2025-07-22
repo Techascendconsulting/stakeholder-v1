@@ -1,15 +1,73 @@
-import React, { useState, useEffect } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic, X } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
+import { useVoice } from '../../contexts/VoiceContext'
 import { Message } from '../../types'
+import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
+import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
+import VoiceInputModal from '../VoiceInputModal'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, user, setCurrentView } = useApp()
+  const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice()
   const [inputMessage, setInputMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showQuestionHelper, setShowQuestionHelper] = useState(false)
   const [selectedQuestionCategory, setSelectedQuestionCategory] = useState<'as-is' | 'to-be'>('as-is')
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null)
+  const [audioStates, setAudioStates] = useState<{[key: string]: 'playing' | 'paused' | 'stopped'}>({})
+  const [showVoiceModal, setShowVoiceModal] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [currentSpeaker, setCurrentSpeaker] = useState<any>(null)
+  const [meetingEndedSuccess, setMeetingEndedSuccess] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Dynamic UX state management - no hard-coding
+  const [isGeneratingResponse, setIsGeneratingResponse] = useState(false)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+  const [canUserType, setCanUserType] = useState(true)
+  const [isEndingMeeting, setIsEndingMeeting] = useState(false)
+  const [userInterruptRequested, setUserInterruptRequested] = useState(false)
+  const [audioPausedPosition, setAudioPausedPosition] = useState<number>(0)
+  const [currentlyProcessingAudio, setCurrentlyProcessingAudio] = useState<string | null>(null)
+
+  // Old hard-coded conversation state removed - replaced by dynamic conversationDynamics
+
+  // Old hard-coded functions removed - replaced by dynamic versions
+
+  // Dynamic input availability logic
+  const shouldAllowUserInput = () => {
+    // Users can always type unless they explicitly choose to wait
+    // This is determined dynamically based on user behavior and preferences
+    return canUserType && !isEndingMeeting
+  }
+
+  // Simplified conversation configuration - most logic moved to AI service
+  const getConversationConfig = () => {
+    const stakeholderCount = selectedStakeholders.length
+    
+    return {
+      // Dynamic greeting handling - stakeholders will manage their own greeting state
+      maxGreetingRespondents: Math.min(stakeholderCount, 3),
+      
+      // Discussion flow is now managed by AI service conversation state
+      maxDiscussionTurns: Math.min(stakeholderCount * 2, 8),
+      
+      // Natural timing for conversation flow
+      greetingPauseTiming: {
+        base: 800,
+        variance: 400
+      },
+      
+      handoffPauseTiming: {
+        base: 1200,
+        variance: 600
+      }
+    }
+  }
 
   // Mock questions for demonstration
   const mockQuestions = {
@@ -31,88 +89,479 @@ const MeetingView: React.FC = () => {
 
   useEffect(() => {
     if (selectedProject && selectedStakeholders.length > 0) {
+      // Reset conversation state for new meeting
+      const aiService = AIService.getInstance()
+      aiService.resetConversationState()
+      
       // Add welcome message
       const welcomeMessage: Message = {
         id: `welcome-${Date.now()}`,
         speaker: 'system',
-        content: `Welcome to your meeting for ${selectedProject.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}.`,
+        content: `Welcome to your meeting for ${selectedProject?.name}. The following stakeholders are present: ${selectedStakeholders.map(s => s.name).join(', ')}.`,
         timestamp: new Date().toISOString()
       }
       setMessages([welcomeMessage])
     }
   }, [selectedProject, selectedStakeholders])
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return
-
-    setIsLoading(true)
-
-    // Add user message
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      speaker: 'user',
-      content: inputMessage,
-      timestamp: new Date().toISOString()
+  // Focus input when component mounts or after sending message
+  useEffect(() => {
+    if (inputRef.current && !isLoading) {
+      inputRef.current.focus()
     }
+  }, [isLoading])
 
-    const updatedMessages = [...messages, userMessage]
-    setMessages(updatedMessages)
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
-    // Simulate AI response
-    setTimeout(() => {
-      const stakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
-      const aiMessage: Message = {
-        id: `ai-${Date.now()}`,
-        speaker: stakeholder.id || 'stakeholder',
-        content: generateMockResponse(inputMessage, stakeholder),
-        timestamp: new Date().toISOString(),
-        stakeholderName: stakeholder.name,
-        stakeholderRole: stakeholder.role
-      }
+  // Speaker change animation effect
+  useEffect(() => {
+    if (currentSpeaker) {
+      // Add a subtle pulse animation to the page when speaker changes
+      document.body.style.animation = 'none'
+      setTimeout(() => {
+        document.body.style.animation = ''
+      }, 10)
+    }
+  }, [currentSpeaker])
 
-      setMessages(prev => [...prev, aiMessage])
-      setIsLoading(false)
-    }, 1500)
-
-    setInputMessage('')
-  }
-
-  const generateMockResponse = (question: string, stakeholder: any) => {
-    const responses = [
-      `That's a great question. From my perspective as ${stakeholder.role}, I can tell you that our current process involves several manual steps that could be streamlined.`,
-      `In my experience, the main challenge we face is the lack of integration between our systems. This creates delays and potential for errors.`,
-      `I think the ideal solution would automate much of what we do manually today, while still giving us the flexibility to handle exceptions.`,
-      `The current process typically takes about 2-3 hours per case, but with the right improvements, we could reduce that significantly.`,
-      `From a ${stakeholder.department} standpoint, we need to ensure any new solution maintains our quality standards while improving efficiency.`
+  // Function to detect if a message is addressed to the group
+  const isGroupMessage = (userMessage: string): boolean => {
+    const message = userMessage.toLowerCase()
+    
+    // Simple group detection - most logic moved to AI service
+    const groupPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)/,
+      /^(hi|hello|hey)\s+(there|y'all)/,
+      /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
+      /^(hi|hello|hey)(?:\s+team)?$/,
     ]
-    return responses[Math.floor(Math.random() * responses.length)]
+    
+    return groupPatterns.some(pattern => pattern.test(message))
   }
 
-  const handleQuestionClick = (question: string) => {
-    setInputMessage(question)
-    setShowQuestionHelper(false)
+  // Function to detect if this is a simple greeting (multiple responses OK)
+  const isSimpleGreeting = (userMessage: string): boolean => {
+    const message = userMessage.toLowerCase()
+    
+    const greetingPatterns = [
+      /^(hi|hello|hey|good morning|good afternoon|good evening)\s+(everyone|guys|team|all|folks)$/,
+      /^(hi|hello|hey)\s+(there|y'all)$/,
+      /^(good morning|good afternoon|good evening)(?:\s+everyone)?$/,
+      /^(hi|hello|hey)(?:\s+team)?$/,
+    ]
+    
+    return greetingPatterns.some(pattern => pattern.test(message))
   }
 
-  const handleSaveNotes = () => {
-    alert('Meeting notes saved successfully!')
+  // Enhanced stakeholder selection logic
+  const getContextualStakeholder = (userMessage: string, conversationHistory: Message[]) => {
+    const message = userMessage.toLowerCase()
+    
+    // 1. Check for explicit stakeholder mentions first
+    const explicitStakeholder = getExplicitlyMentionedStakeholder(message)
+    if (explicitStakeholder) return explicitStakeholder
+    
+    // 2. Check for topic-based stakeholder relevance
+    const topicStakeholder = getTopicRelevantStakeholder(message)
+    if (topicStakeholder) return topicStakeholder
+    
+    // 3. Check conversation context and recent interactions
+    const contextualStakeholder = getContextuallyRelevantStakeholder(message, conversationHistory)
+    if (contextualStakeholder) return contextualStakeholder
+    
+    // 4. Check for follow-up patterns
+    const followUpStakeholder = getFollowUpStakeholder(message, conversationHistory)
+    if (followUpStakeholder) return followUpStakeholder
+    
+    // 5. Use intelligent rotation based on conversation balance
+    return getBalancedStakeholder(conversationHistory)
   }
 
-  const handleAnalyzeAnswers = () => {
-    if (messages.length <= 1) {
-      alert('Please conduct the interview first before analyzing answers.')
-      return
+  const getExplicitlyMentionedStakeholder = (message: string) => {
+    for (const stakeholder of selectedStakeholders) {
+      const firstName = stakeholder.name.split(' ')[0].toLowerCase()
+      const fullName = stakeholder.name.toLowerCase()
+      
+      // Direct addressing patterns
+      const directPatterns = [
+        new RegExp(`\\b${firstName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
+        new RegExp(`\\b${fullName}\\b.*\\b(can|could|would|please|tell|explain|help|what|how|why)\\b`),
+        new RegExp(`\\b(to|for)\\s+${firstName}\\b`),
+        new RegExp(`\\b${firstName}\\s*,`),
+        new RegExp(`\\b${firstName}\\s*\\?`)
+      ]
+      
+      if (directPatterns.some(pattern => pattern.test(message))) {
+        return stakeholder
+      }
+    }
+    return null
+  }
+
+  const getTopicRelevantStakeholder = (message: string) => {
+    const topicKeywords = {
+      'operations': ['process', 'workflow', 'efficiency', 'operations', 'daily', 'routine', 'procedure'],
+      'it': ['system', 'technical', 'technology', 'software', 'integration', 'security', 'data'],
+      'customer': ['customer', 'client', 'user', 'service', 'support', 'satisfaction', 'experience'],
+      'finance': ['cost', 'budget', 'financial', 'money', 'expense', 'roi', 'investment'],
+      'hr': ['staff', 'employee', 'people', 'team', 'training', 'change', 'culture'],
+      'compliance': ['compliance', 'regulatory', 'policy', 'risk', 'audit', 'legal'],
+      'sales': ['sales', 'revenue', 'customer', 'market', 'selling', 'prospects'],
+      'marketing': ['marketing', 'brand', 'campaign', 'promotion', 'advertising', 'market']
+    }
+    
+    let bestMatch = null
+    let maxScore = 0
+    
+    for (const stakeholder of selectedStakeholders) {
+      const role = stakeholder.role.toLowerCase()
+      const department = stakeholder.department.toLowerCase()
+      
+      let score = 0
+      
+      // Check topic relevance
+      for (const [topic, keywords] of Object.entries(topicKeywords)) {
+        if (role.includes(topic) || department.includes(topic)) {
+          const keywordMatches = keywords.filter(keyword => message.includes(keyword)).length
+          score += keywordMatches * 2
+        }
+      }
+      
+      // Check priority alignment
+      stakeholder.priorities.forEach(priority => {
+        if (message.includes(priority.toLowerCase())) {
+          score += 3
+        }
+      })
+      
+      if (score > maxScore) {
+        maxScore = score
+        bestMatch = stakeholder
+      }
+    }
+    
+    return maxScore > 2 ? bestMatch : null
+  }
+
+  const getContextuallyRelevantStakeholder = (message: string, conversationHistory: Message[]) => {
+    const recentMessages = conversationHistory.slice(-5)
+    const questionTypes = {
+      'follow-up': ['and', 'also', 'what about', 'how about', 'regarding', 'concerning'],
+      'clarification': ['can you clarify', 'what do you mean', 'explain', 'clarify'],
+      'continuation': ['continue', 'go on', 'tell me more', 'elaborate']
+    }
+    
+    // Check if this is a follow-up question
+    const isFollowUp = questionTypes['follow-up'].some(pattern => message.includes(pattern))
+    const isClarification = questionTypes['clarification'].some(pattern => message.includes(pattern))
+    
+    if (isFollowUp || isClarification) {
+      // Find the most recent non-user speaker
+      for (let i = recentMessages.length - 1; i >= 0; i--) {
+        const msg = recentMessages[i]
+        if (msg.speaker !== 'user' && msg.speaker !== 'system') {
+          const stakeholder = selectedStakeholders.find(s => s.id === msg.speaker)
+          if (stakeholder) return stakeholder
+        }
+      }
+    }
+    
+    return null
+  }
+
+  const getFollowUpStakeholder = (message: string, conversationHistory: Message[]) => {
+    const recentMessages = conversationHistory.slice(-3)
+    
+    // Check for conversation threads
+    const threads = new Map<string, number>()
+    
+    recentMessages.forEach(msg => {
+      if (msg.speaker !== 'user' && msg.speaker !== 'system') {
+        const count = threads.get(msg.speaker) || 0
+        threads.set(msg.speaker, count + 1)
+      }
+    })
+    
+    // If someone has been actively participating, prioritize them for follow-ups
+    const activeParticipant = [...threads.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .find(([speakerId, count]) => count >= 2)
+    
+    if (activeParticipant) {
+      return selectedStakeholders.find(s => s.id === activeParticipant[0])
+    }
+    
+    return null
+  }
+
+  const getBalancedStakeholder = (conversationHistory: Message[]) => {
+    // Count messages per stakeholder
+    const messageCounts = new Map<string, number>()
+    
+    selectedStakeholders.forEach(stakeholder => {
+      const count = conversationHistory.filter(msg => msg.speaker === stakeholder.id).length
+      messageCounts.set(stakeholder.id, count)
+    })
+    
+    // Find stakeholder with least participation
+    const leastActiveStakeholder = selectedStakeholders.reduce((least, current) => {
+      const leastCount = messageCounts.get(least.id) || 0
+      const currentCount = messageCounts.get(current.id) || 0
+      return currentCount < leastCount ? current : least
+    })
+    
+    return leastActiveStakeholder
+  }
+
+  // Enhanced conversation flow management with mention detection
+  const manageConversationFlow = async (initialStakeholder: any, userMessage: string, currentMessages: Message[]) => {
+    const config = getConversationConfig()
+    let conversationActive = true
+    let turnCount = 0
+    let currentSpeaker = initialStakeholder
+    
+    // Enhanced conversation quality metrics
+    const conversationMetrics = {
+      stakeholderParticipation: new Map<string, number>(),
+      topicsCovered: new Set<string>(),
+      questionsAsked: 0,
+      collaborativeExchanges: 0,
+      stakeholderMentions: 0 // Track cross-references
+    }
+    
+    while (conversationActive && turnCount < config.maxDiscussionTurns) {
+      try {
+        // Generate response from current speaker
+        const response = await generateStakeholderResponse(currentSpeaker, userMessage, currentMessages, 'discussion')
+        const responseMessage = createResponseMessage(currentSpeaker, response, turnCount)
+        
+        // Update conversation metrics
+        updateConversationMetrics(conversationMetrics, currentSpeaker, response)
+        
+        // Add message to conversation
+        currentMessages = [...currentMessages, responseMessage]
+        setMessages(currentMessages)
+        
+        // Play audio response and wait for it to finish
+        try {
+          await playMessageAudio(responseMessage.id, response, currentSpeaker, true)
+        } catch (audioError) {
+          console.warn('Audio playback failed, continuing without audio:', audioError)
+        }
+        
+        // Enhanced mention detection - check if this response mentions other stakeholders
+        const mentionUpdatedMessages = await handleStakeholderMentions(response, currentSpeaker, userMessage, currentMessages)
+        
+        // If mentions were processed, update our working messages
+        if (mentionUpdatedMessages.length > currentMessages.length) {
+          currentMessages = mentionUpdatedMessages
+          conversationMetrics.stakeholderMentions += (mentionUpdatedMessages.length - currentMessages.length)
+          setMessages(currentMessages)
+        }
+        
+        // Enhanced handoff detection with context (only if no mentions were processed)
+        let handoffTarget = null
+        if (mentionUpdatedMessages.length === currentMessages.length) {
+          handoffTarget = await detectIntelligentHandoff(response, currentSpeaker, currentMessages)
+        }
+        
+        if (handoffTarget) {
+          // Natural delay before next person speaks
+          const handoffPause = config.handoffPauseTiming.base + Math.random() * config.handoffPauseTiming.variance
+          await new Promise(resolve => setTimeout(resolve, handoffPause))
+          
+          // Generate handoff response
+          const handoffResponse = await generateHandoffResponse(handoffTarget, currentSpeaker, response, currentMessages)
+          const handoffMessage = createResponseMessage(handoffTarget, handoffResponse, turnCount + 1)
+          
+          currentMessages = [...currentMessages, handoffMessage]
+          setMessages(currentMessages)
+          
+          // Play handoff audio
+          try {
+            await playMessageAudio(handoffMessage.id, handoffResponse, handoffTarget, true)
+          } catch (audioError) {
+            console.warn('Handoff audio playback failed:', audioError)
+          }
+          
+          // Update metrics for handoff
+          updateConversationMetrics(conversationMetrics, handoffTarget, handoffResponse)
+          conversationMetrics.collaborativeExchanges++
+          
+          currentSpeaker = handoffTarget
+        }
+        
+        turnCount++
+        
+        // Enhanced completion evaluation
+        const isComplete = evaluateConversationCompletion(response, conversationMetrics, turnCount)
+        if (isComplete) {
+          conversationActive = false
+        }
+        
+        // Natural pause between turns if conversation continues
+        if (conversationActive && turnCount < config.maxDiscussionTurns) {
+          const turnPause = config.greetingPauseTiming.base + Math.random() * config.greetingPauseTiming.variance
+          await new Promise(resolve => setTimeout(resolve, turnPause))
+        }
+        
+      } catch (error) {
+        console.error('Error in conversation flow:', error)
+        conversationActive = false
+      }
+    }
+    
+    // Enhanced conversation quality metrics logging
+    console.log('Enhanced Conversation Quality Metrics:', {
+      ...conversationMetrics,
+      stakeholderMentions: conversationMetrics.stakeholderMentions,
+      participationBalance: conversationMetrics.stakeholderParticipation.size / selectedStakeholders.length
+    })
+  }
+
+  const updateConversationMetrics = (metrics: any, stakeholder: any, response: string) => {
+    // Update stakeholder participation
+    const currentCount = metrics.stakeholderParticipation.get(stakeholder.id) || 0
+    metrics.stakeholderParticipation.set(stakeholder.id, currentCount + 1)
+    
+    // Detect topics covered
+    const topicKeywords = ['process', 'system', 'customer', 'cost', 'quality', 'efficiency', 'timeline']
+    topicKeywords.forEach(topic => {
+      if (response.toLowerCase().includes(topic)) {
+        metrics.topicsCovered.add(topic)
+      }
+    })
+    
+    // Count questions asked
+    const questionCount = (response.match(/\?/g) || []).length
+    metrics.questionsAsked += questionCount
+  }
+
+  const detectIntelligentHandoff = async (response: string, currentSpeaker: any, conversationHistory: Message[]) => {
+    const aiService = AIService.getInstance()
+    
+    // Get available stakeholders (excluding current speaker)
+    const availableStakeholders = selectedStakeholders
+      .filter(s => s.id !== currentSpeaker.id)
+      .map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }))
+    
+    // Use AI service for handoff detection
+    const handoffTarget = await aiService.detectConversationHandoff(response, availableStakeholders)
+    
+    if (handoffTarget) {
+      return selectedStakeholders.find(s => s.name === handoffTarget.name)
+    }
+    
+    return null
+  }
+
+  const generateHandoffResponse = async (targetStakeholder: any, previousSpeaker: any, previousResponse: string, conversationHistory: Message[]) => {
+    // Extract the key question or topic from the handoff
+    const handoffContext = extractHandoffContext(previousResponse)
+    const contextualPrompt = `${previousSpeaker.name} just mentioned: "${handoffContext}" and is asking for your perspective.`
+    
+    return await generateStakeholderResponse(targetStakeholder, contextualPrompt, conversationHistory, 'discussion')
+  }
+
+  const extractHandoffContext = (response: string): string => {
+    // Extract the most relevant part of the response for handoff context
+    const sentences = response.split(/[.!?]/)
+    const lastSentence = sentences[sentences.length - 2]?.trim() || sentences[sentences.length - 1]?.trim()
+    
+    if (lastSentence && lastSentence.length > 10) {
+      return lastSentence
+    }
+    
+    return response.substring(0, 100) + '...'
+  }
+
+  const evaluateConversationCompletion = (response: string, metrics: any, turnCount: number): boolean => {
+    // Evaluate if conversation has reached natural completion
+    const completionSignals = [
+      'that covers everything',
+      'i think we\'re good',
+      'sounds like a plan',
+      'let me know if you need',
+      'feel free to reach out'
+    ]
+    
+    const hasCompletionSignal = completionSignals.some(signal => 
+      response.toLowerCase().includes(signal)
+    )
+    
+    const hasGoodCoverage = metrics.topicsCovered.size >= 3
+    const hasBalancedParticipation = metrics.stakeholderParticipation.size >= Math.min(2, selectedStakeholders.length)
+    
+    return hasCompletionSignal || (hasGoodCoverage && hasBalancedParticipation && turnCount >= 3)
+  }
+
+  // Function to get initial respondent for discussion
+  const getInitialRespondent = (userMessage: string) => {
+    return getContextualStakeholder(userMessage, messages)
+  }
+
+  // Handle natural discussion flow with turn-taking
+  const handleDiscussionFlow = async (initialStakeholder: any, userMessage: string, currentMessages: Message[]) => {
+    await manageConversationFlow(initialStakeholder, userMessage, currentMessages)
+  }
+
+  // Generate stakeholder response with context
+  const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: 'greeting' | 'discussion' | 'baton_pass') => {
+    const stakeholderContext = {
+      name: stakeholder.name,
+      role: stakeholder.role,
+      department: stakeholder.department,
+      priorities: stakeholder.priorities,
+      personality: stakeholder.personality,
+      expertise: stakeholder.expertise || []
     }
 
-    // Store analysis data
-    const analysisData = {
-      project: selectedProject,
-      stakeholders: selectedStakeholders,
-      messages: messages,
-      meetingId: `meeting-${Date.now()}`
+    const conversationContext = {
+      project: {
+        name: selectedProject?.name || 'Current Project',
+        description: selectedProject?.description || 'Project description',
+        type: selectedProject?.projectType || 'General'
+      },
+      conversationHistory: currentMessages,
+      stakeholders: selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }))
     }
 
-    sessionStorage.setItem('meetingAnalysis', JSON.stringify(analysisData))
-    setCurrentView('analysis')
+    const aiService = AIService.getInstance()
+    return await aiService.generateStakeholderResponse(
+      userMessage,
+      stakeholderContext,
+      conversationContext,
+      responseType
+    )
+  }
+
+  // Create response message object
+  const createResponseMessage = (stakeholder: any, response: string, index: number): Message => {
+    return {
+      id: `ai-${Date.now()}-${index}`,
+      speaker: stakeholder.id || 'stakeholder',
+      content: response,
+      timestamp: new Date().toISOString(),
+      stakeholderName: stakeholder.name,
+      stakeholderRole: stakeholder.role
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -122,187 +571,2844 @@ const MeetingView: React.FC = () => {
     }
   }
 
-  if (!selectedProject || selectedStakeholders.length === 0) {
+  const handleVoiceInput = (transcription: string) => {
+    setInputMessage(transcription)
+    setShowVoiceModal(false)
+    // Focus input after a short delay to ensure modal is closed
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  const handleTranscribingChange = (transcribing: boolean) => {
+    setIsTranscribing(transcribing)
+  }
+
+  // Dynamic timeout and cancellation system
+  const createDynamicTimeout = (operation: string, timeoutMs: number) => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`${operation} timed out after ${timeoutMs}ms`))
+      }, timeoutMs)
+      
+      // Return cleanup function
+      return { cleanup: () => clearTimeout(timeout) }
+    })
+  }
+
+  // State for progress tracking
+  const [noteGenerationProgress, setNoteGenerationProgress] = useState<string>('');
+
+  // Enhanced end meeting with progressive feedback
+  const handleEndMeeting = async () => {
+    if (messages.length <= 1) {
+      alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
+      return;
+    }
+
+    const isConfirmed = window.confirm(
+      'Are you sure you want to end this meeting? This will generate comprehensive interview notes with analytics and end the current session.'
+    );
+
+    if (!isConfirmed) return;
+
+    setIsLoading(true);
+    setIsEndingMeeting(true);
+    setNoteGenerationProgress('Preparing to generate notes...');
+
+    // Optimized timeout for faster note generation
+    const messageCount = messages.length
+    const participantCount = selectedStakeholders.length
+    const baseTimeout = 20000 // Reduced base timeout (20 seconds)
+    const complexityFactor = Math.min(1.5, (messageCount / 30) + (participantCount / 8))
+    const dynamicTimeout = baseTimeout * complexityFactor
+
+    console.log(`Setting optimized timeout for meeting end: ${dynamicTimeout}ms based on ${messageCount} messages and ${participantCount} participants`)
+
+    try {
+      // Stop any current audio
+      stopCurrentAudio();
+
+      const meetingStartTime = new Date(messages[0]?.timestamp || new Date().toISOString());
+      const meetingEndTime = new Date();
+      const duration = Math.round((meetingEndTime.getTime() - meetingStartTime.getTime()) / 1000 / 60);
+
+      // Enhanced meeting data with analytics
+      const meetingData = {
+        project: {
+          name: selectedProject?.name || 'Current Project',
+          description: selectedProject?.description || '',
+          type: selectedProject?.projectType || 'General'
+        },
+        participants: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department,
+          engagementLevel: meetingAnalytics.stakeholderEngagementLevels.get(s.id) || 'medium',
+          participationPercentage: Math.round(meetingAnalytics.participationBalance.get(s.id) || 0)
+        })),
+        messages: messages.filter(m => m.speaker !== 'system'),
+        startTime: meetingStartTime,
+        endTime: meetingEndTime,
+        duration,
+        user: user?.email || 'Business Analyst',
+        analytics: {
+          effectivenessScore: meetingAnalytics.meetingEffectivenessScore,
+          collaborationIndex: meetingAnalytics.collaborationIndex,
+          topicsDiscussed: Array.from(meetingAnalytics.topicsDiscussed),
+          keyInsights: meetingAnalytics.keyInsights,
+          conversationFlow: meetingAnalytics.conversationFlow
+        }
+      };
+
+      const aiService = AIService.getInstance();
+      
+      // Progress callback for real-time feedback
+      const progressCallback = (progress: string) => {
+        setNoteGenerationProgress(progress);
+      };
+      
+      // Create AI generation promise with progress tracking
+      const aiGenerationPromise = aiService.generateInterviewNotes(meetingData, progressCallback);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Interview notes generation timed out')), dynamicTimeout)
+      );
+
+      // Race between AI generation and timeout
+      let baseInterviewNotes;
+      try {
+        baseInterviewNotes = await Promise.race([aiGenerationPromise, timeoutPromise]);
+      } catch (timeoutError) {
+        console.warn('AI generation timed out, creating fallback notes:', timeoutError);
+        setNoteGenerationProgress('Creating fallback notes...');
+        baseInterviewNotes = createFallbackNotes(meetingData);
+      }
+      
+      // Enhanced interview notes with analytics
+      setNoteGenerationProgress('Generating meeting analytics...');
+      const analyticsSection = generateMeetingAnalyticsSummary();
+      const enhancedInterviewNotes = `${baseInterviewNotes}
+
+---
+
+${analyticsSection}
+
+---
+
+## Meeting Quality Assessment
+
+**Overall Meeting Effectiveness**: ${meetingAnalytics.meetingEffectivenessScore}/100
+
+### Strengths
+${meetingAnalytics.keyInsights.filter(insight => 
+  insight.includes('Excellent') || insight.includes('Great') || insight.includes('Active')
+).map(insight => `• ${insight}`).join('\n') || '• Good stakeholder engagement and participation'}
+
+### Areas for Improvement
+${meetingAnalytics.keyInsights.filter(insight => 
+  insight.includes('Consider') || insight.includes('Limited') || insight.includes('suggest')
+).map(insight => `• ${insight}`).join('\n') || '• Continue to maintain current engagement levels'}
+
+### Recommendations for Future Meetings
+${generateMeetingRecommendations()}
+
+---
+
+*This enhanced interview summary includes AI-powered analytics to help improve future stakeholder meetings and requirements gathering sessions.*`;
+
+      // Create notes object with analytics
+      setNoteGenerationProgress('Saving interview notes...');
+      const notesObject = {
+        id: `meeting-${Date.now()}`,
+        title: `Enhanced Interview Notes: ${selectedProject?.name} - ${meetingEndTime.toLocaleDateString()}`,
+        content: enhancedInterviewNotes,
+        projectId: selectedProject?.id || 'unknown',
+        meetingType: 'stakeholder-interview',
+        participants: selectedStakeholders.map(s => s.name).join(', '),
+        date: meetingEndTime.toISOString(),
+        duration: `${duration} minutes`,
+        createdBy: user?.email || 'Business Analyst',
+        analytics: {
+          effectivenessScore: meetingAnalytics.meetingEffectivenessScore,
+          collaborationIndex: meetingAnalytics.collaborationIndex,
+          topicsDiscussed: Array.from(meetingAnalytics.topicsDiscussed),
+          participationBalance: Object.fromEntries(meetingAnalytics.participationBalance),
+          keyInsights: meetingAnalytics.keyInsights
+        }
+      };
+
+      // Save to localStorage
+      const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
+      existingNotes.push(notesObject);
+      localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
+
+      // Show success notification
+      setNoteGenerationProgress('Meeting ended successfully!');
+      setMeetingEndedSuccess(true);
+      
+      // Navigate to notes view
+      setTimeout(() => {
+        setCurrentView('notes');
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error ending meeting:', error);
+      setNoteGenerationProgress('Error occurred - saving basic notes...');
+      alert('Error generating meeting notes. The meeting has been saved with available data.');
+      // Still try to save basic notes even if AI generation fails
+      const basicNotes = createFallbackNotes({
+        project: { name: selectedProject?.name || 'Current Project' },
+        participants: selectedStakeholders,
+        messages: messages.filter(m => m.speaker !== 'system'),
+        duration: 0
+      });
+      
+      const basicNotesObject = {
+        id: `meeting-${Date.now()}`,
+        title: `Basic Meeting Notes: ${selectedProject?.name} - ${new Date().toLocaleDateString()}`,
+        content: basicNotes,
+        projectId: selectedProject?.id || 'unknown',
+        meetingType: 'stakeholder-interview',
+        participants: selectedStakeholders.map(s => s.name).join(', '),
+        date: new Date().toISOString(),
+        duration: '0 minutes',
+        createdBy: user?.email || 'Business Analyst'
+      };
+      
+      const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
+      existingNotes.push(basicNotesObject);
+      localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
+      
+      setCurrentView('notes');
+    } finally {
+      setIsLoading(false);
+      setIsEndingMeeting(false);
+      setUserInterruptRequested(false);
+      setNoteGenerationProgress('');
+    }
+  }
+
+  // Dynamic fallback notes creation
+  const createFallbackNotes = (meetingData: any): string => {
+    const participantList = meetingData.participants.map((p: any) => `- ${p.name} (${p.role})`).join('\n');
+    const messageCount = meetingData.messages?.length || 0;
+    const projectName = meetingData.project?.name || 'Unknown Project';
+    
+    return `# Meeting Notes: ${projectName}
+
+## Meeting Overview
+- **Date**: ${new Date().toLocaleDateString()}
+- **Duration**: ${meetingData.duration || 'Unknown'} minutes
+- **Participants**: ${meetingData.participants?.length || 0} stakeholders
+- **Messages Exchanged**: ${messageCount}
+
+## Participants
+${participantList}
+
+## Conversation Summary
+This meeting included ${messageCount} exchanges between the business analyst and stakeholders. 
+
+${messageCount > 0 ? 'Key discussion points and stakeholder perspectives were captured during the session.' : 'No detailed conversation was recorded.'}
+
+## Technical Note
+These notes were generated using a fallback system due to extended AI processing time. For more detailed analysis, consider reviewing the conversation transcript manually.
+
+---
+*Generated automatically on ${new Date().toLocaleString()}*`;
+  }
+
+  // User interruption controls
+  const handleUserInterruption = () => {
+    setUserInterruptRequested(true)
+    stopCurrentAudio()
+    setCanUserType(true)
+  }
+
+     // Add escape key listener for interruption
+   useEffect(() => {
+     const handleEscapeKey = (event: KeyboardEvent) => {
+       if (event.key === 'Escape') {
+         handleUserInterruption()
+       }
+     }
+
+     document.addEventListener('keydown', handleEscapeKey)
+     return () => document.removeEventListener('keydown', handleEscapeKey)
+   }, [])
+
+   const generateMeetingRecommendations = (): string => {
+     const recommendations: string[] = [];
+     
+     // Based on participation balance
+     const participationValues = Array.from(meetingAnalytics.participationBalance.values());
+     const maxParticipation = Math.max(...participationValues);
+     const minParticipation = Math.min(...participationValues);
+     
+     if (maxParticipation - minParticipation > 40) {
+       recommendations.push('• Use facilitation techniques to encourage quieter stakeholders to share their perspectives');
+       recommendations.push('• Consider using round-robin or structured discussion formats for more balanced participation');
+     }
+     
+     // Based on collaboration index
+     if (meetingAnalytics.collaborationIndex < 40) {
+       recommendations.push('• Encourage more cross-stakeholder dialogue by asking stakeholders to build on each other\'s ideas');
+       recommendations.push('• Use collaborative exercises or group problem-solving activities');
+     }
+     
+     // Based on topic coverage
+     if (meetingAnalytics.topicsDiscussed.size < 4) {
+       recommendations.push('• Use a structured agenda to ensure comprehensive topic coverage');
+       recommendations.push('• Prepare topic-specific questions to guide the conversation more effectively');
+     }
+     
+     // Based on engagement levels
+     const lowEngagementCount = Array.from(meetingAnalytics.stakeholderEngagementLevels.values())
+       .filter(level => level === 'low').length;
+     
+     if (lowEngagementCount > 1) {
+       recommendations.push('• Send pre-meeting materials to help stakeholders prepare for more meaningful participation');
+       recommendations.push('• Consider shorter, more focused meetings to maintain engagement');
+     }
+     
+     // Default recommendations if no specific issues
+     if (recommendations.length === 0) {
+       recommendations.push('• Continue with current meeting approach - good stakeholder engagement observed');
+       recommendations.push('• Consider documenting best practices from this meeting for future sessions');
+     }
+     
+         return recommendations.join('\n');
+  }
+
+  // Enhanced audio management system with conversation state cleanup
+  const stopCurrentAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+      setCurrentAudio(null)
+      setPlayingMessageId(null)
+      setCurrentSpeaker(null)
+      setIsAudioPlaying(false)
+      setCurrentlyProcessingAudio(null)
+      setAudioPausedPosition(0)
+    }
+    
+    // CRITICAL: Reset conversation state when audio is stopped
+    setCurrentSpeaking(null)
+    setConversationQueue([])
+    setIsGeneratingResponse(false)
+    
+    // Clear any thinking states
+    setActiveThinking(new Set())
+    setDynamicFeedback(null)
+    
+    // Clear any pending mentions and response queue to avoid stuck state
+    setPendingStakeholderMentions(null)
+    setResponseQueue({ current: null, upcoming: [] })
+    
+    console.log('🔄 Audio stopped - conversation state reset')
+  }
+
+  // Manual conversation state reset function
+  const resetConversationState = () => {
+    // Stop any audio
+    stopCurrentAudio()
+    
+    // Reset all conversation state
+    setCurrentSpeaking(null)
+    setConversationQueue([])
+    setIsGeneratingResponse(false)
+    
+    // Clear thinking and feedback states
+    setActiveThinking(new Set())
+    setDynamicFeedback(null)
+    
+    // Clear pending mentions and response queue
+    setPendingStakeholderMentions(null)
+    setResponseQueue({ current: null, upcoming: [] })
+    
+    // Enable user input
+    setCanUserType(true)
+    
+    // Show feedback to user
+    setDynamicFeedback('✅ Conversation state reset - ready for new questions')
+    setTimeout(() => setDynamicFeedback(null), 3000)
+    
+    console.log('🔄 Manual conversation state reset completed')
+  }
+
+  const pauseCurrentAudio = () => {
+    if (currentAudio && isAudioPlaying) {
+      setAudioPausedPosition(currentAudio.currentTime)
+      currentAudio.pause()
+      setIsAudioPlaying(false)
+      setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'paused' }))
+    }
+  }
+
+         const resumeCurrentAudio = () => {
+      if (currentAudio && !isAudioPlaying) {
+        currentAudio.currentTime = audioPausedPosition
+        currentAudio.play()
+        setIsAudioPlaying(true)
+        setAudioStates(prev => ({ ...prev, [currentlyProcessingAudio || '']: 'playing' }))
+      }
+    }
+
+    // Dynamic, non-blocking audio playback
+    const playMessageAudio = async (messageId: string, text: string, stakeholder: any, autoPlay: boolean = true): Promise<void> => {
+      console.log('Audio playback attempt:', { messageId, stakeholder: stakeholder.name, globalAudioEnabled, autoPlay })
+      
+      if (!globalAudioEnabled || !isStakeholderVoiceEnabled(stakeholder.id)) {
+        console.log('Audio disabled for stakeholder:', stakeholder.name)
+        return Promise.resolve()
+      }
+
+      try {
+        if (userInterruptRequested) {
+          console.log('User interrupted audio, skipping playback')
+          setUserInterruptRequested(false)
+          return Promise.resolve()
+        }
+
+        stopCurrentAudio()
+        
+        if (!autoPlay) {
+          return Promise.resolve()
+        }
+
+        setCurrentSpeaker(stakeholder)
+        setCurrentlyProcessingAudio(messageId)
+        setIsAudioPlaying(true)
+
+        const voiceName = stakeholder.voice
+        console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
+        console.log('🔧 Azure TTS Available:', isAzureTTSAvailable())
+        
+        if (isAzureTTSAvailable()) {
+          console.log('✅ Using Azure TTS for audio synthesis')
+          const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName)
+          const audioUrl = URL.createObjectURL(audioBlob)
+          const audio = new Audio(audioUrl)
+          
+          setCurrentAudio(audio)
+          setPlayingMessageId(messageId)
+          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+          
+          return new Promise((resolve) => {
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              
+              // Auto-focus input field when audio completes
+              setTimeout(() => {
+                if (inputRef.current) {
+                  inputRef.current.focus()
+                }
+              }, 100)
+              
+              resolve()
+            }
+            
+            audio.onerror = (error) => {
+              console.error('Audio element error:', error)
+              URL.revokeObjectURL(audioUrl)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              resolve()
+            }
+            
+            audio.play().then(() => {
+              // Audio started successfully
+            }).catch((playError) => {
+              console.error('Audio play error:', playError)
+              URL.revokeObjectURL(audioUrl)
+              setCurrentAudio(null)
+              setPlayingMessageId(null)
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+              setCurrentSpeaker(null)
+              setIsAudioPlaying(false)
+              setCurrentlyProcessingAudio(null)
+              resolve()
+            })
+          })
+        } else {
+          console.log('⚠️ Azure TTS not available (check environment variables), using browser TTS')
+          setPlayingMessageId(messageId)
+          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+          
+          await playBrowserTTS(text)
+          
+          setPlayingMessageId(null)
+          setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+          setCurrentSpeaker(null)
+          setIsAudioPlaying(false)
+          setCurrentlyProcessingAudio(null)
+          
+          // Auto-focus input field when browser TTS completes
+          setTimeout(() => {
+            if (inputRef.current) {
+              inputRef.current.focus()
+            }
+          }, 100)
+          
+          return Promise.resolve()
+        }
+      } catch (error) {
+        console.error('Audio playback failed:', error)
+        setPlayingMessageId(null)
+        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+        setCurrentSpeaker(null)
+        setIsAudioPlaying(false)
+        setCurrentlyProcessingAudio(null)
+        
+        // Auto-focus input field even on audio error
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus()
+          }
+        }, 100)
+        
+        return Promise.resolve()
+      }
+    }
+
+    // Enhanced toggle audio with proper pause/resume
+   const toggleMessageAudio = async (messageId: string, text: string, stakeholder: any) => {
+     if (playingMessageId === messageId && isAudioPlaying) {
+       pauseCurrentAudio()
+     } else if (playingMessageId === messageId && !isAudioPlaying) {
+       resumeCurrentAudio()
+     } else {
+       await playMessageAudio(messageId, text, stakeholder, true)
+     }
+   }
+
+       const stopMessageAudio = (messageId: string) => {
+      if (playingMessageId === messageId) {
+        stopCurrentAudio()
+      }
+      setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+      setCanUserType(true)
+    }
+
+  // Old hard-coded greeting flow removed - replaced by dynamic handleAdaptiveGreeting
+
+  // Conversation queue to prevent simultaneous speaking
+  const [conversationQueue, setConversationQueue] = useState<string[]>([])
+  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null)
+
+  // Enhanced mention detection and response handling
+  const handleStakeholderMentions = async (
+    response: string, 
+    speakingStakeholder: any, 
+    userMessage: string, 
+    currentMessages: Message[]
+  ): Promise<Message[]> => {
+    const aiService = AIService.getInstance()
+    
+    // Get available stakeholders (excluding current speaker)
+    const availableStakeholders = selectedStakeholders
+      .filter(s => s.id !== speakingStakeholder.id)
+      .map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }))
+
+    if (availableStakeholders.length === 0) {
+      return currentMessages
+    }
+
+    try {
+      // Enhanced stakeholder mention detection
+      const mentionResult = await aiService.detectStakeholderMentions(response, availableStakeholders)
+      
+      if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        const mentionedNames = mentionResult.mentionedStakeholders.map(s => s.name).join(', ')
+        console.log(`🎯 Stakeholder mention detected: ${mentionedNames} (${mentionResult.mentionType}, confidence: ${mentionResult.confidence})`)
+        
+        // Show user-controlled notification instead of auto-responding
+        const notificationText = mentionResult.mentionedStakeholders.length > 1
+          ? `💬 ${speakingStakeholder.name} mentioned ${mentionedNames}. Type "let them respond" to continue or ask your next question.`
+          : `💬 ${speakingStakeholder.name} mentioned ${mentionResult.mentionedStakeholders[0].name}. Type "let them respond" to continue or ask your next question.`
+        
+        setDynamicFeedback(notificationText)
+        
+        // Store pending mentions for user to control
+        setPendingStakeholderMentions({
+          mentionedStakeholders: mentionResult.mentionedStakeholders,
+          speakingStakeholder,
+          response,
+          userMessage,
+          mentionType: mentionResult.mentionType
+        })
+        
+        // Don't auto-respond - wait for user control
+        console.log('🛑 Stakeholder mention detected - waiting for user control')
+        
+        return currentMessages
+      }
+
+      return currentMessages
+    } catch (error) {
+      console.error('Error handling stakeholder mentions:', error)
+      return currentMessages
+    }
+  }
+
+  // Enhanced stakeholder response processing with mention detection
+  const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string): Promise<Message[]> => {
+    try {
+      // Add to conversation queue to prevent simultaneous speaking
+      setConversationQueue(prev => [...prev, stakeholder.id])
+      
+      // Wait for turn if someone else is speaking
+      while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      
+      // Start speaking
+      setCurrentSpeaking(stakeholder.id)
+      
+      // Dynamic thinking state management
+      addStakeholderToThinking(stakeholder.id)
+      
+      // Generate dynamic thinking message based on actual user question context
+      const thinkingContext = {
+        stakeholder,
+        messageContent,
+        conversationHistory: currentMessages,
+        responseContext
+      }
+      const thinkingMessage = generateThinkingMessage(stakeholder, thinkingContext)
+      setDynamicFeedback(thinkingMessage)
+      
+      // Generate contextual response using AI service
+      const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext)
+      
+      // Clean up thinking state - ensure proper cleanup
+      removeStakeholderFromThinking(stakeholder.id)
+      setDynamicFeedback(null)
+      
+      // Create and add message with dynamic indexing
+      const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length)
+      let updatedMessages = [...currentMessages, responseMessage]
+      setMessages(updatedMessages)
+      
+      // Force cleanup of thinking state to prevent display issues
+      setTimeout(() => {
+        removeStakeholderFromThinking(stakeholder.id)
+        setDynamicFeedback(null)
+      }, 100)
+      
+      // Dynamic audio handling based on user preferences and context
+      if (globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id)) {
+        await playMessageAudio(responseMessage.id, response, stakeholder, true).catch(console.warn)
+      }
+      
+      // Enhanced mention detection - check if this response mentions other stakeholders (disabled for now to prevent false positives)
+      // TODO: Re-enable with better AI accuracy
+      // updatedMessages = await handleStakeholderMentions(response, stakeholder, messageContent, updatedMessages)
+      
+      // Check for traditional baton passing (keep existing functionality)
+      const batonPassedStakeholder = detectBatonPassing(response, updatedMessages)
+      
+      // Finish speaking
+      setCurrentSpeaking(null)
+      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id))
+      
+      // Auto-focus input field when stakeholder response is complete
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }, 500) // Small delay to ensure message is rendered
+      
+      // Handle traditional baton passing if detected and no mentions were processed
+      if (batonPassedStakeholder && !updatedMessages.find(msg => 
+        msg.id.startsWith('mention-response') && 
+        msg.timestamp > responseMessage.timestamp
+      )) {
+        console.log(`📋 Traditional baton passed to ${batonPassedStakeholder.name}`)
+        setTimeout(async () => {
+          await processDynamicStakeholderResponse(batonPassedStakeholder, messageContent, updatedMessages, 'baton_pass')
+        }, 1000) // Small delay for natural flow
+      }
+      
+      return updatedMessages
+    } catch (error) {
+      console.error('Error processing stakeholder response:', error)
+      removeStakeholderFromThinking(stakeholder.id)
+      setDynamicFeedback(null)
+      
+      // Clean up conversation state on error
+      setCurrentSpeaking(null)
+      setConversationQueue(prev => prev.filter(id => id !== stakeholder.id))
+      
+      // Force cleanup of thinking state on error
+      setTimeout(() => {
+        removeStakeholderFromThinking(stakeholder.id)
+        setDynamicFeedback(null)
+      }, 100)
+      
+      throw error
+    }
+  }
+
+  // Dynamic discussion flow management with speaking queue
+  const handleAdaptiveDiscussion = async (messageContent: string, currentMessages: Message[]) => {
+    // Dynamic context analysis for response strategy
+    const context = {
+      messageContent,
+      conversationHistory: currentMessages,
+      stakeholders: selectedStakeholders,
+      currentPhase: conversationDynamics.phase
+    }
+    
+    // Check if this is a question that should have multiple respondents
+    const shouldHaveMultipleResponders = isGeneralQuestion(messageContent) || isOpenEndedQuestion(messageContent)
+    
+    if (shouldHaveMultipleResponders) {
+      // Get multiple relevant stakeholders for this question
+      const relevantStakeholders = selectMultipleRespondents(messageContent, currentMessages)
+      
+      // Set up visual response queue for multiple responders
+      const responseQueueData = relevantStakeholders.map(s => ({
+        name: s.name,
+        id: s.id
+      }))
+      
+      setResponseQueue({
+        current: responseQueueData[0]?.name || null,
+        upcoming: responseQueueData.slice(1)
+      })
+      
+      // Queue all relevant stakeholders to respond
+      for (let i = 0; i < relevantStakeholders.length; i++) {
+        const stakeholder = relevantStakeholders[i]
+        
+        // Show current speaker is about to respond
+        console.log(`🎙️ Now responding: ${stakeholder.name}`)
+        
+        await processDynamicStakeholderResponse(stakeholder, messageContent, currentMessages, 'discussion_primary')
+        
+        // Keep the current speaker visible for a moment after they finish
+        console.log(`✅ ${stakeholder.name} finished responding`)
+        
+        // Wait for current speaker to finish before next one
+        while (currentSpeaking !== null) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        
+        // Show the completed response for 2 seconds before moving to next
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Update response queue - move to next stakeholder (only if there are more)
+        if (i < relevantStakeholders.length - 1) {
+          setResponseQueue(prev => {
+            const remaining = prev.upcoming.slice(1)
+            return {
+              current: prev.upcoming[0]?.name || null,
+              upcoming: remaining
+            }
+          })
+          
+          // Natural pause before next speaker
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+      
+      // Keep the final speaker visible for a moment, then clear
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Clear the response queue when all responses are complete
+      setResponseQueue({ current: null, upcoming: [] })
+      console.log('🏁 All responses complete - queue cleared')
+    } else {
+      // Single respondent for specific questions
+      const primaryRespondent = selectContextualRespondent(messageContent, currentMessages)
+      
+      if (primaryRespondent) {
+        await processDynamicStakeholderResponse(primaryRespondent, messageContent, currentMessages, 'discussion_primary')
+        
+        // Wait for primary response to complete before considering follow-up
+        while (currentSpeaking !== null) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        
+        // Dynamic assessment of follow-up need (only after primary response is complete)
+        const followUpAssessment = await assessFollowUpNeed(messageContent, currentMessages, primaryRespondent)
+        
+        if (followUpAssessment.shouldFollowUp && currentSpeaking === null) {
+          // Dynamic delay calculation for follow-up
+          const followUpDelay = calculateDynamicPause({ 
+            ...context, 
+            stakeholder: primaryRespondent,
+            followUpContext: followUpAssessment 
+          })
+          
+          setTimeout(async () => {
+            // Double-check no one is speaking before starting follow-up
+            if (currentSpeaking === null) {
+              const followUpStakeholder = selectDynamicFollowUp(messageContent, currentMessages, primaryRespondent, followUpAssessment)
+              if (followUpStakeholder) {
+                await processDynamicStakeholderResponse(followUpStakeholder, messageContent, currentMessages, 'discussion_followup')
+              }
+            }
+          }, followUpDelay)
+        }
+      }
+    }
+  }
+
+  // Old hard-coded selection functions removed - replaced by dynamic versions
+
+  // Process pending stakeholder mentions when user approves
+  const processPendingMentions = async () => {
+    if (!pendingStakeholderMentions) return
+
+    const { mentionedStakeholders, speakingStakeholder, response, userMessage, mentionType } = pendingStakeholderMentions
+    
+    console.log(`🎯 Processing approved mentions for: ${mentionedStakeholders.map(s => s.name).join(', ')}`)
+    
+    // Set up response queue for stakeholder-to-stakeholder mentions
+    const responseQueueData = mentionedStakeholders.map(s => ({
+      name: s.name,
+      id: selectedStakeholders.find(st => st.name === s.name)?.id || 'unknown'
+    }))
+    
+    setResponseQueue({
+      current: responseQueueData[0]?.name || null,
+      upcoming: responseQueueData.slice(1)
+    })
+    
+    let currentMessages = [...messages]
+    const aiService = AIService.getInstance()
+    
+    // Convert speaking stakeholder to context format
+    const speakingStakeholderContext = {
+      name: speakingStakeholder.name,
+      role: speakingStakeholder.role,
+      department: speakingStakeholder.department,
+      priorities: speakingStakeholder.priorities,
+      personality: speakingStakeholder.personality,
+      expertise: speakingStakeholder.expertise || []
+    }
+    
+    // Handle all mentioned stakeholders
+    for (let i = 0; i < mentionedStakeholders.length; i++) {
+      const mentionedStakeholderContext = mentionedStakeholders[i]
+      const mentionedStakeholder = selectedStakeholders.find(s => 
+        s.name === mentionedStakeholderContext.name
+      )
+      
+      if (mentionedStakeholder) {
+        try {
+          // Natural pause before the mentioned stakeholder responds
+          const pauseConfig = AIService.getMentionPauseConfig()
+          await new Promise(resolve => setTimeout(resolve, pauseConfig.base + Math.random() * pauseConfig.variance))
+          
+          // Generate mention response
+          const mentionResponse = await aiService.generateMentionResponse(
+            mentionedStakeholderContext,
+            mentionType,
+            response,
+            speakingStakeholderContext,
+            userMessage,
+            {
+              project: {
+                name: selectedProject?.name || 'Current Project',
+                description: selectedProject?.description || 'Project description',
+                type: selectedProject?.projectType || 'General'
+              },
+              conversationHistory: currentMessages,
+              stakeholders: selectedStakeholders.map(s => ({
+                name: s.name,
+                role: s.role,
+                department: s.department,
+                priorities: s.priorities,
+                personality: s.personality,
+                expertise: s.expertise || []
+              }))
+            }
+          )
+          
+          // Create response message
+          const mentionResponseMessage: Message = {
+            id: `mention-response-${Date.now()}-${mentionedStakeholder.id}`,
+            speaker: mentionedStakeholder.id,
+            content: mentionResponse,
+            timestamp: new Date().toISOString(),
+            stakeholderName: mentionedStakeholder.name,
+            stakeholderRole: mentionedStakeholder.role
+          }
+          
+          // Add to messages and update current working array
+          currentMessages = [...currentMessages, mentionResponseMessage]
+          setMessages(currentMessages)
+          
+          // Play audio for the mention response
+          if (globalAudioEnabled && isStakeholderVoiceEnabled(mentionedStakeholder.id)) {
+            try {
+              await playMessageAudio(mentionResponseMessage.id, mentionResponse, mentionedStakeholder, true)
+            } catch (audioError) {
+              console.warn('Audio playback failed for mention response:', audioError)
+            }
+          }
+          
+          // Keep the current speaker visible for a moment after they finish
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          
+          // Update response queue - move to next stakeholder (only if there are more)
+          if (i < mentionedStakeholders.length - 1) {
+            setResponseQueue(prev => {
+              const remaining = prev.upcoming.slice(1)
+              return {
+                current: prev.upcoming[0]?.name || null,
+                upcoming: remaining
+              }
+            })
+            
+            // Pause before next response
+            await new Promise(resolve => setTimeout(resolve, 1500))
+          }
+        } catch (error) {
+          console.error(`Error processing mention response for ${mentionedStakeholder.name}:`, error)
+        }
+      }
+    }
+    
+    // Keep the final speaker visible for a moment, then clear
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Clear pending mentions and response queue
+    setPendingStakeholderMentions(null)
+    setResponseQueue({ current: null, upcoming: [] })
+    console.log('✅ Completed processing all approved mentions')
+  }
+
+     // Dynamic conversation handler - NO HARD-CODING
+   const handleSendMessage = async () => {
+     if (!inputMessage.trim() || isEndingMeeting) return
+
+     const messageContent = inputMessage.trim()
+     
+     // Check for conversation reset commands
+     if (messageContent.toLowerCase().includes('reset conversation') ||
+         messageContent.toLowerCase().includes('restart chat') ||
+         messageContent.toLowerCase().includes('clear queue')) {
+       console.log('🔄 User requested conversation reset')
+       resetConversationState()
+       setInputMessage('')
+       return
+     }
+     
+     // Check for user control commands for pending stakeholder mentions
+     if (pendingStakeholderMentions && (
+       messageContent.toLowerCase().includes('let them respond') ||
+       messageContent.toLowerCase().includes('let them answer') ||
+       messageContent.toLowerCase().includes('continue') ||
+       messageContent.toLowerCase() === 'yes'
+     )) {
+       console.log('👥 User approved stakeholder responses - processing pending mentions')
+       setInputMessage('')
+       setDynamicFeedback(null)
+       
+       // Process the pending mentions
+       await processPendingMentions()
+       return
+     }
+     
+     // If user asks a new question while there are pending mentions, clear them and proceed
+     if (pendingStakeholderMentions) {
+       console.log('❌ User asked new question - clearing pending mentions')
+       setPendingStakeholderMentions(null)
+       setDynamicFeedback(null)
+     }
+
+     setIsGeneratingResponse(true)
+     // DO NOT block user input during AI generation - users should be able to type while stakeholders respond
+     
+     setInputMessage('')
+
+     const userMessage: Message = {
+       id: `user-${Date.now()}`,
+       speaker: 'user',
+       content: messageContent,
+       timestamp: new Date().toISOString()
+     }
+
+     let currentMessages = [...messages, userMessage]
+     setMessages(currentMessages)
+
+     try {
+       // Check for direct stakeholder mentions in user message FIRST
+       const aiService = AIService.getInstance()
+       const availableStakeholders = selectedStakeholders.map(s => ({
+         name: s.name,
+         role: s.role,
+         department: s.department,
+         priorities: s.priorities,
+         personality: s.personality,
+         expertise: s.expertise || []
+       }))
+
+       const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders)
+       
+       // Enhanced debugging for mention detection
+       console.log('🔍 DEBUG: User message analysis:', {
+         messageContent,
+         availableStakeholders: availableStakeholders.map(s => s.name),
+         mentionResult: userMentionResult,
+         threshold: AIService.getMentionConfidenceThreshold()
+       })
+       
+       if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+         const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ')
+         console.log(`🎯 User directly mentioned stakeholder(s): ${mentionedNames} (${userMentionResult.mentionType}, confidence: ${userMentionResult.confidence})`)
+         
+         console.log(`🔍 Detailed detection results:`, {
+           totalDetected: userMentionResult.mentionedStakeholders.length,
+           stakeholders: userMentionResult.mentionedStakeholders.map(s => ({ name: s.name, role: s.role, department: s.department })),
+           availableStakeholders: selectedStakeholders.map(s => ({ id: s.id, name: s.name, role: s.role }))
+         })
+         
+         // Show prominent feedback that stakeholders will respond
+         const feedbackText = userMentionResult.mentionedStakeholders.length > 1 
+           ? `🎯 ${mentionedNames} will respond shortly...`
+           : `🎯 ${userMentionResult.mentionedStakeholders[0].name} will respond shortly...`
+         setDynamicFeedback(feedbackText)
+         setTimeout(() => setDynamicFeedback(null), 2000)
+         
+         // Set up the response queue to show users what to expect
+         const responseQueueData = userMentionResult.mentionedStakeholders.map(s => ({
+           name: s.name,
+           id: selectedStakeholders.find(st => st.name === s.name)?.id || 'unknown'
+         }))
+         
+         setResponseQueue({
+           current: responseQueueData[0]?.name || null,
+           upcoming: responseQueueData.slice(1)
+         })
+         
+         // Trigger all mentioned stakeholders to respond
+         let workingMessages = currentMessages
+         for (let i = 0; i < userMentionResult.mentionedStakeholders.length; i++) {
+           const mentionedStakeholderContext = userMentionResult.mentionedStakeholders[i]
+           const mentionedStakeholder = selectedStakeholders.find(s => 
+             s.name === mentionedStakeholderContext.name
+           )
+           
+           console.log(`🔍 Processing stakeholder: ${mentionedStakeholderContext.name}`, {
+             found: !!mentionedStakeholder,
+             stakeholderId: mentionedStakeholder?.id,
+             stakeholderName: mentionedStakeholder?.name,
+             currentMessageCount: workingMessages.length
+           })
+           
+           if (mentionedStakeholder) {
+             console.log(`✅ About to trigger response for: ${mentionedStakeholder.name}`)
+             
+             // Process the response and update working messages
+             workingMessages = await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, workingMessages, 'direct_mention')
+             
+             console.log(`✅ Completed response for: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`)
+             
+             // Keep the current speaker visible for a moment after they finish
+             await new Promise(resolve => setTimeout(resolve, 2000))
+             
+             // Update response queue - move to next stakeholder (only if there are more)
+             if (i < userMentionResult.mentionedStakeholders.length - 1) {
+               setResponseQueue(prev => {
+                 const remaining = prev.upcoming.slice(1)
+                 return {
+                   current: prev.upcoming[0]?.name || null,
+                   upcoming: remaining
+                 }
+               })
+               
+               console.log(`⏸️ Pausing 1.5s before next stakeholder response`)
+               await new Promise(resolve => setTimeout(resolve, 1500))
+             }
+           } else {
+             console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`)
+           }
+         }
+         
+         // Keep the final speaker visible for a moment, then clear
+         await new Promise(resolve => setTimeout(resolve, 2000))
+         
+         // Clear the response queue when all responses are complete
+         setResponseQueue({ current: null, upcoming: [] })
+         console.log('🏁 All direct mention responses complete - queue cleared')
+         
+         setIsGeneratingResponse(false)
+         return // Exit early - don't go through normal conversation flow
+       }
+
+       // If no direct mention detected, proceed with normal conversation flow
+       // Dynamic conversation type detection
+       const isGroup = isGroupMessage(messageContent)
+       const isGreeting = isSimpleGreeting(messageContent)
+       
+       if (isGroup && isGreeting) {
+         await handleAdaptiveGreeting(messageContent, currentMessages)
+       } else {
+         await handleAdaptiveDiscussion(messageContent, currentMessages)
+       }
+     } catch (error) {
+       console.error('Error generating AI response:', error)
+       await handleFallbackResponse(currentMessages)
+     } finally {
+       setIsGeneratingResponse(false)
+       // canUserType remains true throughout - users can always type unless ending meeting
+     }
+   }
+
+     // Dynamic per-stakeholder audio management - NO HARD-CODING
+   const stopStakeholderAudio = (stakeholderId: string) => {
+     // Stop audio for this specific stakeholder dynamically
+     const messageElements = document.querySelectorAll(`[data-stakeholder-id="${stakeholderId}"]`)
+     messageElements.forEach(element => {
+       const messageId = element.getAttribute('data-message-id')
+       if (messageId && playingMessageId === messageId) {
+         stopCurrentAudio()
+       }
+     })
+     
+     // Remove from dynamic thinking state if they were thinking
+     removeStakeholderFromThinking(stakeholderId)
+     setDynamicFeedback(null)
+     
+     // Force cleanup of thinking state
+     setTimeout(() => {
+       removeStakeholderFromThinking(stakeholderId)
+       setDynamicFeedback(null)
+     }, 100)
+   }
+
+ // Enhanced fallback response
+ const handleFallbackResponse = async (currentMessages: Message[]) => {
+   const fallbackStakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
+   const fallbackResponse = `I apologize, but I'm having some technical difficulties. Could you please rephrase your question?`
+   
+   const fallbackMessage = createResponseMessage(fallbackStakeholder, fallbackResponse, 0)
+   setMessages(prev => [...prev, fallbackMessage])
+ }
+
+   // Generate user avatar from name
+  const generateUserAvatar = (name: string) => {
+    if (!name) return null
+    
+    const initials = name.split(' ').map(word => word.charAt(0).toUpperCase()).join('')
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-purple-500',
+      'bg-red-500',
+      'bg-yellow-500',
+      'bg-indigo-500',
+      'bg-pink-500',
+      'bg-teal-500'
+    ]
+    
+    // Use name to consistently pick the same color
+    const colorIndex = name.length % colors.length
+    const backgroundColor = colors[colorIndex]
+    
+    return (
+      <div className={`w-8 h-8 rounded-full ${backgroundColor} flex items-center justify-center text-white text-sm font-medium`}>
+        {initials}
+      </div>
+    )
+  }
+
+  // Enhanced meeting analytics
+  const [meetingAnalytics, setMeetingAnalytics] = useState({
+    participationBalance: new Map<string, number>(),
+    topicsDiscussed: new Set<string>(),
+    questionTypes: new Map<string, number>(),
+    collaborationIndex: 0,
+    meetingEffectivenessScore: 0,
+    keyInsights: [] as string[],
+    stakeholderEngagementLevels: new Map<string, 'low' | 'medium' | 'high'>(),
+    conversationFlow: [] as { speaker: string, timestamp: string, topic: string }[]
+  })
+
+  // Update analytics when messages change
+  useEffect(() => {
+    if (messages.length > 1) {
+      updateMeetingAnalytics()
+    }
+  }, [messages])
+
+  const updateMeetingAnalytics = () => {
+    const aiService = AIService.getInstance()
+    
+    // Get AI service analytics
+    const aiAnalytics = aiService.getConversationAnalytics()
+    
+    // Traditional analytics
+    const stakeholderMessages = messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system')
+    const totalMessages = stakeholderMessages.length
+    
+    if (totalMessages === 0) return
+
+    // Use AI service data where available, fallback to traditional calculation
+    const participationBalance = new Map<string, number>()
+    selectedStakeholders.forEach(stakeholder => {
+      const messageCount = stakeholderMessages.filter(m => m.speaker === stakeholder.id).length
+      participationBalance.set(stakeholder.id, (messageCount / totalMessages) * 100)
+    })
+
+    // Use AI service topics if available
+    const topicsDiscussed = aiAnalytics.topicsDiscussed.length > 0 
+      ? new Set(aiAnalytics.topicsDiscussed)
+      : new Set<string>()
+
+    // If AI service has no topics, use traditional detection
+    if (topicsDiscussed.size === 0) {
+      const topicKeywords = {
+        'Process': ['process', 'workflow', 'procedure', 'steps'],
+        'Technology': ['system', 'software', 'technical', 'integration'],
+        'Cost': ['cost', 'budget', 'expense', 'financial'],
+        'Quality': ['quality', 'standards', 'performance', 'excellence'],
+        'Timeline': ['timeline', 'schedule', 'deadline', 'timing'],
+        'Resources': ['resources', 'staff', 'team', 'personnel'],
+        'Customers': ['customer', 'user', 'client', 'service'],
+        'Compliance': ['compliance', 'regulatory', 'policy', 'audit'],
+        'Training': ['training', 'education', 'learning', 'skills'],
+        'Communication': ['communication', 'feedback', 'information', 'reporting']
+      }
+
+      stakeholderMessages.forEach(msg => {
+        const content = msg.content.toLowerCase()
+        Object.entries(topicKeywords).forEach(([topic, keywords]) => {
+          if (keywords.some(keyword => content.includes(keyword))) {
+            topicsDiscussed.add(topic)
+          }
+        })
+      })
+    }
+
+    // Rest of analytics calculation remains the same...
+    const questionTypes = new Map<string, number>()
+    const questionPatterns = {
+      'Clarification': ['what do you mean', 'can you explain', 'clarify', 'could you elaborate'],
+      'Information': ['what', 'how', 'when', 'where', 'who', 'which'],
+      'Opinion': ['what do you think', 'your opinion', 'your perspective', 'your view'],
+      'Confirmation': ['is that correct', 'right', 'confirm', 'verify'],
+      'Action': ['what should we do', 'how do we', 'what\'s the next step', 'how can we']
+    }
+
+    messages.filter(m => m.speaker === 'user').forEach(msg => {
+      const content = msg.content.toLowerCase()
+      Object.entries(questionPatterns).forEach(([type, patterns]) => {
+        if (patterns.some(pattern => content.includes(pattern))) {
+          questionTypes.set(type, (questionTypes.get(type) || 0) + 1)
+        }
+      })
+    })
+
+    const handoffCount = calculateHandoffCount(stakeholderMessages)
+    const collaborationIndex = Math.min(100, (handoffCount / Math.max(1, totalMessages - 1)) * 100)
+
+    const balanceScore = calculateParticipationBalance(participationBalance)
+    const topicScore = Math.min(100, (topicsDiscussed.size / 10) * 100)
+    const engagementScore = calculateEngagementScore(stakeholderMessages)
+    const meetingEffectivenessScore = Math.round((balanceScore + topicScore + engagementScore) / 3)
+
+    const keyInsights = generateKeyInsights(participationBalance, topicsDiscussed, questionTypes, collaborationIndex)
+
+    // Use AI service stakeholder states for engagement levels
+    const stakeholderEngagementLevels = new Map<string, 'low' | 'medium' | 'high'>()
+    selectedStakeholders.forEach(stakeholder => {
+      const aiStakeholderState = aiAnalytics.stakeholderStates[stakeholder.name]
+      
+      if (aiStakeholderState) {
+        // Use AI service emotional state to determine engagement
+        const engagement = aiStakeholderState.emotionalState === 'excited' ? 'high' :
+                          aiStakeholderState.emotionalState === 'engaged' ? 'medium' : 'low'
+        stakeholderEngagementLevels.set(stakeholder.id, engagement)
+      } else {
+        // Fallback to traditional calculation
+        const participation = participationBalance.get(stakeholder.id) || 0
+        const messageCount = stakeholderMessages.filter(m => m.speaker === stakeholder.id).length
+        const avgWordsPerMessage = calculateAvgWordsPerMessage(stakeholder.id, stakeholderMessages)
+        
+        let level: 'low' | 'medium' | 'high' = 'low'
+        if (participation > 25 && messageCount > 2 && avgWordsPerMessage > 30) {
+          level = 'high'
+        } else if (participation > 15 && messageCount > 1 && avgWordsPerMessage > 20) {
+          level = 'medium'
+        }
+        
+        stakeholderEngagementLevels.set(stakeholder.id, level)
+      }
+    })
+
+    // Build conversation flow using AI service data if available
+    const conversationFlow = stakeholderMessages.map(msg => ({
+      speaker: msg.stakeholderName || 'Unknown',
+      timestamp: msg.timestamp,
+      topic: identifyMessageTopic(msg.content, {
+        'Process': ['process', 'workflow', 'procedure', 'steps'],
+        'Technology': ['system', 'software', 'technical', 'integration'],
+        'Cost': ['cost', 'budget', 'expense', 'financial'],
+        'Quality': ['quality', 'standards', 'performance', 'excellence'],
+        'Timeline': ['timeline', 'schedule', 'deadline', 'timing'],
+        'Resources': ['resources', 'staff', 'team', 'personnel'],
+        'Customers': ['customer', 'user', 'client', 'service'],
+        'Compliance': ['compliance', 'regulatory', 'policy', 'audit'],
+        'Training': ['training', 'education', 'learning', 'skills'],
+        'Communication': ['communication', 'feedback', 'information', 'reporting']
+      })
+    }))
+
+    setMeetingAnalytics({
+      participationBalance,
+      topicsDiscussed,
+      questionTypes,
+      collaborationIndex,
+      meetingEffectivenessScore,
+      keyInsights,
+      stakeholderEngagementLevels,
+      conversationFlow
+    })
+  }
+
+  const calculateHandoffCount = (stakeholderMessages: Message[]): number => {
+    let handoffCount = 0
+    for (let i = 0; i < stakeholderMessages.length - 1; i++) {
+      if (stakeholderMessages[i].speaker !== stakeholderMessages[i + 1].speaker) {
+        handoffCount++
+      }
+    }
+    return handoffCount
+  }
+
+  const calculateParticipationBalance = (participationMap: Map<string, number>): number => {
+    const participationValues = Array.from(participationMap.values())
+    const idealParticipation = 100 / selectedStakeholders.length
+    
+    const deviations = participationValues.map(p => Math.abs(p - idealParticipation))
+    const avgDeviation = deviations.reduce((sum, dev) => sum + dev, 0) / deviations.length
+    
+    return Math.max(0, 100 - (avgDeviation * 2))
+  }
+
+  const calculateEngagementScore = (stakeholderMessages: Message[]): number => {
+    const totalWords = stakeholderMessages.reduce((sum, msg) => sum + msg.content.split(' ').length, 0)
+    const avgWordsPerMessage = totalWords / Math.max(1, stakeholderMessages.length)
+    
+    // Score based on message length and frequency
+    const lengthScore = Math.min(100, (avgWordsPerMessage / 50) * 100)
+    const frequencyScore = Math.min(100, (stakeholderMessages.length / 10) * 100)
+    
+    return Math.round((lengthScore + frequencyScore) / 2)
+  }
+
+  const calculateAvgWordsPerMessage = (stakeholderId: string, stakeholderMessages: Message[]): number => {
+    const messages = stakeholderMessages.filter(m => m.speaker === stakeholderId)
+    if (messages.length === 0) return 0
+    
+    const totalWords = messages.reduce((sum, msg) => sum + msg.content.split(' ').length, 0)
+    return totalWords / messages.length
+  }
+
+  const identifyMessageTopic = (content: string, topicKeywords: any): string => {
+    const contentLower = content.toLowerCase()
+    
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+      if ((keywords as string[]).some(keyword => contentLower.includes(keyword))) {
+        return topic
+      }
+    }
+    
+    return 'General'
+  }
+
+  const generateKeyInsights = (
+    participationBalance: Map<string, number>,
+    topicsDiscussed: Set<string>,
+    questionTypes: Map<string, number>,
+    collaborationIndex: number
+  ): string[] => {
+    const insights: string[] = []
+    
+    // Participation insights
+    const participationValues = Array.from(participationBalance.values())
+    const maxParticipation = Math.max(...participationValues)
+    const minParticipation = Math.min(...participationValues)
+    
+    if (maxParticipation - minParticipation > 40) {
+      insights.push('Consider encouraging more balanced participation - some stakeholders are dominating the conversation')
+    }
+    
+    if (collaborationIndex > 70) {
+      insights.push('Excellent collaboration - stakeholders are effectively building on each other\'s ideas')
+    } else if (collaborationIndex < 30) {
+      insights.push('Limited cross-stakeholder interaction - consider facilitating more collaborative dialogue')
+    }
+    
+    // Topic coverage insights
+    if (topicsDiscussed.size > 6) {
+      insights.push('Great topic coverage - multiple important areas have been discussed')
+    } else if (topicsDiscussed.size < 3) {
+      insights.push('Consider exploring more diverse topics to ensure comprehensive requirements gathering')
+    }
+    
+    // Question type insights
+    const totalQuestions = Array.from(questionTypes.values()).reduce((sum, count) => sum + count, 0)
+    if (totalQuestions > 5) {
+      insights.push('Active questioning approach - good for thorough requirements gathering')
+    }
+    
+    const clarificationQuestions = questionTypes.get('Clarification') || 0
+    if (clarificationQuestions > 2) {
+      insights.push('Multiple clarification requests suggest need for clearer communication')
+    }
+    
+    return insights.slice(0, 3) // Limit to top 3 insights
+  }
+
+  // Enhanced meeting summary with analytics
+  const generateMeetingAnalyticsSummary = (): string => {
+    const analytics = meetingAnalytics
+    const duration = Math.round((Date.now() - new Date(messages[0]?.timestamp || new Date()).getTime()) / 1000 / 60)
+    
+    return `
+## Meeting Analytics Summary
+
+**Duration**: ${duration} minutes
+**Effectiveness Score**: ${analytics.meetingEffectivenessScore}/100
+**Collaboration Index**: ${Math.round(analytics.collaborationIndex)}%
+
+### Participation Balance
+${Array.from(analytics.participationBalance.entries())
+  .map(([stakeholderId, percentage]) => {
+    const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+    return `- ${stakeholder?.name}: ${Math.round(percentage)}%`
+  })
+  .join('\n')}
+
+### Topics Covered (${analytics.topicsDiscussed.size})
+${Array.from(analytics.topicsDiscussed).join(', ')}
+
+### Key Insights
+${analytics.keyInsights.map(insight => `• ${insight}`).join('\n')}
+
+### Stakeholder Engagement Levels
+${Array.from(analytics.stakeholderEngagementLevels.entries())
+  .map(([stakeholderId, level]) => {
+    const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+    return `- ${stakeholder?.name}: ${level.toUpperCase()}`
+  })
+  .join('\n')}
+`
+  }
+
+  // Dynamic conversation state management - NO HARD-CODING
+  const [conversationDynamics, setConversationDynamics] = useState({
+    phase: 'adaptive', // Dynamically determined based on conversation flow
+    leadSpeaker: null as any, // Dynamically selected based on seniority/context
+    responseOrder: [] as any[], // Dynamic order based on expertise and participation
+    greetingIterations: 0,
+    introducedMembers: new Set<string>(),
+    contextualResponses: new Map<string, boolean>()
+  })
+
+  // Dynamic thinking indicators - context-aware messaging
+  const [activeThinking, setActiveThinking] = useState<Set<string>>(new Set())
+  const [dynamicFeedback, setDynamicFeedback] = useState<string | null>(null)
+  const [pendingStakeholderMentions, setPendingStakeholderMentions] = useState<{
+    mentionedStakeholders: any[],
+    speakingStakeholder: any,
+    response: string,
+    userMessage: string,
+    mentionType: string
+  } | null>(null)
+  const [responseQueue, setResponseQueue] = useState<{
+    current: string | null,
+    upcoming: { name: string, id: string }[]
+  }>({ current: null, upcoming: [] })
+
+  // Dynamic stakeholder thinking management
+  const addStakeholderToThinking = (stakeholderId: string) => {
+    setActiveThinking(prev => new Set(prev).add(stakeholderId))
+  }
+
+  const removeStakeholderFromThinking = (stakeholderId: string) => {
+    setActiveThinking(prev => {
+      const updated = new Set(prev)
+      if (updated.has(stakeholderId)) {
+        updated.delete(stakeholderId)
+        console.log(`Removed ${stakeholderId} from thinking state. Active thinking now:`, Array.from(updated))
+        return updated
+      }
+      return prev
+    })
+  }
+
+  // Dynamic contextually-aligned thinking message generator
+  const generateThinkingMessage = (stakeholder: any, context: any) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+    
+    // Extract user question content and context
+    const userQuestion = context.messageContent || ''
+    const conversationHistory = context.conversationHistory || []
+    const responseContext = context.responseContext || ''
+    
+    // Analyze question content for key topics and themes
+    const questionAnalysis = analyzeQuestionContent(userQuestion)
+    const stakeholderExpertise = mapStakeholderExpertise(stakeholder)
+    
+    // Generate contextually aligned thinking message
+    const contextualMessage = generateContextualThinkingMessage(
+      questionAnalysis,
+      stakeholderExpertise,
+      stakeholder,
+      analytics.conversationPace,
+      userQuestion // Pass the actual question for more specific thinking messages
+    )
+    
+    return contextualMessage
+  }
+
+  // Analyze user question to extract key topics and intent
+  const analyzeQuestionContent = (question: string) => {
+    const questionLower = question.toLowerCase()
+    
+    // Extract key topics dynamically
+    const topicKeywords = {
+      budget: ['budget', 'cost', 'price', 'expense', 'financial', 'money', 'funding', 'investment'],
+      timeline: ['timeline', 'schedule', 'deadline', 'when', 'time', 'duration', 'delivery', 'launch'],
+      technical: ['technical', 'technology', 'system', 'architecture', 'implementation', 'development', 'code'],
+      process: ['process', 'workflow', 'procedure', 'steps', 'method', 'approach', 'how'],
+      requirements: ['requirements', 'features', 'functionality', 'specifications', 'needs', 'what'],
+      users: ['user', 'customer', 'client', 'experience', 'interface', 'usability', 'feedback'],
+      team: ['team', 'resources', 'people', 'staff', 'roles', 'responsibilities', 'collaboration'],
+      risks: ['risk', 'challenge', 'problem', 'issue', 'concern', 'difficulty', 'obstacle'],
+      goals: ['goal', 'objective', 'target', 'outcome', 'result', 'success', 'achievement'],
+      integration: ['integration', 'connect', 'interface', 'api', 'compatibility', 'sync'],
+      performance: ['performance', 'speed', 'efficiency', 'optimization', 'scalability', 'capacity'],
+      security: ['security', 'privacy', 'protection', 'access', 'authentication', 'authorization'],
+      data: ['data', 'database', 'storage', 'information', 'analytics', 'reporting'],
+      quality: ['quality', 'testing', 'validation', 'standards', 'compliance', 'review']
+    }
+    
+    // Find matching topics
+    const matchedTopics = []
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+      if (keywords.some(keyword => questionLower.includes(keyword))) {
+        matchedTopics.push(topic)
+      }
+    }
+    
+    // Determine question type
+    const questionType = questionLower.includes('how') ? 'process' :
+                        questionLower.includes('what') ? 'definition' :
+                        questionLower.includes('why') ? 'reasoning' :
+                        questionLower.includes('when') ? 'timeline' :
+                        questionLower.includes('who') ? 'responsibility' :
+                        questionLower.includes('where') ? 'location' :
+                        'general'
+    
+    return {
+      topics: matchedTopics,
+      questionType,
+      complexity: question.length > 100 ? 'high' : question.length > 50 ? 'medium' : 'low',
+      isSpecific: matchedTopics.length > 0
+    }
+  }
+
+  // Map stakeholder expertise to response domains
+  const mapStakeholderExpertise = (stakeholder: any) => {
+    const role = stakeholder.role?.toLowerCase() || ''
+    const department = stakeholder.department?.toLowerCase() || ''
+    
+    const expertiseMap = {
+      'technical': ['engineer', 'developer', 'architect', 'technical', 'engineering', 'development'],
+      'business': ['manager', 'director', 'executive', 'business', 'operations', 'strategy'],
+      'product': ['product', 'design', 'ux', 'ui', 'user', 'customer'],
+      'financial': ['financial', 'budget', 'accounting', 'finance', 'cost'],
+      'marketing': ['marketing', 'sales', 'communication', 'promotion', 'brand'],
+      'operations': ['operations', 'process', 'workflow', 'efficiency', 'logistics'],
+      'security': ['security', 'compliance', 'risk', 'audit', 'governance'],
+      'data': ['data', 'analytics', 'reporting', 'insights', 'intelligence']
+    }
+    
+    const stakeholderExpertise = []
+    for (const [domain, keywords] of Object.entries(expertiseMap)) {
+      if (keywords.some(keyword => role.includes(keyword) || department.includes(keyword))) {
+        stakeholderExpertise.push(domain)
+      }
+    }
+    
+    return stakeholderExpertise.length > 0 ? stakeholderExpertise : ['general']
+  }
+
+     // Generate contextually aligned thinking message
+   const generateContextualThinkingMessage = (questionAnalysis: any, stakeholderExpertise: any, stakeholder: any, conversationPace: string, userQuestion = '') => {
+     const { topics, questionType, complexity, isSpecific } = questionAnalysis
+     const personality = stakeholder.personality || 'collaborative'
+     
+     // Base thinking patterns by personality and question type
+     const thinkingPatterns = {
+       analytical: {
+         process: ['Analyzing', 'Breaking down', 'Examining', 'Dissecting'],
+         definition: ['Defining', 'Clarifying', 'Explaining', 'Detailing'],
+         reasoning: ['Evaluating', 'Assessing', 'Reasoning through', 'Analyzing'],
+         general: ['Analyzing', 'Examining', 'Evaluating', 'Reviewing', 'Assessing']
+       },
+       collaborative: {
+         process: ['Considering', 'Thinking through', 'Exploring', 'Discussing'],
+         definition: ['Thinking about', 'Considering', 'Reflecting on', 'Exploring'],
+         reasoning: ['Reflecting on', 'Considering', 'Thinking about', 'Exploring'],
+         general: ['Considering', 'Thinking about', 'Reflecting on', 'Discussing', 'Exploring']
+       },
+       direct: {
+         process: ['Addressing', 'Tackling', 'Focusing on', 'Handling'],
+         definition: ['Clarifying', 'Explaining', 'Defining', 'Outlining'],
+         reasoning: ['Addressing', 'Tackling', 'Focusing on', 'Handling'],
+         general: ['Addressing', 'Tackling', 'Focusing on', 'Handling', 'Dealing with']
+       },
+       strategic: {
+         process: ['Strategizing about', 'Planning for', 'Evaluating', 'Considering'],
+         definition: ['Defining', 'Outlining', 'Strategizing about', 'Planning'],
+         reasoning: ['Evaluating', 'Strategizing about', 'Analyzing', 'Considering'],
+         general: ['Evaluating', 'Strategizing about', 'Planning for', 'Considering', 'Analyzing']
+       }
+     }
+     
+     // Get appropriate thinking pattern based on personality and question type
+     const personalityPatterns = thinkingPatterns[personality] || thinkingPatterns.collaborative
+     const patterns = personalityPatterns[questionType] || personalityPatterns.general
+     const thinkingPattern = patterns[Math.floor(Math.random() * patterns.length)]
+    
+    // Generate contextual subject based on question topics and stakeholder expertise
+    let subject = ''
+    
+    if (topics.length > 0) {
+      // Find the most relevant topic based on stakeholder expertise
+      const relevantTopic = topics.find(topic => 
+        stakeholderExpertise.some(expertise => topic.includes(expertise) || expertise.includes(topic))
+      ) || topics[0]
+      
+      // Create more specific contextual subject that directly relates to the question
+      const subjectMap = {
+        budget: ['the budget implications', 'cost considerations', 'financial aspects', 'funding requirements'],
+        timeline: ['the timeline requirements', 'scheduling considerations', 'delivery expectations', 'timing aspects'],
+        technical: ['the technical solution', 'implementation approach', 'system requirements', 'technical feasibility'],
+        process: ['the process requirements', 'workflow considerations', 'implementation steps', 'procedural aspects'],
+        requirements: ['the specific requirements', 'functional specifications', 'project needs', 'scope considerations'],
+        users: ['user experience aspects', 'customer requirements', 'user needs', 'interface considerations'],
+        team: ['team implications', 'resource requirements', 'collaboration needs', 'team structure'],
+        risks: ['potential risks', 'challenge considerations', 'mitigation approaches', 'risk implications'],
+        goals: ['project objectives', 'success criteria', 'target outcomes', 'goal alignment'],
+        integration: ['integration requirements', 'connectivity needs', 'system interfaces', 'compatibility aspects'],
+        performance: ['performance implications', 'optimization needs', 'scalability requirements', 'efficiency considerations'],
+        security: ['security requirements', 'protection measures', 'access considerations', 'compliance needs'],
+        data: ['data requirements', 'information needs', 'storage considerations', 'data implications'],
+        quality: ['quality requirements', 'testing considerations', 'validation needs', 'quality standards']
+      }
+      
+      const subjectOptions = subjectMap[relevantTopic] || [`the ${relevantTopic} requirements`, `${relevantTopic} considerations`]
+      subject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)]
+    } else {
+      // Enhanced fallback to be more specific to stakeholder expertise
+      const expertiseSubjects = {
+        technical: ['the technical solution', 'implementation approach', 'system requirements'],
+        business: ['the business impact', 'strategic implications', 'operational considerations'],
+        product: ['the product requirements', 'user experience', 'feature specifications'],
+        financial: ['the financial implications', 'budget considerations', 'cost analysis'],
+        marketing: ['the market impact', 'customer considerations', 'positioning strategy'],
+        operations: ['the operational impact', 'process requirements', 'workflow considerations'],
+        security: ['the security implications', 'compliance requirements', 'risk assessment'],
+        data: ['the data requirements', 'information needs', 'analytics considerations'],
+        general: ['your specific question', 'this request', 'the requirements']
+      }
+      
+      const primaryExpertise = stakeholderExpertise[0] || 'general'
+      const subjectOptions = expertiseSubjects[primaryExpertise] || expertiseSubjects.general
+      subject = subjectOptions[Math.floor(Math.random() * subjectOptions.length)]
+    }
+    
+         // Add complexity modifier based on question complexity
+     const complexityModifier = complexity === 'high' ? 'carefully ' : 
+                               complexity === 'medium' ? 'thoroughly ' : ''
+     
+     // Add conversation pace modifier
+     const paceModifier = conversationPace === 'fast' ? '' : 
+                         conversationPace === 'slow' ? 'thoughtfully ' : ''
+     
+     // Extract key phrases from the user question for more specific thinking messages
+     let specificSubject = subject
+     if (userQuestion && userQuestion.length > 0) {
+       const questionLower = userQuestion.toLowerCase()
+       
+       // Look for specific objects/topics in the question
+       const specificMatches = [
+         { pattern: /about (.+?)(\?|$|\.|\,)/, prefix: 'about' },
+         { pattern: /with (.+?)(\?|$|\.|\,)/, prefix: 'with' },
+         { pattern: /for (.+?)(\?|$|\.|\,)/, prefix: 'for' },
+         { pattern: /how (.+?)(\?|$|\.|\,)/, prefix: 'how' },
+         { pattern: /why (.+?)(\?|$|\.|\,)/, prefix: 'why' },
+         { pattern: /what (.+?)(\?|$|\.|\,)/, prefix: 'what' },
+         { pattern: /when (.+?)(\?|$|\.|\,)/, prefix: 'when' }
+       ]
+       
+       for (const match of specificMatches) {
+         const result = questionLower.match(match.pattern)
+         if (result && result[1]) {
+           const extractedPhrase = result[1].trim()
+           if (extractedPhrase.length > 3 && extractedPhrase.length < 50) {
+             specificSubject = `${match.prefix} ${extractedPhrase}`
+             break
+           }
+         }
+       }
+     }
+     
+     return `${thinkingPattern} ${paceModifier}${complexityModifier}${specificSubject}...`
+  }
+
+  // Dynamic lead stakeholder selection
+  const selectDynamicLead = (stakeholders: any[], context: any) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+
+    // Dynamic scoring based on multiple factors
+    const scoredStakeholders = stakeholders.map(stakeholder => {
+      let score = 0
+      
+      // Seniority factor (dynamic based on role keywords)
+      const seniorityKeywords = ['senior', 'lead', 'manager', 'director', 'head', 'principal']
+      const roleScore = seniorityKeywords.some(keyword => 
+        stakeholder.role.toLowerCase().includes(keyword)) ? 30 : 0
+      
+      // Participation balance (prefer less active members for variety)
+      const participationScore = analytics.participationCounts?.[stakeholder.id] 
+        ? Math.max(0, 20 - (analytics.participationCounts[stakeholder.id] * 5)) : 20
+      
+      // Expertise relevance (dynamic based on last user message)
+      const lastUserMessage = context.lastUserMessage || ''
+      const expertiseScore = calculateExpertiseRelevance(stakeholder, lastUserMessage)
+      
+      // Personality fit for leadership
+      const personalityScore = stakeholder.personality === 'collaborative' ? 15 : 
+                              stakeholder.personality === 'strategic' ? 12 : 
+                              stakeholder.personality === 'direct' ? 10 : 8
+
+      score = roleScore + participationScore + expertiseScore + personalityScore
+      
+      return { stakeholder, score }
+    })
+
+    // Return highest scoring stakeholder
+    return scoredStakeholders.sort((a, b) => b.score - a.score)[0]?.stakeholder || stakeholders[0]
+  }
+
+  // Dynamic expertise relevance calculator
+  const calculateExpertiseRelevance = (stakeholder: any, message: string) => {
+    const messageLower = message.toLowerCase()
+    const roleLower = stakeholder.role.toLowerCase()
+    const deptLower = stakeholder.department?.toLowerCase() || ''
+
+    // Dynamic keyword matching
+    const relevanceKeywords = {
+      technical: ['technical', 'development', 'code', 'system', 'architecture', 'implementation'],
+      business: ['business', 'strategy', 'market', 'revenue', 'growth', 'customer'],
+      product: ['product', 'feature', 'user', 'experience', 'design', 'requirements'],
+      operations: ['operations', 'process', 'workflow', 'efficiency', 'deployment']
+    }
+
+    let relevanceScore = 0
+    
+    // Check role relevance
+    Object.entries(relevanceKeywords).forEach(([category, keywords]) => {
+      const messageMatches = keywords.filter(keyword => messageLower.includes(keyword)).length
+      const roleMatches = keywords.filter(keyword => roleLower.includes(keyword)).length
+      const deptMatches = keywords.filter(keyword => deptLower.includes(keyword)).length
+      
+      relevanceScore += (messageMatches * roleMatches * 3) + (messageMatches * deptMatches * 2)
+    })
+
+    return Math.min(relevanceScore, 25) // Cap at 25 points
+  }
+
+  // Dynamic pause calculation
+  const calculateDynamicPause = (context: any) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+
+    // Base pause influenced by conversation pace
+    const basePause = analytics.conversationPace === 'fast' ? 1000 : 
+                     analytics.conversationPace === 'slow' ? 4000 : 2500
+
+    // Adjust based on message complexity
+    const messageComplexity = context.lastUserMessage?.length > 150 ? 1.3 : 
+                             context.lastUserMessage?.length < 50 ? 0.8 : 1.0
+
+    // Adjust based on stakeholder personality
+    const personalityFactor = context.stakeholder?.personality === 'analytical' ? 1.2 :
+                             context.stakeholder?.personality === 'direct' ? 0.9 : 1.0
+
+    // Random variance for naturalness
+    const variance = 0.3 + (Math.random() * 0.4) // 0.3 to 0.7 multiplier
+
+    return Math.round(basePause * messageComplexity * personalityFactor * variance)
+  }
+
+  // Dynamic greeting flow management
+  const handleAdaptiveGreeting = async (messageContent: string, currentMessages: Message[]) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+    const greetingIteration = conversationDynamics.greetingIterations + 1
+    
+    // Dynamic context for decision making
+    const context = {
+      greetingIteration,
+      lastUserMessage: messageContent,
+      totalParticipants: selectedStakeholders.length,
+      conversationHistory: currentMessages,
+      userEngagement: analytics.userEngagementLevel || 'medium'
+    }
+
+    // Dynamic response strategy based on context
+    const responseStrategy = determineResponseStrategy(context)
+    
+    if (responseStrategy.type === 'initial_introduction') {
+      const leadStakeholder = selectDynamicLead(selectedStakeholders, context)
+      await processDynamicStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'introduction_lead')
+      
+      setConversationDynamics(prev => ({
+        ...prev,
+        phase: 'introduction_active',
+        leadSpeaker: leadStakeholder,
+        greetingIterations: greetingIteration,
+        introducedMembers: new Set([leadStakeholder.id])
+      }))
+      
+    } else if (responseStrategy.type === 'team_introduction') {
+      const leadStakeholder = conversationDynamics.leadSpeaker || selectDynamicLead(selectedStakeholders, context)
+      await processDynamicStakeholderResponse(leadStakeholder, messageContent, currentMessages, 'facilitate_introductions')
+      
+      // Dynamic delay for next stakeholder
+      const nextStakeholder = selectNextIntroducer(selectedStakeholders, conversationDynamics.introducedMembers)
+      if (nextStakeholder) {
+        const pauseDelay = calculateDynamicPause({ ...context, stakeholder: nextStakeholder })
+        
+        setTimeout(async () => {
+          await processDynamicStakeholderResponse(nextStakeholder, messageContent, currentMessages, 'self_introduction')
+          setConversationDynamics(prev => ({
+            ...prev,
+            introducedMembers: new Set([...prev.introducedMembers, nextStakeholder.id])
+          }))
+        }, pauseDelay)
+      }
+      
+      setConversationDynamics(prev => ({ ...prev, greetingIterations: greetingIteration }))
+      
+    } else if (responseStrategy.type === 'transition_to_discussion') {
+      const facilitator = selectDynamicLead(selectedStakeholders, context)
+      await processDynamicStakeholderResponse(facilitator, messageContent, currentMessages, 'discussion_transition')
+      
+      setConversationDynamics(prev => ({
+        ...prev,
+        phase: 'discussion_active',
+        greetingIterations: greetingIteration
+      }))
+    }
+  }
+
+  // Dynamic response strategy determination
+  const determineResponseStrategy = (context: any) => {
+    const { greetingIteration, totalParticipants, userEngagement, conversationHistory } = context
+    
+    // Analyze conversation patterns
+    const recentGreetings = conversationHistory.filter(msg => 
+      msg.speaker === 'user' && isSimpleGreeting(msg.content)
+    ).length
+
+    // Dynamic decision making
+    if (greetingIteration === 1 || conversationDynamics.introducedMembers.size === 0) {
+      return { type: 'initial_introduction', confidence: 0.9 }
+    }
+    
+    if (greetingIteration === 2 && totalParticipants > 1 && conversationDynamics.introducedMembers.size < totalParticipants) {
+      return { type: 'team_introduction', confidence: 0.8 }
+    }
+    
+    if (recentGreetings > 2 || userEngagement === 'low' || conversationDynamics.introducedMembers.size >= totalParticipants) {
+      return { type: 'transition_to_discussion', confidence: 0.7 }
+    }
+    
+    // Fallback to context-appropriate response
+    return { type: 'contextual_response', confidence: 0.6 }
+  }
+
+  // Dynamic next introducer selection
+  const selectNextIntroducer = (stakeholders: any[], introduced: Set<string>) => {
+    const unintroduced = stakeholders.filter(s => !introduced.has(s.id))
+    
+    if (unintroduced.length === 0) return null
+    
+    // Prefer stakeholders with specific characteristics for introductions
+    const prioritized = unintroduced.sort((a, b) => {
+      const aScore = (a.personality === 'collaborative' ? 10 : 0) + 
+                    (a.role.toLowerCase().includes('senior') ? 8 : 0) +
+                    (Math.random() * 5) // Add some randomness
+      const bScore = (b.personality === 'collaborative' ? 10 : 0) + 
+                    (b.role.toLowerCase().includes('senior') ? 8 : 0) +
+                    (Math.random() * 5)
+      return bScore - aScore
+    })
+    
+       return prioritized[0]
+ }
+
+ // Detect direct addressing by name or role
+ const detectDirectAddressing = (message: string) => {
+   const messageLower = message.toLowerCase()
+   
+   // Check for name mentions (first name, last name, or full name)
+   for (const stakeholder of selectedStakeholders) {
+     const fullName = stakeholder.name.toLowerCase()
+     const firstName = fullName.split(' ')[0]
+     const lastName = fullName.split(' ').slice(-1)[0]
+     
+     // Direct name addressing patterns
+     const namePatterns = [
+       // Direct addressing: "David, what do you think?"
+       new RegExp(`\\b${firstName}[,\\s]`, 'i'),
+       new RegExp(`\\b${lastName}[,\\s]`, 'i'),
+       new RegExp(`\\b${fullName}[,\\s]`, 'i'),
+       // Question patterns: "What do you think, David?"
+       new RegExp(`[,\\s]${firstName}[?\\s]*$`, 'i'),
+       new RegExp(`[,\\s]${lastName}[?\\s]*$`, 'i'),
+       // Role-based: "David what are your thoughts"
+       new RegExp(`\\b${firstName}\\s+what`, 'i'),
+       new RegExp(`\\b${lastName}\\s+what`, 'i')
+     ]
+     
+     if (namePatterns.some(pattern => pattern.test(message))) {
+       return stakeholder
+     }
+   }
+   
+   return null
+ }
+
+   // Detect baton passing in stakeholder responses
+  const detectBatonPassing = (response: string, conversationHistory: Message[]) => {
+    const responseLower = response.toLowerCase()
+    
+    // Common baton passing patterns
+    const batonPatterns = [
+      // Direct suggestions
+      /([a-zA-Z]+)\s+(?:might|could|would|should)\s+be\s+(?:better|more)\s+(?:equipped|suited|able)/,
+      /someone\s+from\s+([a-zA-Z]+)\s+(?:might|could|would|should)/,
+      /([a-zA-Z]+)\s+(?:can|could|would|should)\s+(?:help|assist|answer|explain|walk|guide)/,
+      /(?:ask|check with|speak to|talk to)\s+([a-zA-Z]+)/,
+      /([a-zA-Z]+)\s+(?:knows|understands|handles)\s+(?:this|that|these)/,
+      /([a-zA-Z]+)\s+(?:is|would be)\s+(?:the|a)\s+(?:right|best|better)\s+(?:person|one)/,
+      
+      // Department/role suggestions
+      /someone\s+from\s+(?:the\s+)?([a-zA-Z]+)\s+(?:team|department|group)/,
+      /(?:our|the)\s+([a-zA-Z]+)\s+(?:team|department|group)\s+(?:should|could|might)/,
+      /(?:talk to|ask)\s+(?:the\s+)?([a-zA-Z]+)\s+(?:team|department|group)/,
+      
+      // Name-based suggestions
+      /([A-Z][a-z]+)\s+(?:might|could|would|should)\s+be\s+(?:better|able|more)/,
+      /([A-Z][a-z]+)\s+(?:can|could|would|should)\s+(?:help|handle|explain|answer)/,
+      /(?:ask|check with|speak to|talk to)\s+([A-Z][a-z]+)/,
+      /([A-Z][a-z]+)\s+(?:knows|understands|handles)\s+(?:this|that|these)/,
+      /([A-Z][a-z]+)\s+(?:is|would be)\s+(?:the|a)\s+(?:right|best|better)\s+(?:person|one)/
+    ]
+    
+    for (const pattern of batonPatterns) {
+      const match = responseLower.match(pattern)
+      if (match && match[1]) {
+        const suggestion = match[1].toLowerCase()
+        
+        // Try to find stakeholder by name first
+        const stakeholderByName = selectedStakeholders.find(s => 
+          s.name.toLowerCase().includes(suggestion) || 
+          s.name.toLowerCase().split(' ').some(part => part.includes(suggestion))
+        )
+        
+        if (stakeholderByName) {
+          return stakeholderByName
+        }
+        
+        // Try to find stakeholder by department/role
+        const stakeholderByRole = selectedStakeholders.find(s => 
+          s.department?.toLowerCase().includes(suggestion) || 
+          s.role?.toLowerCase().includes(suggestion)
+        )
+        
+        if (stakeholderByRole) {
+          return stakeholderByRole
+        }
+        
+        // Try to find stakeholder by expertise domain
+        const expertiseDomains = {
+          'operations': ['operations', 'process', 'workflow', 'efficiency'],
+          'technical': ['technical', 'development', 'engineering', 'system'],
+          'business': ['business', 'strategy', 'management', 'commercial'],
+          'product': ['product', 'design', 'user', 'customer'],
+          'financial': ['financial', 'budget', 'accounting', 'finance'],
+          'marketing': ['marketing', 'sales', 'promotion', 'communication'],
+          'security': ['security', 'compliance', 'risk', 'audit'],
+          'data': ['data', 'analytics', 'reporting', 'intelligence']
+        }
+        
+        for (const [domain, keywords] of Object.entries(expertiseDomains)) {
+          if (keywords.some(keyword => keyword.includes(suggestion) || suggestion.includes(keyword))) {
+            const expertStakeholder = selectedStakeholders.find(s => 
+              s.department?.toLowerCase().includes(domain) || 
+              s.role?.toLowerCase().includes(domain) ||
+              s.expertise?.some((exp: string) => exp.toLowerCase().includes(domain))
+            )
+            if (expertStakeholder) {
+              return expertStakeholder
+            }
+          }
+        }
+      }
+    }
+    
+    return null
+  }
+
+  // Detect if question should have multiple respondents
+  const isGeneralQuestion = (messageContent: string): boolean => {
+    const generalPatterns = [
+      /what.*think/i,
+      /how.*feel/i,
+      /thoughts.*on/i,
+      /opinion.*about/i,
+      /perspective.*on/i,
+      /views.*on/i,
+      /everyone.*thoughts/i,
+      /all.*input/i,
+      /team.*feedback/i,
+      /what.*approach/i,
+      /how.*handle/i,
+      /suggestions.*for/i,
+      /ideas.*about/i,
+      /concerns.*about/i,
+      /challenges.*with/i
+    ]
+    
+    return generalPatterns.some(pattern => pattern.test(messageContent))
+  }
+
+  const isOpenEndedQuestion = (messageContent: string): boolean => {
+    const openEndedPatterns = [
+      /what.*best/i,
+      /how.*improve/i,
+      /what.*recommend/i,
+      /how.*approach/i,
+      /what.*strategy/i,
+      /how.*optimize/i,
+      /what.*process/i,
+      /how.*implement/i,
+      /what.*solution/i,
+      /how.*resolve/i
+    ]
+    
+    return openEndedPatterns.some(pattern => pattern.test(messageContent))
+  }
+
+  // Select multiple stakeholders for general questions
+  const selectMultipleRespondents = (messageContent: string, currentMessages: Message[]) => {
+    const aiService = AIService.getInstance()
+    const analytics = aiService.getConversationAnalytics()
+    
+    // Get all stakeholders who are relevant to this question
+    const relevantStakeholders = selectedStakeholders.filter(stakeholder => {
+      const relevanceScore = calculateExpertiseRelevance(stakeholder, messageContent)
+      return relevanceScore > 10 // Only include if they have decent relevance
+    })
+    
+    // Sort by relevance and participation balance
+    const scoredStakeholders = relevantStakeholders.map(stakeholder => {
+      let score = 0
+      
+      // Expertise relevance
+      score += calculateExpertiseRelevance(stakeholder, messageContent)
+      
+      // Participation balance (prefer those who have spoken less)
+      const participationCount = analytics.participationCounts?.[stakeholder.id] || 0
+      score += Math.max(0, 15 - (participationCount * 2))
+      
+      // Avoid recent speakers
+      const recentSpeakers = currentMessages.slice(-2).map(msg => msg.speaker)
+      if (recentSpeakers.includes(stakeholder.id)) {
+        score -= 10
+      }
+      
+      return { stakeholder, score }
+    })
+    
+    // Return top 2-3 most relevant stakeholders
+    return scoredStakeholders
+      .sort((a, b) => b.score - a.score)
+      .slice(0, Math.min(3, scoredStakeholders.length))
+      .map(item => item.stakeholder)
+  }
+
+  // Dynamic contextual respondent selection - NO HARD-CODING
+ const selectContextualRespondent = (messageContent: string, currentMessages: Message[]) => {
+   const aiService = AIService.getInstance()
+   const analytics = aiService.getConversationAnalytics()
+   
+   // PRIORITY 1: Check if user is directly addressing someone by name
+   // DISABLED: Old single-stakeholder detection - now handled by enhanced multiple detection
+   // const directlyAddressedStakeholder = detectDirectAddressing(messageContent)
+   // if (directlyAddressedStakeholder) {
+   //   console.log(`User directly addressed ${directlyAddressedStakeholder.name}, they will respond`)
+   //   return directlyAddressedStakeholder
+   // }
+   
+   // PRIORITY 2: Dynamic context analysis for general questions
+   const recentSpeakers = currentMessages.slice(-3).map(msg => msg.speaker).filter(speaker => speaker !== 'user')
+   const availableStakeholders = selectedStakeholders.filter(s => !recentSpeakers.includes(s.id))
+   
+   // If all have spoken recently, allow all but prefer least recent
+   const candidateStakeholders = availableStakeholders.length > 0 ? availableStakeholders : selectedStakeholders
+   
+   // Dynamic scoring based on multiple contextual factors
+   const scoredCandidates = candidateStakeholders.map(stakeholder => {
+     let score = 0
+     
+     // Expertise relevance to current message
+     score += calculateExpertiseRelevance(stakeholder, messageContent)
+     
+     // Participation balance (prefer those who have spoken less)
+     const participationCount = analytics.participationCounts?.[stakeholder.id] || 0
+     score += Math.max(0, 20 - (participationCount * 3))
+     
+     // Personality match for discussion type
+     const isQuestionAsking = messageContent.includes('?')
+     const isDetailOriented = messageContent.length > 100
+     const personalityBonus = isDetailOriented && stakeholder.personality === 'analytical' ? 10 :
+                             isQuestionAsking && stakeholder.personality === 'collaborative' ? 8 :
+                             stakeholder.personality === 'direct' ? 5 : 3
+     score += personalityBonus
+     
+     // Recency penalty (avoid back-to-back responses)
+     const lastMessage = currentMessages[currentMessages.length - 1]
+     if (lastMessage && lastMessage.speaker === stakeholder.id) {
+       score -= 15
+     }
+     
+     // Add randomness for natural variation
+     score += Math.random() * 8
+     
+     return { stakeholder, score }
+   })
+   
+   // Return highest scoring candidate
+   return scoredCandidates.sort((a, b) => b.score - a.score)[0]?.stakeholder
+ }
+
+ // Dynamic follow-up assessment - NO HARD-CODING
+ const assessFollowUpNeed = async (messageContent: string, currentMessages: Message[], primaryRespondent: any) => {
+   const aiService = AIService.getInstance()
+   const analytics = aiService.getConversationAnalytics()
+   
+   // Dynamic complexity analysis
+   const messageComplexity = {
+     length: messageContent.length,
+     questionCount: (messageContent.match(/\?/g) || []).length,
+     topicalBreadth: calculateTopicalBreadth(messageContent),
+     technicalDepth: calculateTechnicalDepth(messageContent)
+   }
+   
+   // Dynamic conversation context
+   const conversationContext = {
+     participantCount: selectedStakeholders.length,
+     recentFollowUps: currentMessages.slice(-5).filter(msg => 
+       msg.speaker !== 'user' && msg.speaker !== primaryRespondent.id
+     ).length,
+     engagementLevel: analytics.userEngagementLevel || 'medium',
+     conversationPace: analytics.conversationPace || 'medium'
+   }
+   
+   // Dynamic scoring for follow-up likelihood
+   let followUpScore = 0
+   
+   // Complexity factors
+   if (messageComplexity.length > 150) followUpScore += 15
+   if (messageComplexity.questionCount > 1) followUpScore += 10
+   if (messageComplexity.topicalBreadth > 2) followUpScore += 12
+   if (messageComplexity.technicalDepth > 1) followUpScore += 8
+   
+   // Context factors
+   if (conversationContext.participantCount > 2) followUpScore += 10
+   if (conversationContext.recentFollowUps < 2) followUpScore += 8
+   if (conversationContext.engagementLevel === 'high') followUpScore += 5
+   
+   // Dynamic threshold based on conversation pace
+   const threshold = conversationContext.conversationPace === 'fast' ? 25 :
+                    conversationContext.conversationPace === 'slow' ? 15 : 20
+   
+   // Add natural variation
+   followUpScore += (Math.random() - 0.5) * 10
+   
+   return {
+     shouldFollowUp: followUpScore > threshold,
+     confidence: Math.min(followUpScore / 40, 1.0),
+     reason: followUpScore > threshold ? 'topic_complexity' : 'sufficient_coverage',
+     urgency: followUpScore > 30 ? 'high' : followUpScore > 20 ? 'medium' : 'low'
+   }
+ }
+
+ // Dynamic follow-up stakeholder selection - NO HARD-CODING
+ const selectDynamicFollowUp = (messageContent: string, currentMessages: Message[], primaryRespondent: any, followUpAssessment: any) => {
+   const availableStakeholders = selectedStakeholders.filter(s => s.id !== primaryRespondent.id)
+   
+   if (availableStakeholders.length === 0) return null
+   
+   // Dynamic selection based on follow-up context
+   const scoredStakeholders = availableStakeholders.map(stakeholder => {
+     let score = 0
+     
+     // Complementary expertise (different department/role)
+     if (stakeholder.department !== primaryRespondent.department) score += 15
+     if (stakeholder.role !== primaryRespondent.role) score += 10
+     
+     // Personality complementarity
+     const personalityComplement = getPersonalityComplement(primaryRespondent.personality, stakeholder.personality)
+     score += personalityComplement
+     
+     // Relevant expertise for follow-up
+     score += calculateExpertiseRelevance(stakeholder, messageContent) * 0.7
+     
+     // Participation balance
+     const aiService = AIService.getInstance()
+     const analytics = aiService.getConversationAnalytics()
+     const participationCount = analytics.participationCounts?.[stakeholder.id] || 0
+     score += Math.max(0, 15 - (participationCount * 2))
+     
+     // Urgency match
+     const urgencyMatch = followUpAssessment.urgency === 'high' && stakeholder.personality === 'direct' ? 8 :
+                         followUpAssessment.urgency === 'medium' && stakeholder.personality === 'collaborative' ? 6 :
+                         followUpAssessment.urgency === 'low' && stakeholder.personality === 'analytical' ? 4 : 2
+     score += urgencyMatch
+     
+     // Natural variation
+     score += Math.random() * 6
+     
+     return { stakeholder, score }
+   })
+   
+   return scoredStakeholders.sort((a, b) => b.score - a.score)[0]?.stakeholder
+ }
+
+ // Helper functions for dynamic analysis
+ const calculateTopicalBreadth = (message: string) => {
+   const topics = ['technical', 'business', 'user', 'process', 'timeline', 'cost', 'risk', 'quality']
+   return topics.filter(topic => message.toLowerCase().includes(topic)).length
+ }
+
+ const calculateTechnicalDepth = (message: string) => {
+   const technicalTerms = ['system', 'architecture', 'implementation', 'integration', 'performance', 'security']
+   return technicalTerms.filter(term => message.toLowerCase().includes(term)).length
+ }
+
+ const getPersonalityComplement = (primary: string, secondary: string) => {
+   const complementMap = {
+     'analytical': { 'collaborative': 12, 'direct': 8, 'strategic': 10 },
+     'collaborative': { 'analytical': 10, 'direct': 15, 'strategic': 8 },
+     'direct': { 'analytical': 8, 'collaborative': 12, 'strategic': 6 },
+     'strategic': { 'analytical': 10, 'collaborative': 8, 'direct': 6 }
+   }
+   
+   return complementMap[primary]?.[secondary] || 5
+ }
+
+ if (!selectedProject || selectedStakeholders.length === 0) {
     return (
       <div className="p-8">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Meeting Active</h3>
-          <p className="text-gray-600 mb-4">Select a project and stakeholders to start a meeting.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Meeting Active</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Select a project and stakeholders to start a meeting.</p>
           <button
-            onClick={() => setCurrentView('stakeholders')}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            onClick={() => setCurrentView('projects')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Go to Stakeholder Selection
+            Select Project
           </button>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto">
-      {/* Meeting Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Meeting: {selectedProject.name}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Participants: {selectedStakeholders.map(s => s.name).join(', ')}
-            </p>
-          </div>
-          
-          {/* Question Helper Toggle */}
-          <button
-            onClick={() => setShowQuestionHelper(!showQuestionHelper)}
-            className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-          >
-            <HelpCircle className="w-5 h-5" />
-            <span>Question Helper</span>
-            {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-        </div>
-        
-        {/* Question Helper Panel */}
-        {showQuestionHelper && (
-          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-blue-900">
-                Question Bank for {selectedStakeholders[0]?.role || 'Stakeholder'}
-              </h3>
-              <div className="flex bg-white rounded-lg p-1 border border-blue-200">
-                <button
-                  onClick={() => setSelectedQuestionCategory('as-is')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    selectedQuestionCategory === 'as-is'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-blue-700 hover:bg-blue-100'
-                  }`}
-                >
-                  As-Is Process ({mockQuestions['as-is'].length})
-                </button>
-                <button
-                  onClick={() => setSelectedQuestionCategory('to-be')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    selectedQuestionCategory === 'to-be'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-blue-700 hover:bg-blue-100'
-                  }`}
-                >
-                  To-Be Vision ({mockQuestions['to-be'].length})
-                </button>
-              </div>
-            </div>
-            
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {mockQuestions[selectedQuestionCategory].map((question, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleQuestionClick(question)}
-                  className="w-full text-left p-3 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors group"
-                >
-                  <p className="text-sm text-gray-900 group-hover:text-blue-900 font-medium">
-                    {question}
+      return (
+      <div className="max-w-6xl mx-auto p-6 h-screen flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-white">
+                    Meeting: {selectedProject?.name}
+                  </h2>
+                  <p className="text-sm text-blue-100 mt-1">
+                    Participants: {selectedStakeholders.map(s => s.name).join(', ')}
                   </p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${
-              message.speaker === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.speaker === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : message.speaker === 'system'
-                  ? 'bg-gray-200 text-gray-800'
-                  : 'bg-gray-100 text-gray-900'
-              }`}
-            >
-              {message.speaker !== 'user' && message.speaker !== 'system' && (
-                <div className="text-xs font-semibold mb-1 opacity-75">
-                  {message.stakeholderName || 'Stakeholder'}
+                </div>
+                
+                {/* Current Speaker Display */}
+                {currentSpeaker && (
+                  <div className="hidden lg:flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/30 transition-all duration-300 ease-in-out animate-in slide-in-from-right shadow-lg">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-white/30 animate-pulse absolute inset-0"></div>
+                      <img 
+                        src={currentSpeaker.photo} 
+                        alt={currentSpeaker.name}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white/50 transition-transform duration-200 hover:scale-105 relative z-10"
+                        onError={(e) => {
+                          // Fallback to a default avatar if image fails to load
+                          e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                        }}
+                        onLoad={(e) => {
+                          // Hide loading animation when image loads
+                          const loadingDiv = e.currentTarget.previousElementSibling as HTMLElement
+                          if (loadingDiv) loadingDiv.style.display = 'none'
+                        }}
+                      />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse shadow-lg z-20"></div>
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-white flex items-center space-x-2">
+                        <span>Currently Speaking</span>
+                        {/* Sound Wave Animation */}
+                        <div className="flex items-center space-x-0.5">
+                          <div className="w-0.5 h-2 bg-white dark:bg-gray-800 rounded-full animate-pulse"></div>
+                          <div className="w-0.5 h-3 bg-white dark:bg-gray-800 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-0.5 h-4 bg-white dark:bg-gray-800 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-0.5 h-3 bg-white dark:bg-gray-800 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                          <div className="w-0.5 h-2 bg-white dark:bg-gray-800 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-blue-100 font-medium">{currentSpeaker.name}</div>
+                      <div className="text-xs text-blue-200 opacity-75">{currentSpeaker.role}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Question Helper Toggle */}
+              <button
+                onClick={() => setShowQuestionHelper(!showQuestionHelper)}
+                className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+              >
+                <HelpCircle className="w-5 h-5" />
+                <span className="hidden sm:inline">Question Helper</span>
+                {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+              
+              {/* Global Status Indicator */}
+              {isGeneratingResponse && (
+                <div className="flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-lg border border-blue-200">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  </div>
+                  <span className="text-sm">Stakeholders are responding...</span>
                 </div>
               )}
-              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-              <div className="text-xs mt-1 opacity-75">
-                {new Date(message.timestamp).toLocaleTimeString()}
+              
+              {/* End Meeting Status */}
+              {isEndingMeeting && (
+                <button
+                  onClick={handleUserInterruption}
+                  className="flex items-center space-x-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+                  title="Press Escape or click to interrupt meeting end"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:inline">Stop Ending</span>
+                </button>
+              )}
+
+              {/* End Meeting Button */}
+              <button
+                onClick={handleEndMeeting}
+                disabled={messages.length <= 1 || isLoading}
+                className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-sm"
+                title="End meeting and generate interview notes"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="hidden sm:inline">
+                      {noteGenerationProgress || 'Ending...'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-4 h-4" />
+                    <span className="hidden sm:inline">End Meeting</span>
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {/* Mobile End Meeting Button */}
+            {messages.length > 1 && (
+              <div className="sm:hidden mt-3 flex justify-center">
+                <button
+                  onClick={handleEndMeeting}
+                  disabled={isLoading}
+                  className="flex items-center space-x-2 bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg w-full max-w-xs justify-center"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-sm">
+                        {noteGenerationProgress || 'Generating Notes...'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Square className="w-4 h-4" />
+                      <span>End Meeting</span>
+                    </>
+                  )}
+                </button>
               </div>
+            )}
+            
+            {/* Mobile Current Speaker Display */}
+            {currentSpeaker && (
+              <div className="lg:hidden mt-3 flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/30 transition-all duration-300 ease-in-out">
+                <div className="relative">
+                  <img 
+                    src={currentSpeaker.photo} 
+                    alt={currentSpeaker.name}
+                    className="w-8 h-8 rounded-full object-cover border-2 border-white/50"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                    }}
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border border-white animate-pulse"></div>
+                </div>
+                <div className="text-left flex-1">
+                  <div className="text-xs font-medium text-white flex items-center space-x-1">
+                    <span>🎤 {currentSpeaker.name}</span>
+                  </div>
+                  <div className="text-xs text-blue-200 opacity-75">{currentSpeaker.role}</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Question Helper Panel */}
+            {showQuestionHelper && (
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-blue-900">
+                    Question Bank for {selectedStakeholders[0]?.role || 'Stakeholder'}
+                  </h3>
+                  <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 border border-blue-200">
+                    <button
+                      onClick={() => setSelectedQuestionCategory('as-is')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        selectedQuestionCategory === 'as-is'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-blue-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      As-Is Process ({mockQuestions['as-is'].length})
+                    </button>
+                    <button
+                      onClick={() => setSelectedQuestionCategory('to-be')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        selectedQuestionCategory === 'to-be'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-blue-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      To-Be Vision ({mockQuestions['to-be'].length})
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {mockQuestions[selectedQuestionCategory].map((question, index) => (
+                    <div
+                      key={index}
+                      className="bg-white dark:bg-gray-800 border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setInputMessage(question)
+                        setShowQuestionHelper(false)
+                        setTimeout(() => inputRef.current?.focus(), 100)
+                      }}
+                    >
+                      <p className="text-sm text-blue-900 font-medium">{question}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {messages.map((message) => {
+              const stakeholder = selectedStakeholders.find(s => s.id === message.speaker)
+              const isStakeholderMessage = message.speaker !== 'user' && message.speaker !== 'system'
+              const audioState = audioStates[message.id] || 'stopped'
+              const isCurrentlyPlaying = playingMessageId === message.id
+              
+              return (
+                <div
+                  key={message.id}
+                  className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
+                  data-stakeholder-id={stakeholder?.id}
+                  data-message-id={message.id}
+                >
+                  {/* Stakeholder Avatar for non-user messages */}
+                  {isStakeholderMessage && stakeholder && (
+                    <div className="flex-shrink-0 mr-3 mt-1">
+                      <img 
+                        src={stakeholder.photo} 
+                        alt={stakeholder.name}
+                        className={`w-8 h-8 rounded-full object-cover border-2 transition-all duration-200 ${
+                          isCurrentlyPlaying 
+                            ? 'border-green-400 shadow-lg scale-110' 
+                            : 'border-gray-300'
+                        }`}
+                        onError={(e) => {
+                          e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* User Avatar for user messages */}
+                  {message.speaker === 'user' && (
+                    <div className="flex-shrink-0 ml-3 mt-1 order-last">
+                      {generateUserAvatar(user?.name || user?.email || 'Business Analyst')}
+                    </div>
+                  )}
+                  
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg relative ${
+                      message.speaker === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : message.speaker === 'system'
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-gray-200 text-gray-800'
+                    }`}
+                  >
+                    {isStakeholderMessage && (
+                      <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center space-x-2">
+                        <span>{message.stakeholderName}</span>
+                        <span className="text-gray-400">•</span>
+                        <span className="text-gray-500">{message.stakeholderRole}</span>
+                      </div>
+                    )}
+                    
+                    {message.speaker === 'user' && (
+                      <div className="text-xs font-medium text-blue-200 mb-1 flex items-center space-x-2">
+                        <span>{user?.name || user?.email || 'Business Analyst'}</span>
+                        <span className="text-blue-300">•</span>
+                        <span className="text-blue-300">Meeting Facilitator</span>
+                      </div>
+                    )}
+                    
+                    <div className="text-sm whitespace-pre-wrap pr-8">{message.content}</div>
+                    <div className="text-xs mt-1 opacity-75">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
+                    
+                    {/* Audio Controls for Stakeholder Messages */}
+                    {isStakeholderMessage && stakeholder && globalAudioEnabled && isStakeholderVoiceEnabled(stakeholder.id) && (
+                      <div className="absolute top-2 right-2 flex space-x-1">
+                        <button
+                          onClick={() => toggleMessageAudio(message.id, message.content, stakeholder)}
+                          className="p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
+                          title={isCurrentlyPlaying ? 'Pause' : audioState === 'paused' ? 'Resume' : 'Play'}
+                        >
+                          {isCurrentlyPlaying ? (
+                            <Pause className="w-3 h-3 text-gray-700" />
+                          ) : (
+                            <Play className="w-3 h-3 text-gray-700" />
+                          )}
+                        </button>
+                        {(audioState !== 'stopped' || isCurrentlyPlaying) && (
+                          <button
+                            onClick={() => stopStakeholderAudio(stakeholder.id)}
+                            className="p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
+                            title="Stop this stakeholder's audio"
+                          >
+                            <Square className="w-3 h-3 text-gray-700" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+            
+                        {/* Dynamic Individual Stakeholder Thinking Indicators */}
+            {Array.from(activeThinking).map(stakeholderId => {
+              const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+              if (!stakeholder) return null
+              
+              // Check if this stakeholder has a recent message - if so, don't show thinking
+              const hasRecentMessage = messages.some(msg => 
+                msg.speaker === stakeholder.id && 
+                (Date.now() - new Date(msg.timestamp).getTime()) < 5000 // 5 seconds
+              )
+              
+              if (hasRecentMessage) {
+                console.log(`Skipping thinking indicator for ${stakeholder.name} - has recent message`)
+                // Clean up thinking state for this stakeholder
+                setTimeout(() => removeStakeholderFromThinking(stakeholder.id), 0)
+                return null
+              }
+              
+                    // Generate dynamic thinking message based on actual user question and stakeholder context
+      const lastUserMessage = messages.slice().reverse().find(msg => msg.speaker === 'user')?.content || ''
+      const thinkingContext = { 
+        stakeholder, 
+        messageContent: lastUserMessage,
+        conversationHistory: messages,
+        responseContext: 'display_thinking'
+      }
+      const currentThinkingMessage = dynamicFeedback || generateThinkingMessage(stakeholder, thinkingContext)
+      
+      // Debug logging for thinking message alignment
+      console.log(`Thinking message for ${stakeholder.name}:`, currentThinkingMessage, 'Based on question:', lastUserMessage)
+              
+              return (
+                <div key={`thinking-${stakeholderId}`} className="flex justify-start">
+                  <div className="flex-shrink-0 mr-3 mt-1">
+                    <img 
+                      src={stakeholder.photo} 
+                      alt={stakeholder.name}
+                      className="w-8 h-8 rounded-full object-cover border-2 border-blue-300 animate-pulse"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400"
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 text-blue-800 relative shadow-md animate-pulse">
+                    <div className="text-xs font-medium text-blue-600 mb-1 flex items-center space-x-2">
+                      <span>{stakeholder.name}</span>
+                      <span className="text-blue-400">•</span>
+                      <span className="text-blue-500">{stakeholder.role}</span>
+                      <span className="bg-blue-200 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">preparing response</span>
+                    </div>
+                    <div className="text-sm flex items-center space-x-2 pr-6">
+                      <div className="flex space-x-1">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      </div>
+                      <span className="font-medium">{currentThinkingMessage}</span>
+                    </div>
+                    <div className="text-xs mt-1 opacity-75">
+                      {new Date().toLocaleTimeString()}
+                    </div>
+                    
+                    {/* Dynamic stop button */}
+                    <button
+                      onClick={() => stopStakeholderAudio(stakeholder.id)}
+                      className="absolute top-2 right-2 p-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors shadow-sm"
+                      title={`Stop ${stakeholder.name}'s response`}
+                    >
+                      <X className="w-3 h-3 text-blue-700" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+            {/* Scroll anchor */}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Direct Addressing Guidance */}
+          <div className="border-t border-b bg-blue-50 p-3 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-sm text-blue-700">
+                <HelpCircle className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  <strong>Tip:</strong> To get input from a specific stakeholder, address them directly (e.g., "David, what are your thoughts?" or "Sarah, can you help with...")
+                </span>
+              </div>
+              
+              {/* Conversation Queue Indicator */}
+              {conversationQueue.length > 0 && (
+                <div className="flex items-center space-x-2 text-xs text-gray-600">
+                  <span>Speaking queue:</span>
+                  <div className="flex space-x-1">
+                    {conversationQueue.map((stakeholderId, index) => {
+                      const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
+                      return stakeholder ? (
+                        <span 
+                          key={stakeholderId}
+                          className={`px-2 py-1 rounded text-xs ${
+                            index === 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {stakeholder.name}
+                        </span>
+                      ) : null
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        ))}
 
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-100 text-gray-900">
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                <span className="text-sm">Stakeholder is thinking...</span>
+          {/* Response Queue Indicator */}
+          {(responseQueue.current || responseQueue.upcoming.length > 0) && (
+            <div className="bg-gradient-to-r from-green-50 to-green-100 border-t border-l-4 border-l-green-400 p-3 flex-shrink-0">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-800 font-semibold text-sm">Response Queue:</span>
+                </div>
+                
+                {responseQueue.current && (
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-medium border border-green-300">
+                      🎙️ {responseQueue.current} responding...
+                    </span>
+                  </div>
+                )}
+                
+                {responseQueue.upcoming.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-green-700 text-sm font-medium">Speaking Next:</span>
+                    <div className="flex space-x-2">
+                      {responseQueue.upcoming.map((stakeholder, index) => (
+                        <span 
+                          key={stakeholder.id}
+                          className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium border border-yellow-300 flex items-center space-x-1"
+                        >
+                          <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                          <span>{stakeholder.name}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 p-4">
-        <div className="flex space-x-4">
-          <textarea
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message to the stakeholders..."
-            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            rows={2}
-            disabled={isLoading}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputMessage.trim() || isLoading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Send
-          </button>
+          {/* Dynamic Feedback Notification */}
+          {dynamicFeedback && (
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-t border-l-4 border-l-blue-400 p-3 flex-shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
+                <span className="text-blue-800 font-medium text-sm">{dynamicFeedback}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Input */}
+          <div className="border-t p-4 flex-shrink-0">
+            <div className="flex space-x-4">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={shouldAllowUserInput() ? "Type your message or address a stakeholder directly..." : isGeneratingResponse ? "Stakeholders are responding..." : isEndingMeeting ? "Ending meeting..." : "Please wait..."}
+                className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!shouldAllowUserInput()}
+              />
+              <button
+                onClick={() => setShowVoiceModal(true)}
+                disabled={isLoading || isTranscribing}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-2"
+                title="Voice Input"
+              >
+                <Mic className="w-5 h-5" />
+                {isTranscribing && (
+                  <span className="text-sm">Transcribing...</span>
+                )}
+              </button>
+              <button
+                onClick={handleSendMessage}
+                disabled={isLoading || !inputMessage.trim() || !shouldAllowUserInput()}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+              >
+                Send
+              </button>
+            </div>
+          </div>
         </div>
-        
-        {/* Action Buttons */}
-        {messages.length > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <div className="text-xs text-gray-500">
-              Press Enter to send, Shift+Enter for new line
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={handleSaveNotes}
-                className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-              >
-                <Save className="w-4 h-4" />
-                <span>Save Notes</span>
-              </button>
-              <button
-                onClick={handleAnalyzeAnswers}
-                className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Analyze Answers</span>
-              </button>
-            </div>
-          </div>
-        )}
+                 <VoiceInputModal
+           isOpen={showVoiceModal}
+           onClose={() => setShowVoiceModal(false)}
+           onSave={handleVoiceInput}
+           onTranscribingChange={handleTranscribingChange}
+         />
+         
+         {/* Meeting End Success Notification */}
+         {meetingEndedSuccess && (
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+               <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                 <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                 </svg>
+               </div>
+               
+               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Meeting Ended Successfully!</h3>
+               
+               <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+                 <p><strong>Participants:</strong> {selectedStakeholders.length} stakeholders</p>
+                 <p><strong>Project:</strong> {selectedProject?.name}</p>
+                 <p><strong>Status:</strong> Comprehensive interview notes generated</p>
+               </div>
+               
+               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                 <p className="text-blue-800 text-sm">
+                   📝 Your interview notes have been automatically generated and saved. 
+                   You'll be redirected to view them in a moment.
+                 </p>
+               </div>
+               
+               <div className="flex items-center justify-center space-x-2 text-blue-600">
+                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                 <span className="text-sm">Navigating to notes...</span>
+               </div>
+             </div>
+           </div>
+         )}
       </div>
-    </div>
-  )
+    )
 }
 
 export default MeetingView

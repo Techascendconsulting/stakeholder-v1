@@ -2,6 +2,7 @@ import React from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AppProvider } from './contexts/AppContext'
 import { VoiceProvider } from './contexts/VoiceContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import LandingPage from './components/LandingPage'
 import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
@@ -124,13 +125,15 @@ function App() {
   return (
     <ReactErrorBoundary>
       <ErrorBoundary>
-        <AuthProvider>
-          <VoiceProvider>
-            <AppProvider>
-              <AppContent />
-            </AppProvider>
-          </VoiceProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <VoiceProvider>
+              <AppProvider>
+                <AppContent />
+              </AppProvider>
+            </VoiceProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </ErrorBoundary>
     </ReactErrorBoundary>
   )
