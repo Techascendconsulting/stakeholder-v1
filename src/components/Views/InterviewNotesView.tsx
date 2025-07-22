@@ -151,8 +151,8 @@ export const InterviewNotesView: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Interview Notes</h1>
-            <p className="text-gray-600">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Interview Notes</h1>
+            <p className="text-gray-600 dark:text-gray-400">
               Capture your observations, insights, and follow-up thoughts from stakeholder interviews
             </p>
           </div>
@@ -167,7 +167,7 @@ export const InterviewNotesView: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -176,7 +176,7 @@ export const InterviewNotesView: React.FC = () => {
               placeholder="Search notes, projects, or content..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
           
@@ -184,7 +184,7 @@ export const InterviewNotesView: React.FC = () => {
             <select
               value={selectedTag}
               onChange={(e) => setSelectedTag(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <option value="all">All Tags</option>
               {getAllTags().map(tag => (
@@ -197,12 +197,12 @@ export const InterviewNotesView: React.FC = () => {
 
       {/* Notes Grid */}
       {filteredNotes.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center shadow-sm">
           <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-medium text-gray-900 mb-2">
+          <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
             {notes.length === 0 ? 'No notes yet' : 'No notes match your filters'}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {notes.length === 0 
               ? 'Start taking notes during or after your stakeholder interviews to capture key insights and observations.'
               : 'Try adjusting your search terms or filters to find more notes.'
@@ -264,9 +264,9 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
           {note.title}
         </h3>
         <div className="flex items-center space-x-2 ml-4">
@@ -288,7 +288,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete }) => {
       </div>
 
       <div className="mb-4">
-        <p className="text-gray-600 text-sm line-clamp-3">
+        <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3">
           {note.content}
         </p>
       </div>
@@ -296,7 +296,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete }) => {
       {note.projectName && (
         <div className="flex items-center space-x-2 mb-3">
           <FileText size={14} className="text-gray-400" />
-          <span className="text-sm text-gray-600">{note.projectName}</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">{note.projectName}</span>
         </div>
       )}
 
@@ -311,7 +311,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete }) => {
             </span>
           ))}
           {note.tags.length > 3 && (
-            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs">
+            <span className="px-2 py-1 bg-gray-100 text-gray-600 dark:text-gray-400 rounded-md text-xs">
               +{note.tags.length - 3} more
             </span>
           )}
@@ -319,7 +319,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onEdit, onDelete }) => {
       )}
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div className="flex items-center space-x-4 text-xs text-gray-500">
+        <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center space-x-1">
             <Calendar size={12} />
             <span>{formatDate(note.createdAt)}</span>
@@ -363,15 +363,15 @@ const NoteModal: React.FC<NoteModalProps> = ({ note, onSave, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
               {note ? 'Edit Note' : 'Create New Note'}
             </h3>
             <button
               onClick={onCancel}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <X size={20} />
             </button>
@@ -381,7 +381,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ note, onSave, onCancel }) => {
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Title *
               </label>
               <input
@@ -389,12 +389,12 @@ const NoteModal: React.FC<NoteModalProps> = ({ note, onSave, onCancel }) => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter note title..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Project (Optional)
               </label>
               <input
@@ -402,12 +402,12 @@ const NoteModal: React.FC<NoteModalProps> = ({ note, onSave, onCancel }) => {
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder="Associated project name..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Content *
               </label>
               <textarea
@@ -415,12 +415,12 @@ const NoteModal: React.FC<NoteModalProps> = ({ note, onSave, onCancel }) => {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Write your observations, insights, and thoughts..."
                 rows={12}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Tags (Optional)
               </label>
               <input
@@ -428,19 +428,19 @@ const NoteModal: React.FC<NoteModalProps> = ({ note, onSave, onCancel }) => {
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="Enter tags separated by commas (e.g., stakeholder, requirements, follow-up)"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Use tags to organize and find your notes easily
               </p>
             </div>
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200 flex items-center justify-end space-x-4">
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end space-x-4">
           <button
             onClick={onCancel}
-            className="px-6 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 dark:bg-gray-900 transition-colors"
           >
             Cancel
           </button>

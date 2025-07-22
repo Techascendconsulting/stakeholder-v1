@@ -19,10 +19,10 @@ const MeetingModeSelection: React.FC = () => {
 
   if (!selectedProject || selectedStakeholders.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Setup Required</h2>
-          <p className="text-gray-600 mb-6">Please select a project and stakeholders first.</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Setup Required</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Please select a project and stakeholders first.</p>
           <button
             onClick={() => setCurrentView('dashboard')}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -35,12 +35,12 @@ const MeetingModeSelection: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl w-full">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-4xl w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Meeting Mode</h1>
-          <p className="text-gray-600 text-lg">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Choose Your Meeting Mode</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
             Select how you'd like to conduct your stakeholder interview
           </p>
         </div>
@@ -142,7 +142,7 @@ const MeetingModeSelection: React.FC = () => {
         <div className="text-center mt-8">
           <button
             onClick={() => setCurrentView('stakeholders')}
-            className="text-gray-600 hover:text-gray-800 transition-colors"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200 transition-colors"
           >
             ← Back to Stakeholder Selection
           </button>

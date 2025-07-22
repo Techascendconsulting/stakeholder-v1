@@ -257,7 +257,7 @@ export const ProfileView: React.FC = () => {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Profile Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-gray-100 mb-2">Profile Settings</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Manage your account settings and preferences
           </p>
@@ -326,7 +326,7 @@ export const ProfileView: React.FC = () => {
             />
             <label
               htmlFor="photo-upload"
-              className="absolute bottom-0 right-0 w-8 h-8 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              className="absolute bottom-0 right-0 w-8 h-8 bg-white dark:bg-gray-800 text-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors cursor-pointer"
             >
               {photoLoading ? (
                 <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
@@ -379,8 +379,8 @@ export const ProfileView: React.FC = () => {
           {activeTab === 'profile' && (
             <div className="space-y-6">
               {/* Profile Photo Section */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                   <Camera className="mr-2 text-indigo-600" size={20} />
                   Profile Photo
                 </h3>
@@ -399,7 +399,7 @@ export const ProfileView: React.FC = () => {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-gray-600 mb-3">
+                    <p className="text-gray-600 dark:text-gray-400 mb-3">
                       Upload a profile photo to personalize your meetings and make them more engaging.
                     </p>
                     <div className="flex items-center space-x-3">
@@ -447,7 +447,7 @@ export const ProfileView: React.FC = () => {
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-gray-100"
                   />
                 </div>
 
@@ -511,7 +511,7 @@ export const ProfileView: React.FC = () => {
                   <select
                     value={theme}
                     onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 dark:bg-gray-700 text-gray-900 dark:text-white dark:text-gray-100"
                   >
                     <option value="light">☀️ Light</option>
                     <option value="dark">🌙 Dark</option>
@@ -566,7 +566,7 @@ export const ProfileView: React.FC = () => {
           {activeTab === 'notifications' && (
             <div className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
                     <h4 className="font-medium text-gray-900">Email Notifications</h4>
                     <p className="text-sm text-gray-600">Receive important updates via email</p>
@@ -585,7 +585,7 @@ export const ProfileView: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
                     <h4 className="font-medium text-gray-900">Meeting Reminders</h4>
                     <p className="text-sm text-gray-600">Get notified before scheduled meetings</p>
@@ -604,7 +604,7 @@ export const ProfileView: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <div>
                     <h4 className="font-medium text-gray-900">Weekly Digest</h4>
                     <p className="text-sm text-gray-600">Weekly summary of your activity</p>
@@ -629,8 +629,8 @@ export const ProfileView: React.FC = () => {
           {activeTab === 'security' && (
             <div className="space-y-6">
               {/* Account Information */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                   <Shield className="mr-2 text-indigo-600" size={20} />
                   Account Information
                 </h3>
@@ -647,7 +647,7 @@ export const ProfileView: React.FC = () => {
                    </div>
                    <div>
                      <span className="font-medium text-gray-700">User ID:</span>
-                     <span className="ml-2 text-gray-600 font-mono text-xs">{user?.id}</span>
+                     <span className="ml-2 text-gray-600 dark:text-gray-400 font-mono text-xs">{user?.id}</span>
                    </div>
                    <div>
                      <span className="font-medium text-gray-700">Last Password Sign In:</span>
@@ -671,12 +671,12 @@ export const ProfileView: React.FC = () => {
               </div>
 
               {/* Change Password */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                   <Lock className="mr-2 text-indigo-600" size={20} />
                   Change Password
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Enter your current password and choose a new secure password.
                 </p>
 
@@ -787,7 +787,7 @@ export const ProfileView: React.FC = () => {
 
           {/* Save Button - Only show for non-security tabs */}
           {activeTab !== 'security' && (
-            <div className="flex justify-end pt-6 border-t border-gray-200 mt-8">
+            <div className="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700 mt-8">
               <button
                 onClick={saveProfile}
                 disabled={loading}

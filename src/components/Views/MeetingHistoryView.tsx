@@ -27,8 +27,8 @@ export const MeetingHistoryView: React.FC = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No meeting selected</h3>
-          <p className="text-gray-600 mb-6">Please select a meeting from your meeting history.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No meeting selected</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Please select a meeting from your meeting history.</p>
           <button
             onClick={() => setCurrentView('my-meetings')}
             className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -82,8 +82,8 @@ export const MeetingHistoryView: React.FC = () => {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{meeting.project_name}</h1>
-            <p className="text-gray-600">Meeting Details & Analysis</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{meeting.project_name}</h1>
+            <p className="text-gray-600 dark:text-gray-400">Meeting Details & Analysis</p>
           </div>
         </div>
         
@@ -137,14 +137,14 @@ export const MeetingHistoryView: React.FC = () => {
 
       {/* Meeting Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Date & Time</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Date & Time</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 {formatDate(meeting.created_at)}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {formatTime(meeting.created_at)}
               </p>
             </div>
@@ -152,11 +152,11 @@ export const MeetingHistoryView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Duration</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Duration</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 {formatDuration(meeting.duration)}
               </p>
             </div>
@@ -164,14 +164,14 @@ export const MeetingHistoryView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Messages</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Messages</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 {meeting.total_messages}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {meeting.user_messages} from you
               </p>
             </div>
@@ -179,14 +179,14 @@ export const MeetingHistoryView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Stakeholders</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Stakeholders</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 {meeting.stakeholder_names?.length || 0}
               </p>
-              <p className="text-sm text-gray-600">participants</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">participants</p>
             </div>
             <Users className="h-8 w-8 text-orange-600" />
           </div>
@@ -195,40 +195,40 @@ export const MeetingHistoryView: React.FC = () => {
 
       {/* Additional Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Topics Discussed</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Topics Discussed</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 {meeting.topics_discussed?.length || 0}
               </p>
-              <p className="text-sm text-gray-600">key topics identified</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">key topics identified</p>
             </div>
             <Tag className="h-8 w-8 text-blue-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Key Insights</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Key Insights</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
                 {meeting.key_insights?.length || 0}
               </p>
-              <p className="text-sm text-gray-600">insights captured</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">insights captured</p>
             </div>
             <Lightbulb className="h-8 w-8 text-yellow-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Meeting Type</p>
-              <p className="text-lg font-semibold text-gray-900 capitalize">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Meeting Type</p>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
                 {meeting.meeting_type?.replace('-', ' ') || 'Unknown'}
               </p>
-              <p className="text-sm text-gray-600">interaction mode</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">interaction mode</p>
             </div>
             <Award className="h-8 w-8 text-indigo-600" />
           </div>
@@ -243,11 +243,11 @@ export const MeetingHistoryView: React.FC = () => {
             <p className="text-indigo-700">Export, share, or review your meeting data</p>
           </div>
           <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
+            <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
               <Download size={16} />
               <span>Export Summary</span>
             </button>
-            <button className="px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
+            <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors flex items-center space-x-2">
               <Share2 size={16} />
               <span>Share</span>
             </button>
@@ -263,26 +263,26 @@ export const MeetingHistoryView: React.FC = () => {
       </div>
 
       {/* Stakeholders */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
           <Users className="mr-2" size={20} />
           Meeting Participants
         </h3>
         <div className="flex flex-wrap gap-3">
           {meeting.stakeholder_names?.map((name, index) => (
-            <div key={index} className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg">
+            <div key={index} className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900 px-3 py-2 rounded-lg">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
                   {name?.charAt(0) || 'S'}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{name}</p>
-                <p className="text-xs text-gray-600">{meeting.stakeholder_roles?.[index] || 'Stakeholder'}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{name}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{meeting.stakeholder_roles?.[index] || 'Stakeholder'}</p>
               </div>
             </div>
           )) || (
-            <p className="text-gray-500 italic">No participants information available</p>
+            <p className="text-gray-500 dark:text-gray-400 italic">No participants information available</p>
           )}
         </div>
       </div>
@@ -291,8 +291,8 @@ export const MeetingHistoryView: React.FC = () => {
       {((meeting.topics_discussed && meeting.topics_discussed.length > 0) || (meeting.key_insights && meeting.key_insights.length > 0)) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {meeting.topics_discussed && meeting.topics_discussed.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                 <Tag className="mr-2" size={20} />
                 Topics Discussed
               </h3>
@@ -310,8 +310,8 @@ export const MeetingHistoryView: React.FC = () => {
           )}
 
           {meeting.key_insights && meeting.key_insights.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                 <Lightbulb className="mr-2" size={20} />
                 Key Insights
               </h3>
@@ -319,7 +319,7 @@ export const MeetingHistoryView: React.FC = () => {
                 {meeting.key_insights.map((insight, index) => (
                   <div key={index} className="flex items-start space-x-2">
                     <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-sm text-gray-700">{insight}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{insight}</p>
                   </div>
                 ))}
               </div>

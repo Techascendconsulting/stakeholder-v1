@@ -98,7 +98,7 @@ const ProjectsView: React.FC = () => {
       return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
       {/* Professional Header */}
-      <div className="relative bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-gray-700">
+      <div className="relative bg-white dark:bg-gray-800 dark:bg-gray-900 border-b border-slate-200 dark:border-gray-700">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
         <div className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="text-center">

@@ -86,7 +86,7 @@ const NotesView: React.FC = () => {
         
         // Headers
         if (line.startsWith('# ')) {
-          return <h1 key={index} className="text-2xl font-bold text-gray-900 mb-4 mt-6">{line.substring(2)}</h1>
+          return <h1 key={index} className="text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-6">{line.substring(2)}</h1>
         }
         if (line.startsWith('## ')) {
           return <h2 key={index} className="text-xl font-semibold text-gray-800 mb-3 mt-5">{line.substring(3)}</h2>
@@ -142,7 +142,7 @@ const NotesView: React.FC = () => {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Meeting Notes & Analysis</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Meeting Notes & Analysis</h1>
         <p className="text-gray-600">Review comprehensive interview notes and conversation transcripts</p>
       </div>
 
@@ -195,15 +195,15 @@ const NotesView: React.FC = () => {
         filteredNotes.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Interview Notes Yet</h3>
-            <p className="text-gray-600 mb-6">End a stakeholder meeting to generate comprehensive interview notes</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Interview Notes Yet</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">End a stakeholder meeting to generate comprehensive interview notes</p>
           </div>
         ) : (
           <div className="space-y-6">
             {filteredNotes.map((note) => (
-              <div key={note.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div key={note.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200">
                 {/* Note Header */}
-                <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">{note.title}</h3>
@@ -247,13 +247,13 @@ const NotesView: React.FC = () => {
         completedMeetings.length === 0 ? (
           <div className="text-center py-12">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Transcripts Yet</h3>
-            <p className="text-gray-600 mb-6">Complete stakeholder meetings to see conversation transcripts here</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Transcripts Yet</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Complete stakeholder meetings to see conversation transcripts here</p>
           </div>
         ) : (
           <div className="space-y-6">
             {completedMeetings.map((meeting) => (
-              <div key={meeting.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div key={meeting.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200">
                 {/* Meeting Header */}
                 <div className="p-6 border-b border-gray-200">
                   <div className="flex items-center justify-between">
@@ -288,7 +288,7 @@ const NotesView: React.FC = () => {
 
                 {/* Transcript */}
                 <div className="p-6">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Conversation Transcript</h4>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Conversation Transcript</h4>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
                     {meeting.transcript.map((message) => (
                       <div key={message.id} className="flex items-start space-x-3">

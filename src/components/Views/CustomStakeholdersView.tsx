@@ -430,7 +430,7 @@ const CustomStakeholdersView: React.FC = () => {
     return (
       <div className="p-8">
         <div className="text-center">
-          <p className="text-gray-600">No custom project found</p>
+          <p className="text-gray-600 dark:text-gray-400">No custom project found</p>
           <button 
             onClick={() => setCurrentView('projects')}
             className="mt-4 text-blue-600 hover:text-blue-800"
@@ -444,13 +444,13 @@ const CustomStakeholdersView: React.FC = () => {
 
   if (isGenerating) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Generating Our Stakeholders</h2>
-          <p className="text-gray-600 mb-6">Creating realistic stakeholders based on your project context...</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Generating Our Stakeholders</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Creating realistic stakeholders based on your project context...</p>
           <div className="flex items-center justify-center space-x-2">
             <div className="w-3 h-3 bg-purple-600 rounded-full animate-bounce"></div>
             <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce delay-100"></div>
@@ -462,13 +462,13 @@ const CustomStakeholdersView: React.FC = () => {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center space-x-4 mb-8">
           <button
             onClick={() => setCurrentView('custom-project')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+            className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-100 dark:text-white transition-colors font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back to Project Setup</span>
@@ -476,43 +476,43 @@ const CustomStakeholdersView: React.FC = () => {
         </div>
 
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">AI-Generated Stakeholders</h1>
-          <p className="text-lg text-gray-600 max-w-4xl">
-            For your project "<span className="font-semibold text-gray-900">{customProject.name}</span>", 
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">AI-Generated Stakeholders</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-4xl">
+            For your project "<span className="font-semibold text-gray-900 dark:text-white">{customProject.name}</span>", 
             you can use AI-generated stakeholders or create your own custom stakeholders who will adapt to your specific context during interviews.
           </p>
         </div>
 
         {/* Project Context Summary */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Project Context</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Project Context</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="font-medium text-gray-700">Industry:</span>
-              <span className="ml-2 text-gray-600">{customProject.industry}</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">Industry:</span>
+              <span className="ml-2 text-gray-600 dark:text-gray-400">{customProject.industry}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Type:</span>
-              <span className="ml-2 text-gray-600">{customProject.projectType}</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">Type:</span>
+              <span className="ml-2 text-gray-600 dark:text-gray-400">{customProject.projectType}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Complexity:</span>
-              <span className="ml-2 text-gray-600">{customProject.complexity}</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">Complexity:</span>
+              <span className="ml-2 text-gray-600 dark:text-gray-400">{customProject.complexity}</span>
             </div>
           </div>
         </div>
 
         {/* Selection Summary */}
         {selectedStakeholderIds.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Users className="w-6 h-6 text-purple-600" />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {selectedStakeholderIds.length} Stakeholder{selectedStakeholderIds.length !== 1 ? 's' : ''} Selected
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Ready to practice {selectedStakeholderIds.length === 1 ? 'individual interview' : 'group meeting'}
                   </p>
                 </div>
@@ -529,13 +529,13 @@ const CustomStakeholdersView: React.FC = () => {
         )}
 
         {/* Add Stakeholder Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'Choose Your Stakeholders'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {manualStakeholders.length > 0 
                   ? 'Your custom stakeholders based on your actual project team'
                   : 'Add your actual project stakeholders or use our pre-built stakeholders that match your project'
@@ -564,68 +564,68 @@ const CustomStakeholdersView: React.FC = () => {
 
           {/* Add/Edit Stakeholder Form */}
           {showAddForm && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 {editingStakeholder ? 'Edit Stakeholder' : 'Add New Stakeholder'}
               </h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name *</label>
                   <input
                     type="text"
                     value={newStakeholder.name}
                     onChange={(e) => setNewStakeholder(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="e.g., Sarah Johnson"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label>
                   <input
                     type="text"
                     value={newStakeholder.role}
                     onChange={(e) => setNewStakeholder(prev => ({ ...prev, role: e.target.value }))}
                     placeholder="e.g., Operations Manager"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                 </div>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Department</label>
                 <input
                   type="text"
                   value={newStakeholder.department}
                   onChange={(e) => setNewStakeholder(prev => ({ ...prev, department: e.target.value }))}
                   placeholder="e.g., Operations, IT, Customer Service"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Background & Bio</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Background & Bio</label>
                 <textarea
                   value={newStakeholder.bio}
                   onChange={(e) => setNewStakeholder(prev => ({ ...prev, bio: e.target.value }))}
                   placeholder="Brief description of their experience and expertise..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent h-20 resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent h-20 resize-none"
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Communication Style</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Communication Style</label>
                 <input
                   type="text"
                   value={newStakeholder.personality}
                   onChange={(e) => setNewStakeholder(prev => ({ ...prev, personality: e.target.value }))}
                   placeholder="e.g., Analytical and detail-oriented, prefers data-driven decisions"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Key Priorities (up to 3)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Key Priorities (up to 3)</label>
                 <div className="space-y-2">
                   {newStakeholder.priorities.map((priority, index) => (
                     <input
@@ -634,7 +634,7 @@ const CustomStakeholdersView: React.FC = () => {
                       value={priority}
                       onChange={(e) => updatePriority(index, e.target.value)}
                       placeholder={`Priority ${index + 1}`}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     />
                   ))}
                 </div>
@@ -650,7 +650,7 @@ const CustomStakeholdersView: React.FC = () => {
                 </button>
                 <button
                   onClick={cancelForm}
-                  className="text-gray-600 hover:text-gray-800 px-4 py-2"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200 px-4 py-2"
                 >
                   Cancel
                 </button>
@@ -662,16 +662,16 @@ const CustomStakeholdersView: React.FC = () => {
           {manualStakeholders.length > 0 && (
             <div className="space-y-4">
               {manualStakeholders.map((stakeholder) => (
-                <div key={stakeholder.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div key={stakeholder.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="text-lg font-semibold text-gray-900">{stakeholder.name}</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{stakeholder.name}</h4>
                         <span className="text-sm font-medium text-emerald-600">{stakeholder.role}</span>
                         <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Custom</span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{stakeholder.department}</p>
-                      <p className="text-sm text-gray-700">{stakeholder.bio}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{stakeholder.department}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{stakeholder.bio}</p>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
                       <button
@@ -696,7 +696,7 @@ const CustomStakeholdersView: React.FC = () => {
           {manualStakeholders.length === 0 && generatedStakeholders.length === 0 && !showAddForm && (
             <div className="text-center py-8">
               <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No stakeholders added yet</p>
+              <p className="text-gray-500 dark:text-gray-400">No stakeholders added yet</p>
               <p className="text-sm text-gray-400">Add your project stakeholders or generate ones for your project</p>
             </div>
           )}
@@ -724,7 +724,7 @@ const CustomStakeholdersView: React.FC = () => {
         {/* All Stakeholders Display */}
         {(manualStakeholders.length > 0 || generatedStakeholders.length > 0) && (
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               {manualStakeholders.length > 0 ? 'Your Project Stakeholders' : 'Our Pre-Built Stakeholders'}
             </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -734,10 +734,10 @@ const CustomStakeholdersView: React.FC = () => {
             return (
               <div 
                 key={stakeholder.id} 
-                className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-300 cursor-pointer ${
+                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-300 cursor-pointer ${
                   isSelected 
                     ? 'border-purple-500 shadow-lg ring-2 ring-purple-100' 
-                    : 'border-gray-200 hover:shadow-lg hover:border-gray-300'
+                    : 'border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-gray-300 dark:border-gray-600'
                 }`}
                 onClick={() => handleStakeholderToggle(stakeholder.id)}
               >
@@ -750,7 +750,7 @@ const CustomStakeholdersView: React.FC = () => {
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                       isSelected 
                         ? 'bg-purple-600 border-purple-600' 
-                        : 'border-gray-300 hover:border-purple-400'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-purple-400'
                     }`}>
                       {isSelected && (
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -761,7 +761,7 @@ const CustomStakeholdersView: React.FC = () => {
                     <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                       isSelected 
                         ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-gray-100 text-gray-600'
+                        : 'bg-gray-100 text-gray-600 dark:text-gray-400'
                     }`}>
                       {isSelected ? 'Selected' : 'Available'}
                     </div>
@@ -775,9 +775,9 @@ const CustomStakeholdersView: React.FC = () => {
                       className="w-20 h-20 rounded-full object-cover border-4 border-gray-100"
                     />
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 mb-1">{stakeholder.name}</h3>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{stakeholder.name}</h3>
                       <p className="text-base font-semibold text-purple-600 mb-1">{stakeholder.role}</p>
-                      <p className="text-sm text-gray-600">{stakeholder.department}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{stakeholder.department}</p>
                     </div>
                     {stakeholder.isManual && (
                       <div className="flex items-center space-x-2">
@@ -805,27 +805,27 @@ const CustomStakeholdersView: React.FC = () => {
 
                   {/* Bio */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-2">Background</h4>
-                    <p className="text-sm text-gray-700 leading-relaxed">{stakeholder.bio}</p>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-2">Background</h4>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{stakeholder.bio}</p>
                   </div>
 
                   {/* Priorities */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-3">Key Priorities</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">Key Priorities</h4>
                     <div className="space-y-2">
                       {stakeholder.priorities.map((priority: string, index: number) => (
                         <div key={index} className="flex items-center space-x-2">
                           <div className="w-2 h-2 bg-purple-600 rounded-full flex-shrink-0"></div>
-                          <span className="text-sm text-gray-700 font-medium">{priority}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{priority}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Personality */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-2">Communication Style</h4>
-                    <p className="text-sm text-gray-700 italic">{stakeholder.personality}</p>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-2">Communication Style</h4>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 italic">{stakeholder.personality}</p>
                   </div>
                 </div>
               </div>
@@ -840,7 +840,7 @@ const CustomStakeholdersView: React.FC = () => {
           <div className="text-center mb-8">
             <button
               onClick={generateStakeholders}
-              className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors mx-auto"
+              className="flex items-center space-x-2 bg-gray-100 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors mx-auto"
             >
               <RefreshCw className="w-5 h-5" />
               <span>Generate Different Stakeholders</span>
@@ -850,7 +850,7 @@ const CustomStakeholdersView: React.FC = () => {
 
         {/* Practice Tips */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-2xl p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Practice Session Tips</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Practice Session Tips</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="text-base font-semibold text-purple-900 mb-3">Before You Start</h4>

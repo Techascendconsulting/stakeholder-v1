@@ -34,13 +34,13 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
             {meeting.project_name}
           </h3>
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
+          <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <Calendar size={14} />
               <span>{formatDate(meeting.created_at)}</span>
@@ -77,19 +77,19 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
       <div className="flex items-center space-x-6 mb-4">
         <div className="flex items-center space-x-2">
           <Users size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {meeting.stakeholder_names.length} stakeholder{meeting.stakeholder_names.length !== 1 ? 's' : ''}
           </span>
         </div>
         <div className="flex items-center space-x-2">
           <MessageSquare size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {meeting.total_messages} messages
           </span>
         </div>
         <div className="flex items-center space-x-2">
           <Clock size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {formatDuration(meeting.duration)}
           </span>
         </div>
@@ -98,12 +98,12 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
       <div className="mb-4">
         <div className="flex flex-wrap gap-2">
           {meeting.stakeholder_names.slice(0, 3).map((name, index) => (
-            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs">
+            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md text-xs">
               {name} ({meeting.stakeholder_roles[index]})
             </span>
           ))}
           {meeting.stakeholder_names.length > 3 && (
-            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs">
+            <span className="px-2 py-1 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md text-xs">
               +{meeting.stakeholder_names.length - 3} more
             </span>
           )}
@@ -112,7 +112,7 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
 
       {meeting.meeting_summary && (
         <div className="mb-4">
-          <p className="text-sm text-gray-600 line-clamp-2">
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
             {meeting.meeting_summary.slice(0, 150)}...
           </p>
         </div>
@@ -123,7 +123,7 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
           {meeting.topics_discussed.length > 0 && (
             <div className="flex items-center space-x-1">
               <TrendingUp size={14} className="text-gray-400" />
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {meeting.topics_discussed.length} topic{meeting.topics_discussed.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -268,8 +268,8 @@ export const MyMeetingsView: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Meetings</h1>
-            <p className="text-gray-600">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Meetings</h1>
+            <p className="text-gray-600 dark:text-gray-400">
               Review your stakeholder interviews, summaries, and key insights
             </p>
           </div>
@@ -288,41 +288,41 @@ export const MyMeetingsView: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Meetings</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Meetings</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
             </div>
             <MessageSquare className="h-8 w-8 text-purple-600" />
           </div>
         </div>
         
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
             </div>
             <FileText className="h-8 w-8 text-green-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Voice-Only</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.voiceOnly}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Voice-Only</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.voiceOnly}</p>
             </div>
             <Users className="h-8 w-8 text-blue-600" />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Time</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Time</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {Math.floor(stats.totalDuration / 3600)}h {Math.floor((stats.totalDuration % 3600) / 60)}m
               </p>
             </div>
@@ -332,7 +332,7 @@ export const MyMeetingsView: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -341,7 +341,7 @@ export const MyMeetingsView: React.FC = () => {
               placeholder="Search meetings, projects, or stakeholders..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
           
@@ -349,7 +349,7 @@ export const MyMeetingsView: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
               <option value="voice-only">Voice Only</option>
@@ -359,7 +359,7 @@ export const MyMeetingsView: React.FC = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="completed">Completed</option>
@@ -371,12 +371,12 @@ export const MyMeetingsView: React.FC = () => {
 
       {/* Meetings Grid */}
       {filteredMeetings.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
           <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             {meetings.length === 0 ? 'No meetings yet' : 'No meetings match your filters'}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {meetings.length === 0 
               ? 'Start your first stakeholder interview to see your meeting history here.'
               : 'Try adjusting your search terms or filters to find more meetings.'

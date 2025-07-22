@@ -67,8 +67,8 @@ const DeliverablesView: React.FC = () => {
       <div className="p-8">
         <div className="text-center">
           <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Project Selected</h3>
-          <p className="text-gray-600">Select a project to create and manage deliverables</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Project Selected</h3>
+          <p className="text-gray-600 dark:text-gray-400">Select a project to create and manage deliverables</p>
         </div>
       </div>
     )
@@ -80,7 +80,7 @@ const DeliverablesView: React.FC = () => {
       <div className="flex items-center space-x-4 mb-8">
         <button
           onClick={() => setCurrentView('meeting')}
-          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+          className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-100 dark:text-white transition-colors font-medium"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to Meeting</span>
@@ -88,8 +88,8 @@ const DeliverablesView: React.FC = () => {
       </div>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Deliverables Workspace</h1>
-        <p className="text-gray-600">Create and manage your Business Analysis deliverables for {selectedProject.name}</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Deliverables Workspace</h1>
+        <p className="text-gray-600 dark:text-gray-400">Create and manage your Business Analysis deliverables for {selectedProject.name}</p>
       </div>
 
       <div className="space-y-8">
@@ -97,12 +97,12 @@ const DeliverablesView: React.FC = () => {
           const typeDeliverables = getDeliverablesByType(type.id)
           
           return (
-            <div key={type.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
+            <div key={type.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{type.title}</h3>
-                    <p className="text-sm text-gray-600">{type.description}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{type.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{type.description}</p>
                   </div>
                   <button
                     onClick={() => createDeliverable(type.id)}
@@ -118,17 +118,17 @@ const DeliverablesView: React.FC = () => {
                 {typeDeliverables.length === 0 ? (
                   <div className="text-center py-8">
                     <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">No {type.title.toLowerCase()} created yet</p>
+                    <p className="text-gray-500 dark:text-gray-400">No {type.title.toLowerCase()} created yet</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {typeDeliverables.map((deliverable) => (
-                      <div key={deliverable.id} className="border border-gray-200 rounded-lg">
-                        <div className="p-4 border-b border-gray-200 bg-gray-50">
+                      <div key={deliverable.id} className="border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-gray-900">{deliverable.title}</h4>
+                            <h4 className="font-medium text-gray-900 dark:text-white">{deliverable.title}</h4>
                             <div className="flex items-center space-x-2">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 Last modified: {new Date(deliverable.lastModified).toLocaleDateString()}
                               </span>
                               {editingId === deliverable.id ? (
@@ -165,12 +165,12 @@ const DeliverablesView: React.FC = () => {
                             <textarea
                               value={editContent}
                               onChange={(e) => setEditContent(e.target.value)}
-                              className="w-full h-64 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                              className="w-full h-64 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                               placeholder="Enter your content here..."
                             />
                           ) : (
                             <div className="prose max-w-none">
-                              <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
+                              <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-sans">
                                 {deliverable.content}
                               </pre>
                             </div>
