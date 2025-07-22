@@ -29,21 +29,28 @@ const DebugConsole: React.FC = () => {
     const originalConsoleWarn = console.warn
 
     const addLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
-      const log: DebugLog = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        timestamp: new Date().toLocaleTimeString(),
-        type,
-        category,
-        message,
-        data
-      }
-      setLogs(prev => [...prev.slice(-99), log]) // Keep last 100 logs
+      // Use setTimeout to avoid setState during render
+      setTimeout(() => {
+        setLogs(prev => [...prev.slice(-99), {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          timestamp: new Date().toLocaleTimeString(),
+          type,
+          category,
+          message,
+          data
+        }])
+      }, 0)
     }
 
     // Override console methods to capture logs
     console.log = (...args) => {
       originalConsoleLog(...args)
       const message = args.join(' ')
+      
+      // Skip debug console's own logs to avoid recursion
+      if (message.includes('DebugConsole') || message.includes('setState')) {
+        return
+      }
       
       // Categorize based on message content
       if (message.includes('🔍 INIT:')) {
@@ -65,12 +72,18 @@ const DebugConsole: React.FC = () => {
 
     console.error = (...args) => {
       originalConsoleError(...args)
-      addLog('error', 'ERROR', args.join(' '), args)
+      const message = args.join(' ')
+      if (!message.includes('DebugConsole')) {
+        addLog('error', 'ERROR', message, args)
+      }
     }
 
     console.warn = (...args) => {
       originalConsoleWarn(...args)
-      addLog('error', 'WARNING', args.join(' '), args)
+      const message = args.join(' ')
+      if (!message.includes('DebugConsole')) {
+        addLog('error', 'WARNING', message, args)
+      }
     }
 
     return () => {
@@ -82,14 +95,20 @@ const DebugConsole: React.FC = () => {
 
   // Track state changes
   useEffect(() => {
-    setLogs(prev => [...prev, {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      timestamp: new Date().toLocaleTimeString(),
-      type: 'state',
-      category: 'STATE_CHANGE',
-      message: `View: ${currentView}, Project: ${selectedProject?.name || 'none'}, Stakeholders: ${selectedStakeholders.length}`,
-      data: { currentView, selectedProject: selectedProject?.name, stakeholderCount: selectedStakeholders.length }
-    }])
+    const addStateLog = () => {
+      setLogs(prev => [...prev, {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toLocaleTimeString(),
+        type: 'state',
+        category: 'STATE_CHANGE',
+        message: `View: ${currentView}, Project: ${selectedProject?.name || 'none'}, Stakeholders: ${selectedStakeholders.length}`,
+        data: { currentView, selectedProject: selectedProject?.name, stakeholderCount: selectedStakeholders.length }
+      }])
+    }
+
+    // Use setTimeout to avoid setState during render
+    const timer = setTimeout(addStateLog, 0)
+    return () => clearTimeout(timer)
   }, [currentView, selectedProject, selectedStakeholders])
 
   // Auto scroll to bottom
