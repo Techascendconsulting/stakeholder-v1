@@ -198,20 +198,57 @@ export const MyMeetingsView: React.FC = () => {
                typeof meeting.meeting_type === 'string';
       });
 
-      // Also load meetings from localStorage (both temp and permanent)
+      // Load meetings from localStorage using multiple strategies
       const localMeetings: DatabaseMeeting[] = [];
+      
+      // Strategy 1: Load from meetings index (most reliable)
+      try {
+        const meetingsIndex = JSON.parse(localStorage.getItem('meetings_index') || '[]');
+        console.log('📋 Found meetings index with', meetingsIndex.length, 'meeting IDs');
+        
+        for (const meetingId of meetingsIndex) {
+          // Try main storage first
+          let meetingData = null;
+          try {
+            const mainKey = `stored_meeting_${meetingId}`;
+            meetingData = JSON.parse(localStorage.getItem(mainKey) || 'null');
+          } catch (e) {
+            // Try backup storage
+            try {
+              const backupKeys = Object.keys(localStorage).filter(k => k.includes(meetingId) && k.startsWith('backup_meeting_'));
+              if (backupKeys.length > 0) {
+                meetingData = JSON.parse(localStorage.getItem(backupKeys[0]) || 'null');
+              }
+            } catch (e2) {}
+          }
+          
+          if (meetingData && meetingData.user_id === user.id) {
+            meetingData._isFromLocalStorage = true;
+            meetingData._source = 'indexed';
+            localMeetings.push(meetingData);
+          }
+        }
+      } catch (error) {
+        console.warn('Error loading from meetings index:', error);
+      }
+      
+      // Strategy 2: Scan all localStorage keys (fallback)
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('temp-meeting-') || key.startsWith('meeting-'))) {
+        if (key && (key.startsWith('temp-meeting-') || key.startsWith('meeting-') || key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
           try {
             const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (meetingData.user_id === user.id) {
-              // Add a flag to indicate source
-              meetingData._isFromLocalStorage = true;
-              if (key.startsWith('temp-meeting-')) {
-                meetingData._isTemporary = true;
+            if (meetingData && meetingData.user_id === user.id) {
+              // Check if we already have this meeting from index
+              const alreadyLoaded = localMeetings.find(m => m.id === meetingData.id);
+              if (!alreadyLoaded) {
+                meetingData._isFromLocalStorage = true;
+                meetingData._source = 'scanned';
+                if (key.startsWith('temp-meeting-')) {
+                  meetingData._isTemporary = true;
+                }
+                localMeetings.push(meetingData);
               }
-              localMeetings.push(meetingData);
             }
           } catch (error) {
             console.warn('Error parsing localStorage meeting:', key, error);
