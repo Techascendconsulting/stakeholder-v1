@@ -160,13 +160,11 @@ export const RawTranscriptView: React.FC = () => {
       } else {
         newSet.add(meetingId);
       }
-      console.log('🔍 RawTranscript - Expanded meetings count:', newSet.size, 'IDs:', Array.from(newSet));
       return newSet;
     });
   };
 
   const collapseAll = () => {
-    console.log('🔄 RawTranscript - Collapsing all meetings');
     setExpandedMeetings(new Set());
   };
 

@@ -159,13 +159,11 @@ export const MeetingSummaryView: React.FC = () => {
       } else {
         newSet.add(meetingId);
       }
-      console.log('🔍 MeetingSummary - Expanded meetings count:', newSet.size, 'IDs:', Array.from(newSet));
       return newSet;
     });
   };
 
   const collapseAll = () => {
-    console.log('🔄 MeetingSummary - Collapsing all meetings');
     setExpandedMeetings(new Set());
   };
 
@@ -491,13 +489,13 @@ For detailed conversation analysis and specific stakeholder insights, please rev
           <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
             {allMeetings.length} meeting{allMeetings.length !== 1 ? 's' : ''}
           </div>
-          {expandedMeetings.size >= 1 && (
+          {expandedMeetings.size > 1 && (
             <button
               onClick={collapseAll}
-              className="px-3 py-2 bg-red-100 text-red-700 border border-red-300 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-2 text-sm font-medium"
+              className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 text-sm"
             >
               <ChevronDown size={14} />
-              <span>Collapse All ({expandedMeetings.size})</span>
+              <span>Collapse All</span>
             </button>
           )}
           <button
