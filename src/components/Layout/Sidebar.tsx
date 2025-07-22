@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   };
 
   return (
-    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white ${isCollapsed ? 'w-16' : 'w-64'} min-h-screen flex flex-col shadow-lg transition-all duration-300 ${className}`}>
+    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white ${isCollapsed ? 'w-20' : 'w-64'} min-h-screen flex flex-col shadow-lg transition-all duration-300 ${className}`}>
       {/* Logo/Brand with Toggle */}
       <div className={`${isCollapsed ? 'p-3' : 'p-6'} border-b border-purple-500/30 transition-all duration-300`}>
         <div className="flex items-center justify-between">
@@ -82,22 +82,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           )}
 
           {isCollapsed && (
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-sm mx-auto">
-              <GraduationCap className="w-8 h-8 text-white" />
+            <div className="w-full flex flex-col items-center">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-sm mb-3">
+                <GraduationCap className="w-8 h-8 text-white" />
+              </div>
+              <button
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg bg-white/15 hover:bg-white/25 transition-colors border border-white/20"
+                title="Expand sidebar"
+              >
+                <ChevronRight size={22} className="text-white" />
+              </button>
             </div>
           )}
 
-          <button
-            onClick={toggleSidebar}
-            className={`p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors ${isCollapsed ? 'mx-auto mt-2' : ''}`}
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {isCollapsed ? (
-              <ChevronRight size={20} className="text-white" />
-            ) : (
+          {!isCollapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+              title="Collapse sidebar"
+            >
               <ChevronLeft size={20} className="text-white" />
-            )}
-          </button>
+            </button>
+          )}
         </div>
 
         {/* Environment Indicator */}
@@ -121,9 +128,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             title={isCollapsed ? `Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} mode` : ''}
           >
             {resolvedTheme === 'light' ? (
-              <Moon size={18} className="text-purple-200" />
+              <Moon size={isCollapsed ? 22 : 18} className="text-purple-200" />
             ) : (
-              <Sun size={18} className="text-purple-200" />
+              <Sun size={isCollapsed ? 22 : 18} className="text-purple-200" />
             )}
             {!isCollapsed && (
               <span className="text-purple-200 text-sm">
@@ -153,14 +160,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => setCurrentView(item.id as any)}
-                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-3' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-4' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
                   }`}
                   title={isCollapsed ? item.label : ''}
                 >
-                  <Icon size={isCollapsed ? 24 : 20} className={isActive ? 'text-white' : 'text-purple-200'} />
+                  <Icon size={isCollapsed ? 28 : 20} className={isActive ? 'text-white' : 'text-purple-200'} />
                   {!isCollapsed && <span>{item.label}</span>}
                 </button>
 
