@@ -270,9 +270,16 @@ export const MyMeetingsView: React.FC = () => {
         'Database meetings': validMeetings.length,
         'LocalStorage meetings': localMeetings.length,
         'Total displayed': allMeetings.length,
+        'Meeting types': allMeetings.reduce((acc: any, m) => {
+          acc[m.meeting_type || 'unknown'] = (acc[m.meeting_type || 'unknown'] || 0) + 1;
+          return acc;
+        }, {}),
+        'With summaries': allMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length,
+        'With transcripts': allMeetings.filter(m => m.transcript && m.transcript.length > 0).length,
         'All meetings loaded': allMeetings.map(m => ({
           id: m.id,
           project: m.project_name,
+          type: m.meeting_type || 'unknown',
           date: m.created_at,
           hasSummary: !!(m.meeting_summary && m.meeting_summary.trim()),
           hasTranscript: !!(m.transcript && m.transcript.length > 0),

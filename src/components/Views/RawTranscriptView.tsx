@@ -103,7 +103,13 @@ export const RawTranscriptView: React.FC = () => {
       console.log('📋 RawTranscriptView loaded:', {
         database: databaseMeetings.length,
         localStorage: localMeetings.length,
-        total: allMeetingsData.length
+        total: allMeetingsData.length,
+        meetingTypes: allMeetingsData.reduce((acc: any, m) => {
+          acc[m.meeting_type] = (acc[m.meeting_type] || 0) + 1;
+          return acc;
+        }, {}),
+        meetingsWithSummary: allMeetingsData.filter(m => m.meeting_summary && m.meeting_summary.trim()).length,
+        meetingsWithTranscript: allMeetingsData.filter(m => m.transcript && m.transcript.length > 0).length
       });
       
       setAllMeetings(allMeetingsData);
