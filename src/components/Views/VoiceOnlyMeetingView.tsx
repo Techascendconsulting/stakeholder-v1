@@ -1119,17 +1119,14 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
           completed_at: new Date().toISOString()
         };
         
-        setEndingProgress('Meeting complete! Generating PDF files...');
-        
-        // Generate PDF files
-        await generateMeetingPDFs(completeMeeting);
+        setEndingProgress('Meeting complete! Preparing summary view...');
         
         setEndingProgress('Success! Redirecting to meeting summary...');
         console.log('✅ Complete meeting created successfully');
         
         // Set the meeting data for the summary view
         setSelectedMeeting(completeMeeting);
-        setCurrentView('meeting-history');
+        setCurrentView('meeting-summary');
         
       } catch (summaryError) {
         console.error('❌ Error generating summary:', summaryError);
@@ -1162,7 +1159,7 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
         };
         
         setSelectedMeeting(basicMeeting);
-        setCurrentView('meeting-history');
+        setCurrentView('meeting-summary');
       }
     } catch (error) {
       console.error('❌ Critical error during meeting end process:', error);
