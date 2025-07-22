@@ -95,21 +95,9 @@ const GuidedPracticeHub: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Divider */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="h-px bg-slate-300 dark:bg-gray-600 w-16"></div>
-            <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Learn More</span>
-            <div className="h-px bg-slate-300 dark:bg-gray-600 w-16"></div>
-          </div>
-        </div>
-
         {/* Video Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-6 mb-8 shadow-sm">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl mb-4">
-              <Play className="w-6 h-6 text-white ml-1" />
-            </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
               🎥 Watch this short video to see how the practice works and how to get the most from it.
             </h2>
