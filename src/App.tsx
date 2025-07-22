@@ -10,8 +10,14 @@ import { AlertCircle } from 'lucide-react'
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
+  const [isMounted, setIsMounted] = React.useState(false)
 
-  if (loading) {
+  // Prevent hydration flash by waiting for mount
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (loading || !isMounted) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">

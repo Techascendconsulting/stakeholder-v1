@@ -21,7 +21,7 @@ import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
 
 const MainLayout: React.FC = () => {
-  const { currentView, isLoading, selectedProject, selectedStakeholders, user, isHydrated } = useApp()
+  const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
 
   if (isLoading) {
     return (
@@ -89,28 +89,9 @@ const MainLayout: React.FC = () => {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <div 
-        className={`flex-1 flex flex-col transition-opacity duration-200 ${
-          isHydrated ? 'opacity-100' : 'opacity-0'
-        }`}
-        style={{ 
-          visibility: isHydrated ? 'visible' : 'hidden'
-        }}
-      >
-        <main className="flex-1 overflow-auto">
-          {renderView()}
-        </main>
-      </div>
-      
-      {/* Loading overlay during hydration */}
-      {!isHydrated && (
-        <div className="absolute inset-0 bg-gray-50 dark:bg-gray-900 flex items-center justify-center z-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">Loading...</p>
-          </div>
-        </div>
-      )}
+      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        {renderView()}
+      </main>
     </div>
   )
 }

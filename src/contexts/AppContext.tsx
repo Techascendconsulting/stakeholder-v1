@@ -65,8 +65,8 @@ export const useApp = () => {
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth()
   
-  // Track hydration state to prevent blink effect
-  const [isHydrated, setIsHydrated] = useState(false)
+  // Track hydration state to prevent blink effect - start as true to prevent flash
+  const [isHydrated, setIsHydrated] = useState(true)
   
   // Track previous user state to detect actual logout vs initial loading
   const prevUser = useRef(user)
@@ -206,13 +206,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [isLoading, setIsLoading] = useState(false)
-
-  // Mark hydration complete after initial localStorage restoration
-  useEffect(() => {
-    // Mark as hydrated immediately - no delays
-    setIsHydrated(true)
-    console.log('✅ HYDRATION: App hydration complete immediately')
-  }, [])
 
   // Clear view state on actual logout (not during initial load)
   useEffect(() => {
