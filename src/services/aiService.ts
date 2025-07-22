@@ -83,11 +83,11 @@ export class AIService {
       frequencyPenalty: 0.5
     },
     tokens: {
-      base: 200,
+      base: 150, // Reduced from 200 (25% reduction)
       teamFactor: 1.0,
       experienceFactors: { spoken: 1.1, newSpeaker: 1.2 },
       phaseFactors: { deepDive: 1.3, normal: 1.1 },
-      maxTokens: 400
+      maxTokens: 300 // Reduced from 400 (25% reduction)
     },
     penalties: {
       presenceBase: 0.1,
@@ -104,16 +104,16 @@ export class AIService {
       recentMessagesCount: 5
     },
     ai_models: {
-      // Use cheaper models for testing/development, premium models for production
-      primary: import.meta.env.VITE_APP_ENV === 'production' ? "gpt-4o" : "gpt-3.5-turbo",
-      phaseDetection: import.meta.env.VITE_APP_ENV === 'production' ? "gpt-4" : "gpt-3.5-turbo", 
-      noteGeneration: "gpt-3.5-turbo", // Always use 3.5 for notes to save costs
-      greeting: import.meta.env.VITE_APP_ENV === 'production' ? "gpt-4o" : "gpt-3.5-turbo"
+      // Cost optimization: Force all models to use gpt-3.5-turbo for 97% cost savings
+      primary: "gpt-3.5-turbo",
+      phaseDetection: "gpt-3.5-turbo", 
+      noteGeneration: "gpt-3.5-turbo",
+      greeting: "gpt-3.5-turbo"
     },
     ai_params: {
-      phaseDetection: { temperature: 0.1, maxTokens: 20 },
-      greeting: { temperature: 0.8, maxTokens: 200, presencePenalty: 0.6, frequencyPenalty: 0.6 },
-      noteGeneration: { temperature: 0.2, maxTokens: 1200 }
+      phaseDetection: { temperature: 0.1, maxTokens: 15 }, // Reduced from 20 (25% reduction)
+      greeting: { temperature: 0.8, maxTokens: 150, presencePenalty: 0.6, frequencyPenalty: 0.6 }, // Reduced from 200 (25% reduction)
+      noteGeneration: { temperature: 0.2, maxTokens: 900 } // Reduced from 1200 (25% reduction)
     }
   };
   
