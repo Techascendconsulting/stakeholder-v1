@@ -35,20 +35,20 @@ const ProjectsView: React.FC = () => {
     switch (complexity) {
       case 'Beginner':
         return {
-          color: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-          badge: 'bg-emerald-100 text-emerald-800',
+          color: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700',
+          badge: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200',
           description: 'Foundation Level'
         }
       case 'Intermediate':
         return {
-          color: 'bg-amber-50 text-amber-700 border border-amber-200',
-          badge: 'bg-amber-100 text-amber-800',
+          color: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700',
+          badge: 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200',
           description: 'Professional Level'
         }
       case 'Advanced':
         return {
-          color: 'bg-red-50 text-red-700 border border-red-200',
-          badge: 'bg-red-100 text-red-800',
+          color: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700',
+          badge: 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200',
           description: 'Expert Level'
         }
       default:
@@ -95,36 +95,36 @@ const ProjectsView: React.FC = () => {
     return project.complexity.toLowerCase() === selectedFilter
   })
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
       {/* Professional Header */}
-      <div className="relative bg-white border-b border-slate-200">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5"></div>
+      <div className="relative bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-gray-700">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
         <div className="relative max-w-7xl mx-auto px-6 py-16">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
               <BookOpen className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">
               Professional Training Projects
             </h1>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-8">
               Master business analysis through immersive, real-world case studies designed by industry experts
             </p>
             
             {/* Key Stats */}
             <div className="flex flex-wrap justify-center gap-8 text-center">
               <div className="flex items-center space-x-2">
-                <Globe className="w-5 h-5 text-indigo-600" />
-                <span className="text-slate-700 font-medium">Used by 10,000+ BAs globally</span>
+                <Globe className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Used by 10,000+ BAs globally</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Award className="w-5 h-5 text-purple-600" />
-                <span className="text-slate-700 font-medium">Industry-validated scenarios</span>
+                <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Industry-validated scenarios</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                <span className="text-slate-700 font-medium">Proven learning outcomes</span>
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Proven learning outcomes</span>
               </div>
             </div>
           </div>
@@ -135,10 +135,10 @@ const ProjectsView: React.FC = () => {
         {/* Filter Section */}
         <div className="flex flex-wrap items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Choose Your Project</h2>
-            <p className="text-slate-600">Select a complexity level that matches your experience</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Choose Your Project</h2>
+            <p className="text-slate-600 dark:text-slate-400">Select a complexity level that matches your experience</p>
           </div>
-          <div className="flex items-center space-x-1 bg-white rounded-xl border border-slate-200 p-1 shadow-sm">
+          <div className="flex items-center space-x-1 bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 p-1 shadow-sm">
             {[
               { id: 'all', label: 'All Projects' },
               { id: 'beginner', label: 'Beginner' },
@@ -151,7 +151,7 @@ const ProjectsView: React.FC = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   selectedFilter === filter.id
                     ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-gray-700'
                 }`}
               >
                 {filter.label}
@@ -171,12 +171,12 @@ const ProjectsView: React.FC = () => {
             const isSelected = studentSubscription?.selected_project_id === project.id
             
             return (
-              <div key={project.id} className={`group relative bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 ${
+              <div key={project.id} className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/10 hover:-translate-y-1 ${
                 isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : ''
               }`}>
                 
                 {/* Project Header */}
-                <div className="relative p-8 bg-gradient-to-br from-slate-50 to-white">
+                <div className="relative p-8 bg-gradient-to-br from-slate-50 to-white dark:from-gray-700 dark:to-gray-800">
                   {isSelected && (
                     <div className="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1.5 rounded-full text-sm font-semibold">
                       ✓ Active Project
@@ -185,10 +185,10 @@ const ProjectsView: React.FC = () => {
                   
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {project.name}
                       </h3>
-                      <p className="text-slate-600 leading-relaxed mb-4">{project.description}</p>
+                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{project.description}</p>
                       
                       {/* Badges */}
                       <div className="flex flex-wrap gap-2">
