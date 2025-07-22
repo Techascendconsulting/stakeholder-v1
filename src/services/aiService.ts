@@ -801,22 +801,22 @@ FORMATTING REQUIREMENTS:
     return `# Meeting Summary: ${project.name}
 
 ## Meeting Details
-**Date:** ${new Date(startTime).toLocaleDateString()}  
-**Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()}  
-**Duration:** ${duration} minutes  
-**Facilitator:** ${userName}  
-**Project:** ${project.name}  
-**Project Type:** ${project.type || 'Business Analysis'}  
+Date: ${new Date(startTime).toLocaleDateString()}  
+Time: ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()}  
+Duration: ${duration} minutes  
+Facilitator: ${userName}  
+Project: ${project.name}  
+Project Type: ${project.type || 'Business Analysis'}  
 
 ## Meeting Participants
-${participants.map((p: any) => `**${p.name}** - ${p.role}${p.department ? `, ${p.department}` : ''}`).join('  \n')}
+${participants.map((p: any) => `${p.name} - ${p.role}${p.department ? `, ${p.department}` : ''}`).join('  \n')}
 
 ## Meeting Overview
 This ${duration}-minute stakeholder meeting involved ${participants.length} participant${participants.length > 1 ? 's' : ''} and covered ${messages.filter((m: any) => m.speaker !== 'user').length} stakeholder responses across various project topics.
 
 ---
 
-*Generating detailed analysis...*`;
+Generating detailed analysis...`;
   }
 
   // Combine basic structure with AI analysis for clean output
@@ -843,7 +843,7 @@ This ${duration}-minute stakeholder meeting involved ${participants.length} part
 
 ---
 
-**Summary Generated:** ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`
+Summary Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`
     );
 
     return finalNotes;
@@ -857,14 +857,14 @@ This ${duration}-minute stakeholder meeting involved ${participants.length} part
     return `# Meeting Summary: ${project.name}
 
 ## Meeting Details
-**Date:** ${new Date(startTime).toLocaleDateString()}  
-**Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()}  
-**Duration:** ${duration} minutes  
-**Facilitator:** ${userName}  
-**Project:** ${project.name}  
+Date: ${new Date(startTime).toLocaleDateString()}  
+Time: ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()}  
+Duration: ${duration} minutes  
+Facilitator: ${userName}  
+Project: ${project.name}  
 
 ## Meeting Participants
-${participants.map((p: any) => `**${p.name}** - ${p.role}${p.department ? `, ${p.department}` : ''}`).join('  \n')}
+${participants.map((p: any) => `${p.name} - ${p.role}${p.department ? `, ${p.department}` : ''}`).join('  \n')}
 
 ## Executive Summary
 This meeting session involved discussions with ${participants.length} stakeholder${participants.length > 1 ? 's' : ''} regarding the ${project.name} project. The conversation included ${messages.filter((m: any) => m.speaker !== 'user').length} stakeholder responses covering various project aspects and requirements.
@@ -877,8 +877,8 @@ Due to technical limitations, a detailed AI analysis could not be generated for 
 
 ---
 
-**Summary Generated:** ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}  
-**Note:** This is a basic summary. For detailed insights, please review the complete transcript.`;
+Summary Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}  
+Note: This is a basic summary. For detailed insights, please review the complete transcript.`;
   }
 
   // Enhanced stakeholder memory system

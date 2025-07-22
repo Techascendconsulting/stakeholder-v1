@@ -32,13 +32,24 @@ export const RawTranscriptView: React.FC = () => {
   // Load all meetings
   useEffect(() => {
     loadAllMeetings();
-  }, [user?.id]);
+  }, [user?.id, selectedMeeting?.id]);
 
   const loadAllMeetings = async () => {
     if (!user?.id) return;
     
     try {
       setLoading(true);
+      
+      // If we have a selected meeting passed in (from voice meeting), prioritize it
+      if (selectedMeeting && selectedMeeting.id) {
+        console.log('🎯 Displaying selected meeting transcript:', selectedMeeting);
+        setAllMeetings([selectedMeeting]);
+        setExpandedMeetings(new Set([selectedMeeting.id]));
+        setLoading(false);
+        return;
+      }
+      
+      // Otherwise load from database
       const meetings = await DatabaseService.getUserMeetings(user.id);
       const validMeetings = meetings.filter(meeting => 
         meeting && meeting.id && meeting.project_name && meeting.created_at
@@ -51,6 +62,13 @@ export const RawTranscriptView: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading meetings:', error);
+      
+      // If database fails but we have a selected meeting, use it
+      if (selectedMeeting && selectedMeeting.id) {
+        console.log('📋 Database failed, using selected meeting transcript:', selectedMeeting);
+        setAllMeetings([selectedMeeting]);
+        setExpandedMeetings(new Set([selectedMeeting.id]));
+      }
     } finally {
       setLoading(false);
     }
