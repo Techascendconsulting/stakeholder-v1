@@ -91,10 +91,10 @@ const Dashboard: React.FC = () => {
       const tempMeetings: any[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith('temp-meeting-')) {
+        if (key && (key.startsWith('temp-meeting-') || key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
           try {
             const tempMeetingData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (tempMeetingData.user_id === user.id) {
+            if (tempMeetingData.user_id === user.id && tempMeetingData.id) {
               tempMeetings.push(tempMeetingData);
             }
           } catch (error) {
@@ -103,6 +103,34 @@ const Dashboard: React.FC = () => {
         }
       }
       console.log('💾 Dashboard - Temporary meetings found:', tempMeetings);
+
+      // Combine all meetings and remove duplicates
+      const allMeetings = [...validMeetings, ...tempMeetings]
+        .filter((meeting, index, self) =>
+          index === self.findIndex(m => m.id === meeting.id)
+        );
+
+      console.log('📊 Dashboard - Total combined meetings:', allMeetings.length);
+
+      // Calculate real-time statistics from actual meeting data
+      const voiceMeetings = allMeetings.filter(m => m.meeting_type === 'voice-only').length;
+      const transcriptMeetings = allMeetings.filter(m => m.meeting_type === 'group' || m.meeting_type === 'individual').length;
+      const totalMeetings = allMeetings.length;
+
+      // Update progress with real-time data
+      if (userProgress) {
+        userProgress.total_meetings_conducted = totalMeetings;
+        userProgress.total_voice_meetings = voiceMeetings;
+        userProgress.total_transcript_meetings = transcriptMeetings;
+        
+        console.log('📊 Dashboard - Real-time statistics calculated:', {
+          totalMeetings,
+          voiceMeetings,
+          transcriptMeetings
+        });
+      }
+
+      setProgress(userProgress);
 
     } catch (error) {
       console.error('❌ Dashboard - Error loading dashboard data:', error);
