@@ -138,10 +138,10 @@ const GuidedPracticeHub: React.FC = () => {
                   🔹 How It Works
                 </h3>
                 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Step 1 */}
                   <div className="relative">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700 h-full flex flex-col">
                       <div className="flex items-center justify-between mb-4">
                         <div className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-lg font-bold text-sm">
                           1
@@ -151,7 +151,7 @@ const GuidedPracticeHub: React.FC = () => {
                       <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">
                         Choose a Sample Project
                       </h4>
-                      <p className="text-slate-600 dark:text-slate-400 mb-4">
+                      <p className="text-slate-600 dark:text-slate-400 mb-4 flex-grow">
                         Explore real-world scenarios like onboarding, fraud reduction, or process improvement.
                       </p>
                       <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
@@ -162,7 +162,7 @@ const GuidedPracticeHub: React.FC = () => {
 
                   {/* Step 2 */}
                   <div className="relative">
-                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700 h-full flex flex-col">
                       <div className="flex items-center justify-between mb-4">
                         <div className="inline-flex items-center justify-center w-8 h-8 bg-purple-600 text-white rounded-lg font-bold text-sm">
                           2
@@ -170,34 +170,55 @@ const GuidedPracticeHub: React.FC = () => {
                         <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                       </div>
                       <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">
-                        Prepare for Your First Meeting
+                        Prepare for Your Meeting
                       </h4>
-                      <p className="text-slate-600 dark:text-slate-400 mb-4">
-                        You'll read a project brief, understand what's going wrong, and learn who the key stakeholders are.
+                      <p className="text-slate-600 dark:text-slate-400 mb-4 flex-grow">
+                        Read the project brief, understand what's going wrong, and learn who the stakeholders are.
                       </p>
                       <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">
-                        This helps you ask focused, relevant questions in your meeting.
+                        This helps you ask focused, relevant questions.
                       </p>
                     </div>
                   </div>
 
                   {/* Step 3 */}
                   <div className="relative">
-                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-xl p-6 border border-emerald-200 dark:border-emerald-700">
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-xl p-6 border border-amber-200 dark:border-amber-700 h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="inline-flex items-center justify-center w-8 h-8 bg-amber-600 text-white rounded-lg font-bold text-sm">
+                          3
+                        </div>
+                        <Users className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">
+                        Select Your Stakeholders
+                      </h4>
+                      <p className="text-slate-600 dark:text-slate-400 mb-4 flex-grow">
+                        Choose which stakeholders to interview based on the project needs and your learning goals.
+                      </p>
+                      <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">
+                        Start with one stakeholder, then try group meetings.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="relative">
+                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-xl p-6 border border-emerald-200 dark:border-emerald-700 h-full flex flex-col">
                       <div className="flex items-center justify-between mb-4">
                         <div className="inline-flex items-center justify-center w-8 h-8 bg-emerald-600 text-white rounded-lg font-bold text-sm">
-                          3
+                          4
                         </div>
                         <MessageSquare className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">
-                        Start the Meeting and Practice Live
+                        Join Live Meeting
                       </h4>
-                      <p className="text-slate-600 dark:text-slate-400 mb-4">
-                        Join a voice or text-based meeting. Talk to AI-powered stakeholders who behave like real people.
+                      <p className="text-slate-600 dark:text-slate-400 mb-4 flex-grow">
+                        Start your voice or text-based meeting with AI-powered stakeholders who behave like real people.
                       </p>
                       <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
-                        You'll practise guiding a conversation, dealing with vague answers, and pulling out what matters.
+                        Practice guiding conversations and uncovering insights.
                       </p>
                     </div>
                   </div>
