@@ -1,0 +1,266 @@
+import React, { useState, useEffect, useRef } from 'react'
+import { X, Bug, Eye, EyeOff, Trash2, Download, Copy } from 'lucide-react'
+import { useApp } from '../../contexts/AppContext'
+import { useAuth } from '../../contexts/AuthContext'
+
+interface DebugLog {
+  id: string
+  timestamp: string
+  type: 'navigation' | 'localStorage' | 'state' | 'render' | 'error' | 'info'
+  category: string
+  message: string
+  data?: any
+}
+
+const DebugConsole: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [logs, setLogs] = useState<DebugLog[]>([])
+  const [filter, setFilter] = useState<string>('all')
+  const [autoScroll, setAutoScroll] = useState(true)
+  const logsEndRef = useRef<HTMLDivElement>(null)
+  const { currentView, selectedProject, selectedStakeholders } = useApp()
+  const { user } = useAuth()
+
+  // Intercept console.log and capture debug messages
+  useEffect(() => {
+    const originalConsoleLog = console.log
+    const originalConsoleError = console.error
+    const originalConsoleWarn = console.warn
+
+    const addLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
+      const log: DebugLog = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toLocaleTimeString(),
+        type,
+        category,
+        message,
+        data
+      }
+      setLogs(prev => [...prev.slice(-99), log]) // Keep last 100 logs
+    }
+
+    // Override console methods to capture logs
+    console.log = (...args) => {
+      originalConsoleLog(...args)
+      const message = args.join(' ')
+      
+      // Categorize based on message content
+      if (message.includes('🔍 INIT:')) {
+        addLog('state', 'INITIALIZATION', message, args)
+      } else if (message.includes('🔄 NAVIGATE:')) {
+        addLog('navigation', 'NAVIGATION', message, args)
+      } else if (message.includes('💾')) {
+        addLog('localStorage', 'STORAGE', message, args)
+      } else if (message.includes('🔍 RENDER:')) {
+        addLog('render', 'RENDERING', message, args)
+      } else if (message.includes('🔍 USER_EFFECT:')) {
+        addLog('state', 'USER_STATE', message, args)
+      } else if (message.includes('✅ HYDRATION:')) {
+        addLog('state', 'HYDRATION', message, args)
+      } else {
+        addLog('info', 'GENERAL', message, args)
+      }
+    }
+
+    console.error = (...args) => {
+      originalConsoleError(...args)
+      addLog('error', 'ERROR', args.join(' '), args)
+    }
+
+    console.warn = (...args) => {
+      originalConsoleWarn(...args)
+      addLog('error', 'WARNING', args.join(' '), args)
+    }
+
+    return () => {
+      console.log = originalConsoleLog
+      console.error = originalConsoleError
+      console.warn = originalConsoleWarn
+    }
+  }, [])
+
+  // Track state changes
+  useEffect(() => {
+    setLogs(prev => [...prev, {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toLocaleTimeString(),
+      type: 'state',
+      category: 'STATE_CHANGE',
+      message: `View: ${currentView}, Project: ${selectedProject?.name || 'none'}, Stakeholders: ${selectedStakeholders.length}`,
+      data: { currentView, selectedProject: selectedProject?.name, stakeholderCount: selectedStakeholders.length }
+    }])
+  }, [currentView, selectedProject, selectedStakeholders])
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    if (autoScroll && logsEndRef.current) {
+      logsEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [logs, autoScroll])
+
+  const clearLogs = () => setLogs([])
+
+  const downloadLogs = () => {
+    const logText = logs.map(log => 
+      `[${log.timestamp}] ${log.type.toUpperCase()}-${log.category}: ${log.message}`
+    ).join('\n')
+    
+    const blob = new Blob([logText], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `debug-logs-${new Date().toISOString().split('T')[0]}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const copyLogs = () => {
+    const logText = logs.map(log => 
+      `[${log.timestamp}] ${log.type.toUpperCase()}-${log.category}: ${log.message}`
+    ).join('\n')
+    navigator.clipboard.writeText(logText)
+  }
+
+  const filteredLogs = logs.filter(log => 
+    filter === 'all' || log.type === filter
+  )
+
+  const getLogColor = (type: DebugLog['type']) => {
+    switch (type) {
+      case 'navigation': return 'text-blue-600 bg-blue-50'
+      case 'localStorage': return 'text-purple-600 bg-purple-50'
+      case 'state': return 'text-green-600 bg-green-50'
+      case 'render': return 'text-orange-600 bg-orange-50'
+      case 'error': return 'text-red-600 bg-red-50'
+      default: return 'text-gray-600 bg-gray-50'
+    }
+  }
+
+  if (!isVisible) {
+    return (
+      <button
+        onClick={() => setIsVisible(true)}
+        className="fixed bottom-4 right-4 p-3 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-700 transition-colors z-50"
+        title="Open Debug Console"
+      >
+        <Bug size={20} />
+      </button>
+    )
+  }
+
+  return (
+    <div className={`fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl z-50 ${
+      isMinimized ? 'w-80 h-12' : 'w-96 h-96'
+    }`}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 bg-gray-800 text-white rounded-t-lg">
+        <div className="flex items-center space-x-2">
+          <Bug size={16} />
+          <span className="font-medium">Debug Console</span>
+          <span className="text-xs bg-gray-700 px-2 py-1 rounded">
+            {filteredLogs.length} logs
+          </span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={() => setAutoScroll(!autoScroll)}
+            className="p-1 hover:bg-gray-700 rounded"
+            title={autoScroll ? 'Disable auto-scroll' : 'Enable auto-scroll'}
+          >
+            {autoScroll ? <Eye size={14} /> : <EyeOff size={14} />}
+          </button>
+          <button
+            onClick={clearLogs}
+            className="p-1 hover:bg-gray-700 rounded"
+            title="Clear logs"
+          >
+            <Trash2 size={14} />
+          </button>
+          <button
+            onClick={copyLogs}
+            className="p-1 hover:bg-gray-700 rounded"
+            title="Copy logs"
+          >
+            <Copy size={14} />
+          </button>
+          <button
+            onClick={downloadLogs}
+            className="p-1 hover:bg-gray-700 rounded"
+            title="Download logs"
+          >
+            <Download size={14} />
+          </button>
+          <button
+            onClick={() => setIsMinimized(!isMinimized)}
+            className="p-1 hover:bg-gray-700 rounded"
+          >
+            {isMinimized ? '□' : '_'}
+          </button>
+          <button
+            onClick={() => setIsVisible(false)}
+            className="p-1 hover:bg-gray-700 rounded"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>
+
+      {!isMinimized && (
+        <>
+          {/* Filter Bar */}
+          <div className="p-2 bg-gray-50 border-b">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="w-full text-xs border rounded px-2 py-1"
+            >
+              <option value="all">All Logs</option>
+              <option value="navigation">Navigation</option>
+              <option value="localStorage">LocalStorage</option>
+              <option value="state">State Changes</option>
+              <option value="render">Rendering</option>
+              <option value="error">Errors</option>
+              <option value="info">Info</option>
+            </select>
+          </div>
+
+          {/* Current State Info */}
+          <div className="p-2 bg-blue-50 border-b text-xs">
+            <div><strong>User:</strong> {user?.email || 'Not logged in'}</div>
+            <div><strong>View:</strong> {currentView}</div>
+            <div><strong>Project:</strong> {selectedProject?.name || 'None'}</div>
+            <div><strong>Stakeholders:</strong> {selectedStakeholders.length}</div>
+          </div>
+
+          {/* Logs */}
+          <div className="h-64 overflow-y-auto p-2 space-y-1 text-xs">
+            {filteredLogs.map((log) => (
+              <div key={log.id} className={`p-2 rounded border-l-2 ${getLogColor(log.type)}`}>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs">[{log.timestamp}]</span>
+                  <span className="text-xs font-medium">{log.type.toUpperCase()}</span>
+                </div>
+                <div className="font-medium">{log.category}</div>
+                <div className="break-words">{log.message}</div>
+                {log.data && (
+                  <details className="mt-1">
+                    <summary className="cursor-pointer text-xs text-gray-500">Data</summary>
+                    <pre className="text-xs bg-gray-100 p-1 rounded mt-1 overflow-x-auto">
+                      {JSON.stringify(log.data, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            ))}
+            <div ref={logsEndRef} />
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+export default DebugConsole

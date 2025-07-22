@@ -19,6 +19,7 @@ import { ProfileView } from '../Views/ProfileView'
 import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
+import DebugConsole from '../Debug/DebugConsole'
 
 const MainLayout: React.FC = () => {
   const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
@@ -92,6 +93,7 @@ const MainLayout: React.FC = () => {
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
         {renderView()}
       </main>
+      <DebugConsole />
     </div>
   )
 }
