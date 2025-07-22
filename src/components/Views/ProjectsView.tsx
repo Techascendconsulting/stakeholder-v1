@@ -234,51 +234,7 @@ const ProjectsView: React.FC = () => {
           })}
         </div>
 
-        {/* Create Custom Project Section */}
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200/50 dark:border-purple-700/50 rounded-3xl p-8 md:p-12 mb-12">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl mb-8 shadow-lg">
-              <Plus className="w-10 h-10 text-white" />
-            </div>
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Create Your Custom Project</h3>
-            <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
-              Already working on a project? Create AI stakeholders tailored to your specific business context and practice your interview skills.
-            </p>
-            
-            {/* Process Steps */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-purple-100 dark:border-purple-800 shadow-sm">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">1</span>
-                </div>
-                <h4 className="font-bold text-slate-900 dark:text-white mb-2">Define Context</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Describe your project, goals, and business requirements</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800 shadow-sm">
-                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-indigo-600 dark:text-indigo-400 font-bold text-lg">2</span>
-                </div>
-                <h4 className="font-bold text-slate-900 dark:text-white mb-2">AI Generation</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Our AI creates realistic stakeholders for your scenario</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-emerald-100 dark:border-emerald-800 shadow-sm">
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">3</span>
-                </div>
-                <h4 className="font-bold text-slate-900 dark:text-white mb-2">Practice & Improve</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Conduct interviews and receive feedback</p>
-              </div>
-            </div>
-            
-            <button
-              onClick={() => setCurrentView('custom-project')}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-10 py-4 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center space-x-3"
-            >
-              <span>Create Custom Project</span>
-              <Zap className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+
 
         {/* Professional Framework Section */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-200 dark:border-gray-700 p-8 md:p-12 shadow-sm">
