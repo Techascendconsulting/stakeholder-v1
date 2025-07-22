@@ -161,7 +161,7 @@ const ProjectsView: React.FC = () => {
         </div>
 
         {/* Project Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-12">
           {filteredProjects.map((project) => {
             const complexityConfig = getComplexityConfig(project.complexity)
             const businessImpact = getBusinessImpact(project.id)
@@ -171,62 +171,72 @@ const ProjectsView: React.FC = () => {
             const isSelected = studentSubscription?.selected_project_id === project.id
             
             return (
-              <div key={project.id} className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/10 hover:-translate-y-1 ${
-                isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : ''
+              <div key={project.id} className={`group relative bg-white dark:bg-gray-800 rounded-xl border border-slate-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600 ${
+                isSelected ? 'ring-2 ring-indigo-500 shadow-md' : 'shadow-sm'
               }`}>
                 
                 {/* Project Header */}
-                <div className="relative p-8 bg-gradient-to-br from-slate-50 to-white dark:from-gray-700 dark:to-gray-800">
+                <div className="p-6">
                   {isSelected && (
-                    <div className="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1.5 rounded-full text-sm font-semibold">
-                      ✓ Active Project
+                    <div className="absolute top-3 right-3 bg-indigo-600 text-white px-2 py-1 rounded-md text-xs font-medium">
+                      Active
                     </div>
                   )}
                   
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        {project.name}
-                      </h3>
-                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{project.description}</p>
-                      
-                      {/* Badges */}
-                      <div className="flex flex-wrap gap-2">
-                        <span className={`inline-flex items-center px-3 py-1.5 text-sm font-semibold rounded-full ${complexityConfig.badge}`}>
-                          {project.complexity}
-                        </span>
-                        <span className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-full border ${priorityConfig.color}`}>
-                          {businessImpact.priority} Priority
-                        </span>
-                        {requiredTier !== 'free' && (
-                          <span className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                            {requiredTier === 'premium' ? (
-                              <>
-                                <Star className="w-4 h-4 mr-1" />
-                                Premium
-                              </>
-                            ) : (
-                              <>
-                                <Crown className="w-4 h-4 mr-1" />
-                                Enterprise
-                              </>
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                  <div className="mb-4">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" 
+                        style={{ 
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}>
+                      {project.name}
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" 
+                       style={{ 
+                         display: '-webkit-box',
+                         WebkitLineClamp: 3,
+                         WebkitBoxOrient: 'vertical',
+                         overflow: 'hidden'
+                       }}>
+                      {project.description}
+                    </p>
                   </div>
-                </div>
+                  
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-md ${complexityConfig.badge}`}>
+                      {project.complexity}
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-md border ${priorityConfig.color}`}>
+                      {businessImpact.priority} Priority
+                    </span>
+                    {requiredTier !== 'free' && (
+                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-amber-100 text-amber-700 border border-amber-200">
+                        {requiredTier === 'premium' ? (
+                          <>
+                            <Star className="w-3 h-3 mr-1" />
+                            Premium
+                          </>
+                        ) : (
+                          <>
+                            <Crown className="w-3 h-3 mr-1" />
+                            Enterprise
+                          </>
+                        )}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Action Button */}
-                <div className="px-8 pb-8">
+                  {/* Action Button */}
                   <button
                     onClick={() => handleViewBrief(project)}
                     disabled={!isAccessible}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-sm hover:shadow-lg group hover:from-indigo-700 hover:to-purple-700 transform hover:scale-[1.02]"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 text-sm"
                   >
-                    <span>{isSelected ? 'Continue Project' : 'Start Project'}</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <span>{isSelected ? 'Continue Project' : 'View Details'}</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
