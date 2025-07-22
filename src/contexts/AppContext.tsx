@@ -4,6 +4,9 @@ import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
 
 interface AppContextType {
+  // Hydration state
+  isHydrated: boolean
+  
   // Current view
   currentView: AppView
   setCurrentView: (view: AppView) => void
@@ -206,13 +209,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Mark hydration complete after initial localStorage restoration
   useEffect(() => {
-    // Small delay to ensure all localStorage reads are complete
-    const timer = setTimeout(() => {
-      setIsHydrated(true)
-      console.log('✅ HYDRATION: App hydration complete, preventing blink effect')
-    }, 50)
-    
-    return () => clearTimeout(timer)
+    // Mark as hydrated immediately since localStorage is synchronous
+    setIsHydrated(true)
+    console.log('✅ HYDRATION: App hydration complete, no more blink effect')
   }, [])
 
   // Clear view state on actual logout (not during initial load)
@@ -289,6 +288,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const canCreateMoreMeetings = () => true
 
   const value = {
+    isHydrated,
     currentView,
     setCurrentView,
     projects: mockProjects,
