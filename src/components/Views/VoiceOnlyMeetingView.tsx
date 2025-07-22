@@ -1083,8 +1083,8 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
       
             setEndingProgress('Generating meeting summary and preparing files...');
       
-      // Always create a complete meeting object with AI summary - skip database entirely for now
-      console.log('🔚 Creating complete meeting data with AI summary...');
+      // Always create a complete meeting object with AI summary AND save to database
+      console.log('🔚 Creating complete meeting data with AI summary and saving to database...');
       
       try {
         // Generate AI summary
@@ -1119,7 +1119,40 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
           completed_at: new Date().toISOString()
         };
         
-        setEndingProgress('Meeting complete! Preparing summary view...');
+        setEndingProgress('Saving meeting to database...');
+        
+        // Save meeting to database to ensure it persists
+        try {
+          const saveResult = await DatabaseService.saveMeetingData(
+            completeMeeting.id,
+            completeMeeting.transcript,
+            completeMeeting.raw_chat,
+            completeMeeting.meeting_notes,
+            completeMeeting.meeting_summary,
+            completeMeeting.duration,
+            completeMeeting.topics_discussed,
+            completeMeeting.key_insights,
+            {
+              userId: completeMeeting.user_id,
+              projectId: completeMeeting.project_id,
+              projectName: completeMeeting.project_name,
+              stakeholderIds: completeMeeting.stakeholder_ids,
+              stakeholderNames: completeMeeting.stakeholder_names,
+              stakeholderRoles: completeMeeting.stakeholder_roles
+            }
+          );
+          
+          if (saveResult) {
+            console.log('✅ Meeting successfully saved to database:', completeMeeting.id);
+            setEndingProgress('Meeting saved! Redirecting to summary...');
+          } else {
+            console.warn('⚠️ Failed to save meeting to database, but proceeding with local data');
+            setEndingProgress('Meeting complete! Redirecting to summary...');
+          }
+        } catch (saveError) {
+          console.error('❌ Error saving meeting to database:', saveError);
+          setEndingProgress('Meeting complete! Redirecting to summary...');
+        }
         
         setEndingProgress('Success! Redirecting to meeting summary...');
         console.log('✅ Complete meeting created successfully');
@@ -1157,6 +1190,34 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
           created_at: new Date().toISOString(),
           completed_at: new Date().toISOString()
         };
+        
+        // Also save basic meeting to database
+        try {
+          const saveResult = await DatabaseService.saveMeetingData(
+            basicMeeting.id,
+            basicMeeting.transcript,
+            basicMeeting.raw_chat,
+            basicMeeting.meeting_notes,
+            basicMeeting.meeting_summary,
+            basicMeeting.duration,
+            basicMeeting.topics_discussed,
+            basicMeeting.key_insights,
+            {
+              userId: basicMeeting.user_id,
+              projectId: basicMeeting.project_id,
+              projectName: basicMeeting.project_name,
+              stakeholderIds: basicMeeting.stakeholder_ids,
+              stakeholderNames: basicMeeting.stakeholder_names,
+              stakeholderRoles: basicMeeting.stakeholder_roles
+            }
+          );
+          
+          if (saveResult) {
+            console.log('✅ Basic meeting saved to database:', basicMeeting.id);
+          }
+        } catch (saveError) {
+          console.error('❌ Error saving basic meeting:', saveError);
+        }
         
         setSelectedMeeting(basicMeeting);
         setCurrentView('meeting-summary');
