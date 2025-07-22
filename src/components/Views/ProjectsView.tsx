@@ -85,7 +85,7 @@ const ProjectsView: React.FC = () => {
   }
 
   const getProjectRequirement = (projectId: string) => {
-    if (projectId === 'proj-3') return 'free'
+    if (projectId === 'proj-3') return 'premium'
     if (projectId === 'proj-1' || projectId === 'proj-4') return 'premium'
     return 'enterprise'
   }
