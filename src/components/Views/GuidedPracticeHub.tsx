@@ -37,7 +37,19 @@ const GuidedPracticeHub: React.FC = () => {
       {/* Hero Header */}
       <div className="relative bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
-        <div className="relative max-w-7xl mx-auto px-6 py-16">
+        
+        {/* Skip to Projects Button - Top Right */}
+        <div className="absolute top-4 right-4 z-10">
+          <button
+            onClick={handleStartPracticing}
+            className="inline-flex items-center space-x-2 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm border border-slate-200 dark:border-gray-600"
+          >
+            <span className="text-sm">Skip to Projects</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 py-12">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
               <BookOpen className="w-8 h-8 text-white" />
@@ -50,19 +62,19 @@ const GuidedPracticeHub: React.FC = () => {
             </div>
             
             <div className="max-w-4xl mx-auto">
-              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
+              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
                 Business Analysts solve problems by working with people — not just writing documents.
                 To do this well, you need to confidently ask the right questions, guide conversations, 
                 and uncover the real issues hiding beneath the surface.
               </p>
-              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
+              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
                 This practice space helps you develop exactly that.
                 You'll choose realistic projects, meet with stakeholders, and improve your confidence by doing — not memorising.
               </p>
             </div>
 
             {/* Key Stats */}
-            <div className="flex flex-wrap justify-center gap-8 text-center mb-8">
+            <div className="flex flex-wrap justify-center gap-6 text-center mb-6">
               <div className="flex items-center space-x-2">
                 <Globe className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-slate-700 dark:text-slate-300 font-medium">Realistic scenarios</span>
@@ -77,26 +89,14 @@ const GuidedPracticeHub: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Access for Returning Users */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              <button
-                onClick={handleStartPracticing}
-                className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-colors shadow-lg hover:shadow-xl"
-              >
-                <span>Skip to Projects</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <span className="text-sm text-slate-500 dark:text-slate-400">
-                Already familiar? Jump straight to project selection
-              </span>
-            </div>
+
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Divider */}
-        <div className="flex items-center justify-center mb-12">
+        <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-4">
             <div className="h-px bg-slate-300 dark:bg-gray-600 w-16"></div>
             <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Learn More</span>
@@ -105,7 +105,7 @@ const GuidedPracticeHub: React.FC = () => {
         </div>
 
         {/* Video Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 mb-12 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-6 mb-8 shadow-sm">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl mb-4">
               <Play className="w-6 h-6 text-white ml-1" />
@@ -113,7 +113,7 @@ const GuidedPracticeHub: React.FC = () => {
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
               🎥 Watch this short video to see how the practice works and how to get the most from it.
             </h2>
-            <div className="bg-slate-100 dark:bg-gray-700 rounded-xl p-12 border-2 border-dashed border-slate-300 dark:border-gray-600">
+            <div className="bg-slate-100 dark:bg-gray-700 rounded-xl p-8 border-2 border-dashed border-slate-300 dark:border-gray-600">
               <div className="flex items-center justify-center">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full mb-4 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
@@ -154,14 +154,14 @@ const GuidedPracticeHub: React.FC = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="p-8">
+          <div className="p-6">
             {activeTab === 'how-it-works' && (
-              <div className="space-y-8">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
                   🔹 How It Works
                 </h3>
                 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Step 1 */}
                   <div className="relative">
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700 h-full flex flex-col">
@@ -427,10 +427,10 @@ const GuidedPracticeHub: React.FC = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-12">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-            <h3 className="text-2xl font-bold mb-4">Ready to Start Practicing?</h3>
-            <p className="text-indigo-100 mb-8 max-w-2xl mx-auto">
+        <div className="text-center mt-8">
+                      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-xl">
+              <h3 className="text-2xl font-bold mb-3">Ready to Start Practicing?</h3>
+              <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
               Choose from our library of realistic projects and begin developing your stakeholder conversation skills today.
             </p>
             <button
