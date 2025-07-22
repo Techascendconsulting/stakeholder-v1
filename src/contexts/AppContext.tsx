@@ -105,14 +105,101 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }
   
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([])
+  // Initialize selectedProject from localStorage
+  const [selectedProject, setSelectedProjectState] = useState<Project | null>(() => {
+    try {
+      const savedProject = localStorage.getItem('selectedProject')
+      if (savedProject) {
+        console.log('✅ INIT: Restoring selectedProject from localStorage:', JSON.parse(savedProject).name)
+        return JSON.parse(savedProject)
+      }
+      return null
+    } catch (error) {
+      console.log('❌ INIT: Error loading selectedProject from localStorage:', error)
+      return null
+    }
+  })
+
+  // Initialize selectedStakeholders from localStorage  
+  const [selectedStakeholders, setSelectedStakeholdersState] = useState<Stakeholder[]>(() => {
+    try {
+      const savedStakeholders = localStorage.getItem('selectedStakeholders')
+      if (savedStakeholders) {
+        const stakeholders = JSON.parse(savedStakeholders)
+        console.log('✅ INIT: Restoring selectedStakeholders from localStorage:', stakeholders.length, 'stakeholders')
+        return stakeholders
+      }
+      return []
+    } catch (error) {
+      console.log('❌ INIT: Error loading selectedStakeholders from localStorage:', error)
+      return []
+    }
+  })
+
+  // Initialize customProject from localStorage
+  const [customProject, setCustomProjectState] = useState<Project | null>(() => {
+    try {
+      const savedCustomProject = localStorage.getItem('customProject')
+      if (savedCustomProject) {
+        console.log('✅ INIT: Restoring customProject from localStorage:', JSON.parse(savedCustomProject).name)
+        return JSON.parse(savedCustomProject)
+      }
+      return null
+    } catch (error) {
+      console.log('❌ INIT: Error loading customProject from localStorage:', error)
+      return null
+    }
+  })
+
+  // Custom setters that handle localStorage automatically
+  const setSelectedProject = (project: Project | null) => {
+    console.log('🎯 PROJECT: setSelectedProject called with:', project?.name || 'null')
+    setSelectedProjectState(project)
+    try {
+      if (project) {
+        localStorage.setItem('selectedProject', JSON.stringify(project))
+        console.log('💾 PROJECT: Saved selectedProject to localStorage:', project.name)
+      } else {
+        localStorage.removeItem('selectedProject')
+        console.log('💾 PROJECT: Removed selectedProject from localStorage')
+      }
+    } catch (error) {
+      console.log('❌ PROJECT: Could not save selectedProject to localStorage:', error)
+    }
+  }
+
+  const setSelectedStakeholders = (stakeholders: Stakeholder[]) => {
+    console.log('👥 STAKEHOLDERS: setSelectedStakeholders called with:', stakeholders.length, 'stakeholders')
+    setSelectedStakeholdersState(stakeholders)
+    try {
+      localStorage.setItem('selectedStakeholders', JSON.stringify(stakeholders))
+      console.log('💾 STAKEHOLDERS: Saved selectedStakeholders to localStorage')
+    } catch (error) {
+      console.log('❌ STAKEHOLDERS: Could not save selectedStakeholders to localStorage:', error)
+    }
+  }
+
+  const setCustomProject = (project: Project | null) => {
+    console.log('🛠️ CUSTOM: setCustomProject called with:', project?.name || 'null')
+    setCustomProjectState(project)
+    try {
+      if (project) {
+        localStorage.setItem('customProject', JSON.stringify(project))
+        console.log('💾 CUSTOM: Saved customProject to localStorage:', project.name)
+      } else {
+        localStorage.removeItem('customProject')
+        console.log('💾 CUSTOM: Removed customProject from localStorage')
+      }
+    } catch (error) {
+      console.log('❌ CUSTOM: Could not save customProject to localStorage:', error)
+    }
+  }
+
   const [selectedMeeting, setSelectedMeeting] = useState<any | null>(null)
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [customProject, setCustomProject] = useState<Project | null>(null)
 
   // Clear view state on actual logout (not during initial load)
   useEffect(() => {
