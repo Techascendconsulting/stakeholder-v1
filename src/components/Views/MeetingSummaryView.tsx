@@ -152,13 +152,19 @@ export const MeetingSummaryView: React.FC = () => {
   };
 
   const toggleMeeting = (meetingId: string) => {
-    const newExpanded = new Set(expandedMeetings);
-    if (newExpanded.has(meetingId)) {
-      newExpanded.delete(meetingId);
-    } else {
-      newExpanded.add(meetingId);
-    }
-    setExpandedMeetings(newExpanded);
+    setExpandedMeetings(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(meetingId)) {
+        newSet.delete(meetingId);
+      } else {
+        newSet.add(meetingId);
+      }
+      return newSet;
+    });
+  };
+
+  const collapseAll = () => {
+    setExpandedMeetings(new Set());
   };
 
   // Generate fallback summary for meetings without AI summaries
@@ -483,6 +489,15 @@ For detailed conversation analysis and specific stakeholder insights, please rev
           <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
             {allMeetings.length} meeting{allMeetings.length !== 1 ? 's' : ''}
           </div>
+          {expandedMeetings.size > 1 && (
+            <button
+              onClick={collapseAll}
+              className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2 text-sm"
+            >
+              <ChevronDown size={14} />
+              <span>Collapse All</span>
+            </button>
+          )}
           <button
             onClick={() => setCurrentView('raw-transcript')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
