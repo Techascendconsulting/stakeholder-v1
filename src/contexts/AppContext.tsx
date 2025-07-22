@@ -70,6 +70,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   // Track previous user state to detect actual logout vs initial loading
   const prevUser = useRef(user)
+
+  // Mark app as ready at HTML level to prevent any blink
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && window.markAppReady) {
+        window.markAppReady()
+        console.log('✅ APP: Marked as ready at HTML level - no more blink!')
+      }
+    }, 100) // Small delay to ensure everything is rendered
+    
+    return () => clearTimeout(timer)
+  }, [user, currentView]) // Wait for user and view to be set
   
   // Initialize currentView from localStorage or default to dashboard
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
