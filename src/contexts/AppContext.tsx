@@ -209,18 +209,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // Only clear if we had a logged-in user before and now we're explicitly logged out
     if (prevUser.current && user === null) {
-      console.log('👋 USER_EFFECT: Actual logout detected, clearing saved view')
+      console.log('👋 USER_EFFECT: Actual logout detected, clearing all saved state')
       localStorage.removeItem('currentView')
+      localStorage.removeItem('selectedProject')
+      localStorage.removeItem('selectedStakeholders')
+      localStorage.removeItem('customProject')
       setCurrentViewState('dashboard')
+      setSelectedProjectState(null)
+      setSelectedStakeholdersState([])
+      setCustomProjectState(null)
     } else if (user) {
-      console.log('✅ USER_EFFECT: User is logged in, preserving current view:', currentView)
+      console.log('✅ USER_EFFECT: User is logged in, preserving current state')
+      console.log('✅ USER_EFFECT: Current view:', currentView)
+      console.log('✅ USER_EFFECT: Selected project:', selectedProject?.name || 'none')
     } else {
       console.log('⏳ USER_EFFECT: User state is loading or no change, doing nothing')
     }
     
     // Update previous user reference
     prevUser.current = user
-  }, [user, currentView])
+  }, [user, currentView, selectedProject])
 
   // Mock user progress data
   const userProgress = {
