@@ -76,7 +76,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const validViews: AppView[] = [
         'dashboard', 'guided-practice-hub', 'projects', 'project-brief', 'stakeholders', 
         'meeting-mode-selection', 'meeting', 'voice-only-meeting', 'my-meetings', 
-        'meeting-history', 'meeting-summary', 'raw-transcript', 'notes', 'deliverables', 'profile'
+        'meeting-history', 'meeting-summary', 'raw-transcript', 'notes', 'deliverables', 
+        'profile', 'custom-project', 'custom-stakeholders'
       ]
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
