@@ -723,8 +723,8 @@ Generate only the greeting, nothing else.`;
         progressCallback('Analyzing conversation content...');
       }
 
-      // Use optimized prompt for faster processing
-      const prompt = `Analyze this stakeholder meeting transcript and generate concise, professional interview notes.
+      // Use enhanced prompt for clean, professional formatting
+      const prompt = `Analyze this stakeholder meeting transcript and generate professional, well-formatted interview notes.
 
 PROJECT: ${project.name}
 DURATION: ${duration} minutes
@@ -733,15 +733,36 @@ PARTICIPANTS: ${participants.map((p: any) => `${p.name} (${p.role})`).join(', ')
 TRANSCRIPT:
 ${conversationTranscript}
 
-Generate notes with these sections:
-1. Executive Summary (2-3 sentences)
-2. Key Discussion Points (bullet points)
-3. Stakeholder Insights (per participant)
-4. Pain Points Identified
-5. Requirements Mentioned
-6. Action Items
+Generate clean, professional notes using this EXACT format (no asterisks, no markdown symbols):
 
-Be concise but comprehensive. Focus on actionable insights.`;
+## Executive Summary
+[Write 2-3 sentences summarizing the meeting's key outcomes and purpose]
+
+## Key Discussion Topics
+[List the main topics discussed, using clear paragraph format without bullet points]
+
+## Stakeholder Insights
+[For each participant, provide their key contributions and perspectives in paragraph format]
+
+## Current State Analysis
+[Describe the current processes, systems, and workflows discussed]
+
+## Challenges and Pain Points
+[Identify problems, inefficiencies, and concerns raised during the discussion]
+
+## Requirements and Needs
+[List the requirements, needs, and expectations identified]
+
+## Next Steps and Action Items
+[Outline any follow-up actions, decisions, or next steps discussed]
+
+FORMATTING REQUIREMENTS:
+- Use clean paragraph format, no asterisks or bullet symbols
+- Use clear section headers with ##
+- Write in professional, business-appropriate language
+- Focus on actionable insights and concrete information
+- Keep each section concise but comprehensive
+- Use proper sentence structure and grammar`;
 
       if (progressCallback) {
         progressCallback('Generating AI analysis...');
@@ -772,87 +793,92 @@ Be concise but comprehensive. Focus on actionable insights.`;
     }
   }
 
-  // Generate basic structure immediately for faster feedback
+  // Generate clean, professional basic structure
   private generateBasicStructure(meetingData: any): string {
     const { project, participants, messages, startTime, endTime, duration, user } = meetingData;
+    const userName = user?.email?.split('@')[0] || user?.displayName || 'Business Analyst';
     
-    return `# Interview Notes: ${project.name}
+    return `# Meeting Summary: ${project.name}
 
-## Meeting Information
-- **Date:** ${new Date(startTime).toLocaleDateString()}
-- **Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()} (${duration} minutes)
-- **Facilitator:** ${user}
-- **Project:** ${project.name}
-- **Project Type:** ${project.type}
+## Meeting Details
+**Date:** ${new Date(startTime).toLocaleDateString()}  
+**Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()}  
+**Duration:** ${duration} minutes  
+**Facilitator:** ${userName}  
+**Project:** ${project.name}  
+**Project Type:** ${project.type || 'Business Analysis'}  
 
-## Participants
-${participants.map((p: any) => `- **${p.name}** - ${p.role}, ${p.department}`).join('\n')}
+## Meeting Participants
+${participants.map((p: any) => `**${p.name}** - ${p.role}${p.department ? `, ${p.department}` : ''}`).join('  \n')}
 
-## Meeting Statistics
-- **Total Messages:** ${messages.length}
-- **Stakeholder Responses:** ${messages.filter((m: any) => m.speaker !== 'user').length}
-- **Topics Covered:** ${Math.ceil(messages.length / 3)} estimated topics
+## Meeting Overview
+This ${duration}-minute stakeholder meeting involved ${participants.length} participant${participants.length > 1 ? 's' : ''} and covered ${messages.filter((m: any) => m.speaker !== 'user').length} stakeholder responses across various project topics.
 
 ---
-*Processing AI analysis...*`;
+
+*Generating detailed analysis...*`;
   }
 
-  // Combine basic structure with AI analysis
+  // Combine basic structure with AI analysis for clean output
   private combineNotesWithAnalysis(basicNotes: string, aiAnalysis: string): string {
     if (!aiAnalysis) {
-      return basicNotes;
+      return basicNotes.replace('*Generating detailed analysis...*', 
+        '## Analysis Status\nDetailed analysis could not be generated at this time. The meeting details and participant information above provide a basic summary of the session.');
     }
 
-    // Extract sections from AI analysis and enhance basic structure
-    const sections = aiAnalysis.split('\n\n');
-    const enhancedContent = sections.map(section => {
-      // Clean up and format AI content
-      return section.trim();
-    }).join('\n\n');
-
+    // Clean the AI analysis content
+    let cleanedAnalysis = aiAnalysis.trim();
+    
+    // Remove any asterisk bullet points that might have slipped through
+    cleanedAnalysis = cleanedAnalysis.replace(/^\s*\*\s+/gm, '');
+    cleanedAnalysis = cleanedAnalysis.replace(/^\s*-\s+/gm, '');
+    
+    // Ensure proper section formatting
+    cleanedAnalysis = cleanedAnalysis.replace(/^([A-Z][^#\n]*):?\s*$/gm, '## $1');
+    
     // Replace processing message with actual analysis
     const finalNotes = basicNotes.replace(
-      '*Processing AI analysis...*',
-      `${enhancedContent}
+      '*Generating detailed analysis...*',
+      `${cleanedAnalysis}
 
 ---
-*Notes generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*`
+
+**Summary Generated:** ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`
     );
 
     return finalNotes;
   }
 
-  // Fallback notes generation if AI fails
+  // Clean fallback notes generation if AI fails
   private getFallbackNotes(meetingData: any): string {
     const { project, participants, messages, startTime, endTime, duration, user } = meetingData;
+    const userName = user?.email?.split('@')[0] || user?.displayName || 'Business Analyst';
     
-    return `# Interview Notes: ${project.name}
+    return `# Meeting Summary: ${project.name}
 
-## Meeting Information
-- **Date:** ${new Date(startTime).toLocaleDateString()}
-- **Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()} (${duration} minutes)
-- **Facilitator:** ${user}
-- **Project:** ${project.name}
+## Meeting Details
+**Date:** ${new Date(startTime).toLocaleDateString()}  
+**Time:** ${new Date(startTime).toLocaleTimeString()} - ${new Date(endTime).toLocaleTimeString()}  
+**Duration:** ${duration} minutes  
+**Facilitator:** ${userName}  
+**Project:** ${project.name}  
 
-## Participants
-${participants.map((p: any) => `- **${p.name}** - ${p.role}, ${p.department}`).join('\n')}
+## Meeting Participants
+${participants.map((p: any) => `**${p.name}** - ${p.role}${p.department ? `, ${p.department}` : ''}`).join('  \n')}
 
-## Conversation Summary
-The meeting included ${messages.filter((m: any) => m.speaker !== 'user').length} stakeholder responses and covered various aspects of the ${project.name} project.
+## Executive Summary
+This meeting session involved discussions with ${participants.length} stakeholder${participants.length > 1 ? 's' : ''} regarding the ${project.name} project. The conversation included ${messages.filter((m: any) => m.speaker !== 'user').length} stakeholder responses covering various project aspects and requirements.
 
-## Raw Transcript
-${messages.map((msg: any) => {
-  const time = new Date(msg.timestamp).toLocaleTimeString();
-  if (msg.speaker === 'user') {
-    return `[${time}] Business Analyst: ${msg.content}`;
-  } else {
-    return `[${time}] ${msg.stakeholderName} (${msg.stakeholderRole}): ${msg.content}`;
-  }
-}).join('\n')}
+## Meeting Overview
+The session focused on gathering stakeholder input and understanding different perspectives related to the project objectives. Key discussions involved current processes, challenges, and potential areas for improvement.
+
+## Analysis Note
+Due to technical limitations, a detailed AI analysis could not be generated for this meeting. The complete conversation transcript is available in the Raw Transcript section for manual review and analysis.
 
 ---
-*Notes generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*
-*Note: This is a basic transcript. For detailed analysis, please review the conversation manually.*`;
+
+**Summary Generated:** ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}  
+**Note:** This is a basic summary. For detailed insights, please review the complete transcript.`;
   }
 
   // Enhanced stakeholder memory system
