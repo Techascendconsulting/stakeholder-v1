@@ -164,7 +164,7 @@ const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span className="text-blue-400 text-sm font-medium">Up Next:</span>
+              <span className="text-blue-400 text-sm font-medium">Speaking Next:</span>
             </div>
             <div className="flex items-center space-x-3">
               {upcomingQueue.slice(0, 3).map((speaker, index) => {

@@ -3302,7 +3302,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 
                 {responseQueue.upcoming.length > 0 && (
                   <div className="flex items-center space-x-2">
-                    <span className="text-green-700 text-sm font-medium">Up next:</span>
+                    <span className="text-green-700 text-sm font-medium">Speaking Next:</span>
                     <div className="flex space-x-2">
                       {responseQueue.upcoming.map((stakeholder, index) => (
                         <span 
