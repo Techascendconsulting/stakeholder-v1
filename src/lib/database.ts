@@ -288,24 +288,9 @@ export class DatabaseService {
 
       console.log('🗃️ DATABASE - Attempting to update meeting with data:', updateData);
 
-      // First try to update the existing meeting
-      const { error: updateError, data: updateResult } = await supabase
-        .from('user_meetings')
-        .update(updateData)
-        .eq('id', meetingId)
-        .select()
-
-      console.log('🗃️ DATABASE - Update result:', { error: updateError, data: updateResult });
-
-      // If update succeeded
-      if (!updateError && updateResult && updateResult.length > 0) {
-        console.log('🗃️ DATABASE - Meeting successfully updated:', updateResult[0]);
-        return true;
-      }
-
-      // If update failed because meeting doesn't exist, try to create it
-      if (updateError || !updateResult || updateResult.length === 0) {
-        console.log('🗃️ DATABASE - Meeting does not exist, attempting to create new meeting');
+      // Always create a new meeting entry instead of updating existing ones
+      // This ensures each meeting is preserved as a separate entry
+      console.log('🗃️ DATABASE - Creating new meeting entry to preserve meeting history');
         
         // Create meeting record with available data
         const createData = {
@@ -338,11 +323,10 @@ export class DatabaseService {
         if (createResult && createResult.length > 0) {
           console.log('🗃️ DATABASE - Meeting successfully created:', createResult[0]);
           return true;
+        } else {
+          console.warn('🗃️ DATABASE - Create failed for meeting:', meetingId);
+          return false;
         }
-      }
-
-      console.warn('🗃️ DATABASE - Both update and create failed for meeting:', meetingId);
-      return false;
     } catch (error) {
       console.error('🗃️ DATABASE - Error saving meeting data:', error)
       return false

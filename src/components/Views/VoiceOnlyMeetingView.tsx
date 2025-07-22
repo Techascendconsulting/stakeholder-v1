@@ -248,6 +248,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
   const [endingProgress, setEndingProgress] = useState('');
   
+  // Reset meeting state when component mounts to ensure fresh meeting
+  useEffect(() => {
+    console.log('🔄 VoiceOnlyMeetingView - Component mounted, resetting meeting state');
+    setMeetingId(null);
+    setMeetingStartTime(Date.now());
+    setBackgroundTranscript([]);
+    setMessages([]);
+    setTranscriptMessages([]);
+    setIsEndingMeeting(false);
+    setEndingProgress('');
+  }, []); // Only run on mount
+
   // Ensure meeting ID exists - safety mechanism
   useEffect(() => {
     if (!meetingId && user?.id) {
@@ -1093,9 +1105,15 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
         const topicsDiscussed = extractTopicsFromTranscript(backgroundTranscript);
         const keyInsights = extractKeyInsights(backgroundTranscript);
         
-        // Create complete meeting object with all data
+        // Create complete meeting object with all data - ensure unique ID
+        const timestamp = Date.now();
+        const random1 = Math.random().toString(36).substr(2, 9);
+        const random2 = Math.random().toString(36).substr(2, 9);
+        const uniqueMeetingId = meetingId || `meeting-${timestamp}-${random1}-${random2}`;
+        console.log('🆔 Creating meeting with UNIQUE ID:', uniqueMeetingId, 'Original meetingId was:', meetingId);
+        
         const completeMeeting = {
-          id: meetingId || `complete-${Date.now()}`,
+          id: uniqueMeetingId,
           user_id: user?.id || 'unknown',
           project_id: selectedProject?.id || 'unknown',
           project_name: selectedProject?.name || 'Meeting Session',
@@ -1143,7 +1161,13 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
           );
           
           if (saveResult) {
-            console.log('✅ Meeting successfully saved to database:', completeMeeting.id);
+            console.log('✅ Meeting successfully saved to database:', {
+              id: completeMeeting.id,
+              projectName: completeMeeting.project_name,
+              duration: completeMeeting.duration,
+              timestamp: completeMeeting.created_at,
+              summaryLength: completeMeeting.meeting_summary?.length || 0
+            });
             setEndingProgress('Meeting saved! Redirecting to summary...');
           } else {
             console.warn('⚠️ Failed to save meeting to database, but proceeding with local data');
@@ -1166,8 +1190,11 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
         setEndingProgress('Finalizing meeting data...');
       
               // Create basic meeting if summary generation fails
+        const basicMeetingId = meetingId || `basic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        console.log('🆔 Creating basic meeting with unique ID:', basicMeetingId);
+        
         const basicMeeting = {
-          id: meetingId || `basic-${Date.now()}`,
+          id: basicMeetingId,
           user_id: user?.id || 'unknown',
           project_id: selectedProject?.id || 'unknown',
           project_name: selectedProject?.name || 'Meeting Session',
