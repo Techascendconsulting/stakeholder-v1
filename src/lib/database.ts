@@ -295,7 +295,7 @@ export class DatabaseService {
         // Create meeting record with available data
         const createData = {
           id: meetingId,
-          user_id: additionalMeetingData?.userId || transcript[0]?.userId || 'unknown',
+          user_id: additionalMeetingData?.userId || 'unknown',
           project_id: additionalMeetingData?.projectId || 'unknown',
           project_name: additionalMeetingData?.projectName || 'Meeting Session',
           stakeholder_ids: additionalMeetingData?.stakeholderIds || [],
@@ -316,7 +316,13 @@ export class DatabaseService {
         console.log('🗃️ DATABASE - Create result:', { error: createError, data: createResult });
 
         if (createError) {
-          console.error('🗃️ DATABASE - Failed to create meeting:', createError);
+          console.error('🗃️ DATABASE - Failed to create meeting:', {
+            error: createError,
+            errorMessage: createError.message,
+            errorDetails: createError.details,
+            errorHint: createError.hint,
+            createData: createData
+          });
           return false;
         }
 
