@@ -59,6 +59,7 @@ export interface Deliverable {
 
 export type AppView = 
   | 'dashboard'
+  | 'guided-practice-hub'
   | 'projects'
   | 'project-brief'
   | 'stakeholders'

@@ -2,6 +2,7 @@ import React from 'react'
 import { Sidebar } from './Sidebar'
 import { useApp } from '../../contexts/AppContext'
 import Dashboard from '../Views/Dashboard'
+import GuidedPracticeHub from '../Views/GuidedPracticeHub'
 import ProjectsView from '../Views/ProjectsView'
 import ProjectBrief from '../Views/ProjectBrief'
 import StakeholdersView from '../Views/StakeholdersView'
@@ -15,6 +16,7 @@ import { RawTranscriptView } from '../Views/RawTranscriptView'
 import { InterviewNotesView } from '../Views/InterviewNotesView'
 import DeliverablesView from '../Views/DeliverablesView'
 import { ProfileView } from '../Views/ProfileView'
+import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
 
@@ -42,6 +44,8 @@ const MainLayout: React.FC = () => {
     switch (currentView) {
       case 'dashboard':
         return <Dashboard />
+      case 'guided-practice-hub':
+        return <GuidedPracticeHub />
       case 'projects':
         return <ProjectsView />
       case 'project-brief':
