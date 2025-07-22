@@ -247,6 +247,16 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Meeting ending states to prevent multiple clicks and show progress
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
   const [endingProgress, setEndingProgress] = useState('');
+  
+  // Ensure meeting ID exists - safety mechanism
+  useEffect(() => {
+    if (!meetingId && user?.id) {
+      const safeMeetingId = `safe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      setMeetingId(safeMeetingId);
+      setMeetingStartTime(Date.now());
+      console.log('🛡️ SAFETY: Created meeting ID because none existed:', safeMeetingId);
+    }
+  }, [meetingId, user?.id]);
 
   // Add conversation dynamics from transcript meeting for adaptive responses
   const [conversationDynamics, setConversationDynamics] = useState({
@@ -322,9 +332,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             console.log('🎯 Meeting initialized in database:', newMeetingId);
           } else {
             console.error('🎯 INIT MEETING - Failed to create meeting, no ID returned');
+            // Create fallback local meeting ID
+            const fallbackMeetingId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            setMeetingId(fallbackMeetingId);
+            setMeetingStartTime(Date.now());
+            console.log('🎯 Created fallback meeting ID:', fallbackMeetingId);
           }
         } catch (error) {
           console.error('🎯 INIT MEETING - Error initializing meeting:', error);
+          // Create emergency fallback meeting ID
+          const emergencyMeetingId = `emergency-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          setMeetingId(emergencyMeetingId);
+          setMeetingStartTime(Date.now());
+          console.log('🎯 Created emergency meeting ID:', emergencyMeetingId);
         }
       } else {
         console.log('🎯 INIT MEETING - Conditions not met:', {
@@ -332,6 +352,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           hasUserId: !!user?.id,
           alreadyHasMeetingId: !!meetingId
         });
+        
+        // If we don't have a meeting ID yet, create one anyway to ensure saving works
+        if (!meetingId && user?.id) {
+          const backupMeetingId = `backup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          setMeetingId(backupMeetingId);
+          setMeetingStartTime(Date.now());
+          console.log('🎯 Created backup meeting ID for conditions not met:', backupMeetingId);
+        }
       }
     };
 
@@ -1201,19 +1229,33 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
     console.log('💾 SAVE MEETING - Starting save process');
     console.log('💾 Save validation:', {
       meetingId,
+      meetingIdType: typeof meetingId,
+      meetingIdLength: meetingId?.length,
       userId: user?.id,
+      userIdType: typeof user?.id,
       backgroundTranscriptLength: backgroundTranscript.length,
-      backgroundTranscriptSample: backgroundTranscript.slice(0, 2)
+      backgroundTranscriptSample: backgroundTranscript.slice(0, 2),
+      selectedProjectName: selectedProject?.name,
+      selectedStakeholdersCount: selectedStakeholders?.length
     });
     
-    if (!meetingId || !user?.id) {
-      console.warn('❌ Cannot save meeting: missing meetingId or user', { 
+    if (!meetingId) {
+      console.error('❌ Cannot save meeting: meetingId is missing or null', { 
         meetingId, 
+        meetingIdType: typeof meetingId,
+        meetingIdValue: meetingId,
+        meetingStartTime,
+        timeSinceStart: Date.now() - meetingStartTime
+      });
+      return null;
+    }
+    
+    if (!user?.id) {
+      console.error('❌ Cannot save meeting: user ID is missing', { 
+        user,
         userId: user?.id,
-        userObject: user,
         hasUser: !!user,
-        hasUserId: !!user?.id,
-        hasMeetingId: !!meetingId
+        userKeys: user ? Object.keys(user) : 'no user'
       });
       return null;
     }
