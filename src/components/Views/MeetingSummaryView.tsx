@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, FileText, Download, Share2, Calendar, Clock, Users, MessageSquare, Tag, Lightbulb, CheckCircle, ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { ArrowLeft, FileText, Download, Share2, Calendar, Clock, Users, MessageSquare, Tag, Lightbulb, CheckCircle, ChevronDown, ChevronRight, Plus, User } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseMeeting, DatabaseService } from '../../lib/database';
@@ -461,7 +461,7 @@ For detailed conversation analysis and specific stakeholder insights, please rev
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      {/* Header */}
+      {/* Header - Enhanced like RawTranscriptView */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
           <button
@@ -475,17 +475,17 @@ For detailed conversation analysis and specific stakeholder insights, please rev
               <FileText className="mr-3" size={32} />
               Meeting Summaries
             </h1>
-            <p className="text-gray-600">AI-generated analysis and insights for all meetings</p>
+            <p className="text-gray-600 dark:text-gray-400">AI-generated analysis and insights from all stakeholder meetings</p>
           </div>
         </div>
         
         <div className="flex items-center space-x-3">
-          <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
-            {allMeetings.length} meetings
+          <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+            {allMeetings.length} meeting{allMeetings.length !== 1 ? 's' : ''}
           </div>
           <button
             onClick={() => setCurrentView('raw-transcript')}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
           >
             <MessageSquare size={16} />
             <span>View Transcripts</span>
@@ -511,8 +511,8 @@ For detailed conversation analysis and specific stakeholder insights, please rev
             .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime())
             .map(([dateString, meetings]) => (
               <div key={dateString} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {/* Date Header */}
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+                {/* Date Header - Enhanced gradients like RawTranscriptView */}
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                       <Calendar className="mr-2 text-purple-600" size={20} />
@@ -525,138 +525,195 @@ For detailed conversation analysis and specific stakeholder insights, please rev
                 </div>
 
                 {/* Meetings List */}
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {meetings
                     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                     .map((meeting) => (
                       <div key={meeting.id} className="p-6">
-                                                 {/* Meeting Header - Non-clickable Info */}
-                         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                           <div className="flex items-center space-x-4">
-                             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                               <span className="text-white font-bold text-lg">
-                                 {meeting.project_name?.charAt(0) || 'M'}
-                               </span>
-                             </div>
-                             <div className="text-left">
-                               <h4 className="text-lg font-semibold text-gray-900">{meeting.project_name}</h4>
-                               <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                 <span className="flex items-center space-x-1">
-                                   <Clock size={14} />
-                                   <span>{formatTime(meeting.created_at)}</span>
-                                 </span>
-                                 <span className="flex items-center space-x-1">
-                                   <Clock size={14} />
-                                   <span>{formatDuration(meeting.duration)}</span>
-                                 </span>
-                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                   meeting.meeting_type === 'voice-only' 
-                                     ? 'bg-purple-100 text-purple-700'
-                                     : 'bg-blue-100 text-blue-700'
-                                 }`}>
-                                   {meeting.meeting_type === 'voice-only' ? 'Voice Only' : 'With Transcript'}
-                                 </span>
-                               </div>
-                             </div>
-                           </div>
-                           <div className="flex items-center space-x-3">
-                             {meeting.meeting_summary ? (
-                               <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                 AI Summary
-                               </span>
-                             ) : (
-                               <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                                 Auto Summary
-                               </span>
-                             )}
-                             <button
-                               onClick={() => toggleMeeting(meeting.id)}
-                               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 text-sm font-medium"
-                             >
-                               <FileText size={14} />
-                               <span>{expandedMeetings.has(meeting.id) ? 'Hide Summary' : 'See Summary'}</span>
-                               {expandedMeetings.has(meeting.id) ? (
-                                 <ChevronDown size={14} />
-                               ) : (
-                                 <ChevronRight size={14} />
-                               )}
-                             </button>
-                           </div>
-                         </div>
+                        {/* Meeting Header - Beautiful gradient like RawTranscriptView */}
+                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-900 dark:to-purple-900/20 rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                              <span className="text-white font-bold text-lg">
+                                {meeting.project_name?.charAt(0) || 'M'}
+                              </span>
+                            </div>
+                            <div className="text-left">
+                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{meeting.project_name}</h4>
+                              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                                <span className="flex items-center space-x-1">
+                                  <Clock size={14} />
+                                  <span>{formatTime(meeting.created_at)}</span>
+                                </span>
+                                <span className="flex items-center space-x-1">
+                                  <Clock size={14} />
+                                  <span>{formatDuration(meeting.duration)}</span>
+                                </span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  meeting.meeting_type === 'voice-only' 
+                                    ? 'bg-purple-100 text-purple-700'
+                                    : meeting.meeting_type === 'group'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-green-100 text-green-700'
+                                }`}>
+                                  {meeting.meeting_type === 'voice-only' ? 'Voice Meeting' : 
+                                   meeting.meeting_type === 'group' ? 'Group Meeting' : 'Individual Meeting'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            {meeting.meeting_summary ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                AI Summary
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                Auto Summary
+                              </span>
+                            )}
+                            <button
+                              onClick={() => toggleMeeting(meeting.id)}
+                              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 text-sm font-medium"
+                            >
+                              <FileText size={14} />
+                              <span>{expandedMeetings.has(meeting.id) ? 'Hide Summary' : 'View Summary'}</span>
+                              {expandedMeetings.has(meeting.id) ? (
+                                <ChevronDown size={14} />
+                              ) : (
+                                <ChevronRight size={14} />
+                              )}
+                            </button>
+                          </div>
+                        </div>
 
-                        {/* Expanded Content */}
+                        {/* Expanded Content - Enhanced layout */}
                         {expandedMeetings.has(meeting.id) && (
                           <div className="mt-6 space-y-6">
                             {/* Summary Content */}
-                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                              <div className="flex items-center justify-between mb-4">
-                                <h5 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                                  <FileText className="mr-2 text-purple-600" size={18} />
-                                  AI-Generated Summary
-                                </h5>
-                                <button
-                                  onClick={() => generatePDF(meeting)}
-                                  className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1 text-sm"
-                                >
-                                  <Download size={14} />
-                                  <span>PDF</span>
-                                </button>
-                              </div>
-                              
-                              {meeting.meeting_summary ? (
-                                <div className="space-y-6">
-                                  {renderFormattedSummary(meeting.meeting_summary)}
-                                </div>
-                              ) : (
-                                <div className="space-y-6">
-                                  {renderFormattedSummary(generateFallbackSummary(meeting))}
-                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <p className="text-blue-800 text-sm">
-                                      📝 This summary was automatically generated from the meeting transcript. 
-                                      For more detailed AI analysis, the full transcript is available in the Raw Transcript section.
-                                    </p>
+                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-between">
+                                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                    <FileText className="mr-2 text-purple-600" size={18} />
+                                    {meeting.meeting_summary ? 'AI-Generated Summary' : 'Auto-Generated Summary'}
+                                  </h5>
+                                  <div className="flex items-center space-x-2">
+                                    <button
+                                      onClick={() => generatePDF(meeting)}
+                                      className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1 text-sm"
+                                    >
+                                      <Download size={14} />
+                                      <span>Download PDF</span>
+                                    </button>
+                                    <button
+                                      onClick={() => setCurrentView('raw-transcript')}
+                                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-1 text-sm"
+                                    >
+                                      <MessageSquare size={14} />
+                                      <span>View Transcript</span>
+                                    </button>
                                   </div>
                                 </div>
-                              )}
+                              </div>
+                              
+                              <div className="p-6">
+                                {meeting.meeting_summary ? (
+                                  <div className="space-y-6">
+                                    {renderFormattedSummary(meeting.meeting_summary)}
+                                  </div>
+                                ) : (
+                                  <div className="space-y-6">
+                                    {renderFormattedSummary(generateFallbackSummary(meeting))}
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                      <p className="text-blue-800 dark:text-blue-200 text-sm">
+                                        📝 This summary was automatically generated from the meeting transcript. 
+                                        For more detailed AI analysis, the full transcript is available in the Raw Transcript section.
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
 
-                            {/* Topics and Insights */}
+                            {/* Enhanced Statistics Cards like RawTranscriptView */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-green-800 dark:text-green-200">Your Questions</p>
+                                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">{meeting.user_messages || 0}</p>
+                                  </div>
+                                  <User className="h-8 w-8 text-green-600" />
+                                </div>
+                              </div>
+                              
+                              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">Stakeholder Responses</p>
+                                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{meeting.ai_messages || 0}</p>
+                                  </div>
+                                  <Users className="h-8 w-8 text-blue-600" />
+                                </div>
+                              </div>
+                              
+                              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-purple-800 dark:text-purple-200">Total Exchanges</p>
+                                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{meeting.total_messages || 0}</p>
+                                  </div>
+                                  <MessageSquare className="h-8 w-8 text-purple-600" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Enhanced Topics and Insights */}
                             {((meeting.topics_discussed && meeting.topics_discussed.length > 0) || (meeting.key_insights && meeting.key_insights.length > 0)) && (
                               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Topics Discussed */}
                                 {meeting.topics_discussed && meeting.topics_discussed.length > 0 && (
-                                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                    <h6 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                                      <Tag className="mr-2 text-blue-600" size={16} />
-                                      Topics Discussed
-                                    </h6>
-                                    <div className="flex flex-wrap gap-2">
-                                      {meeting.topics_discussed.map((topic, index) => (
-                                        <span
-                                          key={index}
-                                          className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm border border-blue-200"
-                                        >
-                                          {topic}
-                                        </span>
-                                      ))}
+                                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                      <h6 className="font-semibold text-gray-900 dark:text-white flex items-center">
+                                        <Tag className="mr-2 text-blue-600" size={16} />
+                                        Topics Discussed
+                                      </h6>
+                                    </div>
+                                    <div className="p-4">
+                                      <div className="flex flex-wrap gap-2">
+                                        {meeting.topics_discussed.map((topic, index) => (
+                                          <span
+                                            key={index}
+                                            className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm border border-blue-200 dark:border-blue-800"
+                                          >
+                                            {topic}
+                                          </span>
+                                        ))}
+                                      </div>
                                     </div>
                                   </div>
                                 )}
 
                                 {/* Key Insights */}
                                 {meeting.key_insights && meeting.key_insights.length > 0 && (
-                                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                    <h6 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                                      <Lightbulb className="mr-2 text-yellow-600" size={16} />
-                                      Key Insights
-                                    </h6>
-                                    <div className="space-y-2">
-                                      {meeting.key_insights.map((insight, index) => (
-                                        <div key={index} className="flex items-start space-x-2">
-                                          <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
-                                          <p className="text-sm text-gray-700 leading-relaxed">{insight}</p>
-                                        </div>
-                                      ))}
+                                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                      <h6 className="font-semibold text-gray-900 dark:text-white flex items-center">
+                                        <Lightbulb className="mr-2 text-yellow-600" size={16} />
+                                        Key Insights
+                                      </h6>
+                                    </div>
+                                    <div className="p-4">
+                                      <div className="space-y-3">
+                                        {meeting.key_insights.map((insight, index) => (
+                                          <div key={index} className="flex items-start space-x-2">
+                                            <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{insight}</p>
+                                          </div>
+                                        ))}
+                                      </div>
                                     </div>
                                   </div>
                                 )}
