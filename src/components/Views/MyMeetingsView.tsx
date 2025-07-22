@@ -110,13 +110,20 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
         </div>
       </div>
 
-      {meeting.meeting_summary && (
-        <div className="mb-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-            {meeting.meeting_summary.slice(0, 150)}...
-          </p>
-        </div>
-      )}
+      {/* Always show meeting summary section */}
+      <div className="mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+          {meeting.meeting_summary && meeting.meeting_summary.trim() 
+            ? meeting.meeting_summary.slice(0, 150) + (meeting.meeting_summary.length > 150 ? '...' : '')
+            : `Meeting with ${meeting.stakeholder_names.join(', ')} regarding ${meeting.project_name}. Duration: ${Math.floor(meeting.duration / 60)} minutes, ${meeting.total_messages} messages exchanged. Click to view full details.`
+          }
+        </p>
+        {!meeting.meeting_summary || !meeting.meeting_summary.trim() && (
+          <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded mt-1 inline-block">
+            Summary being generated
+          </span>
+        )}
+      </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div className="flex items-center space-x-4">
@@ -175,7 +182,9 @@ export const MyMeetingsView: React.FC = () => {
 
     try {
       setLoading(true);
+      console.log('📋 MyMeetings - Loading ALL meetings for user:', user.id);
       const userMeetings = await DatabaseService.getUserMeetings(user.id);
+      console.log('📋 MyMeetings - Database returned', userMeetings.length, 'meetings');
       
       // Filter out meetings with missing or invalid data
       const validMeetings = userMeetings.filter(meeting => {
@@ -212,10 +221,17 @@ export const MyMeetingsView: React.FC = () => {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
       
-      console.log('📋 Loaded meetings:', {
-        database: validMeetings.length,
-        temporary: tempMeetings.length,
-        total: allMeetings.length
+      console.log('📋 MyMeetings - FINAL RESULT:', {
+        'Database meetings': validMeetings.length,
+        'Temporary meetings': tempMeetings.length,
+        'Total displayed': allMeetings.length,
+        'All meetings loaded': allMeetings.map(m => ({
+          id: m.id,
+          project: m.project_name,
+          date: m.created_at,
+          hasSummary: !!(m.meeting_summary && m.meeting_summary.trim()),
+          hasTranscript: !!(m.transcript && m.transcript.length > 0)
+        }))
       });
       
       setMeetings(allMeetings);
