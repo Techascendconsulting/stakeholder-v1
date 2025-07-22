@@ -112,11 +112,8 @@ export const MeetingSummaryView: React.FC = () => {
       
       setAllMeetings(allMeetingsData);
       
-      // Auto-expand the most recent meeting (or selected one if specified)
-      if (allMeetingsData.length > 0) {
-        const meetingToExpand = selectedMeeting?.id || allMeetingsData[0].id;
-        setExpandedMeetings(new Set([meetingToExpand]));
-      }
+      // Don't auto-expand any meetings - let users choose what to view
+      setExpandedMeetings(new Set());
     } catch (error) {
       console.error('Error loading meetings:', error);
       
@@ -140,7 +137,7 @@ export const MeetingSummaryView: React.FC = () => {
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           );
           setAllMeetings(sortedFallback);
-          setExpandedMeetings(new Set([sortedFallback[0].id]));
+          setExpandedMeetings(new Set()); // Don't auto-expand fallback meetings either
           console.log('📋 Using fallback localStorage meetings:', sortedFallback.length);
         } else {
           setAllMeetings([]);
