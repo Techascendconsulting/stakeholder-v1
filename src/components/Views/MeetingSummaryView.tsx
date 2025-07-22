@@ -164,6 +164,57 @@ export const MeetingSummaryView: React.FC = () => {
     setExpandedMeetings(newExpanded);
   };
 
+  // Generate fallback summary for meetings without AI summaries
+  const generateFallbackSummary = (meeting: any): string => {
+    const transcript = meeting.transcript || meeting.raw_chat || [];
+    const participants = meeting.stakeholder_names || [];
+    const duration = Math.floor(meeting.duration / 60) || 0;
+    const messageCount = transcript.length || 0;
+    
+    // Extract key information from transcript
+    const userMessages = transcript.filter((m: any) => m.speaker === 'user');
+    const stakeholderMessages = transcript.filter((m: any) => m.speaker !== 'user');
+    
+    // Generate structured summary
+    const summary = `## Executive Summary
+
+This meeting involved a ${duration}-minute stakeholder conversation for the ${meeting.project_name} project. The session included ${participants.length} stakeholder${participants.length !== 1 ? 's' : ''} and consisted of ${messageCount} total exchanges.
+
+## Meeting Overview
+
+**Date:** ${new Date(meeting.created_at).toLocaleDateString()}
+**Duration:** ${duration} minutes
+**Total Messages:** ${messageCount}
+**Participants:** ${participants.join(', ')}
+
+## Key Discussion Points
+
+The conversation covered various aspects of the ${meeting.project_name} project with active participation from all stakeholders. ${userMessages.length} questions and comments were raised by the business analyst, generating ${stakeholderMessages.length} responses from stakeholders.
+
+## Conversation Flow
+
+${participants.map(participant => {
+  const participantMessages = stakeholderMessages.filter((m: any) => m.stakeholderName === participant);
+  return `**${participant}:** Contributed ${participantMessages.length} message${participantMessages.length !== 1 ? 's' : ''} to the discussion`;
+}).join('\n')}
+
+## Meeting Metrics
+
+- **Engagement Level:** ${messageCount > 20 ? 'High' : messageCount > 10 ? 'Medium' : 'Low'} (${messageCount} total exchanges)
+- **Discussion Balance:** ${Math.round((userMessages.length / messageCount) * 100)}% questions, ${Math.round((stakeholderMessages.length / messageCount) * 100)}% responses
+- **Session Completion:** ${meeting.status === 'completed' ? 'Successfully completed' : 'In progress'}
+
+## Next Steps
+
+For detailed conversation analysis and specific stakeholder insights, please review the complete transcript in the Raw Transcript section. Consider scheduling follow-up sessions to dive deeper into any topics that require additional clarification.
+
+---
+
+*This summary was automatically generated from the meeting transcript. The complete conversation details are preserved in the raw transcript for your reference.*`;
+
+    return summary;
+  };
+
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -514,11 +565,11 @@ export const MeetingSummaryView: React.FC = () => {
                            <div className="flex items-center space-x-3">
                              {meeting.meeting_summary ? (
                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                 Summary Available
+                                 AI Summary
                                </span>
                              ) : (
-                               <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
-                                 No Summary
+                               <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                 Auto Summary
                                </span>
                              )}
                              <button
@@ -560,9 +611,14 @@ export const MeetingSummaryView: React.FC = () => {
                                   {renderFormattedSummary(meeting.meeting_summary)}
                                 </div>
                               ) : (
-                                <div className="text-center py-8">
-                                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                                  <p className="text-gray-600">No summary available for this meeting.</p>
+                                <div className="space-y-6">
+                                  {renderFormattedSummary(generateFallbackSummary(meeting))}
+                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <p className="text-blue-800 text-sm">
+                                      📝 This summary was automatically generated from the meeting transcript. 
+                                      For more detailed AI analysis, the full transcript is available in the Raw Transcript section.
+                                    </p>
+                                  </div>
                                 </div>
                               )}
                             </div>
