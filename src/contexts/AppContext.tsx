@@ -71,18 +71,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Track previous user state to detect actual logout vs initial loading
   const prevUser = useRef(user)
 
-  // Mark app as ready at HTML level to prevent any blink
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (typeof window !== 'undefined' && window.markAppReady) {
-        window.markAppReady()
-        console.log('✅ APP: Marked as ready at HTML level - no more blink!')
-      }
-    }, 100) // Small delay to ensure everything is rendered
-    
-    return () => clearTimeout(timer)
-  }, [user, currentView]) // Wait for user and view to be set
-  
   // Initialize currentView from localStorage or default to dashboard
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
     console.log('🔍 INIT: AppContext initializing currentView...')
@@ -218,6 +206,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentMeeting, setCurrentMeeting] = useState<Meeting | null>(null)
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [isLoading, setIsLoading] = useState(false)
+
+  // Mark app as ready at HTML level to prevent any blink
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && window.markAppReady) {
+        window.markAppReady()
+        console.log('✅ APP: Marked as ready at HTML level - no more blink!')
+      }
+    }, 100) // Small delay to ensure everything is rendered
+    
+    return () => clearTimeout(timer)
+  }, [user, currentView]) // Wait for user and view to be set
 
   // Clear view state on actual logout (not during initial load)
   useEffect(() => {
