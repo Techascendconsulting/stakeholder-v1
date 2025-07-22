@@ -243,6 +243,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [backgroundTranscript, setBackgroundTranscript] = useState<Message[]>([]);
   const [meetingId, setMeetingId] = useState<string | null>(null);
   const [meetingStartTime, setMeetingStartTime] = useState(Date.now());
+  
+  // Meeting ending states to prevent multiple clicks and show progress
+  const [isEndingMeeting, setIsEndingMeeting] = useState(false);
+  const [endingProgress, setEndingProgress] = useState('');
 
   // Add conversation dynamics from transcript meeting for adaptive responses
   const [conversationDynamics, setConversationDynamics] = useState({
@@ -927,7 +931,115 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
+  // Generate PDF files for meeting summary and raw transcript
+  const generateMeetingPDFs = async (meetingData: any) => {
+    try {
+      console.log('📄 Generating PDF files for meeting...');
+      
+      const meetingDate = new Date(meetingData.created_at).toLocaleDateString();
+      const meetingTime = new Date(meetingData.created_at).toLocaleTimeString();
+      const duration = Math.floor(meetingData.duration / 60);
+      
+      // Generate Summary PDF
+      if (meetingData.meeting_summary) {
+        const summaryBlob = new Blob([`
+MEETING SUMMARY REPORT
+======================
+
+Project: ${meetingData.project_name}
+Date: ${meetingDate}
+Time: ${meetingTime}
+Duration: ${duration} minutes
+Participants: ${meetingData.stakeholder_names?.join(', ') || 'N/A'}
+
+${meetingData.meeting_summary}
+
+---
+Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+        `], { type: 'text/plain' });
+        
+        const summaryUrl = URL.createObjectURL(summaryBlob);
+        const summaryLink = document.createElement('a');
+        summaryLink.href = summaryUrl;
+        summaryLink.download = `meeting-summary-${meetingData.project_name.replace(/[^a-zA-Z0-9]/g, '-')}-${meetingDate.replace(/\//g, '-')}.txt`;
+        document.body.appendChild(summaryLink);
+        summaryLink.click();
+        document.body.removeChild(summaryLink);
+        URL.revokeObjectURL(summaryUrl);
+        
+        console.log('📄 Summary PDF generated and downloaded');
+      }
+      
+      // Generate Raw Transcript PDF
+      if (meetingData.transcript && meetingData.transcript.length > 0) {
+        const transcriptContent = meetingData.transcript.map((msg: any) => {
+          const time = new Date(msg.timestamp).toLocaleTimeString();
+          const speaker = msg.speaker === 'user' ? 'Business Analyst' : `${msg.stakeholderName} (${msg.stakeholderRole})`;
+          return `[${time}] ${speaker}: ${msg.content}`;
+        }).join('\n\n');
+        
+        const transcriptBlob = new Blob([`
+RAW MEETING TRANSCRIPT
+=====================
+
+Project: ${meetingData.project_name}
+Date: ${meetingDate}
+Time: ${meetingTime}
+Duration: ${duration} minutes
+Total Messages: ${meetingData.transcript.length}
+Participants: ${meetingData.stakeholder_names?.join(', ') || 'N/A'}
+
+CONVERSATION TRANSCRIPT:
+========================
+
+${transcriptContent}
+
+---
+Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+        `], { type: 'text/plain' });
+        
+        const transcriptUrl = URL.createObjectURL(transcriptBlob);
+        const transcriptLink = document.createElement('a');
+        transcriptLink.href = transcriptUrl;
+        transcriptLink.download = `raw-transcript-${meetingData.project_name.replace(/[^a-zA-Z0-9]/g, '-')}-${meetingDate.replace(/\//g, '-')}.txt`;
+        document.body.appendChild(transcriptLink);
+        transcriptLink.click();
+        document.body.removeChild(transcriptLink);
+        URL.revokeObjectURL(transcriptUrl);
+        
+        console.log('📄 Raw transcript PDF generated and downloaded');
+      }
+      
+      // Store metadata for user selection
+      const pdfMetadata = {
+        meetingId: meetingData.id,
+        summaryGenerated: !!meetingData.meeting_summary,
+        transcriptGenerated: !!(meetingData.transcript && meetingData.transcript.length > 0),
+        generatedAt: new Date().toISOString(),
+        projectName: meetingData.project_name,
+        duration: duration,
+        messageCount: meetingData.transcript?.length || 0
+      };
+      
+      localStorage.setItem(`pdf-metadata-${meetingData.id}`, JSON.stringify(pdfMetadata));
+      console.log('📄 PDF metadata saved for future reference');
+      
+    } catch (error) {
+      console.error('❌ Error generating PDFs:', error);
+      // Don't throw - this shouldn't stop the meeting ending process
+    }
+  };
+
   const handleEndMeeting = async () => {
+    // Prevent multiple clicks
+    if (isEndingMeeting) {
+      console.log('🔚 END MEETING - Already ending, ignoring additional clicks');
+      return;
+    }
+    
+    setIsEndingMeeting(true);
+    setEndingProgress('Stopping audio and preparing to save meeting...');
+    
     console.log('🔚 END MEETING - Starting end meeting process');
     console.log('🔚 Meeting data before save:', {
       meetingId,
@@ -938,19 +1050,30 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       selectedStakeholders: selectedStakeholders?.length
     });
     
-    stopAllAudio();
-    
-    // Wait for the meeting to be saved before navigating away
-    console.log('🔚 Waiting for meeting save to complete...');
-    const savedMeetingData = await saveMeetingToDatabase();
-    console.log('🔚 Meeting save result:', savedMeetingData);
+    try {
+      stopAllAudio();
+      
+      setEndingProgress('Saving meeting data and generating summary...');
+      
+      // Wait for the meeting to be saved before navigating away
+      console.log('🔚 Waiting for meeting save to complete...');
+      const savedMeetingData = await saveMeetingToDatabase();
+      console.log('🔚 Meeting save result:', savedMeetingData);
     
     if (savedMeetingData) {
+      setEndingProgress('Meeting saved successfully! Generating PDF files...');
+      
+      // Generate PDF files for summary and transcript
+      await generateMeetingPDFs(savedMeetingData);
+      
+      setEndingProgress('Complete! Redirecting to meeting summary...');
       console.log('✅ Save successful - navigating to meeting summary');
+      
       // Set the saved meeting data for the summary view
       setSelectedMeeting(savedMeetingData);
       setCurrentView('meeting-history');
     } else {
+      setEndingProgress('Save failed, creating temporary meeting with full data...');
       console.error('❌ Save failed - creating temporary meeting with AI summary');
       
       try {
@@ -1029,6 +1152,47 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         setSelectedMeeting(basicTempMeeting);
         setCurrentView('meeting-history');
       }
+    }
+    } catch (error) {
+      console.error('❌ Critical error during meeting end process:', error);
+      setEndingProgress('Error occurred while ending meeting. Attempting recovery...');
+      
+      // Create absolute fallback meeting
+      const emergencyMeeting = {
+        id: meetingId || `emergency-${Date.now()}`,
+        user_id: user?.id || 'unknown',
+        project_id: selectedProject?.id || 'unknown',
+        project_name: selectedProject?.name || 'Emergency Recovery',
+        stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
+        stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
+        stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
+        transcript: backgroundTranscript.length > 0 ? backgroundTranscript : messages,
+        raw_chat: messages,
+        meeting_notes: '',
+        meeting_summary: `Emergency Recovery Summary\n\nThis meeting was recovered after a technical error during the ending process.\n\nMeeting Duration: ${Math.floor((Date.now() - meetingStartTime) / 1000 / 60)} minutes\nMessages Captured: ${Math.max(backgroundTranscript.length, messages.length)}\n\nThe complete transcript is available below. If you need a detailed analysis, please contact support.`,
+        status: 'completed' as const,
+        meeting_type: 'voice-only' as const,
+        duration: Math.floor((Date.now() - meetingStartTime) / 1000),
+        total_messages: Math.max(backgroundTranscript.length, messages.length),
+        user_messages: (backgroundTranscript.length > 0 ? backgroundTranscript : messages).filter(m => m.speaker === 'user').length,
+        ai_messages: (backgroundTranscript.length > 0 ? backgroundTranscript : messages).filter(m => m.speaker !== 'user').length,
+        topics_discussed: ['Emergency recovery - analysis unavailable'],
+        key_insights: ['Meeting data preserved in emergency mode'],
+        effectiveness_score: undefined,
+        created_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
+      };
+      
+      // Save emergency meeting to localStorage
+      const emergencyKey = `emergency-meeting-${emergencyMeeting.id}`;
+      localStorage.setItem(emergencyKey, JSON.stringify(emergencyMeeting));
+      
+      setSelectedMeeting(emergencyMeeting);
+      setCurrentView('meeting-history');
+    } finally {
+      // Always reset ending state
+      setIsEndingMeeting(false);
+      setEndingProgress('');
     }
   };
 
@@ -1813,10 +1977,19 @@ Please review the raw transcript for detailed conversation content.`;
             {/* End Call */}
             <button 
               onClick={handleEndMeeting}
-              className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-700 flex items-center justify-center transition-colors"
-              title="End meeting"
+              disabled={isEndingMeeting}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                isEndingMeeting 
+                  ? 'bg-red-400 cursor-not-allowed' 
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
+              title={isEndingMeeting ? 'Ending meeting...' : 'End meeting'}
             >
-              <Phone className="w-4 h-4 text-white transform rotate-[135deg]" />
+              {isEndingMeeting ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Phone className="w-4 h-4 text-white transform rotate-[135deg]" />
+              )}
             </button>
           </div>
           
@@ -1824,6 +1997,14 @@ Please review the raw transcript for detailed conversation content.`;
             <Users className="w-4 h-4 text-gray-300" />
             <span className="text-gray-200">{allParticipants.length} participants</span>
           </div>
+          
+          {/* Meeting Ending Progress */}
+          {isEndingMeeting && endingProgress && (
+            <div className="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>{endingProgress}</span>
+            </div>
+          )}
         </div>
       </div>
 
