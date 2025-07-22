@@ -1290,7 +1290,15 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
         meetingSummary,
         duration,
         topicsDiscussed,
-        keyInsights
+        keyInsights,
+        {
+          userId: user?.id,
+          projectId: selectedProject?.id,
+          projectName: selectedProject?.name,
+          stakeholderIds: selectedStakeholders?.map(s => s.id),
+          stakeholderNames: selectedStakeholders?.map(s => s.name),
+          stakeholderRoles: selectedStakeholders?.map(s => s.role)
+        }
       );
 
       console.log('💾 DatabaseService.saveMeetingData result:', success);

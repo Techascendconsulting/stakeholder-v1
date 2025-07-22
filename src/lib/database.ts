@@ -245,7 +245,15 @@ export class DatabaseService {
     meetingSummary: string,
     duration: number,
     topicsDiscussed: string[],
-    keyInsights: string[]
+    keyInsights: string[],
+    additionalMeetingData?: {
+      userId?: string;
+      projectId?: string;
+      projectName?: string;
+      stakeholderIds?: string[];
+      stakeholderNames?: string[];
+      stakeholderRoles?: string[];
+    }
   ): Promise<boolean> {
     try {
       console.log('🗃️ DATABASE - saveMeetingData called with:', {
@@ -278,25 +286,63 @@ export class DatabaseService {
         completed_at: new Date().toISOString()
       };
 
-      console.log('🗃️ DATABASE - Updating meeting with data:', updateData);
+      console.log('🗃️ DATABASE - Attempting to update meeting with data:', updateData);
 
-      const { error, data } = await supabase
+      // First try to update the existing meeting
+      const { error: updateError, data: updateResult } = await supabase
         .from('user_meetings')
         .update(updateData)
         .eq('id', meetingId)
         .select()
 
-      console.log('🗃️ DATABASE - Update result:', { error, data });
+      console.log('🗃️ DATABASE - Update result:', { error: updateError, data: updateResult });
 
-      if (error) throw error
-      
-      if (!data || data.length === 0) {
-        console.warn('🗃️ DATABASE - No rows updated. Meeting may not exist:', meetingId);
-        return false;
+      // If update succeeded
+      if (!updateError && updateResult && updateResult.length > 0) {
+        console.log('🗃️ DATABASE - Meeting successfully updated:', updateResult[0]);
+        return true;
       }
 
-      console.log('🗃️ DATABASE - Meeting successfully updated:', data[0]);
-      return true
+      // If update failed because meeting doesn't exist, try to create it
+      if (updateError || !updateResult || updateResult.length === 0) {
+        console.log('🗃️ DATABASE - Meeting does not exist, attempting to create new meeting');
+        
+        // Create meeting record with available data
+        const createData = {
+          id: meetingId,
+          user_id: additionalMeetingData?.userId || transcript[0]?.userId || 'unknown',
+          project_id: additionalMeetingData?.projectId || 'unknown',
+          project_name: additionalMeetingData?.projectName || 'Meeting Session',
+          stakeholder_ids: additionalMeetingData?.stakeholderIds || [],
+          stakeholder_names: additionalMeetingData?.stakeholderNames || [],
+          stakeholder_roles: additionalMeetingData?.stakeholderRoles || [],
+          meeting_type: 'voice-only',
+          created_at: new Date().toISOString(),
+          ...updateData // Include all the meeting data
+        };
+
+        console.log('🗃️ DATABASE - Creating new meeting with data:', createData);
+
+        const { error: createError, data: createResult } = await supabase
+          .from('user_meetings')
+          .insert(createData)
+          .select();
+
+        console.log('🗃️ DATABASE - Create result:', { error: createError, data: createResult });
+
+        if (createError) {
+          console.error('🗃️ DATABASE - Failed to create meeting:', createError);
+          return false;
+        }
+
+        if (createResult && createResult.length > 0) {
+          console.log('🗃️ DATABASE - Meeting successfully created:', createResult[0]);
+          return true;
+        }
+      }
+
+      console.warn('🗃️ DATABASE - Both update and create failed for meeting:', meetingId);
+      return false;
     } catch (error) {
       console.error('🗃️ DATABASE - Error saving meeting data:', error)
       return false
