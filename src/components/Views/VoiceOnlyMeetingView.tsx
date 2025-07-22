@@ -9,6 +9,7 @@ import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTT
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
+import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 
 interface ParticipantCardProps {
   participant: any;
@@ -55,19 +56,24 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
       {/* Video/Photo Content */}
       {isUser ? (
         <div className="w-full h-full flex items-center justify-center relative">
-          {/* User's profile photo or initials with larger display */}
-          <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
-            <UserAvatar 
-              userId={user?.id || ''} 
-              email={user?.email} 
-              size="xl" 
-              className="mb-2" 
-              showBorder={false}
+          {getUserProfilePhoto(user?.id || '') ? (
+            /* User's uploaded profile photo displayed as full photo like other participants */
+            <img
+              src={getUserProfilePhoto(user?.id || '') || ''}
+              alt={getUserDisplayName(user?.id || '', user?.email)}
+              className="w-full h-full object-cover"
             />
-            <div className="text-white text-xs font-medium opacity-75">
-              Business Analyst
+          ) : (
+            /* Fallback to gradient background with initials if no profile photo */
+            <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
+                {getUserDisplayName(user?.id || '', user?.email)?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+              <div className="text-white text-xs font-medium opacity-75">
+                Business Analyst
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ) : photo ? (
         <img
