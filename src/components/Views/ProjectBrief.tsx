@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Telescope as Scope, XCircle } from 'lucide-react'
+import { ArrowLeft, Target, AlertCircle, GitBranch, CheckCircle, Users, ArrowRight, Building, Telescope as Scope, XCircle, Clock, DollarSign, TrendingUp, BarChart3 } from 'lucide-react'
 
 const ProjectBrief: React.FC = () => {
   const { selectedProject, setCurrentView } = useApp()
@@ -84,6 +84,20 @@ const ProjectBrief: React.FC = () => {
 
   const { inScope, outOfScope, systemsInvolved } = extractScopeInfo()
 
+  // Get business impact data (moved from ProjectsView)
+  const getBusinessImpact = (projectId: string) => {
+    const impacts = {
+      'proj-1': { value: '£1.8M', type: 'Annual Cost Savings', priority: 'High', roi: '340%' },
+      'proj-2': { value: '£250K', type: 'Process Efficiency', priority: 'Critical', roi: '180%' },
+      'proj-3': { value: '£3.3M', type: 'Revenue Impact', priority: 'High', roi: '420%' },
+      'proj-4': { value: '£140K', type: 'Operational Savings', priority: 'Medium', roi: '120%' },
+      'proj-5': { value: '£300K', type: 'Strategic Investment', priority: 'High', roi: '200%' }
+    }
+    return impacts[projectId as keyof typeof impacts] || { value: 'TBD', type: 'Business Value', priority: 'Medium', roi: 'TBD' }
+  }
+
+  const businessImpact = getBusinessImpact(selectedProject.id)
+
   // Extract stakeholder information
   const stakeholderRoles = [
     { role: "Operations Leadership", concern: "Process efficiency and resource optimization" },
@@ -114,15 +128,64 @@ const ProjectBrief: React.FC = () => {
             <div className="flex items-center justify-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center space-x-2">
                 <Building className="w-4 h-4" />
-                <span>Duration: {selectedProject.duration}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Target className="w-4 h-4" />
                 <span>Complexity: {selectedProject.complexity}</span>
               </div>
             </div>
           </div>
           <p className="text-lg text-gray-700 dark:text-gray-300 text-center leading-relaxed">{selectedProject.description}</p>
+        </div>
+
+        {/* Project Metrics */}
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl shadow-sm border border-indigo-200 dark:border-indigo-800 p-8 mb-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
+              <BarChart3 className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Project Overview</h2>
+            <p className="text-gray-600 dark:text-gray-400">Key metrics and business impact for this training scenario</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Duration */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Duration</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedProject.duration}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Training Timeline</p>
+            </div>
+
+            {/* Business Impact */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <DollarSign className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Business Impact</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{businessImpact.value}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{businessImpact.type}</p>
+            </div>
+
+            {/* Stakeholders */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Stakeholders</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">5</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Key Roles</p>
+            </div>
+
+            {/* Expected ROI */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/50 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Expected ROI</h3>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{businessImpact.roi}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Return on Investment</p>
+            </div>
+          </div>
         </div>
 
         {/* Project Brief Sections */}
