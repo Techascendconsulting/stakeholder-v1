@@ -64,29 +64,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   // Initialize currentView from localStorage or default to dashboard
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
+    console.log('🔍 INIT: AppContext initializing currentView...')
     try {
       const savedView = localStorage.getItem('currentView')
+      console.log('🔍 INIT: Found saved view in localStorage:', savedView)
+      
       // Validate that the saved view is a valid AppView
       const validViews: AppView[] = ['dashboard', 'projects', 'meeting-history', 'deliverables', 'voice-meeting', 'meeting-summary', 'raw-transcript']
       if (savedView && validViews.includes(savedView as AppView)) {
-        console.log('🔄 Restored view from localStorage:', savedView)
+        console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
         return savedView as AppView
+      } else {
+        console.log('⚠️ INIT: Invalid or missing saved view, defaulting to dashboard. savedView:', savedView)
+        return 'dashboard'
       }
-      return 'dashboard'
     } catch (error) {
-      console.log('Could not load saved view, defaulting to dashboard')
+      console.log('❌ INIT: Error loading saved view, defaulting to dashboard:', error)
       return 'dashboard'
     }
   })
 
   // Custom setCurrentView that handles localStorage automatically
   const setCurrentView = (view: AppView) => {
-    console.log('🔄 Navigating to view:', view)
+    console.log('🔄 NAVIGATE: setCurrentView called with view:', view)
+    console.log('🔄 NAVIGATE: Previous view was:', currentView)
     setCurrentViewState(view)
     try {
       localStorage.setItem('currentView', view)
+      console.log('💾 NAVIGATE: Saved view to localStorage:', view)
     } catch (error) {
-      console.log('Could not save view to localStorage:', error)
+      console.log('❌ NAVIGATE: Could not save view to localStorage:', error)
     }
   }
   
@@ -99,14 +106,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(false)
   const [customProject, setCustomProject] = useState<Project | null>(null)
 
-  // Clear view state on user logout
+  // Clear view state on user logout (but not on initial load)
   useEffect(() => {
-    if (!user) {
-      console.log('👋 User logged out, clearing saved view')
+    console.log('🔍 USER_EFFECT: useEffect triggered with user:', user ? 'logged in' : 'not logged in')
+    console.log('🔍 USER_EFFECT: Current view is:', currentView)
+    
+    // Only clear if user explicitly becomes null (logout), not during initial undefined state
+    if (user === null) {
+      console.log('👋 USER_EFFECT: User logged out, clearing saved view')
       localStorage.removeItem('currentView')
       setCurrentViewState('dashboard')
+    } else if (user) {
+      console.log('✅ USER_EFFECT: User is logged in, preserving current view:', currentView)
+    } else {
+      console.log('⏳ USER_EFFECT: User state is undefined (still loading), doing nothing')
     }
-  }, [user])
+  }, [user, currentView])
 
   // Mock user progress data
   const userProgress = {

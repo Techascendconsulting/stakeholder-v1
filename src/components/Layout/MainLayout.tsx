@@ -37,14 +37,17 @@ const MainLayout: React.FC = () => {
   }
 
   const renderView = () => {
-    console.log('🔍 DEBUG: MainLayout renderView called with currentView:', currentView)
-    console.log('🔍 DEBUG: selectedProject:', selectedProject?.name || 'null')
-    console.log('🔍 DEBUG: selectedStakeholders count:', selectedStakeholders?.length || 0)
+    console.log('🔍 RENDER: MainLayout renderView called with currentView:', currentView)
+    console.log('🔍 RENDER: selectedProject:', selectedProject?.name || 'null')
+    console.log('🔍 RENDER: selectedStakeholders count:', selectedStakeholders?.length || 0)
+    console.log('🔍 RENDER: About to render view for:', currentView)
     
     switch (currentView) {
       case 'dashboard':
+        console.log('🏠 RENDER: Rendering Dashboard component')
         return <Dashboard />
       case 'guided-practice-hub':
+        console.log('🎯 RENDER: Rendering GuidedPracticeHub component')
         return <GuidedPracticeHub />
       case 'projects':
         return <ProjectsView />
