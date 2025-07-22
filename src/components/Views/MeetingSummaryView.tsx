@@ -38,34 +38,110 @@ export const MeetingSummaryView: React.FC = () => {
     try {
       setLoading(true);
       
-      // If we have a selected meeting passed in (from voice meeting), prioritize it
-      if (selectedMeeting && selectedMeeting.id) {
-        console.log('🎯 Displaying selected meeting:', selectedMeeting);
-        setAllMeetings([selectedMeeting]);
-        setExpandedMeetings(new Set([selectedMeeting.id]));
-        setLoading(false);
-        return;
+      // ALWAYS load ALL meetings - never just show one
+      console.log('📋 Loading ALL meetings for summary view');
+      
+      // Load from database
+      const databaseMeetings = await DatabaseService.getUserMeetings(user.id);
+      
+      // Load from localStorage using the same strategy as MyMeetingsView
+      const localMeetings: any[] = [];
+      
+      // Strategy 1: Load from meetings index
+      try {
+        const meetingsIndex = JSON.parse(localStorage.getItem('meetings_index') || '[]');
+        for (const meetingId of meetingsIndex) {
+          let meetingData = null;
+          try {
+            const mainKey = `stored_meeting_${meetingId}`;
+            meetingData = JSON.parse(localStorage.getItem(mainKey) || 'null');
+          } catch (e) {
+            try {
+              const backupKeys = Object.keys(localStorage).filter(k => k.includes(meetingId) && k.startsWith('backup_meeting_'));
+              if (backupKeys.length > 0) {
+                meetingData = JSON.parse(localStorage.getItem(backupKeys[0]) || 'null');
+              }
+            } catch (e2) {}
+          }
+          
+          if (meetingData && meetingData.user_id === user.id) {
+            localMeetings.push(meetingData);
+          }
+        }
+      } catch (error) {
+        console.warn('Error loading from meetings index:', error);
       }
       
-      // Otherwise load from database
-      const meetings = await DatabaseService.getUserMeetings(user.id);
-      const validMeetings = meetings.filter(meeting => 
-        meeting && meeting.id && meeting.project_name && meeting.created_at
-      );
-      setAllMeetings(validMeetings);
+      // Strategy 2: Scan localStorage keys
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_') || key.startsWith('temp-meeting-'))) {
+          try {
+            const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
+            if (meetingData && meetingData.user_id === user.id) {
+              const alreadyLoaded = localMeetings.find(m => m.id === meetingData.id);
+              if (!alreadyLoaded) {
+                localMeetings.push(meetingData);
+              }
+            }
+          } catch (error) {
+            console.warn('Error parsing localStorage meeting:', key, error);
+          }
+        }
+      }
       
-      // Auto-expand the selected meeting if it exists
-      if (selectedMeeting) {
-        setExpandedMeetings(new Set([selectedMeeting.id]));
+      // Combine all meetings and remove duplicates
+      const allMeetingsData = [...databaseMeetings, ...localMeetings]
+        .filter((meeting, index, self) => 
+          meeting && meeting.id && meeting.project_name && meeting.created_at &&
+          index === self.findIndex(m => m.id === meeting.id)
+        )
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      
+      console.log('📋 MeetingSummaryView loaded:', {
+        database: databaseMeetings.length,
+        localStorage: localMeetings.length,
+        total: allMeetingsData.length
+      });
+      
+      setAllMeetings(allMeetingsData);
+      
+      // Auto-expand the most recent meeting (or selected one if specified)
+      if (allMeetingsData.length > 0) {
+        const meetingToExpand = selectedMeeting?.id || allMeetingsData[0].id;
+        setExpandedMeetings(new Set([meetingToExpand]));
       }
     } catch (error) {
       console.error('Error loading meetings:', error);
       
-      // If database fails but we have a selected meeting, use it
-      if (selectedMeeting && selectedMeeting.id) {
-        console.log('📋 Database failed, using selected meeting:', selectedMeeting);
-        setAllMeetings([selectedMeeting]);
-        setExpandedMeetings(new Set([selectedMeeting.id]));
+      // Fallback: try to load just from localStorage if database fails
+      try {
+        const fallbackMeetings: any[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
+            try {
+              const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
+              if (meetingData && meetingData.user_id === user.id) {
+                fallbackMeetings.push(meetingData);
+              }
+            } catch (e) {}
+          }
+        }
+        
+        if (fallbackMeetings.length > 0) {
+          const sortedFallback = fallbackMeetings.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          setAllMeetings(sortedFallback);
+          setExpandedMeetings(new Set([sortedFallback[0].id]));
+          console.log('📋 Using fallback localStorage meetings:', sortedFallback.length);
+        } else {
+          setAllMeetings([]);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback loading also failed:', fallbackError);
+        setAllMeetings([]);
       }
     } finally {
       setLoading(false);
