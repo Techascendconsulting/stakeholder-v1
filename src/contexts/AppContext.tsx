@@ -209,9 +209,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Mark hydration complete after initial localStorage restoration
   useEffect(() => {
-    // Mark as hydrated immediately since localStorage is synchronous
+    // Mark as hydrated immediately - no delays
     setIsHydrated(true)
-    console.log('✅ HYDRATION: App hydration complete, no more blink effect')
+    console.log('✅ HYDRATION: App hydration complete immediately')
   }, [])
 
   // Clear view state on actual logout (not during initial load)
