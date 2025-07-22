@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { UserAvatar } from '../Common/UserAvatar';
 
 interface SidebarProps {
   className?: string;
@@ -151,9 +152,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm group`}
             title={isCollapsed ? user?.email?.split('@')[0] || 'User' : ''}
           >
-            <div className={`${isCollapsed ? 'w-10 h-10' : 'w-8 h-8'} bg-white/20 rounded-full flex items-center justify-center transition-all duration-200`}>
-              <User className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} text-white`} />
-            </div>
+            <UserAvatar 
+              userId={user?.id || ''} 
+              email={user?.email} 
+              size={isCollapsed ? 'lg' : 'md'} 
+              className="transition-all duration-200" 
+              showBorder={false}
+            />
             {!isCollapsed && (
               <>
                 <div className="flex-1 min-w-0 text-left">

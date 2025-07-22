@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseMeeting, DatabaseService } from '../../lib/database';
 import { Message } from '../../types';
 import jsPDF from 'jspdf';
+import { UserAvatar } from '../Common/UserAvatar';
 
 export const RawTranscriptView: React.FC = () => {
   const { setCurrentView, selectedMeeting } = useApp();
@@ -171,28 +172,45 @@ export const RawTranscriptView: React.FC = () => {
     
     return (
       <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`max-w-[80%] rounded-xl p-4 shadow-sm ${
-          isUser 
-            ? 'bg-indigo-600 text-white' 
-            : 'bg-white border border-gray-200'
-        }`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className={`text-xs font-medium ${isUser ? 'text-indigo-200' : 'text-gray-500'}`}>
-              {isUser ? 'Business Analyst' : stakeholderName?.charAt(0)?.toUpperCase() + (stakeholderName?.slice(1) || '')}
-            </span>
-            {message.timestamp && (
-              <span className={`text-xs ${isUser ? 'text-indigo-200' : 'text-gray-400'}`}>
-                {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true
-                })}
+        <div className={`flex items-start space-x-3 max-w-[80%] ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+          {/* Avatar */}
+          {isUser ? (
+            <UserAvatar 
+              userId={user?.id || ''} 
+              email={user?.email} 
+              size="sm" 
+              className="flex-shrink-0 mt-1"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-1">
+              {stakeholderName?.charAt(0)?.toUpperCase() || 'S'}
+            </div>
+          )}
+          
+          {/* Message Content */}
+          <div className={`rounded-xl p-4 shadow-sm ${
+            isUser 
+              ? 'bg-indigo-600 text-white' 
+              : 'bg-white border border-gray-200'
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-xs font-medium ${isUser ? 'text-indigo-200' : 'text-gray-500'}`}>
+                {isUser ? 'Business Analyst' : stakeholderName?.charAt(0)?.toUpperCase() + (stakeholderName?.slice(1) || '')}
               </span>
-            )}
+              {message.timestamp && (
+                <span className={`text-xs ${isUser ? 'text-indigo-200' : 'text-gray-400'}`}>
+                  {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  })}
+                </span>
+              )}
+            </div>
+            <p className={`text-sm leading-relaxed ${isUser ? 'text-white' : 'text-gray-800'}`}>
+              {message.content}
+            </p>
           </div>
-          <p className={`text-sm leading-relaxed ${isUser ? 'text-white' : 'text-gray-800'}`}>
-            {message.content}
-          </p>
         </div>
       </div>
     );

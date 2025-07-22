@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { DatabaseService } from '../../lib/database';
+import { UserAvatar } from '../Common/UserAvatar';
 
 interface ParticipantCardProps {
   participant: any;
@@ -19,6 +21,8 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   isCurrentSpeaker, 
   isUser = false 
 }) => {
+  const { user } = useAuth();
+  
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
@@ -49,7 +53,23 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
       )}
       
       {/* Video/Photo Content */}
-      {!isUser && photo ? (
+      {isUser ? (
+        <div className="w-full h-full flex items-center justify-center relative">
+          {/* User's profile photo or initials with larger display */}
+          <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
+            <UserAvatar 
+              userId={user?.id || ''} 
+              email={user?.email} 
+              size="xl" 
+              className="mb-2" 
+              showBorder={false}
+            />
+            <div className="text-white text-xs font-medium opacity-75">
+              Business Analyst
+            </div>
+          </div>
+        </div>
+      ) : photo ? (
         <img
           src={photo}
           alt={participant.name}

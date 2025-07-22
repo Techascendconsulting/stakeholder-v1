@@ -3,6 +3,7 @@ import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
+import { getUserProfile, updateUserProfile } from '../../utils/profileUtils';
 
 export const ProfileView: React.FC = () => {
   const { user } = useAuth();
@@ -33,6 +34,10 @@ export const ProfileView: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Photo state
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [photoLoading, setPhotoLoading] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -69,6 +74,7 @@ export const ProfileView: React.FC = () => {
         setEmailNotifications(profile.emailNotifications !== false);
         setMeetingReminders(profile.meetingReminders !== false);
         setWeeklyDigest(profile.weeklyDigest || false);
+        setProfilePhoto(profile.profilePhoto || null);
       }
     }
   };
@@ -89,6 +95,7 @@ export const ProfileView: React.FC = () => {
         emailNotifications,
         meetingReminders,
         weeklyDigest,
+        profilePhoto,
         updatedAt: new Date().toISOString()
       };
       
@@ -156,6 +163,57 @@ export const ProfileView: React.FC = () => {
     }
   };
 
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Please select an image smaller than 5MB.');
+      return;
+    }
+
+    setPhotoLoading(true);
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setProfilePhoto(result);
+      setPhotoLoading(false);
+      
+      // Auto-save photo
+      if (user?.id) {
+        const profile = JSON.parse(localStorage.getItem(`profile-${user.id}`) || '{}');
+        profile.profilePhoto = result;
+        profile.updatedAt = new Date().toISOString();
+        localStorage.setItem(`profile-${user.id}`, JSON.stringify(profile));
+      }
+    };
+    
+    reader.onerror = () => {
+      setPhotoLoading(false);
+      alert('Error reading file. Please try again.');
+    };
+    
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    setProfilePhoto(null);
+    if (user?.id) {
+      const profile = JSON.parse(localStorage.getItem(`profile-${user.id}`) || '{}');
+      profile.profilePhoto = null;
+      profile.updatedAt = new Date().toISOString();
+      localStorage.setItem(`profile-${user.id}`, JSON.stringify(profile));
+    }
+  };
+
   const formatJoinDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -209,12 +267,35 @@ export const ProfileView: React.FC = () => {
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-8 mb-8 text-white">
         <div className="flex items-center space-x-6">
           <div className="relative">
-            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold">
-              {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-            <button className="absolute bottom-0 right-0 w-8 h-8 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors">
-              <Camera size={16} />
-            </button>
+            {profilePhoto ? (
+              <img
+                src={profilePhoto}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-4 border-white/20"
+              />
+            ) : (
+              <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold">
+                {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+              id="photo-upload"
+              disabled={photoLoading}
+            />
+            <label
+              htmlFor="photo-upload"
+              className="absolute bottom-0 right-0 w-8 h-8 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              {photoLoading ? (
+                <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Camera size={16} />
+              )}
+            </label>
           </div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold mb-1">
@@ -259,6 +340,66 @@ export const ProfileView: React.FC = () => {
         <div className="p-6">
           {activeTab === 'profile' && (
             <div className="space-y-6">
+              {/* Profile Photo Section */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Camera className="mr-2 text-indigo-600" size={20} />
+                  Profile Photo
+                </h3>
+                <div className="flex items-center space-x-6">
+                  <div className="relative">
+                    {profilePhoto ? (
+                      <img
+                        src={profilePhoto}
+                        alt="Profile"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-2xl font-bold text-gray-600">
+                        {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-600 mb-3">
+                      Upload a profile photo to personalize your meetings and make them more engaging.
+                    </p>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        id="photo-upload-profile"
+                        disabled={photoLoading}
+                      />
+                      <label
+                        htmlFor="photo-upload-profile"
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer flex items-center space-x-2 disabled:bg-gray-400"
+                      >
+                        {photoLoading ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Camera size={16} />
+                        )}
+                        <span>{photoLoading ? 'Uploading...' : profilePhoto ? 'Change Photo' : 'Upload Photo'}</span>
+                      </label>
+                      {profilePhoto && (
+                        <button
+                          onClick={removePhoto}
+                          className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Supports JPG, PNG, GIF. Max size: 5MB
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
