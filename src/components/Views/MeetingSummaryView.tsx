@@ -73,6 +73,115 @@ export const MeetingSummaryView: React.FC = () => {
     return `${minutes}m`;
   };
 
+  // Render formatted summary with proper styling
+  const renderFormattedSummary = (summary: string) => {
+    const sections = summary.split(/^## /gm).filter(section => section.trim());
+    
+    return sections.map((section, index) => {
+      const lines = section.trim().split('\n');
+      const title = lines[0].replace(/^#+\s*/, '').trim();
+      const content = lines.slice(1).join('\n').trim();
+      
+      // Skip if no content
+      if (!content && index > 0) return null;
+      
+      // Handle the main title differently
+      if (index === 0 && !title.includes('Meeting Summary')) {
+        return (
+          <div key={index} className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
+            <div className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
+              {section.trim()}
+            </div>
+          </div>
+        );
+      }
+      
+      // Render sections with icons and styling
+      const getSectionIcon = (sectionTitle: string) => {
+        const lowerTitle = sectionTitle.toLowerCase();
+        if (lowerTitle.includes('executive') || lowerTitle.includes('summary')) return '📋';
+        if (lowerTitle.includes('discussion') || lowerTitle.includes('topics')) return '💬';
+        if (lowerTitle.includes('stakeholder') || lowerTitle.includes('insights')) return '👥';
+        if (lowerTitle.includes('current') || lowerTitle.includes('analysis')) return '🔍';
+        if (lowerTitle.includes('challenge') || lowerTitle.includes('pain')) return '⚠️';
+        if (lowerTitle.includes('requirement') || lowerTitle.includes('needs')) return '📝';
+        if (lowerTitle.includes('next') || lowerTitle.includes('action')) return '✅';
+        if (lowerTitle.includes('detail') || lowerTitle.includes('meeting')) return '📅';
+        if (lowerTitle.includes('participant')) return '👤';
+        return '📄';
+      };
+      
+      const getSectionStyles = (sectionTitle: string) => {
+        const lowerTitle = sectionTitle.toLowerCase();
+        if (lowerTitle.includes('executive') || lowerTitle.includes('summary')) {
+          return {
+            headerBg: 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20',
+            textColor: 'text-blue-900 dark:text-blue-100'
+          };
+        }
+        if (lowerTitle.includes('discussion') || lowerTitle.includes('topics')) {
+          return {
+            headerBg: 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20',
+            textColor: 'text-green-900 dark:text-green-100'
+          };
+        }
+        if (lowerTitle.includes('stakeholder') || lowerTitle.includes('insights')) {
+          return {
+            headerBg: 'bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20',
+            textColor: 'text-purple-900 dark:text-purple-100'
+          };
+        }
+        if (lowerTitle.includes('current') || lowerTitle.includes('analysis')) {
+          return {
+            headerBg: 'bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20',
+            textColor: 'text-indigo-900 dark:text-indigo-100'
+          };
+        }
+        if (lowerTitle.includes('challenge') || lowerTitle.includes('pain')) {
+          return {
+            headerBg: 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20',
+            textColor: 'text-red-900 dark:text-red-100'
+          };
+        }
+        if (lowerTitle.includes('requirement') || lowerTitle.includes('needs')) {
+          return {
+            headerBg: 'bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20',
+            textColor: 'text-orange-900 dark:text-orange-100'
+          };
+        }
+        if (lowerTitle.includes('next') || lowerTitle.includes('action')) {
+          return {
+            headerBg: 'bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20',
+            textColor: 'text-emerald-900 dark:text-emerald-100'
+          };
+        }
+        return {
+          headerBg: 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20',
+          textColor: 'text-gray-900 dark:text-gray-100'
+        };
+      };
+      
+      const styles = getSectionStyles(title);
+      const icon = getSectionIcon(title);
+      
+      return (
+        <div key={index} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+          <div className={`${styles.headerBg} px-6 py-4 border-b border-gray-200 dark:border-gray-700`}>
+            <h3 className={`text-lg font-semibold ${styles.textColor} flex items-center`}>
+              <span className="mr-3 text-xl">{icon}</span>
+              {title}
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+              {content}
+            </div>
+          </div>
+        </div>
+      );
+    }).filter(Boolean);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -347,12 +456,8 @@ export const MeetingSummaryView: React.FC = () => {
                               </div>
                               
                               {meeting.meeting_summary ? (
-                                <div className="prose max-w-none">
-                                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border-l-4 border-purple-500">
-                                    <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                                      {meeting.meeting_summary}
-                                    </div>
-                                  </div>
+                                <div className="space-y-6">
+                                  {renderFormattedSummary(meeting.meeting_summary)}
                                 </div>
                               ) : (
                                 <div className="text-center py-8">
