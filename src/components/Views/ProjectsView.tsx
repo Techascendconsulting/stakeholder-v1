@@ -161,7 +161,7 @@ const ProjectsView: React.FC = () => {
         </div>
 
         {/* Project Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
           {filteredProjects.map((project) => {
             const complexityConfig = getComplexityConfig(project.complexity)
             const businessImpact = getBusinessImpact(project.id)
@@ -214,49 +214,6 @@ const ProjectsView: React.FC = () => {
                           </span>
                         )}
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Project Preview */}
-                <div className="px-8 py-6 bg-gradient-to-r from-slate-50/50 to-indigo-50/30 dark:from-gray-900/50 dark:to-indigo-900/20 border-y border-slate-100 dark:border-gray-700">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
-                      <Building2 className="w-8 h-8 text-white" />
-                    </div>
-                    <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Professional Training Scenario</h4>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Realistic business environment with authentic stakeholders, challenges, and objectives designed by industry experts.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Learning Outcomes */}
-                <div className="px-8 py-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h4 className="text-lg font-bold text-slate-900 dark:text-white">What You'll Master</h4>
-                    <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-semibold rounded-full">
-                      {project.complexity} Level
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-3">
-                    <div className="flex items-center space-x-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-100 dark:border-emerald-800">
-                      <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-slate-700 dark:text-slate-300 font-medium">Advanced stakeholder interview techniques</span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-slate-700 dark:text-slate-300 font-medium">Requirements elicitation & documentation</span>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-100 dark:border-purple-800">
-                      <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-slate-700 dark:text-slate-300 font-medium">Professional deliverable creation</span>
                     </div>
                   </div>
                 </div>
