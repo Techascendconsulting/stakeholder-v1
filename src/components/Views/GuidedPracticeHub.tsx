@@ -76,11 +76,34 @@ const GuidedPracticeHub: React.FC = () => {
                 <span className="text-slate-700 dark:text-slate-300 font-medium">Safe practice environment</span>
               </div>
             </div>
+
+            {/* Quick Access for Returning Users */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              <button
+                onClick={handleStartPracticing}
+                className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-colors shadow-lg hover:shadow-xl"
+              >
+                <span>Skip to Projects</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                Already familiar? Jump straight to project selection
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Divider */}
+        <div className="flex items-center justify-center mb-12">
+          <div className="flex items-center space-x-4">
+            <div className="h-px bg-slate-300 dark:bg-gray-600 w-16"></div>
+            <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Learn More</span>
+            <div className="h-px bg-slate-300 dark:bg-gray-600 w-16"></div>
+          </div>
+        </div>
+
         {/* Video Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 mb-12 shadow-sm">
           <div className="text-center">
