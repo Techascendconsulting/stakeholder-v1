@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff, Sun, Moon, Monitor } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { supabase } from '../../lib/supabase';
 import { getUserProfile, updateUserProfile } from '../../utils/profileUtils';
 
 export const ProfileView: React.FC = () => {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'notifications' | 'security'>('profile');
 
@@ -17,7 +19,6 @@ export const ProfileView: React.FC = () => {
   const [company, setCompany] = useState('');
 
   // Preferences state
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
   const [language, setLanguage] = useState('en');
   const [timezone, setTimezone] = useState('UTC');
 
@@ -68,7 +69,6 @@ export const ProfileView: React.FC = () => {
         setBio(profile.bio || '');
         setRole(profile.role || 'Business Analyst');
         setCompany(profile.company || '');
-        setTheme(profile.theme || 'light');
         setLanguage(profile.language || 'en');
         setTimezone(profile.timezone || 'UTC');
         setEmailNotifications(profile.emailNotifications !== false);
@@ -89,7 +89,6 @@ export const ProfileView: React.FC = () => {
         bio,
         role,
         company,
-        theme,
         language,
         timezone,
         emailNotifications,
@@ -256,11 +255,50 @@ export const ProfileView: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-        <p className="text-gray-600">
-          Manage your account settings and preferences
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Profile Settings</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage your account settings and preferences
+          </p>
+        </div>
+        
+        {/* Theme Toggle */}
+        <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+          <button
+            onClick={() => setTheme('light')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'light' 
+                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+            title="Light mode"
+          >
+            <Sun size={18} />
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'dark' 
+                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+            title="Dark mode"
+          >
+            <Moon size={18} />
+          </button>
+          <button
+            onClick={() => setTheme('system')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'system' 
+                ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+            title="System preference"
+          >
+            <Monitor size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Profile Header Card */}
@@ -314,8 +352,8 @@ export const ProfileView: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -467,18 +505,21 @@ export const ProfileView: React.FC = () => {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Theme
                   </label>
                   <select
                     value={theme}
-                    onChange={(e) => setTheme(e.target.value as any)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="system">System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="system">💻 System</option>
                   </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {theme === 'system' ? 'Matches your device preference' : `Always use ${theme} mode`}
+                  </p>
                 </div>
 
                 <div>
