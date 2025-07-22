@@ -53,8 +53,8 @@ const ProjectsView: React.FC = () => {
         }
       default:
         return {
-          color: 'bg-slate-50 text-slate-700 border border-slate-200',
-          badge: 'bg-slate-100 text-slate-800',
+          color: 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+          badge: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200',
           description: 'Standard Level'
         }
     }
@@ -74,13 +74,13 @@ const ProjectsView: React.FC = () => {
   const getPriorityConfig = (priority: string) => {
     switch (priority) {
       case 'Critical':
-        return { color: 'bg-red-100 text-red-700 border-red-200' }
+        return { color: 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700' }
       case 'High':
-        return { color: 'bg-orange-100 text-orange-700 border-orange-200' }
+        return { color: 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700' }
       case 'Medium':
-        return { color: 'bg-blue-100 text-blue-700 border-blue-200' }
+        return { color: 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700' }
       default:
-        return { color: 'bg-slate-100 text-slate-700 border-slate-200' }
+        return { color: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' }
     }
   }
 
@@ -219,45 +219,45 @@ const ProjectsView: React.FC = () => {
                 </div>
 
                 {/* Project Metrics */}
-                <div className="px-8 py-6 bg-slate-50/50 border-y border-slate-100">
+                <div className="px-8 py-6 bg-slate-50/50 dark:bg-gray-900/50 border-y border-slate-100 dark:border-gray-700">
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                          <Clock className="w-5 h-5 text-indigo-600" />
+                        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center">
+                          <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-slate-500">Duration</p>
-                          <p className="text-lg font-bold text-slate-900">{project.duration}</p>
+                          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Duration</p>
+                          <p className="text-lg font-bold text-slate-900 dark:text-white">{project.duration}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-purple-600" />
+                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-slate-500">Business Impact</p>
-                          <p className="text-lg font-bold text-slate-900">{businessImpact.value}</p>
+                          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Business Impact</p>
+                          <p className="text-lg font-bold text-slate-900 dark:text-white">{businessImpact.value}</p>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                          <Users className="w-5 h-5 text-emerald-600" />
+                        <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center">
+                          <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-slate-500">Stakeholders</p>
-                          <p className="text-lg font-bold text-slate-900">5 Key Roles</p>
+                          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Stakeholders</p>
+                          <p className="text-lg font-bold text-slate-900 dark:text-white">5 Key Roles</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                          <TrendingUp className="w-5 h-5 text-orange-600" />
+                        <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/50 rounded-xl flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-slate-500">Expected ROI</p>
-                          <p className="text-lg font-bold text-slate-900">{businessImpact.roi}</p>
+                          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Expected ROI</p>
+                          <p className="text-lg font-bold text-slate-900 dark:text-white">{businessImpact.roi}</p>
                         </div>
                       </div>
                     </div>
@@ -266,19 +266,19 @@ const ProjectsView: React.FC = () => {
 
                 {/* Learning Outcomes */}
                 <div className="px-8 py-6">
-                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">What You'll Master</h4>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4">What You'll Master</h4>
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="text-sm text-slate-600 font-medium">Advanced stakeholder interview techniques</span>
+                      <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">Advanced stakeholder interview techniques</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="text-sm text-slate-600 font-medium">Requirements elicitation & documentation</span>
+                      <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">Requirements elicitation & documentation</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="text-sm text-slate-600 font-medium">Professional deliverable creation</span>
+                      <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">Professional deliverable creation</span>
                     </div>
                   </div>
                 </div>
@@ -300,38 +300,38 @@ const ProjectsView: React.FC = () => {
         </div>
 
         {/* Create Custom Project Section */}
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200/50 rounded-3xl p-8 md:p-12 mb-12">
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200/50 dark:border-purple-700/50 rounded-3xl p-8 md:p-12 mb-12">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl mb-8 shadow-lg">
               <Plus className="w-10 h-10 text-white" />
             </div>
-            <h3 className="text-3xl font-bold text-slate-900 mb-4">Create Your Custom Project</h3>
-            <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
+            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Create Your Custom Project</h3>
+            <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
               Already working on a project? Create AI stakeholders tailored to your specific business context and practice your interview skills.
             </p>
             
             {/* Process Steps */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-              <div className="bg-white rounded-2xl p-6 border border-purple-100 shadow-sm">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-purple-600 font-bold text-lg">1</span>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-purple-100 dark:border-purple-800 shadow-sm">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-purple-600 dark:text-purple-400 font-bold text-lg">1</span>
                 </div>
-                <h4 className="font-bold text-slate-900 mb-2">Define Context</h4>
-                <p className="text-sm text-slate-600">Describe your project, goals, and business requirements</p>
+                <h4 className="font-bold text-slate-900 dark:text-white mb-2">Define Context</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Describe your project, goals, and business requirements</p>
               </div>
-              <div className="bg-white rounded-2xl p-6 border border-indigo-100 shadow-sm">
-                <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-indigo-600 font-bold text-lg">2</span>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800 shadow-sm">
+                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-indigo-600 dark:text-indigo-400 font-bold text-lg">2</span>
                 </div>
-                <h4 className="font-bold text-slate-900 mb-2">AI Generation</h4>
-                <p className="text-sm text-slate-600">Our AI creates realistic stakeholders for your scenario</p>
+                <h4 className="font-bold text-slate-900 dark:text-white mb-2">AI Generation</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Our AI creates realistic stakeholders for your scenario</p>
               </div>
-              <div className="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-emerald-600 font-bold text-lg">3</span>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-emerald-100 dark:border-emerald-800 shadow-sm">
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">3</span>
                 </div>
-                <h4 className="font-bold text-slate-900 mb-2">Practice & Improve</h4>
-                <p className="text-sm text-slate-600">Conduct interviews and receive feedback</p>
+                <h4 className="font-bold text-slate-900 dark:text-white mb-2">Practice & Improve</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Conduct interviews and receive feedback</p>
               </div>
             </div>
             
@@ -346,10 +346,10 @@ const ProjectsView: React.FC = () => {
         </div>
 
         {/* Professional Framework Section */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 md:p-12 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-200 dark:border-gray-700 p-8 md:p-12 shadow-sm">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-slate-900 mb-4">Industry-Leading Training Framework</h3>
-            <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Industry-Leading Training Framework</h3>
+            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
               Our methodology follows BABOK® standards and industry best practices, trusted by business analysts worldwide
             </p>
           </div>
@@ -359,8 +359,8 @@ const ProjectsView: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
                 <Target className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mb-3">Requirements Mastery</h4>
-              <p className="text-slate-600 leading-relaxed">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Requirements Mastery</h4>
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                 Master advanced elicitation techniques, analysis methods, and documentation following BABOK® standards
               </p>
             </div>
@@ -368,8 +368,8 @@ const ProjectsView: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
                 <Users className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mb-3">Stakeholder Excellence</h4>
-              <p className="text-slate-600 leading-relaxed">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Stakeholder Excellence</h4>
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                 Develop expert-level skills in stakeholder management, influence mapping, and conflict resolution
               </p>
             </div>
@@ -377,8 +377,8 @@ const ProjectsView: React.FC = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
                 <Award className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mb-3">Professional Delivery</h4>
-              <p className="text-slate-600 leading-relaxed">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Professional Delivery</h4>
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                 Create executive-ready deliverables using industry-standard templates and communication strategies
               </p>
             </div>
