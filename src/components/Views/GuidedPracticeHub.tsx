@@ -99,7 +99,7 @@ const GuidedPracticeHub: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-6 mb-8 shadow-sm">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-              🎥 Watch this short video to see how the practice works and how to get the most from it.
+              Watch this short video to see how the practice works and how to get the most from it.
             </h2>
             {/* YouTube Video Embed */}
             <div className="relative w-full max-w-4xl mx-auto">
