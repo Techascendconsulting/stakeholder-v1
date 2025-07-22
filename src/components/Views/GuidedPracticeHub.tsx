@@ -113,16 +113,17 @@ const GuidedPracticeHub: React.FC = () => {
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
               🎥 Watch this short video to see how the practice works and how to get the most from it.
             </h2>
-            <div className="bg-slate-100 dark:bg-gray-700 rounded-xl p-8 border-2 border-dashed border-slate-300 dark:border-gray-600">
-              <div className="flex items-center justify-center">
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full mb-4 shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
-                    <Play className="w-10 h-10 text-white ml-1" />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 font-medium">
-                    Video placeholder - How to Practice Effectively
-                  </p>
-                </div>
+            {/* YouTube Video Embed */}
+            <div className="relative w-full max-w-4xl mx-auto">
+              <div className="relative pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-lg">
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full"
+                  src="https://www.youtube.com/embed/a2OEfUpXdnw?rel=0&modestbranding=1&showinfo=0"
+                  title="How to Practice Stakeholder Conversations Effectively"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             </div>
           </div>
