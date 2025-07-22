@@ -39,10 +39,10 @@ const GuidedPracticeHub: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
         
         {/* Skip to Projects Button - Top Right */}
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-6 right-6 z-10">
           <button
             onClick={handleStartPracticing}
-            className="inline-flex items-center space-x-2 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm border border-slate-200 dark:border-gray-600"
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-white/20"
           >
             <span className="text-sm">Skip to Projects</span>
             <ArrowRight className="w-4 h-4" />
