@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react'
 import { useAuth } from './AuthContext'
 import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
@@ -62,6 +62,9 @@ export const useApp = () => {
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth()
   
+  // Track previous user state to detect actual logout vs initial loading
+  const prevUser = useRef(user)
+  
   // Initialize currentView from localStorage or default to dashboard
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
     console.log('🔍 INIT: AppContext initializing currentView...')
@@ -70,7 +73,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('🔍 INIT: Found saved view in localStorage:', savedView)
       
       // Validate that the saved view is a valid AppView
-      const validViews: AppView[] = ['dashboard', 'projects', 'meeting-history', 'deliverables', 'voice-meeting', 'meeting-summary', 'raw-transcript']
+      const validViews: AppView[] = [
+        'dashboard', 'guided-practice-hub', 'projects', 'project-brief', 'stakeholders', 
+        'meeting-mode-selection', 'meeting', 'voice-only-meeting', 'my-meetings', 
+        'meeting-history', 'meeting-summary', 'raw-transcript', 'notes', 'deliverables', 'profile'
+      ]
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
         return savedView as AppView
