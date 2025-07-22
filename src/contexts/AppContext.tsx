@@ -61,7 +61,35 @@ export const useApp = () => {
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth()
-  const [currentView, setCurrentView] = useState<AppView>('dashboard')
+  
+  // Initialize currentView from localStorage or default to dashboard
+  const [currentView, setCurrentViewState] = useState<AppView>(() => {
+    try {
+      const savedView = localStorage.getItem('currentView')
+      // Validate that the saved view is a valid AppView
+      const validViews: AppView[] = ['dashboard', 'projects', 'meeting-history', 'deliverables', 'voice-meeting', 'meeting-summary', 'raw-transcript']
+      if (savedView && validViews.includes(savedView as AppView)) {
+        console.log('🔄 Restored view from localStorage:', savedView)
+        return savedView as AppView
+      }
+      return 'dashboard'
+    } catch (error) {
+      console.log('Could not load saved view, defaulting to dashboard')
+      return 'dashboard'
+    }
+  })
+
+  // Custom setCurrentView that handles localStorage automatically
+  const setCurrentView = (view: AppView) => {
+    console.log('🔄 Navigating to view:', view)
+    setCurrentViewState(view)
+    try {
+      localStorage.setItem('currentView', view)
+    } catch (error) {
+      console.log('Could not save view to localStorage:', error)
+    }
+  }
+  
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([])
   const [selectedMeeting, setSelectedMeeting] = useState<any | null>(null)
@@ -70,6 +98,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [deliverables, setDeliverables] = useState<Deliverable[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [customProject, setCustomProject] = useState<Project | null>(null)
+
+  // Clear view state on user logout
+  useEffect(() => {
+    if (!user) {
+      console.log('👋 User logged out, clearing saved view')
+      localStorage.removeItem('currentView')
+      setCurrentViewState('dashboard')
+    }
+  }, [user])
 
   // Mock user progress data
   const userProgress = {
