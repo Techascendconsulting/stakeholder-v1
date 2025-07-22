@@ -198,39 +198,48 @@ export const MyMeetingsView: React.FC = () => {
                typeof meeting.meeting_type === 'string';
       });
 
-      // Also load temporary meetings from localStorage
-      const tempMeetings: DatabaseMeeting[] = [];
+      // Also load meetings from localStorage (both temp and permanent)
+      const localMeetings: DatabaseMeeting[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith('temp-meeting-')) {
+        if (key && (key.startsWith('temp-meeting-') || key.startsWith('meeting-'))) {
           try {
-            const tempMeetingData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (tempMeetingData.user_id === user.id) {
-              // Add a flag to indicate this is a temporary meeting
-              tempMeetingData._isTemporary = true;
-              tempMeetings.push(tempMeetingData);
+            const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
+            if (meetingData.user_id === user.id) {
+              // Add a flag to indicate source
+              meetingData._isFromLocalStorage = true;
+              if (key.startsWith('temp-meeting-')) {
+                meetingData._isTemporary = true;
+              }
+              localMeetings.push(meetingData);
             }
           } catch (error) {
-            console.warn('Error parsing temporary meeting:', key, error);
+            console.warn('Error parsing localStorage meeting:', key, error);
           }
         }
       }
 
-      // Combine real and temporary meetings, sort by date
-      const allMeetings = [...validMeetings, ...tempMeetings].sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+      // Combine database and localStorage meetings, remove duplicates, sort by date
+      const allMeetings = [...validMeetings, ...localMeetings]
+        .filter((meeting, index, self) => 
+          // Remove duplicates based on meeting ID
+          index === self.findIndex(m => m.id === meeting.id)
+        )
+        .sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
       
       console.log('📋 MyMeetings - FINAL RESULT:', {
         'Database meetings': validMeetings.length,
-        'Temporary meetings': tempMeetings.length,
+        'LocalStorage meetings': localMeetings.length,
         'Total displayed': allMeetings.length,
         'All meetings loaded': allMeetings.map(m => ({
           id: m.id,
           project: m.project_name,
           date: m.created_at,
           hasSummary: !!(m.meeting_summary && m.meeting_summary.trim()),
-          hasTranscript: !!(m.transcript && m.transcript.length > 0)
+          hasTranscript: !!(m.transcript && m.transcript.length > 0),
+          source: m._isFromLocalStorage ? 'localStorage' : 'database'
         }))
       });
       

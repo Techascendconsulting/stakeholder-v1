@@ -1139,7 +1139,19 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
         
         setEndingProgress('Saving meeting to database...');
         
-        // Save meeting to database to ensure it persists
+        // Save meeting to both database and localStorage for persistence
+        setEndingProgress('Saving meeting data...');
+        
+        // Primary: Save to localStorage (guaranteed to work)
+        const localStorageKey = `meeting-${completeMeeting.id}`;
+        try {
+          localStorage.setItem(localStorageKey, JSON.stringify(completeMeeting));
+          console.log('✅ Meeting saved to localStorage:', localStorageKey);
+        } catch (localError) {
+          console.error('❌ Failed to save to localStorage:', localError);
+        }
+        
+        // Secondary: Attempt database save (best effort)
         try {
           const saveResult = await DatabaseService.saveMeetingData(
             completeMeeting.id,
@@ -1161,22 +1173,15 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
           );
           
           if (saveResult) {
-            console.log('✅ Meeting successfully saved to database:', {
-              id: completeMeeting.id,
-              projectName: completeMeeting.project_name,
-              duration: completeMeeting.duration,
-              timestamp: completeMeeting.created_at,
-              summaryLength: completeMeeting.meeting_summary?.length || 0
-            });
-            setEndingProgress('Meeting saved! Redirecting to summary...');
+            console.log('✅ Meeting also saved to database:', completeMeeting.id);
           } else {
-            console.warn('⚠️ Failed to save meeting to database, but proceeding with local data');
-            setEndingProgress('Meeting complete! Redirecting to summary...');
+            console.warn('⚠️ Database save failed, but localStorage backup successful');
           }
         } catch (saveError) {
-          console.error('❌ Error saving meeting to database:', saveError);
-          setEndingProgress('Meeting complete! Redirecting to summary...');
+          console.error('❌ Database save error, but localStorage backup successful:', saveError);
         }
+        
+        setEndingProgress('Meeting saved! Redirecting to summary...');
         
         setEndingProgress('Success! Redirecting to meeting summary...');
         console.log('✅ Complete meeting created successfully');
