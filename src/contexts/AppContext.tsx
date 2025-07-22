@@ -113,21 +113,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(false)
   const [customProject, setCustomProject] = useState<Project | null>(null)
 
-  // Clear view state on user logout (but not on initial load)
+  // Clear view state on actual logout (not during initial load)
   useEffect(() => {
-    console.log('🔍 USER_EFFECT: useEffect triggered with user:', user ? 'logged in' : 'not logged in')
+    console.log('🔍 USER_EFFECT: useEffect triggered with user:', user ? 'logged in' : user === null ? 'logged out' : 'undefined/loading')
+    console.log('🔍 USER_EFFECT: Previous user was:', prevUser.current ? 'logged in' : prevUser.current === null ? 'logged out' : 'undefined/loading')
     console.log('🔍 USER_EFFECT: Current view is:', currentView)
     
-    // Only clear if user explicitly becomes null (logout), not during initial undefined state
-    if (user === null) {
-      console.log('👋 USER_EFFECT: User logged out, clearing saved view')
+    // Only clear if we had a logged-in user before and now we're explicitly logged out
+    if (prevUser.current && user === null) {
+      console.log('👋 USER_EFFECT: Actual logout detected, clearing saved view')
       localStorage.removeItem('currentView')
       setCurrentViewState('dashboard')
     } else if (user) {
       console.log('✅ USER_EFFECT: User is logged in, preserving current view:', currentView)
     } else {
-      console.log('⏳ USER_EFFECT: User state is undefined (still loading), doing nothing')
+      console.log('⏳ USER_EFFECT: User state is loading or no change, doing nothing')
     }
+    
+    // Update previous user reference
+    prevUser.current = user
   }, [user, currentView])
 
   // Mock user progress data
