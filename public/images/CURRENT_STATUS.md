@@ -6,7 +6,7 @@
 **Status: ACTIVE** - Using existing Pexels photos from stakeholder data
 
 **Current Participants with Photos:**
-- ✅ **James Walker** (Head of Operations) - `https://images.pexels.com/photos/1043471/...`
+- ✅ **James Walker** (Head of Operations) - `/Screenshot 2025-07-22 at 17.29.25.png`
 - ✅ **Aisha Ahmed** (Customer Service Manager) - `https://images.pexels.com/photos/774909/...`
 - ✅ **David Thompson** (IT Systems Lead) - `https://images.pexels.com/photos/1222271/...`
 - ✅ **Sarah Patel** (HR Business Partner) - `https://images.pexels.com/photos/1181686/...`

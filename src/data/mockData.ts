@@ -199,7 +199,7 @@ export const mockStakeholders: Stakeholder[] = [
     role: 'Head of Operations',
     department: 'Operations',
     bio: 'James leads operational excellence initiatives across the organization with 15 years of experience in process optimization and operational strategy. He focuses on efficiency improvements and cross-functional coordination.',
-    photo: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400',
+    photo: '/Screenshot 2025-07-22 at 17.29.25.png',
     personality: 'Strategic, process-focused, results-driven leadership style',
     priorities: ['Operational efficiency', 'Process standardization', 'Resource optimization'],
     expertise: ['Process optimization', 'Operational strategy', 'Cross-functional coordination', 'Efficiency improvements', 'Resource management'],
