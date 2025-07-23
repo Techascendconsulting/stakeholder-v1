@@ -42,8 +42,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <User className="w-8 h-8" />,
     color: "from-purple-500 to-indigo-600",
-    gradient: "bg-gradient-to-br from-purple-50 to-indigo-50",
-    
+    gradient: "bg-gradient-to-br from-purple-50 to-indigo-50"
   },
   {
     id: 2,
@@ -58,8 +57,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Building2 className="w-8 h-8" />,
     color: "from-blue-500 to-cyan-600",
-    gradient: "bg-gradient-to-br from-blue-50 to-cyan-50",
-    
+    gradient: "bg-gradient-to-br from-blue-50 to-cyan-50"
   },
   {
     id: 3,
@@ -74,8 +72,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Users className="w-8 h-8" />,
     color: "from-emerald-500 to-teal-600",
-    gradient: "bg-gradient-to-br from-emerald-50 to-teal-50",
-    
+    gradient: "bg-gradient-to-br from-emerald-50 to-teal-50"
   },
   {
     id: 4,
@@ -90,8 +87,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Target className="w-8 h-8" />,
     color: "from-orange-500 to-red-600",
-    gradient: "bg-gradient-to-br from-orange-50 to-red-50",
-    
+    gradient: "bg-gradient-to-br from-orange-50 to-red-50"
   },
   {
     id: 5,
@@ -106,8 +102,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <TrendingUp className="w-8 h-8" />,
     color: "from-pink-500 to-rose-600",
-    gradient: "bg-gradient-to-br from-pink-50 to-rose-50",
-    
+    gradient: "bg-gradient-to-br from-pink-50 to-rose-50"
   },
   {
     id: 6,
@@ -122,8 +117,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <CheckCircle className="w-8 h-8" />,
     color: "from-violet-500 to-purple-600",
-    gradient: "bg-gradient-to-br from-violet-50 to-purple-50",
-    
+    gradient: "bg-gradient-to-br from-violet-50 to-purple-50"
   },
   {
     id: 7,
@@ -138,8 +132,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Workflow className="w-8 h-8" />,
     color: "from-amber-500 to-yellow-600",
-    gradient: "bg-gradient-to-br from-amber-50 to-yellow-50",
-    
+    gradient: "bg-gradient-to-br from-amber-50 to-yellow-50"
   },
   {
     id: 8,
@@ -154,8 +147,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <GitBranch className="w-8 h-8" />,
     color: "from-green-500 to-emerald-600",
-    gradient: "bg-gradient-to-br from-green-50 to-emerald-50",
-    
+    gradient: "bg-gradient-to-br from-green-50 to-emerald-50"
   },
   {
     id: 9,
@@ -170,8 +162,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Search className="w-8 h-8" />,
     color: "from-slate-500 to-gray-600",
-    gradient: "bg-gradient-to-br from-slate-50 to-gray-50",
-    
+    gradient: "bg-gradient-to-br from-slate-50 to-gray-50"
   },
   {
     id: 10,
@@ -186,8 +177,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Users className="w-8 h-8" />,
     color: "from-indigo-500 to-blue-600",
-    gradient: "bg-gradient-to-br from-indigo-50 to-blue-50",
-    
+    gradient: "bg-gradient-to-br from-indigo-50 to-blue-50"
   },
   {
     id: 11,
@@ -202,8 +192,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <User className="w-8 h-8" />,
     color: "from-teal-500 to-cyan-600",
-    gradient: "bg-gradient-to-br from-teal-50 to-cyan-50",
-    
+    gradient: "bg-gradient-to-br from-teal-50 to-cyan-50"
   },
   {
     id: 12,
@@ -218,8 +207,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Workflow className="w-8 h-8" />,
     color: "from-rose-500 to-pink-600",
-    gradient: "bg-gradient-to-br from-rose-50 to-pink-50",
-    
+    gradient: "bg-gradient-to-br from-rose-50 to-pink-50"
   },
   {
     id: 13,
@@ -234,8 +222,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <Target className="w-8 h-8" />,
     color: "from-yellow-500 to-orange-600",
-    gradient: "bg-gradient-to-br from-yellow-50 to-orange-50",
-    
+    gradient: "bg-gradient-to-br from-yellow-50 to-orange-50"
   },
   {
     id: 14,
@@ -250,8 +237,7 @@ const concepts: ConceptCard[] = [
     ],
     icon: <CheckCircle className="w-8 h-8" />,
     color: "from-purple-500 to-violet-600",
-    gradient: "bg-gradient-to-br from-purple-50 to-violet-50",
-    
+    gradient: "bg-gradient-to-br from-purple-50 to-violet-50"
   }
 ];
 
