@@ -56,4 +56,13 @@ export interface Deliverable {
   lastModified: string
 }
 
-export type AppView = 'dashboard' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'
+export interface CoreConcept {
+  id: string
+  title: string
+  summary: string
+  body: string[]
+  videoUrl: string | null
+  completed?: boolean
+}
+
+export type AppView = 'dashboard' | 'core-concepts' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'
