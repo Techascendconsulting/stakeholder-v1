@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'guided-practice-hub', label: 'Training Projects', icon: FolderOpen },
-    { id: 'my-meetings', label: 'My Meetings', icon: MessageSquare },
+    { id: 'my-meetings', label: 'Meeting Library', icon: MessageSquare },
     { id: 'notes', label: 'Interview Notes', icon: BookText },
     { id: 'deliverables', label: 'Deliverables', icon: FileText },
     { id: 'custom-project', label: 'Create Project', icon: Plus },

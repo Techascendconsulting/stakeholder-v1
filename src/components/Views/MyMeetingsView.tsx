@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Users, MessageSquare, TrendingUp, Search, Filter, Calendar, Eye, FileText, ChevronRight, Star, CheckCircle, AlertCircle, BarChart3, Target, Lightbulb, ArrowRight, Plus } from 'lucide-react';
+import { Clock, Users, MessageSquare, TrendingUp, Search, Filter, Calendar, Eye, FileText, ChevronRight, Star, CheckCircle, AlertCircle, BarChart3, Target, Lightbulb, ArrowRight, Plus, Sparkles, BookOpen, Zap } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseService, DatabaseMeeting } from '../../lib/database';
@@ -7,9 +7,11 @@ import { DatabaseService, DatabaseMeeting } from '../../lib/database';
 interface MeetingCardProps {
   meeting: DatabaseMeeting;
   onViewDetails: (meeting: DatabaseMeeting) => void;
+  onViewSummary: (meeting: DatabaseMeeting) => void;
+  onViewTranscript: (meeting: DatabaseMeeting) => void;
 }
 
-const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => {
+const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails, onViewSummary, onViewTranscript }) => {
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     return `${minutes} min`;
@@ -52,15 +54,16 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
   const EngagementIcon = engagement.icon;
 
   const hasInsights = meeting.meeting_summary && meeting.meeting_summary.trim();
+  const hasTranscript = meeting.transcript && meeting.transcript.length > 0;
   const topicsCount = meeting.topics_discussed?.length || 0;
 
   return (
-    <div className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl hover:border-purple-200 dark:hover:border-purple-700 transition-all duration-200 cursor-pointer">
+    <div className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl hover:border-purple-200 dark:hover:border-purple-700 transition-all duration-200">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-sm">
                 {meeting.project_name?.charAt(0) || 'M'}
               </span>
@@ -81,14 +84,19 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
         </div>
         <div className="flex items-center space-x-2">
           {hasInsights && (
-            <div className="p-1.5 bg-green-100 text-green-600 rounded-lg" title="AI Insights Available">
+            <div className="p-1.5 bg-green-100 text-green-600 rounded-lg" title="AI Summary Available">
               <Lightbulb size={14} />
+            </div>
+          )}
+          {hasTranscript && (
+            <div className="p-1.5 bg-blue-100 text-blue-600 rounded-lg" title="Full Transcript Available">
+              <MessageSquare size={14} />
             </div>
           )}
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
             meeting.status === 'completed' 
-              ? 'bg-green-100 text-green-700'
-              : 'bg-amber-100 text-amber-700'
+              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
           }`}>
             {meeting.status === 'completed' ? 'Completed' : 'In Progress'}
           </span>
@@ -148,26 +156,83 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
         </div>
       </div>
 
-      {/* Meeting Summary Preview */}
-      <div className="mb-4">
+      {/* Content Highlights - Enhanced */}
+      <div className="mb-4 space-y-3">
+        {/* AI Summary Section */}
         {hasInsights ? (
-          <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
-            <div className="flex items-center space-x-2 mb-2">
-              <Lightbulb size={14} className="text-green-600" />
-              <span className="text-sm font-medium text-green-800 dark:text-green-200">AI-Generated Insights</span>
+          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <Sparkles size={16} className="text-green-600 dark:text-green-400" />
+                <span className="text-sm font-semibold text-green-800 dark:text-green-200">AI-Generated Summary</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewSummary(meeting);
+                }}
+                className="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1"
+              >
+                <Eye size={12} />
+                <span>View Full Summary</span>
+              </button>
             </div>
-            <p className="text-sm text-green-700 dark:text-green-300 line-clamp-2">
-              {meeting.meeting_summary.slice(0, 120)}...
+            <p className="text-sm text-green-700 dark:text-green-300 line-clamp-3 leading-relaxed">
+              {meeting.meeting_summary.slice(0, 180)}...
             </p>
+            <div className="mt-2 text-xs text-green-600 dark:text-green-400">
+              ✨ Key insights, action items, and meeting highlights included
+            </div>
           </div>
         ) : (
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
             <div className="flex items-center space-x-2 mb-2">
-              <AlertCircle size={14} className="text-blue-600" />
-              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Meeting Overview</span>
+              <AlertCircle size={14} className="text-amber-600" />
+              <span className="text-sm font-medium text-amber-800 dark:text-amber-200">No AI Summary Available</span>
+            </div>
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              Meeting completed but summary generation may have been skipped
+            </p>
+          </div>
+        )}
+
+        {/* Transcript Section */}
+        {hasTranscript ? (
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <MessageSquare size={16} className="text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                  Complete Transcript ({meeting.transcript.length} messages)
+                </span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewTranscript(meeting);
+                }}
+                className="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1"
+              >
+                <FileText size={12} />
+                <span>View Transcript</span>
+              </button>
             </div>
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              Stakeholder session covering {topicsCount} key topics. {meeting.total_messages} conversation exchanges recorded.
+              Full conversation record with {meeting.stakeholder_names?.join(', ')} • 
+              Perfect for detailed analysis and reference
+            </p>
+            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+              📝 Complete dialogue, timestamps, and speaker attribution
+            </div>
+          </div>
+        ) : (
+          <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-2 mb-2">
+              <MessageSquare size={14} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">No Transcript Available</span>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              This was likely a voice-only meeting without transcript generation
             </p>
           </div>
         )}
@@ -208,6 +273,7 @@ export const MyMeetingsView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'voice-only' | 'transcript'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'completed' | 'in_progress'>('all');
+  const [contentFilter, setContentFilter] = useState<'all' | 'with-summary' | 'with-transcript' | 'no-content'>('all');
 
   // Scroll to top on mount
   useEffect(() => {
@@ -287,6 +353,16 @@ export const MyMeetingsView: React.FC = () => {
     setCurrentView('meeting-summary');
   };
 
+  const handleViewSummary = (meeting: DatabaseMeeting) => {
+    setSelectedMeeting(meeting);
+    setCurrentView('meeting-summary');
+  };
+
+  const handleViewTranscript = (meeting: DatabaseMeeting) => {
+    setSelectedMeeting(meeting);
+    setCurrentView('raw-transcript');
+  };
+
   // Filter meetings based on search and filters
   const filteredMeetings = meetings.filter(meeting => {
     const matchesSearch = searchTerm === '' || 
@@ -296,7 +372,24 @@ export const MyMeetingsView: React.FC = () => {
     const matchesType = filterType === 'all' || meeting.meeting_type === filterType;
     const matchesStatus = filterStatus === 'all' || meeting.status === filterStatus;
     
-    return matchesSearch && matchesType && matchesStatus;
+    // New content filter
+    let matchesContent = true;
+    switch (contentFilter) {
+      case 'with-summary':
+        matchesContent = meeting.meeting_summary && meeting.meeting_summary.trim() !== '';
+        break;
+      case 'with-transcript':
+        matchesContent = meeting.transcript && meeting.transcript.length > 0;
+        break;
+      case 'no-content':
+        matchesContent = (!meeting.meeting_summary || meeting.meeting_summary.trim() === '') && 
+                        (!meeting.transcript || meeting.transcript.length === 0);
+        break;
+      default:
+        matchesContent = true;
+    }
+    
+    return matchesSearch && matchesType && matchesStatus && matchesContent;
   });
 
   // Calculate insights
@@ -308,6 +401,7 @@ export const MyMeetingsView: React.FC = () => {
     ? meetings.reduce((acc, m) => acc + (m.total_messages / (m.duration / 60)), 0) / meetings.length 
     : 0;
   const withInsights = meetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
+  const withTranscripts = meetings.filter(m => m.transcript && m.transcript.length > 0).length;
 
   if (loading) {
     return (
@@ -332,7 +426,7 @@ export const MyMeetingsView: React.FC = () => {
               Your Stakeholder Journey
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
-              Track, analyze, and improve your stakeholder conversations. Each meeting builds your business analysis expertise.
+              Track, analyze, and improve your stakeholder conversations. Review AI summaries and full transcripts to enhance your skills.
             </p>
           </div>
           <button
@@ -344,8 +438,8 @@ export const MyMeetingsView: React.FC = () => {
           </button>
         </div>
 
-        {/* Key Insights Dashboard */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        {/* Enhanced Key Insights Dashboard */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
@@ -361,11 +455,11 @@ export const MyMeetingsView: React.FC = () => {
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-green-100 dark:bg-green-800 rounded-lg">
-                <Star size={20} className="text-green-600 dark:text-green-300" />
+                <Sparkles size={20} className="text-green-600 dark:text-green-300" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-900 dark:text-green-100">{completedMeetings}</div>
-                <div className="text-sm text-green-700 dark:text-green-300">Completed</div>
+                <div className="text-2xl font-bold text-green-900 dark:text-green-100">{withInsights}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">AI Summaries</div>
               </div>
             </div>
           </div>
@@ -373,11 +467,23 @@ export const MyMeetingsView: React.FC = () => {
           <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-                <Users size={20} className="text-blue-600 dark:text-blue-300" />
+                <FileText size={20} className="text-blue-600 dark:text-blue-300" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{totalStakeholders}</div>
-                <div className="text-sm text-blue-700 dark:text-blue-300">Stakeholders</div>
+                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{withTranscripts}</div>
+                <div className="text-sm text-blue-700 dark:text-blue-300">Full Transcripts</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-indigo-200 dark:border-indigo-800">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-800 rounded-lg">
+                <Users size={20} className="text-indigo-600 dark:text-indigo-300" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{totalStakeholders}</div>
+                <div className="text-sm text-indigo-700 dark:text-indigo-300">Stakeholders</div>
               </div>
             </div>
           </div>
@@ -396,16 +502,16 @@ export const MyMeetingsView: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-indigo-200 dark:border-indigo-800">
+          <div className="bg-gradient-to-r from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20 rounded-xl p-4 border border-teal-200 dark:border-teal-800">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-indigo-100 dark:bg-indigo-800 rounded-lg">
-                <TrendingUp size={20} className="text-indigo-600 dark:text-indigo-300" />
+              <div className="p-2 bg-teal-100 dark:bg-teal-800 rounded-lg">
+                <TrendingUp size={20} className="text-teal-600 dark:text-teal-300" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">
+                <div className="text-2xl font-bold text-teal-900 dark:text-teal-100">
                   {avgEngagement.toFixed(1)}
                 </div>
-                <div className="text-sm text-indigo-700 dark:text-indigo-300">Avg Engagement</div>
+                <div className="text-sm text-teal-700 dark:text-teal-300">Avg Engagement</div>
               </div>
             </div>
           </div>
@@ -413,15 +519,52 @@ export const MyMeetingsView: React.FC = () => {
           <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-lg">
-                <Lightbulb size={20} className="text-emerald-600 dark:text-emerald-300" />
+                <Star size={20} className="text-emerald-600 dark:text-emerald-300" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{withInsights}</div>
-                <div className="text-sm text-emerald-700 dark:text-emerald-300">With AI Insights</div>
+                <div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{completedMeetings}</div>
+                <div className="text-sm text-emerald-700 dark:text-emerald-300">Completed</div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Content Library Quick Access */}
+        {(withInsights > 0 || withTranscripts > 0) && (
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold mb-2 flex items-center">
+                  <Zap className="mr-2" size={24} />
+                  Your Content Library
+                </h2>
+                <p className="text-purple-100 mb-4">
+                  Quick access to all your meeting insights and conversation records
+                </p>
+              </div>
+              <div className="flex space-x-3">
+                {withInsights > 0 && (
+                  <button
+                    onClick={() => setCurrentView('meeting-summary')}
+                    className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors flex items-center space-x-2"
+                  >
+                    <Sparkles size={16} />
+                    <span>View All Summaries</span>
+                  </button>
+                )}
+                {withTranscripts > 0 && (
+                  <button
+                    onClick={() => setCurrentView('raw-transcript')}
+                    className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors flex items-center space-x-2"
+                  >
+                    <FileText size={16} />
+                    <span>View All Transcripts</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Value Proposition Banner */}
         {totalMeetings === 0 && (
@@ -471,7 +614,7 @@ export const MyMeetingsView: React.FC = () => {
         )}
       </div>
 
-      {/* Search and Filters */}
+      {/* Enhanced Search and Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
@@ -504,6 +647,17 @@ export const MyMeetingsView: React.FC = () => {
               <option value="all">All Status</option>
               <option value="completed">Completed</option>
               <option value="in_progress">In Progress</option>
+            </select>
+
+            <select
+              value={contentFilter}
+              onChange={(e) => setContentFilter(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="all">All Content</option>
+              <option value="with-summary">With AI Summary</option>
+              <option value="with-transcript">With Transcript</option>
+              <option value="no-content">Missing Content</option>
             </select>
           </div>
         </div>
@@ -538,6 +692,8 @@ export const MyMeetingsView: React.FC = () => {
               key={meeting.id}
               meeting={meeting}
               onViewDetails={handleViewMeetingDetails}
+              onViewSummary={handleViewSummary}
+              onViewTranscript={handleViewTranscript}
             />
           ))}
         </div>
