@@ -262,74 +262,161 @@ const CoreConceptsView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Core Concepts</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Essential business analyst principles and foundational knowledge
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Your Progress</h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                {completedConcepts.size} of {coreConcepts.length} concepts completed
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-purple-900">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 dark:from-blue-500/5 dark:to-purple-500/5"></div>
+        <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-12">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-lg">
+              <BookOpen className="w-10 h-10 text-white" />
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(completedConcepts.size / coreConcepts.length) * 100}%` }}
-                ></div>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-4">
+              Core Concepts
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+              Master the essential business analyst principles that form the foundation of successful BA practice
+            </p>
+          </div>
+
+          {/* Enhanced Progress Card */}
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 p-8 mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Your Learning Journey</h2>
+                <p className="text-gray-600 dark:text-gray-300 text-lg">
+                  {completedConcepts.size} of {coreConcepts.length} concepts mastered
+                </p>
               </div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {Math.round((completedConcepts.size / coreConcepts.length) * 100)}%
-              </span>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    {Math.round((completedConcepts.size / coreConcepts.length) * 100)}%
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Complete</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Enhanced Progress Bar */}
+            <div className="relative">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 shadow-inner">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all duration-700 ease-out shadow-lg relative overflow-hidden"
+                  style={{ width: `${(completedConcepts.size / coreConcepts.length) * 100}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
+                </div>
+              </div>
+              {/* Progress milestones */}
+              <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <span>Beginner</span>
+                <span>Intermediate</span>
+                <span>Advanced</span>
+                <span>Expert</span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {coreConcepts.map((concept) => (
-            <div
-              key={concept.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group"
-              onClick={() => setSelectedConcept(concept)}
-            >
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <BookOpen className="w-5 h-5 text-purple-600 flex-shrink-0" />
-                    {completedConcepts.has(concept.id) && (
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    )}
+      {/* Enhanced Concepts Grid */}
+      <div className="max-w-7xl mx-auto px-6 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {coreConcepts.map((concept, index) => {
+            const isCompleted = completedConcepts.has(concept.id)
+            const conceptNumber = parseInt(concept.id)
+            
+            // Different gradient combinations for visual variety
+            const gradients = [
+              'from-blue-500 to-cyan-500',
+              'from-purple-500 to-pink-500', 
+              'from-green-500 to-teal-500',
+              'from-orange-500 to-red-500',
+              'from-indigo-500 to-purple-500',
+              'from-teal-500 to-blue-500'
+            ]
+            const gradient = gradients[index % gradients.length]
+            
+            return (
+              <div
+                key={concept.id}
+                className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/50 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden"
+                onClick={() => setSelectedConcept(concept)}
+              >
+                {/* Gradient Header */}
+                <div className={`h-2 bg-gradient-to-r ${gradient}`}></div>
+                
+                {/* Completion Badge */}
+                {isCompleted && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="bg-green-500 text-white rounded-full p-1 shadow-lg">
+                      <CheckCircle className="w-4 h-4" />
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Concept {concept.id}
+                )}
+                
+                <div className="p-8">
+                  {/* Header Section */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-12 h-12 bg-gradient-to-r ${gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                        <span className="text-white font-bold text-lg">{conceptNumber}</span>
+                      </div>
+                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                        Concept {concept.id}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300 leading-tight">
+                    {concept.title}
+                  </h3>
+
+                  {/* Summary */}
+                  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6 line-clamp-3">
+                    {concept.summary}
+                  </p>
+
+                  {/* Key Points Indicator */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                      <span>{concept.body.length} key insights</span>
+                    </div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">
+                      5 min read
+                    </div>
+                  </div>
+
+                  {/* Progress Indicator */}
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mb-4">
+                    <div 
+                      className={`bg-gradient-to-r ${gradient} h-1 rounded-full transition-all duration-300`}
+                      style={{ width: isCompleted ? '100%' : '0%' }}
+                    ></div>
+                  </div>
+
+                  {/* Call to Action */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      {isCompleted ? 'Completed ✓' : 'Ready to learn'}
+                    </span>
+                    <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 group-hover:text-purple-600 transition-colors">
+                      <span className="text-sm font-medium">Explore</span>
+                      <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900 transition-colors">
+                        <ArrowLeft className="w-3 h-3 rotate-180" />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-purple-600 transition-colors">
-                  {concept.title}
-                </h3>
-
-                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
-                  {concept.summary}
-                </p>
-
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>{concept.body.length} key points</span>
-                  <span className="group-hover:text-purple-600 transition-colors">
-                    Click to learn →
-                  </span>
-                </div>
+                {/* Hover Effect Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
