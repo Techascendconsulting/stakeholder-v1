@@ -536,7 +536,7 @@ export const MyMeetingsView: React.FC = () => {
               <div>
                 <h2 className="text-xl font-bold mb-2 flex items-center">
                   <Zap className="mr-2" size={24} />
-                  Your Content Library
+                  Your Meeting Content Library
                 </h2>
                 <p className="text-purple-100 mb-4">
                   Quick access to all your meeting insights and conversation records
