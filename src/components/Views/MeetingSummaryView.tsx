@@ -471,8 +471,8 @@ For detailed conversation analysis and specific stakeholder insights, please rev
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => setCurrentView('meeting-history')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setCurrentView('my-meetings')}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
