@@ -192,69 +192,114 @@ const CoreConceptsView: React.FC = () => {
   }
 
   if (selectedConcept) {
+    const conceptNumber = parseInt(selectedConcept.id)
+    const gradients = [
+      'from-blue-500 to-cyan-500',
+      'from-purple-500 to-pink-500', 
+      'from-green-500 to-teal-500',
+      'from-orange-500 to-red-500',
+      'from-indigo-500 to-purple-500',
+      'from-teal-500 to-blue-500'
+    ]
+    const gradient = gradients[(conceptNumber - 1) % gradients.length]
+    
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="mb-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-purple-900">
+        <div className="max-w-5xl mx-auto p-6">
+          {/* Enhanced Header */}
+          <div className="mb-12">
             <button
               onClick={() => setSelectedConcept(null)}
-              className="flex items-center space-x-2 text-purple-600 hover:text-purple-700 transition-colors mb-4"
+              className="group flex items-center space-x-3 text-blue-600 hover:text-purple-600 transition-colors mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-white/20 dark:border-gray-700/50"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Core Concepts</span>
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 group-hover:bg-purple-100 dark:group-hover:bg-purple-900 rounded-full flex items-center justify-center transition-colors">
+                <ArrowLeft className="w-4 h-4" />
+              </div>
+              <span className="font-medium">Back to Core Concepts</span>
             </button>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {selectedConcept.title}
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              {selectedConcept.summary}
-            </p>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
-            <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-t-lg flex items-center justify-center">
-              <div className="text-center">
-                <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500">Video content coming soon</p>
+            
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 p-8 mb-8">
+              <div className="flex items-start space-x-6">
+                <div className={`w-16 h-16 bg-gradient-to-r ${gradient} rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+                  <span className="text-white font-bold text-2xl">{conceptNumber}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full inline-block mb-4">
+                    Concept {selectedConcept.id} of {coreConcepts.length}
+                  </div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-4 leading-tight">
+                    {selectedConcept.title}
+                  </h1>
+                  <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {selectedConcept.summary}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Key Points</h2>
-            <ul className="space-y-4">
-              {selectedConcept.body.map((point, index) => (
-                <li key={index} className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{point}</p>
-                </li>
-              ))}
-            </ul>
+          {/* Enhanced Video Placeholder */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 mb-8 overflow-hidden">
+            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"></div>
+              <div className="text-center relative z-10">
+                <div className={`w-20 h-20 bg-gradient-to-r ${gradient} rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-4`}>
+                  <Play className="w-10 h-10 text-white ml-1" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Video Coming Soon</h3>
+                <p className="text-gray-500 dark:text-gray-400">Interactive video content will be available here</p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <button
-              onClick={() => toggleCompletion(selectedConcept.id)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                completedConcepts.has(selectedConcept.id)
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <CheckCircle className={`w-5 h-5 ${
-                completedConcepts.has(selectedConcept.id) ? 'text-green-600' : 'text-gray-400'
-              }`} />
-              <span>
-                {completedConcepts.has(selectedConcept.id) ? 'Completed' : 'Mark as Completed'}
-              </span>
-            </button>
+          {/* Enhanced Key Points */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 p-8 mb-8">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className={`w-10 h-10 bg-gradient-to-r ${gradient} rounded-xl flex items-center justify-center`}>
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Key Learning Points</h2>
+            </div>
+            
+            <div className="grid gap-6">
+              {selectedConcept.body.map((point, index) => (
+                <div key={index} className="group flex items-start space-x-4 p-4 rounded-2xl hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                  <div className={`w-8 h-8 bg-gradient-to-r ${gradient} rounded-full flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                    <span className="text-white font-bold text-sm">{index + 1}</span>
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                    {point}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
 
-            <button
-              onClick={() => setSelectedConcept(null)}
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Back to Core Concepts
-            </button>
+          {/* Enhanced Action Bar */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 p-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => toggleCompletion(selectedConcept.id)}
+                className={`flex items-center space-x-3 px-6 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                  completedConcepts.has(selectedConcept.id)
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg hover:shadow-xl'
+                    : `bg-gradient-to-r ${gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
+                }`}
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>
+                  {completedConcepts.has(selectedConcept.id) ? '✓ Completed' : 'Mark as Complete'}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setSelectedConcept(null)}
+                className="flex items-center space-x-3 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-2xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                <span>Back to Overview</span>
+                <ArrowLeft className="w-4 h-4 rotate-180" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
