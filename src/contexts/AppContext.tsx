@@ -57,7 +57,31 @@ export const useApp = () => {
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth()
-  const [currentView, setCurrentView] = useState<AppView>('dashboard')
+  
+  // Initialize currentView from localStorage or default to dashboard
+  const [currentView, setCurrentViewState] = useState<AppView>(() => {
+    try {
+      const savedView = localStorage.getItem('currentView')
+      
+      // Validate that the saved view is a valid AppView
+      const validViews: AppView[] = [
+        'dashboard', 'core-concepts', 'projects', 'project-brief', 'stakeholders', 
+        'meeting', 'notes', 'deliverables', 'profile', 'analysis', 'custom-project', 'custom-stakeholders'
+      ]
+      if (savedView && validViews.includes(savedView as AppView)) {
+        return savedView as AppView
+      } else {
+        return 'dashboard'
+      }
+    } catch (error) {
+      return 'dashboard'
+    }
+  })
+
+  const setCurrentView = (view: AppView) => {
+    setCurrentViewState(view)
+    localStorage.setItem('currentView', view)
+  }
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([])
   const [meetings, setMeetings] = useState<Meeting[]>([])
