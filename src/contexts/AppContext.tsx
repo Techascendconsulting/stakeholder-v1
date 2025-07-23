@@ -80,7 +80,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       
       // Validate that the saved view is a valid AppView
       const validViews: AppView[] = [
-        'dashboard', 'guided-practice-hub', 'projects', 'project-brief', 'stakeholders', 
+        'dashboard', 'guided-practice-hub', 'core-concepts', 'projects', 'project-brief', 'stakeholders', 
         'meeting-mode-selection', 'meeting', 'voice-only-meeting', 'my-meetings', 
         'meeting-history', 'meeting-summary', 'raw-transcript', 'notes', 'deliverables', 
         'profile', 'custom-project', 'custom-stakeholders'
