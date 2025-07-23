@@ -24,7 +24,6 @@ export interface Stakeholder {
   personality: string
   priorities: string[]
   voice: string
-  expertise: string[]
   isCustom?: boolean
 }
 
@@ -57,21 +56,13 @@ export interface Deliverable {
   lastModified: string
 }
 
-export type AppView = 
-  | 'dashboard'
-  | 'guided-practice-hub'
-  | 'projects'
-  | 'project-brief'
-  | 'stakeholders'
-  | 'meeting-mode-selection'
-  | 'meeting'
-  | 'voice-only-meeting'
-  | 'my-meetings'
-  | 'meeting-history'
-  | 'meeting-summary'
-  | 'raw-transcript'
-  | 'notes'
-  | 'deliverables'
-  | 'profile'
-  | 'custom-project'
-  | 'custom-stakeholders';
+export interface CoreConcept {
+  id: string
+  title: string
+  summary: string
+  body: string[]
+  videoUrl: string | null
+  completed?: boolean
+}
+
+export type AppView = 'dashboard' | 'guided-practice-hub' | 'core-concepts' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting-mode-selection' | 'meeting' | 'voice-only-meeting' | 'my-meetings' | 'meeting-history' | 'meeting-summary' | 'raw-transcript' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'
