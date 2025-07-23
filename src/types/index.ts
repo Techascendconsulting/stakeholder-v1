@@ -65,4 +65,4 @@ export interface CoreConcept {
   completed?: boolean
 }
 
-export type AppView = 'dashboard' | 'core-concepts' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'
+export type AppView = 'dashboard' | 'guided-practice-hub' | 'core-concepts' | 'projects' | 'project-brief' | 'stakeholders' | 'meeting-mode-selection' | 'meeting' | 'voice-only-meeting' | 'my-meetings' | 'meeting-history' | 'meeting-summary' | 'raw-transcript' | 'notes' | 'deliverables' | 'profile' | 'analysis' | 'custom-project' | 'custom-stakeholders'
