@@ -2,6 +2,7 @@ import React from 'react'
 import { Sidebar } from './Sidebar'
 import { useApp } from '../../contexts/AppContext'
 import Dashboard from '../Views/Dashboard'
+import CoreConceptsView from '../Views/CoreConceptsView'
 import GuidedPracticeHub from '../Views/GuidedPracticeHub'
 import ProjectsView from '../Views/ProjectsView'
 import ProjectBrief from '../Views/ProjectBrief'
@@ -47,6 +48,9 @@ const MainLayout: React.FC = () => {
       case 'dashboard':
         console.log('🏠 RENDER: Rendering Dashboard component')
         return <Dashboard />
+      case 'core-concepts':
+        console.log('📚 RENDER: Rendering CoreConceptsView component')
+        return <CoreConceptsView />
       case 'guided-practice-hub':
         console.log('🎯 RENDER: Rendering GuidedPracticeHub component')
         return <GuidedPracticeHub />
