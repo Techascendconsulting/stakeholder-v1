@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Users, MessageSquare, TrendingUp, Search, Filter, Calendar, Eye, FileText, ChevronRight } from 'lucide-react';
+import { Clock, Users, MessageSquare, TrendingUp, Search, Filter, Calendar, Eye, FileText, ChevronRight, Star, CheckCircle, AlertCircle, BarChart3, Target, Lightbulb, ArrowRight, Plus } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseService, DatabaseMeeting } from '../../lib/database';
@@ -17,10 +17,18 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Today';
+    if (diffDays === 2) return 'Yesterday';
+    if (diffDays <= 7) return `${diffDays - 1} days ago`;
+    
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
     });
   };
 
@@ -33,116 +41,159 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails }) => 
     });
   };
 
+  const getEngagementLevel = () => {
+    const messageRatio = meeting.total_messages / (meeting.duration / 60); // messages per minute
+    if (messageRatio > 2) return { level: 'High', color: 'bg-emerald-100 text-emerald-700', icon: TrendingUp };
+    if (messageRatio > 1) return { level: 'Medium', color: 'bg-blue-100 text-blue-700', icon: BarChart3 };
+    return { level: 'Low', color: 'bg-gray-100 text-gray-600', icon: Target };
+  };
+
+  const engagement = getEngagementLevel();
+  const EngagementIcon = engagement.icon;
+
+  const hasInsights = meeting.meeting_summary && meeting.meeting_summary.trim();
+  const topicsCount = meeting.topics_discussed?.length || 0;
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+    <div className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl hover:border-purple-200 dark:hover:border-purple-700 transition-all duration-200 cursor-pointer">
+      {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-            {meeting.project_name}
-          </h3>
-          <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center space-x-1">
-              <Calendar size={14} />
-              <span>{formatDate(meeting.created_at)}</span>
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">
+                {meeting.project_name?.charAt(0) || 'M'}
+              </span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Clock size={14} />
-              <span>{formatTime(meeting.created_at)}</span>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                {meeting.project_name}
+              </h3>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <Calendar size={12} />
+                <span>{formatDate(meeting.created_at)}</span>
+                <span>•</span>
+                <Clock size={12} />
+                <span>{formatTime(meeting.created_at)}</span>
+              </div>
             </div>
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            meeting.meeting_type === 'voice-only' 
-              ? 'bg-purple-100 text-purple-700'
-              : 'bg-blue-100 text-blue-700'
-          }`}>
-            {meeting.meeting_type === 'voice-only' ? 'Voice Only' : 'With Transcript'}
-          </span>
+          {hasInsights && (
+            <div className="p-1.5 bg-green-100 text-green-600 rounded-lg" title="AI Insights Available">
+              <Lightbulb size={14} />
+            </div>
+          )}
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
             meeting.status === 'completed' 
               ? 'bg-green-100 text-green-700'
-              : 'bg-yellow-100 text-yellow-700'
+              : 'bg-amber-100 text-amber-700'
           }`}>
             {meeting.status === 'completed' ? 'Completed' : 'In Progress'}
           </span>
-          {(meeting as any)._isTemporary && (
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
-              Temporary
-            </span>
-          )}
         </div>
       </div>
 
-      <div className="flex items-center space-x-6 mb-4">
-        <div className="flex items-center space-x-2">
-          <Users size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            {meeting.stakeholder_names.length} stakeholder{meeting.stakeholder_names.length !== 1 ? 's' : ''}
-          </span>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-4 gap-4 mb-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-1">
+            <Users size={16} className="text-purple-500" />
+          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{meeting.stakeholder_names.length}</div>
+          <div className="text-xs text-gray-500">Stakeholders</div>
         </div>
-        <div className="flex items-center space-x-2">
-          <MessageSquare size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            {meeting.total_messages} messages
-          </span>
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-1">
+            <MessageSquare size={16} className="text-blue-500" />
+          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{meeting.total_messages}</div>
+          <div className="text-xs text-gray-500">Exchanges</div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Clock size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            {formatDuration(meeting.duration)}
-          </span>
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-1">
+            <Clock size={16} className="text-green-500" />
+          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{formatDuration(meeting.duration)}</div>
+          <div className="text-xs text-gray-500">Duration</div>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-1">
+            <EngagementIcon size={16} className={engagement.color.includes('emerald') ? 'text-emerald-500' : engagement.color.includes('blue') ? 'text-blue-500' : 'text-gray-400'} />
+          </div>
+          <div className="text-sm font-medium text-gray-900 dark:text-white">{engagement.level}</div>
+          <div className="text-xs text-gray-500">Engagement</div>
         </div>
       </div>
 
+      {/* Stakeholders */}
       <div className="mb-4">
+        <div className="flex items-center space-x-2 mb-2">
+          <Users size={14} className="text-gray-400" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Meeting Participants</span>
+        </div>
         <div className="flex flex-wrap gap-2">
           {meeting.stakeholder_names.slice(0, 3).map((name, index) => (
-            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md text-xs">
-              {name} ({meeting.stakeholder_roles[index]})
-            </span>
+            <div key={index} className="flex items-center space-x-1 px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs">
+              <span className="font-medium">{name}</span>
+              <span className="text-purple-500">({meeting.stakeholder_roles[index]})</span>
+            </div>
           ))}
           {meeting.stakeholder_names.length > 3 && (
-            <span className="px-2 py-1 bg-gray-100 text-gray-700 dark:text-gray-300 rounded-md text-xs">
+            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
               +{meeting.stakeholder_names.length - 3} more
             </span>
           )}
         </div>
       </div>
 
-      {/* Always show meeting summary section */}
+      {/* Meeting Summary Preview */}
       <div className="mb-4">
-        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-          {meeting.meeting_summary && meeting.meeting_summary.trim() 
-            ? meeting.meeting_summary.slice(0, 150) + (meeting.meeting_summary.length > 150 ? '...' : '')
-            : `Meeting with ${meeting.stakeholder_names.join(', ')} regarding ${meeting.project_name}. Duration: ${Math.floor(meeting.duration / 60)} minutes, ${meeting.total_messages} messages exchanged. Click to view full details.`
-          }
-        </p>
-        {!meeting.meeting_summary || !meeting.meeting_summary.trim() && (
-          <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded mt-1 inline-block">
-            Summary being generated
-          </span>
+        {hasInsights ? (
+          <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center space-x-2 mb-2">
+              <Lightbulb size={14} className="text-green-600" />
+              <span className="text-sm font-medium text-green-800 dark:text-green-200">AI-Generated Insights</span>
+            </div>
+            <p className="text-sm text-green-700 dark:text-green-300 line-clamp-2">
+              {meeting.meeting_summary.slice(0, 120)}...
+            </p>
+          </div>
+        ) : (
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center space-x-2 mb-2">
+              <AlertCircle size={14} className="text-blue-600" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Meeting Overview</span>
+            </div>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Stakeholder session covering {topicsCount} key topics. {meeting.total_messages} conversation exchanges recorded.
+            </p>
+          </div>
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+      {/* Action Footer */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
         <div className="flex items-center space-x-4">
-          {meeting.topics_discussed.length > 0 && (
-            <div className="flex items-center space-x-1">
-              <TrendingUp size={14} className="text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {meeting.topics_discussed.length} topic{meeting.topics_discussed.length !== 1 ? 's' : ''}
-              </span>
+          {topicsCount > 0 && (
+            <div className="flex items-center space-x-1 text-gray-500">
+              <TrendingUp size={12} />
+              <span className="text-xs">{topicsCount} topics discussed</span>
             </div>
           )}
+          <div className={`flex items-center space-x-1 ${engagement.color}`}>
+            <EngagementIcon size={12} />
+            <span className="text-xs">{engagement.level} engagement</span>
+          </div>
         </div>
         <button
           onClick={() => onViewDetails(meeting)}
-          className="flex items-center space-x-1 px-3 py-1 bg-purple-50 text-purple-600 rounded-md text-sm font-medium hover:bg-purple-100 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 group-hover:scale-105"
         >
           <Eye size={14} />
           <span>View Details</span>
-          <ChevronRight size={14} />
+          <ArrowRight size={14} />
         </button>
       </div>
     </div>
@@ -183,72 +234,20 @@ export const MyMeetingsView: React.FC = () => {
     try {
       setLoading(true);
       console.log('📋 MyMeetings - Loading ALL meetings for user:', user.id);
+      
+      // Load from database
       const userMeetings = await DatabaseService.getUserMeetings(user.id);
       console.log('📋 MyMeetings - Database returned', userMeetings.length, 'meetings');
       
-      // Filter out meetings with missing or invalid data
-      const validMeetings = userMeetings.filter(meeting => {
-        return meeting &&
-               typeof meeting.project_name === 'string' &&
-               meeting.project_name.trim() !== '' &&
-               Array.isArray(meeting.stakeholder_names) &&
-               meeting.stakeholder_names.every(name => typeof name === 'string') &&
-               meeting.created_at &&
-               meeting.status &&
-               typeof meeting.meeting_type === 'string';
-      });
-
-      // Load meetings from localStorage using multiple strategies
-      const localMeetings: DatabaseMeeting[] = [];
-      
-      // Strategy 1: Load from meetings index (most reliable)
-      try {
-        const meetingsIndex = JSON.parse(localStorage.getItem('meetings_index') || '[]');
-        console.log('📋 Found meetings index with', meetingsIndex.length, 'meeting IDs');
-        
-        for (const meetingId of meetingsIndex) {
-          // Try main storage first
-          let meetingData = null;
-          try {
-            const mainKey = `stored_meeting_${meetingId}`;
-            meetingData = JSON.parse(localStorage.getItem(mainKey) || 'null');
-          } catch (e) {
-            // Try backup storage
-            try {
-              const backupKeys = Object.keys(localStorage).filter(k => k.includes(meetingId) && k.startsWith('backup_meeting_'));
-              if (backupKeys.length > 0) {
-                meetingData = JSON.parse(localStorage.getItem(backupKeys[0]) || 'null');
-              }
-            } catch (e2) {}
-          }
-          
-          if (meetingData && meetingData.user_id === user.id) {
-            meetingData._isFromLocalStorage = true;
-            meetingData._source = 'indexed';
-            localMeetings.push(meetingData);
-          }
-        }
-      } catch (error) {
-        console.warn('Error loading from meetings index:', error);
-      }
-      
-      // Strategy 2: Scan all localStorage keys (fallback)
+      // Load from localStorage as backup
+      const localMeetings: any[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('temp-meeting-') || key.startsWith('meeting-') || key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
+        if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
           try {
             const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (meetingData && meetingData.user_id === user.id) {
-              // Check if we already have this meeting from index
-              const alreadyLoaded = localMeetings.find(m => m.id === meetingData.id);
-              if (!alreadyLoaded) {
-                meetingData._isFromLocalStorage = true;
-                meetingData._source = 'scanned';
-                if (key.startsWith('temp-meeting-')) {
-                  meetingData._isTemporary = true;
-                }
-                localMeetings.push(meetingData);
-              }
+            if (meetingData.user_id === user.id && meetingData.id) {
+              localMeetings.push(meetingData);
             }
           } catch (error) {
             console.warn('Error parsing localStorage meeting:', key, error);
@@ -256,148 +255,220 @@ export const MyMeetingsView: React.FC = () => {
         }
       }
 
-      // Combine database and localStorage meetings, remove duplicates, sort by date
-      const allMeetings = [...validMeetings, ...localMeetings]
-        .filter((meeting, index, self) => 
-          // Remove duplicates based on meeting ID
+      // Combine and deduplicate
+      const allMeetings = [...userMeetings, ...localMeetings]
+        .filter((meeting, index, self) =>
           index === self.findIndex(m => m.id === meeting.id)
         )
-        .sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-      
-      console.log('📋 MyMeetings - FINAL RESULT:', {
-        'Database meetings': validMeetings.length,
-        'LocalStorage meetings': localMeetings.length,
-        'Total displayed': allMeetings.length,
-        'Meeting types': allMeetings.reduce((acc: any, m) => {
-          acc[m.meeting_type || 'unknown'] = (acc[m.meeting_type || 'unknown'] || 0) + 1;
-          return acc;
-        }, {}),
-        'With summaries': allMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length,
-        'With transcripts': allMeetings.filter(m => m.transcript && m.transcript.length > 0).length,
-        'All meetings loaded': allMeetings.map(m => ({
-          id: m.id,
-          project: m.project_name,
-          type: m.meeting_type || 'unknown',
-          date: m.created_at,
-          hasSummary: !!(m.meeting_summary && m.meeting_summary.trim()),
-          hasTranscript: !!(m.transcript && m.transcript.length > 0),
-          source: m._isFromLocalStorage ? 'localStorage' : 'database'
-        }))
-      });
-      
+        .filter(meeting => {
+          return meeting &&
+                 typeof meeting.project_name === 'string' &&
+                 meeting.project_name.trim() !== '' &&
+                 Array.isArray(meeting.stakeholder_names) &&
+                 meeting.stakeholder_names.every(name => typeof name === 'string') &&
+                 meeting.created_at &&
+                 meeting.status &&
+                 typeof meeting.meeting_type === 'string';
+        })
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      console.log('📋 MyMeetings - Final processed meetings:', allMeetings.length);
       setMeetings(allMeetings);
     } catch (error) {
       console.error('Error loading meetings:', error);
-      setMeetings([]); // Set empty array on error
+      setMeetings([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewDetails = (meeting: DatabaseMeeting) => {
+  const handleViewMeetingDetails = (meeting: DatabaseMeeting) => {
     setSelectedMeeting(meeting);
-    setCurrentView('meeting-history');
+    setCurrentView('meeting-summary');
   };
 
+  // Filter meetings based on search and filters
   const filteredMeetings = meetings.filter(meeting => {
-    const matchesSearch = (meeting.project_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (meeting.stakeholder_names || []).some(name => 
-                           (name || '').toLowerCase().includes(searchTerm.toLowerCase())
-                         );
+    const matchesSearch = searchTerm === '' || 
+      meeting.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      meeting.stakeholder_names.some(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesType = filterType === 'all' || 
-                       (filterType === 'voice-only' && meeting.meeting_type === 'voice-only') ||
-                       (filterType === 'transcript' && meeting.meeting_type !== 'voice-only');
-    
+    const matchesType = filterType === 'all' || meeting.meeting_type === filterType;
     const matchesStatus = filterStatus === 'all' || meeting.status === filterStatus;
-
+    
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const stats = {
-    total: meetings.length,
-    completed: meetings.filter(m => m.status === 'completed').length,
-    voiceOnly: meetings.filter(m => m.meeting_type === 'voice-only').length,
-    totalDuration: meetings.reduce((acc, m) => acc + m.duration, 0)
-  };
+  // Calculate insights
+  const totalMeetings = meetings.length;
+  const completedMeetings = meetings.filter(m => m.status === 'completed').length;
+  const totalStakeholders = new Set(meetings.flatMap(m => m.stakeholder_names)).size;
+  const totalDuration = meetings.reduce((acc, m) => acc + m.duration, 0);
+  const avgEngagement = meetings.length > 0 
+    ? meetings.reduce((acc, m) => acc + (m.total_messages / (m.duration / 60)), 0) / meetings.length 
+    : 0;
+  const withInsights = meetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading your stakeholder meetings...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Hero Header with Value Proposition */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Meetings</h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Review your stakeholder interviews, summaries, and key insights
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Your Stakeholder Journey
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
+              Track, analyze, and improve your stakeholder conversations. Each meeting builds your business analysis expertise.
             </p>
           </div>
           <button
-            onClick={() => {
-              console.log('🔄 Manual refresh requested');
-              loadMeetings();
-            }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+            onClick={() => setCurrentView('projects')}
+            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
           >
-            <TrendingUp size={16} />
-            <span>Refresh</span>
+            <Plus size={20} />
+            <span>Start New Meeting</span>
           </button>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Meetings</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+        {/* Key Insights Dashboard */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-lg">
+                <CheckCircle size={20} className="text-purple-600 dark:text-purple-300" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{totalMeetings}</div>
+                <div className="text-sm text-purple-700 dark:text-purple-300">Total Meetings</div>
+              </div>
             </div>
-            <MessageSquare className="h-8 w-8 text-purple-600" />
+          </div>
+
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-green-100 dark:bg-green-800 rounded-lg">
+                <Star size={20} className="text-green-600 dark:text-green-300" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-900 dark:text-green-100">{completedMeetings}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">Completed</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                <Users size={20} className="text-blue-600 dark:text-blue-300" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{totalStakeholders}</div>
+                <div className="text-sm text-blue-700 dark:text-blue-300">Stakeholders</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-orange-100 dark:bg-orange-800 rounded-lg">
+                <Clock size={20} className="text-orange-600 dark:text-orange-300" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                  {Math.floor(totalDuration / 3600)}h {Math.floor((totalDuration % 3600) / 60)}m
+                </div>
+                <div className="text-sm text-orange-700 dark:text-orange-300">Total Time</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-indigo-200 dark:border-indigo-800">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-800 rounded-lg">
+                <TrendingUp size={20} className="text-indigo-600 dark:text-indigo-300" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">
+                  {avgEngagement.toFixed(1)}
+                </div>
+                <div className="text-sm text-indigo-700 dark:text-indigo-300">Avg Engagement</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-lg">
+                <Lightbulb size={20} className="text-emerald-600 dark:text-emerald-300" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{withInsights}</div>
+                <div className="text-sm text-emerald-700 dark:text-emerald-300">With AI Insights</div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
-            </div>
-            <FileText className="h-8 w-8 text-green-600" />
-          </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Voice-Only</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.voiceOnly}</p>
-            </div>
-            <Users className="h-8 w-8 text-blue-600" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Time</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {Math.floor(stats.totalDuration / 3600)}h {Math.floor((stats.totalDuration % 3600) / 60)}m
+        {/* Value Proposition Banner */}
+        {totalMeetings === 0 && (
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white mb-6">
+            <div className="max-w-3xl">
+              <h2 className="text-2xl font-bold mb-3">🚀 Master Stakeholder Conversations</h2>
+              <p className="text-purple-100 mb-4 text-lg">
+                Practice real-world business analysis scenarios. Get AI-powered insights. Build confidence in stakeholder management.
               </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <Target size={20} />
+                  </div>
+                  <div>
+                    <div className="font-semibold">Practice Scenarios</div>
+                    <div className="text-sm text-purple-200">Real business situations</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <Lightbulb size={20} />
+                  </div>
+                  <div>
+                    <div className="font-semibold">AI Insights</div>
+                    <div className="text-sm text-purple-200">Smart feedback & analysis</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <TrendingUp size={20} />
+                  </div>
+                  <div>
+                    <div className="font-semibold">Track Progress</div>
+                    <div className="text-sm text-purple-200">See your improvement</div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setCurrentView('projects')}
+                className="bg-white text-purple-600 px-6 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-colors"
+              >
+                Start Your First Meeting
+              </button>
             </div>
-            <Clock className="h-8 w-8 text-orange-600" />
           </div>
-        </div>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -466,7 +537,7 @@ export const MyMeetingsView: React.FC = () => {
             <MeetingCard
               key={meeting.id}
               meeting={meeting}
-              onViewDetails={handleViewDetails}
+              onViewDetails={handleViewMeetingDetails}
             />
           ))}
         </div>
