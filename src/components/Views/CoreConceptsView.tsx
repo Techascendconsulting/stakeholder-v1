@@ -1,471 +1,446 @@
-import React, { useState } from 'react'
-import { useApp } from '../../contexts/AppContext'
-import { CoreConcept } from '../../types'
-import { BookOpen, CheckCircle, Play, ArrowLeft } from 'lucide-react'
-
-const coreConcepts: CoreConcept[] = [
-  {
-    id: '1',
-    title: "Who Is a Business Analyst?",
-    summary: "Understand what a Business Analyst is and why the role exists.",
-    body: [
-      "A Business Analyst helps organisations solve business problems.",
-      "They work across teams to understand needs and shape the right solutions.",
-      "They don't build the solution — they define and clarify it.",
-      "The BA role exists because businesses often struggle to explain problems clearly."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '2',
-    title: "How Organisations Work",
-    summary: "To solve business problems, you must understand how businesses operate.",
-    body: [
-      "Every organisation either sells products, services, or both.",
-      "They exist to deliver value — money, time saved, or impact.",
-      "Understanding what they sell helps you understand their goals.",
-      "BA work always ties back to business performance and value."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '3',
-    title: "Departments in an Organisation",
-    summary: "The different departments help the business deliver its services or products.",
-    body: [
-      "Common departments include Sales, Marketing, Finance, Operations, Compliance, and Customer Service.",
-      "Each one has its own goals and pain points.",
-      "BAs often work across departments to understand where processes break down.",
-      "Knowing who does what helps you ask better questions and involve the right people."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '4',
-    title: "Why Projects Happen",
-    summary: "Projects begin when the business wants to fix something, improve, or stay competitive.",
-    body: [
-      "Projects are usually triggered by problems, regulations, inefficiencies, or growth plans.",
-      "They are time-bound and goal-driven — not ongoing tasks.",
-      "The BA helps define the project clearly before it begins.",
-      "Your work prevents wasted time and money solving the wrong thing."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '5',
-    title: "Why BAs Are Hired",
-    summary: "BAs help the business understand itself before spending money on solutions.",
-    body: [
-      "Without BAs, teams may waste time building the wrong solution.",
-      "The BA adds clarity, structure, and alignment.",
-      "They reduce risk, surface hidden needs, and ensure what gets delivered actually helps.",
-      "BAs are paid to improve decision-making before the build starts."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '6',
-    title: "What a BA Does (and Doesn't Do)",
-    summary: "A BA defines what's needed — but doesn't deliver it themselves.",
-    body: [
-      "They ask questions, gather info, and document what the business really needs.",
-      "They write clear requirements — not vague guesses.",
-      "They don't code, design, or test directly — but support those who do.",
-      "Their job is to define the 'what' and 'why' — not the 'how'."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '7',
-    title: "How a BA Works",
-    summary: "BAs work through collaboration, research, and structured thinking.",
-    body: [
-      "They speak with stakeholders to uncover goals, gaps, and conflicts.",
-      "They map out current and future states.",
-      "They write user stories, acceptance criteria, and sometimes process flows.",
-      "They support delivery teams by keeping the focus on solving the right problem."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '8',
-    title: "Agile and Waterfall",
-    summary: "Projects are delivered differently — BAs adapt based on the method.",
-    body: [
-      "Waterfall means plan everything up front, then build.",
-      "Agile means break the work into small chunks and adjust along the way.",
-      "In Agile, BAs work closely with teams during each sprint.",
-      "In Waterfall, BAs often define everything before development begins."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '9',
-    title: "Understanding the Problem",
-    summary: "BAs must define the problem before anyone starts solving it.",
-    body: [
-      "Most people focus on symptoms — BAs go deeper.",
-      "Good BAs ask 'What's really going wrong here?'",
-      "You're not paid to guess — you're paid to confirm.",
-      "The wrong solution to the wrong problem still fails."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '10',
-    title: "Working With Stakeholders",
-    summary: "Stakeholders are anyone affected by or involved in the change.",
-    body: [
-      "BAs interview stakeholders to understand different perspectives.",
-      "You'll deal with conflict, uncertainty, and unclear needs.",
-      "Listening well builds trust — guessing loses it.",
-      "Keep stakeholders involved and aligned."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '11',
-    title: "Working With Developers",
-    summary: "You're the bridge between business needs and tech execution.",
-    body: [
-      "Developers rely on you to explain what needs to be built — clearly.",
-      "You don't need to know code, but you must speak clearly and be available.",
-      "You remove confusion and answer questions — fast.",
-      "When you're clear, developers build better and faster."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '12',
-    title: "Understanding Systems and Processes",
-    summary: "BAs must understand how work flows and how systems support that work.",
-    body: [
-      "Processes = what people do. Systems = the tools they use to do it.",
-      "BAs map out both — especially when things aren't working.",
-      "A great system can still fail if the process behind it is broken.",
-      "Always check how people and tech interact — that's where the truth is."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '13',
-    title: "Spotting Inefficiencies",
-    summary: "BAs help teams stop wasting time — even if they've gotten used to it.",
-    body: [
-      "Look for delays, double entry, unclear handoffs, and manual rework.",
-      "You may hear: 'It's just how we do it.' That's your cue.",
-      "Inefficiencies hide inside normal routines.",
-      "Your job is to question what everyone else ignores."
-    ],
-    videoUrl: null
-  },
-  {
-    id: '14',
-    title: "Tools Business Analysts Use",
-    summary: "BAs use tools to gather, write, and communicate — but tools aren't the point.",
-    body: [
-      "Common tools: Jira (requirements), Confluence (documentation), Excel (data), Miro (flows), Lucidchart (diagrams).",
-      "You'll use CRM systems, ticketing platforms, and internal apps too.",
-      "You don't need to master them all — just know how to use them for clarity.",
-      "Good thinking always matters more than flashy tools."
-    ],
-    videoUrl: null
-  }
-]
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Clock, BarChart3, Play, CheckCircle2, Circle } from 'lucide-react';
+import { CoreConcept } from '../../types';
 
 const CoreConceptsView: React.FC = () => {
-  const { setCurrentView } = useApp()
-  const [selectedConcept, setSelectedConcept] = useState<CoreConcept | null>(null)
-  const [completedConcepts, setCompletedConcepts] = useState<Set<string>>(new Set())
+  const [selectedConcept, setSelectedConcept] = useState<CoreConcept | null>(null);
+  const [completedConcepts, setCompletedConcepts] = useState<Set<string>>(new Set());
 
+  // Load completion status from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('completed-core-concepts');
+    if (saved) {
+      setCompletedConcepts(new Set(JSON.parse(saved)));
+    }
+  }, []);
+
+  // Save completion status to localStorage
   const toggleCompletion = (conceptId: string) => {
-    setCompletedConcepts(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(conceptId)) {
-        newSet.delete(conceptId)
-      } else {
-        newSet.add(conceptId)
-      }
-      return newSet
-    })
-  }
+    const newCompleted = new Set(completedConcepts);
+    if (newCompleted.has(conceptId)) {
+      newCompleted.delete(conceptId);
+    } else {
+      newCompleted.add(conceptId);
+    }
+    setCompletedConcepts(newCompleted);
+    localStorage.setItem('completed-core-concepts', JSON.stringify([...newCompleted]));
+  };
+
+  const coreConcepts: CoreConcept[] = [
+    {
+      id: 'business-analysis-fundamentals',
+      title: 'Business Analysis Fundamentals',
+      summary: 'Core principles and methodologies that form the foundation of business analysis practice.',
+      description: 'Business analysis is the practice of enabling change in an enterprise by defining needs and recommending solutions that deliver value to stakeholders. This fundamental concept covers the essential principles, methodologies, and frameworks that every business analyst should master.',
+      keyPoints: [
+        'Understanding the role and responsibilities of a business analyst',
+        'Key business analysis techniques and methodologies',
+        'The business analysis lifecycle and process',
+        'Stakeholder identification and management principles',
+        'Requirements elicitation fundamentals'
+      ],
+      estimatedTime: '45 minutes',
+      difficulty: 'Beginner'
+    },
+    {
+      id: 'requirements-gathering',
+      title: 'Requirements Gathering Techniques',
+      summary: 'Comprehensive methods for eliciting, documenting, and validating business requirements.',
+      description: 'Requirements gathering is the cornerstone of successful business analysis. This concept explores various techniques for discovering, documenting, and validating requirements from different stakeholder groups.',
+      keyPoints: [
+        'Interview techniques and best practices',
+        'Workshop facilitation methods',
+        'Observation and job shadowing approaches',
+        'Survey and questionnaire design',
+        'Document analysis and review processes'
+      ],
+      estimatedTime: '60 minutes',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'stakeholder-management',
+      title: 'Stakeholder Analysis & Management',
+      summary: 'Strategies for identifying, analyzing, and effectively managing project stakeholders.',
+      description: 'Effective stakeholder management is critical to project success. Learn how to identify key stakeholders, analyze their influence and interest, and develop strategies for effective engagement and communication.',
+      keyPoints: [
+        'Stakeholder identification techniques',
+        'Power-interest grid analysis',
+        'Communication planning and execution',
+        'Managing conflicting stakeholder interests',
+        'Building and maintaining stakeholder relationships'
+      ],
+      estimatedTime: '50 minutes',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'process-modeling',
+      title: 'Business Process Modeling',
+      summary: 'Visual techniques for documenting and analyzing business processes and workflows.',
+      description: 'Process modeling helps visualize how work flows through an organization. Master various modeling techniques to document current state processes, identify improvement opportunities, and design future state solutions.',
+      keyPoints: [
+        'Process mapping fundamentals',
+        'BPMN (Business Process Model and Notation)',
+        'Swimlane diagrams and flowcharts',
+        'Value stream mapping',
+        'Process improvement identification'
+      ],
+      estimatedTime: '75 minutes',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'data-analysis',
+      title: 'Data Analysis for Business Insights',
+      summary: 'Methods for collecting, analyzing, and interpreting data to support business decisions.',
+      description: 'Data-driven decision making is essential in modern business analysis. Learn how to collect, analyze, and interpret data to generate actionable insights that support business objectives.',
+      keyPoints: [
+        'Data collection methods and sources',
+        'Statistical analysis fundamentals',
+        'Data visualization techniques',
+        'Trend analysis and forecasting',
+        'Presenting data insights effectively'
+      ],
+      estimatedTime: '65 minutes',
+      difficulty: 'Advanced'
+    },
+    {
+      id: 'solution-design',
+      title: 'Solution Design & Evaluation',
+      summary: 'Approaches for designing and evaluating potential solutions to business problems.',
+      description: 'Moving from problem identification to solution design requires structured thinking and evaluation. Learn methodologies for generating, analyzing, and selecting the best solutions for business challenges.',
+      keyPoints: [
+        'Solution ideation and brainstorming',
+        'Cost-benefit analysis techniques',
+        'Risk assessment and mitigation',
+        'Solution comparison matrices',
+        'Implementation planning considerations'
+      ],
+      estimatedTime: '55 minutes',
+      difficulty: 'Advanced'
+    },
+    {
+      id: 'change-management',
+      title: 'Change Management Principles',
+      summary: 'Understanding how to facilitate organizational change and user adoption.',
+      description: 'Business analysts often drive change initiatives. Understanding change management principles helps ensure that recommended solutions are successfully adopted and deliver expected value.',
+      keyPoints: [
+        'Change management models and frameworks',
+        'Resistance identification and management',
+        'Communication strategies for change',
+        'Training and support planning',
+        'Measuring change success'
+      ],
+      estimatedTime: '40 minutes',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'agile-ba',
+      title: 'Agile Business Analysis',
+      summary: 'Adapting business analysis practices for agile and iterative development environments.',
+      description: 'Agile methodologies require different approaches to business analysis. Learn how to adapt traditional BA practices for agile environments while maintaining quality and stakeholder value.',
+      keyPoints: [
+        'Agile principles and BA role adaptation',
+        'User story writing and acceptance criteria',
+        'Sprint planning and backlog management',
+        'Continuous stakeholder collaboration',
+        'Iterative requirements refinement'
+      ],
+      estimatedTime: '50 minutes',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'communication-skills',
+      title: 'Business Communication Excellence',
+      summary: 'Essential communication skills for effective business analysis practice.',
+      description: 'Communication is at the heart of business analysis. Develop skills in written, verbal, and visual communication to effectively convey complex information to diverse stakeholder groups.',
+      keyPoints: [
+        'Audience analysis and message tailoring',
+        'Written communication best practices',
+        'Presentation skills and techniques',
+        'Visual communication and diagramming',
+        'Facilitation and meeting management'
+      ],
+      estimatedTime: '45 minutes',
+      difficulty: 'Beginner'
+    },
+    {
+      id: 'project-lifecycle',
+      title: 'Project Lifecycle & BA Role',
+      summary: 'Understanding the business analyst\'s role throughout different project phases.',
+      description: 'The business analyst\'s role evolves throughout the project lifecycle. Learn how BA activities and deliverables change from project initiation through closure.',
+      keyPoints: [
+        'Project phases and BA involvement',
+        'Key deliverables by project phase',
+        'Collaboration with project managers',
+        'Quality assurance and testing support',
+        'Post-implementation review and lessons learned'
+      ],
+      estimatedTime: '35 minutes',
+      difficulty: 'Beginner'
+    },
+    {
+      id: 'technology-understanding',
+      title: 'Technology for Business Analysts',
+      summary: 'Essential technology concepts and tools for modern business analysis.',
+      description: 'While not required to be technical experts, business analysts benefit from understanding key technology concepts to better bridge business and technical teams.',
+      keyPoints: [
+        'System architecture fundamentals',
+        'Database and data management concepts',
+        'Integration and API basics',
+        'Cloud computing overview',
+        'Emerging technology trends'
+      ],
+      estimatedTime: '60 minutes',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: 'metrics-kpis',
+      title: 'Metrics & KPI Development',
+      summary: 'Creating meaningful measurements to track business performance and solution success.',
+      description: 'Effective measurement is crucial for demonstrating value and driving continuous improvement. Learn how to identify, define, and implement meaningful metrics and KPIs.',
+      keyPoints: [
+        'KPI identification and selection',
+        'SMART criteria for metrics',
+        'Baseline establishment and target setting',
+        'Dashboard and reporting design',
+        'Performance monitoring and adjustment'
+      ],
+      estimatedTime: '45 minutes',
+      difficulty: 'Advanced'
+    },
+    {
+      id: 'vendor-management',
+      title: 'Vendor & Contract Management',
+      summary: 'Managing relationships and requirements with external vendors and service providers.',
+      description: 'Many solutions involve external vendors or service providers. Learn how to effectively manage vendor relationships, contracts, and deliverables from a business analysis perspective.',
+      keyPoints: [
+        'Vendor selection criteria and evaluation',
+        'Contract requirements definition',
+        'Service level agreement (SLA) development',
+        'Vendor performance monitoring',
+        'Relationship management best practices'
+      ],
+      estimatedTime: '40 minutes',
+      difficulty: 'Advanced'
+    },
+    {
+      id: 'ethics-professionalism',
+      title: 'Ethics & Professional Standards',
+      summary: 'Ethical considerations and professional standards in business analysis practice.',
+      description: 'Business analysts often handle sensitive information and make recommendations that impact people and organizations. Understanding ethical principles and professional standards is essential.',
+      keyPoints: [
+        'Professional codes of conduct',
+        'Confidentiality and information security',
+        'Conflict of interest management',
+        'Objectivity and bias recognition',
+        'Continuous professional development'
+      ],
+      estimatedTime: '30 minutes',
+      difficulty: 'Beginner'
+    }
+  ];
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Beginner': return 'text-green-400 bg-green-400/10';
+      case 'Intermediate': return 'text-yellow-400 bg-yellow-400/10';
+      case 'Advanced': return 'text-red-400 bg-red-400/10';
+      default: return 'text-gray-400 bg-gray-400/10';
+    }
+  };
+
+  const completedCount = completedConcepts.size;
+  const totalCount = coreConcepts.length;
+  const progressPercentage = (completedCount / totalCount) * 100;
 
   if (selectedConcept) {
-    const conceptNumber = parseInt(selectedConcept.id)
-    const gradients = [
-      'from-blue-500 to-cyan-500',
-      'from-purple-500 to-pink-500', 
-      'from-green-500 to-teal-500',
-      'from-orange-500 to-red-500',
-      'from-indigo-500 to-purple-500',
-      'from-teal-500 to-blue-500'
-    ]
-    const gradient = gradients[(conceptNumber - 1) % gradients.length]
-    
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-purple-900">
-        <div className="max-w-5xl mx-auto p-6">
-          {/* Enhanced Header */}
-          <div className="mb-12">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Header */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-10">
+          <div className="max-w-4xl mx-auto px-6 py-4">
             <button
               onClick={() => setSelectedConcept(null)}
-              className="group flex items-center space-x-3 text-blue-600 hover:text-purple-600 transition-colors mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-white/20 dark:border-gray-700/50"
+              className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors group"
             >
-              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 group-hover:bg-purple-100 dark:group-hover:bg-purple-900 rounded-full flex items-center justify-center transition-colors">
-                <ArrowLeft className="w-4 h-4" />
-              </div>
-              <span className="font-medium">Back to Core Concepts</span>
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              Back to Core Concepts
             </button>
-            
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 p-8 mb-8">
-              <div className="flex items-start space-x-6">
-                <div className={`w-16 h-16 bg-gradient-to-r ${gradient} rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0`}>
-                  <span className="text-white font-bold text-2xl">{conceptNumber}</span>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full inline-block mb-4">
-                    Concept {selectedConcept.id} of {coreConcepts.length}
-                  </div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-4 leading-tight">
-                    {selectedConcept.title}
-                  </h1>
-                  <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
-                    {selectedConcept.summary}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
+        </div>
 
-          {/* Enhanced Video Placeholder */}
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 mb-8 overflow-hidden">
-            <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"></div>
-              <div className="text-center relative z-10">
-                <div className={`w-20 h-20 bg-gradient-to-r ${gradient} rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-4`}>
-                  <Play className="w-10 h-10 text-white ml-1" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Video Coming Soon</h3>
-                <p className="text-gray-500 dark:text-gray-400">Interactive video content will be available here</p>
+        {/* Content */}
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          {/* Title Section */}
+          <div className="mb-8">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">
+                  {selectedConcept.title}
+                </h1>
+                <p className="text-slate-300 text-lg">
+                  {selectedConcept.summary}
+                </p>
               </div>
-            </div>
-          </div>
-
-          {/* Enhanced Key Points */}
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 p-8 mb-8">
-            <div className="flex items-center space-x-3 mb-8">
-              <div className={`w-10 h-10 bg-gradient-to-r ${gradient} rounded-xl flex items-center justify-center`}>
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Key Learning Points</h2>
-            </div>
-            
-            <div className="grid gap-6">
-              {selectedConcept.body.map((point, index) => (
-                <div key={index} className="group flex items-start space-x-4 p-4 rounded-2xl hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                  <div className={`w-8 h-8 bg-gradient-to-r ${gradient} rounded-full flex items-center justify-center flex-shrink-0 shadow-lg`}>
-                    <span className="text-white font-bold text-sm">{index + 1}</span>
-                  </div>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                    {point}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Enhanced Action Bar */}
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/50 p-6">
-            <div className="flex items-center justify-between">
               <button
                 onClick={() => toggleCompletion(selectedConcept.id)}
-                className={`flex items-center space-x-3 px-6 py-3 rounded-2xl font-medium transition-all duration-300 ${
-                  completedConcepts.has(selectedConcept.id)
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg hover:shadow-xl'
-                    : `bg-gradient-to-r ${gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
-                }`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 transition-colors group"
               >
-                <CheckCircle className="w-5 h-5" />
-                <span>
-                  {completedConcepts.has(selectedConcept.id) ? '✓ Completed' : 'Mark as Complete'}
-                </span>
+                {completedConcepts.has(selectedConcept.id) ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    <span className="text-green-400">Completed</span>
+                  </>
+                ) : (
+                  <>
+                    <Circle className="w-5 h-5 text-slate-400 group-hover:text-white" />
+                    <span className="text-slate-400 group-hover:text-white">Mark Complete</span>
+                  </>
+                )}
               </button>
+            </div>
 
-              <button
-                onClick={() => setSelectedConcept(null)}
-                className="flex items-center space-x-3 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-2xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                <span>Back to Overview</span>
-                <ArrowLeft className="w-4 h-4 rotate-180" />
-              </button>
+            {/* Meta Information */}
+            <div className="flex items-center gap-6 text-sm text-slate-400">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                {selectedConcept.estimatedTime}
+              </div>
+              <div className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(selectedConcept.difficulty)}`}>
+                {selectedConcept.difficulty}
+              </div>
+            </div>
+          </div>
+
+          {/* Video Section */}
+          <div className="mb-8">
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-slate-700/50 p-8 text-center">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Play className="w-8 h-8 text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Video Content</h3>
+              <p className="text-slate-400">
+                Video content for this concept will be available soon. 
+                For now, review the key points and description below.
+              </p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-white mb-4">Overview</h2>
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
+              <p className="text-slate-300 leading-relaxed">
+                {selectedConcept.description}
+              </p>
+            </div>
+          </div>
+
+          {/* Key Points */}
+          <div>
+            <h2 className="text-xl font-semibold text-white mb-4">Key Learning Points</h2>
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
+              <ul className="space-y-3">
+                {selectedConcept.keyPoints.map((point, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                    <span className="text-slate-300">{point}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-purple-900">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 dark:from-blue-500/5 dark:to-purple-500/5"></div>
-        <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-12">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-lg">
-              <BookOpen className="w-10 h-10 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <div className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Core Concepts</h1>
+              <p className="text-slate-300">
+                Master the fundamental principles of business analysis
+              </p>
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-4">
-              Core Concepts
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              Master the essential business analyst principles that form the foundation of successful BA practice
-            </p>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-white">
+                {completedCount}/{totalCount}
+              </div>
+              <div className="text-sm text-slate-400">Completed</div>
+            </div>
           </div>
 
-          {/* Enhanced Progress Card */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 p-8 mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Your Learning Journey</h2>
-                <p className="text-gray-600 dark:text-gray-300 text-lg">
-                  {completedConcepts.size} of {coreConcepts.length} concepts mastered
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    {Math.round((completedConcepts.size / coreConcepts.length) * 100)}%
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Complete</div>
-                </div>
-              </div>
+          {/* Progress Bar */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-400">Overall Progress</span>
+              <span className="text-sm text-slate-400">{Math.round(progressPercentage)}%</span>
             </div>
-            
-            {/* Enhanced Progress Bar */}
-            <div className="relative">
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 shadow-inner">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all duration-700 ease-out shadow-lg relative overflow-hidden"
-                  style={{ width: `${(completedConcepts.size / coreConcepts.length) * 100}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
-                </div>
-              </div>
-              {/* Progress milestones */}
-              <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-                <span>Beginner</span>
-                <span>Intermediate</span>
-                <span>Advanced</span>
-                <span>Expert</span>
-              </div>
+            <div className="w-full bg-slate-700/50 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Concepts Grid */}
-      <div className="max-w-7xl mx-auto px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {coreConcepts.map((concept, index) => {
-            const isCompleted = completedConcepts.has(concept.id)
-            const conceptNumber = parseInt(concept.id)
-            
-            // Different gradient combinations for visual variety
-            const gradients = [
-              'from-blue-500 to-cyan-500',
-              'from-purple-500 to-pink-500', 
-              'from-green-500 to-teal-500',
-              'from-orange-500 to-red-500',
-              'from-indigo-500 to-purple-500',
-              'from-teal-500 to-blue-500'
-            ]
-            const gradient = gradients[index % gradients.length]
+      {/* Content */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {coreConcepts.map((concept) => {
+            const isCompleted = completedConcepts.has(concept.id);
             
             return (
               <div
                 key={concept.id}
-                className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/50 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden"
+                className="group relative bg-slate-800/30 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6 hover:bg-slate-700/30 transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10"
                 onClick={() => setSelectedConcept(concept)}
               >
-                {/* Gradient Header */}
-                <div className={`h-2 bg-gradient-to-r ${gradient}`}></div>
-                
-                {/* Completion Badge */}
-                {isCompleted && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <div className="bg-green-500 text-white rounded-full p-1 shadow-lg">
-                      <CheckCircle className="w-4 h-4" />
-                    </div>
-                  </div>
-                )}
-                
-                <div className="p-8">
-                  {/* Header Section */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-12 h-12 bg-gradient-to-r ${gradient} rounded-xl flex items-center justify-center shadow-lg`}>
-                        <span className="text-white font-bold text-lg">{conceptNumber}</span>
-                      </div>
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                        Concept {concept.id}
-                      </div>
-                    </div>
-                  </div>
+                {/* Completion Status */}
+                <div className="absolute top-4 right-4">
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-6 h-6 text-green-400" />
+                  ) : (
+                    <Circle className="w-6 h-6 text-slate-500" />
+                  )}
+                </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300 leading-tight">
+                {/* Content */}
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-2 pr-8 group-hover:text-blue-300 transition-colors">
                     {concept.title}
                   </h3>
-
-                  {/* Summary */}
-                  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6 line-clamp-3">
+                  <p className="text-slate-400 text-sm leading-relaxed">
                     {concept.summary}
                   </p>
+                </div>
 
-                  {/* Key Points Indicator */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                      <span>{concept.body.length} key insights</span>
-                    </div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">
-                      5 min read
-                    </div>
+                {/* Meta */}
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <Clock className="w-3 h-3" />
+                    {concept.estimatedTime}
                   </div>
-
-                  {/* Progress Indicator */}
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mb-4">
-                    <div 
-                      className={`bg-gradient-to-r ${gradient} h-1 rounded-full transition-all duration-300`}
-                      style={{ width: isCompleted ? '100%' : '0%' }}
-                    ></div>
-                  </div>
-
-                  {/* Call to Action */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      {isCompleted ? 'Completed ✓' : 'Ready to learn'}
-                    </span>
-                    <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 group-hover:text-purple-600 transition-colors">
-                      <span className="text-sm font-medium">Explore</span>
-                      <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900 transition-colors">
-                        <ArrowLeft className="w-3 h-3 rotate-180" />
-                      </div>
-                    </div>
+                  <div className={`px-2 py-1 rounded-full font-medium ${getDifficultyColor(concept.difficulty)}`}>
+                    {concept.difficulty}
                   </div>
                 </div>
 
-                {/* Hover Effect Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                {/* Hover Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CoreConceptsView
+export default CoreConceptsView;

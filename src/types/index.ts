@@ -58,30 +58,21 @@ export interface Deliverable {
 }
 
 export interface CoreConcept {
-  id: string
-  title: string
-  summary: string
-  body: string[]
-  videoUrl: string | null
-  completed?: boolean
+  id: string;
+  title: string;
+  summary: string;
+  description: string;
+  keyPoints: string[];
+  videoUrl?: string;
+  estimatedTime: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
 }
 
 export type AppView = 
-  | 'dashboard'
-  | 'guided-practice-hub'
+  | 'dashboard' 
+  | 'training-projects' 
   | 'core-concepts'
-  | 'projects'
-  | 'project-brief'
-  | 'stakeholders'
-  | 'meeting-mode-selection'
-  | 'meeting'
-  | 'voice-only-meeting'
-  | 'my-meetings'
-  | 'meeting-history'
-  | 'meeting-summary'
-  | 'raw-transcript'
-  | 'notes'
-  | 'deliverables'
-  | 'profile'
-  | 'custom-project'
-  | 'custom-stakeholders';
+  | 'my-meetings' 
+  | 'voice-meeting' 
+  | 'settings' 
+  | 'profile';
