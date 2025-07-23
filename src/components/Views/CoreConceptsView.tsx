@@ -308,15 +308,33 @@ const CoreConceptsView: React.FC = () => {
 
           {/* Video Section */}
           <div className="mb-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Play className="w-8 h-8 text-blue-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Video Content</h3>
-              <p className="text-gray-600">
-                Video content for this concept will be available soon. 
-                For now, review the key points and description below.
-              </p>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              {selectedConcept.id === 1 ? (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Video Explanation</h3>
+                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      className="absolute top-0 left-0 w-full h-full rounded-lg"
+                      src="https://www.youtube.com/embed/b_hJ4S7NYfY"
+                      title="Who is a Business Analyst"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Play className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Video Content</h3>
+                  <p className="text-gray-600">
+                    Video content for this concept will be available soon. 
+                    For now, review the key points and description below.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
