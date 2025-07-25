@@ -308,6 +308,26 @@ export class DatabaseService {
 
         console.log('🗃️ DATABASE - Creating new meeting with data:', createData);
 
+        // Check if meeting with this ID already exists
+        const { data: existingMeeting } = await supabase
+          .from('user_meetings')
+          .select('id')
+          .eq('id', meetingId)
+          .single();
+
+        if (existingMeeting) {
+          console.warn('🗃️ DATABASE - Meeting ID already exists, using upsert instead of insert:', meetingId);
+          // If meeting exists, update it instead
+          const { error: updateError, data: updateResult } = await supabase
+            .from('user_meetings')
+            .update(createData)
+            .eq('id', meetingId)
+            .select();
+          
+          console.log('🗃️ DATABASE - Update result:', { error: updateError, data: updateResult });
+          return !updateError;
+        }
+
         const { error: createError, data: createResult } = await supabase
           .from('user_meetings')
           .insert(createData)

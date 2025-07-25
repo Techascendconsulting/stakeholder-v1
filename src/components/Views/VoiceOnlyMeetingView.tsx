@@ -1105,13 +1105,23 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
         const topicsDiscussed = extractTopicsFromTranscript(backgroundTranscript);
         const keyInsights = extractKeyInsights(backgroundTranscript);
         
-        // Create completely unique meeting ID with crypto random + sequence number
+        // Create completely unique meeting ID with crypto random + sequence number + extra randomness
         const timestamp = Date.now();
-        const cryptoRandom = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(36)).join('');
-        const sequenceNum = Math.floor(Math.random() * 10000);
+        const cryptoRandom = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(36)).join('');
+        const sequenceNum = Math.floor(Math.random() * 99999);
+        const extraRandom = Math.random().toString(36).substring(2, 8);
         const userId = user?.id || 'unknown';
-        const uniqueMeetingId = `meeting_${userId.slice(0,8)}_${timestamp}_${sequenceNum}_${cryptoRandom}`;
-        console.log('🆔 Creating meeting with CRYPTO-UNIQUE ID:', uniqueMeetingId);
+        let uniqueMeetingId = `meeting_${userId.slice(0,8)}_${timestamp}_${sequenceNum}_${cryptoRandom}_${extraRandom}`;
+        console.log('🆔 Creating meeting with EXTRA-UNIQUE ID:', uniqueMeetingId);
+        
+        // Double-check this ID doesn't exist in localStorage already
+        const existingKeys = Object.keys(localStorage).filter(k => k.includes(uniqueMeetingId));
+        if (existingKeys.length > 0) {
+          console.warn('⚠️ COLLISION DETECTED! Re-generating ID...');
+          const collisionAvoidId = `meeting_${userId.slice(0,8)}_${Date.now()}_${Math.random().toString(36)}_COLLISION_AVOID`;
+          console.log('🆔 Using collision-avoidance ID:', collisionAvoidId);
+          uniqueMeetingId = collisionAvoidId;
+        }
         
         const completeMeeting = {
           id: uniqueMeetingId,
@@ -1168,6 +1178,9 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
             meetingsIndex.push(completeMeeting.id);
             localStorage.setItem('meetings_index', JSON.stringify(meetingsIndex));
             console.log('✅ Meeting added to index:', meetingsIndex.length, 'total meetings');
+            console.log('✅ All meetings in index:', meetingsIndex);
+          } else {
+            console.warn('⚠️ Meeting ID already exists in index!', completeMeeting.id);
           }
         } catch (error) {
           console.error('❌ Index update failed:', error);
