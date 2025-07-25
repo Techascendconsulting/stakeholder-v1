@@ -7,7 +7,6 @@ import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
 import VoiceInputModal from '../VoiceInputModal'
-import { DatabaseService } from '../../lib/database'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView } = useApp()
@@ -808,12 +807,40 @@ ${generateMeetingRecommendations()}
         createdBy: user?.email || 'Business Analyst'
       };
       
+      // Save fallback transcript meeting using same pattern
+      const fallbackMeetingId = `meeting_${user?.id}_${Date.now()}_fallback_${Math.random().toString(36).substring(2, 8)}`;
+      
+      const fallbackMeetingData = {
+        id: fallbackMeetingId,
+        user_id: user?.id,
+        project_id: selectedProject?.id,
+        project_name: selectedProject?.name,
+        stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
+        stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
+        stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
+        meeting_type: 'voice-transcript',
+        transcript: messages.filter(m => m.speaker !== 'system'),
+        raw_chat: messages.filter(m => m.speaker !== 'system'),
+        meeting_notes: basicNotes,
+        meeting_summary: '',
+        duration: 0,
+        total_messages: messages.filter(m => m.speaker !== 'system').length,
+        user_messages: messages.filter(m => m.speaker === 'user').length,
+        ai_messages: messages.filter(m => m.speaker !== 'user' && m.speaker !== 'system').length,
+        topics_discussed: [],
+        key_insights: [],
+        status: 'completed',
+        created_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
+      };
+
+      localStorage.setItem(`stored_meeting_${fallbackMeetingId}`, JSON.stringify(fallbackMeetingData));
+      
       const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
       existingNotes.push(basicNotesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
 
-      // Transcript meetings fallback also stays in localStorage - no database needed
-      console.log('💾 MeetingView - Fallback transcript meeting saved to localStorage')
+      console.log('💾 MeetingView - Fallback transcript meeting saved to localStorage with ID:', fallbackMeetingId)
       
       setCurrentView('notes');
     } finally {
