@@ -11,10 +11,39 @@ export const MeetingDetailsView: React.FC = () => {
   const [meeting, setMeeting] = useState<DatabaseMeeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [aiAnalytics, setAiAnalytics] = useState<any>(null);
+  const [completedActions, setCompletedActions] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     loadMeetingDetails();
+    loadCompletedActions();
   }, [selectedMeeting, user?.id]);
+
+  const loadCompletedActions = () => {
+    if (!selectedMeeting) return;
+    
+    const storageKey = `completed_actions_${selectedMeeting.id}`;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      setCompletedActions(new Set(JSON.parse(saved)));
+    }
+  };
+
+  const toggleActionComplete = (actionIndex: number) => {
+    if (!selectedMeeting) return;
+    
+    const newCompleted = new Set(completedActions);
+    if (newCompleted.has(actionIndex)) {
+      newCompleted.delete(actionIndex);
+    } else {
+      newCompleted.add(actionIndex);
+    }
+    
+    setCompletedActions(newCompleted);
+    
+    // Save to localStorage
+    const storageKey = `completed_actions_${selectedMeeting.id}`;
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(newCompleted)));
+  };
 
   const loadMeetingDetails = async () => {
     if (!selectedMeeting || !user?.id) {
@@ -371,30 +400,85 @@ export const MeetingDetailsView: React.FC = () => {
               </div>
             )}
 
-            {/* Next Steps - Main Focus */}
-            {aiAnalytics && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <ChevronRight className="w-6 h-6 text-blue-500" />
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Action Items: Recommended Next Steps</h3>
-                </div>
-                <div className="space-y-4">
-                  {aiAnalytics.nextSteps.map((step: string, index: number) => (
-                    <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full text-white text-xs flex items-center justify-center font-bold mt-0.5">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Next Action</h4>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">{step}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                         {/* Next Steps - Main Focus */}
+             {aiAnalytics && (
+               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                 <div className="flex items-center justify-between mb-6">
+                   <div className="flex items-center space-x-3">
+                     <ChevronRight className="w-6 h-6 text-blue-500" />
+                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Action Items: Recommended Next Steps</h3>
+                   </div>
+                   <div className="text-sm text-gray-500 dark:text-gray-400">
+                     {completedActions.size} of {aiAnalytics.nextSteps.length} completed
+                   </div>
+                 </div>
+                 <div className="space-y-4">
+                   {aiAnalytics.nextSteps.map((step: string, index: number) => {
+                     const isCompleted = completedActions.has(index);
+                     return (
+                       <div 
+                         key={index} 
+                         className={`p-4 rounded-lg border transition-all duration-200 ${
+                           isCompleted 
+                             ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                             : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                         }`}
+                       >
+                         <div className="flex items-start space-x-3">
+                           <button
+                             onClick={() => toggleActionComplete(index)}
+                             className={`w-6 h-6 rounded-full text-white text-xs flex items-center justify-center font-bold mt-0.5 transition-colors ${
+                               isCompleted 
+                                 ? 'bg-green-500 hover:bg-green-600' 
+                                 : 'bg-blue-500 hover:bg-blue-600'
+                             }`}
+                           >
+                             {isCompleted ? <CheckCircle size={14} /> : index + 1}
+                           </button>
+                           <div className={`flex-1 ${isCompleted ? 'opacity-60' : ''}`}>
+                             <h4 className={`font-medium mb-1 ${
+                               isCompleted 
+                                 ? 'text-green-800 dark:text-green-200 line-through' 
+                                 : 'text-gray-900 dark:text-white'
+                             }`}>
+                               {isCompleted ? 'Completed Action' : 'Next Action'}
+                             </h4>
+                             <p className={`text-sm ${
+                               isCompleted 
+                                 ? 'text-green-700 dark:text-green-300 line-through' 
+                                 : 'text-gray-700 dark:text-gray-300'
+                             }`}>
+                               {step}
+                             </p>
+                           </div>
+                           {isCompleted && (
+                             <div className="text-green-500 mt-0.5">
+                               <CheckCircle size={20} />
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                     );
+                   })}
+                 </div>
+                 
+                 {/* Progress Summary */}
+                 {completedActions.size > 0 && (
+                   <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                     <div className="flex items-center space-x-3">
+                       <CheckCircle className="w-5 h-5 text-green-500" />
+                       <div>
+                         <h4 className="font-medium text-green-800 dark:text-green-200">Great Progress!</h4>
+                         <p className="text-sm text-green-700 dark:text-green-300">
+                           You've completed {completedActions.size} action item{completedActions.size !== 1 ? 's' : ''} from this meeting.
+                           {completedActions.size === aiAnalytics.nextSteps.length ? ' All done! 🎉' : ' Keep going!'}
+                         </p>
+                       </div>
+                     </div>
+                   </div>
+                 )}
+               </div>
+             )}
           </div>
 
           {/* Right Sidebar - Supporting Information */}
