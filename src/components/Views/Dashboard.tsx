@@ -10,6 +10,12 @@ const Dashboard: React.FC = () => {
   const [progress, setProgress] = useState<DatabaseProgress | null>(null);
   const [recentMeetings, setRecentMeetings] = useState<DatabaseMeeting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [calculatedStats, setCalculatedStats] = useState({
+    projects: 0,
+    meetings: 0,
+    voiceMeetings: 0,
+    deliverables: 0
+  });
 
   // Scroll to top on mount
   useEffect(() => {
@@ -83,8 +89,28 @@ const Dashboard: React.FC = () => {
       });
       
       console.log('📋 Dashboard - Valid meetings after filtering:', validMeetings);
-      console.log('📋 Dashboard - Setting recent meetings (last 5):', validMeetings.slice(0, 5));
-      setRecentMeetings(validMeetings.slice(0, 5)); // Show last 5 meetings instead of 3
+      console.log('📋 Dashboard - Setting recent meetings (last 3):', validMeetings.slice(0, 3));
+      setRecentMeetings(validMeetings.slice(0, 3)); // Show last 3 meetings for consistency
+
+      // Calculate actual stats from meetings data
+      const uniqueProjects = new Set(validMeetings.map(m => m.project_id)).size;
+      const totalMeetings = validMeetings.length;
+      const voiceMeetings = validMeetings.filter(m => m.meeting_type === 'voice-only').length;
+      const deliverablesCreated = validMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
+      
+      setCalculatedStats({
+        projects: uniqueProjects,
+        meetings: totalMeetings,
+        voiceMeetings: voiceMeetings,
+        deliverables: deliverablesCreated
+      });
+      
+      console.log('📊 Dashboard - Calculated stats:', {
+        projects: uniqueProjects,
+        meetings: totalMeetings,
+        voiceMeetings: voiceMeetings,
+        deliverables: deliverablesCreated
+      });
 
       // Also check localStorage for any temporary meetings
       console.log('💾 Dashboard - Checking localStorage for temporary meetings...');
@@ -197,7 +223,7 @@ const Dashboard: React.FC = () => {
   const stats = [
     {
       title: 'Projects Started',
-      value: progress?.total_projects_started || 0,
+      value: calculatedStats.projects,
       icon: Target,
       color: 'bg-blue-500',
       change: '+12%',
@@ -205,7 +231,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Meetings Conducted',
-      value: progress?.total_meetings_conducted || 0,
+      value: calculatedStats.meetings,
       icon: Users,
       color: 'bg-purple-500',
       change: '+8%',
@@ -213,7 +239,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Voice-Only Meetings',
-      value: progress?.total_voice_meetings || 0,
+      value: calculatedStats.voiceMeetings,
       icon: MessageSquare,
       color: 'bg-green-500',
       change: '+15%',
@@ -221,7 +247,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Deliverables Created',
-      value: progress?.total_deliverables_created || 0,
+      value: calculatedStats.deliverables,
       icon: FileText,
       color: 'bg-orange-500',
       change: '+6%',
@@ -431,10 +457,18 @@ const Dashboard: React.FC = () => {
 
         {/* Content Insights Panel */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
-            <Zap className="mr-2" size={20} />
-            Your Content Library
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <Zap className="mr-2" size={20} />
+              Your Content Library
+            </h3>
+            <button
+              onClick={() => setCurrentView('my-meetings')}
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+            >
+              View All →
+            </button>
+          </div>
 
           {recentMeetings.length === 0 ? (
             <div className="text-center py-8">
@@ -453,7 +487,7 @@ const Dashboard: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {/* Summary Statistics */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mb-3">
                 <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
                   <div className="text-2xl font-bold text-green-900 dark:text-green-100">{meetingsWithSummaries}</div>
                   <div className="text-sm text-green-700 dark:text-green-300">AI Summaries</div>
@@ -463,6 +497,9 @@ const Dashboard: React.FC = () => {
                   <div className="text-sm text-blue-700 dark:text-blue-300">Full Transcripts</div>
                 </div>
               </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                * Stats from your 3 most recent meetings
+              </p>
 
               {/* Quick Access Buttons */}
               <div className="space-y-3">
