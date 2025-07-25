@@ -425,16 +425,21 @@ export const MeetingDetailsView: React.FC = () => {
                          }`}
                        >
                          <div className="flex items-start space-x-3">
-                           <button
-                             onClick={() => toggleActionComplete(index)}
-                             className={`w-6 h-6 rounded-full text-white text-xs flex items-center justify-center font-bold mt-0.5 transition-colors ${
+                           <div className="flex items-center space-x-2 mt-0.5">
+                             <input
+                               type="checkbox"
+                               checked={isCompleted}
+                               onChange={() => toggleActionComplete(index)}
+                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                             />
+                             <div className={`w-6 h-6 rounded-full text-white text-xs flex items-center justify-center font-bold transition-colors ${
                                isCompleted 
-                                 ? 'bg-green-500 hover:bg-green-600' 
-                                 : 'bg-blue-500 hover:bg-blue-600'
-                             }`}
-                           >
-                             {isCompleted ? <CheckCircle size={14} /> : index + 1}
-                           </button>
+                                 ? 'bg-green-500' 
+                                 : 'bg-blue-500'
+                             }`}>
+                               {index + 1}
+                             </div>
+                           </div>
                            <div className={`flex-1 ${isCompleted ? 'opacity-60' : ''}`}>
                              <h4 className={`font-medium mb-1 ${
                                isCompleted 
