@@ -110,7 +110,7 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails, onVie
           <div className="flex items-center justify-center mb-1">
             <Users size={16} className="text-purple-500" />
           </div>
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">{meeting.stakeholder_names.length}</div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{meeting.stakeholder_names?.length || 0}</div>
           <div className="text-xs text-gray-500">Stakeholders</div>
         </div>
         <div className="text-center">
@@ -143,15 +143,15 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails, onVie
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Meeting Participants</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {meeting.stakeholder_names.slice(0, 3).map((name, index) => (
+          {(meeting.stakeholder_names || []).slice(0, 3).map((name, index) => (
             <div key={index} className="flex items-center space-x-1 px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs">
               <span className="font-medium">{name}</span>
-              <span className="text-purple-500">({meeting.stakeholder_roles[index]})</span>
+              <span className="text-purple-500">({(meeting.stakeholder_roles || [])[index]})</span>
             </div>
           ))}
-          {meeting.stakeholder_names.length > 3 && (
+          {(meeting.stakeholder_names?.length || 0) > 3 && (
             <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-              +{meeting.stakeholder_names.length - 3} more
+              +{(meeting.stakeholder_names?.length || 0) - 3} more
             </span>
           )}
         </div>
@@ -349,8 +349,8 @@ export const MyMeetingsView: React.FC = () => {
   // Filter meetings based on search and filters
   const filteredMeetings = meetings.filter(meeting => {
     const matchesSearch = searchTerm === '' || 
-      meeting.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meeting.stakeholder_names.some(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
+      meeting.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (meeting.stakeholder_names || []).some(name => name?.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesType = filterType === 'all' || meeting.meeting_type === filterType;
     const matchesStatus = filterStatus === 'all' || meeting.status === filterStatus;

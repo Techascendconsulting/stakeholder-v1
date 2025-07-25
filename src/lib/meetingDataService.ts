@@ -47,8 +47,10 @@ export class MeetingDataService {
           index === self.findIndex(m => m.id === meeting.id)
         );
 
-      // Apply unified validation filter
-      const validMeetings = allMeetings.filter(meeting => this.isValidMeeting(meeting, userId));
+      // Apply unified validation filter and normalize data
+      const validMeetings = allMeetings
+        .filter(meeting => this.isValidMeeting(meeting, userId))
+        .map(meeting => this.normalizeMeetingData(meeting));
 
       // Sort by creation date (newest first)
       const sortedMeetings = validMeetings.sort((a, b) => 
@@ -205,6 +207,29 @@ export class MeetingDataService {
     }
 
     return isValid;
+  }
+
+  /**
+   * Normalize meeting data to ensure all required fields exist
+   */
+  private static normalizeMeetingData(meeting: any): DatabaseMeeting {
+    return {
+      ...meeting,
+      stakeholder_names: meeting.stakeholder_names || [],
+      stakeholder_roles: meeting.stakeholder_roles || [],
+      stakeholder_ids: meeting.stakeholder_ids || [],
+      transcript: meeting.transcript || [],
+      raw_chat: meeting.raw_chat || [],
+      topics_discussed: meeting.topics_discussed || [],
+      key_insights: meeting.key_insights || [],
+      meeting_notes: meeting.meeting_notes || '',
+      meeting_summary: meeting.meeting_summary || '',
+      total_messages: meeting.total_messages || 0,
+      user_messages: meeting.user_messages || 0,
+      ai_messages: meeting.ai_messages || 0,
+      duration: meeting.duration || 0,
+      project_name: meeting.project_name || meeting.project_id || 'Unknown Project'
+    };
   }
 
   /**
