@@ -7,6 +7,7 @@ import { Project } from '../../lib/types';
 // Types
 interface AgileTicket {
   id: string;
+  ticketNumber: string;
   type: 'Story' | 'Task' | 'Bug' | 'Spike';
   title: string;
   description: string;
@@ -101,12 +102,20 @@ export const AgileHubView: React.FC = () => {
     setTickets(updatedTickets);
   };
 
+  const generateTicketNumber = () => {
+    const projectCode = currentProject?.name.split(' ').map(word => word[0]).join('').toUpperCase() || 'PROJ';
+    const nextNumber = tickets.length + 1;
+    return `${projectCode}-${nextNumber}`;
+  };
+
   const createTicket = (ticketData: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (!user?.id) return;
 
+    const ticketNumber = generateTicketNumber();
     const newTicket: AgileTicket = {
       ...ticketData,
       id: `ticket_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+      ticketNumber,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       userId: user.id
@@ -480,7 +489,10 @@ export const AgileHubView: React.FC = () => {
                       <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Ticket
+                            Key
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Summary
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Type
@@ -498,10 +510,23 @@ export const AgileHubView: React.FC = () => {
                       </thead>
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredTickets.map((ticket) => (
-                          <tr key={ticket.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td className="px-6 py-4">
+                          <tr key={ticket.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                            {/* Key Column */}
+                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
+                              <div className="flex items-center space-x-2">
+                                <span className={getTypeColor(ticket.type)}>
+                                  {getTypeIcon(ticket.type)}
+                                </span>
+                                <span className="text-sm font-medium text-blue-600 hover:text-blue-800">
+                                  {ticket.ticketNumber || `${currentProject?.name.split(' ').map(w => w[0]).join('').toUpperCase() || 'PROJ'}-${tickets.indexOf(ticket) + 1}`}
+                                </span>
+                              </div>
+                            </td>
+                            
+                            {/* Summary Column */}
+                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
                               <div>
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600">
                                   {ticket.title}
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-md">
@@ -509,64 +534,80 @@ export const AgileHubView: React.FC = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTypeColor(ticket.type)}`}>
+                            
+                            {/* Type Column */}
+                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${getTypeColor(ticket.type).replace('text-', 'bg-').replace('-600', '-100')} ${getTypeColor(ticket.type)}`}>
                                 {getTypeIcon(ticket.type)}
                                 <span className="ml-1">{ticket.type}</span>
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
+                            
+                            {/* Priority Column */}
+                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
                                 {ticket.priority}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ticket.status)}`}>
+                            
+                            {/* Status Column */}
+                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${getStatusColor(ticket.status)}`}>
                                 {ticket.status}
                               </span>
                             </td>
-                                                         <td className="px-6 py-4">
-                               <div className="flex items-center space-x-2">
-                                 {ticket.type === 'Story' && ticket.status === 'Ready for Refinement' && (
-                                   <button
-                                     onClick={() => startRefinementMeeting(ticket)}
-                                     className="bg-orange-600 text-white px-3 py-1 rounded-md text-xs hover:bg-orange-700 transition-colors flex items-center space-x-1"
-                                   >
-                                     <Play size={12} />
-                                     <span>Join Refinement</span>
-                                   </button>
-                                 )}
-                                 {ticket.status === 'Draft' && (
-                                   <button
-                                     onClick={() => updateTicketStatus(ticket.id, 'Ready for Refinement')}
-                                     className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors"
-                                   >
-                                     Mark Ready
-                                   </button>
-                                 )}
-                                 
-                                 {/* Action buttons */}
-                                 <div className="flex items-center space-x-1">
-                                   <button 
-                                     onClick={() => editTicket(ticket)}
-                                     className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                     title="Edit ticket"
-                                   >
-                                     <Edit3 size={14} />
-                                   </button>
-                                   <button 
-                                     onClick={() => deleteTicket(ticket.id)}
-                                     className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                     title="Delete ticket"
-                                   >
-                                     <Trash2 size={14} />
-                                   </button>
-                                   <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors" title="View details">
-                                     <Eye size={14} />
-                                   </button>
-                                 </div>
-                               </div>
-                             </td>
+                                                                                     {/* Actions Column */}
+                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center space-x-2">
+                                {ticket.type === 'Story' && ticket.status === 'Ready for Refinement' && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      startRefinementMeeting(ticket);
+                                    }}
+                                    className="bg-orange-600 text-white px-3 py-1 rounded-md text-xs hover:bg-orange-700 transition-colors flex items-center space-x-1"
+                                  >
+                                    <Play size={12} />
+                                    <span>Refinement</span>
+                                  </button>
+                                )}
+                                {ticket.status === 'Draft' && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateTicketStatus(ticket.id, 'Ready for Refinement');
+                                    }}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors"
+                                  >
+                                    Mark Ready
+                                  </button>
+                                )}
+                                
+                                {/* Quick Action Buttons */}
+                                <div className="flex items-center space-x-1">
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteTicket(ticket.id);
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    title="Delete ticket"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Add view details functionality
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors" 
+                                    title="View details"
+                                  >
+                                    <MoreHorizontal size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -865,11 +906,18 @@ const EditTicketModal: React.FC<{
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edit Ticket</h3>
+          <div className="flex items-center space-x-3">
+            <span className={`${getTypeColor(ticket.type)}`}>
+              {getTypeIcon(ticket.type)}
+            </span>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              {ticket.ticketNumber || 'New Ticket'}
+            </h3>
+          </div>
           <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span>ID: {ticket.id.split('_')[1]}</span>
-            <span>•</span>
             <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+            <span>•</span>
+            <span>Updated: {new Date(ticket.updatedAt).toLocaleDateString()}</span>
           </div>
         </div>
         
