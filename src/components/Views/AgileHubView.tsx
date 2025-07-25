@@ -1024,18 +1024,7 @@ export const AgileHubView: React.FC = () => {
                                                                                      {/* Actions Column */}
                             <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                               <div className="flex items-center space-x-2">
-                                {ticket.type === 'Story' && ticket.status === 'Ready for Refinement' && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      startRefinementMeeting(ticket);
-                                    }}
-                                    className="bg-orange-600 text-white px-3 py-1 rounded-md text-xs hover:bg-orange-700 transition-colors flex items-center space-x-1"
-                                  >
-                                    <Play size={12} />
-                                    <span>Refinement</span>
-                                  </button>
-                                )}
+
                                 
                                 {/* Quick Action Buttons */}
                                 <div className="flex items-center space-x-1">
