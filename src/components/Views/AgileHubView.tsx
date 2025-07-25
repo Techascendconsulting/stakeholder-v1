@@ -774,6 +774,27 @@ const CreateTicketModal: React.FC<{
     priority: 'Medium' as AgileTicket['priority'],
     status: 'Draft' as AgileTicket['status']
   });
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+
+  const getTypeIcon = (type: AgileTicket['type']) => {
+    switch (type) {
+      case 'Story': return <BookOpen className="w-4 h-4" />;
+      case 'Task': return <Square className="w-4 h-4" />;
+      case 'Bug': return <Bug className="w-4 h-4" />;
+      case 'Spike': return <Lightbulb className="w-4 h-4" />;
+    }
+  };
+
+  const getTypeColor = (type: AgileTicket['type']) => {
+    switch (type) {
+      case 'Story': return 'text-blue-600';
+      case 'Task': return 'text-green-600';
+      case 'Bug': return 'text-red-600';
+      case 'Spike': return 'text-purple-600';
+    }
+  };
+
+  const ticketTypes: AgileTicket['type'][] = ['Story', 'Task', 'Bug', 'Spike'];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -794,16 +815,44 @@ const CreateTicketModal: React.FC<{
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Type
             </label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as AgileTicket['type'] })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="Story">Story</option>
-              <option value="Task">Task</option>
-              <option value="Bug">Bug</option>
-              <option value="Spike">Spike</option>
-            </select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <div className="flex items-center space-x-2">
+                  <span className={getTypeColor(formData.type)}>
+                    {getTypeIcon(formData.type)}
+                  </span>
+                  <span>{formData.type}</span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              </button>
+              
+              {showTypeDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                  {ticketTypes.map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, type });
+                        setShowTypeDropdown(false);
+                      }}
+                      className={`w-full flex items-center space-x-3 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-lg last:rounded-b-lg ${
+                        formData.type === type ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                    >
+                      <span className={getTypeColor(type)}>
+                        {getTypeIcon(type)}
+                      </span>
+                      <span className="text-gray-900 dark:text-white">{type}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Title */}
