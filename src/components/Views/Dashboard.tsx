@@ -83,8 +83,8 @@ const Dashboard: React.FC = () => {
       });
       
       console.log('📋 Dashboard - Valid meetings after filtering:', validMeetings);
-      console.log('📋 Dashboard - Setting recent meetings (last 3):', validMeetings.slice(0, 3));
-      setRecentMeetings(validMeetings.slice(0, 3)); // Show only last 3 meetings
+      console.log('📋 Dashboard - Setting recent meetings (last 5):', validMeetings.slice(0, 5));
+      setRecentMeetings(validMeetings.slice(0, 5)); // Show last 5 meetings instead of 3
 
       // Also check localStorage for any temporary meetings
       console.log('💾 Dashboard - Checking localStorage for temporary meetings...');
@@ -194,19 +194,10 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // Calculate insights about meetings with summaries and transcripts
-  const meetingsWithSummaries = recentMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
-  const meetingsWithTranscripts = recentMeetings.filter(m => m.transcript && m.transcript.length > 0).length;
-
-  // Calculate realistic project count from actual meetings (max 5 training projects available)
-  const [actualProjectCount, setActualProjectCount] = useState<number>(0);
-  const [totalMeetingsCount, setTotalMeetingsCount] = useState<number>(0);
-
-  // Stats array defined after state initialization
   const stats = [
     {
       title: 'Projects Started',
-      value: actualProjectCount,
+      value: progress?.total_projects_started || 0,
       icon: Target,
       color: 'bg-blue-500',
       change: '+12%',
@@ -214,7 +205,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Meetings Conducted',
-      value: totalMeetingsCount,
+      value: progress?.total_meetings_conducted || 0,
       icon: Users,
       color: 'bg-purple-500',
       change: '+8%',
@@ -237,75 +228,10 @@ const Dashboard: React.FC = () => {
       changeType: 'positive' as const
     }
   ];
-  
-  useEffect(() => {
-    const calculateRealProjectCount = async () => {
-      if (!user?.id) return;
-      
-      try {
-        // Get all meetings to calculate unique training projects
-        const allMeetings = await DatabaseService.getUserMeetings(user.id);
-        
-        // Also check localStorage for additional meetings
-        const localMeetings: any[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
-            try {
-              const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
-              if (meetingData.user_id === user.id && meetingData.id) {
-                localMeetings.push(meetingData);
-              }
-            } catch (error) {
-              console.warn('Error parsing localStorage meeting:', key, error);
-            }
-          }
-        }
-        
-        // Combine and get unique project names
-        const combinedMeetings = [...allMeetings, ...localMeetings]
-          .filter((meeting, index, self) => 
-            meeting && meeting.id && 
-            index === self.findIndex(m => m.id === meeting.id)
-          );
-        
-        // Only count the 5 predefined training projects (not custom projects)
-        const trainingProjectNames = [
-          'Customer Onboarding Process Optimization',
-          'Digital Expense Management System Implementation',
-          'Multi-Location Inventory Management Enhancement', 
-          'Customer Support Ticket Management System',
-          'Employee Performance Management Platform'
-        ];
-        
-        const uniqueTrainingProjects = new Set(
-          combinedMeetings
-            .map(meeting => meeting.project_name)
-            .filter(name => name && trainingProjectNames.includes(name))
-        );
-        
-        // Show actual count of training projects started (0-5 possible)
-        const projectCount = uniqueTrainingProjects.size;
-        
-        // Also calculate total meetings count
-        const totalMeetings = combinedMeetings.length;
-        
-        console.log('📊 Dashboard - Training projects started (by having meetings):', projectCount);
-        console.log('📊 Dashboard - Projects with meetings:', Array.from(uniqueTrainingProjects));
-        console.log('📊 Dashboard - Total meetings conducted:', totalMeetings);
-        
-        setActualProjectCount(projectCount);
-        setTotalMeetingsCount(totalMeetings);
-      } catch (error) {
-        console.error('Error calculating project count:', error);
-        // Default to 0 if no meetings found
-        setActualProjectCount(0);
-        setTotalMeetingsCount(0);
-      }
-    };
-    
-    calculateRealProjectCount();
-  }, [user?.id, recentMeetings, progress]);
+
+  // Calculate insights about meetings with summaries and transcripts
+  const meetingsWithSummaries = recentMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
+  const meetingsWithTranscripts = recentMeetings.filter(m => m.transcript && m.transcript.length > 0).length;
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -505,20 +431,10 @@ const Dashboard: React.FC = () => {
 
         {/* Content Insights Panel */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-              <Zap className="mr-2" size={20} />
-              Content Library
-            </h3>
-            {recentMeetings.length > 0 && (
-              <button
-                onClick={() => setCurrentView('my-meetings')}
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center"
-              >
-                View All Content <ChevronRight size={16} className="ml-1" />
-              </button>
-            )}
-          </div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+            <Zap className="mr-2" size={20} />
+            Your Content Library
+          </h3>
 
           {recentMeetings.length === 0 ? (
             <div className="text-center py-8">
@@ -536,18 +452,15 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Summary Statistics from Recent Meetings */}
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">From your 3 most recent meetings:</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">{meetingsWithSummaries}</div>
-                    <div className="text-sm text-green-700 dark:text-green-300">AI Summaries</div>
-                  </div>
-                  <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{meetingsWithTranscripts}</div>
-                    <div className="text-sm text-blue-700 dark:text-blue-300">Full Transcripts</div>
-                  </div>
+              {/* Summary Statistics */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">{meetingsWithSummaries}</div>
+                  <div className="text-sm text-green-700 dark:text-green-300">AI Summaries</div>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{meetingsWithTranscripts}</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">Full Transcripts</div>
                 </div>
               </div>
 
