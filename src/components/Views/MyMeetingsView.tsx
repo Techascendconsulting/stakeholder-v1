@@ -338,13 +338,14 @@ export const MyMeetingsView: React.FC = () => {
           return meeting &&
                  typeof meeting.project_name === 'string' &&
                  meeting.project_name.trim() !== '' &&
-                 Array.isArray(meeting.stakeholder_names) &&
-                 meeting.stakeholder_names.every(name => typeof name === 'string') &&
+                 // Array.isArray(meeting.stakeholder_names) &&
+                 // meeting.stakeholder_names.every(name => typeof name === 'string') &&
                  meeting.created_at &&
                  meeting.status &&
                  typeof meeting.meeting_type === 'string';
         })
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      console.log("📋 MyMeetings - BEFORE FILTER:", allMeetings.length, "meetings");
 
       console.log('📋 MyMeetings - Final processed meetings:', allMeetings.length);
       setMeetings(allMeetings);
