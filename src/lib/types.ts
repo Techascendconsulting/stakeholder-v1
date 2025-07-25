@@ -223,3 +223,69 @@ export type StateChangeHandler = (state: AudioPlaybackState) => void
 
 export type ErrorHandler = (error: AppError) => void
 
+// Refinement Meeting Types with Azure TTS
+interface RefinementTeamMember {
+  id: string;
+  name: string;
+  role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester';
+  voiceId: string; // Azure TTS voice ID
+  nationality: string;
+  personality: string;
+  focusAreas: string[];
+  avatar?: string;
+}
+
+interface RefinementMessage {
+  id: string;
+  speakerId: string;
+  speakerName: string;
+  speakerRole: string;
+  message: string;
+  timestamp: string;
+  isUser: boolean;
+  audioUrl?: string; // Azure TTS generated audio
+  isPlaying?: boolean;
+}
+
+interface RefinementMeetingState {
+  id: string;
+  stories: AgileTicket[];
+  currentStoryIndex: number;
+  phase: 'intro' | 'story-review' | 'discussion' | 'estimation' | 'summary' | 'completed';
+  messages: RefinementMessage[];
+  currentSpeaker: string | null;
+  isWaitingForUser: boolean;
+  startedAt: string;
+  scores: {
+    [storyId: string]: {
+      clarity: number;
+      completeness: number;
+      testability: number;
+      overall: number;
+    };
+  };
+  suggestions: {
+    [storyId: string]: string[];
+  };
+  kanbanColumns: {
+    [columnId: string]: {
+      id: string;
+      title: string;
+      stories: string[]; // story IDs
+    };
+  };
+}
+
+interface AzureTTSConfig {
+  endpoint: string;
+  apiKey: string;
+  region: string;
+}
+
+interface TTSRequest {
+  text: string;
+  voiceId: string;
+  rate?: string;
+  pitch?: string;
+}
+

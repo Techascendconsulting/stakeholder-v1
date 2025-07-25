@@ -3,6 +3,7 @@ import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, 
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
+import { RefinementMeetingView } from './RefinementMeetingView';
 
 // Types
 interface AgileTicket {
@@ -1129,10 +1130,7 @@ export const AgileHubView: React.FC = () => {
                       
                       <button
                         onClick={() => {
-                          // Auto-select all ready stories and start meeting
-                          const allStoryIds = storiesReadyForRefinement.map(story => story.id);
-                          setSelectedRefinementStories(new Set(allStoryIds));
-                          setSelectedTicket(storiesReadyForRefinement[0]);
+                          // Start comprehensive refinement meeting with all ready stories
                           setShowRefinementModal(true);
                           setIsInMeeting(true);
                         }}
@@ -1332,33 +1330,24 @@ export const AgileHubView: React.FC = () => {
         />
       )}
 
-      {/* Refinement Meeting Modal */}
-      {showRefinementModal && selectedTicket && (
-        <RefinementMeetingModal
-          ticket={selectedTicket}
-          selectedStories={Array.from(selectedRefinementStories)}
-          allStories={storiesReadyForRefinement}
-          onClose={() => {
-            setShowRefinementModal(false);
-            setSelectedTicket(null);
-            clearRefinementSelection();
-          }}
-          onComplete={(meetingData, scores) => {
-            // Determine which stories to refine
-            const storiesToRefine = selectedRefinementStories.size > 0 
-              ? Array.from(selectedRefinementStories)
-              : [selectedTicket.id];
+      {/* Comprehensive Refinement Meeting */}
+      {showRefinementModal && storiesReadyForRefinement.length > 0 && (
+        <RefinementMeetingView
+          stories={storiesReadyForRefinement}
+          onMeetingEnd={(results) => {
+            // Process meeting results
+            const { scores, suggestions, duration, transcript } = results;
             
             // Create meeting records for each story
-            const newMeetings: RefinementMeeting[] = storiesToRefine.map(ticketId => ({
-              id: `meeting_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${ticketId}`,
-              ticketId: ticketId,
-              participants: ['You', 'Dev 1', 'Dev 2', 'Tester', 'Scrum Master'],
-              duration: meetingData.duration,
-              transcript: meetingData.transcript,
-              summary: `${meetingData.summary} (Multi-story session with ${storiesToRefine.length} stories)`,
-              scores,
-              feedback: meetingData.feedback,
+            const newMeetings: RefinementMeeting[] = storiesReadyForRefinement.map(story => ({
+              id: `meeting_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${story.id}`,
+              ticketId: story.id,
+              participants: ['You', 'Sarah (Scrum Master)', 'Srikanth (Senior Dev)', 'Lisa (Developer)', 'Tom (QA Tester)'],
+              duration: duration,
+              transcript: transcript,
+              summary: `Team refinement meeting with ${storiesReadyForRefinement.length} stories`,
+              scores: scores[story.id] || { clarity: 8, completeness: 7, testability: 7, overall: 7 },
+              feedback: suggestions[story.id] || [],
               completedAt: new Date().toISOString()
             }));
             
@@ -1368,20 +1357,24 @@ export const AgileHubView: React.FC = () => {
             setRefinementMeetings(updatedMeetings);
             
             // Update all ticket statuses and scores
-            storiesToRefine.forEach(ticketId => {
-              updateTicketStatus(ticketId, 'Refined', {
-                clarity: scores.clarity,
-                completeness: scores.completeness,
-                testability: scores.testability,
-                overall: scores.overall,
-                feedback: meetingData.feedback,
-                aiSummary: `${meetingData.summary} (Part of multi-story refinement)`
+            storiesReadyForRefinement.forEach(story => {
+              const storyScores = scores[story.id] || { clarity: 8, completeness: 7, testability: 7, overall: 7 };
+              updateTicketStatus(story.id, 'Refined', {
+                clarity: storyScores.clarity,
+                completeness: storyScores.completeness,
+                testability: storyScores.testability,
+                overall: storyScores.overall,
+                feedback: suggestions[story.id] || [],
+                aiSummary: `Refined in team meeting with AI feedback and scoring`
               });
             });
             
             setShowRefinementModal(false);
-            setSelectedTicket(null);
-            clearRefinementSelection();
+            setIsInMeeting(false);
+          }}
+          onClose={() => {
+            setShowRefinementModal(false);
+            setIsInMeeting(false);
           }}
         />
       )}
