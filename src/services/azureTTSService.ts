@@ -24,6 +24,12 @@ class AzureTTSService {
       return this.audioCache.get(cacheKey)!;
     }
 
+    // Check if Azure TTS is configured
+    if (!this.config.endpoint || !this.config.apiKey) {
+      console.warn('Azure TTS not configured. Skipping audio synthesis.');
+      return ''; // Return empty string when not configured
+    }
+
     try {
       const ssml = this.buildSSML(request);
       
@@ -39,7 +45,8 @@ class AzureTTSService {
       });
 
       if (!response.ok) {
-        throw new Error(`Azure TTS API error: ${response.status}`);
+        console.warn(`Azure TTS API error: ${response.status}. Meeting will continue without audio.`);
+        return ''; // Return empty string on API error
       }
 
       const audioBlob = await response.blob();
@@ -50,7 +57,7 @@ class AzureTTSService {
       
       return audioUrl;
     } catch (error) {
-      console.error('Azure TTS Error:', error);
+      console.warn('Azure TTS Error:', error, 'Meeting will continue without audio.');
       return ''; // Return empty string on error
     }
   }

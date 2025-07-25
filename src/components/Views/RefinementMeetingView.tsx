@@ -49,7 +49,8 @@ import {
   User,
   Target,
   Lightbulb,
-  BookOpen
+  BookOpen,
+  X
 } from 'lucide-react';
 
 interface RefinementMeetingViewProps {
@@ -68,6 +69,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [userInput, setUserInput] = useState('');
+  const [ttsAvailable, setTtsAvailable] = useState(true);
 
   // Priority color helper function
   const getPriorityColor = (priority: string) => {
@@ -172,7 +174,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       currentSpeaker: member.id
     }));
 
-    // Generate TTS audio
+    // Generate TTS audio (if available and not muted)
     if (!isMuted) {
       try {
         const audioUrl = await azureTTSService.synthesizeSpeech({
@@ -207,14 +209,27 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               currentSpeaker: null
             }));
           };
+        } else {
+          // No audio available, mark TTS as unavailable and show text only
+          setTtsAvailable(false);
+          setTimeout(() => {
+            setMeetingState(prev => ({
+              ...prev,
+              currentSpeaker: null
+            }));
+          }, 2000);
         }
-      } catch (error) {
-        console.error('TTS Error:', error);
-        setMeetingState(prev => ({
-          ...prev,
-          currentSpeaker: null
-        }));
-      }
+              } catch (error) {
+          console.warn('TTS Error:', error, 'Continuing with text-only meeting.');
+          setTtsAvailable(false);
+          // Clear current speaker after a delay even if TTS fails
+          setTimeout(() => {
+            setMeetingState(prev => ({
+              ...prev,
+              currentSpeaker: null
+            }));
+          }, 2000);
+        }
     } else {
       // If muted, just clear current speaker after a delay
       setTimeout(() => {
@@ -434,9 +449,17 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         <div className="flex items-center space-x-4">
           <Users className="w-5 h-5 text-blue-400" />
           <span className="font-medium">Team Refinement Meeting</span>
-          <div className="flex items-center space-x-2 text-sm text-gray-300">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span>Recording</span>
+          <div className="flex items-center space-x-4 text-sm text-gray-300">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <span>Recording</span>
+            </div>
+            {!ttsAvailable && (
+              <div className="flex items-center space-x-2 text-yellow-400">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                <span>Text Only</span>
+              </div>
+            )}
           </div>
         </div>
         
