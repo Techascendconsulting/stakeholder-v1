@@ -36,12 +36,13 @@ export default {
     'to-pink-600',
     'from-yellow-500',
     'to-orange-600',
-         // Additional specific colors for cards 6, 12, 14
-     'from-violet-500',
-     'to-purple-500',
-     'from-rose-500',
-     'to-red-500',
-     'from-fuchsia-500',
+         // Additional specific colors for cards 6, 12, 14 (using proven working patterns)
+     'from-blue-500',
+     'to-purple-600',
+     'from-pink-500', 
+     'to-red-600',
+     'from-purple-500',
+     'to-indigo-600',
      // Specific gradient class patterns
      {
        pattern: /bg-gradient-to-r/
