@@ -56,6 +56,7 @@ export const AgileHubView: React.FC = () => {
   const [isInMeeting, setIsInMeeting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
 
   useEffect(() => {
     setCurrentProject(selectedProject);
@@ -241,19 +242,32 @@ export const AgileHubView: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agile Hub</h1>
                 {projects && projects.length > 1 ? (
                   <div className="relative">
-                    <select
-                      value={currentProject?.id || ''}
-                      onChange={(e) => {
-                        const project = projects.find(p => p.id === e.target.value);
-                        setCurrentProject(project || null);
-                      }}
-                      className="appearance-none pl-3 pr-8 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                    <button
+                      onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+                      className="flex items-center space-x-2 pl-3 pr-8 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
                     >
-                      {projects.map(project => (
-                        <option key={project.id} value={project.id}>{project.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                      <span>{currentProject?.name}</span>
+                      <ChevronDown className="w-4 h-4 text-gray-500" />
+                    </button>
+                    
+                    {showProjectDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                        {projects.map(project => (
+                          <button
+                            key={project.id}
+                            onClick={() => {
+                              setCurrentProject(project);
+                              setShowProjectDropdown(false);
+                            }}
+                            className={`w-full flex items-center space-x-2 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-lg last:rounded-b-lg ${
+                              currentProject?.id === project.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'
+                            }`}
+                          >
+                            <span>{project.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
