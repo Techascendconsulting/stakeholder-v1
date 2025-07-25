@@ -18,7 +18,8 @@ import {
   ChevronRight,
   Sun,
   Moon,
-  Calendar
+  Calendar,
+  GitBranch
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
