@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X } from 'lucide-react';
+import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useApp } from '../../contexts/AppContext';
 
 // Types
 interface AgileTicket {
@@ -43,6 +44,7 @@ interface RefinementMeeting {
 
 export const AgileHubView: React.FC = () => {
   const { user } = useAuth();
+  const { selectedProject } = useApp();
   const [activeTab, setActiveTab] = useState<'backlog' | 'refinement' | 'feedback' | 'ceremonies'>('backlog');
   const [tickets, setTickets] = useState<AgileTicket[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -56,12 +58,17 @@ export const AgileHubView: React.FC = () => {
   useEffect(() => {
     loadTickets();
     loadRefinementMeetings();
-  }, [user?.id]);
+  }, [user?.id, selectedProject?.id]);
+
+  const getStorageKey = (type: 'tickets' | 'meetings') => {
+    const projectId = selectedProject?.id || 'default';
+    return `agile_${type}_${user?.id}_${projectId}`;
+  };
 
   const loadTickets = () => {
     if (!user?.id) return;
     
-    const storageKey = `agile_tickets_${user.id}`;
+    const storageKey = getStorageKey('tickets');
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       setTickets(JSON.parse(saved));
@@ -71,7 +78,7 @@ export const AgileHubView: React.FC = () => {
   const loadRefinementMeetings = () => {
     if (!user?.id) return;
     
-    const storageKey = `refinement_meetings_${user.id}`;
+    const storageKey = getStorageKey('meetings');
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       setRefinementMeetings(JSON.parse(saved));
@@ -81,7 +88,7 @@ export const AgileHubView: React.FC = () => {
   const saveTickets = (updatedTickets: AgileTicket[]) => {
     if (!user?.id) return;
     
-    const storageKey = `agile_tickets_${user.id}`;
+    const storageKey = getStorageKey('tickets');
     localStorage.setItem(storageKey, JSON.stringify(updatedTickets));
     setTickets(updatedTickets);
   };
@@ -170,6 +177,26 @@ export const AgileHubView: React.FC = () => {
     ticket => ticket.type === 'Story' && ticket.status === 'Refined'
   );
 
+  // Show project selection prompt if no project
+  if (!selectedProject) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <Workflow className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome to Agile Hub</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Select a training project to start creating stories and practicing Agile delivery workflows.
+          </p>
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              💡 Go to <strong>Training Projects</strong> to select a project and begin your Agile journey!
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -177,7 +204,12 @@ export const AgileHubView: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agile Hub</h1>
+              <div className="flex items-center space-x-3">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agile Hub</h1>
+                <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                  {selectedProject.name}
+                </span>
+              </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Manage your delivery backlog and refinement meetings</p>
             </div>
             <button
@@ -641,7 +673,7 @@ export const AgileHubView: React.FC = () => {
             };
             
             const updatedMeetings = [...refinementMeetings, newMeeting];
-            const storageKey = `refinement_meetings_${user?.id}`;
+            const storageKey = getStorageKey('meetings');
             localStorage.setItem(storageKey, JSON.stringify(updatedMeetings));
             setRefinementMeetings(updatedMeetings);
             
