@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useRe
 import { useAuth } from './AuthContext'
 import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
+import { MeetingDataService } from '../lib/meetingDataService'
 
 interface AppContextType {
   // Hydration state
@@ -47,6 +48,7 @@ interface AppContextType {
   canAccessProject: (projectId: string) => boolean
   canSaveNotes: () => boolean
   canCreateMoreMeetings: () => boolean
+  refreshMeetingData: () => Promise<void>
   
   // Loading state
   isLoading: boolean
@@ -295,6 +297,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const canSaveNotes = () => true
   const canCreateMoreMeetings = () => true
 
+  const refreshMeetingData = async () => {
+    if (user?.id) {
+      console.log('🔄 AppContext - Refreshing meeting data cache for user:', user.id)
+      MeetingDataService.clearCache(user.id)
+      // Force refresh data in unified service
+      await MeetingDataService.refreshData(user.id)
+    }
+  }
+
   const value = {
     isHydrated,
     currentView,
@@ -320,6 +331,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     canAccessProject,
     canSaveNotes,
     canCreateMoreMeetings,
+    refreshMeetingData,
     isLoading,
     selectedMeeting,
     setSelectedMeeting

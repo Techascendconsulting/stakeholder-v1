@@ -3,18 +3,20 @@ import { TrendingUp, Users, MessageSquare, FileText, Clock, Award, Target, Calen
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseService, DatabaseProgress, DatabaseMeeting } from '../../lib/database';
+import { MeetingDataService, MeetingStats } from '../../lib/meetingDataService';
 
 const Dashboard: React.FC = () => {
-  const { setCurrentView, setSelectedMeeting } = useApp();
+  const { setCurrentView, setSelectedMeeting, refreshMeetingData } = useApp();
   const { user } = useAuth();
   const [progress, setProgress] = useState<DatabaseProgress | null>(null);
   const [recentMeetings, setRecentMeetings] = useState<DatabaseMeeting[]>([]);
   const [loading, setLoading] = useState(true);
-  const [calculatedStats, setCalculatedStats] = useState({
-    projects: 0,
-    meetings: 0,
+  const [meetingStats, setMeetingStats] = useState<MeetingStats>({
+    totalMeetings: 0,
     voiceMeetings: 0,
-    deliverables: 0
+    transcriptMeetings: 0,
+    uniqueProjects: 0,
+    deliverablesCreated: 0
   });
 
   // Scroll to top on mount
@@ -38,9 +40,10 @@ const Dashboard: React.FC = () => {
 
   // Refresh data when coming back to dashboard (e.g., after completing a meeting)
   useEffect(() => {
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       if (!document.hidden && user?.id) {
         console.log('🔄 Dashboard - Page became visible, refreshing data');
+        await refreshMeetingData();
         loadDashboardData();
       }
     };
@@ -49,7 +52,7 @@ const Dashboard: React.FC = () => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user?.id]);
+  }, [user?.id, refreshMeetingData]);
 
   const loadDashboardData = async () => {
     if (!user?.id) {
@@ -59,7 +62,7 @@ const Dashboard: React.FC = () => {
 
     try {
       setLoading(true);
-      console.log('🔄 Dashboard - Loading data for user:', user.id);
+      console.log('🔄 Dashboard - Loading unified data for user:', user.id);
       
       // Load user progress
       console.log('📊 Dashboard - Loading user progress...');
@@ -71,89 +74,25 @@ const Dashboard: React.FC = () => {
       console.log('📊 Dashboard - User progress loaded:', userProgress);
       setProgress(userProgress);
 
-      // Load ALL meetings (not just recent)
-      console.log('📋 Dashboard - Loading all user meetings...');
-      const meetings = await DatabaseService.getUserMeetings(user.id);
-      console.log('📋 Dashboard - Raw meetings from database:', meetings);
-      
-      // Filter out any meetings with missing data but be more lenient
-      const validMeetings = meetings.filter(meeting => {
-        const isValid = meeting && 
-          meeting.id && 
-          meeting.user_id === user.id;
-        
-        if (!isValid) {
-          console.warn('📋 Dashboard - Invalid meeting filtered out:', meeting);
-        }
-        return isValid;
-      });
-      
-      console.log('📋 Dashboard - Valid meetings after filtering:', validMeetings);
-      console.log('📋 Dashboard - Setting recent meetings (last 3):', validMeetings.slice(0, 3));
-      setRecentMeetings(validMeetings.slice(0, 3)); // Show last 3 meetings for consistency
+      // Use unified meeting data service
+      const [stats, recentMeetingsData] = await Promise.all([
+        MeetingDataService.getMeetingStats(user.id),
+        MeetingDataService.getRecentMeetings(user.id, 3)
+      ]);
 
-      // Calculate actual stats from meetings data
-      const uniqueProjects = new Set(validMeetings.map(m => m.project_id)).size;
-      const totalMeetings = validMeetings.length;
-      const voiceMeetings = validMeetings.filter(m => m.meeting_type === 'voice-only').length;
-      const deliverablesCreated = validMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
-      
-      setCalculatedStats({
-        projects: uniqueProjects,
-        meetings: totalMeetings,
-        voiceMeetings: voiceMeetings,
-        deliverables: deliverablesCreated,
-        transcriptOnly: validMeetings.filter(m => m.meeting_type !== 'voice-only').length
-      });
-      
-      console.log('📊 Dashboard - Calculated stats:', {
-        projects: uniqueProjects,
-        meetings: totalMeetings,
-        voiceMeetings: voiceMeetings,
-        deliverables: deliverablesCreated
-      });
+      setMeetingStats(stats);
+      setRecentMeetings(recentMeetingsData);
 
-      // Also check localStorage for any temporary meetings
-      console.log('💾 Dashboard - Checking localStorage for temporary meetings...');
-      const tempMeetings: any[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('temp-meeting-') || key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
-          try {
-            const tempMeetingData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (tempMeetingData.user_id === user.id && tempMeetingData.id) {
-              tempMeetings.push(tempMeetingData);
-            }
-          } catch (error) {
-            console.warn('💾 Dashboard - Error parsing temporary meeting:', key, error);
-          }
-        }
-      }
-      console.log('💾 Dashboard - Temporary meetings found:', tempMeetings);
-
-      // Combine all meetings and remove duplicates
-      const allMeetings = [...validMeetings, ...tempMeetings]
-        .filter((meeting, index, self) =>
-          index === self.findIndex(m => m.id === meeting.id)
-        );
-
-      console.log('📊 Dashboard - Total combined meetings:', allMeetings.length);
-
-      // Calculate real-time statistics from actual meeting data
-      const voiceMeetingsAll = allMeetings.filter(m => m.meeting_type === 'voice-only').length;
-      const transcriptMeetings = allMeetings.filter(m => m.meeting_type === 'group' || m.meeting_type === 'individual').length;
-      const totalMeetingsAll = allMeetings.length;
-
-      // Update progress with real-time data
+      // Update progress with real-time data from unified service
       if (userProgress) {
-        userProgress.total_meetings_conducted = totalMeetingsAll;
-        userProgress.total_voice_meetings = voiceMeetingsAll;
-        userProgress.total_transcript_meetings = transcriptMeetings;
+        userProgress.total_meetings_conducted = stats.totalMeetings;
+        userProgress.total_voice_meetings = stats.voiceMeetings;
+        userProgress.total_transcript_meetings = stats.transcriptMeetings;
         
         console.log('📊 Dashboard - Real-time statistics calculated:', {
-          totalMeetings: totalMeetingsAll,
-          voiceMeetings: voiceMeetingsAll,
-          transcriptMeetings
+          totalMeetings: stats.totalMeetings,
+          voiceMeetings: stats.voiceMeetings,
+          transcriptMeetings: stats.transcriptMeetings
         });
       }
 
@@ -224,7 +163,7 @@ const Dashboard: React.FC = () => {
   const stats = [
     {
       title: 'Projects Started',
-      value: calculatedStats.projects,
+              value: meetingStats.uniqueProjects,
       icon: Target,
       color: 'bg-blue-500',
       change: '+12%',
@@ -232,7 +171,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Meetings Conducted',
-      value: calculatedStats.meetings,
+              value: meetingStats.totalMeetings,
       icon: Users,
       color: 'bg-purple-500',
       change: '+8%',
@@ -240,7 +179,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Voice-Only Meetings',
-      value: calculatedStats.voiceMeetings,
+              value: meetingStats.voiceMeetings,
       icon: MessageSquare,
       color: 'bg-green-500',
       change: '+15%',
@@ -248,7 +187,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Transcript-Only Meetings',
-      value: calculatedStats.transcriptOnly,
+              value: meetingStats.transcriptMeetings,
       icon: FileText,
       color: 'bg-orange-500',
       change: '+6%',

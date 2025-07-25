@@ -3,6 +3,7 @@ import { Clock, Users, MessageSquare, TrendingUp, Search, Filter, Calendar, Eye,
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseService, DatabaseMeeting } from '../../lib/database';
+import { MeetingDataService } from '../../lib/meetingDataService';
 
 interface MeetingCardProps {
   meeting: DatabaseMeeting;
@@ -266,7 +267,7 @@ const MeetingCard: React.FC<MeetingCardProps> = ({ meeting, onViewDetails, onVie
 };
 
 export const MyMeetingsView: React.FC = () => {
-  const { setCurrentView, setSelectedMeeting } = useApp();
+  const { setCurrentView, setSelectedMeeting, refreshMeetingData } = useApp();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<DatabaseMeeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -294,62 +295,33 @@ export const MyMeetingsView: React.FC = () => {
     loadMeetings();
   }, [user?.id]);
 
+  // Refresh data when component becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && user?.id) {
+        console.log('🔄 MyMeetings - Page became visible, refreshing data');
+        await refreshMeetingData();
+        loadMeetings();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user?.id, refreshMeetingData]);
+
   const loadMeetings = async () => {
     if (!user?.id) return;
 
     try {
       setLoading(true);
-      console.log('📋 MyMeetings - Loading ALL meetings for user:', user.id);
+      console.log('📋 MyMeetings - Loading meetings using unified service for user:', user.id);
       
-      // Load from database
-      const userMeetings = await DatabaseService.getUserMeetings(user.id);
-      console.log('📋 MyMeetings - Database returned', userMeetings.length, 'meetings');
+      // Use unified meeting data service
+      const allMeetings = await MeetingDataService.getAllUserMeetings(user.id);
+      console.log('📋 MyMeetings - Unified service returned:', allMeetings.length, 'meetings');
       
-      // Load from localStorage as backup
-      const localMeetings: any[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (
-          key.startsWith('temp-meeting-') || 
-          key.startsWith('stored_meeting_') || 
-          key.startsWith('backup_meeting_') ||
-          key.startsWith(`temp-meeting-${user.id}`) ||
-          key.startsWith(`stored_meeting_${user.id}`) ||
-          key.startsWith(`backup_meeting_${user.id}`) ||
-          key.includes(`-${user.id}`) && (key.includes('meeting') || key.includes('transcript'))
-        )) {
-          try {
-            const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (meetingData.user_id === user.id && meetingData.id) {
-              localMeetings.push(meetingData);
-            }
-          } catch (error) {
-            console.warn('Error parsing localStorage meeting:', key, error);
-          }
-        }
-      }
-
-      // Combine and deduplicate
-      console.log("📋 MyMeetings - userMeetings count:", userMeetings.length);
-      console.log("📋 MyMeetings - localMeetings count:", localMeetings.length);
-      const allMeetings = [...userMeetings, ...localMeetings]
-        .filter((meeting, index, self) =>
-          index === self.findIndex(m => m.id === meeting.id)
-        )
-        .filter(meeting => {
-          return meeting &&
-                 typeof meeting.project_name === 'string' &&
-                 meeting.project_name.trim() !== '' &&
-                 // Array.isArray(meeting.stakeholder_names) &&
-                 // meeting.stakeholder_names.every(name => typeof name === 'string') &&
-                 meeting.created_at &&
-                 meeting.status &&
-                 typeof meeting.meeting_type === 'string';
-        })
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      console.log("📋 MyMeetings - BEFORE FILTER:", allMeetings.length, "meetings");
-
-      console.log('📋 MyMeetings - Final processed meetings:', allMeetings.length);
       setMeetings(allMeetings);
     } catch (error) {
       console.error('Error loading meetings:', error);
