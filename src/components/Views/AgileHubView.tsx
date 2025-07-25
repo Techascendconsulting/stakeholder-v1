@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown, Edit3, Trash2, MoreHorizontal } from 'lucide-react';
+import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown, Edit3, Trash2, MoreHorizontal, Paperclip, MessageCircle, Upload, Download, Send } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
@@ -17,6 +17,8 @@ interface AgileTicket {
   createdAt: string;
   updatedAt: string;
   userId: string;
+  attachments?: TicketAttachment[];
+  comments?: TicketComment[];
   refinementScore?: {
     clarity: number;
     completeness: number;
@@ -25,6 +27,25 @@ interface AgileTicket {
     feedback: string[];
     aiSummary: string;
   };
+}
+
+interface TicketAttachment {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  fileData: string; // base64 encoded file data for localStorage
+}
+
+interface TicketComment {
+  id: string;
+  text: string;
+  authorId: string;
+  authorName: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 interface RefinementMeeting {
@@ -526,8 +547,24 @@ export const AgileHubView: React.FC = () => {
                             {/* Summary Column */}
                             <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
                               <div>
-                                <div className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600">
-                                  {ticket.title}
+                                <div className="flex items-center space-x-2">
+                                  <div className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600">
+                                    {ticket.title}
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    {ticket.attachments && ticket.attachments.length > 0 && (
+                                      <div className="flex items-center space-x-1 text-gray-500">
+                                        <Paperclip size={12} />
+                                        <span className="text-xs">{ticket.attachments.length}</span>
+                                      </div>
+                                    )}
+                                    {ticket.comments && ticket.comments.length > 0 && (
+                                      <div className="flex items-center space-x-1 text-gray-500">
+                                        <MessageCircle size={12} />
+                                        <span className="text-xs">{ticket.comments.length}</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-md">
                                   {ticket.description}
@@ -871,6 +908,9 @@ const EditTicketModal: React.FC<{
     status: ticket.status
   });
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [attachments, setAttachments] = useState<TicketAttachment[]>(ticket.attachments || []);
+  const [comments, setComments] = useState<TicketComment[]>(ticket.comments || []);
 
   const getTypeIcon = (type: AgileTicket['type']) => {
     switch (type) {
@@ -905,13 +945,76 @@ const EditTicketModal: React.FC<{
     setFormData({ ...formData, [field]: capitalizedValue });
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileData = e.target?.result as string;
+      const newAttachment: TicketAttachment = {
+        id: `attachment_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: 'Current User', // Replace with actual user name
+        fileData
+      };
+      setAttachments([...attachments, newAttachment]);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAttachment = (attachmentId: string) => {
+    setAttachments(attachments.filter(att => att.id !== attachmentId));
+  };
+
+  const downloadAttachment = (attachment: TicketAttachment) => {
+    const link = document.createElement('a');
+    link.href = attachment.fileData;
+    link.download = attachment.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const addComment = () => {
+    if (!newComment.trim()) return;
+
+    const comment: TicketComment = {
+      id: `comment_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+      text: newComment,
+      authorId: 'current-user', // Replace with actual user ID
+      authorName: 'Current User', // Replace with actual user name
+      createdAt: new Date().toISOString()
+    };
+
+    setComments([...comments, comment]);
+    setNewComment('');
+  };
+
+  const removeComment = (commentId: string) => {
+    setComments(comments.filter(comment => comment.id !== commentId));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
     
     onUpdateTicket({
       ...ticket,
-      ...formData
+      ...formData,
+      attachments,
+      comments
     });
   };
 
@@ -1061,6 +1164,138 @@ const EditTicketModal: React.FC<{
               <option value="Ready for Refinement">Ready for Refinement</option>
               <option value="Refined">Refined</option>
             </select>
+          </div>
+
+          {/* Attachments Section */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Attachments
+            </label>
+            <div className="space-y-3">
+              {/* File Upload */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="file"
+                  id="file-upload"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif"
+                />
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Upload size={16} />
+                  <span className="text-sm">Attach File</span>
+                </label>
+              </div>
+              
+              {/* Attachment List */}
+              {attachments.length > 0 && (
+                <div className="space-y-2">
+                  {attachments.map((attachment) => (
+                    <div key={attachment.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Paperclip size={16} className="text-gray-500" />
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {attachment.fileName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {formatFileSize(attachment.fileSize)} • {new Date(attachment.uploadedAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => downloadAttachment(attachment)}
+                          className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                          title="Download"
+                        >
+                          <Download size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(attachment.id)}
+                          className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Remove"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Comments Section */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Comments
+            </label>
+            
+            {/* Add Comment */}
+            <div className="space-y-3">
+              <div className="flex space-x-3">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add a comment..."
+                  rows={2}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                />
+                <button
+                  type="button"
+                  onClick={addComment}
+                  disabled={!newComment.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                >
+                  <Send size={16} />
+                  <span>Comment</span>
+                </button>
+              </div>
+              
+              {/* Comments List */}
+              {comments.length > 0 && (
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {comment.authorName}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(comment.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeComment(comment.id)}
+                          className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Delete comment"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {comments.length === 0 && (
+                <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No comments yet. Be the first to comment!</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Actions */}
