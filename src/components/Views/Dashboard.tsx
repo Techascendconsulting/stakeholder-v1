@@ -64,13 +64,44 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       console.log('🔄 Dashboard - Loading unified data for user:', user.id);
       
-      // Load user progress
+      // Load user progress with fallback
       console.log('📊 Dashboard - Loading user progress...');
-      let userProgress = await DatabaseService.getUserProgress(user.id);
-      if (!userProgress) {
-        console.log('📊 Dashboard - No existing progress, initializing...');
-        userProgress = await DatabaseService.initializeUserProgress(user.id);
+      let userProgress = null;
+      
+      try {
+        userProgress = await DatabaseService.getUserProgress(user.id);
+        if (!userProgress) {
+          console.log('📊 Dashboard - No existing progress, attempting to initialize...');
+          try {
+            userProgress = await DatabaseService.initializeUserProgress(user.id);
+          } catch (initError) {
+            console.warn('📊 Dashboard - Could not initialize progress, using fallback:', initError);
+            userProgress = null;
+          }
+        }
+      } catch (progressError) {
+        console.warn('📊 Dashboard - Progress table unavailable, using fallback:', progressError);
+        userProgress = null;
       }
+      
+      // Create fallback progress if database unavailable
+      if (!userProgress) {
+        console.log('📊 Dashboard - Using fallback progress data');
+        userProgress = {
+          id: 'fallback',
+          user_id: user.id,
+          total_projects_started: 0,
+          total_projects_completed: 0,
+          total_meetings_conducted: 0,
+          total_deliverables_created: 0,
+          total_voice_meetings: 0,
+          total_transcript_meetings: 0,
+          achievements: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+      
       console.log('📊 Dashboard - User progress loaded:', userProgress);
       setProgress(userProgress);
 
@@ -106,9 +137,28 @@ const Dashboard: React.FC = () => {
 
     } catch (error) {
       console.error('❌ Dashboard - Error loading dashboard data:', error);
-      // Set empty arrays to prevent undefined errors
+      
+      // Try to load meetings even if progress fails
+      try {
+        console.log('🔄 Dashboard - Attempting to load meetings despite error...');
+        MeetingDataService.clearCache(user.id);
+        const [stats, recentMeetingsData] = await Promise.all([
+          MeetingDataService.getMeetingStats(user.id),
+          MeetingDataService.getRecentMeetings(user.id, 3)
+        ]);
+        
+        setMeetingStats(stats);
+        setRecentMeetings(recentMeetingsData);
+        console.log('✅ Dashboard - Successfully loaded meetings despite progress error');
+        console.log('📊 Dashboard - Emergency stats:', stats);
+      } catch (meetingError) {
+        console.error('❌ Dashboard - Could not load meetings either:', meetingError);
+        setRecentMeetings([]);
+      }
+      
+      // Set fallback progress
       setProgress({
-        id: '',
+        id: 'error-fallback',
         user_id: user.id,
         total_projects_started: 0,
         total_projects_completed: 0,
@@ -120,7 +170,6 @@ const Dashboard: React.FC = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
-      setRecentMeetings([]);
     } finally {
       setLoading(false);
     }
