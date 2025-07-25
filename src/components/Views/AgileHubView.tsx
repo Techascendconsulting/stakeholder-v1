@@ -1397,7 +1397,7 @@ export const AgileHubView: React.FC = () => {
           stories={storiesReadyForRefinement}
           onMeetingEnd={(results) => {
             // Process meeting results
-            const { scores, suggestions, duration, transcript } = results;
+            const { scores = {}, suggestions = {}, duration, transcript } = results;
             
             // Create meeting records for each story
             const newMeetings: RefinementMeeting[] = storiesReadyForRefinement.map(story => ({
@@ -1407,8 +1407,8 @@ export const AgileHubView: React.FC = () => {
               duration: duration || 0,
               transcript: transcript || [],
               summary: `Team refinement meeting with ${storiesReadyForRefinement.length} stories`,
-              scores: (scores && scores[story.id]) ? scores[story.id] : { clarity: 8, completeness: 7, testability: 7, overall: 7 },
-              feedback: (suggestions && suggestions[story.id]) ? suggestions[story.id] : [],
+              scores: scores[story.id] || { clarity: 8, completeness: 7, testability: 7, overall: 7 },
+              feedback: suggestions[story.id] || [],
               completedAt: new Date().toISOString()
             }));
             
