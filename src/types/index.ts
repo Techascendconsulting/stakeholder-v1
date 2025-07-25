@@ -72,6 +72,7 @@ export type AppView =
   | 'dashboard' 
   | 'training-projects' 
   | 'core-concepts'
+  | 'agile-hub'
   | 'my-meetings' 
   | 'voice-meeting' 
   | 'settings' 
