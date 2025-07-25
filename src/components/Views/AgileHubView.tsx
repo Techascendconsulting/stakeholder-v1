@@ -1143,12 +1143,16 @@ export const AgileHubView: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Stories List - Display Only */}
+                    {/* Stories List - Clickable to Edit */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {storiesReadyForRefinement.map((story) => (
                         <div 
                           key={story.id} 
-                          className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                          onClick={() => {
+                            setSelectedTicket(story);
+                            setShowEditModal(true);
+                          }}
+                          className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer"
                         >
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center space-x-2">
@@ -1173,10 +1177,14 @@ export const AgileHubView: React.FC = () => {
                             </div>
                           )}
                           
-                          {/* Status indicator */}
-                          <div className="flex items-center justify-center">
+                          {/* Status indicator and edit hint */}
+                          <div className="flex items-center justify-between">
                             <span className="text-xs text-orange-600 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded-full">
                               Ready for Refinement
+                            </span>
+                            <span className="text-xs text-gray-400 hover:text-gray-600 flex items-center space-x-1">
+                              <Edit3 size={12} />
+                              <span>Click to edit</span>
                             </span>
                           </div>
                         </div>
