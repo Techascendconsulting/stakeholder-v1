@@ -96,7 +96,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [userInput, setUserInput] = useState('');
   
   // Meeting-specific state
-  const [meetingPhase, setMeetingPhase] = useState<'intro' | 'discussion' | 'completed'>('intro');
+  const [meetingPhase, setMeetingPhase] = useState<'waiting' | 'intro' | 'discussion' | 'completed'>('waiting');
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [isEditingStory, setIsEditingStory] = useState(false);
   const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
@@ -129,18 +129,17 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcript]);
 
-  // Initialize meeting
-  useEffect(() => {
-    if (meetingPhase === 'intro') {
-      setTimeout(() => {
-        addAIMessage(
-          teamMembers[0], // Sarah (Scrum Master)
-          `Hello everyone! I'm Sarah, your Scrum Master for today's refinement session. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review. Let's start by having our Business Analyst present the first story.`
-        );
-        setMeetingPhase('discussion');
-      }, 1000);
-    }
-  }, []);
+  // Handle meeting start
+  const startMeeting = () => {
+    setMeetingPhase('intro');
+    setTimeout(() => {
+      addAIMessage(
+        teamMembers[0], // Sarah (Scrum Master)
+        `Hello everyone! I'm Sarah, your Scrum Master for today's refinement session. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review. Let's start by having our Business Analyst present the first story.`
+      );
+      setMeetingPhase('discussion');
+    }, 1000);
+  };
 
   // Voice Meeting Audio Control (reused from VoiceOnlyMeetingView)
   const playMessageAudio = async (messageId: string, text: string, teamMember: AgileTeamMemberContext, autoPlay: boolean = true): Promise<void> => {
@@ -453,8 +452,17 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           </button>
           
           <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="font-medium">Refinement Meeting</span>
+            {meetingPhase === 'waiting' ? (
+              <>
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span className="font-medium">Refinement Meeting - Ready to Start</span>
+              </>
+            ) : (
+              <>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="font-medium">Refinement Meeting - Live</span>
+              </>
+            )}
           </div>
           
           {!isAzureTTSAvailable() && (
@@ -483,15 +491,51 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       </div>
 
              <div className="flex-1 flex overflow-hidden">
-         {/* Main Content - Kanban Board (white background) */}
+                  {/* Main Content - Kanban Board (white background) */}
          <div className="flex-1 bg-white text-gray-900 p-6 overflow-auto">
-          <div className="h-full flex flex-col">
-            <h2 className="text-xl font-semibold mb-6 text-gray-900">
-              Story Refinement Board
-            </h2>
-            
-            {/* Kanban Columns */}
-            <div className="flex-1 grid grid-cols-3 gap-6">
+           <div className="h-full flex flex-col">
+             <h2 className="text-xl font-semibold mb-6 text-gray-900">
+               Story Refinement Board
+             </h2>
+             
+             {/* Meeting Start Screen */}
+             {meetingPhase === 'waiting' && (
+               <div className="flex-1 flex items-center justify-center">
+                 <div className="text-center max-w-md">
+                   <div className="mb-8">
+                     <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                       <Users size={40} className="text-blue-600" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Ready to Start Refinement?</h3>
+                     <p className="text-gray-600 mb-6">
+                       You have {initialStories.length} {initialStories.length === 1 ? 'story' : 'stories'} ready for refinement. 
+                       The AI team is waiting to join you for the session.
+                     </p>
+                     <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                       <h4 className="font-medium text-gray-900 mb-2">Meeting Participants</h4>
+                       <div className="text-sm text-gray-600 space-y-1">
+                         <div>• You (Business Analyst)</div>
+                         <div>• Sarah (Scrum Master)</div>
+                         <div>• Srikanth (Senior Developer)</div>
+                         <div>• Lisa (Developer)</div>
+                         <div>• Tom (QA Tester)</div>
+                       </div>
+                     </div>
+                   </div>
+                   <button
+                     onClick={startMeeting}
+                     className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium text-lg transition-colors flex items-center space-x-3 mx-auto"
+                   >
+                     <Play size={24} />
+                     <span>Start Refinement Meeting</span>
+                   </button>
+                 </div>
+               </div>
+             )}
+
+             {/* Kanban Columns - Only show when meeting has started */}
+             {meetingPhase !== 'waiting' && (
+               <div className="flex-1 grid grid-cols-3 gap-6">
               {Object.values(kanbanColumns).map(column => (
                 <div 
                   key={column.id} 
@@ -560,10 +604,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                     })}
                   </div>
                 </div>
-              ))}
+                               ))}
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
                  {/* Right Sidebar - Participants & Chat (Dark mode) */}
          <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col overflow-hidden">
@@ -633,23 +678,30 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
           {/* Voice Input Area */}
           <div className="p-4 border-t border-gray-700 space-y-3">
-            {/* Voice Recording Button */}
-            <div className="flex items-center space-x-2">
-              <button
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onMouseLeave={stopRecording}
-                disabled={isTranscribing || isAudioPlaying}
-                className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all ${
-                  isRecording
-                    ? 'bg-red-600 text-white'
-                    : isTranscribing
-                    ? 'bg-yellow-600 text-white'
-                    : isAudioPlaying
-                    ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-              >
+            {meetingPhase === 'waiting' ? (
+              <div className="text-center py-8">
+                <div className="text-gray-400 mb-2">Meeting hasn't started yet</div>
+                <div className="text-sm text-gray-500">Click "Start Refinement Meeting" to begin</div>
+              </div>
+            ) : (
+              <>
+                {/* Voice Recording Button */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onMouseDown={startRecording}
+                    onMouseUp={stopRecording}
+                    onMouseLeave={stopRecording}
+                    disabled={isTranscribing || isAudioPlaying}
+                    className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                      isRecording
+                        ? 'bg-red-600 text-white'
+                        : isTranscribing
+                        ? 'bg-yellow-600 text-white'
+                        : isAudioPlaying
+                        ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                  >
                 {isRecording ? (
                   <>
                     <MicOff size={20} />
@@ -701,10 +753,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                   </div>
                 </div>
               ))}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-        </div>
+                             <div ref={messagesEndRef} />
+             </div>
+               </>
+             )}
+           </div>
+         </div>
       </div>
 
       {/* Jira-Style Story Editor Modal */}
