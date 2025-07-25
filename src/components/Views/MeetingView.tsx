@@ -738,13 +738,42 @@ ${generateMeetingRecommendations()}
         }
       };
 
-      // Save to localStorage
+      // Save transcript meeting to localStorage using same pattern as voice-only meetings
+      const meetingId = `meeting_${user?.id}_${Date.now()}_${Math.floor(Math.random() * 100000)}_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 8)}`;
+      
+      const transcriptMeetingData = {
+        id: meetingId,
+        user_id: user?.id,
+        project_id: selectedProject?.id,
+        project_name: selectedProject?.name,
+        stakeholder_ids: selectedStakeholders?.map(s => s.id) || [],
+        stakeholder_names: selectedStakeholders?.map(s => s.name) || [],
+        stakeholder_roles: selectedStakeholders?.map(s => s.role) || [],
+        meeting_type: 'voice-transcript',
+        transcript: messages,
+        raw_chat: messages,
+        meeting_notes: enhancedInterviewNotes || '',
+        meeting_summary: baseInterviewNotes || '',
+        duration: duration,
+        total_messages: messages.length,
+        user_messages: messages.filter(m => m.speaker === 'user').length,
+        ai_messages: messages.filter(m => m.speaker !== 'user').length,
+        topics_discussed: Array.from(meetingAnalytics.topicsDiscussed),
+        key_insights: meetingAnalytics.keyInsights,
+        status: 'completed',
+        created_at: meetingEndTime.toISOString(),
+        completed_at: meetingEndTime.toISOString()
+      };
+
+      // Save to localStorage with same pattern as voice-only meetings
+      localStorage.setItem(`stored_meeting_${meetingId}`, JSON.stringify(transcriptMeetingData));
+      
+      // Also save to meetingNotes for the notes view (separate from meeting data)
       const existingNotes = JSON.parse(localStorage.getItem('meetingNotes') || '[]');
       existingNotes.push(notesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
 
-      // Transcript meetings are saved to localStorage (meetingNotes) - no database needed
-      console.log('💾 MeetingView - Transcript meeting saved to localStorage as meetingNotes')
+      console.log('💾 MeetingView - Transcript meeting saved to localStorage with ID:', meetingId)
 
       // Show success notification
       setNoteGenerationProgress('Meeting ended successfully!');
