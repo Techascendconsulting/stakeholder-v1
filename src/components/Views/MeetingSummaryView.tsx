@@ -55,7 +55,6 @@ export const MeetingSummaryView: React.FC = () => {
       console.log('📋 MeetingSummaryView loaded:', {
         total: allMeetings.length,
         withSummariesOrTranscripts: allMeetingsData.length,
-        total: allMeetingsData.length,
         meetingTypes: allMeetingsData.reduce((acc: any, m) => {
           acc[m.meeting_type] = (acc[m.meeting_type] || 0) + 1;
           return acc;
