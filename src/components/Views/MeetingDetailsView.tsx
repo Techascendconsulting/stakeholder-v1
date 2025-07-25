@@ -259,13 +259,14 @@ export const MeetingDetailsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* AI Performance Scoring */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Content - Actionable Insights */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* AI Performance Scoring */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center space-x-3 mb-6">
                 <Brain className="w-6 h-6 text-purple-600" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Performance Analysis</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">AI Performance Analysis</h3>
               </div>
 
               {aiAnalytics && (
@@ -280,7 +281,7 @@ export const MeetingDetailsView: React.FC = () => {
                   </div>
 
                   {/* Detailed Scores */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Communication</span>
@@ -345,6 +346,77 @@ export const MeetingDetailsView: React.FC = () => {
               )}
             </div>
 
+            {/* Areas for Improvement - Main Focus */}
+            {aiAnalytics && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <Zap className="w-6 h-6 text-yellow-500" />
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Action Items: Areas for Improvement</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {aiAnalytics.improvements.map((improvement: string, index: number) => (
+                    <div key={index} className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-yellow-500 rounded-full text-white text-xs flex items-center justify-center font-bold mt-0.5">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Improvement Area</h4>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{improvement}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Next Steps - Main Focus */}
+            {aiAnalytics && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <ChevronRight className="w-6 h-6 text-blue-500" />
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Action Items: Recommended Next Steps</h3>
+                </div>
+                <div className="space-y-4">
+                  {aiAnalytics.nextSteps.map((step: string, index: number) => (
+                    <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-6 h-6 bg-blue-500 rounded-full text-white text-xs flex items-center justify-center font-bold mt-0.5">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Next Action</h4>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{step}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Sidebar - Supporting Information */}
+          <div className="space-y-6">
+            {/* Strengths */}
+            {aiAnalytics && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <Star className="w-5 h-5 text-green-500" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Strengths</h3>
+                </div>
+                <ul className="space-y-2">
+                  {aiAnalytics.strengths.map((strength: string, index: number) => (
+                    <li key={index} className="flex items-start space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{strength}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Participants */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center space-x-3 mb-4">
@@ -367,65 +439,6 @@ export const MeetingDetailsView: React.FC = () => {
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* Insights and Improvements */}
-          <div className="space-y-6">
-            {/* Strengths */}
-            {aiAnalytics && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Star className="w-5 h-5 text-green-500" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Strengths</h3>
-                </div>
-                <ul className="space-y-2">
-                  {aiAnalytics.strengths.map((strength: string, index: number) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{strength}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Areas for Improvement */}
-            {aiAnalytics && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Zap className="w-5 h-5 text-yellow-500" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Areas for Improvement</h3>
-                </div>
-                <ul className="space-y-2">
-                  {aiAnalytics.improvements.map((improvement: string, index: number) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <Target className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{improvement}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Next Steps */}
-            {aiAnalytics && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <ChevronRight className="w-5 h-5 text-blue-500" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recommended Next Steps</h3>
-                </div>
-                <ul className="space-y-2">
-                  {aiAnalytics.nextSteps.map((step: string, index: number) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded-full mt-0.5 flex-shrink-0 text-white text-xs flex items-center justify-center font-bold">
-                        {index + 1}
-                      </div>
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{step}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
 
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
