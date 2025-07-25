@@ -46,8 +46,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { id: 'training-projects', label: 'Training Projects', icon: FolderOpen },
     { id: 'custom-project', label: 'Create Your Project', icon: Plus },
     { id: 'my-meetings', label: 'My Meetings', icon: Calendar },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'profile', label: 'Profile', icon: User },
   ];
 
   const handleSignOut = async () => {
