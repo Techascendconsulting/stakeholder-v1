@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
+import { DatabaseService } from '../../lib/database'
 import { ArrowLeft, MessageCircle, ArrowRight, Building, Users, Check } from 'lucide-react'
 
 const StakeholdersView: React.FC = () => {
-  const { selectedProject, stakeholders, selectedStakeholders, setSelectedStakeholders, setCurrentView } = useApp()
+  const { selectedProject, stakeholders, selectedStakeholders, setSelectedStakeholders, setCurrentView, user } = useApp()
   const [localSelectedStakeholders, setLocalSelectedStakeholders] = useState<string[]>([])
+  const [hasActiveMeeting, setHasActiveMeeting] = useState<boolean>(false)
+  const [activeMeetingId, setActiveMeetingId] = useState<string | null>(null)
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -40,6 +43,57 @@ const StakeholdersView: React.FC = () => {
     setTimeout(scrollToTop, 100)
   }, [])
 
+  // Check for existing meetings for the current project
+  useEffect(() => {
+    const checkForActiveMeeting = async () => {
+      if (!selectedProject || !user?.id) return
+
+      try {
+        // Check database for in-progress meetings for this project
+        const meetings = await DatabaseService.getUserMeetings(user.id)
+        const projectMeetings = meetings.filter(
+          meeting => meeting.project_name === selectedProject.name && meeting.status === 'in_progress'
+        )
+
+        // Also check localStorage for temporary meetings
+        const localMeetings: any[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_') || key.startsWith('temp-meeting-'))) {
+            try {
+              const meetingData = JSON.parse(localStorage.getItem(key) || '{}')
+              if (meetingData.user_id === user.id && 
+                  meetingData.project_name === selectedProject.name && 
+                  meetingData.status !== 'completed') {
+                localMeetings.push(meetingData)
+              }
+            } catch (error) {
+              console.warn('Error parsing localStorage meeting:', key, error)
+            }
+          }
+        }
+
+        const activeMeetings = [...projectMeetings, ...localMeetings]
+        
+        if (activeMeetings.length > 0) {
+          console.log('🔄 Found active meeting for project:', selectedProject.name, activeMeetings[0])
+          setHasActiveMeeting(true)
+          setActiveMeetingId(activeMeetings[0].id)
+        } else {
+          console.log('✨ No active meetings found for project:', selectedProject.name)
+          setHasActiveMeeting(false)
+          setActiveMeetingId(null)
+        }
+      } catch (error) {
+        console.error('Error checking for active meetings:', error)
+        setHasActiveMeeting(false)
+        setActiveMeetingId(null)
+      }
+    }
+
+    checkForActiveMeeting()
+  }, [selectedProject, user?.id])
+
   if (!selectedProject) {
     return (
       <div className="p-8">
@@ -67,13 +121,20 @@ const StakeholdersView: React.FC = () => {
   }
 
   const handleStartGroupMeeting = () => {
-    const selectedStakeholderObjects = stakeholders.filter(s => 
-      localSelectedStakeholders.includes(s.id)
-    )
-    console.log('🎯 DEBUG: Starting meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
-    setSelectedStakeholders(selectedStakeholderObjects)
-    console.log('🎯 DEBUG: Setting current view to meeting mode selection')
-    setCurrentView('meeting-mode-selection')
+    if (hasActiveMeeting && activeMeetingId) {
+      // Continue existing meeting - go directly to voice meeting view
+      console.log('🔄 Continuing existing meeting:', activeMeetingId)
+      setCurrentView('voice-only-meeting')
+    } else {
+      // Start new meeting
+      const selectedStakeholderObjects = stakeholders.filter(s => 
+        localSelectedStakeholders.includes(s.id)
+      )
+      console.log('🎯 DEBUG: Starting new meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
+      setSelectedStakeholders(selectedStakeholderObjects)
+      console.log('🎯 DEBUG: Setting current view to meeting mode selection')
+      setCurrentView('meeting-mode-selection')
+    }
   }
 
   const isStakeholderSelected = (stakeholderId: string) => {
@@ -103,17 +164,23 @@ const StakeholdersView: React.FC = () => {
         </div>
 
         {/* Selection Summary */}
-        {localSelectedStakeholders.length > 0 && (
+        {(localSelectedStakeholders.length > 0 || hasActiveMeeting) && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Users className="w-6 h-6 text-blue-600" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {localSelectedStakeholders.length} Stakeholder{localSelectedStakeholders.length !== 1 ? 's' : ''} Selected
+                    {hasActiveMeeting 
+                      ? 'Meeting In Progress' 
+                      : `${localSelectedStakeholders.length} Stakeholder${localSelectedStakeholders.length !== 1 ? 's' : ''} Selected`
+                    }
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {localSelectedStakeholders.length === 1 ? 'Individual interview' : 'Group meeting'} ready to begin
+                    {hasActiveMeeting 
+                      ? 'Resume your in-progress meeting'
+                      : `${localSelectedStakeholders.length === 1 ? 'Individual interview' : 'Group meeting'} ready to begin`
+                    }
                   </p>
                 </div>
               </div>
@@ -122,7 +189,12 @@ const StakeholdersView: React.FC = () => {
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-8 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center space-x-3 shadow-sm hover:shadow-md"
               >
                 <MessageCircle className="w-5 h-5" />
-                <span>Start {localSelectedStakeholders.length === 1 ? 'Interview' : 'Group Meeting'}</span>
+                <span>
+                  {hasActiveMeeting 
+                    ? 'Continue Meeting' 
+                    : `Start ${localSelectedStakeholders.length === 1 ? 'Interview' : 'Group Meeting'}`
+                  }
+                </span>
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
