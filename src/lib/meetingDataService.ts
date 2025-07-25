@@ -10,7 +10,7 @@ export interface MeetingStats {
 
 export class MeetingDataService {
   private static cachedMeetings: Map<string, { meetings: DatabaseMeeting[]; timestamp: number }> = new Map();
-  private static cacheExpiry = 5 * 60 * 1000; // 5 minutes
+  private static cacheExpiry = 10 * 1000; // 10 seconds for debugging
 
   /**
    * Get all meetings for a user with unified data loading logic

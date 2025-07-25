@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, MessageSquare, FileText, Clock, Award, Target, Calendar, ChevronRight, Play, FolderOpen, Eye, ArrowRight, Lightbulb, Zap, BookOpen } from 'lucide-react';
+import { TrendingUp, Users, MessageSquare, FileText, Clock, Award, Target, Calendar, ChevronRight, Play, FolderOpen, Eye, ArrowRight, Lightbulb, Zap, BookOpen, RefreshCw } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseService, DatabaseProgress, DatabaseMeeting } from '../../lib/database';
@@ -74,11 +74,17 @@ const Dashboard: React.FC = () => {
       console.log('📊 Dashboard - User progress loaded:', userProgress);
       setProgress(userProgress);
 
-      // Use unified meeting data service
+      // Force clear cache and get fresh data
+      console.log('🔄 Dashboard - Clearing cache and forcing fresh data load...');
+      MeetingDataService.clearCache(user.id);
+      
       const [stats, recentMeetingsData] = await Promise.all([
         MeetingDataService.getMeetingStats(user.id),
         MeetingDataService.getRecentMeetings(user.id, 3)
       ]);
+
+      console.log('📊 Dashboard - Received stats:', stats);
+      console.log('📋 Dashboard - Received recent meetings:', recentMeetingsData.length);
 
       setMeetingStats(stats);
       setRecentMeetings(recentMeetingsData);
@@ -203,9 +209,22 @@ const Dashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-gray-100 mb-2">
-          Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋
-        </h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-gray-100">
+            Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋
+          </h1>
+          <button
+            onClick={() => {
+              console.log('🔄 Dashboard - Manual refresh triggered');
+              loadDashboardData();
+            }}
+            className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+            disabled={loading}
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button>
+        </div>
         <p className="text-gray-600 dark:text-gray-400">
           Here's your stakeholder interview progress and recent activity
         </p>
