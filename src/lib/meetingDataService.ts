@@ -155,24 +155,46 @@ export class MeetingDataService {
    * Unified meeting validation logic
    */
   private static isValidMeeting(meeting: any, userId: string): meeting is DatabaseMeeting {
-    const isValid = meeting &&
-      meeting.id &&
-      meeting.user_id === userId &&
-      typeof meeting.project_name === 'string' &&
-      meeting.project_name.trim() !== '' &&
-      meeting.created_at &&
-      meeting.status &&
-      typeof meeting.meeting_type === 'string';
+    // Debug: Log the full meeting object to understand its structure
+    console.log('🔍 MeetingDataService - Validating meeting:', {
+      id: meeting?.id,
+      user_id: meeting?.user_id,
+      project_id: meeting?.project_id,
+      project_name: meeting?.project_name,
+      created_at: meeting?.created_at,
+      status: meeting?.status,
+      meeting_type: meeting?.meeting_type,
+      has_stakeholder_names: Array.isArray(meeting?.stakeholder_names),
+      stakeholder_names_length: meeting?.stakeholder_names?.length,
+      full_object_keys: Object.keys(meeting || {})
+    });
+
+    // More permissive validation - only check absolutely essential fields
+    const hasBasicFields = meeting && meeting.id && meeting.user_id === userId;
+    
+    // Check project identification (either project_name or project_id should be present)
+    const hasProjectInfo = (meeting.project_name && typeof meeting.project_name === 'string') ||
+                          (meeting.project_id && typeof meeting.project_id === 'string');
+    
+    // Check that it has some kind of timestamp
+    const hasTimestamp = meeting.created_at || meeting.updated_at;
+    
+    const isValid = hasBasicFields && hasProjectInfo && hasTimestamp;
 
     if (!isValid) {
       console.warn('🚫 MeetingDataService - Invalid meeting filtered out:', {
+        hasBasicFields,
+        hasProjectInfo,
+        hasTimestamp,
         id: meeting?.id,
         user_id: meeting?.user_id,
         project_name: meeting?.project_name,
-        has_created_at: !!meeting?.created_at,
-        has_status: !!meeting?.status,
-        meeting_type: meeting?.meeting_type
+        project_id: meeting?.project_id,
+        created_at: meeting?.created_at,
+        updated_at: meeting?.updated_at
       });
+    } else {
+      console.log('✅ MeetingDataService - Valid meeting accepted:', meeting?.id);
     }
 
     return isValid;
