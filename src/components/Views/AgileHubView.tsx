@@ -105,6 +105,7 @@ export const AgileHubView: React.FC = () => {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [editingStatus, setEditingStatus] = useState<string | null>(null);
+  const [editingStoryPoints, setEditingStoryPoints] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
 
   // Custom setCurrentProject that persists to localStorage
@@ -998,6 +999,30 @@ export const AgileHubView: React.FC = () => {
                               </span>
                             </td>
                             
+                            {/* Story Points Column */}
+                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                              {editingStoryPoints === ticket.id ? (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={ticket.storyPoints || ''}
+                                  onChange={(e) => updateTicketField(ticket.id, 'storyPoints', e.target.value ? parseInt(e.target.value) : undefined)}
+                                  onBlur={() => setEditingStoryPoints(null)}
+                                  onKeyPress={(e) => e.key === 'Enter' && setEditingStoryPoints(null)}
+                                  className="w-16 px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs text-center text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  autoFocus
+                                />
+                              ) : (
+                                <span 
+                                  onClick={() => setEditingStoryPoints(ticket.id)}
+                                  className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full text-xs font-medium text-gray-900 dark:text-white cursor-pointer"
+                                >
+                                  {ticket.storyPoints || '?'}
+                                </span>
+                              )}
+                            </td>
+                            
                             {/* Status Column */}
                             <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                               {editingStatus === ticket.id ? (
@@ -1398,7 +1423,8 @@ const EditTicketModal: React.FC<{
     description: ticket.description,
     acceptanceCriteria: ticket.acceptanceCriteria || '',
     priority: ticket.priority,
-    status: ticket.status
+    status: ticket.status,
+    storyPoints: ticket.storyPoints
   });
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -1643,6 +1669,22 @@ const EditTicketModal: React.FC<{
             </select>
           </div>
 
+          {/* Story Points */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Story Points
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={formData.storyPoints || ''}
+              onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value ? parseInt(e.target.value) : undefined })}
+              placeholder="Enter story points (optional)"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
           {/* Status */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1828,7 +1870,8 @@ const CreateTicketModal: React.FC<{
     description: '',
     acceptanceCriteria: '',
     priority: 'Medium' as AgileTicket['priority'],
-    status: 'Draft' as AgileTicket['status']
+    status: 'Draft' as AgileTicket['status'],
+    storyPoints: undefined as number | undefined
   });
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
@@ -1989,6 +2032,22 @@ const CreateTicketModal: React.FC<{
               <option value="Medium">Medium</option>
               <option value="High">High</option>
             </select>
+          </div>
+
+          {/* Story Points */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Story Points
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={formData.storyPoints || ''}
+              onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value ? parseInt(e.target.value) : undefined })}
+              placeholder="Enter story points (optional)"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
 
           {/* Actions */}
