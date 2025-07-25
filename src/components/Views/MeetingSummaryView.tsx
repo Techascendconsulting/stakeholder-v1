@@ -3,6 +3,7 @@ import { ArrowLeft, FileText, Download, Share2, Calendar, Clock, Users, MessageS
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseMeeting, DatabaseService } from '../../lib/database';
+import { MeetingDataService } from '../../lib/meetingDataService';
 import jsPDF from 'jspdf';
 
 export const MeetingSummaryView: React.FC = () => {
@@ -39,68 +40,21 @@ export const MeetingSummaryView: React.FC = () => {
       setLoading(true);
       
       // ALWAYS load ALL meetings - never just show one
-      console.log('📋 Loading ALL meetings for summary view');
+      console.log('📋 Loading ALL meetings for summary view using unified service');
       
-      // Load from database
-      const databaseMeetings = await DatabaseService.getUserMeetings(user.id);
+      // Use unified meeting data service for consistent data
+      const allMeetings = await MeetingDataService.getAllUserMeetings(user.id, true); // Force fresh data
+      console.log('📋 Unified service returned:', allMeetings.length, 'meetings');
       
-      // Load from localStorage using the same strategy as MyMeetingsView
-      const localMeetings: any[] = [];
-      
-      // Strategy 1: Load from meetings index
-      try {
-        const meetingsIndex = JSON.parse(localStorage.getItem('meetings_index') || '[]');
-        for (const meetingId of meetingsIndex) {
-          let meetingData = null;
-          try {
-            const mainKey = `stored_meeting_${meetingId}`;
-            meetingData = JSON.parse(localStorage.getItem(mainKey) || 'null');
-          } catch (e) {
-            try {
-              const backupKeys = Object.keys(localStorage).filter(k => k.includes(meetingId) && k.startsWith('backup_meeting_'));
-              if (backupKeys.length > 0) {
-                meetingData = JSON.parse(localStorage.getItem(backupKeys[0]) || 'null');
-              }
-            } catch (e2) {}
-          }
-          
-          if (meetingData && meetingData.user_id === user.id) {
-            localMeetings.push(meetingData);
-          }
-        }
-      } catch (error) {
-        console.warn('Error loading from meetings index:', error);
-      }
-      
-      // Strategy 2: Scan localStorage keys
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_') || key.startsWith('temp-meeting-'))) {
-          try {
-            const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (meetingData && meetingData.user_id === user.id) {
-              const alreadyLoaded = localMeetings.find(m => m.id === meetingData.id);
-              if (!alreadyLoaded) {
-                localMeetings.push(meetingData);
-              }
-            }
-          } catch (error) {
-            console.warn('Error parsing localStorage meeting:', key, error);
-          }
-        }
-      }
-      
-      // Combine all meetings and remove duplicates
-      const allMeetingsData = [...databaseMeetings, ...localMeetings]
-        .filter((meeting, index, self) => 
-          meeting && meeting.id && meeting.project_name && meeting.created_at &&
-          index === self.findIndex(m => m.id === meeting.id)
-        )
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Filter to only meetings with summaries or transcripts
+      const allMeetingsData = allMeetings.filter(meeting => 
+        (meeting.meeting_summary && meeting.meeting_summary.trim()) ||
+        (meeting.transcript && meeting.transcript.length > 0)
+      );
       
       console.log('📋 MeetingSummaryView loaded:', {
-        database: databaseMeetings.length,
-        localStorage: localMeetings.length,
+        total: allMeetings.length,
+        withSummariesOrTranscripts: allMeetingsData.length,
         total: allMeetingsData.length,
         meetingTypes: allMeetingsData.reduce((acc: any, m) => {
           acc[m.meeting_type] = (acc[m.meeting_type] || 0) + 1;
@@ -567,11 +521,14 @@ For detailed conversation analysis and specific stakeholder insights, please rev
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                   meeting.meeting_type === 'voice-only' 
                                     ? 'bg-purple-100 text-purple-700'
+                                    : meeting.meeting_type === 'voice-transcript'
+                                    ? 'bg-orange-100 text-orange-700'
                                     : meeting.meeting_type === 'group'
                                     ? 'bg-blue-100 text-blue-700'
                                     : 'bg-green-100 text-green-700'
                                 }`}>
-                                  {meeting.meeting_type === 'voice-only' ? 'Voice Meeting' : 
+                                  {meeting.meeting_type === 'voice-only' ? 'Voice-Only Meeting' : 
+                                   meeting.meeting_type === 'voice-transcript' ? 'Voice + Transcript Meeting' :
                                    meeting.meeting_type === 'group' ? 'Group Meeting' : 'Individual Meeting'}
                                 </span>
                               </div>

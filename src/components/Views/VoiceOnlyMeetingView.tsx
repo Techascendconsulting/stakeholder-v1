@@ -1395,6 +1395,12 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
       console.log('💾 DatabaseService.saveMeetingData result:', success);
 
       if (success) {
+        console.log('✅ VoiceOnlyMeetingView - Voice-only meeting saved to database successfully');
+        // Clear meeting data cache to ensure fresh data on next load
+        if (window.MeetingDataService) {
+          window.MeetingDataService.forceClearAll();
+        }
+        
         // Update user progress
         console.log('💾 Incrementing meeting count...');
         await DatabaseService.incrementMeetingCount(user.id, 'voice-only');

@@ -12,7 +12,7 @@ export interface MeetingStats {
 
 export class MeetingDataService {
   private static cachedMeetings: Map<string, { meetings: DatabaseMeeting[]; timestamp: number }> = new Map();
-  private static cacheExpiry = 10 * 1000; // 10 seconds for debugging
+  private static cacheExpiry = 1 * 1000; // 1 second for immediate updates
 
   /**
    * Get all meetings for a user with unified data loading logic
@@ -247,4 +247,9 @@ export class MeetingDataService {
     console.log('🔄 MeetingDataService - Force refreshing data for user:', userId);
     return this.getAllUserMeetings(userId, true);
   }
+}
+
+// Make MeetingDataService available globally for cache clearing
+if (typeof window !== 'undefined') {
+  (window as any).MeetingDataService = MeetingDataService;
 }
