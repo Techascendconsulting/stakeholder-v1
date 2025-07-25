@@ -1404,11 +1404,11 @@ export const AgileHubView: React.FC = () => {
               id: `meeting_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${story.id}`,
               ticketId: story.id,
               participants: ['You', 'Sarah (Scrum Master)', 'Srikanth (Senior Dev)', 'Lisa (Developer)', 'Tom (QA Tester)'],
-              duration: duration,
-              transcript: transcript,
+              duration: duration || 0,
+              transcript: transcript || [],
               summary: `Team refinement meeting with ${storiesReadyForRefinement.length} stories`,
-              scores: scores[story.id] || { clarity: 8, completeness: 7, testability: 7, overall: 7 },
-              feedback: suggestions[story.id] || [],
+              scores: (scores && scores[story.id]) ? scores[story.id] : { clarity: 8, completeness: 7, testability: 7, overall: 7 },
+              feedback: (suggestions && suggestions[story.id]) ? suggestions[story.id] : [],
               completedAt: new Date().toISOString()
             }));
             

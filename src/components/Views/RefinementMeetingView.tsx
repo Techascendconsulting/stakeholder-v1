@@ -587,30 +587,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       </div>
 
       {/* Main Meeting Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Participant Video Grid (like voice-only meetings) */}
-        <div className="bg-gray-900 p-4">
-          <div className="grid grid-cols-5 gap-4 max-w-6xl mx-auto">
-            {/* User */}
-            <ParticipantCard
-              participant={{ name: user?.full_name || 'You' }}
-              isCurrentSpeaker={false}
-              isUser={true}
-            />
-            
-            {/* AI Team Members */}
-            {teamMembers.map(member => (
-              <ParticipantCard
-                key={member.name}
-                participant={member}
-                isCurrentSpeaker={currentSpeaker?.name === member.name}
-                isUser={false}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Start Meeting Button & Kanban Board */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Side - Kanban Board */}
         <div className="flex-1 bg-white text-gray-900 p-6 overflow-auto">
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
@@ -709,99 +687,121 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                 </div>
               ))}
             </div>
-          </div>
-        </div>
+                     </div>
+         </div>
 
-        {/* Bottom Chat Area */}
-        <div className="bg-gray-800 border-t border-gray-700 p-4">
-          <div className="max-w-6xl mx-auto">
-            {meetingStarted ? (
-              <div className="flex space-x-4">
-                {/* Voice Recording Button */}
-                <button
-                  onMouseDown={startRecording}
-                  onMouseUp={stopRecording}
-                  onMouseLeave={stopRecording}
-                  disabled={isTranscribing || isAudioPlaying}
-                  className={`flex items-center justify-center space-x-2 py-3 px-6 rounded-lg font-medium transition-all ${
-                    isRecording
-                      ? 'bg-red-600 text-white'
-                      : isTranscribing
-                      ? 'bg-yellow-600 text-white'
-                      : isAudioPlaying
-                      ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  {isRecording ? (
-                    <>
-                      <MicOff size={20} />
-                      <span>Release to Send</span>
-                    </>
-                  ) : isTranscribing ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Transcribing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mic size={20} />
-                      <span>Hold to Speak</span>
-                    </>
-                  )}
-                </button>
+         {/* Right Side - Participants Panel */}
+         <div className="w-80 bg-gray-900 border-l border-gray-700 flex flex-col overflow-hidden">
+           {/* Participants Header */}
+           <div className="p-4 border-b border-gray-700">
+             <h3 className="font-medium text-white mb-2">Meeting Participants</h3>
+             <div className="text-sm text-gray-400">{teamMembers.length + 1} people in this meeting</div>
+           </div>
 
-                {/* Text Input */}
-                <div className="flex-1 flex space-x-2">
-                  <input
-                    type="text"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type your message to the team..."
-                    disabled={isAudioPlaying}
-                    className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                  />
-                  <button
-                    onClick={() => handleSendMessage()}
-                    disabled={!userInput.trim() || isAudioPlaying}
-                    className="px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white"
-                  >
-                    <Send size={20} />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <div className="text-gray-400 mb-2">Development team is ready</div>
-                <div className="text-sm text-gray-500">Click "Start Meeting" above to begin the refinement session</div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+           {/* Participant Video Grid (Vertical Layout) */}
+           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+             {/* User */}
+             <div className="w-full">
+               <ParticipantCard
+                 participant={{ name: user?.full_name || 'You' }}
+                 isCurrentSpeaker={false}
+                 isUser={true}
+               />
+             </div>
+             
+             {/* AI Team Members */}
+             {teamMembers.map(member => (
+               <div key={member.name} className="w-full">
+                 <ParticipantCard
+                   participant={member}
+                   isCurrentSpeaker={currentSpeaker?.name === member.name}
+                   isUser={false}
+                 />
+               </div>
+             ))}
+           </div>
 
-      {/* Recent Messages Overlay */}
-      {transcript.length > 0 && (
-        <div className="absolute bottom-20 right-4 w-96 bg-gray-800 rounded-lg shadow-lg border border-gray-700 max-h-60 overflow-y-auto">
-          <div className="p-3 border-b border-gray-700">
-            <h4 className="text-sm font-medium text-white">Recent Messages</h4>
-          </div>
-          <div className="p-3 space-y-2">
-            {transcript.slice(-5).map(message => (
-              <div key={message.id} className="text-xs">
-                <div className="font-medium text-white">
-                  {message.speaker === 'user' ? 'You' : message.speaker}
-                </div>
-                <div className="text-gray-300 line-clamp-2">
-                  {message.content}
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-      )}
+           {/* Voice Input Area */}
+           <div className="p-4 border-t border-gray-700">
+             {meetingStarted ? (
+               <div className="space-y-3">
+                 {/* Voice Recording Button */}
+                 <button
+                   onMouseDown={startRecording}
+                   onMouseUp={stopRecording}
+                   onMouseLeave={stopRecording}
+                   disabled={isTranscribing || isAudioPlaying}
+                   className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                     isRecording
+                       ? 'bg-red-600 text-white'
+                       : isTranscribing
+                       ? 'bg-yellow-600 text-white'
+                       : isAudioPlaying
+                       ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                       : 'bg-blue-600 hover:bg-blue-700 text-white'
+                   }`}
+                 >
+                   {isRecording ? (
+                     <>
+                       <MicOff size={20} />
+                       <span>Release to Send</span>
+                     </>
+                   ) : isTranscribing ? (
+                     <>
+                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                       <span>Transcribing...</span>
+                     </>
+                   ) : (
+                     <>
+                       <Mic size={20} />
+                       <span>Hold to Speak</span>
+                     </>
+                   )}
+                 </button>
+
+                 {/* Text Input */}
+                 <div className="flex space-x-2">
+                   <input
+                     type="text"
+                     value={userInput}
+                     onChange={(e) => setUserInput(e.target.value)}
+                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                     placeholder="Type message..."
+                     disabled={isAudioPlaying}
+                     className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 text-sm"
+                   />
+                   <button
+                     onClick={() => handleSendMessage()}
+                     disabled={!userInput.trim() || isAudioPlaying}
+                     className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white"
+                   >
+                     <Send size={16} />
+                   </button>
+                 </div>
+               </div>
+             ) : (
+               <div className="text-center py-4">
+                 <div className="text-gray-400 mb-2">Development team is ready</div>
+                 <div className="text-sm text-gray-500">Click "Start Meeting" to begin</div>
+               </div>
+             )}
+           </div>
+         </div>
+       </div>
+
+       {/* Bottom Chat Area - Now just for recent messages */}
+       <div className="bg-gray-800 border-t border-gray-700 p-2">
+         <div className="max-w-6xl mx-auto">
+           {transcript.length > 0 && (
+             <div className="text-center">
+               <div className="text-xs text-gray-400">Recent: {transcript.slice(-1)[0]?.speaker}: {transcript.slice(-1)[0]?.content.slice(0, 100)}...</div>
+             </div>
+           )}
+         </div>
+       </div>
+     </div>
+
+     
 
       {/* Jira-Style Story Editor Modal */}
       {isEditingStory && editingStory && (
