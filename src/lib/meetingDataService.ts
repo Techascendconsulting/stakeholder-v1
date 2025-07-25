@@ -4,6 +4,8 @@ export interface MeetingStats {
   totalMeetings: number;
   voiceMeetings: number;
   transcriptMeetings: number;
+  voiceOnlyMeetings: number;
+  voiceTranscriptMeetings: number;
   uniqueProjects: number;
   deliverablesCreated: number;
 }
@@ -86,10 +88,16 @@ export class MeetingDataService {
   static async getMeetingStats(userId: string): Promise<MeetingStats> {
     const allMeetings = await this.getAllUserMeetings(userId);
     
+    const voiceOnlyMeetings = allMeetings.filter(m => m.meeting_type === 'voice-only').length;
+    const voiceTranscriptMeetings = allMeetings.filter(m => m.meeting_type === 'voice-transcript').length;
+    const legacyTranscriptMeetings = allMeetings.filter(m => m.meeting_type === 'group' || m.meeting_type === 'individual').length;
+    
     const stats: MeetingStats = {
       totalMeetings: allMeetings.length,
-      voiceMeetings: allMeetings.filter(m => m.meeting_type === 'voice-only').length,
-      transcriptMeetings: allMeetings.filter(m => m.meeting_type === 'group' || m.meeting_type === 'individual').length,
+      voiceMeetings: voiceOnlyMeetings, // Keep for backward compatibility
+      transcriptMeetings: voiceTranscriptMeetings + legacyTranscriptMeetings, // All transcript meetings
+      voiceOnlyMeetings: voiceOnlyMeetings,
+      voiceTranscriptMeetings: voiceTranscriptMeetings + legacyTranscriptMeetings,
       uniqueProjects: new Set(allMeetings.map(m => m.project_id)).size,
       deliverablesCreated: allMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length
     };

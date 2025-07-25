@@ -253,6 +253,7 @@ export class DatabaseService {
       stakeholderIds?: string[];
       stakeholderNames?: string[];
       stakeholderRoles?: string[];
+      meetingType?: 'voice-only' | 'voice-transcript';
     }
   ): Promise<boolean> {
     try {
@@ -301,7 +302,7 @@ export class DatabaseService {
           stakeholder_ids: additionalMeetingData?.stakeholderIds || [],
           stakeholder_names: additionalMeetingData?.stakeholderNames || [],
           stakeholder_roles: additionalMeetingData?.stakeholderRoles || [],
-          meeting_type: 'voice-only',
+          meeting_type: additionalMeetingData?.meetingType || 'voice-only',
           created_at: new Date().toISOString(),
           ...updateData // Include all the meeting data
         };

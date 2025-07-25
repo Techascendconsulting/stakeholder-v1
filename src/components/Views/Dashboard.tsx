@@ -15,6 +15,8 @@ const Dashboard: React.FC = () => {
     totalMeetings: 0,
     voiceMeetings: 0,
     transcriptMeetings: 0,
+    voiceOnlyMeetings: 0,
+    voiceTranscriptMeetings: 0,
     uniqueProjects: 0,
     deliverablesCreated: 0
   });
@@ -234,15 +236,15 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Voice-Only Meetings',
-              value: meetingStats.voiceMeetings,
+      value: meetingStats.voiceOnlyMeetings,
       icon: MessageSquare,
       color: 'bg-green-500',
       change: '+15%',
       changeType: 'positive' as const
     },
     {
-      title: 'Transcript-Only Meetings',
-              value: meetingStats.transcriptMeetings,
+      title: 'Voice + Transcript Meetings',
+      value: meetingStats.voiceTranscriptMeetings,
       icon: FileText,
       color: 'bg-orange-500',
       change: '+6%',

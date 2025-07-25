@@ -1256,7 +1256,8 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
               projectName: basicMeeting.project_name,
               stakeholderIds: basicMeeting.stakeholder_ids,
               stakeholderNames: basicMeeting.stakeholder_names,
-              stakeholderRoles: basicMeeting.stakeholder_roles
+              stakeholderRoles: basicMeeting.stakeholder_roles,
+              meetingType: 'voice-only'
             }
           );
           
@@ -1386,7 +1387,8 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
           projectName: selectedProject?.name,
           stakeholderIds: selectedStakeholders?.map(s => s.id),
           stakeholderNames: selectedStakeholders?.map(s => s.name),
-          stakeholderRoles: selectedStakeholders?.map(s => s.role)
+          stakeholderRoles: selectedStakeholders?.map(s => s.role),
+          meetingType: 'voice-only'
         }
       );
 
