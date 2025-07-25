@@ -83,8 +83,8 @@ const Dashboard: React.FC = () => {
       });
       
       console.log('📋 Dashboard - Valid meetings after filtering:', validMeetings);
-      console.log('📋 Dashboard - Setting recent meetings (last 5):', validMeetings.slice(0, 5));
-      setRecentMeetings(validMeetings.slice(0, 5)); // Show last 5 meetings instead of 3
+      console.log('📋 Dashboard - Setting recent meetings (last 3):', validMeetings.slice(0, 3));
+      setRecentMeetings(validMeetings.slice(0, 3)); // Show only last 3 meetings
 
       // Also check localStorage for any temporary meetings
       console.log('💾 Dashboard - Checking localStorage for temporary meetings...');
@@ -431,10 +431,20 @@ const Dashboard: React.FC = () => {
 
         {/* Content Insights Panel */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
-            <Zap className="mr-2" size={20} />
-            Your Content Library
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <Zap className="mr-2" size={20} />
+              Content Library
+            </h3>
+            {recentMeetings.length > 0 && (
+              <button
+                onClick={() => setCurrentView('my-meetings')}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center"
+              >
+                View All Content <ChevronRight size={16} className="ml-1" />
+              </button>
+            )}
+          </div>
 
           {recentMeetings.length === 0 ? (
             <div className="text-center py-8">
@@ -452,15 +462,18 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Summary Statistics */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">{meetingsWithSummaries}</div>
-                  <div className="text-sm text-green-700 dark:text-green-300">AI Summaries</div>
-                </div>
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{meetingsWithTranscripts}</div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300">Full Transcripts</div>
+              {/* Summary Statistics from Recent Meetings */}
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">From your 3 most recent meetings:</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">{meetingsWithSummaries}</div>
+                    <div className="text-sm text-green-700 dark:text-green-300">AI Summaries</div>
+                  </div>
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{meetingsWithTranscripts}</div>
+                    <div className="text-sm text-blue-700 dark:text-blue-300">Full Transcripts</div>
+                  </div>
                 </div>
               </div>
 
