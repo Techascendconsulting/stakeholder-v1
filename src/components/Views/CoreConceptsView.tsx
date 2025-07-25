@@ -249,15 +249,15 @@ const getGradientClass = (conceptId: number): string => {
     3: 'bg-gradient-to-r from-emerald-500 to-teal-600',
     4: 'bg-gradient-to-r from-orange-500 to-red-600',
     5: 'bg-gradient-to-r from-pink-500 to-rose-600',
-    6: 'bg-gradient-to-r from-purple-500 to-pink-600',
+    6: 'bg-gradient-to-r from-violet-500 to-purple-500',
     7: 'bg-gradient-to-r from-amber-500 to-yellow-600',
     8: 'bg-gradient-to-r from-green-500 to-emerald-600',
     9: 'bg-gradient-to-r from-slate-500 to-gray-600',
     10: 'bg-gradient-to-r from-indigo-500 to-blue-600',
     11: 'bg-gradient-to-r from-teal-500 to-cyan-600',
-    12: 'bg-gradient-to-r from-red-500 to-pink-600',
+    12: 'bg-gradient-to-r from-rose-500 to-red-500',
     13: 'bg-gradient-to-r from-yellow-500 to-orange-600',
-    14: 'bg-gradient-to-r from-purple-600 to-blue-600'
+    14: 'bg-gradient-to-r from-fuchsia-500 to-purple-500'
   };
   
   return gradientClasses[conceptId as keyof typeof gradientClasses] || 'bg-gradient-to-r from-gray-500 to-gray-600';
