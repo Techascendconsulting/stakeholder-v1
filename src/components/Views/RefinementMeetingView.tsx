@@ -85,7 +85,7 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   const { user } = useAuth();
   
   return (
-    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-64 h-48">
+    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-20">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
         <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
@@ -103,40 +103,37 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
+            <div className="flex items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-bold">
                 {getUserDisplayName(user?.id || '', user?.email)?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
-              <div className="text-white text-xs font-medium opacity-75">
-                Business Analyst
               </div>
             </div>
           )}
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: getAvatarColor(participant.name).replace('bg-', '#').replace('-500', '') }}>
-          <span className="text-white text-6xl font-bold">
+          <span className="text-white text-lg font-bold">
             {getInitials(participant.name)}
           </span>
         </div>
       )}
       
       {/* Name overlay */}
-      <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-sm">
-        {participant.name}
+      <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white px-1 py-0.5 rounded text-xs">
+        {participant.name.split(' ')[0]} {/* First name only for space */}
       </div>
 
       {/* Speaking/Mute indicator */}
       {!isUser && (
-        <div className="absolute top-2 left-2">
+        <div className="absolute top-1 right-1">
           {isCurrentSpeaker ? (
-            <div className="bg-green-500 text-white px-2 py-1 rounded-full text-xs flex items-center space-x-1">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              <span>Speaking</span>
+            <div className="bg-green-500 text-white px-1 py-0.5 rounded-full text-xs flex items-center space-x-1">
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+              <span className="hidden sm:inline">Speaking</span>
             </div>
           ) : (
-            <div className="bg-gray-600 text-white px-2 py-1 rounded-full text-xs">
-              Ready
+            <div className="bg-gray-600 text-white px-1 py-0.5 rounded-full text-xs">
+              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
             </div>
           )}
         </div>
@@ -698,28 +695,65 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
              <div className="text-sm text-gray-400">{teamMembers.length + 1} people in this meeting</div>
            </div>
 
-           {/* Participant Video Grid (Vertical Layout) */}
-           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-             {/* User */}
-             <div className="w-full">
-               <ParticipantCard
-                 participant={{ name: user?.full_name || 'You' }}
-                 isCurrentSpeaker={false}
-                 isUser={true}
-               />
-             </div>
-             
-             {/* AI Team Members */}
-             {teamMembers.map(member => (
-               <div key={member.name} className="w-full">
-                 <ParticipantCard
-                   participant={member}
-                   isCurrentSpeaker={currentSpeaker?.name === member.name}
-                   isUser={false}
-                 />
-               </div>
-             ))}
-           </div>
+                     {/* Participant Video Grid (3+2 Layout) */}
+          <div className="p-4 space-y-3">
+            {/* First Row - 3 participants */}
+            <div className="grid grid-cols-3 gap-2">
+              {/* User */}
+              <ParticipantCard
+                participant={{ name: user?.full_name || 'You' }}
+                isCurrentSpeaker={false}
+                isUser={true}
+              />
+              
+              {/* First 2 AI Team Members */}
+              {teamMembers.slice(0, 2).map(member => (
+                <ParticipantCard
+                  key={member.name}
+                  participant={member}
+                  isCurrentSpeaker={currentSpeaker?.name === member.name}
+                  isUser={false}
+                />
+              ))}
+            </div>
+
+            {/* Second Row - 2 participants centered */}
+            {teamMembers.length > 2 && (
+              <div className="flex justify-center">
+                <div className="grid grid-cols-2 gap-2 w-2/3">
+                  {teamMembers.slice(2, 4).map(member => (
+                    <ParticipantCard
+                      key={member.name}
+                      participant={member}
+                      isCurrentSpeaker={currentSpeaker?.name === member.name}
+                      isUser={false}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Transcription Area */}
+          <div className="flex-1 p-4 border-t border-gray-700">
+            <div className="h-full bg-gray-800 rounded-lg p-3 overflow-y-auto">
+              <h4 className="text-sm font-medium text-gray-300 mb-2">Live Transcription</h4>
+              {transcript.length > 0 ? (
+                <div className="space-y-2">
+                  {transcript.slice(-5).map((entry, index) => (
+                    <div key={index} className="text-sm">
+                      <span className="font-medium text-white">{entry.speaker}:</span>
+                      <span className="text-gray-300 ml-2">{entry.content}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-sm italic">
+                  Conversation will appear here...
+                </div>
+              )}
+            </div>
+          </div>
 
            {/* Voice Input Area */}
            <div className="p-4 border-t border-gray-700">
