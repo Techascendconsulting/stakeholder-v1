@@ -17,6 +17,7 @@ interface AgileTicket {
   acceptanceCriteria?: string;
   priority: 'Low' | 'Medium' | 'High';
   status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
+  storyPoints?: number;
   createdAt: string;
   updatedAt: string;
   userId: string;
@@ -868,6 +869,9 @@ export const AgileHubView: React.FC = () => {
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Priority
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Story Points
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Status

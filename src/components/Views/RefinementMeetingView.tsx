@@ -20,6 +20,7 @@ interface AgileTicket {
   acceptanceCriteria?: string;
   priority: 'Low' | 'Medium' | 'High';
   status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
+  storyPoints?: number;
   createdAt: string;
   updatedAt: string;
   userId: string;
