@@ -319,9 +319,9 @@ ${transcriptText}`;
                                 </span>
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                   meeting.meeting_type === 'voice-only' 
-                                    ? 'bg-purple-100 text-purple-700'
+                                    ? 'bg-purple-200 text-purple-800 border border-purple-300'
                                     : meeting.meeting_type === 'voice-transcript'
-                                    ? 'bg-orange-100 text-orange-700'
+                                    ? 'bg-orange-200 text-orange-800 border border-orange-300'
                                     : meeting.meeting_type === 'group'
                                     ? 'bg-blue-100 text-blue-700'
                                     : 'bg-green-100 text-green-700'
