@@ -44,7 +44,7 @@ const concepts: ConceptCard[] = [
   {
     id: 3,
     title: "Departments in an Organisation",
-    description: "The different departments help the business deliver its services or products.",
+    description: "Departments help the business deliver its services or products.",
     icon: <Users className="w-8 h-8" />,
     color: "from-emerald-500 to-teal-600",
     gradient: "bg-gradient-to-br from-emerald-50 to-teal-50"
