@@ -157,32 +157,34 @@ const MeetingRow: React.FC<MeetingCardProps> = ({ meeting, onViewDetails, onView
 
       {/* Actions */}
       <td className="px-6 py-4">
-        <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewDetails(meeting)}
-            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-            title="View Details"
+            className="px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1"
           >
-            <Eye size={14} />
+            <Eye size={12} />
+            <span>Details</span>
           </button>
-          {hasInsights && (
-            <button
-              onClick={() => onViewSummary(meeting)}
-              className="p-1.5 text-gray-400 hover:text-green-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-              title="View Summary"
-            >
-              <FileText size={14} />
-            </button>
-          )}
-          {hasTranscript && (
-            <button
-              onClick={() => onViewTranscript(meeting)}
-              className="p-1.5 text-gray-400 hover:text-blue-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-              title="View Transcript"
-            >
-              <MessageSquare size={14} />
-            </button>
-          )}
+          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {hasInsights && (
+              <button
+                onClick={() => onViewSummary(meeting)}
+                className="p-1.5 text-gray-400 hover:text-green-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                title="View Summary"
+              >
+                <FileText size={12} />
+              </button>
+            )}
+            {hasTranscript && (
+              <button
+                onClick={() => onViewTranscript(meeting)}
+                className="p-1.5 text-gray-400 hover:text-blue-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                title="View Transcript"
+              >
+                <MessageSquare size={12} />
+              </button>
+            )}
+          </div>
         </div>
       </td>
     </tr>
