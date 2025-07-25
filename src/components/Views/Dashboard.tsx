@@ -194,6 +194,15 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // Calculate insights about meetings with summaries and transcripts
+  const meetingsWithSummaries = recentMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
+  const meetingsWithTranscripts = recentMeetings.filter(m => m.transcript && m.transcript.length > 0).length;
+
+  // Calculate realistic project count from actual meetings (max 5 training projects available)
+  const [actualProjectCount, setActualProjectCount] = useState<number>(0);
+  const [totalMeetingsCount, setTotalMeetingsCount] = useState<number>(0);
+
+  // Stats array defined after state initialization
   const stats = [
     {
       title: 'Projects Started',
@@ -228,14 +237,6 @@ const Dashboard: React.FC = () => {
       changeType: 'positive' as const
     }
   ];
-
-  // Calculate insights about meetings with summaries and transcripts
-  const meetingsWithSummaries = recentMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
-  const meetingsWithTranscripts = recentMeetings.filter(m => m.transcript && m.transcript.length > 0).length;
-
-  // Calculate realistic project count from actual meetings (max 5 training projects available)
-  const [actualProjectCount, setActualProjectCount] = useState<number>(0);
-  const [totalMeetingsCount, setTotalMeetingsCount] = useState<number>(0);
   
   useEffect(() => {
     const calculateRealProjectCount = async () => {
