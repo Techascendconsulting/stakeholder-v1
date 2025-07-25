@@ -102,7 +102,8 @@ const Dashboard: React.FC = () => {
         projects: uniqueProjects,
         meetings: totalMeetings,
         voiceMeetings: voiceMeetings,
-        deliverables: deliverablesCreated
+        deliverables: deliverablesCreated,
+        transcriptOnly: validMeetings.filter(m => m.meeting_type !== 'voice-only').length
       });
       
       console.log('📊 Dashboard - Calculated stats:', {
@@ -246,8 +247,8 @@ const Dashboard: React.FC = () => {
       changeType: 'positive' as const
     },
     {
-      title: 'Deliverables Created',
-      value: calculatedStats.deliverables,
+      title: 'Transcript-Only Meetings',
+      value: calculatedStats.transcriptOnly,
       icon: FileText,
       color: 'bg-orange-500',
       change: '+6%',
