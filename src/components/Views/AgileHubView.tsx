@@ -239,7 +239,7 @@ export const AgileHubView: React.FC = () => {
 
   const editTicket = (ticket: AgileTicket) => {
     setSelectedTicket(ticket);
-    setShowEditModal(true);
+    // Split-screen view, not modal
   };
 
   const deleteTicket = (ticketId: string) => {
@@ -854,7 +854,10 @@ export const AgileHubView: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className={`flex ${selectedTicket ? 'space-x-6' : ''}`}>
+                    {/* Left Side - Tickets Table */}
+                    <div className={`${selectedTicket ? 'w-1/2' : 'w-full'} transition-all duration-300`}>
+                      <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                       <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
@@ -1095,6 +1098,25 @@ export const AgileHubView: React.FC = () => {
                         ))}
                       </tbody>
                     </table>
+                      </div>
+                    </div>
+
+                    {/* Right Side - Ticket Details Panel (Jira-style split screen) */}
+                    {selectedTicket && (
+                      <div className="w-1/2">
+                        <TicketDetailPanel 
+                          ticket={selectedTicket} 
+                          onClose={() => setSelectedTicket(null)}
+                          onUpdateTicket={(updatedTicket) => {
+                            const updatedTickets = tickets.map(t => 
+                              t.id === updatedTicket.id ? updatedTicket : t
+                            );
+                            saveTickets(updatedTickets);
+                            setSelectedTicket(updatedTicket);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
