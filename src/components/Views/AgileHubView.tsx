@@ -15,7 +15,7 @@ interface AgileTicket {
   description: string;
   acceptanceCriteria?: string;
   priority: 'Low' | 'Medium' | 'High';
-  status: 'Draft' | 'Ready for Refinement' | 'Refined';
+  status: 'Draft' | 'Ready for Refinement' | 'To Do' | 'In Progress' | 'In Test' | 'Done' | 'Refined';
   createdAt: string;
   updatedAt: string;
   userId: string;
@@ -85,6 +85,8 @@ export const AgileHubView: React.FC = () => {
   const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set());
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [editingStatus, setEditingStatus] = useState<string | null>(null);
+  const [editingType, setEditingType] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentProject(selectedProject);
@@ -94,6 +96,17 @@ export const AgileHubView: React.FC = () => {
     loadTickets();
     loadRefinementMeetings();
   }, [user?.id, currentProject?.id]);
+
+  // Close inline editing when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setEditingStatus(null);
+      setEditingType(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const getStorageKey = (type: 'tickets' | 'meetings') => {
     const projectId = currentProject?.id || 'default';
@@ -289,6 +302,30 @@ export const AgileHubView: React.FC = () => {
     saveTickets(newTickets);
   };
 
+  // Inline editing functions
+  const updateTicketField = (ticketId: string, field: 'status' | 'type', value: string) => {
+    const updatedTickets = tickets.map(ticket => 
+      ticket.id === ticketId 
+        ? { ...ticket, [field]: value, updatedAt: new Date().toISOString() }
+        : ticket
+    );
+    saveTickets(updatedTickets);
+    setEditingStatus(null);
+    setEditingType(null);
+  };
+
+  const handleStatusClick = (ticketId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingStatus(editingStatus === ticketId ? null : ticketId);
+    setEditingType(null);
+  };
+
+  const handleTypeClick = (ticketId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingType(editingType === ticketId ? null : ticketId);
+    setEditingStatus(null);
+  };
+
   const getTypeIcon = (type: AgileTicket['type']) => {
     switch (type) {
       case 'Story': return <BookOpen className="w-4 h-4" />;
@@ -319,7 +356,11 @@ export const AgileHubView: React.FC = () => {
     switch (status) {
       case 'Draft': return 'bg-gray-100 text-gray-700';
       case 'Ready for Refinement': return 'bg-orange-100 text-orange-700';
-      case 'Refined': return 'bg-green-100 text-green-700';
+      case 'To Do': return 'bg-blue-100 text-blue-700';
+      case 'In Progress': return 'bg-yellow-100 text-yellow-700';
+      case 'In Test': return 'bg-purple-100 text-purple-700';
+      case 'Done': return 'bg-green-100 text-green-700';
+      case 'Refined': return 'bg-emerald-100 text-emerald-700';
     }
   };
 
@@ -590,22 +631,28 @@ export const AgileHubView: React.FC = () => {
                         </span>
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => bulkUpdateStatus('Draft')}
-                            className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors"
+                            onClick={() => bulkUpdateStatus('To Do')}
+                            className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
                           >
-                            Mark as Draft
+                            To Do
                           </button>
                           <button
-                            onClick={() => bulkUpdateStatus('Ready for Refinement')}
-                            className="px-3 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 transition-colors"
+                            onClick={() => bulkUpdateStatus('In Progress')}
+                            className="px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700 transition-colors"
                           >
-                            Mark Ready
+                            In Progress
                           </button>
                           <button
-                            onClick={() => bulkUpdateStatus('Refined')}
+                            onClick={() => bulkUpdateStatus('In Test')}
+                            className="px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors"
+                          >
+                            In Test
+                          </button>
+                          <button
+                            onClick={() => bulkUpdateStatus('Done')}
                             className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
                           >
-                            Mark Refined
+                            Done
                           </button>
                           <button
                             onClick={bulkDelete}
@@ -640,16 +687,20 @@ export const AgileHubView: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <select
-                      value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="all">All Status</option>
-                      <option value="Draft">Draft</option>
-                      <option value="Ready for Refinement">Ready for Refinement</option>
-                      <option value="Refined">Refined</option>
-                    </select>
+                                         <select
+                       value={filterStatus}
+                       onChange={(e) => setFilterStatus(e.target.value)}
+                       className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     >
+                       <option value="all">All Status</option>
+                       <option value="Draft">Draft</option>
+                       <option value="Ready for Refinement">Ready for Refinement</option>
+                       <option value="To Do">To Do</option>
+                       <option value="In Progress">In Progress</option>
+                       <option value="In Test">In Test</option>
+                       <option value="Done">Done</option>
+                       <option value="Refined">Refined</option>
+                     </select>
                   </div>
                   
                   {/* Multi-select controls */}
@@ -804,11 +855,29 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Type Column */}
-                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${getTypeColor(ticket.type).replace('text-', 'bg-').replace('-600', '-100')} ${getTypeColor(ticket.type)}`}>
-                                {getTypeIcon(ticket.type)}
-                                <span className="ml-1">{ticket.type}</span>
-                              </span>
+                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                              {editingType === ticket.id ? (
+                                <select
+                                  value={ticket.type}
+                                  onChange={(e) => updateTicketField(ticket.id, 'type', e.target.value)}
+                                  onBlur={() => setEditingType(null)}
+                                  className="text-xs rounded px-2 py-1 border focus:ring-2 focus:ring-blue-500"
+                                  autoFocus
+                                >
+                                  <option value="Story">Story</option>
+                                  <option value="Task">Task</option>
+                                  <option value="Bug">Bug</option>
+                                  <option value="Spike">Spike</option>
+                                </select>
+                              ) : (
+                                <button
+                                  onClick={(e) => handleTypeClick(ticket.id, e)}
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium hover:opacity-75 ${getTypeColor(ticket.type).replace('text-', 'bg-').replace('-600', '-100')} ${getTypeColor(ticket.type)}`}
+                                >
+                                  {getTypeIcon(ticket.type)}
+                                  <span className="ml-1">{ticket.type}</span>
+                                </button>
+                              )}
                             </td>
                             
                             {/* Priority Column */}
@@ -819,10 +888,31 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Status Column */}
-                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${getStatusColor(ticket.status)}`}>
-                                {ticket.status}
-                              </span>
+                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                              {editingStatus === ticket.id ? (
+                                <select
+                                  value={ticket.status}
+                                  onChange={(e) => updateTicketField(ticket.id, 'status', e.target.value)}
+                                  onBlur={() => setEditingStatus(null)}
+                                  className="text-xs rounded px-2 py-1 border focus:ring-2 focus:ring-blue-500"
+                                  autoFocus
+                                >
+                                  <option value="Draft">Draft</option>
+                                  <option value="Ready for Refinement">Ready for Refinement</option>
+                                  <option value="To Do">To Do</option>
+                                  <option value="In Progress">In Progress</option>
+                                  <option value="In Test">In Test</option>
+                                  <option value="Done">Done</option>
+                                  <option value="Refined">Refined</option>
+                                </select>
+                              ) : (
+                                <button
+                                  onClick={(e) => handleStatusClick(ticket.id, e)}
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium hover:opacity-75 ${getStatusColor(ticket.status)}`}
+                                >
+                                  {ticket.status}
+                                </button>
+                              )}
                             </td>
                                                                                      {/* Actions Column */}
                             <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
@@ -1386,15 +1476,19 @@ const EditTicketModal: React.FC<{
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Status
             </label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as AgileTicket['status'] })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="Draft">Draft</option>
-              <option value="Ready for Refinement">Ready for Refinement</option>
-              <option value="Refined">Refined</option>
-            </select>
+                          <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as AgileTicket['status'] })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="Draft">Draft</option>
+                <option value="Ready for Refinement">Ready for Refinement</option>
+                <option value="To Do">To Do</option>
+                <option value="In Progress">In Progress</option>
+                <option value="In Test">In Test</option>
+                <option value="Done">Done</option>
+                <option value="Refined">Refined</option>
+              </select>
           </div>
 
           {/* Attachments Section */}
