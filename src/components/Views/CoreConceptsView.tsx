@@ -246,32 +246,18 @@ const CoreConceptsView: React.FC = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<ConceptCard | null>(null);
 
-  // Force light theme for this component
-  useEffect(() => {
-    const root = document.documentElement;
-    const hadDarkClass = root.classList.contains('dark');
-    
-    // Remove dark class when component mounts
-    root.classList.remove('dark');
-    
-    // Restore original theme when component unmounts
-    return () => {
-      if (hadDarkClass) {
-        root.classList.add('dark');
-      }
-    };
-  }, []);
+  // Component no longer forces light theme - now respects dark mode
 
   // Detail view for selected concept
   if (selectedConcept) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-6 py-4">
             <button
               onClick={() => setSelectedConcept(null)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               Back to Core Concepts
@@ -285,17 +271,17 @@ const CoreConceptsView: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${selectedConcept.gradient} text-gray-700`}>
+                <div className={`p-3 rounded-xl ${selectedConcept.gradient} dark:bg-gray-700 text-gray-700 dark:text-gray-300`}>
                   {selectedConcept.icon}
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full inline-block mb-2">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full inline-block mb-2">
                     Concept {selectedConcept.id}
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                     {selectedConcept.title}
                   </h1>
-                  <p className="text-gray-600 text-lg">
+                  <p className="text-gray-600 dark:text-gray-300 text-lg">
                     {selectedConcept.description}
                   </p>
                 </div>
