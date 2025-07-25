@@ -4,6 +4,7 @@ import { useApp } from '../../contexts/AppContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { DatabaseCleanup } from '../../lib/databaseCleanup'
 import { MeetingDataService } from '../../lib/meetingDataService'
+import { executeUserReset } from '../../lib/executeReset'
 
 interface DebugLog {
   id: string
@@ -158,19 +159,23 @@ const DebugConsole: React.FC = () => {
     if (!user?.id) return
     if (!confirm('⚠️ This will DELETE ALL your meetings and progress data. Are you sure?')) return
     
-    setDbOperationStatus('Resetting user data...')
-    const result = await DatabaseCleanup.resetUserData(user.id)
+    setDbOperationStatus('🚨 Performing complete reset...')
     
-    if (result.success) {
-      setDbOperationStatus('✅ Data reset successful!')
-      MeetingDataService.clearCache(user.id)
+    try {
+      await executeUserReset(user.id)
+      setDbOperationStatus('✅ Complete reset successful! All data cleared.')
       await refreshMeetingData()
       await loadDbStats()
-    } else {
-      setDbOperationStatus(`❌ Error: ${result.message}`)
+      
+      // Force refresh the page to ensure clean state
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
+    } catch (error) {
+      setDbOperationStatus(`❌ Reset failed: ${error}`)
     }
     
-    setTimeout(() => setDbOperationStatus(''), 3000)
+    setTimeout(() => setDbOperationStatus(''), 5000)
   }
 
   const fixCorruptedMeetings = async () => {
