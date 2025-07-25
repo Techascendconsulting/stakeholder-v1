@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Meetings Conducted',
-      value: recentMeetings.length > 0 ? (progress?.total_meetings_conducted || 0) : 0,
+      value: recentMeetings.length,
       icon: Users,
       color: 'bg-purple-500',
       change: '+8%',
@@ -233,15 +233,15 @@ const Dashboard: React.FC = () => {
   const meetingsWithSummaries = recentMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
   const meetingsWithTranscripts = recentMeetings.filter(m => m.transcript && m.transcript.length > 0).length;
 
-  // Calculate actual project count from meetings data (more accurate than stored counter)
+  // Calculate realistic project count from actual meetings (max 5 training projects available)
   const [actualProjectCount, setActualProjectCount] = useState<number>(0);
   
   useEffect(() => {
-    const calculateActualProjects = async () => {
+    const calculateRealProjectCount = async () => {
       if (!user?.id) return;
       
       try {
-        // Get all meetings to calculate unique projects
+        // Get all meetings to calculate unique training projects
         const allMeetings = await DatabaseService.getUserMeetings(user.id);
         
         // Also check localStorage for additional meetings
@@ -267,22 +267,35 @@ const Dashboard: React.FC = () => {
             index === self.findIndex(m => m.id === meeting.id)
           );
         
-        const uniqueProjects = new Set(
+        // Only count the 5 predefined training projects (not custom projects)
+        const trainingProjectNames = [
+          'Customer Onboarding Process Optimization',
+          'Digital Expense Management System Implementation',
+          'Multi-Location Inventory Management Enhancement', 
+          'Customer Support Ticket Management System',
+          'Employee Performance Management Platform'
+        ];
+        
+        const uniqueTrainingProjects = new Set(
           combinedMeetings
             .map(meeting => meeting.project_name)
-            .filter(name => name && name.trim())
+            .filter(name => name && trainingProjectNames.includes(name))
         );
         
-        console.log('📊 Dashboard - Calculated actual project count:', uniqueProjects.size);
-        console.log('📊 Dashboard - Unique projects:', Array.from(uniqueProjects));
-        setActualProjectCount(uniqueProjects.size);
+        // Cap at maximum realistic number (users typically do 1 project, max 5 available)
+        const projectCount = Math.min(uniqueTrainingProjects.size, 5);
+        
+        console.log('📊 Dashboard - Training projects worked on:', uniqueTrainingProjects.size);
+        console.log('📊 Dashboard - Training projects:', Array.from(uniqueTrainingProjects));
+        setActualProjectCount(projectCount);
       } catch (error) {
-        console.error('Error calculating actual project count:', error);
-        setActualProjectCount(progress?.total_projects_started || 0);
+        console.error('Error calculating project count:', error);
+        // Default to 0 if no meetings found, max 1 for most users
+        setActualProjectCount(0);
       }
     };
     
-    calculateActualProjects();
+    calculateRealProjectCount();
   }, [user?.id, recentMeetings, progress]);
 
   return (
