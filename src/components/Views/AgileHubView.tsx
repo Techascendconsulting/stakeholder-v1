@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Triangle } from 'lucide-react';
+import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
@@ -139,7 +139,7 @@ export const AgileHubView: React.FC = () => {
       case 'Story': return <BookOpen className="w-4 h-4" />;
       case 'Task': return <Square className="w-4 h-4" />;
       case 'Bug': return <Bug className="w-4 h-4" />;
-      case 'Spike': return <Triangle className="w-4 h-4" />;
+      case 'Spike': return <Lightbulb className="w-4 h-4" />;
     }
   };
 
@@ -240,18 +240,21 @@ export const AgileHubView: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agile Hub</h1>
                 {projects && projects.length > 1 ? (
-                  <select
-                    value={currentProject?.id || ''}
-                    onChange={(e) => {
-                      const project = projects.find(p => p.id === e.target.value);
-                      setCurrentProject(project || null);
-                    }}
-                    className="px-3 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {projects.map(project => (
-                      <option key={project.id} value={project.id}>{project.name}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={currentProject?.id || ''}
+                      onChange={(e) => {
+                        const project = projects.find(p => p.id === e.target.value);
+                        setCurrentProject(project || null);
+                      }}
+                      className="appearance-none pl-3 pr-8 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                    >
+                      {projects.map(project => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                  </div>
                 ) : (
                   <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
                     {currentProject.name}
