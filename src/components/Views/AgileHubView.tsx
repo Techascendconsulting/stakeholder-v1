@@ -1089,96 +1089,68 @@ export const AgileHubView: React.FC = () => {
                   </div>
                 ) : (
                   <div>
-                    {/* Multi-Select Actions */}
+                    {/* Single Attend Meeting Button */}
                     <div className="mb-6 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <button
-                          onClick={selectedRefinementStories.size === storiesReadyForRefinement.length ? clearRefinementSelection : selectAllRefinementStories}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          {selectedRefinementStories.size === storiesReadyForRefinement.length ? 'Deselect All' : 'Select All'}
-                        </button>
-                        {selectedRefinementStories.size > 0 && (
-                          <span className="text-sm text-gray-500">
-                            {selectedRefinementStories.size} of {storiesReadyForRefinement.length} stories selected
-                          </span>
-                        )}
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {storiesReadyForRefinement.length} {storiesReadyForRefinement.length === 1 ? 'story' : 'stories'} ready for team refinement
+                        </p>
                       </div>
                       
-                      {selectedRefinementStories.size > 0 && (
-                        <button
-                          onClick={startMultiStoryRefinement}
-                          className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2 font-medium"
-                        >
-                          <Users size={16} />
-                          <span>Start Refinement Meeting ({selectedRefinementStories.size} stories)</span>
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          // Auto-select all ready stories and start meeting
+                          const allStoryIds = storiesReadyForRefinement.map(story => story.id);
+                          setSelectedRefinementStories(new Set(allStoryIds));
+                          setSelectedTicket(storiesReadyForRefinement[0]);
+                          setShowRefinementModal(true);
+                          setIsInMeeting(true);
+                        }}
+                        className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2 font-medium"
+                      >
+                        <Users size={16} />
+                        <span>Attend Refinement Meeting</span>
+                      </button>
                     </div>
 
-                    {/* Stories Grid */}
+                    {/* Stories List - Display Only */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {storiesReadyForRefinement.map((story) => {
-                        const isSelected = selectedRefinementStories.has(story.id);
-                        return (
-                          <div 
-                            key={story.id} 
-                            className={`relative bg-gray-50 dark:bg-gray-900 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
-                              isSelected 
-                                ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' 
-                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                            }`}
-                            onClick={() => toggleRefinementStory(story.id)}
-                          >
-                            {/* Selection Checkbox */}
-                            <div className="absolute top-4 right-4">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => toggleRefinementStory(story.id)}
-                                className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
-                              />
+                      {storiesReadyForRefinement.map((story) => (
+                        <div 
+                          key={story.id} 
+                          className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center space-x-2">
+                              <BookOpen className="w-5 h-5 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-600">Story</span>
+                              <span className="text-sm text-gray-500">#{story.ticketNumber}</span>
                             </div>
-
-                            <div className="p-6">
-                              <div className="flex items-start justify-between mb-4 pr-8">
-                                <div className="flex items-center space-x-2">
-                                  <BookOpen className="w-5 h-5 text-blue-600" />
-                                  <span className="text-sm font-medium text-blue-600">Story</span>
-                                  <span className="text-sm text-gray-500">#{story.ticketNumber}</span>
-                                </div>
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                                  {story.priority}
-                                </span>
-                              </div>
-                              
-                              <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{story.title}</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{story.description}</p>
-                              
-                              {story.acceptanceCriteria && (
-                                <div className="mb-4">
-                                  <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                                    Acceptance Criteria
-                                  </h5>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{story.acceptanceCriteria}</p>
-                                </div>
-                              )}
-                              
-                              {/* Individual refinement button (secondary action) */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startRefinementMeeting(story);
-                                }}
-                                className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2 text-sm"
-                              >
-                                <Users size={14} />
-                                <span>Solo Refinement</span>
-                              </button>
-                            </div>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                              {story.priority}
+                            </span>
                           </div>
-                        );
-                      })}
+                          
+                          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{story.title}</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{story.description}</p>
+                          
+                          {story.acceptanceCriteria && (
+                            <div className="mb-4">
+                              <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                                Acceptance Criteria
+                              </h5>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{story.acceptanceCriteria}</p>
+                            </div>
+                          )}
+                          
+                          {/* Status indicator */}
+                          <div className="flex items-center justify-center">
+                            <span className="text-xs text-orange-600 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded-full">
+                              Ready for Refinement
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -2058,11 +2030,11 @@ const RefinementMeetingModal: React.FC<{
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              {selectedStories.length > 1 ? `Refinement Meeting: ${selectedStories.length} Stories` : `Refinement Meeting: ${ticket.title}`}
+              {selectedStories.length > 1 ? `Team Refinement Meeting` : `Refinement Meeting: ${ticket.title}`}
             </h3>
             {selectedStories.length > 1 && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Multi-story refinement session
+                Refining all {selectedStories.length} ready stories
               </p>
             )}
           </div>
@@ -2077,7 +2049,7 @@ const RefinementMeetingModal: React.FC<{
             <h4 className="text-xl font-medium text-gray-900 dark:text-white mb-2">Ready to Start Refinement?</h4>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {selectedStories.length > 1 
-                ? `Join your AI team members to refine ${selectedStories.length} stories through collaborative discussion`
+                ? `Join your AI team members to refine all ${selectedStories.length} ready stories through collaborative discussion`
                 : 'Join your AI team members to refine this story through collaborative discussion'
               }
             </p>
@@ -2085,7 +2057,7 @@ const RefinementMeetingModal: React.FC<{
             {/* Show selected stories if multiple */}
             {selectedStories.length > 1 && (
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4 text-left max-w-2xl mx-auto">
-                <h5 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Stories in this session:</h5>
+                <h5 className="font-medium mb-2 text-blue-900 dark:text-blue-100">All Ready Stories in Meeting:</h5>
                                  <div className="space-y-1 text-sm text-blue-800 dark:text-blue-200 max-h-32 overflow-y-auto">
                    {selectedStories.map((storyId, index) => {
                      const story = allStories.find(s => s.id === storyId);
