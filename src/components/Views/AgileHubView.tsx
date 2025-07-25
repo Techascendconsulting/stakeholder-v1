@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
+import { Project } from '../../lib/types';
 
 // Types
 interface AgileTicket {
@@ -44,7 +45,8 @@ interface RefinementMeeting {
 
 export const AgileHubView: React.FC = () => {
   const { user } = useAuth();
-  const { selectedProject } = useApp();
+  const { selectedProject, projects } = useApp();
+  const [currentProject, setCurrentProject] = useState<Project | null>(selectedProject);
   const [activeTab, setActiveTab] = useState<'backlog' | 'refinement' | 'feedback' | 'ceremonies'>('backlog');
   const [tickets, setTickets] = useState<AgileTicket[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -56,12 +58,16 @@ export const AgileHubView: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   useEffect(() => {
+    setCurrentProject(selectedProject);
+  }, [selectedProject]);
+
+  useEffect(() => {
     loadTickets();
     loadRefinementMeetings();
-  }, [user?.id, selectedProject?.id]);
+  }, [user?.id, currentProject?.id]);
 
   const getStorageKey = (type: 'tickets' | 'meetings') => {
-    const projectId = selectedProject?.id || 'default';
+    const projectId = currentProject?.id || 'default';
     return `agile_${type}_${user?.id}_${projectId}`;
   };
 
@@ -177,8 +183,35 @@ export const AgileHubView: React.FC = () => {
     ticket => ticket.type === 'Story' && ticket.status === 'Refined'
   );
 
-  // Show project selection prompt if no project
-  if (!selectedProject) {
+  // Show project selection if no current project but projects exist
+  if (!currentProject) {
+    if (projects && projects.length > 0) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto p-8">
+            <Workflow className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Choose Your Project</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Select a project to manage its backlog and refinement meetings.
+            </p>
+            <div className="space-y-3">
+              {projects.map((project) => (
+                <button
+                  key={project.id}
+                  onClick={() => setCurrentProject(project)}
+                  className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left"
+                >
+                  <div className="font-medium text-gray-900 dark:text-white">{project.name}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{project.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // No projects at all
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
