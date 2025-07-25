@@ -991,17 +991,6 @@ export const AgileHubView: React.FC = () => {
                                     <span>Refinement</span>
                                   </button>
                                 )}
-                                {ticket.status === 'Draft' && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updateTicketStatus(ticket.id, 'Ready for Refinement');
-                                    }}
-                                    className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors"
-                                  >
-                                    Mark Ready
-                                  </button>
-                                )}
                                 
                                 {/* Quick Action Buttons */}
                                 <div className="flex items-center space-x-1">
