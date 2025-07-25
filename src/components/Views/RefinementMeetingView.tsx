@@ -1,7 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
-import { AgileTicket, RefinementMeetingState, RefinementMessage, RefinementTeamMember } from '../../lib/types';
+import { RefinementMeetingState, RefinementMessage, RefinementTeamMember } from '../../lib/types';
+
+// AgileTicket interface (should match the one in AgileHubView)
+interface AgileTicket {
+  id: string;
+  ticketNumber: string;
+  projectId: string;
+  projectName: string;
+  type: 'Story' | 'Task' | 'Bug' | 'Spike';
+  title: string;
+  description: string;
+  acceptanceCriteria?: string;
+  priority: 'Low' | 'Medium' | 'High';
+  status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  attachments?: any[];
+  comments?: any[];
+  refinementScore?: {
+    clarity: number;
+    completeness: number;
+    testability: number;
+    overall: number;
+    feedback: string[];
+    aiSummary: string;
+  };
+}
 import { azureTTSService } from '../../services/azureTTSService';
 import { 
   Users, 
@@ -41,6 +68,20 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [userInput, setUserInput] = useState('');
+
+  // Priority color helper function
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      case 'Low':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  };
 
   // Team members
   const teamMembers = azureTTSService.getTeamMembers();
