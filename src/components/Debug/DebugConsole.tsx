@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { X, Bug, Eye, EyeOff, Trash2, Download, Copy } from 'lucide-react'
+import { X, Bug, Eye, EyeOff, Trash2, Download, Copy, RefreshCw, Database } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { DatabaseCleanup } from '../../lib/databaseCleanup'
+import { MeetingDataService } from '../../lib/meetingDataService'
 
 interface DebugLog {
   id: string
@@ -19,8 +21,10 @@ const DebugConsole: React.FC = () => {
   const [filter, setFilter] = useState<string>('all')
   const [autoScroll, setAutoScroll] = useState(true)
   const logsEndRef = useRef<HTMLDivElement>(null)
-  const { currentView, selectedProject, selectedStakeholders } = useApp()
+  const { currentView, selectedProject, selectedStakeholders, refreshMeetingData } = useApp()
   const { user } = useAuth()
+  const [dbStats, setDbStats] = useState<any>(null)
+  const [dbOperationStatus, setDbOperationStatus] = useState<string>('')
 
   // Intercept console.log and capture debug messages
   useEffect(() => {
@@ -143,6 +147,57 @@ const DebugConsole: React.FC = () => {
     navigator.clipboard.writeText(logText)
   }
 
+  // Database management functions
+  const loadDbStats = async () => {
+    if (!user?.id) return
+    const stats = await DatabaseCleanup.getUserDataStats(user.id)
+    setDbStats(stats)
+  }
+
+  const resetUserData = async () => {
+    if (!user?.id) return
+    if (!confirm('⚠️ This will DELETE ALL your meetings and progress data. Are you sure?')) return
+    
+    setDbOperationStatus('Resetting user data...')
+    const result = await DatabaseCleanup.resetUserData(user.id)
+    
+    if (result.success) {
+      setDbOperationStatus('✅ Data reset successful!')
+      MeetingDataService.clearCache(user.id)
+      await refreshMeetingData()
+      await loadDbStats()
+    } else {
+      setDbOperationStatus(`❌ Error: ${result.message}`)
+    }
+    
+    setTimeout(() => setDbOperationStatus(''), 3000)
+  }
+
+  const fixCorruptedMeetings = async () => {
+    if (!user?.id) return
+    
+    setDbOperationStatus('Fixing corrupted meetings...')
+    const result = await DatabaseCleanup.fixCorruptedMeetings(user.id)
+    
+    if (result.success) {
+      setDbOperationStatus(`✅ Fixed! Deleted ${result.deletedCount} corrupted meetings`)
+      MeetingDataService.clearCache(user.id)
+      await refreshMeetingData()
+      await loadDbStats()
+    } else {
+      setDbOperationStatus(`❌ Error: ${result.message}`)
+    }
+    
+    setTimeout(() => setDbOperationStatus(''), 3000)
+  }
+
+  // Load DB stats when user changes
+  useEffect(() => {
+    if (user?.id && isVisible) {
+      loadDbStats()
+    }
+  }, [user?.id, isVisible])
+
   const filteredLogs = logs.filter(log => 
     filter === 'all' || log.type === filter
   )
@@ -253,6 +308,51 @@ const DebugConsole: React.FC = () => {
             <div><strong>Project:</strong> {selectedProject?.name || 'None'}</div>
             <div><strong>Stakeholders:</strong> {selectedStakeholders.length}</div>
           </div>
+
+          {/* Database Management */}
+          {user?.id && (
+            <div className="p-2 bg-red-50 border-b text-xs">
+              <div className="flex items-center space-x-1 mb-2">
+                <Database size={12} />
+                <strong>Database Management</strong>
+                <button
+                  onClick={loadDbStats}
+                  className="p-1 bg-blue-500 text-white rounded text-xs"
+                  title="Refresh stats"
+                >
+                  <RefreshCw size={10} />
+                </button>
+              </div>
+              
+              {dbStats && (
+                <div className="mb-2 text-xs">
+                  <div>Total: {dbStats.totalMeetings} | Valid: {dbStats.validMeetings} | Corrupted: {dbStats.corruptedMeetings}</div>
+                </div>
+              )}
+              
+              <div className="flex space-x-1">
+                <button
+                  onClick={fixCorruptedMeetings}
+                  className="px-2 py-1 bg-orange-500 text-white rounded text-xs hover:bg-orange-600"
+                  disabled={!dbStats || dbStats.corruptedMeetings === 0}
+                >
+                  Fix Corrupted
+                </button>
+                <button
+                  onClick={resetUserData}
+                  className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                >
+                  Reset All Data
+                </button>
+              </div>
+              
+              {dbOperationStatus && (
+                <div className="mt-1 text-xs font-medium">
+                  {dbOperationStatus}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Logs */}
           <div className="h-64 overflow-y-auto p-2 space-y-1 text-xs">

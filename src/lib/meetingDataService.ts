@@ -109,6 +109,12 @@ export class MeetingDataService {
     }
   }
 
+  // Force clear all cache immediately (for debugging)
+  static forceClearAll(): void {
+    this.cachedMeetings.clear();
+    console.log('🗑️ MeetingDataService - Force cleared ALL cache');
+  }
+
   /**
    * Get meetings from localStorage with unified logic
    */
