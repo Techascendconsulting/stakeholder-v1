@@ -29,7 +29,7 @@ interface AgileTicket {
     aiSummary: string;
   };
 }
-import { azureTTSService } from '../../services/azureTTSService';
+import { azureTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { 
   Users, 
   MessageCircle, 
@@ -104,8 +104,45 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }
   };
 
-  // Team members
-  const teamMembers = azureTTSService.getTeamMembers();
+  // Team members - using the same voice assignments as the working voice meetings
+  const teamMembers = {
+    sarah: {
+      id: 'sarah',
+      name: 'Sarah',
+      role: 'Scrum Master' as const,
+      voiceId: 'en-GB-LibbyNeural',
+      nationality: 'British',
+      personality: 'Collaborative, process-focused, keeps meetings on track',
+      focusAreas: ['Story sizing', 'Sprint readiness', 'Delivery risks', 'Team coordination']
+    },
+    srikanth: {
+      id: 'srikanth',
+      name: 'Srikanth',
+      role: 'Senior Developer' as const,
+      voiceId: 'en-GB-RyanNeural', // Using UK voice for consistency
+      nationality: 'Indian',
+      personality: 'Technical depth, architectural thinking, system perspective',
+      focusAreas: ['System limitations', 'Scalability', 'Architecture', 'Technical complexity']
+    },
+    lisa: {
+      id: 'lisa',
+      name: 'Lisa',
+      role: 'Developer' as const,
+      voiceId: 'en-GB-MaisieNeural',
+      nationality: 'Polish',
+      personality: 'Implementation-focused, detail-oriented, integration expert',
+      focusAreas: ['Task clarity', 'Integration questions', 'Implementation details']
+    },
+    tom: {
+      id: 'tom',
+      name: 'Tom',
+      role: 'QA Tester' as const,
+      voiceId: 'en-GB-ThomasNeural',
+      nationality: 'British',
+      personality: 'Quality-focused, edge case finder, testability advocate',
+      focusAreas: ['Testability', 'Edge cases', 'Acceptance criteria gaps', 'Quality assurance']
+    }
+  };
   const teamMembersList = Object.values(teamMembers);
 
   // Meeting state
@@ -193,52 +230,50 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       currentSpeaker: member.id
     }));
 
-    // Generate TTS audio (if available and not muted)
-    if (!isMuted && ttsAvailable) {
+        // Generate TTS audio using the same system as voice meetings
+    if (!isMuted && isAzureTTSAvailable()) {
       try {
-        const audioUrl = await azureTTSService.synthesizeSpeech({
-          text,
-          voiceId: member.voiceId,
-          rate: 'medium'
-        });
+        console.log(`🎵 Using voice: ${member.voiceId} for team member: ${member.name}`);
+        console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
+        
+        const audioBlob = await azureTTS.synthesizeSpeech(text, member.voiceId);
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        // Update message with audio URL
+        setMeetingState(prev => ({
+          ...prev,
+          messages: prev.messages.map(msg => 
+            msg.id === message.id 
+              ? { ...msg, audioUrl, isPlaying: true }
+              : msg
+          )
+        }));
 
-        if (audioUrl) {
-          const audio = new Audio(audioUrl);
-          
-          // Update message with audio URL
+        audio.play();
+        
+        audio.onended = () => {
           setMeetingState(prev => ({
             ...prev,
             messages: prev.messages.map(msg => 
               msg.id === message.id 
-                ? { ...msg, audioUrl, isPlaying: true }
+                ? { ...msg, isPlaying: false }
                 : msg
-            )
+            ),
+            currentSpeaker: null
           }));
-
-          audio.play();
-          
-          audio.onended = () => {
-            setMeetingState(prev => ({
-              ...prev,
-              messages: prev.messages.map(msg => 
-                msg.id === message.id 
-                  ? { ...msg, isPlaying: false }
-                  : msg
-              ),
-              currentSpeaker: null
-            }));
-          };
-        } else {
-          // No audio available, mark TTS as unavailable and show text only
-          setTtsAvailable(false);
-          console.warn('Azure TTS not configured. Meeting will continue in text-only mode.');
-          setTimeout(() => {
-            setMeetingState(prev => ({
-              ...prev,
-              currentSpeaker: null
-            }));
-          }, 2000);
-        }
+          // Clean up the blob URL
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        audio.onerror = () => {
+          console.warn('Audio playback error');
+          setMeetingState(prev => ({
+            ...prev,
+            currentSpeaker: null
+          }));
+          URL.revokeObjectURL(audioUrl);
+        };
       } catch (error) {
         console.warn('TTS Error:', error, 'Continuing with text-only meeting.');
         setTtsAvailable(false);
@@ -474,7 +509,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               <span>Recording</span>
             </div>
-            {!ttsAvailable && (
+            {!isAzureTTSAvailable() && (
               <div className="flex items-center space-x-2 text-yellow-400">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                 <span>Text Only</span>
@@ -692,12 +727,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${
                     meetingState.currentSpeaker === member.id 
-                      ? 'ring-2 ring-green-500 bg-white' 
-                      : 'bg-gray-200 dark:bg-gray-700'
+                      ? `ring-2 ring-green-500 ${getAvatarColor(member.name)}` 
+                      : getAvatarColor(member.name)
                   }`}>
-                    {member.avatar}
+                    {getInitials(member.name)}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
