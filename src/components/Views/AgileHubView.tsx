@@ -69,6 +69,358 @@ interface RefinementMeeting {
   completedAt: string;
 }
 
+// TicketDetailPanel Component for Jira-style split screen editing
+interface TicketDetailPanelProps {
+  ticket: AgileTicket;
+  onClose: () => void;
+  onUpdateTicket: (ticket: AgileTicket) => void;
+}
+
+const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({ 
+  ticket, 
+  onClose, 
+  onUpdateTicket 
+}) => {
+  const [editingTicket, setEditingTicket] = useState<AgileTicket>(ticket);
+  const [newComment, setNewComment] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Auto-save changes
+  useEffect(() => {
+    const saveTimer = setTimeout(() => {
+      onUpdateTicket(editingTicket);
+    }, 1000); // Auto-save after 1 second of no changes
+
+    return () => clearTimeout(saveTimer);
+  }, [editingTicket, onUpdateTicket]);
+
+  const handleFieldChange = (field: keyof AgileTicket, value: any) => {
+    setEditingTicket(prev => ({
+      ...prev,
+      [field]: value,
+      updatedAt: new Date().toISOString()
+    }));
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const fileData = reader.result as string;
+        const newAttachment: TicketAttachment = {
+          id: `attachment_${Date.now()}`,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: 'Current User',
+          fileData
+        };
+
+        setEditingTicket(prev => ({
+          ...prev,
+          attachments: [...(prev.attachments || []), newAttachment]
+        }));
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const addComment = () => {
+    if (!newComment.trim()) return;
+
+    const comment: TicketComment = {
+      id: `comment_${Date.now()}`,
+      text: newComment.trim(),
+      authorId: 'current-user',
+      authorName: 'Current User',
+      createdAt: new Date().toISOString()
+    };
+
+    setEditingTicket(prev => ({
+      ...prev,
+      comments: [...(prev.comments || []), comment]
+    }));
+    setNewComment('');
+  };
+
+  const removeAttachment = (attachmentId: string) => {
+    setEditingTicket(prev => ({
+      ...prev,
+      attachments: prev.attachments?.filter(a => a.id !== attachmentId) || []
+    }));
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'Story': return <BookOpen size={16} className="text-green-600" />;
+      case 'Task': return <Square size={16} className="text-blue-600" />;
+      case 'Bug': return <Bug size={16} className="text-red-600" />;
+      case 'Spike': return <Lightbulb size={16} className="text-yellow-600" />;
+      default: return <Square size={16} />;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High': return 'bg-red-100 text-red-800 border-red-200';
+      case 'Medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Draft': return 'bg-gray-100 text-gray-800';
+      case 'Ready for Refinement': return 'bg-blue-100 text-blue-800';
+      case 'Refined': return 'bg-purple-100 text-purple-800';
+      case 'To Do': return 'bg-yellow-100 text-yellow-800';
+      case 'In Progress': return 'bg-orange-100 text-orange-800';
+      case 'In Test': return 'bg-indigo-100 text-indigo-800';
+      case 'Done': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="h-full bg-white border-l border-gray-200 flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          {getTypeIcon(editingTicket.type)}
+          <div>
+            <h3 className="font-semibold text-gray-900">{editingTicket.ticketNumber}</h3>
+            <p className="text-sm text-gray-500">{editingTicket.projectName}</p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <X size={20} className="text-gray-500" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {/* Title */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+          <input
+            type="text"
+            value={editingTicket.title}
+            onChange={(e) => handleFieldChange('title', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* Type, Priority, Status, Story Points */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+            <select
+              value={editingTicket.type}
+              onChange={(e) => handleFieldChange('type', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="Story">Story</option>
+              <option value="Task">Task</option>
+              <option value="Bug">Bug</option>
+              <option value="Spike">Spike</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <select
+              value={editingTicket.priority}
+              onChange={(e) => handleFieldChange('priority', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              value={editingTicket.status}
+              onChange={(e) => handleFieldChange('status', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="Draft">Draft</option>
+              <option value="Ready for Refinement">Ready for Refinement</option>
+              <option value="Refined">Refined</option>
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="In Test">In Test</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Story Points</label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={editingTicket.storyPoints || ''}
+              onChange={(e) => handleFieldChange('storyPoints', e.target.value ? parseInt(e.target.value) : undefined)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter points"
+            />
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea
+            value={editingTicket.description}
+            onChange={(e) => handleFieldChange('description', e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {/* Acceptance Criteria (Stories only) */}
+        {editingTicket.type === 'Story' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Acceptance Criteria</label>
+            <textarea
+              value={editingTicket.acceptanceCriteria || ''}
+              onChange={(e) => handleFieldChange('acceptanceCriteria', e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Define acceptance criteria..."
+            />
+          </div>
+        )}
+
+        {/* Attachments */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-gray-700">Attachments</label>
+            <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center space-x-2">
+              <Upload size={16} />
+              <span>Upload</span>
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={isUploading}
+              />
+            </label>
+          </div>
+          
+          {editingTicket.attachments && editingTicket.attachments.length > 0 && (
+            <div className="space-y-2">
+              {editingTicket.attachments.map(attachment => (
+                <div key={attachment.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Paperclip size={16} className="text-gray-500" />
+                    <span className="text-sm">{attachment.fileName}</span>
+                    <span className="text-xs text-gray-500">
+                      ({(attachment.fileSize / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeAttachment(attachment.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Comments */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Comments</label>
+          
+          {/* Add Comment */}
+          <div className="flex space-x-2 mb-4">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addComment()}
+              placeholder="Add a comment..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={addComment}
+              disabled={!newComment.trim()}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center"
+            >
+              <Send size={16} />
+            </button>
+          </div>
+
+          {/* Comments List */}
+          {editingTicket.comments && editingTicket.comments.length > 0 && (
+            <div className="space-y-3">
+              {editingTicket.comments.map(comment => (
+                <div key={comment.id} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="font-medium text-sm">{comment.authorName}</span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(comment.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700">{comment.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Refinement Score (if available) */}
+        {editingTicket.refinementScore && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Refinement Score</label>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-medium text-green-800">Overall Score</span>
+                <span className="text-2xl font-bold text-green-600">
+                  {editingTicket.refinementScore.overall}/10
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                <div>
+                  <span className="text-gray-600">Clarity:</span>
+                  <span className="ml-2 font-medium">{editingTicket.refinementScore.clarity}/10</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Completeness:</span>
+                  <span className="ml-2 font-medium">{editingTicket.refinementScore.completeness}/10</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Testability:</span>
+                  <span className="ml-2 font-medium">{editingTicket.refinementScore.testability}/10</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const AgileHubView: React.FC = () => {
   const { user } = useAuth();
   const { selectedProject, projects } = useApp();
