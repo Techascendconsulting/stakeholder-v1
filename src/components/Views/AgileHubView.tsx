@@ -83,6 +83,7 @@ export const AgileHubView: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set());
+  const [selectedRefinementStories, setSelectedRefinementStories] = useState<Set<string>>(new Set());
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [editingStatus, setEditingStatus] = useState<string | null>(null);
@@ -229,6 +230,39 @@ export const AgileHubView: React.FC = () => {
 
   const clearSelection = () => {
     setSelectedTickets(new Set());
+  };
+
+  const clearRefinementSelection = () => {
+    setSelectedRefinementStories(new Set());
+  };
+
+  const toggleRefinementStory = (ticketId: string) => {
+    const newSelection = new Set(selectedRefinementStories);
+    if (newSelection.has(ticketId)) {
+      newSelection.delete(ticketId);
+    } else {
+      newSelection.add(ticketId);
+    }
+    setSelectedRefinementStories(newSelection);
+  };
+
+  const selectAllRefinementStories = () => {
+    const allStoryIds = storiesReadyForRefinement.map(story => story.id);
+    setSelectedRefinementStories(new Set(allStoryIds));
+  };
+
+  const startMultiStoryRefinement = () => {
+    if (selectedRefinementStories.size === 0) return;
+    
+    const selectedStories = storiesReadyForRefinement.filter(story => 
+      selectedRefinementStories.has(story.id)
+    );
+    
+    setSelectedTicket(selectedStories[0]); // Use first story as primary for modal display
+    setShowRefinementModal(true);
+    setIsInMeeting(true);
+    
+    // We'll pass the selected stories to the refinement modal
   };
 
   const bulkUpdateStatus = (status: AgileTicket['status']) => {
@@ -654,6 +688,32 @@ export const AgileHubView: React.FC = () => {
                           >
                             Done
                           </button>
+                          {/* Add bulk refinement for stories */}
+                          {Array.from(selectedTickets).some(ticketId => {
+                            const ticket = tickets.find(t => t.id === ticketId);
+                            return ticket?.type === 'Story' && ticket?.status === 'Ready for Refinement';
+                          }) && (
+                            <button
+                              onClick={() => {
+                                // Get selected stories that are ready for refinement
+                                const readyStories = Array.from(selectedTickets).filter(ticketId => {
+                                  const ticket = tickets.find(t => t.id === ticketId);
+                                  return ticket?.type === 'Story' && ticket?.status === 'Ready for Refinement';
+                                });
+                                
+                                if (readyStories.length > 0) {
+                                  setSelectedRefinementStories(new Set(readyStories));
+                                  setSelectedTicket(tickets.find(t => t.id === readyStories[0])!);
+                                  setShowRefinementModal(true);
+                                  setIsInMeeting(true);
+                                }
+                              }}
+                              className="px-3 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 transition-colors flex items-center space-x-1"
+                            >
+                              <Users size={12} />
+                              <span>Refinement</span>
+                            </button>
+                          )}
                           <button
                             onClick={bulkDelete}
                             className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
@@ -983,7 +1043,7 @@ export const AgileHubView: React.FC = () => {
                 <div className="mb-6">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Stories Ready for Refinement</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Join AI-powered refinement meetings to improve story clarity and completeness
+                    Select multiple stories for efficient team refinement meetings
                   </p>
                 </div>
 
@@ -994,40 +1054,98 @@ export const AgileHubView: React.FC = () => {
                     <p className="text-gray-500 dark:text-gray-400">Create stories and mark them as ready to start refinement meetings</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {storiesReadyForRefinement.map((story) => (
-                      <div key={story.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                                                 <div className="flex items-start justify-between mb-4">
-                           <div className="flex items-center space-x-2">
-                             <BookOpen className="w-5 h-5 text-blue-600" />
-                             <span className="text-sm font-medium text-blue-600">Story</span>
-                           </div>
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                            {story.priority}
-                          </span>
-                        </div>
-                        
-                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{story.title}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{story.description}</p>
-                        
-                        {story.acceptanceCriteria && (
-                          <div className="mb-4">
-                            <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                              Acceptance Criteria
-                            </h5>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{story.acceptanceCriteria}</p>
-                          </div>
-                        )}
-                        
+                  <div>
+                    {/* Multi-Select Actions */}
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
                         <button
-                          onClick={() => startRefinementMeeting(story)}
-                          className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2"
+                          onClick={selectedRefinementStories.size === storiesReadyForRefinement.length ? clearRefinementSelection : selectAllRefinementStories}
+                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          {selectedRefinementStories.size === storiesReadyForRefinement.length ? 'Deselect All' : 'Select All'}
+                        </button>
+                        {selectedRefinementStories.size > 0 && (
+                          <span className="text-sm text-gray-500">
+                            {selectedRefinementStories.size} of {storiesReadyForRefinement.length} stories selected
+                          </span>
+                        )}
+                      </div>
+                      
+                      {selectedRefinementStories.size > 0 && (
+                        <button
+                          onClick={startMultiStoryRefinement}
+                          className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2 font-medium"
                         >
                           <Users size={16} />
-                          <span>Join Refinement Meeting</span>
+                          <span>Start Refinement Meeting ({selectedRefinementStories.size} stories)</span>
                         </button>
-                      </div>
-                    ))}
+                      )}
+                    </div>
+
+                    {/* Stories Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {storiesReadyForRefinement.map((story) => {
+                        const isSelected = selectedRefinementStories.has(story.id);
+                        return (
+                          <div 
+                            key={story.id} 
+                            className={`relative bg-gray-50 dark:bg-gray-900 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
+                              isSelected 
+                                ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' 
+                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                            }`}
+                            onClick={() => toggleRefinementStory(story.id)}
+                          >
+                            {/* Selection Checkbox */}
+                            <div className="absolute top-4 right-4">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleRefinementStory(story.id)}
+                                className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
+                              />
+                            </div>
+
+                            <div className="p-6">
+                              <div className="flex items-start justify-between mb-4 pr-8">
+                                <div className="flex items-center space-x-2">
+                                  <BookOpen className="w-5 h-5 text-blue-600" />
+                                  <span className="text-sm font-medium text-blue-600">Story</span>
+                                  <span className="text-sm text-gray-500">#{story.ticketNumber}</span>
+                                </div>
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                                  {story.priority}
+                                </span>
+                              </div>
+                              
+                              <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{story.title}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{story.description}</p>
+                              
+                              {story.acceptanceCriteria && (
+                                <div className="mb-4">
+                                  <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                                    Acceptance Criteria
+                                  </h5>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{story.acceptanceCriteria}</p>
+                                </div>
+                              )}
+                              
+                              {/* Individual refinement button (secondary action) */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startRefinementMeeting(story);
+                                }}
+                                className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2 text-sm"
+                              >
+                                <Users size={14} />
+                                <span>Solo Refinement</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1174,41 +1292,52 @@ export const AgileHubView: React.FC = () => {
       {showRefinementModal && selectedTicket && (
         <RefinementMeetingModal
           ticket={selectedTicket}
+          selectedStories={Array.from(selectedRefinementStories)}
+          allStories={storiesReadyForRefinement}
           onClose={() => {
             setShowRefinementModal(false);
             setSelectedTicket(null);
+            clearRefinementSelection();
           }}
           onComplete={(meetingData, scores) => {
-            // Save meeting data
-            const newMeeting: RefinementMeeting = {
-              id: `meeting_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-              ticketId: selectedTicket.id,
+            // Determine which stories to refine
+            const storiesToRefine = selectedRefinementStories.size > 0 
+              ? Array.from(selectedRefinementStories)
+              : [selectedTicket.id];
+            
+            // Create meeting records for each story
+            const newMeetings: RefinementMeeting[] = storiesToRefine.map(ticketId => ({
+              id: `meeting_${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${ticketId}`,
+              ticketId: ticketId,
               participants: ['You', 'Dev 1', 'Dev 2', 'Tester', 'Scrum Master'],
               duration: meetingData.duration,
               transcript: meetingData.transcript,
-              summary: meetingData.summary,
+              summary: `${meetingData.summary} (Multi-story session with ${storiesToRefine.length} stories)`,
               scores,
               feedback: meetingData.feedback,
               completedAt: new Date().toISOString()
-            };
+            }));
             
-            const updatedMeetings = [...refinementMeetings, newMeeting];
+            const updatedMeetings = [...refinementMeetings, ...newMeetings];
             const storageKey = getStorageKey('meetings');
             localStorage.setItem(storageKey, JSON.stringify(updatedMeetings));
             setRefinementMeetings(updatedMeetings);
             
-            // Update ticket status and scores
-            updateTicketStatus(selectedTicket.id, 'Refined', {
-              clarity: scores.clarity,
-              completeness: scores.completeness,
-              testability: scores.testability,
-              overall: scores.overall,
-              feedback: meetingData.feedback,
-              aiSummary: meetingData.summary
+            // Update all ticket statuses and scores
+            storiesToRefine.forEach(ticketId => {
+              updateTicketStatus(ticketId, 'Refined', {
+                clarity: scores.clarity,
+                completeness: scores.completeness,
+                testability: scores.testability,
+                overall: scores.overall,
+                feedback: meetingData.feedback,
+                aiSummary: `${meetingData.summary} (Part of multi-story refinement)`
+              });
             });
             
             setShowRefinementModal(false);
             setSelectedTicket(null);
+            clearRefinementSelection();
           }}
         />
       )}
@@ -1846,9 +1975,11 @@ const CreateTicketModal: React.FC<{
 // Refinement Meeting Modal Component (placeholder for now)
 const RefinementMeetingModal: React.FC<{
   ticket: AgileTicket;
+  selectedStories?: string[];
+  allStories?: AgileTicket[];
   onClose: () => void;
   onComplete: (meetingData: any, scores: any) => void;
-}> = ({ ticket, onClose, onComplete }) => {
+}> = ({ ticket, selectedStories = [], allStories = [], onClose, onComplete }) => {
   const [isInProgress, setIsInProgress] = useState(false);
   const [meetingPhase, setMeetingPhase] = useState<'intro' | 'discussion' | 'estimation' | 'summary'>('intro');
 
@@ -1891,7 +2022,16 @@ const RefinementMeetingModal: React.FC<{
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Refinement Meeting: {ticket.title}</h3>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              {selectedStories.length > 1 ? `Refinement Meeting: ${selectedStories.length} Stories` : `Refinement Meeting: ${ticket.title}`}
+            </h3>
+            {selectedStories.length > 1 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Multi-story refinement session
+              </p>
+            )}
+          </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={20} />
           </button>
@@ -1902,9 +2042,30 @@ const RefinementMeetingModal: React.FC<{
             <Users className="w-16 h-16 text-blue-600 mx-auto mb-4" />
             <h4 className="text-xl font-medium text-gray-900 dark:text-white mb-2">Ready to Start Refinement?</h4>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Join your AI team members to refine this story through collaborative discussion
+              {selectedStories.length > 1 
+                ? `Join your AI team members to refine ${selectedStories.length} stories through collaborative discussion`
+                : 'Join your AI team members to refine this story through collaborative discussion'
+              }
             </p>
             
+            {/* Show selected stories if multiple */}
+            {selectedStories.length > 1 && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4 text-left max-w-2xl mx-auto">
+                <h5 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Stories in this session:</h5>
+                                 <div className="space-y-1 text-sm text-blue-800 dark:text-blue-200 max-h-32 overflow-y-auto">
+                   {selectedStories.map((storyId, index) => {
+                     const story = allStories.find(s => s.id === storyId);
+                     return story ? (
+                       <div key={storyId} className="flex items-center space-x-2">
+                         <span className="text-xs font-mono bg-blue-200 dark:bg-blue-800 px-1 rounded">#{story.ticketNumber}</span>
+                         <span className="truncate">{story.title}</span>
+                       </div>
+                     ) : null;
+                   })}
+                 </div>
+              </div>
+            )}
+
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6 text-left max-w-2xl mx-auto">
               <h5 className="font-medium mb-2">Meeting Participants:</h5>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400">
