@@ -80,6 +80,9 @@ export const AgileHubView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set());
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   useEffect(() => {
     setCurrentProject(selectedProject);
@@ -187,6 +190,97 @@ export const AgileHubView: React.FC = () => {
     saveTickets(updatedTickets);
     setShowEditModal(false);
     setSelectedTicket(null);
+  };
+
+  // Multi-select functions
+  const toggleTicketSelection = (ticketId: string) => {
+    const newSelected = new Set(selectedTickets);
+    if (newSelected.has(ticketId)) {
+      newSelected.delete(ticketId);
+    } else {
+      newSelected.add(ticketId);
+    }
+    setSelectedTickets(newSelected);
+  };
+
+  const selectAllTickets = () => {
+    const allTicketIds = new Set(filteredTickets.map(ticket => ticket.id));
+    setSelectedTickets(allTicketIds);
+  };
+
+  const clearSelection = () => {
+    setSelectedTickets(new Set());
+  };
+
+  const bulkUpdateStatus = (status: AgileTicket['status']) => {
+    const updatedTickets = tickets.map(ticket => 
+      selectedTickets.has(ticket.id)
+        ? { ...ticket, status, updatedAt: new Date().toISOString() }
+        : ticket
+    );
+    saveTickets(updatedTickets);
+    clearSelection();
+  };
+
+  const bulkDelete = () => {
+    if (confirm(`Are you sure you want to delete ${selectedTickets.size} selected tickets?`)) {
+      const updatedTickets = tickets.filter(ticket => !selectedTickets.has(ticket.id));
+      saveTickets(updatedTickets);
+      clearSelection();
+    }
+  };
+
+  // Drag and drop functions
+  const handleDragStart = (e: React.DragEvent, ticketId: string) => {
+    setDraggedItem(ticketId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetTicketId: string) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem === targetTicketId) return;
+
+    const draggedIndex = filteredTickets.findIndex(ticket => ticket.id === draggedItem);
+    const targetIndex = filteredTickets.findIndex(ticket => ticket.id === targetTicketId);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    // Reorder tickets
+    const newTickets = [...tickets];
+    const draggedTicket = newTickets.find(ticket => ticket.id === draggedItem);
+    const targetTicket = newTickets.find(ticket => ticket.id === targetTicketId);
+
+    if (!draggedTicket || !targetTicket) return;
+
+    // Remove dragged item
+    const draggedTicketIndex = newTickets.findIndex(ticket => ticket.id === draggedItem);
+    newTickets.splice(draggedTicketIndex, 1);
+
+    // Insert at new position
+    const newTargetIndex = newTickets.findIndex(ticket => ticket.id === targetTicketId);
+    newTickets.splice(newTargetIndex, 0, draggedTicket);
+
+    saveTickets(newTickets);
+    setDraggedItem(null);
+  };
+
+  const moveTicket = (ticketId: string, direction: 'up' | 'down') => {
+    const currentIndex = tickets.findIndex(ticket => ticket.id === ticketId);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= tickets.length) return;
+
+    const newTickets = [...tickets];
+    const [movedTicket] = newTickets.splice(currentIndex, 1);
+    newTickets.splice(newIndex, 0, movedTicket);
+
+    saveTickets(newTickets);
   };
 
   const getTypeIcon = (type: AgileTicket['type']) => {
@@ -465,30 +559,95 @@ export const AgileHubView: React.FC = () => {
             {/* Backlog Tab */}
             {activeTab === 'backlog' && (
               <div>
-                {/* Filters */}
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="flex-1 max-w-md">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <input
-                        type="text"
-                        placeholder="Search tickets..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
+                {/* Bulk Actions Bar */}
+                {selectedTickets.size > 0 && (
+                  <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                          {selectedTickets.size} ticket{selectedTickets.size !== 1 ? 's' : ''} selected
+                        </span>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => bulkUpdateStatus('Draft')}
+                            className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors"
+                          >
+                            Mark as Draft
+                          </button>
+                          <button
+                            onClick={() => bulkUpdateStatus('Ready for Refinement')}
+                            className="px-3 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 transition-colors"
+                          >
+                            Mark Ready
+                          </button>
+                          <button
+                            onClick={() => bulkUpdateStatus('Refined')}
+                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                          >
+                            Mark Refined
+                          </button>
+                          <button
+                            onClick={bulkDelete}
+                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                          >
+                            Delete Selected
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        onClick={clearSelection}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        Clear Selection
+                      </button>
                     </div>
                   </div>
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Ready for Refinement">Ready for Refinement</option>
-                    <option value="Refined">Refined</option>
-                  </select>
+                )}
+
+                {/* Filters */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1 max-w-md">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <input
+                          type="text"
+                          placeholder="Search tickets..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="Draft">Draft</option>
+                      <option value="Ready for Refinement">Ready for Refinement</option>
+                      <option value="Refined">Refined</option>
+                    </select>
+                  </div>
+                  
+                  {/* Multi-select controls */}
+                  <div className="flex items-center space-x-2">
+                    {filteredTickets.length > 0 && (
+                      <>
+                        <button
+                          onClick={selectedTickets.size === filteredTickets.length ? clearSelection : selectAllTickets}
+                          className="text-sm text-blue-600 hover:text-blue-800"
+                        >
+                          {selectedTickets.size === filteredTickets.length ? 'Deselect All' : 'Select All'}
+                        </button>
+                        <span className="text-gray-300">|</span>
+                      </>
+                    )}
+                    <span className="text-sm text-gray-500">
+                      {filteredTickets.length} ticket{filteredTickets.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Tickets Table */}
@@ -509,6 +668,17 @@ export const AgileHubView: React.FC = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                       <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>
+                          <th className="px-3 py-3 text-left">
+                            <input
+                              type="checkbox"
+                              checked={filteredTickets.length > 0 && selectedTickets.size === filteredTickets.length}
+                              onChange={selectedTickets.size === filteredTickets.length ? clearSelection : selectAllTickets}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                          </th>
+                          <th className="px-3 py-3 text-left">
+                            <GripVertical className="w-4 h-4 text-gray-400" title="Drag to reorder" />
+                          </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Key
                           </th>
@@ -530,8 +700,48 @@ export const AgileHubView: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {filteredTickets.map((ticket) => (
-                          <tr key={ticket.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                        {filteredTickets.map((ticket, index) => (
+                          <tr 
+                            key={ticket.id} 
+                            className={`hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${selectedTickets.has(ticket.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''} ${draggedItem === ticket.id ? 'opacity-50' : ''}`}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, ticket.id)}
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, ticket.id)}
+                          >
+                            {/* Checkbox Column */}
+                            <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={selectedTickets.has(ticket.id)}
+                                onChange={() => toggleTicketSelection(ticket.id)}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                            </td>
+                            
+                            {/* Drag Handle Column */}
+                            <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  onClick={() => moveTicket(ticket.id, 'up')}
+                                  disabled={index === 0}
+                                  className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                                  title="Move up"
+                                >
+                                  <ArrowUp size={12} />
+                                </button>
+                                <GripVertical className="w-4 h-4 text-gray-400 cursor-grab active:cursor-grabbing" />
+                                <button
+                                  onClick={() => moveTicket(ticket.id, 'down')}
+                                  disabled={index === filteredTickets.length - 1}
+                                  className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                                  title="Move down"
+                                >
+                                  <ArrowDown size={12} />
+                                </button>
+                              </div>
+                            </td>
+                            
                             {/* Key Column */}
                             <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
                               <div className="flex items-center space-x-2">
