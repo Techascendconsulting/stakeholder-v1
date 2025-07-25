@@ -241,6 +241,28 @@ const concepts: ConceptCard[] = [
   }
 ];
 
+// Helper function to get static gradient classes (prevents Tailwind purging)
+const getGradientClass = (conceptId: number): string => {
+  const gradientClasses = {
+    1: 'bg-gradient-to-r from-purple-500 to-indigo-600',
+    2: 'bg-gradient-to-r from-blue-500 to-cyan-600',
+    3: 'bg-gradient-to-r from-emerald-500 to-teal-600',
+    4: 'bg-gradient-to-r from-orange-500 to-red-600',
+    5: 'bg-gradient-to-r from-pink-500 to-rose-600',
+    6: 'bg-gradient-to-r from-violet-500 to-purple-600',
+    7: 'bg-gradient-to-r from-amber-500 to-yellow-600',
+    8: 'bg-gradient-to-r from-green-500 to-emerald-600',
+    9: 'bg-gradient-to-r from-slate-500 to-gray-600',
+    10: 'bg-gradient-to-r from-indigo-500 to-blue-600',
+    11: 'bg-gradient-to-r from-teal-500 to-cyan-600',
+    12: 'bg-gradient-to-r from-rose-500 to-pink-600',
+    13: 'bg-gradient-to-r from-yellow-500 to-orange-600',
+    14: 'bg-gradient-to-r from-purple-500 to-violet-600'
+  };
+  
+  return gradientClasses[conceptId as keyof typeof gradientClasses] || 'bg-gradient-to-r from-gray-500 to-gray-600';
+};
+
 // Main CoreConceptsView Component
 const CoreConceptsView: React.FC = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
@@ -419,7 +441,7 @@ const CoreConceptsView: React.FC = () => {
               onClick={() => setSelectedConcept(concept)}
             >
               {/* Card Header with Gradient */}
-              <div className={`h-2 bg-gradient-to-r ${concept.color}`}></div>
+              <div className={`h-2 ${getGradientClass(concept.id)}`}></div>
               
               {/* Card Content */}
               <div className="p-8 flex flex-col flex-grow">
