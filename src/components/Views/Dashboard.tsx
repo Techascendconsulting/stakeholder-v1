@@ -197,7 +197,7 @@ const Dashboard: React.FC = () => {
   const stats = [
     {
       title: 'Projects Started',
-      value: progress?.total_projects_started || 0,
+      value: actualProjectCount,
       icon: Target,
       color: 'bg-blue-500',
       change: '+12%',
@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Meetings Conducted',
-      value: progress?.total_meetings_conducted || 0,
+      value: recentMeetings.length > 0 ? (progress?.total_meetings_conducted || 0) : 0,
       icon: Users,
       color: 'bg-purple-500',
       change: '+8%',
@@ -232,6 +232,58 @@ const Dashboard: React.FC = () => {
   // Calculate insights about meetings with summaries and transcripts
   const meetingsWithSummaries = recentMeetings.filter(m => m.meeting_summary && m.meeting_summary.trim()).length;
   const meetingsWithTranscripts = recentMeetings.filter(m => m.transcript && m.transcript.length > 0).length;
+
+  // Calculate actual project count from meetings data (more accurate than stored counter)
+  const [actualProjectCount, setActualProjectCount] = useState<number>(0);
+  
+  useEffect(() => {
+    const calculateActualProjects = async () => {
+      if (!user?.id) return;
+      
+      try {
+        // Get all meetings to calculate unique projects
+        const allMeetings = await DatabaseService.getUserMeetings(user.id);
+        
+        // Also check localStorage for additional meetings
+        const localMeetings: any[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
+            try {
+              const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
+              if (meetingData.user_id === user.id && meetingData.id) {
+                localMeetings.push(meetingData);
+              }
+            } catch (error) {
+              console.warn('Error parsing localStorage meeting:', key, error);
+            }
+          }
+        }
+        
+        // Combine and get unique project names
+        const combinedMeetings = [...allMeetings, ...localMeetings]
+          .filter((meeting, index, self) => 
+            meeting && meeting.id && 
+            index === self.findIndex(m => m.id === meeting.id)
+          );
+        
+        const uniqueProjects = new Set(
+          combinedMeetings
+            .map(meeting => meeting.project_name)
+            .filter(name => name && name.trim())
+        );
+        
+        console.log('📊 Dashboard - Calculated actual project count:', uniqueProjects.size);
+        console.log('📊 Dashboard - Unique projects:', Array.from(uniqueProjects));
+        setActualProjectCount(uniqueProjects.size);
+      } catch (error) {
+        console.error('Error calculating actual project count:', error);
+        setActualProjectCount(progress?.total_projects_started || 0);
+      }
+    };
+    
+    calculateActualProjects();
+  }, [user?.id, recentMeetings, progress]);
 
   return (
     <div className="max-w-7xl mx-auto p-6">
