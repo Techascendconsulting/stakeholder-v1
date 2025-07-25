@@ -46,8 +46,8 @@ const MainLayout: React.FC = () => {
     
     switch (currentView) {
       case 'dashboard':
-        console.log('🏠 RENDER: Redirecting to ProjectsView to avoid Dashboard errors')
-        return <ProjectsView />
+        console.log('🏠 RENDER: Rendering Dashboard component')
+        return <Dashboard />
       case 'core-concepts':
         console.log('📚 RENDER: Rendering CoreConceptsView component')
         return <CoreConceptsView />
