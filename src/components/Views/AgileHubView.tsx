@@ -246,7 +246,7 @@ export const AgileHubView: React.FC = () => {
                       const project = projects.find(p => p.id === e.target.value);
                       setCurrentProject(project || null);
                     }}
-                    className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium border-0 focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     {projects.map(project => (
                       <option key={project.id} value={project.id}>{project.name}</option>
