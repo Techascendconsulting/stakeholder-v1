@@ -528,14 +528,19 @@ export const AgileHubView: React.FC = () => {
                 {projects && projects.length > 1 ? (
                   <div className="relative">
                     <button
-                      onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                      className="flex items-center space-x-2 pl-3 pr-8 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                      onClick={() => !showRefinementModal && setShowProjectDropdown(!showProjectDropdown)}
+                      disabled={showRefinementModal}
+                      className={`flex items-center space-x-2 pl-3 pr-8 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        showRefinementModal 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer'
+                      }`}
                     >
                       <span>{currentProject?.name}</span>
                       <ChevronDown className="w-4 h-4 text-gray-500" />
                     </button>
                     
-                    {showProjectDropdown && (
+                    {showProjectDropdown && !showRefinementModal && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
                         {projects.map(project => (
                           <button
@@ -563,8 +568,13 @@ export const AgileHubView: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">Manage your delivery backlog and refinement meetings</p>
             </div>
             <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              onClick={() => !showRefinementModal && setShowCreateModal(true)}
+              disabled={showRefinementModal}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                showRefinementModal
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
             >
               <Plus size={16} />
               <span>Create New Ticket</span>

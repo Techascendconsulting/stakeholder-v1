@@ -440,7 +440,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="fixed inset-0 bg-gray-900 text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
       <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -482,9 +482,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 flex">
-        {/* Main Content - Kanban Board (white background) */}
-        <div className="flex-1 bg-white text-gray-900 p-6">
+             <div className="flex-1 flex overflow-hidden">
+         {/* Main Content - Kanban Board (white background) */}
+         <div className="flex-1 bg-white text-gray-900 p-6 overflow-auto">
           <div className="h-full flex flex-col">
             <h2 className="text-xl font-semibold mb-6 text-gray-900">
               Story Refinement Board
@@ -565,8 +565,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           </div>
         </div>
 
-        {/* Right Sidebar - Participants & Chat (Dark mode) */}
-        <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col">
+                 {/* Right Sidebar - Participants & Chat (Dark mode) */}
+         <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col overflow-hidden">
           
           {/* Participants Header */}
           <div className="p-4 border-b border-gray-700">
