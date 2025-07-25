@@ -36,15 +36,21 @@ export default {
     'to-pink-600',
     'from-yellow-500',
     'to-orange-600',
-    // Specific gradient class patterns
-    {
-      pattern: /bg-gradient-to-r/
-    },
-    {
-      pattern: /from-(purple|blue|emerald|orange|pink|violet|amber|green|slate|indigo|teal|rose|yellow)-(500|600)/
-    },
-    {
-      pattern: /to-(indigo|cyan|teal|red|rose|purple|yellow|emerald|gray|blue|orange|violet)-(600)/
-    }
+         // Additional specific colors for cards 6, 12, 14
+     'from-purple-500',
+     'to-pink-600',
+     'from-red-500',
+     'from-purple-600',
+     'to-blue-600',
+     // Specific gradient class patterns
+     {
+       pattern: /bg-gradient-to-r/
+     },
+     {
+       pattern: /from-(purple|blue|emerald|orange|pink|violet|amber|green|slate|indigo|teal|rose|yellow)-(500|600)/
+     },
+     {
+       pattern: /to-(indigo|cyan|teal|red|rose|purple|yellow|emerald|gray|blue|orange|violet)-(600)/
+     }
   ]
 };
