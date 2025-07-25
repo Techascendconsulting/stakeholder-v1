@@ -814,9 +814,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                  </div>
                </div>
              ) : (
-               <div className="text-center py-4">
-                 <div className="text-gray-400 mb-2">Development team is ready</div>
-                 <div className="text-sm text-gray-500">Click "Start Meeting" to begin</div>
+               <div className="text-center py-2">
+                 <div className="text-xs text-gray-500">Ready to start</div>
                </div>
              )}
            </div>
