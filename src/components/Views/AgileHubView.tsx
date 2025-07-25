@@ -70,7 +70,23 @@ interface RefinementMeeting {
 export const AgileHubView: React.FC = () => {
   const { user } = useAuth();
   const { selectedProject, projects } = useApp();
-  const [currentProject, setCurrentProject] = useState<Project | null>(selectedProject);
+  // Project context - persist Agile Hub's selected project separately
+  const [currentProject, setCurrentProject] = useState<Project | null>(() => {
+    // First try to restore from Agile Hub specific localStorage
+    try {
+      const savedAgileProject = localStorage.getItem(`agile_hub_project_${user?.id}`);
+      if (savedAgileProject) {
+        const parsed = JSON.parse(savedAgileProject);
+        console.log('✅ AgileHub: Restored project from localStorage:', parsed.name);
+        return parsed;
+      }
+    } catch (error) {
+      console.log('❌ AgileHub: Error loading project from localStorage:', error);
+    }
+    
+    // Fallback to selectedProject from AppContext
+    return selectedProject;
+  });
   const [activeTab, setActiveTab] = useState<'backlog' | 'refinement' | 'feedback' | 'ceremonies'>('backlog');
   const [tickets, setTickets] = useState<AgileTicket[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -89,9 +105,38 @@ export const AgileHubView: React.FC = () => {
   const [editingStatus, setEditingStatus] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
 
+  // Custom setCurrentProject that persists to localStorage
+  const updateCurrentProject = (project: Project | null) => {
+    setCurrentProject(project);
+    try {
+      if (project && user?.id) {
+        localStorage.setItem(`agile_hub_project_${user.id}`, JSON.stringify(project));
+        console.log('💾 AgileHub: Saved project to localStorage:', project.name);
+      } else if (user?.id) {
+        localStorage.removeItem(`agile_hub_project_${user.id}`);
+        console.log('💾 AgileHub: Removed project from localStorage');
+      }
+    } catch (error) {
+      console.log('❌ AgileHub: Error saving project to localStorage:', error);
+    }
+  };
+
   useEffect(() => {
-    setCurrentProject(selectedProject);
+    if (selectedProject && !currentProject) {
+      updateCurrentProject(selectedProject);
+    }
   }, [selectedProject]);
+
+  // Validate that currentProject still exists in the user's project list
+  useEffect(() => {
+    if (currentProject && projects && projects.length > 0) {
+      const projectExists = projects.some(p => p.id === currentProject.id);
+      if (!projectExists) {
+        console.log('⚠️ AgileHub: Current project no longer exists, clearing selection');
+        updateCurrentProject(null);
+      }
+    }
+  }, [projects, currentProject]);
 
   useEffect(() => {
     loadTickets();
@@ -436,7 +481,7 @@ export const AgileHubView: React.FC = () => {
               {projects.map((project) => (
                 <button
                   key={project.id}
-                  onClick={() => setCurrentProject(project)}
+                  onClick={() => updateCurrentProject(project)}
                   className="w-full p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left"
                 >
                   <div className="font-medium text-gray-900 dark:text-white">{project.name}</div>
@@ -493,7 +538,7 @@ export const AgileHubView: React.FC = () => {
                           <button
                             key={project.id}
                             onClick={() => {
-                              setCurrentProject(project);
+                              updateCurrentProject(project);
                               setShowProjectDropdown(false);
                             }}
                             className={`w-full flex items-center space-x-2 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-lg last:rounded-b-lg ${
