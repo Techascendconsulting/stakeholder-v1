@@ -235,6 +235,7 @@ const Dashboard: React.FC = () => {
 
   // Calculate realistic project count from actual meetings (max 5 training projects available)
   const [actualProjectCount, setActualProjectCount] = useState<number>(0);
+  const [totalMeetingsCount, setTotalMeetingsCount] = useState<number>(0);
   
   useEffect(() => {
     const calculateRealProjectCount = async () => {
@@ -282,11 +283,11 @@ const Dashboard: React.FC = () => {
             .filter(name => name && trainingProjectNames.includes(name))
         );
         
-        // Cap at maximum realistic number (users typically do 1 project, max 5 available)
-        const projectCount = Math.min(uniqueTrainingProjects.size, 5);
+        // Show actual count of training projects started (0-5 possible)
+        const projectCount = uniqueTrainingProjects.size;
         
-        console.log('📊 Dashboard - Training projects worked on:', uniqueTrainingProjects.size);
-        console.log('📊 Dashboard - Training projects:', Array.from(uniqueTrainingProjects));
+        console.log('📊 Dashboard - Training projects started:', projectCount);
+        console.log('📊 Dashboard - Projects:', Array.from(uniqueTrainingProjects));
         setActualProjectCount(projectCount);
       } catch (error) {
         console.error('Error calculating project count:', error);
