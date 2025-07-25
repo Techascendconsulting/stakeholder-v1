@@ -8,6 +8,8 @@ import { Project } from '../../lib/types';
 interface AgileTicket {
   id: string;
   ticketNumber: string;
+  projectId: string; // Fixed project association
+  projectName: string; // Fixed project name
   type: 'Story' | 'Task' | 'Bug' | 'Spike';
   title: string;
   description: string;
@@ -126,20 +128,24 @@ export const AgileHubView: React.FC = () => {
     setTickets(updatedTickets);
   };
 
-  const generateTicketNumber = () => {
-    const projectCode = currentProject?.name.split(' ').map(word => word[0]).join('').toUpperCase() || 'PROJ';
-    const nextNumber = tickets.length + 1;
+  const generateTicketNumber = (projectId: string, projectName: string) => {
+    const projectCode = projectName.split(' ').map(word => word[0]).join('').toUpperCase() || 'PROJ';
+    // Get tickets for this specific project to determine next number
+    const projectTickets = tickets.filter(ticket => ticket.projectId === projectId);
+    const nextNumber = projectTickets.length + 1;
     return `${projectCode}-${nextNumber}`;
   };
 
-  const createTicket = (ticketData: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
-    if (!user?.id) return;
+  const createTicket = (ticketData: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'ticketNumber' | 'projectId' | 'projectName'>) => {
+    if (!user?.id || !currentProject) return;
 
-    const ticketNumber = generateTicketNumber();
+    const ticketNumber = generateTicketNumber(currentProject.id, currentProject.name);
     const newTicket: AgileTicket = {
       ...ticketData,
       id: `ticket_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
       ticketNumber,
+      projectId: currentProject.id,
+      projectName: currentProject.name,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       userId: user.id
@@ -318,18 +324,26 @@ export const AgileHubView: React.FC = () => {
   };
 
   const filteredTickets = tickets.filter(ticket => {
+    // Only show tickets for the current project
+    const matchesProject = currentProject ? ticket.projectId === currentProject.id : false;
     const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || ticket.status === filterStatus;
-    return matchesSearch && matchesFilter;
+    return matchesProject && matchesSearch && matchesFilter;
   });
 
   const storiesReadyForRefinement = tickets.filter(
-    ticket => ticket.type === 'Story' && ticket.status === 'Ready for Refinement'
+    ticket => currentProject && 
+              ticket.projectId === currentProject.id && 
+              ticket.type === 'Story' && 
+              ticket.status === 'Ready for Refinement'
   );
 
   const refinedStories = tickets.filter(
-    ticket => ticket.type === 'Story' && ticket.status === 'Refined'
+    ticket => currentProject && 
+              ticket.projectId === currentProject.id && 
+              ticket.type === 'Story' && 
+              ticket.status === 'Refined'
   );
 
   // Show project selection if no current project but projects exist
@@ -445,7 +459,9 @@ export const AgileHubView: React.FC = () => {
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{tickets.length}</div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {currentProject ? tickets.filter(t => t.projectId === currentProject.id).length : 0}
+                </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Total Tickets</div>
               </div>
             </div>
@@ -481,7 +497,12 @@ export const AgileHubView: React.FC = () => {
                 <BarChart3 className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{refinementMeetings.length}</div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {currentProject ? refinementMeetings.filter(meeting => {
+                    const ticket = tickets.find(t => t.id === meeting.ticketId);
+                    return ticket && ticket.projectId === currentProject.id;
+                  }).length : 0}
+                </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Meetings Completed</div>
               </div>
             </div>
@@ -749,7 +770,7 @@ export const AgileHubView: React.FC = () => {
                                   {getTypeIcon(ticket.type)}
                                 </span>
                                 <span className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                                  {ticket.ticketNumber || `${currentProject?.name.split(' ').map(w => w[0]).join('').toUpperCase() || 'PROJ'}-${tickets.indexOf(ticket) + 1}`}
+                                  {ticket.ticketNumber}
                                 </span>
                               </div>
                             </td>
@@ -1533,7 +1554,7 @@ const EditTicketModal: React.FC<{
 // Create Ticket Modal Component
 const CreateTicketModal: React.FC<{
   onClose: () => void;
-  onCreateTicket: (ticket: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => void;
+  onCreateTicket: (ticket: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'ticketNumber' | 'projectId' | 'projectName'>) => void;
 }> = ({ onClose, onCreateTicket }) => {
   const [formData, setFormData] = useState({
     type: 'Story' as AgileTicket['type'],
