@@ -139,19 +139,19 @@ const Dashboard: React.FC = () => {
       console.log('📊 Dashboard - Total combined meetings:', allMeetings.length);
 
       // Calculate real-time statistics from actual meeting data
-      const voiceMeetings = allMeetings.filter(m => m.meeting_type === 'voice-only').length;
+      const voiceMeetingsAll = allMeetings.filter(m => m.meeting_type === 'voice-only').length;
       const transcriptMeetings = allMeetings.filter(m => m.meeting_type === 'group' || m.meeting_type === 'individual').length;
-      const totalMeetings = allMeetings.length;
+      const totalMeetingsAll = allMeetings.length;
 
       // Update progress with real-time data
       if (userProgress) {
-        userProgress.total_meetings_conducted = totalMeetings;
-        userProgress.total_voice_meetings = voiceMeetings;
+        userProgress.total_meetings_conducted = totalMeetingsAll;
+        userProgress.total_voice_meetings = voiceMeetingsAll;
         userProgress.total_transcript_meetings = transcriptMeetings;
         
         console.log('📊 Dashboard - Real-time statistics calculated:', {
-          totalMeetings,
-          voiceMeetings,
+          totalMeetings: totalMeetingsAll,
+          voiceMeetings: voiceMeetingsAll,
           transcriptMeetings
         });
       }
