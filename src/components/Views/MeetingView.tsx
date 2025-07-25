@@ -743,43 +743,8 @@ ${generateMeetingRecommendations()}
       existingNotes.push(notesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
 
-      // Save to database
-      try {
-        const meetingId = `meeting_${user?.id}_${Date.now()}_${Math.floor(Math.random() * 100000)}_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 8)}`;
-        
-        console.log('💾 MeetingView - Saving transcript meeting to database...');
-        const success = await DatabaseService.saveMeetingData(
-          meetingId,
-          messages, // Transcript from messages
-          messages, // Raw chat (same as transcript for this type)
-          enhancedInterviewNotes || '', // Meeting notes
-          baseInterviewNotes || '', // Meeting summary
-          duration,
-          Array.from(meetingAnalytics.topicsDiscussed), // Topics discussed
-          meetingAnalytics.keyInsights, // Key insights
-          {
-            userId: user?.id,
-            projectId: selectedProject?.id,
-            projectName: selectedProject?.name,
-            stakeholderIds: selectedStakeholders?.map(s => s.id),
-            stakeholderNames: selectedStakeholders?.map(s => s.name),
-            stakeholderRoles: selectedStakeholders?.map(s => s.role),
-            meetingType: 'voice-transcript'
-          }
-        );
-        
-        if (success) {
-          console.log('✅ MeetingView - Transcript meeting saved to database successfully');
-          // Clear meeting data cache to ensure fresh data on next load
-          if (window.MeetingDataService) {
-            window.MeetingDataService.forceClearAll();
-          }
-        } else {
-          console.warn('⚠️ MeetingView - Failed to save transcript meeting to database');
-        }
-      } catch (error) {
-        console.error('❌ MeetingView - Error saving transcript meeting to database:', error);
-      }
+      // Transcript meetings are saved to localStorage (meetingNotes) - no database needed
+      console.log('💾 MeetingView - Transcript meeting saved to localStorage as meetingNotes')
 
       // Show success notification
       setNoteGenerationProgress('Meeting ended successfully!');
@@ -818,38 +783,8 @@ ${generateMeetingRecommendations()}
       existingNotes.push(basicNotesObject);
       localStorage.setItem('meetingNotes', JSON.stringify(existingNotes));
 
-      // Also try to save to database
-      try {
-        const fallbackMeetingId = `meeting_${user?.id}_${Date.now()}_fallback_${Math.random().toString(36).substring(2, 8)}`;
-        const fallbackSuccess = await DatabaseService.saveMeetingData(
-          fallbackMeetingId,
-          messages.filter(m => m.speaker !== 'system'), // Transcript
-          messages.filter(m => m.speaker !== 'system'), // Raw chat
-          basicNotes, // Meeting notes
-          '', // No summary for fallback
-          0, // Duration unknown in error case
-          [], // No topics in error case
-          [], // No insights in error case
-          {
-            userId: user?.id,
-            projectId: selectedProject?.id,
-            projectName: selectedProject?.name,
-            stakeholderIds: selectedStakeholders?.map(s => s.id),
-            stakeholderNames: selectedStakeholders?.map(s => s.name),
-            stakeholderRoles: selectedStakeholders?.map(s => s.role),
-            meetingType: 'voice-transcript'
-          }
-        );
-        
-        if (fallbackSuccess) {
-          console.log('✅ MeetingView - Fallback transcript meeting saved to database');
-          if (window.MeetingDataService) {
-            window.MeetingDataService.forceClearAll();
-          }
-        }
-      } catch (dbError) {
-        console.error('❌ MeetingView - Error saving fallback meeting to database:', dbError);
-      }
+      // Transcript meetings fallback also stays in localStorage - no database needed
+      console.log('💾 MeetingView - Fallback transcript meeting saved to localStorage')
       
       setCurrentView('notes');
     } finally {
