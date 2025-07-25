@@ -38,7 +38,15 @@ const createSupabaseClient = () => {
     } as any
   }
   
-  return createClient(supabaseUrl, supabaseAnonKey)
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      storageKey: 'stakeholder-app-auth',
+      storage: window.localStorage,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  })
 }
 
 export const supabase = createSupabaseClient()

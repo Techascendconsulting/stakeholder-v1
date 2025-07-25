@@ -30,15 +30,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('🔐 AUTH - Getting initial session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) {
-          console.error('Error getting session:', error)
+          console.error('🔐 AUTH - Error getting session:', error)
         } else {
+          console.log('🔐 AUTH - Initial session:', session ? 'Found' : 'None')
           setSession(session)
           setUser(session?.user ?? null)
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error)
+        console.error('🔐 AUTH - Error in getInitialSession:', error)
       } finally {
         setLoading(false)
       }
@@ -49,7 +51,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email)
+        console.log('🔐 AUTH - State changed:', event, session?.user?.email)
+        
+        // Handle different auth events
+        switch (event) {
+          case 'SIGNED_IN':
+            console.log('🔐 AUTH - User signed in, persisting session')
+            break
+          case 'SIGNED_OUT':
+            console.log('🔐 AUTH - User signed out, clearing session')
+            break
+          case 'TOKEN_REFRESHED':
+            console.log('🔐 AUTH - Token refreshed, updating session')
+            break
+          case 'USER_UPDATED':
+            console.log('🔐 AUTH - User updated')
+            break
+        }
+        
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
