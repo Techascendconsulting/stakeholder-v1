@@ -374,83 +374,132 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
   const currentStory = stories[meetingState.currentStoryIndex];
 
+  const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
+  const selectedStoryForDetail = stories.find(s => s.id === selectedStoryId);
+
+  const handleStoryClick = (storyId: string) => {
+    setSelectedStoryId(storyId);
+    // Add message about story selection
+    const story = stories.find(s => s.id === storyId);
+    if (story) {
+      addUserMessage(`Let's discuss story ${story.ticketNumber}: "${story.title}"`);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
-        
-        {/* Meeting Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Users className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Team Refinement Meeting
-              </h2>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Clock size={16} />
-              <span>Story {meetingState.currentStoryIndex + 1} of {stories.length}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className={`p-2 rounded-lg ${isMuted ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}
-            >
-              {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-            </button>
-            <button
-              onClick={onClose}
-              className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
-            >
-              <PhoneOff size={20} />
-            </button>
+    <div className="fixed inset-0 bg-gray-900 z-50">
+      {/* Teams-style Meeting Header */}
+      <div className="bg-black text-white p-3 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Users className="w-5 h-5 text-blue-400" />
+          <span className="font-medium">Team Refinement Meeting</span>
+          <div className="flex items-center space-x-2 text-sm text-gray-300">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span>Recording</span>
           </div>
         </div>
+        
+        <div className="flex items-center space-x-3">
+          <div className="text-sm text-gray-300">
+            Story {meetingState.currentStoryIndex + 1} of {stories.length}
+          </div>
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            className={`p-2 rounded ${isMuted ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 hover:bg-gray-700'}`}
+          >
+            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 bg-red-600 hover:bg-red-700 rounded"
+          >
+            <PhoneOff size={16} />
+          </button>
+        </div>
+      </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          
-          {/* Kanban Board */}
-          <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 p-4">
-            <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Story Board</h3>
+      <div className="flex h-[calc(100vh-60px)]">
+        
+        {/* Main Shared Screen - Kanban Board */}
+        <div className="flex-1 bg-white dark:bg-gray-800 p-6 relative">
+          <div className="h-full flex flex-col">
             
-            <div className="space-y-4">
+            {/* Board Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Sprint Refinement Board
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Click on any story card to discuss with the team
+              </p>
+            </div>
+
+            {/* Kanban Columns */}
+            <div className="flex-1 grid grid-cols-3 gap-6">
               {Object.values(meetingState.kanbanColumns).map(column => (
-                <div key={column.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {column.title} ({column.stories.length})
-                  </h4>
+                <div key={column.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      {column.title}
+                    </h3>
+                    <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-sm">
+                      {column.stories.length}
+                    </span>
+                  </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {column.stories.map(storyId => {
                       const story = stories.find(s => s.id === storyId);
                       if (!story) return null;
                       
                       const isActive = storyId === currentStory?.id;
+                      const isSelected = selectedStoryId === storyId;
                       
                       return (
                         <div 
                           key={storyId}
-                          className={`p-2 rounded border text-xs ${
-                            isActive 
-                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                          onClick={() => handleStoryClick(storyId)}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg transform scale-105'
+                              : isActive 
+                                ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20' 
+                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300'
                           }`}
                         >
-                          <div className="flex items-center space-x-1 mb-1">
-                            <BookOpen size={12} className="text-blue-600" />
-                            <span className="font-medium">#{story.ticketNumber}</span>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                            {story.title}
-                          </p>
-                          {meetingState.scores[storyId] && (
-                            <div className="mt-1 flex items-center space-x-1">
-                              <CheckCircle size={10} className="text-green-600" />
-                              <span className="text-green-600">
-                                Score: {meetingState.scores[storyId].overall}/10
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <BookOpen size={16} className="text-blue-600" />
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {story.ticketNumber}
                               </span>
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                              {story.priority}
+                            </span>
+                          </div>
+                          
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-2 line-clamp-2">
+                            {story.title}
+                          </h4>
+                          
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                            {story.description}
+                          </p>
+                          
+                          {meetingState.scores[storyId] && (
+                            <div className="mt-3 flex items-center space-x-2">
+                              <CheckCircle size={14} className="text-green-600" />
+                              <span className="text-sm text-green-600 font-medium">
+                                Refined - Score: {meetingState.scores[storyId].overall}/10
+                              </span>
+                            </div>
+                          )}
+                          
+                          {isActive && (
+                            <div className="mt-2 flex items-center space-x-1 text-orange-600">
+                              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                              <span className="text-xs font-medium">Currently Discussing</span>
                             </div>
                           )}
                         </div>
@@ -462,115 +511,175 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             </div>
           </div>
 
-          {/* Meeting Chat */}
-          <div className="flex-1 flex flex-col">
-            
-            {/* Team Members Bar */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm font-medium">You (Business Analyst)</span>
+          {/* Story Detail Overlay */}
+          {selectedStoryForDetail && (
+            <div className="absolute top-6 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-10">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Story Details</h3>
+                <button
+                  onClick={() => setSelectedStoryId(null)}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <BookOpen size={14} className="text-blue-600" />
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {selectedStoryForDetail.ticketNumber}
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(selectedStoryForDetail.priority)}`}>
+                      {selectedStoryForDetail.priority}
+                    </span>
+                  </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">
+                    {selectedStoryForDetail.title}
+                  </h4>
                 </div>
                 
-                {teamMembersList.map(member => (
-                  <div 
-                    key={member.id}
-                    className={`flex items-center space-x-2 px-3 py-1 rounded-lg ${
-                      meetingState.currentSpeaker === member.id 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    <span>{member.avatar}</span>
-                    <span className="text-sm">{member.name}</span>
-                    <span className="text-xs">({member.role})</span>
-                    {meetingState.currentSpeaker === member.id && (
-                      <div className="flex space-x-1">
-                        <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-                        <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse delay-75"></div>
-                        <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse delay-150"></div>
-                      </div>
-                    )}
+                <div>
+                  <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</h5>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {selectedStoryForDetail.description}
+                  </p>
+                </div>
+                
+                {selectedStoryForDetail.acceptanceCriteria && (
+                  <div>
+                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Acceptance Criteria</h5>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {selectedStoryForDetail.acceptanceCriteria}
+                    </p>
                   </div>
-                ))}
+                )}
+
+                {meetingState.scores[selectedStoryForDetail.id] && (
+                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded">
+                    <h5 className="text-sm font-medium text-green-800 dark:text-green-400 mb-2">Refinement Scores</h5>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>Clarity: {meetingState.scores[selectedStoryForDetail.id].clarity}/10</div>
+                      <div>Complete: {meetingState.scores[selectedStoryForDetail.id].completeness}/10</div>
+                      <div>Testable: {meetingState.scores[selectedStoryForDetail.id].testability}/10</div>
+                      <div className="font-medium">Overall: {meetingState.scores[selectedStoryForDetail.id].overall}/10</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+          )}
+        </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {meetingState.messages.map(message => (
-                <div 
-                  key={message.id}
-                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div 
-                    className={`max-w-3xl p-3 rounded-lg ${
-                      message.isUser 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-sm font-medium">
-                        {message.speakerName}
+        {/* Teams-style Right Sidebar - Participants */}
+        <div className="w-80 bg-gray-100 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 flex flex-col">
+          
+          {/* Participants Header */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Meeting Participants</h3>
+            <div className="text-sm text-gray-500">5 people in this meeting</div>
+          </div>
+
+          {/* You (Business Analyst) */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {user?.full_name || 'You'}
+                </div>
+                <div className="text-sm text-gray-500">Business Analyst • Presenter</div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Team Members */}
+          <div className="flex-1 overflow-y-auto">
+            {teamMembersList.map(member => (
+              <div 
+                key={member.id}
+                className={`p-4 border-b border-gray-200 dark:border-gray-700 transition-colors ${
+                  meetingState.currentSpeaker === member.id 
+                    ? 'bg-green-50 dark:bg-green-900/20' 
+                    : ''
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                    meetingState.currentSpeaker === member.id 
+                      ? 'ring-2 ring-green-500 bg-white' 
+                      : 'bg-gray-200 dark:bg-gray-700'
+                  }`}>
+                    {member.avatar}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {member.name}
                       </span>
-                      <span className="text-xs opacity-70">
-                        ({message.speakerRole})
-                      </span>
-                      {message.audioUrl && (
-                        <button
-                          onClick={() => {
-                            const audio = new Audio(message.audioUrl);
-                            audio.play();
-                          }}
-                          className="text-xs opacity-70 hover:opacity-100"
-                        >
-                          <Play size={12} />
-                        </button>
-                      )}
-                      {message.isPlaying && (
+                      {meetingState.currentSpeaker === member.id && (
                         <div className="flex space-x-1">
-                          <div className="w-1 h-1 bg-current rounded-full animate-pulse"></div>
-                          <div className="w-1 h-1 bg-current rounded-full animate-pulse delay-75"></div>
-                          <div className="w-1 h-1 bg-current rounded-full animate-pulse delay-150"></div>
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse delay-75"></div>
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse delay-150"></div>
                         </div>
                       )}
                     </div>
-                    <p className="text-sm">{message.message}</p>
+                    <div className="text-sm text-gray-500">{member.role} • {member.nationality}</div>
+                    {meetingState.currentSpeaker === member.id && (
+                      <div className="text-xs text-green-600 mt-1">Speaking...</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chat/Input Area */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            {meetingState.phase === 'completed' ? (
+              <div className="text-center">
+                <p className="text-green-600 font-medium mb-2">Meeting Completed!</p>
+                <p className="text-sm text-gray-500">Generating final scores...</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Type your message to the team..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                  disabled={meetingState.currentSpeaker !== null}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!userInput.trim() || meetingState.currentSpeaker !== null}
+                  className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  Send Message
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Recent Messages */}
+          <div className="max-h-40 overflow-y-auto p-4 pt-0">
+            <div className="space-y-2">
+              {meetingState.messages.slice(-3).map(message => (
+                <div key={message.id} className="bg-white dark:bg-gray-800 p-2 rounded text-xs">
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {message.speakerName}
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {message.message}
                   </div>
                 </div>
               ))}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              {meetingState.phase === 'completed' ? (
-                <div className="text-center">
-                  <p className="text-green-600 font-medium mb-2">Meeting Completed!</p>
-                  <p className="text-sm text-gray-500">Generating final scores and feedback...</p>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder={meetingState.isWaitingForUser ? "Present your story or respond to questions..." : "Type your response..."}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    disabled={meetingState.currentSpeaker !== null}
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!userInput.trim() || meetingState.currentSpeaker !== null}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Send
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
