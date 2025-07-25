@@ -239,9 +239,24 @@ export const AgileHubView: React.FC = () => {
             <div>
               <div className="flex items-center space-x-3">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agile Hub</h1>
-                <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                  {selectedProject.name}
-                </span>
+                {projects && projects.length > 1 ? (
+                  <select
+                    value={currentProject?.id || ''}
+                    onChange={(e) => {
+                      const project = projects.find(p => p.id === e.target.value);
+                      setCurrentProject(project || null);
+                    }}
+                    className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium border-0 focus:ring-2 focus:ring-blue-500"
+                  >
+                    {projects.map(project => (
+                      <option key={project.id} value={project.id}>{project.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                    {currentProject.name}
+                  </span>
+                )}
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Manage your delivery backlog and refinement meetings</p>
             </div>
