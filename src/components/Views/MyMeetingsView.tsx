@@ -256,7 +256,7 @@ export const MyMeetingsView: React.FC = () => {
 
   const handleViewMeetingDetails = (meeting: DatabaseMeeting) => {
     setSelectedMeeting(meeting);
-    setCurrentView('meeting-summary');
+    setCurrentView('meeting-details');
   };
 
   const handleViewSummary = (meeting: DatabaseMeeting) => {

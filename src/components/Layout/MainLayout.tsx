@@ -13,6 +13,7 @@ import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView'
 import { MyMeetingsView } from '../Views/MyMeetingsView'
 import { MeetingHistoryView } from '../Views/MeetingHistoryView'
 import { MeetingSummaryView } from '../Views/MeetingSummaryView'
+import { MeetingDetailsView } from '../Views/MeetingDetailsView'
 import { RawTranscriptView } from '../Views/RawTranscriptView'
 import { InterviewNotesView } from '../Views/InterviewNotesView'
 import DeliverablesView from '../Views/DeliverablesView'
@@ -72,6 +73,8 @@ const MainLayout: React.FC = () => {
         return <MeetingHistoryView />
       case 'meeting-summary':
         return <MeetingSummaryView />
+      case 'meeting-details':
+        return <MeetingDetailsView />
       case 'raw-transcript':
         return <RawTranscriptView />
       case 'notes':
