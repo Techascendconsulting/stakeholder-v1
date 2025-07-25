@@ -50,7 +50,9 @@ import {
   Target,
   Lightbulb,
   BookOpen,
-  X
+  X,
+  Edit3,
+  Save
 } from 'lucide-react';
 
 interface RefinementMeetingViewProps {
@@ -58,6 +60,21 @@ interface RefinementMeetingViewProps {
   onMeetingEnd: (results: any) => void;
   onClose: () => void;
 }
+
+// Helper function to get initials from name
+const getInitials = (name: string): string => {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+};
+
+// Helper function to get avatar background color based on name
+const getAvatarColor = (name: string): string => {
+  const colors = [
+    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
+    'bg-indigo-500', 'bg-yellow-500', 'bg-red-500', 'bg-teal-500'
+  ];
+  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+};
 
 export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   stories,
@@ -70,6 +87,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [userInput, setUserInput] = useState('');
   const [ttsAvailable, setTtsAvailable] = useState(true);
+  const [isEditingStory, setIsEditingStory] = useState(false);
+  const [editingStoryData, setEditingStoryData] = useState<AgileTicket | null>(null);
 
   // Priority color helper function
   const getPriorityColor = (priority: string) => {
@@ -175,7 +194,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }));
 
     // Generate TTS audio (if available and not muted)
-    if (!isMuted) {
+    if (!isMuted && ttsAvailable) {
       try {
         const audioUrl = await azureTTSService.synthesizeSpeech({
           text,
@@ -212,6 +231,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         } else {
           // No audio available, mark TTS as unavailable and show text only
           setTtsAvailable(false);
+          console.warn('Azure TTS not configured. Meeting will continue in text-only mode.');
           setTimeout(() => {
             setMeetingState(prev => ({
               ...prev,
@@ -219,19 +239,19 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             }));
           }, 2000);
         }
-              } catch (error) {
-          console.warn('TTS Error:', error, 'Continuing with text-only meeting.');
-          setTtsAvailable(false);
-          // Clear current speaker after a delay even if TTS fails
-          setTimeout(() => {
-            setMeetingState(prev => ({
-              ...prev,
-              currentSpeaker: null
-            }));
-          }, 2000);
-        }
+      } catch (error) {
+        console.warn('TTS Error:', error, 'Continuing with text-only meeting.');
+        setTtsAvailable(false);
+        // Clear current speaker after a delay even if TTS fails
+        setTimeout(() => {
+          setMeetingState(prev => ({
+            ...prev,
+            currentSpeaker: null
+          }));
+        }, 2000);
+      }
     } else {
-      // If muted, just clear current speaker after a delay
+      // If muted or TTS unavailable, just clear current speaker after a delay
       setTimeout(() => {
         setMeetingState(prev => ({
           ...prev,
