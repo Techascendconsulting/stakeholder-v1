@@ -85,7 +85,7 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   const { user } = useAuth();
   
   return (
-    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-20">
+    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-24">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
         <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
@@ -103,37 +103,43 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="flex items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-bold">
+            <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-bold mb-1">
                 {getUserDisplayName(user?.id || '', user?.email)?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+              <div className="text-white text-xs font-medium opacity-90">
+                BA
               </div>
             </div>
           )}
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: getAvatarColor(participant.name).replace('bg-', '#').replace('-500', '') }}>
-          <span className="text-white text-lg font-bold">
+        <div className="w-full h-full flex flex-col items-center justify-center" style={{ backgroundColor: getAvatarColor(participant.name).replace('bg-', '#').replace('-500', '') }}>
+          <span className="text-white text-2xl font-bold mb-1">
             {getInitials(participant.name)}
+          </span>
+          <span className="text-white text-xs font-medium opacity-90">
+            {participant.name.split(' ')[1] || participant.name.split(' ')[0]}
           </span>
         </div>
       )}
       
       {/* Name overlay */}
-      <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white px-1 py-0.5 rounded text-xs">
-        {participant.name.split(' ')[0]} {/* First name only for space */}
+      <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-sm">
+        {participant.name.split(' ')[0]}
       </div>
 
       {/* Speaking/Mute indicator */}
       {!isUser && (
-        <div className="absolute top-1 right-1">
+        <div className="absolute top-2 right-2">
           {isCurrentSpeaker ? (
-            <div className="bg-green-500 text-white px-1 py-0.5 rounded-full text-xs flex items-center space-x-1">
-              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-              <span className="hidden sm:inline">Speaking</span>
+            <div className="bg-green-500 text-white px-2 py-1 rounded-full text-xs flex items-center space-x-1">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span>Speaking</span>
             </div>
           ) : (
-            <div className="bg-gray-600 text-white px-1 py-0.5 rounded-full text-xs">
-              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+            <div className="bg-gray-600 text-white px-2 py-1 rounded-full text-xs">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
             </div>
           )}
         </div>
@@ -696,9 +702,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
            </div>
 
                      {/* Participant Video Grid (3+2 Layout) */}
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-4">
             {/* First Row - 3 participants */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {/* User */}
               <ParticipantCard
                 participant={{ name: user?.full_name || 'You' }}
@@ -720,7 +726,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             {/* Second Row - 2 participants centered */}
             {teamMembers.length > 2 && (
               <div className="flex justify-center">
-                <div className="grid grid-cols-2 gap-2 w-2/3">
+                <div className="grid grid-cols-2 gap-3 w-2/3">
                   {teamMembers.slice(2, 4).map(member => (
                     <ParticipantCard
                       key={member.name}
