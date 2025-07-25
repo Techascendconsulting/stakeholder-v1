@@ -247,6 +247,23 @@ const CoreConceptsView: React.FC = () => {
   const [selectedConcept, setSelectedConcept] = useState<ConceptCard | null>(null);
 
   // Component no longer forces light theme - now respects dark mode
+  
+  console.log('🔍 CoreConceptsView: Component rendered, concepts length:', concepts.length);
+  console.log('🔍 CoreConceptsView: selectedConcept:', selectedConcept?.id || 'null');
+  console.log('🔍 CoreConceptsView: hoveredCard:', hoveredCard);
+
+  // Safety check for concepts array
+  if (!concepts || concepts.length === 0) {
+    console.error('❌ CoreConceptsView: concepts array is empty or undefined');
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Concepts Available</h2>
+          <p className="text-gray-600 dark:text-gray-400">The concepts data could not be loaded.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Detail view for selected concept
   if (selectedConcept) {
@@ -388,7 +405,10 @@ const CoreConceptsView: React.FC = () => {
       {/* Concepts Grid */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {concepts.map((concept) => (
+          {concepts.map((concept) => {
+            console.log('🔍 Rendering concept:', concept.id, concept.title);
+            try {
+              return (
             <div
               key={concept.id}
               className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer card-hover h-80 flex flex-col ${
@@ -439,7 +459,16 @@ const CoreConceptsView: React.FC = () => {
               {/* Hover Effect Overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
             </div>
-          ))}
+              );
+            } catch (error) {
+              console.error('❌ Error rendering concept:', concept.id, error);
+              return (
+                <div key={concept.id} className="bg-red-100 dark:bg-red-900 p-4 rounded-lg">
+                  <p className="text-red-800 dark:text-red-200">Error rendering concept {concept.id}</p>
+                </div>
+              );
+            }
+          })}
         </div>
       </div>
 
