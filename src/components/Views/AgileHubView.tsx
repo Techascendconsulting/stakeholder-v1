@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown } from 'lucide-react';
+import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown, Edit3, Trash2, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
@@ -50,6 +50,7 @@ export const AgileHubView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'backlog' | 'refinement' | 'feedback' | 'ceremonies'>('backlog');
   const [tickets, setTickets] = useState<AgileTicket[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showRefinementModal, setShowRefinementModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<AgileTicket | null>(null);
   const [refinementMeetings, setRefinementMeetings] = useState<RefinementMeeting[]>([]);
@@ -133,6 +134,29 @@ export const AgileHubView: React.FC = () => {
   const startRefinementMeeting = (ticket: AgileTicket) => {
     setSelectedTicket(ticket);
     setShowRefinementModal(true);
+  };
+
+  const editTicket = (ticket: AgileTicket) => {
+    setSelectedTicket(ticket);
+    setShowEditModal(true);
+  };
+
+  const deleteTicket = (ticketId: string) => {
+    if (confirm('Are you sure you want to delete this ticket?')) {
+      const updatedTickets = tickets.filter(ticket => ticket.id !== ticketId);
+      saveTickets(updatedTickets);
+    }
+  };
+
+  const updateTicket = (updatedTicket: AgileTicket) => {
+    const updatedTickets = tickets.map(ticket => 
+      ticket.id === updatedTicket.id 
+        ? { ...updatedTicket, updatedAt: new Date().toISOString() }
+        : ticket
+    );
+    saveTickets(updatedTickets);
+    setShowEditModal(false);
+    setSelectedTicket(null);
   };
 
   const getTypeIcon = (type: AgileTicket['type']) => {
@@ -501,30 +525,48 @@ export const AgileHubView: React.FC = () => {
                                 {ticket.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center space-x-2">
-                                {ticket.type === 'Story' && ticket.status === 'Ready for Refinement' && (
-                                  <button
-                                    onClick={() => startRefinementMeeting(ticket)}
-                                    className="bg-orange-600 text-white px-3 py-1 rounded-md text-xs hover:bg-orange-700 transition-colors flex items-center space-x-1"
-                                  >
-                                    <Play size={12} />
-                                    <span>Join Refinement</span>
-                                  </button>
-                                )}
-                                {ticket.status === 'Draft' && (
-                                  <button
-                                    onClick={() => updateTicketStatus(ticket.id, 'Ready for Refinement')}
-                                    className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors"
-                                  >
-                                    Mark Ready
-                                  </button>
-                                )}
-                                <button className="text-gray-400 hover:text-gray-600 p-1">
-                                  <Eye size={14} />
-                                </button>
-                              </div>
-                            </td>
+                                                         <td className="px-6 py-4">
+                               <div className="flex items-center space-x-2">
+                                 {ticket.type === 'Story' && ticket.status === 'Ready for Refinement' && (
+                                   <button
+                                     onClick={() => startRefinementMeeting(ticket)}
+                                     className="bg-orange-600 text-white px-3 py-1 rounded-md text-xs hover:bg-orange-700 transition-colors flex items-center space-x-1"
+                                   >
+                                     <Play size={12} />
+                                     <span>Join Refinement</span>
+                                   </button>
+                                 )}
+                                 {ticket.status === 'Draft' && (
+                                   <button
+                                     onClick={() => updateTicketStatus(ticket.id, 'Ready for Refinement')}
+                                     className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors"
+                                   >
+                                     Mark Ready
+                                   </button>
+                                 )}
+                                 
+                                 {/* Action buttons */}
+                                 <div className="flex items-center space-x-1">
+                                   <button 
+                                     onClick={() => editTicket(ticket)}
+                                     className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                     title="Edit ticket"
+                                   >
+                                     <Edit3 size={14} />
+                                   </button>
+                                   <button 
+                                     onClick={() => deleteTicket(ticket.id)}
+                                     className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                     title="Delete ticket"
+                                   >
+                                     <Trash2 size={14} />
+                                   </button>
+                                   <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors" title="View details">
+                                     <Eye size={14} />
+                                   </button>
+                                 </div>
+                               </div>
+                             </td>
                           </tr>
                         ))}
                       </tbody>
@@ -715,6 +757,18 @@ export const AgileHubView: React.FC = () => {
         />
       )}
 
+      {/* Edit Ticket Modal */}
+      {showEditModal && selectedTicket && (
+        <EditTicketModal
+          ticket={selectedTicket}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedTicket(null);
+          }}
+          onUpdateTicket={updateTicket}
+        />
+      )}
+
       {/* Refinement Meeting Modal */}
       {showRefinementModal && selectedTicket && (
         <RefinementMeetingModal
@@ -757,6 +811,209 @@ export const AgileHubView: React.FC = () => {
           }}
         />
       )}
+    </div>
+  );
+};
+
+// Edit Ticket Modal Component
+const EditTicketModal: React.FC<{
+  ticket: AgileTicket;
+  onClose: () => void;
+  onUpdateTicket: (ticket: AgileTicket) => void;
+}> = ({ ticket, onClose, onUpdateTicket }) => {
+  const [formData, setFormData] = useState({
+    type: ticket.type,
+    title: ticket.title,
+    description: ticket.description,
+    acceptanceCriteria: ticket.acceptanceCriteria || '',
+    priority: ticket.priority,
+    status: ticket.status
+  });
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+
+  const getTypeIcon = (type: AgileTicket['type']) => {
+    switch (type) {
+      case 'Story': return <BookOpen className="w-4 h-4" />;
+      case 'Task': return <Square className="w-4 h-4" />;
+      case 'Bug': return <Bug className="w-4 h-4" />;
+      case 'Spike': return <Lightbulb className="w-4 h-4" />;
+    }
+  };
+
+  const getTypeColor = (type: AgileTicket['type']) => {
+    switch (type) {
+      case 'Story': return 'text-blue-600';
+      case 'Task': return 'text-green-600';
+      case 'Bug': return 'text-red-600';
+      case 'Spike': return 'text-purple-600';
+    }
+  };
+
+  const ticketTypes: AgileTicket['type'][] = ['Story', 'Task', 'Bug', 'Spike'];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title.trim()) return;
+    
+    onUpdateTicket({
+      ...ticket,
+      ...formData
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edit Ticket</h3>
+          <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <span>ID: {ticket.id.split('_')[1]}</span>
+            <span>•</span>
+            <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+          </div>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Type
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <div className="flex items-center space-x-2">
+                  <span className={getTypeColor(formData.type)}>
+                    {getTypeIcon(formData.type)}
+                  </span>
+                  <span>{formData.type}</span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              </button>
+              
+              {showTypeDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                  {ticketTypes.map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => {
+                        setFormData({ ...formData, type });
+                        setShowTypeDropdown(false);
+                      }}
+                      className={`w-full flex items-center space-x-3 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-lg last:rounded-b-lg ${
+                        formData.type === type ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                    >
+                      <span className={getTypeColor(type)}>
+                        {getTypeIcon(type)}
+                      </span>
+                      <span className="text-gray-900 dark:text-white">{type}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Title */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="Brief summary of the work"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder={formData.type === 'Story' ? 'As a [user], I want [goal] so that [benefit]' : 'Detailed description of the work'}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Acceptance Criteria (Stories only) */}
+          {formData.type === 'Story' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Acceptance Criteria
+              </label>
+              <textarea
+                value={formData.acceptanceCriteria}
+                onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
+                placeholder="Given [context], when [action], then [outcome]"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          )}
+
+          {/* Priority */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Priority
+            </label>
+            <select
+              value={formData.priority}
+              onChange={(e) => setFormData({ ...formData, priority: e.target.value as AgileTicket['priority'] })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Status
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as AgileTicket['status'] })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="Draft">Draft</option>
+              <option value="Ready for Refinement">Ready for Refinement</option>
+              <option value="Refined">Refined</option>
+            </select>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Update Ticket
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
