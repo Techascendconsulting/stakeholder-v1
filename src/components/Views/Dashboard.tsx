@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Meetings Conducted',
-      value: recentMeetings.length,
+      value: totalMeetingsCount,
       icon: Users,
       color: 'bg-purple-500',
       change: '+8%',
@@ -286,13 +286,20 @@ const Dashboard: React.FC = () => {
         // Show actual count of training projects started (0-5 possible)
         const projectCount = uniqueTrainingProjects.size;
         
-        console.log('📊 Dashboard - Training projects started:', projectCount);
-        console.log('📊 Dashboard - Projects:', Array.from(uniqueTrainingProjects));
+        // Also calculate total meetings count
+        const totalMeetings = combinedMeetings.length;
+        
+        console.log('📊 Dashboard - Training projects started (by having meetings):', projectCount);
+        console.log('📊 Dashboard - Projects with meetings:', Array.from(uniqueTrainingProjects));
+        console.log('📊 Dashboard - Total meetings conducted:', totalMeetings);
+        
         setActualProjectCount(projectCount);
+        setTotalMeetingsCount(totalMeetings);
       } catch (error) {
         console.error('Error calculating project count:', error);
-        // Default to 0 if no meetings found, max 1 for most users
+        // Default to 0 if no meetings found
         setActualProjectCount(0);
+        setTotalMeetingsCount(0);
       }
     };
     
