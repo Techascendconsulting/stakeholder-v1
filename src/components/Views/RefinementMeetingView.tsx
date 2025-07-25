@@ -801,9 +801,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
        </div>
      </div>
 
-     
-
-      {/* Jira-Style Story Editor Modal */}
+     {/* Jira-Style Story Editor Modal */}
       {isEditingStory && editingStory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900">
