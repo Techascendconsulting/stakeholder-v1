@@ -1066,7 +1066,7 @@ export const AgileHubView: React.FC = () => {
                 <div className="mb-6">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Stories Ready for Refinement</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Select multiple stories for efficient team refinement meetings
+                    Attend team refinement meetings for all ready stories
                   </p>
                 </div>
 
