@@ -21,6 +21,7 @@ import { ProfileView } from '../Views/ProfileView'
 import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
+import { AgileHubView } from '../Views/AgileHubView'
 import DebugConsole from '../Debug/DebugConsole'
 
 const MainLayout: React.FC = () => {
@@ -89,6 +90,8 @@ const MainLayout: React.FC = () => {
         return <CustomProjectView />
       case 'custom-stakeholders':
         return <CustomStakeholdersView />
+      case 'agile-hub':
+        return <AgileHubView />
       default:
         return <ProjectsView />
     }

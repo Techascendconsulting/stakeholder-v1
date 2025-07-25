@@ -19,7 +19,7 @@ import {
   Sun,
   Moon,
   Calendar,
-  GitBranch
+  Workflow
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -46,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { id: 'core-concepts', label: 'Core BA Concepts', icon: BookOpen },
     { id: 'training-projects', label: 'Training Projects', icon: FolderOpen },
     { id: 'custom-project', label: 'Create Your Project', icon: Plus },
+    { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
     { id: 'my-meetings', label: 'My Meetings', icon: Calendar },
   ];
 
