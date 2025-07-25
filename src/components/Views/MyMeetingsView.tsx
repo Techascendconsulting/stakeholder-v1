@@ -309,7 +309,15 @@ export const MyMeetingsView: React.FC = () => {
       const localMeetings: any[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
+        if (key && (
+          key.startsWith('temp-meeting-') || 
+          key.startsWith('stored_meeting_') || 
+          key.startsWith('backup_meeting_') ||
+          key.startsWith(`temp-meeting-${user.id}`) ||
+          key.startsWith(`stored_meeting_${user.id}`) ||
+          key.startsWith(`backup_meeting_${user.id}`) ||
+          key.includes(`-${user.id}`) && (key.includes('meeting') || key.includes('transcript'))
+        )) {
           try {
             const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
             if (meetingData.user_id === user.id && meetingData.id) {
