@@ -61,8 +61,8 @@ const concepts: ConceptCard[] = [
   },
   {
     id: 3,
-    title: "Departments in an Organisation",
-    description: "The different departments help the business deliver its services or products.",
+    title: "Departments in Organisations",
+    description: "Departments help the business deliver its services or products.",
     detailedDescription: "Common departments include Sales, Marketing, Finance, Operations, Compliance, and Customer Service. Each one has its own goals and pain points. BAs often work across departments to understand where processes break down. Knowing who does what helps you ask better questions and involve the right people.",
     keyPoints: [
       "Common departments include Sales, Marketing, Finance, Operations, Compliance, and Customer Service.",
