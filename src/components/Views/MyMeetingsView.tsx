@@ -186,8 +186,8 @@ const MeetingRow: React.FC<MeetingCardProps> = ({ meeting, onViewDetails, onView
         </div>
       </td>
     </tr>
-
   );
+};
 
 export const MyMeetingsView: React.FC = () => {
   const { setCurrentView, setSelectedMeeting, refreshMeetingData } = useApp();
