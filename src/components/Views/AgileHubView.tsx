@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow } from 'lucide-react';
+import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Triangle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
@@ -136,10 +136,10 @@ export const AgileHubView: React.FC = () => {
 
   const getTypeIcon = (type: AgileTicket['type']) => {
     switch (type) {
-      case 'Story': return <FileText className="w-4 h-4" />;
-      case 'Task': return <CheckCircle className="w-4 h-4" />;
-      case 'Bug': return <AlertTriangle className="w-4 h-4" />;
-      case 'Spike': return <Zap className="w-4 h-4" />;
+      case 'Story': return <BookOpen className="w-4 h-4" />;
+      case 'Task': return <Square className="w-4 h-4" />;
+      case 'Bug': return <Bug className="w-4 h-4" />;
+      case 'Spike': return <Triangle className="w-4 h-4" />;
     }
   };
 
@@ -537,11 +537,11 @@ export const AgileHubView: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {storiesReadyForRefinement.map((story) => (
                       <div key={story.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center space-x-2">
-                            <FileText className="w-5 h-5 text-blue-600" />
-                            <span className="text-sm font-medium text-blue-600">Story</span>
-                          </div>
+                                                 <div className="flex items-start justify-between mb-4">
+                           <div className="flex items-center space-x-2">
+                             <BookOpen className="w-5 h-5 text-blue-600" />
+                             <span className="text-sm font-medium text-blue-600">Story</span>
+                           </div>
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
                             {story.priority}
                           </span>
