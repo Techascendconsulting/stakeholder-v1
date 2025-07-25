@@ -892,6 +892,19 @@ const EditTicketModal: React.FC<{
 
   const ticketTypes: AgileTicket['type'][] = ['Story', 'Task', 'Bug', 'Spike'];
 
+  const capitalizeFirstLetter = (text: string) => {
+    if (!text) return text;
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    const capitalizedValue = ['title', 'description', 'acceptanceCriteria'].includes(field) 
+      ? capitalizeFirstLetter(value)
+      : value;
+    
+    setFormData({ ...formData, [field]: capitalizedValue });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
@@ -981,7 +994,7 @@ const EditTicketModal: React.FC<{
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) => handleInputChange('title', e.target.value)}
               placeholder="Brief summary of the work"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
@@ -995,7 +1008,7 @@ const EditTicketModal: React.FC<{
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder={formData.type === 'Story' ? 'As a [user], I want [goal] so that [benefit]' : 'Detailed description of the work'}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1010,7 +1023,7 @@ const EditTicketModal: React.FC<{
               </label>
               <textarea
                 value={formData.acceptanceCriteria}
-                onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
+                onChange={(e) => handleInputChange('acceptanceCriteria', e.target.value)}
                 placeholder="Given [context], when [action], then [outcome]"
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1107,6 +1120,19 @@ const CreateTicketModal: React.FC<{
 
   const ticketTypes: AgileTicket['type'][] = ['Story', 'Task', 'Bug', 'Spike'];
 
+  const capitalizeFirstLetter = (text: string) => {
+    if (!text) return text;
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    const capitalizedValue = ['title', 'description', 'acceptanceCriteria'].includes(field) 
+      ? capitalizeFirstLetter(value)
+      : value;
+    
+    setFormData({ ...formData, [field]: capitalizedValue });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
@@ -1180,7 +1206,7 @@ const CreateTicketModal: React.FC<{
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) => handleInputChange('title', e.target.value)}
               placeholder="Brief summary of the work"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
@@ -1194,7 +1220,7 @@ const CreateTicketModal: React.FC<{
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder={formData.type === 'Story' ? 'As a [user], I want [goal] so that [benefit]' : 'Detailed description of the work'}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1209,7 +1235,7 @@ const CreateTicketModal: React.FC<{
               </label>
               <textarea
                 value={formData.acceptanceCriteria}
-                onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
+                onChange={(e) => handleInputChange('acceptanceCriteria', e.target.value)}
                 placeholder="Given [context], when [action], then [outcome]"
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
