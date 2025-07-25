@@ -330,6 +330,8 @@ export const MyMeetingsView: React.FC = () => {
       }
 
       // Combine and deduplicate
+      console.log("📋 MyMeetings - userMeetings count:", userMeetings.length);
+      console.log("📋 MyMeetings - localMeetings count:", localMeetings.length);
       const allMeetings = [...userMeetings, ...localMeetings]
         .filter((meeting, index, self) =>
           index === self.findIndex(m => m.id === meeting.id)
