@@ -294,21 +294,6 @@ export const MyMeetingsView: React.FC = () => {
     loadMeetings();
   }, [user?.id]);
 
-  // Real-time sync: Refresh when meeting data changes in localStorage
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key && (e.key.includes('meeting') || e.key.includes('transcript')) && user?.id) {
-        console.log('🔄 MyMeetings - Meeting data changed in localStorage, refreshing');
-        setTimeout(() => loadMeetings(), 100); // Small delay for data consistency
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [user?.id]);
-
   const loadMeetings = async () => {
     if (!user?.id) return;
 
@@ -322,18 +307,9 @@ export const MyMeetingsView: React.FC = () => {
       
       // Load from localStorage as backup
       const localMeetings: any[] = [];
-              console.log('�� MyMeetings - Found meeting in localStorage:', key, meetingData.project_name);
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (
-          key.startsWith('temp-meeting-') || 
-          key.startsWith('stored_meeting_') || 
-          key.startsWith('backup_meeting_') ||
-          key.startsWith(`temp-meeting-${user.id}`) ||
-          key.startsWith(`stored_meeting_${user.id}`) ||
-          key.startsWith(`backup_meeting_${user.id}`) ||
-          key.includes(`-${user.id}`) && (key.includes('meeting') || key.includes('transcript'))
-        )) {
+        if (key && (key.startsWith('stored_meeting_') || key.startsWith('backup_meeting_'))) {
           try {
             const meetingData = JSON.parse(localStorage.getItem(key) || '{}');
             if (meetingData.user_id === user.id && meetingData.id) {
