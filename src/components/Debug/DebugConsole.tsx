@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { DatabaseCleanup } from '../../lib/databaseCleanup'
 import { MeetingDataService } from '../../lib/meetingDataService'
 import { executeUserReset } from '../../lib/executeReset'
+import { DatabaseService } from '../../lib/database'
 
 interface DebugLog {
   id: string
@@ -26,6 +27,7 @@ const DebugConsole: React.FC = () => {
   const { user } = useAuth()
   const [dbStats, setDbStats] = useState<any>(null)
   const [dbOperationStatus, setDbOperationStatus] = useState<string>('')
+  const [testResult, setTestResult] = useState<string>('')
 
   // Intercept console.log and capture debug messages
   useEffect(() => {
@@ -196,6 +198,77 @@ const DebugConsole: React.FC = () => {
     setTimeout(() => setDbOperationStatus(''), 3000)
   }
 
+  const testTranscriptMeetingSave = async () => {
+    if (!user?.id) {
+      setTestResult('❌ No user logged in')
+      return
+    }
+
+    if (!selectedProject || !selectedStakeholders?.length) {
+      setTestResult('❌ Need to select project and stakeholders first')
+      return
+    }
+
+    setTestResult('🧪 Testing transcript meeting save...')
+    
+    try {
+      const testMeetingId = `test_transcript_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+      
+      // Create test transcript data
+      const testMessages = [
+        { speaker: 'user', content: 'Hello, can you tell me about your current requirements?', timestamp: new Date().toISOString() },
+        { speaker: selectedStakeholders[0]?.name || 'Stakeholder', content: 'We need a better system to manage our processes.', timestamp: new Date().toISOString() },
+        { speaker: 'user', content: 'What are the main pain points with the current system?', timestamp: new Date().toISOString() },
+        { speaker: selectedStakeholders[0]?.name || 'Stakeholder', content: 'The biggest issue is efficiency and user experience.', timestamp: new Date().toISOString() }
+      ]
+
+      const testNotes = 'Test transcript meeting notes - Enhanced with analytics'
+      const testSummary = 'Test meeting summary - Requirements discussion'
+      const testTopics = ['requirements', 'pain points', 'efficiency']
+      const testInsights = ['User experience is a priority', 'Current system needs improvement']
+
+      console.log('🧪 DEBUG: Attempting to save test transcript meeting...')
+      
+      const success = await DatabaseService.saveMeetingData(
+        testMeetingId,
+        testMessages,
+        testMessages,
+        testNotes,
+        testSummary,
+        5, // 5 minutes duration
+        testTopics,
+        testInsights,
+        {
+          userId: user.id,
+          projectId: selectedProject.id,
+          projectName: selectedProject.name,
+          stakeholderIds: selectedStakeholders.map(s => s.id),
+          stakeholderNames: selectedStakeholders.map(s => s.name),
+          stakeholderRoles: selectedStakeholders.map(s => s.role),
+          meetingType: 'voice-transcript'
+        }
+      )
+
+      if (success) {
+        setTestResult('✅ Test transcript meeting saved successfully!')
+        console.log('🧪 DEBUG: Test transcript meeting saved to database')
+        
+        // Clear cache and refresh data
+        MeetingDataService.forceClearAll()
+        await refreshMeetingData()
+        await loadDbStats()
+      } else {
+        setTestResult('❌ Failed to save test transcript meeting')
+        console.log('🧪 DEBUG: Test transcript meeting save failed')
+      }
+    } catch (error) {
+      setTestResult(`❌ Error: ${error.message}`)
+      console.error('🧪 DEBUG: Error saving test transcript meeting:', error)
+    }
+
+    setTimeout(() => setTestResult(''), 5000)
+  }
+
   // Load DB stats when user changes
   useEffect(() => {
     if (user?.id && isVisible) {
@@ -335,7 +408,14 @@ const DebugConsole: React.FC = () => {
                 </div>
               )}
               
-              <div className="flex space-x-1">
+              <div className="flex space-x-1 flex-wrap gap-1">
+                <button
+                  onClick={testTranscriptMeetingSave}
+                  className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                  disabled={!selectedProject || !selectedStakeholders?.length}
+                >
+                  Test Transcript Save
+                </button>
                 <button
                   onClick={fixCorruptedMeetings}
                   className="px-2 py-1 bg-orange-500 text-white rounded text-xs hover:bg-orange-600"
@@ -354,6 +434,12 @@ const DebugConsole: React.FC = () => {
               {dbOperationStatus && (
                 <div className="mt-1 text-xs font-medium">
                   {dbOperationStatus}
+                </div>
+              )}
+              
+              {testResult && (
+                <div className="mt-1 text-xs font-medium">
+                  {testResult}
                 </div>
               )}
             </div>
