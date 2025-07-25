@@ -172,9 +172,10 @@ export class MeetingDataService {
     // More permissive validation - only check absolutely essential fields
     const hasBasicFields = meeting && meeting.id && meeting.user_id === userId;
     
-    // Check project identification (either project_name or project_id should be present)
-    const hasProjectInfo = (meeting.project_name && typeof meeting.project_name === 'string') ||
-                          (meeting.project_id && typeof meeting.project_id === 'string');
+         // Check project identification (either project_name or project_id should be present)
+     // If project_name is missing but we have project_id, that's still valid
+     const hasProjectInfo = (meeting.project_name && typeof meeting.project_name === 'string' && meeting.project_name.trim() !== '') ||
+                           (meeting.project_id && typeof meeting.project_id === 'string' && meeting.project_id.trim() !== '');
     
     // Check that it has some kind of timestamp
     const hasTimestamp = meeting.created_at || meeting.updated_at;
