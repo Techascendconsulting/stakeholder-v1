@@ -589,7 +589,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       {/* Main Meeting Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Side - Kanban Board */}
-        <div className="flex-1 bg-white text-gray-900 p-6 overflow-auto">
+        <div className="flex-1 max-w-4xl bg-white text-gray-900 p-6 overflow-auto">
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -691,7 +691,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
          </div>
 
          {/* Right Side - Participants Panel */}
-         <div className="w-80 bg-gray-900 border-l border-gray-700 flex flex-col overflow-hidden">
+         <div className="w-96 bg-gray-900 border-l border-gray-700 flex flex-col overflow-hidden">
            {/* Participants Header */}
            <div className="p-4 border-b border-gray-700">
              <h3 className="font-medium text-white mb-2">Meeting Participants</h3>
