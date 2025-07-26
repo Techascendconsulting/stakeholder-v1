@@ -778,9 +778,8 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
 
       {/* Main Meeting Area */}
       <div className="flex-1 flex overflow-hidden">
-        <>
-          {/* Left Side - Modern Jira-style Sprint Planning */}
-          <div className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 overflow-hidden border-r border-slate-200">
+        {/* Left Side - Modern Jira-style Sprint Planning */}
+        <div className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 overflow-hidden border-r border-slate-200">
           <div className="h-full flex flex-col">
             {/* Simplified Header */}
             <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg">
@@ -1421,7 +1420,6 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
         
         {/* Right Side Spacer */}
         <div className="w-96 bg-gray-900 border-t border-gray-700"></div>
-        </>
       </div>
 
       {/* Story Editor Modal (same as refinement meeting) */}
