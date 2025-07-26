@@ -144,8 +144,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     return [];
   });
 
-  const [sprintCapacity] = useState(40); // Story points capacity
-  const [currentSprintPoints, setCurrentSprintPoints] = useState(0);
+
   
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [isEditingStory, setIsEditingStory] = useState(false);
@@ -163,14 +162,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     }
   }, [transcript]);
 
-  // Calculate current sprint points when sprint stories change
-  useEffect(() => {
-    const totalPoints = sprintStories.reduce((sum, storyId) => {
-      const story = stories.find(s => s.id === storyId);
-      return sum + (story?.storyPoints || 0);
-    }, 0);
-    setCurrentSprintPoints(totalPoints);
-  }, [sprintStories, stories]);
+
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -197,28 +189,22 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     if (targetArea === 'sprint') {
       // Moving to sprint
       if (!sprintStories.includes(storyId)) {
-        const storyPoints = story?.storyPoints || 0;
-        if (currentSprintPoints + storyPoints <= sprintCapacity) {
-          const newBacklog = backlogStories.filter(id => id !== storyId);
-          const newSprint = [...sprintStories, storyId];
-          setBacklogStories(newBacklog);
-          setSprintStories(newSprint);
-          setCurrentSprintPoints(prev => prev + storyPoints);
-          
-          // Save to localStorage
-          localStorage.setItem('sprint_planning_backlog', JSON.stringify(newBacklog));
-          localStorage.setItem('sprint_planning_sprint', JSON.stringify(newSprint));
-        }
+        const newBacklog = backlogStories.filter(id => id !== storyId);
+        const newSprint = [...sprintStories, storyId];
+        setBacklogStories(newBacklog);
+        setSprintStories(newSprint);
+        
+        // Save to localStorage
+        localStorage.setItem('sprint_planning_backlog', JSON.stringify(newBacklog));
+        localStorage.setItem('sprint_planning_sprint', JSON.stringify(newSprint));
       }
     } else {
       // Moving back to backlog
       if (!backlogStories.includes(storyId)) {
-        const storyPoints = story?.storyPoints || 0;
         const newSprint = sprintStories.filter(id => id !== storyId);
         const newBacklog = [...backlogStories, storyId];
         setSprintStories(newSprint);
         setBacklogStories(newBacklog);
-        setCurrentSprintPoints(prev => prev - storyPoints);
         
         // Save to localStorage
         localStorage.setItem('sprint_planning_backlog', JSON.stringify(newBacklog));
@@ -445,8 +431,6 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
           currentContext: {
             backlogStories: backlogStories,
             sprintStories: sprintStories,
-            sprintCapacity: sprintCapacity,
-            currentSprintPoints: currentSprintPoints,
             totalStories: stories.length,
             sprintGoal: 'Plan and commit to stories for the upcoming sprint',
             currentStory: currentStory ? {
@@ -663,12 +647,12 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
         {/* Left Side - Modern Jira-style Sprint Planning */}
         <div className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 overflow-hidden border-r border-slate-200">
           <div className="h-full flex flex-col">
-            {/* Modern Header with Gradient */}
+            {/* Simplified Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold mb-1">Sprint Planning</h1>
+                    <h1 className="text-2xl font-bold">Sprint Planning</h1>
                     <p className="text-blue-100 text-sm">Plan your next sprint with AI-powered team collaboration</p>
                   </div>
                   {!meetingStarted && (
@@ -681,58 +665,6 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                     </button>
                   )}
                 </div>
-                
-                {/* Enhanced Sprint Metrics */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-blue-100 text-sm font-medium">Sprint Capacity</p>
-                        <div className="flex items-baseline space-x-1">
-                          <span className="text-2xl font-bold">{currentSprintPoints}</span>
-                          <span className="text-blue-200">/ {sprintCapacity}</span>
-                        </div>
-                      </div>
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        currentSprintPoints > sprintCapacity ? 'bg-red-500/20 text-red-200' : 'bg-green-500/20 text-green-200'
-                      }`}>
-                        {currentSprintPoints > sprintCapacity ? '⚠️' : '✓'}
-                      </div>
-                    </div>
-                    <div className="mt-2 w-full bg-white/20 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          currentSprintPoints > sprintCapacity ? 'bg-red-400' : 'bg-green-400'
-                        }`}
-                        style={{ width: `${Math.min((currentSprintPoints / sprintCapacity) * 100, 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-blue-100 text-sm font-medium">Issues in Sprint</p>
-                        <p className="text-2xl font-bold">{sprintStories.length}</p>
-                      </div>
-                      <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-200 flex items-center justify-center text-xl">
-                        🎯
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-blue-100 text-sm font-medium">Backlog</p>
-                        <p className="text-2xl font-bold">{backlogStories.length}</p>
-                      </div>
-                      <div className="w-12 h-12 rounded-full bg-purple-500/20 text-purple-200 flex items-center justify-center text-xl">
-                        📋
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -740,32 +672,25 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
             <div className="flex-1 flex flex-col bg-white/50 backdrop-blur-sm">
               {/* Sprint Section - Top */}
               <div className="border-b border-slate-200 flex flex-col shadow-sm">
-                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-b border-emerald-200/50 px-6 py-4 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-b border-emerald-200/50 px-6 py-3 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow-lg">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow-lg text-sm">
                       S1
                     </div>
                     <div>
-                      <h3 className="font-bold text-emerald-800 text-lg">Sprint 1</h3>
-                      <p className="text-emerald-600 text-sm font-medium">
-                        {sprintStories.length} {sprintStories.length === 1 ? 'issue' : 'issues'} • {currentSprintPoints} of {sprintCapacity} story points
+                      <h3 className="font-bold text-emerald-800">Sprint 1</h3>
+                      <p className="text-emerald-600 text-sm">
+                        {sprintStories.length} {sprintStories.length === 1 ? 'issue' : 'issues'} committed
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    {currentSprintPoints > sprintCapacity && (
-                      <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium border border-red-200">
-                        ⚠️ Over capacity by {currentSprintPoints - sprintCapacity} points
-                      </div>
-                    )}
-                    <div className="text-emerald-600 text-sm font-medium bg-emerald-100/50 px-3 py-1 rounded-full border border-emerald-200">
-                      📋 → 🎯 Drop zone
-                    </div>
+                  <div className="text-emerald-600 text-sm font-medium bg-emerald-100/50 px-3 py-1 rounded-full border border-emerald-200">
+                    📋 → 🎯 Drop zone
                   </div>
                 </div>
                 
                 <div 
-                  className="min-h-[250px] max-h-[350px] overflow-y-auto bg-white/80 backdrop-blur-sm"
+                  className="max-h-[40vh] overflow-y-auto bg-white/80 backdrop-blur-sm"
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, 'sprint')}
                 >
@@ -774,11 +699,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                       <div className="text-center p-8 rounded-2xl bg-white/50 backdrop-blur-sm border border-emerald-200/50 shadow-lg">
                         <div className="text-4xl mb-4">🎯</div>
                         <h4 className="font-semibold text-slate-700 mb-2">Start Planning Your Sprint</h4>
-                        <p className="text-sm text-slate-600 mb-4">Drag refined issues from the backlog below to commit them to this sprint</p>
-                        <div className="flex items-center justify-center space-x-2 text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                          <span>💡</span>
-                          <span>Capacity: {sprintCapacity} story points available</span>
-                        </div>
+                        <p className="text-sm text-slate-600">Drag refined issues from the backlog below to commit them to this sprint</p>
                       </div>
                     </div>
                   ) : (
@@ -852,14 +773,14 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
 
               {/* Backlog Section - Bottom */}
               <div className="flex-1 flex flex-col">
-                <div className="bg-gradient-to-r from-slate-100 to-purple-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-slate-100 to-purple-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg text-sm">
                       📋
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-800 text-lg">Product Backlog</h3>
-                      <p className="text-slate-600 text-sm font-medium">
+                      <h3 className="font-bold text-slate-800">Product Backlog</h3>
+                      <p className="text-slate-600 text-sm">
                         {backlogStories.length} refined {backlogStories.length === 1 ? 'issue' : 'issues'} ready for planning
                       </p>
                     </div>
