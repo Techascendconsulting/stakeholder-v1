@@ -768,11 +768,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-2">
-                <div className="text-xs text-gray-500">Ready to start</div>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
