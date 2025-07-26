@@ -177,6 +177,15 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   // Inline editing states
   const [editingField, setEditingField] = useState<{storyId: string, field: 'priority' | 'status' | 'storyPoints'} | null>(null);
   const [tempValue, setTempValue] = useState<string>('');
+  
+  // Sprint execution state
+  const [sprintStarted, setSprintStarted] = useState(() => {
+    try {
+      return localStorage.getItem('sprint_started') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
 
   // Refs for audio recording
@@ -260,6 +269,22 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     } else if (e.key === 'Escape') {
       cancelInlineEdit();
     }
+  };
+
+  // Sprint execution functions
+  const startSprint = () => {
+    console.log('🚀 Starting sprint with', sprintStories.length, 'stories');
+    
+    // Move all sprint stories to "To Do" status automatically
+    sprintStories.forEach(storyId => {
+      console.log(`Moving story ${storyId} to To Do status`);
+      // Here we would normally call an update function passed as a prop
+      // For now, we'll just log the action
+    });
+    
+    setSprintStarted(true);
+    localStorage.setItem('sprint_started', 'true');
+    console.log('✅ Sprint started successfully');
   };
 
   const handleDragStart = (e: React.DragEvent, storyId: string) => {
@@ -793,15 +818,34 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                       </p>
                     </div>
                   </div>
-                  <div className="text-emerald-600 text-sm font-medium bg-emerald-100/50 px-3 py-1 rounded-full border border-emerald-200">
-                    📋 → 🎯 Drop zone
+                  <div className="flex items-center space-x-3">
+                    {!sprintStarted && sprintStories.length > 0 && (
+                      <button
+                        onClick={startSprint}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm"
+                      >
+                        <span>🚀</span>
+                        <span>Start Sprint</span>
+                      </button>
+                    )}
+                    {sprintStarted && (
+                      <div className="flex items-center space-x-2 text-emerald-700 font-medium">
+                        <span>✅</span>
+                        <span>Sprint Active</span>
+                      </div>
+                    )}
+                    {!sprintStarted && (
+                      <div className="text-emerald-600 text-sm font-medium bg-emerald-100/50 px-3 py-1 rounded-full border border-emerald-200">
+                        📋 → 🎯 Drop zone
+                      </div>
+                    )}
                   </div>
                 </div>
                 
                 <div 
                   className="max-h-[40vh] overflow-y-auto bg-white/80 backdrop-blur-sm"
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, 'sprint')}
+                  onDragOver={!sprintStarted ? handleDragOver : undefined}
+                  onDrop={!sprintStarted ? (e) => handleDrop(e, 'sprint') : undefined}
                 >
                   {sprintStories.length === 0 ? (
                     <div className="flex items-center justify-center h-48 text-slate-500 bg-gradient-to-br from-emerald-25 to-blue-25">
@@ -811,7 +855,133 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                         <p className="text-sm text-slate-600">Drag refined issues from the backlog below to commit them to this sprint</p>
                       </div>
                     </div>
+                  ) : sprintStarted ? (
+                    // Kanban Board View
+                    <div className="p-4 h-full">
+                      <div className="grid grid-cols-4 gap-4 h-full">
+                        {/* To Do Column */}
+                        <div className="bg-white rounded-lg shadow-sm border border-slate-200">
+                          <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 rounded-t-lg">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-slate-800 flex items-center">
+                                <span className="mr-2">📋</span>
+                                To Do
+                              </h4>
+                              <span className="bg-slate-200 text-slate-700 text-xs font-medium px-2 py-1 rounded-full">
+                                {sprintStories.length}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
+                            {sprintStories.map(storyId => {
+                              const story = stories.find(s => s.id === storyId);
+                              if (!story) return null;
+                              
+                              return (
+                                <div
+                                  key={storyId}
+                                  className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                  onClick={() => openStoryEditor(story)}
+                                >
+                                  <div className="flex items-start justify-between mb-2">
+                                    <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(story.priority)}`}>
+                                      {story.priority}
+                                    </span>
+                                  </div>
+                                  <h5 className="font-medium text-slate-900 text-sm mb-2 line-clamp-2">{story.title}</h5>
+                                  {story.description && (
+                                    <p className="text-xs text-slate-600 line-clamp-2 mb-2">{story.description}</p>
+                                  )}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-1">
+                                      <span className="text-xs text-slate-500">Points:</span>
+                                      <span className="text-xs font-medium text-slate-700">{story.storyPoints || '?'}</span>
+                                    </div>
+                                    {story.refinementScore && (
+                                      <span className="text-xs text-green-600 font-medium">
+                                        {story.refinementScore.overall}/10
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* In Progress Column */}
+                        <div className="bg-white rounded-lg shadow-sm border border-slate-200">
+                          <div className="bg-orange-50 px-4 py-3 border-b border-orange-200 rounded-t-lg">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-orange-800 flex items-center">
+                                <span className="mr-2">⚡</span>
+                                In Progress
+                              </h4>
+                              <span className="bg-orange-200 text-orange-700 text-xs font-medium px-2 py-1 rounded-full">
+                                0
+                              </span>
+                            </div>
+                          </div>
+                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
+                            <div className="flex items-center justify-center h-32 text-slate-400">
+                              <div className="text-center">
+                                <div className="text-2xl mb-2">⚡</div>
+                                <p className="text-sm">No stories in progress</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* In Test Column */}
+                        <div className="bg-white rounded-lg shadow-sm border border-slate-200">
+                          <div className="bg-yellow-50 px-4 py-3 border-b border-yellow-200 rounded-t-lg">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-yellow-800 flex items-center">
+                                <span className="mr-2">🧪</span>
+                                In Test
+                              </h4>
+                              <span className="bg-yellow-200 text-yellow-700 text-xs font-medium px-2 py-1 rounded-full">
+                                0
+                              </span>
+                            </div>
+                          </div>
+                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
+                            <div className="flex items-center justify-center h-32 text-slate-400">
+                              <div className="text-center">
+                                <div className="text-2xl mb-2">🧪</div>
+                                <p className="text-sm">No stories in test</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Done Column */}
+                        <div className="bg-white rounded-lg shadow-sm border border-slate-200">
+                          <div className="bg-green-50 px-4 py-3 border-b border-green-200 rounded-t-lg">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-green-800 flex items-center">
+                                <span className="mr-2">✅</span>
+                                Done
+                              </h4>
+                              <span className="bg-green-200 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
+                                0
+                              </span>
+                            </div>
+                          </div>
+                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
+                            <div className="flex items-center justify-center h-32 text-slate-400">
+                              <div className="text-center">
+                                <div className="text-2xl mb-2">🎉</div>
+                                <p className="text-sm">No completed stories</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
+                    // Planning Table View
                     <div className="p-2">
                       <table className="w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <thead className="bg-gradient-to-r from-emerald-50 to-blue-50">
@@ -880,8 +1050,9 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                 </div>
               </div>
 
-              {/* Backlog Section - Bottom */}
-              <div className="flex-1 flex flex-col">
+                              {/* Backlog Section - Bottom - Only show during planning */}
+                {!sprintStarted && (
+                <div className="flex-1 flex flex-col">
                 <div className="bg-gradient-to-r from-slate-100 to-purple-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg text-sm">
@@ -968,8 +1139,9 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                                 </td>
                                 <td className="py-4 px-6">
                                   <div className="flex items-center space-x-2">
-                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 shadow-sm">
-                                      ✨ Refined
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(story.status)} shadow-sm`}>
+                                      <span className="mr-1">{getStatusEmoji(story.status)}</span>
+                                      {story.status}
                                     </span>
                                     {story.refinementScore && (
                                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
@@ -990,6 +1162,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
             </div>
           </div>
         </div>
+        )}
 
         {/* Right Side - Participants Panel */}
         <div className="w-96 bg-gray-900 border-l border-gray-700 flex flex-col overflow-hidden">
