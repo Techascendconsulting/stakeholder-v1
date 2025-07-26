@@ -46,23 +46,23 @@ const ProjectsView: React.FC = () => {
         }
       case 'Intermediate':
         return {
-          color: 'from-amber-400 to-amber-600',
-          textColor: 'text-amber-700',
-          bgColor: 'bg-amber-50',
-          borderColor: 'border-amber-200',
+          color: 'from-blue-400 to-blue-600',
+          textColor: 'text-blue-700',
+          bgColor: 'bg-blue-50',
+          borderColor: 'border-blue-200',
           icon: Brain,
           description: 'Level Up Your Skills',
-          iconBg: 'bg-amber-500'
+          iconBg: 'bg-blue-500'
         }
       case 'Advanced':
         return {
-          color: 'from-red-400 to-red-600',
-          textColor: 'text-red-700',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-200',
+          color: 'from-purple-400 to-purple-600',
+          textColor: 'text-purple-700',
+          bgColor: 'bg-purple-50',
+          borderColor: 'border-purple-200',
           icon: Trophy,
           description: 'Master-Level Challenge',
-          iconBg: 'bg-red-500'
+          iconBg: 'bg-purple-500'
         }
       default:
         return {
