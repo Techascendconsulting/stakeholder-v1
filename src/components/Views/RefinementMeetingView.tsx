@@ -300,6 +300,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
   // Add AI message with dynamic response
   const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
+    console.log('📝 Adding AI message from:', teamMember.name);
+    console.log('🔊 Global audio enabled:', globalAudioEnabled);
+    
     const message: Message = {
       id: `msg_${Date.now()}_${Math.random()}`,
       speaker: teamMember.name,
@@ -309,25 +312,33 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       stakeholderId: teamMember.name.toLowerCase()
     };
 
-    setTranscript(prev => [...prev, message]);
+    setTranscript(prev => {
+      console.log('📋 Adding message to transcript. Current length:', prev.length);
+      return [...prev, message];
+    });
     
     // Play audio using voice meeting logic
+    console.log('🎵 Attempting to play audio for:', teamMember.name);
     await playMessageAudio(message.id, text, teamMember, true);
   };
 
   // Handle meeting start
-  const startMeeting = () => {
+  const startMeeting = async () => {
     setMeetingStarted(true);
+    
     // Ensure audio is enabled for the meeting
     if (!globalAudioEnabled) {
       setGlobalAudioEnabled(true);
     }
-    setTimeout(() => {
-      addAIMessage(
+    
+    // Wait a bit for audio context to initialize, then start greeting
+    setTimeout(async () => {
+      console.log('🎬 Starting Scrum Master greeting...');
+      await addAIMessage(
         teamMembers[0], // Sarah (Scrum Master)
         `Hello everyone! I'm Sarah, your Scrum Master for today's refinement session. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review. Let's start by having our Business Analyst present the first story.`
       );
-    }, 1000);
+    }, 1500); // Increased delay to ensure audio context is ready
   };
 
   // Generate dynamic AI response (no hardcoding)
