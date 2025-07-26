@@ -795,9 +795,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       )}
 
       {/* Message Input Area - Matches Kanban Board Width */}
-      <div className="flex">
+      <div className="flex relative">
         {/* Left Side - Input Area (matches kanban board width) */}
-        <div className="flex-1 px-6 py-4 bg-gray-900 border-t border-gray-700">
+        <div className="flex-1 px-6 py-4 bg-gray-900 border-t border-gray-700 relative">
           {/* Dynamic Feedback Display */}
           {meetingStarted && (isRecording || isTranscribing) && (
             <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
@@ -845,15 +845,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               <Send className="w-4 h-4 text-white" />
             </button>
           </div>
-        </div>
-        
-        {/* Right Side Spacer - Matches Participants Panel Width */}
-        <div className="w-96 bg-gray-900 border-t border-gray-700"></div>
-      </div>
 
-        {/* Sliding Transcript Panel - Voice-Only Style */}
-        {meetingStarted && (
-          <>
+          {/* Sliding Transcript Panel - Voice-Only Style */}
+          {meetingStarted && (
+            <>
 
             {/* Transcript Panel - slides up from text area, only over left side */}
             <div 
@@ -936,6 +931,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             </div>
           </>
         )}
+        </div>
+        
+        {/* Right Side Spacer - Matches Participants Panel Width */}
+        <div className="w-96 bg-gray-900 border-t border-gray-700"></div>
       </div>
 
       {/* Jira-Style Story Editor Modal */}
