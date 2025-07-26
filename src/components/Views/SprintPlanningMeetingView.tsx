@@ -62,27 +62,27 @@ interface SprintPlanningMeetingViewProps {
 
 const teamMembers: SprintPlanningMember[] = [
   {
-    name: 'Sarah Chen',
+    name: 'Sarah',
     role: 'Scrum Master',
     avatar: '👩‍💼',
     isAI: true
   },
   {
-    name: 'Mike Rodriguez',
+    name: 'Srikanth',
     role: 'Senior Developer',
     avatar: '👨‍💻',
     isAI: true
   },
   {
-    name: 'Emily Watson',
-    role: 'QA Engineer',
-    avatar: '👩‍🔬',
+    name: 'Lisa',
+    role: 'Developer',
+    avatar: '👩‍💻',
     isAI: true
   },
   {
-    name: 'David Kim',
-    role: 'Frontend Developer',
-    avatar: '👨‍🎨',
+    name: 'Tom',
+    role: 'QA Tester',
+    avatar: '👨‍🔬',
     isAI: true
   }
 ];
@@ -188,7 +188,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     // Scrum Master greeting with delay for audio context
     setTimeout(async () => {
       const scrumMaster = teamMembers.find(m => m.role === 'Scrum Master') || teamMembers[0];
-      const greeting = `Welcome to our Sprint Planning meeting! I'm ${scrumMaster.name}, your Scrum Master. Today we'll review ${stories.length} refined stories and decide which ones to include in our upcoming sprint. Let's start by discussing the first story. What questions do you have?`;
+      const greeting = `Alright team, let's start our sprint planning. We have ${stories.length} refined ${stories.length === 1 ? 'story' : 'stories'} to review today. I'll keep us moving through each one. Who wants to kick off with the first story?`;
       await addAIMessage(scrumMaster, greeting);
     }, 1500); // Increased delay for audio context initialization
   };
@@ -281,15 +281,56 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       // Use the same dynamic AI service as refinement meeting
       const dynamicAIService = AIService.getInstance();
       
-      // Convert team members to stakeholder format for AIService
-      const availableTeamMembers = teamMembers.map(member => ({
-        name: member.name,
-        role: member.role,
-        department: 'Development',
-        priorities: [`${member.role} responsibilities`, 'Sprint planning', 'Story acceptance'],
-        personality: member.role === 'Scrum Master' ? 'Facilitating and process-focused' : 'Collaborative and technical',
-        expertise: member.role === 'Scrum Master' ? ['scrum', 'facilitation', 'agile'] : [member.role.toLowerCase(), 'development', 'agile']
-      }));
+      // Convert team members to stakeholder format with specific role behaviors
+      const availableTeamMembers = teamMembers.map(member => {
+        switch (member.role) {
+          case 'Scrum Master':
+            return {
+              name: member.name,
+              role: member.role,
+              department: 'Agile Delivery',
+              priorities: ['Meeting facilitation', 'Process clarity', 'Team decisions', 'Sprint commitment'],
+              personality: 'Guides the meeting and moves the team through the agenda. Asks questions when clarity is missing. Keeps the team focused and ensures decisions are made.',
+              expertise: ['scrum', 'agile facilitation', 'sprint planning', 'team dynamics']
+            };
+          case 'Senior Developer':
+            return {
+              name: member.name,
+              role: member.role,
+              department: 'Engineering',
+              priorities: ['System architecture', 'Technical feasibility', 'Complexity assessment', 'Dependencies'],
+              personality: 'Thinks about architecture, system dependencies, feasibility. Raises concerns about complexity, estimation, or unknowns. May challenge unclear requirements or suggest edge cases.',
+              expertise: ['system design', 'architecture', 'technical estimation', 'code complexity']
+            };
+          case 'Developer':
+            return {
+              name: member.name,
+              role: member.role,
+              department: 'Engineering',
+              priorities: ['Implementation details', 'Frontend/backend needs', 'Technical blockers', 'Development approach'],
+              personality: 'Focuses on building the story. Points out front-end/backend needs. Flags tech blockers or questions not covered by grooming.',
+              expertise: ['frontend development', 'backend development', 'implementation', 'technical requirements']
+            };
+          case 'QA Tester':
+            return {
+              name: member.name,
+              role: member.role,
+              department: 'Quality Assurance',
+              priorities: ['Testing strategy', 'Test coverage', 'Acceptance criteria', 'Quality risks'],
+              personality: 'Thinks about testing strategy and coverage. Highlights missing acceptance criteria, edge cases, testability. Can raise risks related to regression or flaky behavior.',
+              expertise: ['test strategy', 'quality assurance', 'edge cases', 'regression testing']
+            };
+          default:
+            return {
+              name: member.name,
+              role: member.role,
+              department: 'Development',
+              priorities: ['Story delivery'],
+              personality: 'Collaborative team member',
+              expertise: ['agile delivery']
+            };
+        }
+      });
 
       // Detect who should respond (like refinement meeting)
       const mentionResult = await dynamicAIService.detectStakeholderMentions(userMessage, availableTeamMembers);
@@ -311,11 +352,31 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       }
 
       if (responder) {
-        // Create conversation context for sprint planning
+        // Create conversation context for sprint planning with role-specific behavior
+        const currentStory = stories.find(s => kanbanColumns.reviewing.stories.includes(s.id));
         const conversationContext = {
           project: {
             name: 'Sprint Planning Session',
-            description: 'Agile sprint planning and story acceptance session',
+            description: `You are part of an Agile delivery team participating in a live Sprint Planning meeting.
+
+Each person has a unique role and voice. They respond naturally based on the current ticket, their responsibilities, and team dynamics.
+
+Meeting Participants:
+- Sarah (Scrum Master): Guides the meeting and moves the team through the agenda. Asks questions when clarity is missing. Keeps the team focused and ensures decisions are made.
+- Srikanth (Senior Developer): Thinks about architecture, system dependencies, feasibility. Raises concerns about complexity, estimation, or unknowns. May challenge unclear requirements or suggest edge cases.
+- Lisa (Developer): Focuses on building the story. Points out front-end/backend needs. Flags tech blockers or questions not covered by grooming.
+- Tom (QA Tester): Thinks about testing strategy and coverage. Highlights missing acceptance criteria, edge cases, testability. Can raise risks related to regression or flaky behavior.
+- [User] (Business Analyst): Provides clarity when others ask for it. Answers questions about story intent. Can elaborate on business logic if needed.
+
+Your job as AI is to make them respond IN CHARACTER. They must:
+- React to the current user story (${currentStory?.title || 'the story being discussed'})
+- Raise concerns or approvals based on their role
+- Keep responses short (max 3 sentences)
+- Speak in natural team tone, not like a tutorial
+- Be silent unless it's their turn
+- Never break character or explain Agile
+
+Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.title}` : 'No specific story selected'}`,
             type: 'Sprint Planning Meeting'
           },
           conversationHistory: transcript.map(t => ({ speaker: t.speaker, content: t.content })),
@@ -324,16 +385,24 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
             storiesUnderReview: kanbanColumns.reviewing.stories,
             acceptedStories: kanbanColumns.accepted.stories,
             totalStories: stories.length,
-            sprintGoal: 'Plan and commit to stories for the upcoming sprint'
+            sprintGoal: 'Plan and commit to stories for the upcoming sprint',
+            currentStory: currentStory ? {
+              id: currentStory.id,
+              title: currentStory.title,
+              description: currentStory.description,
+              acceptanceCriteria: currentStory.acceptanceCriteria,
+              storyPoints: currentStory.storyPoints,
+              priority: currentStory.priority
+            } : null
           }
         };
 
-        // Generate dynamic response using AIService
+        // Generate dynamic response using AIService with sprint planning context
         const response = await dynamicAIService.generateStakeholderResponse(
           userMessage,
           responder,
           conversationContext,
-          'sprint_planning_discussion'
+          'sprint_planning_meeting'
         );
         
         // Find the corresponding team member for audio
