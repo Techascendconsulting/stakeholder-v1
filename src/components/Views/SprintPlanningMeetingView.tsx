@@ -105,13 +105,11 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
   const [meetingStartTime, setMeetingStartTime] = useState(0);
   
-  // Sprint planning specific state
-  const [kanbanColumns, setKanbanColumns] = useState({
-    reviewing: { id: 'reviewing', title: 'Under Review', stories: stories.map(s => s.id) },
-    accepted: { id: 'accepted', title: 'Accepted for Sprint', stories: [] as string[] },
-    needs_discussion: { id: 'needs_discussion', title: 'Needs Discussion', stories: [] as string[] },
-    rejected: { id: 'rejected', title: 'Not This Sprint', stories: [] as string[] }
-  });
+  // Sprint planning specific state - Jira style
+  const [backlogStories, setBacklogStories] = useState<string[]>(stories.map(s => s.id));
+  const [sprintStories, setSprintStories] = useState<string[]>([]);
+  const [sprintCapacity] = useState(40); // Story points capacity
+  const [currentSprintPoints, setCurrentSprintPoints] = useState(0);
   
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [isEditingStory, setIsEditingStory] = useState(false);
@@ -128,6 +126,15 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [transcript]);
+
+  // Calculate current sprint points when sprint stories change
+  useEffect(() => {
+    const totalPoints = sprintStories.reduce((sum, storyId) => {
+      const story = stories.find(s => s.id === storyId);
+      return sum + (story?.storyPoints || 0);
+    }, 0);
+    setCurrentSprintPoints(totalPoints);
+  }, [sprintStories, stories]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -146,24 +153,30 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, columnId: string) => {
+  const handleDrop = (e: React.DragEvent, targetArea: 'backlog' | 'sprint') => {
     e.preventDefault();
     const storyId = e.dataTransfer.getData('text/plain');
+    const story = stories.find(s => s.id === storyId);
     
-    setKanbanColumns(prev => {
-      const newColumns = { ...prev };
-      
-      // Remove from all columns
-      Object.keys(newColumns).forEach(key => {
-        newColumns[key as keyof typeof newColumns].stories = 
-          newColumns[key as keyof typeof newColumns].stories.filter(id => id !== storyId);
-      });
-      
-      // Add to target column
-      newColumns[columnId as keyof typeof newColumns].stories.push(storyId);
-      
-      return newColumns;
-    });
+    if (targetArea === 'sprint') {
+      // Moving to sprint
+      if (!sprintStories.includes(storyId)) {
+        const storyPoints = story?.storyPoints || 0;
+        if (currentSprintPoints + storyPoints <= sprintCapacity) {
+          setBacklogStories(prev => prev.filter(id => id !== storyId));
+          setSprintStories(prev => [...prev, storyId]);
+          setCurrentSprintPoints(prev => prev + storyPoints);
+        }
+      }
+    } else {
+      // Moving back to backlog
+      if (!backlogStories.includes(storyId)) {
+        const storyPoints = story?.storyPoints || 0;
+        setSprintStories(prev => prev.filter(id => id !== storyId));
+        setBacklogStories(prev => [...prev, storyId]);
+        setCurrentSprintPoints(prev => prev - storyPoints);
+      }
+    }
   };
 
   const openStoryEditor = (story: AgileTicket) => {
@@ -353,7 +366,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
 
       if (responder) {
         // Create conversation context for sprint planning with role-specific behavior
-        const currentStory = stories.find(s => kanbanColumns.reviewing.stories.includes(s.id));
+        const currentStory = stories.find(s => sprintStories.includes(s.id) || backlogStories.includes(s.id));
         const conversationContext = {
           project: {
             name: 'Sprint Planning Session',
@@ -382,8 +395,10 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
           conversationHistory: transcript.map(t => ({ speaker: t.speaker, content: t.content })),
           stakeholders: availableTeamMembers,
           currentContext: {
-            storiesUnderReview: kanbanColumns.reviewing.stories,
-            acceptedStories: kanbanColumns.accepted.stories,
+            backlogStories: backlogStories,
+            sprintStories: sprintStories,
+            sprintCapacity: sprintCapacity,
+            currentSprintPoints: currentSprintPoints,
             totalStories: stories.length,
             sprintGoal: 'Plan and commit to stories for the upcoming sprint',
             currentStory: currentStory ? {
@@ -491,9 +506,9 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
     if (!meetingStarted) return;
 
     try {
-      // Calculate accepted and rejected stories
-      const acceptedStories = stories.filter(s => kanbanColumns.accepted.stories.includes(s.id));
-      const rejectedStories = stories.filter(s => kanbanColumns.rejected.stories.includes(s.id));
+      // Calculate accepted and rejected stories based on Jira-style planning
+      const acceptedStories = stories.filter(s => sprintStories.includes(s.id));
+      const rejectedStories = stories.filter(s => backlogStories.includes(s.id));
 
       const results: SprintPlanningResults = {
         transcript,
@@ -507,8 +522,8 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
       console.error('Error ending sprint planning meeting:', error);
       onMeetingEnd({
         transcript,
-        acceptedStories: stories.filter(s => kanbanColumns.accepted.stories.includes(s.id)),
-        rejectedStories: stories.filter(s => kanbanColumns.rejected.stories.includes(s.id)),
+        acceptedStories: stories.filter(s => sprintStories.includes(s.id)),
+        rejectedStories: stories.filter(s => backlogStories.includes(s.id)),
         duration: Date.now() - meetingStartTime
       });
     }
@@ -597,113 +612,191 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
 
       {/* Main Meeting Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Side - Kanban Board */}
-        <div className="flex-1 bg-gray-50 text-gray-900 p-6 overflow-auto border-r border-gray-200">
+        {/* Left Side - Jira-style Sprint Planning */}
+        <div className="flex-1 bg-gray-50 text-gray-900 overflow-hidden border-r border-gray-200">
           <div className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Sprint Planning Board
-              </h2>
+            {/* Header */}
+            <div className="bg-white border-b border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-semibold text-gray-900">Sprint Planning</h2>
+                {!meetingStarted && (
+                  <button
+                    onClick={startMeeting}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors flex items-center space-x-2"
+                  >
+                    <Play size={16} />
+                    <span>Start Planning</span>
+                  </button>
+                )}
+              </div>
               
-              {/* Start Meeting Button */}
-              {!meetingStarted && (
-                <button
-                  onClick={startMeeting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
-                >
-                  <Play size={20} />
-                  <span>Start Planning</span>
-                </button>
-              )}
+              {/* Sprint Info Bar */}
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium">Sprint Capacity:</span>
+                  <span className={`font-semibold ${currentSprintPoints > sprintCapacity ? 'text-red-600' : 'text-green-600'}`}>
+                    {currentSprintPoints}/{sprintCapacity} points
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium">Stories in Sprint:</span>
+                  <span className="font-semibold text-blue-600">{sprintStories.length}</span>
+                </div>
+                {currentSprintPoints > sprintCapacity && (
+                  <span className="text-red-600 font-medium">⚠️ Over capacity</span>
+                )}
+              </div>
             </div>
-            
-            {/* Kanban Columns */}
-            <div className="flex-1 grid grid-cols-4 gap-4">
-              {Object.values(kanbanColumns).map(column => (
+
+            {/* Two-Panel Layout - Jira Style */}
+            <div className="flex-1 flex">
+              {/* Left Panel - Backlog */}
+              <div className="w-1/2 border-r border-gray-200 flex flex-col">
+                <div className="bg-gray-100 border-b border-gray-200 px-4 py-3">
+                  <h3 className="font-semibold text-gray-800 text-sm">Backlog ({backlogStories.length} stories)</h3>
+                  <p className="text-xs text-gray-600 mt-1">Drag stories to the sprint to plan your work</p>
+                </div>
+                
                 <div 
-                  key={column.id} 
-                  className="bg-gray-100 rounded-lg p-4 h-full border border-gray-200 shadow-sm"
+                  className="flex-1 p-4 overflow-y-auto space-y-3"
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, column.id)}
+                  onDrop={(e) => handleDrop(e, 'backlog')}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-800 text-sm uppercase tracking-wide">
-                      {column.title}
-                    </h3>
-                    <span className="bg-gray-300 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">
-                      {column.stories.length}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2 h-full overflow-y-auto">
-                    {column.stories.map(storyId => {
-                      const story = stories.find(s => s.id === storyId);
-                      if (!story) return null;
-                      
-                      const isSelected = selectedStoryId === storyId;
-                      
-                      return (
-                        <div 
-                          key={storyId}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, storyId)}
-                          onClick={() => openStoryEditor(story)}
-                          className={`p-2 rounded border cursor-pointer transition-all hover:shadow-sm bg-white h-20 flex flex-col ${
-                            isSelected
-                              ? 'border-blue-500 shadow-sm ring-1 ring-blue-200'
-                              : 'border-gray-300 hover:border-gray-400'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center space-x-1">
-                              <GripVertical size={12} className="text-gray-400" />
-                              <span className="font-medium text-blue-600 text-xs">
-                                {story.ticketNumber}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              {story.storyPoints && (
-                                <span className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs font-medium">
-                                  {story.storyPoints}
-                                </span>
-                              )}
-                              <span className={`px-1 py-0.5 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                                {story.priority.charAt(0)}
-                              </span>
-                            </div>
+                  {backlogStories.map(storyId => {
+                    const story = stories.find(s => s.id === storyId);
+                    if (!story) return null;
+                    
+                    return (
+                      <div 
+                        key={storyId}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, storyId)}
+                        onClick={() => openStoryEditor(story)}
+                        className="bg-white border border-gray-200 rounded p-3 cursor-move hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <GripVertical size={14} className="text-gray-400" />
+                            <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
                           </div>
-                          
-                          <h4 className="font-medium text-gray-900 text-xs line-clamp-2 leading-tight mb-1 flex-1">
-                            {story.title}
-                          </h4>
-                          
-                          <div className="h-3 mb-1">
-                            {story.description && (
-                              <p className="text-xs text-gray-500 line-clamp-1 leading-tight">
-                                {story.description.length > 40 
-                                  ? `${story.description.substring(0, 40)}...` 
-                                  : story.description
-                                }
-                              </p>
+                          <div className="flex items-center space-x-2">
+                            {story.storyPoints && (
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                                {story.storyPoints} pts
+                              </span>
                             )}
-                          </div>
-                          
-                          <div className="h-4 flex items-center">
-                            {story.refinementScore && (
-                              <div className="flex items-center space-x-1">
-                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                                <span className="text-xs text-green-600 font-medium">
-                                  {story.refinementScore.overall}/10
-                                </span>
-                              </div>
-                            )}
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                              {story.priority}
+                            </span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                        
+                        <h4 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
+                          {story.title}
+                        </h4>
+                        
+                        {story.description && (
+                          <p className="text-xs text-gray-600 line-clamp-2">
+                            {story.description}
+                          </p>
+                        )}
+                        
+                        {story.refinementScore && (
+                          <div className="mt-2 flex items-center space-x-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-xs text-green-600 font-medium">
+                              Refined ({story.refinementScore.overall}/10)
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  
+                  {backlogStories.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-2xl mb-2">📋</div>
+                      <p className="text-sm">All stories have been planned</p>
+                    </div>
+                  )}
                 </div>
-              ))}
+              </div>
+
+              {/* Right Panel - Sprint */}
+              <div className="w-1/2 flex flex-col">
+                <div className="bg-blue-50 border-b border-gray-200 px-4 py-3">
+                  <h3 className="font-semibold text-gray-800 text-sm">Sprint ({sprintStories.length} stories)</h3>
+                  <p className="text-xs text-gray-600 mt-1">Stories committed for this sprint</p>
+                </div>
+                
+                <div 
+                  className="flex-1 p-4 overflow-y-auto space-y-3"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, 'sprint')}
+                >
+                  {sprintStories.map(storyId => {
+                    const story = stories.find(s => s.id === storyId);
+                    if (!story) return null;
+                    
+                    return (
+                      <div 
+                        key={storyId}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, storyId)}
+                        onClick={() => openStoryEditor(story)}
+                        className="bg-white border border-blue-200 rounded p-3 cursor-move hover:shadow-md transition-shadow border-l-4 border-l-blue-500"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <GripVertical size={14} className="text-gray-400" />
+                            <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {story.storyPoints && (
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                                {story.storyPoints} pts
+                              </span>
+                            )}
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                              {story.priority}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <h4 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
+                          {story.title}
+                        </h4>
+                        
+                        {story.description && (
+                          <p className="text-xs text-gray-600 line-clamp-2">
+                            {story.description}
+                          </p>
+                        )}
+                        
+                        {story.refinementScore && (
+                          <div className="mt-2 flex items-center space-x-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-xs text-green-600 font-medium">
+                              Refined ({story.refinementScore.overall}/10)
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  
+                  {sprintStories.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <div className="text-3xl mb-3">🎯</div>
+                      <h4 className="font-medium mb-2">Plan Your Sprint</h4>
+                      <p className="text-sm">Drag stories from the backlog to commit them to this sprint</p>
+                      <div className="mt-4 text-xs text-gray-400">
+                        Sprint Capacity: {sprintCapacity} story points
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
