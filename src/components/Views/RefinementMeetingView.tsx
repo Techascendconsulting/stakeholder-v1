@@ -424,22 +424,33 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
   const handleVoiceInput = async (audioBlob: Blob) => {
     setIsTranscribing(true);
+    console.log('🎤 Voice input received, audio blob size:', audioBlob.size);
+    
     try {
       const transcribedText = await transcribeAudio(audioBlob);
-      if (transcribedText.trim()) {
-        console.log('🎤 Transcribed text:', transcribedText);
+      console.log('🎤 Transcription result:', transcribedText);
+      
+      if (transcribedText && transcribedText.trim()) {
+        console.log('✅ Setting transcribed text to input field:', transcribedText);
         // First populate the input field (like voice-only meeting)
         setUserInput(transcribedText);
         
         // Wait a moment for user to see the transcribed text
         setTimeout(async () => {
+          console.log('📤 Auto-sending transcribed message');
           await handleSendMessage(transcribedText);
-        }, 500);
+        }, 1000); // Increased to 1 second so user can see the text
       } else {
-        console.warn('No transcription received or transcription was empty');
+        console.warn('❌ No transcription received or transcription was empty');
+        setUserInput(''); // Clear input if transcription failed
       }
     } catch (error) {
-      console.error('Error transcribing audio:', error);
+      console.error('❌ Error transcribing audio:', error);
+      // Show user-friendly error
+      setUserInput(''); // Clear input on error
+      if (error.message?.includes('VITE_OPENAI_API_KEY')) {
+        console.error('💡 Hint: Add VITE_OPENAI_API_KEY to .env file for voice transcription');
+      }
     } finally {
       setIsTranscribing(false);
     }
