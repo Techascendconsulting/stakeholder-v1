@@ -276,6 +276,16 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             resolve();
           });
         });
+      } else {
+        console.log('⚠️ Azure TTS not available, skipping audio playback');
+        setCurrentSpeaker(teamMember);
+        setIsAudioPlaying(false);
+        // Still show visual feedback that someone is "speaking"
+        setTimeout(() => {
+          setCurrentSpeaker(null);
+          console.log(`📝 ${teamMember.name} finished speaking (text-only mode)`);
+        }, 2000); // Show speaker for 2 seconds
+        return Promise.resolve();
       }
     } catch (error) {
       console.error('Error in playMessageAudio:', error);
@@ -866,12 +876,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           {meetingStarted && (
             <>
 
-            {/* Transcript Panel - slides up from text area, only over left side */}
+            {/* Transcript Panel - slides up from text area, matches input width */}
             <div 
-              className={`absolute bottom-full left-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
+              className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
                 transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
               }`}
-              style={{ right: '384px' }} // Match right sidebar width (w-96 = 384px)
             >
               {/* Transcript Header */}
               <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600">
