@@ -427,8 +427,16 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     try {
       const transcribedText = await transcribeAudio(audioBlob);
       if (transcribedText.trim()) {
+        console.log('🎤 Transcribed text:', transcribedText);
+        // First populate the input field (like voice-only meeting)
         setUserInput(transcribedText);
-        await handleSendMessage(transcribedText);
+        
+        // Wait a moment for user to see the transcribed text
+        setTimeout(async () => {
+          await handleSendMessage(transcribedText);
+        }, 500);
+      } else {
+        console.warn('No transcription received or transcription was empty');
       }
     } catch (error) {
       console.error('Error transcribing audio:', error);
