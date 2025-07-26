@@ -749,6 +749,39 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
           </div>
 
+          {/* Meeting Controls - Voice-Only Style */}
+          {meetingStarted && (
+            <div className="px-6 py-3 bg-gray-900 border-t border-gray-700">
+              <div className="flex items-center space-x-2">
+                {/* Mic Button */}
+                <button
+                  onMouseDown={startRecording}
+                  onMouseUp={stopRecording}
+                  onMouseLeave={stopRecording}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                    isRecording 
+                      ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
+                      : isTranscribing
+                      ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
+                      : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                  title={isRecording ? 'Release to Send' : isTranscribing ? 'Processing...' : 'Hold to Record'}
+                >
+                  {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
+                </button>
+
+                {/* Stop Button */}
+                <button
+                  onClick={stopCurrentAudio}
+                  className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
+                  title="Stop current speaker"
+                >
+                  <Square className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Message Input Area - Voice-Only Style */}
           <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
             {meetingStarted && (
@@ -778,23 +811,6 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                     className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
                   >
                     <Send className="w-4 h-4 text-white" />
-                  </button>
-                  
-                  {/* Mic Button - Voice-Only Style */}
-                  <button
-                    onMouseDown={startRecording}
-                    onMouseUp={stopRecording}
-                    onMouseLeave={stopRecording}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      isRecording 
-                        ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
-                        : isTranscribing
-                        ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
-                        : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
-                    title={isRecording ? 'Release to Send' : isTranscribing ? 'Processing...' : 'Hold to Record'}
-                  >
-                    {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
                   </button>
                 </div>
 
