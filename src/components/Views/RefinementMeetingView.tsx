@@ -784,48 +784,48 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
           {/* Message Input Area - Voice-Only Style */}
           <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
+            {/* Dynamic Feedback Display */}
+            {meetingStarted && (isRecording || isTranscribing) && (
+              <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+                <span className="text-white text-sm font-medium">
+                  {isRecording ? '🎤 Recording your message... Release to send' : 
+                   isTranscribing ? '🔄 Processing and transcribing your message...' : ''}
+                </span>
+              </div>
+            )}
+            
+            <div className="flex space-x-3">
+              <input
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type a message"
+                disabled={!meetingStarted}
+                className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400 disabled:opacity-50"
+              />
+              <button
+                onClick={() => handleSendMessage()}
+                disabled={!userInput.trim() || !meetingStarted}
+                className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
+              >
+                <Send className="w-4 h-4 text-white" />
+              </button>
+            </div>
+
+            {/* Sliding Transcript Panel - Voice-Only Style */}
             {meetingStarted && (
               <>
-                {/* Dynamic Feedback Display */}
-                {(isRecording || isTranscribing) && (
-                  <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
-                    <span className="text-white text-sm font-medium">
-                      {isRecording ? '🎤 Recording your message... Release to send' : 
-                       isTranscribing ? '🔄 Processing and transcribing your message...' : ''}
-                    </span>
-                  </div>
-                )}
-                
-                <div className="flex space-x-3">
-                  <input
-                    type="text"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type a message"
-                    className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400"
-                  />
+                {/* Floating Transcript Button (when minimized) */}
+                {!transcriptPanelOpen && (
                   <button
-                    onClick={() => handleSendMessage()}
-                    disabled={!userInput.trim()}
-                    className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
+                    onClick={() => setTranscriptPanelOpen(true)}
+                    className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg shadow-lg transition-all duration-200 text-xs font-medium"
+                    title="Show transcript"
                   >
-                    <Send className="w-4 h-4 text-white" />
+                    Transcript ({transcript.length})
                   </button>
-                </div>
-
-                {/* Sliding Transcript Panel - Voice-Only Style */}
-                <>
-                  {/* Floating Transcript Button (when minimized) */}
-                  {!transcriptPanelOpen && (
-                    <button
-                      onClick={() => setTranscriptPanelOpen(true)}
-                      className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg shadow-lg transition-all duration-200 text-xs font-medium"
-                      title="Show transcript"
-                    >
-                      Transcript ({transcript.length})
-                    </button>
-                  )}
+                )}
 
                   {/* Transcript Panel - slides up from text area */}
                   <div 
@@ -906,8 +906,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                     </div>
                   </div>
                 </>
-              </>
-            )}
+              )}
           </div>
         </div>
       </div>
