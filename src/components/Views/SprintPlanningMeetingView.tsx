@@ -648,152 +648,179 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
               </div>
             </div>
 
-            {/* Two-Panel Layout - Jira Style */}
-            <div className="flex-1 flex">
-              {/* Left Panel - Backlog */}
-              <div className="w-1/2 border-r border-gray-200 flex flex-col">
-                <div className="bg-gray-100 border-b border-gray-200 px-4 py-3">
-                  <h3 className="font-semibold text-gray-800 text-sm">Backlog ({backlogStories.length} stories)</h3>
-                  <p className="text-xs text-gray-600 mt-1">Drag stories to the sprint to plan your work</p>
+            {/* Vertical Layout - Jira Style (Sprint top, Backlog bottom) */}
+            <div className="flex-1 flex flex-col">
+              {/* Sprint Section - Top */}
+              <div className="border-b border-gray-200 flex flex-col">
+                <div className="bg-blue-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-800 text-sm">Sprint 1 ({sprintStories.length} issues)</h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {currentSprintPoints}/{sprintCapacity} story points
+                      {currentSprintPoints > sprintCapacity && (
+                        <span className="text-red-600 ml-2">⚠️ Over capacity</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Drag issues from backlog to add to sprint
+                  </div>
                 </div>
                 
                 <div 
-                  className="flex-1 p-4 overflow-y-auto space-y-3"
+                  className="min-h-[200px] max-h-[300px] overflow-y-auto"
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, 'backlog')}
+                  onDrop={(e) => handleDrop(e, 'sprint')}
                 >
-                  {backlogStories.map(storyId => {
-                    const story = stories.find(s => s.id === storyId);
-                    if (!story) return null;
-                    
-                    return (
-                      <div 
-                        key={storyId}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, storyId)}
-                        onClick={() => openStoryEditor(story)}
-                        className="bg-white border border-gray-200 rounded p-3 cursor-move hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <GripVertical size={14} className="text-gray-400" />
-                            <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {story.storyPoints && (
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                                {story.storyPoints} pts
-                              </span>
-                            )}
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                              {story.priority}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <h4 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
-                          {story.title}
-                        </h4>
-                        
-                        {story.description && (
-                          <p className="text-xs text-gray-600 line-clamp-2">
-                            {story.description}
-                          </p>
-                        )}
-                        
-                        {story.refinementScore && (
-                          <div className="mt-2 flex items-center space-x-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-xs text-green-600 font-medium">
-                              Refined ({story.refinementScore.overall}/10)
-                            </span>
-                          </div>
-                        )}
+                  {sprintStories.length === 0 ? (
+                    <div className="flex items-center justify-center h-32 text-gray-500 bg-blue-25">
+                      <div className="text-center">
+                        <div className="text-2xl mb-2">🎯</div>
+                        <p className="text-sm">Plan your sprint by dragging issues here</p>
                       </div>
-                    );
-                  })}
-                  
-                  {backlogStories.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <div className="text-2xl mb-2">📋</div>
-                      <p className="text-sm">All stories have been planned</p>
                     </div>
+                  ) : (
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Issue</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Summary</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Priority</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Story Points</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sprintStories.map(storyId => {
+                          const story = stories.find(s => s.id === storyId);
+                          if (!story) return null;
+                          
+                          return (
+                            <tr 
+                              key={storyId}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, storyId)}
+                              className="border-b border-gray-100 hover:bg-blue-50 cursor-move transition-colors"
+                              onClick={() => openStoryEditor(story)}
+                            >
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-2">
+                                  <GripVertical size={12} className="text-gray-400" />
+                                  <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="max-w-md">
+                                  <p className="font-medium text-gray-900 text-sm line-clamp-1">{story.title}</p>
+                                  {story.description && (
+                                    <p className="text-xs text-gray-600 line-clamp-1 mt-1">{story.description}</p>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                                  {story.priority}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <span className="font-medium text-sm">{story.storyPoints || '—'}</span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                  In Sprint
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               </div>
 
-              {/* Right Panel - Sprint */}
-              <div className="w-1/2 flex flex-col">
-                <div className="bg-blue-50 border-b border-gray-200 px-4 py-3">
-                  <h3 className="font-semibold text-gray-800 text-sm">Sprint ({sprintStories.length} stories)</h3>
-                  <p className="text-xs text-gray-600 mt-1">Stories committed for this sprint</p>
+              {/* Backlog Section - Bottom */}
+              <div className="flex-1 flex flex-col">
+                <div className="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-800 text-sm">Backlog ({backlogStories.length} issues)</h3>
+                    <p className="text-xs text-gray-600 mt-1">Refined stories ready for sprint planning</p>
+                  </div>
                 </div>
                 
                 <div 
-                  className="flex-1 p-4 overflow-y-auto space-y-3"
+                  className="flex-1 overflow-y-auto"
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, 'sprint')}
+                  onDrop={(e) => handleDrop(e, 'backlog')}
                 >
-                  {sprintStories.map(storyId => {
-                    const story = stories.find(s => s.id === storyId);
-                    if (!story) return null;
-                    
-                    return (
-                      <div 
-                        key={storyId}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, storyId)}
-                        onClick={() => openStoryEditor(story)}
-                        className="bg-white border border-blue-200 rounded p-3 cursor-move hover:shadow-md transition-shadow border-l-4 border-l-blue-500"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <GripVertical size={14} className="text-gray-400" />
-                            <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {story.storyPoints && (
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                                {story.storyPoints} pts
-                              </span>
-                            )}
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                              {story.priority}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <h4 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
-                          {story.title}
-                        </h4>
-                        
-                        {story.description && (
-                          <p className="text-xs text-gray-600 line-clamp-2">
-                            {story.description}
-                          </p>
-                        )}
-                        
-                        {story.refinementScore && (
-                          <div className="mt-2 flex items-center space-x-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-xs text-green-600 font-medium">
-                              Refined ({story.refinementScore.overall}/10)
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  
-                  {sprintStories.length === 0 && (
-                    <div className="text-center py-12 text-gray-500">
-                      <div className="text-3xl mb-3">🎯</div>
-                      <h4 className="font-medium mb-2">Plan Your Sprint</h4>
-                      <p className="text-sm">Drag stories from the backlog to commit them to this sprint</p>
-                      <div className="mt-4 text-xs text-gray-400">
-                        Sprint Capacity: {sprintCapacity} story points
+                  {backlogStories.length === 0 ? (
+                    <div className="flex items-center justify-center h-32 text-gray-500">
+                      <div className="text-center">
+                        <div className="text-2xl mb-2">📋</div>
+                        <p className="text-sm">All issues have been added to the sprint</p>
                       </div>
                     </div>
+                  ) : (
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                        <tr>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Issue</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Summary</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Priority</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Story Points</th>
+                          <th className="text-left py-2 px-4 text-xs font-medium text-gray-600 uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {backlogStories.map(storyId => {
+                          const story = stories.find(s => s.id === storyId);
+                          if (!story) return null;
+                          
+                          return (
+                            <tr 
+                              key={storyId}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, storyId)}
+                              className="border-b border-gray-100 hover:bg-gray-50 cursor-move transition-colors"
+                              onClick={() => openStoryEditor(story)}
+                            >
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-2">
+                                  <GripVertical size={12} className="text-gray-400" />
+                                  <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="max-w-md">
+                                  <p className="font-medium text-gray-900 text-sm line-clamp-1">{story.title}</p>
+                                  {story.description && (
+                                    <p className="text-xs text-gray-600 line-clamp-1 mt-1">{story.description}</p>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                                  {story.priority}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <span className="font-medium text-sm">{story.storyPoints || '—'}</span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  Refined
+                                </span>
+                                {story.refinementScore && (
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    ({story.refinementScore.overall}/10)
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               </div>
