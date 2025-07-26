@@ -445,7 +445,20 @@ export const AgileHubView: React.FC = () => {
   const [tickets, setTickets] = useState<AgileTicket[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showRefinementModal, setShowRefinementModal] = useState(false);
+  // Persist refinement meeting state across refreshes
+  const [showRefinementModal, setShowRefinementModal] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const persistedMeeting = localStorage.getItem('active_refinement_meeting');
+      return persistedMeeting === 'true';
+    }
+    return false;
+  });
+
+  // Helper function to manage refinement meeting state  
+  const endRefinementMeeting = () => {
+    setShowRefinementModal(false);
+    localStorage.removeItem('active_refinement_meeting');
+  };
   const [selectedTicket, setSelectedTicket] = useState<AgileTicket | null>(null);
   const [refinementMeetings, setRefinementMeetings] = useState<RefinementMeeting[]>([]);
   const [isInMeeting, setIsInMeeting] = useState(false);
@@ -587,6 +600,7 @@ export const AgileHubView: React.FC = () => {
   const startRefinementMeeting = (ticket: AgileTicket) => {
     setSelectedTicket(ticket);
     setShowRefinementModal(true);
+    localStorage.setItem('active_refinement_meeting', 'true');
   };
 
   const editTicket = (ticket: AgileTicket) => {
@@ -660,6 +674,7 @@ export const AgileHubView: React.FC = () => {
     
     setSelectedTicket(selectedStories[0]); // Use first story as primary for modal display
     setShowRefinementModal(true);
+    localStorage.setItem('active_refinement_meeting', 'true');
     setIsInMeeting(true);
     
     // We'll pass the selected stories to the refinement modal
@@ -1115,6 +1130,7 @@ export const AgileHubView: React.FC = () => {
                                   setSelectedRefinementStories(new Set(readyStories));
                                   setSelectedTicket(tickets.find(t => t.id === readyStories[0])!);
                                   setShowRefinementModal(true);
+                                  localStorage.setItem('active_refinement_meeting', 'true');
                                   setIsInMeeting(true);
                                 }
                               }}
@@ -1545,6 +1561,7 @@ export const AgileHubView: React.FC = () => {
                         onClick={() => {
                           // Start comprehensive refinement meeting with all ready stories
                           setShowRefinementModal(true);
+                          localStorage.setItem('active_refinement_meeting', 'true');
                           setIsInMeeting(true);
                         }}
                         className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2 font-medium"
@@ -1782,11 +1799,11 @@ export const AgileHubView: React.FC = () => {
               });
             });
             
-            setShowRefinementModal(false);
+            endRefinementMeeting();
             setIsInMeeting(false);
           }}
           onClose={() => {
-            setShowRefinementModal(false);
+            endRefinementMeeting();
             setIsInMeeting(false);
           }}
         />
