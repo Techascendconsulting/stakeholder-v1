@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, PhoneOff, FileText, Square, Mic, Send, Volume2, MicOff, Play, GripVertical, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
-import { playAudio, isAzureTTSAvailable } from '../../lib/azureTTS';
+import { azureTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import AIService from '../../services/aiService';
 
 // Types - Same as refinement meeting but focused on sprint planning
@@ -216,7 +216,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   };
 
   const playMessageAudio = async (text: string, speaker: SprintPlanningMember): Promise<void> => {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       if (!globalAudioEnabled) {
         console.log('🔇 Audio disabled, skipping TTS');
         resolve();
@@ -224,13 +224,30 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       }
 
       if (isAzureTTSAvailable()) {
-        console.log(`🎵 Playing audio for ${speaker.name}: "${text.substring(0, 50)}..."`);
-        playAudio(text, speaker.name)
-          .then(() => resolve())
-          .catch((error) => {
-            console.error('Error playing audio:', error);
+        try {
+          console.log(`🎵 Playing audio for ${speaker.name}: "${text.substring(0, 50)}..."`);
+          // Use a default voice (we can map speakers to specific voices later)
+          const voiceName = 'en-GB-RyanNeural'; // Default voice for sprint planning
+          const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
             resolve();
-          });
+          };
+          
+          audio.onerror = () => {
+            URL.revokeObjectURL(audioUrl);
+            console.error('Error playing audio');
+            resolve();
+          };
+          
+          await audio.play();
+        } catch (error) {
+          console.error('Error synthesizing audio:', error);
+          resolve();
+        }
       } else {
         console.warn('Azure TTS not configured. Please add VITE_AZURE_TTS_KEY to your environment variables.');
         // Visual feedback when audio is not available
