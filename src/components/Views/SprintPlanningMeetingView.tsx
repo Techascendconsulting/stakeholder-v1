@@ -105,9 +105,45 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
   const [meetingStartTime, setMeetingStartTime] = useState(0);
   
-  // Sprint planning specific state - Jira style
-  const [backlogStories, setBacklogStories] = useState<string[]>(stories.map(s => s.id));
-  const [sprintStories, setSprintStories] = useState<string[]>([]);
+  // Sprint planning specific state - Jira style with persistence
+  const [backlogStories, setBacklogStories] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedBacklog = localStorage.getItem('sprint_planning_backlog');
+      if (savedBacklog) {
+        try {
+          const parsed = JSON.parse(savedBacklog);
+          // Filter to only include stories that still exist
+          const validStories = parsed.filter((id: string) => stories.some(s => s.id === id));
+          // Add any new stories that weren't in the saved state
+          const allStoryIds = stories.map(s => s.id);
+          const savedSprint = localStorage.getItem('sprint_planning_sprint');
+          const sprintIds = savedSprint ? JSON.parse(savedSprint) : [];
+          const newStories = allStoryIds.filter(id => !validStories.includes(id) && !sprintIds.includes(id));
+          return [...validStories, ...newStories];
+        } catch (error) {
+          console.error('Error loading backlog from localStorage:', error);
+        }
+      }
+    }
+    return stories.map(s => s.id);
+  });
+
+  const [sprintStories, setSprintStories] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedSprint = localStorage.getItem('sprint_planning_sprint');
+      if (savedSprint) {
+        try {
+          const parsed = JSON.parse(savedSprint);
+          // Filter to only include stories that still exist
+          return parsed.filter((id: string) => stories.some(s => s.id === id));
+        } catch (error) {
+          console.error('Error loading sprint from localStorage:', error);
+        }
+      }
+    }
+    return [];
+  });
+
   const [sprintCapacity] = useState(40); // Story points capacity
   const [currentSprintPoints, setCurrentSprintPoints] = useState(0);
   
