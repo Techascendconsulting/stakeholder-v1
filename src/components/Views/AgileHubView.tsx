@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown, Edit3, Trash2, MoreHorizontal, Paperclip, MessageCircle, Upload, Download, Send, GripVertical, Check, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown, Edit3, Trash2, MoreHorizontal, Paperclip, MessageCircle, Upload, Download, Send, GripVertical, Check, ArrowUp, ArrowDown, RotateCcw, Monitor } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
 import { RefinementMeetingView } from './RefinementMeetingView';
+import { SprintPlanningMeetingView } from './SprintPlanningMeetingView';
 
 // Types
 interface AgileTicket {
@@ -16,7 +17,7 @@ interface AgileTicket {
   description: string;
   acceptanceCriteria?: string;
   priority: 'Low' | 'Medium' | 'High';
-  status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
+  status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'In Sprint' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
   storyPoints?: number;
   createdAt: string;
   updatedAt: string;
@@ -262,6 +263,7 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
               <option value="Draft">Draft</option>
               <option value="Ready for Refinement">Ready for Refinement</option>
               <option value="Refined">Refined</option>
+              <option value="In Sprint">In Sprint</option>
               <option value="To Do">To Do</option>
               <option value="In Progress">In Progress</option>
               <option value="In Test">In Test</option>
@@ -454,10 +456,25 @@ export const AgileHubView: React.FC = () => {
     return false;
   });
 
+  // Persist sprint planning meeting state across refreshes
+  const [showSprintPlanningModal, setShowSprintPlanningModal] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const persistedMeeting = localStorage.getItem('active_sprint_planning_meeting');
+      return persistedMeeting === 'true';
+    }
+    return false;
+  });
+
   // Helper function to manage refinement meeting state  
   const endRefinementMeeting = () => {
     setShowRefinementModal(false);
     localStorage.removeItem('active_refinement_meeting');
+  };
+
+  // Helper function to manage sprint planning meeting state
+  const endSprintPlanningMeeting = () => {
+    setShowSprintPlanningModal(false);
+    localStorage.removeItem('active_sprint_planning_meeting');
   };
   const [selectedTicket, setSelectedTicket] = useState<AgileTicket | null>(null);
   const [refinementMeetings, setRefinementMeetings] = useState<RefinementMeeting[]>([]);
@@ -601,6 +618,15 @@ export const AgileHubView: React.FC = () => {
     setSelectedTicket(ticket);
     setShowRefinementModal(true);
     localStorage.setItem('active_refinement_meeting', 'true');
+  };
+
+  const startSprintPlanning = (refinedStories: AgileTicket[]) => {
+    if (refinedStories.length === 0) {
+      alert('No refined stories available for sprint planning');
+      return;
+    }
+    setShowSprintPlanningModal(true);
+    localStorage.setItem('active_sprint_planning_meeting', 'true');
   };
 
   const editTicket = (ticket: AgileTicket) => {
@@ -1140,6 +1166,7 @@ export const AgileHubView: React.FC = () => {
                         <option value="Draft">Draft</option>
                         <option value="Ready for Refinement">Ready for Refinement</option>
                         <option value="Refined">Refined</option>
+                        <option value="In Sprint">In Sprint</option>
                         <option value="To Do">To Do</option>
                         <option value="In Progress">In Progress</option>
                         <option value="In Test">In Test</option>
@@ -1375,6 +1402,7 @@ export const AgileHubView: React.FC = () => {
                                   <option value="Draft">Draft</option>
                                   <option value="Ready for Refinement">Ready for Refinement</option>
                                   <option value="Refined">Refined</option>
+                                  <option value="In Sprint">In Sprint</option>
                                   <option value="To Do">To Do</option>
                                   <option value="In Progress">In Progress</option>
                                   <option value="In Test">In Test</option>
@@ -1668,20 +1696,124 @@ export const AgileHubView: React.FC = () => {
 
             {/* Ceremonies Tab */}
             {activeTab === 'ceremonies' && (
-              <div className="text-center py-12">
-                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Agile Ceremonies</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">
-                  Sprint Planning, Daily Standups, and Retrospectives coming soon!
-                </p>
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 max-w-md mx-auto">
-                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">What's Coming</h4>
-                  <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                    <li>• Sprint Planning Simulations</li>
-                    <li>• Daily Standup Practice</li>
-                    <li>• Retrospective Facilitation</li>
-                    <li>• Sprint Review Presentations</li>
-                  </ul>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Agile Ceremonies</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Practice real Agile ceremonies with AI teammates</p>
+                </div>
+
+                {/* Sprint Planning Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                          <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Sprint Planning</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">Plan your next sprint with AI teammates</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+                        <h5 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
+                          <span className="mr-2">🧠</span>
+                          What It's For:
+                        </h5>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                          This represents the real-life Sprint Planning ceremony, where the Agile team decides which refined user stories are ready to be added to the upcoming sprint.
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          This is the first step in starting a sprint. It simulates how planning works in tools like Jira — but in a real voice-based experience.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span>Stories reviewed & planned</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span>AI-powered team discussion</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                          <span>Real-time collaboration</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="ml-6">
+                      {(() => {
+                        const refinedStories = tickets.filter(t => 
+                          currentProject && 
+                          t.projectId === currentProject.id && 
+                          t.type === 'Story' && 
+                          t.status === 'Refined'
+                        );
+                        const hasRefinedStories = refinedStories.length > 0;
+
+                        return (
+                          <div className="text-center">
+                            <div className="mb-3">
+                              <div className={`text-2xl font-bold ${hasRefinedStories ? 'text-green-600' : 'text-gray-400'}`}>
+                                {refinedStories.length}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Refined Stories</div>
+                            </div>
+                            
+                            <button
+                              onClick={() => startSprintPlanning(refinedStories)}
+                              disabled={!hasRefinedStories}
+                              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                hasRefinedStories
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                  : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                              }`}
+                            >
+                              {hasRefinedStories ? 'Start Planning' : 'No Stories Ready'}
+                            </button>
+                            
+                            {hasRefinedStories && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                Click to join AI sprint planning
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coming Soon Section */}
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span className="mr-2">🚀</span>
+                    Coming Soon
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-300">
+                      <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                      </div>
+                      <span>Daily Standup Practice</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-300">
+                      <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                        <RotateCcw className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <span>Retrospective Facilitation</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-300">
+                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                        <Monitor className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span>Sprint Review Presentations</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -1753,6 +1885,36 @@ export const AgileHubView: React.FC = () => {
           }}
           onClose={() => {
             endRefinementMeeting();
+            setIsInMeeting(false);
+          }}
+        />
+      )}
+
+      {/* Sprint Planning Meeting */}
+      {showSprintPlanningModal && (
+        <SprintPlanningMeetingView
+          stories={tickets.filter(t => 
+            currentProject && 
+            t.projectId === currentProject.id && 
+            t.type === 'Story' && 
+            t.status === 'Refined'
+          )}
+          onMeetingEnd={(results) => {
+            const { acceptedStories, rejectedStories, transcript, duration } = results;
+            
+            // Update accepted stories to 'In Sprint' status
+            acceptedStories.forEach(story => {
+              updateTicketStatus(story.id, 'In Sprint');
+            });
+            
+            // Rejected stories remain as 'Refined' for future sprints
+            console.log(`Sprint Planning completed: ${acceptedStories.length} accepted, ${rejectedStories.length} deferred`);
+            
+            endSprintPlanningMeeting();
+            setIsInMeeting(false);
+          }}
+          onClose={() => {
+            endSprintPlanningMeeting();
             setIsInMeeting(false);
           }}
         />
@@ -2048,6 +2210,7 @@ const EditTicketModal: React.FC<{
                                  <option value="Draft">Draft</option>
                  <option value="Ready for Refinement">Ready for Refinement</option>
                  <option value="Refined">Refined</option>
+                 <option value="In Sprint">In Sprint</option>
                  <option value="To Do">To Do</option>
                  <option value="In Progress">In Progress</option>
                  <option value="In Test">In Test</option>

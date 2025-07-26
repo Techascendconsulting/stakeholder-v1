@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, Edit3, Save, Trash2, Plus, GripVertical, FileText } from 'lucide-react';
+import { ArrowLeft, PhoneOff, FileText, Square, Mic, Send, Volume2, MicOff, Play, GripVertical, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useApp } from '../../contexts/AppContext';
-import { useVoice } from '../../contexts/VoiceContext';
-import { Message } from '../../types';
-import { azureTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
-import AIService from '../../services/aiService';
-import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
-import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
+import { playAudio, isAzureTTSAvailable } from '../../lib/azureTTS';
+import { AIService } from '../../lib/ai/AIService';
 
-// AgileTicket interface
+// Types - Same as refinement meeting but focused on sprint planning
 interface AgileTicket {
   id: string;
   ticketNumber: string;
@@ -26,8 +21,6 @@ interface AgileTicket {
   createdAt: string;
   updatedAt: string;
   userId: string;
-  attachments?: any[];
-  comments?: any[];
   refinementScore?: {
     clarity: number;
     completeness: number;
@@ -38,389 +31,282 @@ interface AgileTicket {
   };
 }
 
-interface RefinementMeetingViewProps {
+interface SprintPlanningMember {
+  name: string;
+  role: string;
+  avatar: string;
+  isAI: boolean;
+}
+
+interface Message {
+  id: string;
+  role: 'user' | 'ai';
+  content: string;
+  speaker: string;
+  timestamp: Date;
+}
+
+interface SprintPlanningResults {
+  transcript: Message[];
+  summary?: string;
+  acceptedStories: AgileTicket[];
+  rejectedStories: AgileTicket[];
+  duration: number;
+}
+
+interface SprintPlanningMeetingViewProps {
   stories: AgileTicket[];
-  onMeetingEnd: (results: any) => void;
+  onMeetingEnd: (results: SprintPlanningResults) => void;
   onClose: () => void;
 }
 
-// Helper functions
-const getInitials = (name: string): string => {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-};
-
-const getAvatarColor = (name: string): string => {
-  const colors = [
-    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
-    'bg-indigo-500', 'bg-yellow-500', 'bg-red-500', 'bg-teal-500'
-  ];
-  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return colors[hash % colors.length];
-};
-
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'High':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-    case 'Medium':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-    case 'Low':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+const teamMembers: SprintPlanningMember[] = [
+  {
+    name: 'Sarah Chen',
+    role: 'Scrum Master',
+    avatar: '👩‍💼',
+    isAI: true
+  },
+  {
+    name: 'Mike Rodriguez',
+    role: 'Senior Developer',
+    avatar: '👨‍💻',
+    isAI: true
+  },
+  {
+    name: 'Emily Watson',
+    role: 'QA Engineer',
+    avatar: '👩‍🔬',
+    isAI: true
+  },
+  {
+    name: 'David Kim',
+    role: 'Frontend Developer',
+    avatar: '👨‍🎨',
+    isAI: true
   }
-};
+];
 
-// Participant Card Component (like voice-only meetings)
-interface ParticipantCardProps {
-  participant: any;
-  isCurrentSpeaker: boolean;
-  isUser?: boolean;
-}
+// Initialize AI Service
+const dynamicAIService = new AIService();
 
-const ParticipantCard: React.FC<ParticipantCardProps> = ({ 
-  participant, 
-  isCurrentSpeaker, 
-  isUser = false 
-}) => {
-  const { user } = useAuth();
-  
-  return (
-    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-40">
-      {/* Animated Speaking Ring */}
-      {isCurrentSpeaker && (
-        <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
-          <div className="absolute inset-0 rounded-xl border-4 border-green-400 opacity-50 animate-ping"></div>
-        </div>
-      )}
-      
-      {/* Video/Photo Content */}
-      {isUser ? (
-        <div className="w-full h-full flex items-center justify-center relative">
-          {getUserProfilePhoto(user?.id || '') ? (
-            <img
-              src={getUserProfilePhoto(user?.id || '') || ''}
-              alt={getUserDisplayName(user?.id || '', user?.email)}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
-                {getUserDisplayName(user?.id || '', user?.email)?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
-              <div className="text-white text-sm font-medium opacity-90">
-                Business Analyst
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: getAvatarColor(participant.name).replace('bg-', '#').replace('-500', '') }}>
-          <span className="text-white text-lg font-bold">
-            {getInitials(participant.name)}
-          </span>
-        </div>
-      )}
-      
-      {/* Name overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-80 text-white px-1 py-0.5 text-xs text-center truncate">
-        {participant.name.split(' ')[0]}
-      </div>
-
-      {/* Speaking indicator */}
-      {!isUser && isCurrentSpeaker && (
-        <div className="absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
-      )}
-    </div>
-  );
-};
-
-export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
-  stories: initialStories,
+export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
+  stories,
   onMeetingEnd,
   onClose
 }) => {
   const { user } = useAuth();
-  const { globalAudioEnabled, setGlobalAudioEnabled } = useVoice();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-
-  // Meeting state (reusing voice meeting patterns)
-  const [stories, setStories] = useState<AgileTicket[]>(initialStories);
-  const [meetingStartTime] = useState<number>(Date.now());
+  const [meetingStarted, setMeetingStarted] = useState(false);
   const [transcript, setTranscript] = useState<Message[]>([]);
-  const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
-  const transcriptEndRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll transcript to bottom
-  useEffect(() => {
-    if (transcriptEndRef.current && transcriptPanelOpen) {
-      transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [transcript, transcriptPanelOpen]);
-  const [currentSpeaker, setCurrentSpeaker] = useState<any>(null);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
-  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
-  const [audioStates, setAudioStates] = useState<Record<string, string>>({});
-  
-  // Voice input state (reusing voice meeting patterns)
+  const [userInput, setUserInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [userInput, setUserInput] = useState('');
+  const [currentSpeaker, setCurrentSpeaker] = useState<SprintPlanningMember | null>(null);
+  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
+  const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
+  const [meetingStartTime, setMeetingStartTime] = useState(0);
   
-  // Meeting-specific state
-  const [meetingStarted, setMeetingStarted] = useState(false);
+  // Sprint planning specific state
+  const [kanbanColumns, setKanbanColumns] = useState({
+    reviewing: { id: 'reviewing', title: 'Under Review', stories: stories.map(s => s.id) },
+    accepted: { id: 'accepted', title: 'Accepted for Sprint', stories: [] as string[] },
+    needs_discussion: { id: 'needs_discussion', title: 'Needs Discussion', stories: [] as string[] },
+    rejected: { id: 'rejected', title: 'Not This Sprint', stories: [] as string[] }
+  });
+  
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [isEditingStory, setIsEditingStory] = useState(false);
   const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
-  
-  // Kanban columns state with drag-and-drop
-  const [kanbanColumns, setKanbanColumns] = useState({
-    'ready': {
-      id: 'ready',
-      title: 'Ready for Discussion',
-      stories: initialStories.map(s => s.id)
-    },
-    'discussing': {
-      id: 'discussing', 
-      title: 'Currently Discussing',
-      stories: []
-    },
-    'refined': {
-      id: 'refined',
-      title: 'Refined',
-      stories: []
-    }
-  });
 
-  // AI Refinement Service
-  const aiService = AgileRefinementService.getInstance();
-  const teamMembers = aiService.getTeamMembers();
+  // Refs for audio recording
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll messages
+  // Auto-scroll transcript
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (transcriptEndRef.current) {
+      transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [transcript]);
 
-  // Voice Meeting Audio Control (reused from VoiceOnlyMeetingView)
-  const playMessageAudio = async (messageId: string, text: string, teamMember: AgileTeamMemberContext, autoPlay: boolean = true): Promise<void> => {
-    console.log('Audio playback attempt:', { messageId, teamMember: teamMember.name, globalAudioEnabled, autoPlay });
-    
-    if (!globalAudioEnabled) {
-      console.log('Audio disabled globally');
-      return Promise.resolve();
-    }
-
-    try {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        setCurrentAudio(null);
-      }
-      
-      if (!autoPlay) {
-        return Promise.resolve();
-      }
-
-      setCurrentSpeaker(teamMember);
-      setIsAudioPlaying(true);
-
-      const voiceName = teamMember.voiceId;
-      console.log('🎵 Using voice:', voiceName, 'for team member:', teamMember.name);
-      console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
-      
-      if (isAzureTTSAvailable() && voiceName) {
-        console.log('✅ Using Azure TTS for audio synthesis');
-        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        
-        setCurrentAudio(audio);
-        setPlayingMessageId(messageId);
-        setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
-        
-        return new Promise((resolve) => {
-          audio.onended = () => {
-            URL.revokeObjectURL(audioUrl);
-            setCurrentAudio(null);
-            setPlayingMessageId(null);
-            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaker(null);
-            setIsAudioPlaying(false);
-            console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio naturally ended`);
-            resolve();
-          };
-          
-          audio.onerror = (error) => {
-            console.error('Audio element error:', error);
-            URL.revokeObjectURL(audioUrl);
-            setCurrentAudio(null);
-            setPlayingMessageId(null);
-            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaker(null);
-            setIsAudioPlaying(false);
-            resolve();
-          };
-          
-          audio.play().then(() => {
-            console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio started playing`);
-          }).catch((playError) => {
-            console.error('Audio play error:', playError);
-            URL.revokeObjectURL(audioUrl);
-            setCurrentAudio(null);
-            setPlayingMessageId(null);
-            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaker(null);
-            setIsAudioPlaying(false);
-            resolve();
-          });
-        });
-      } else {
-        console.log('⚠️ Azure TTS not available, skipping audio playback');
-        setCurrentSpeaker(teamMember);
-        setIsAudioPlaying(false);
-        // Still show visual feedback that someone is "speaking"
-        setTimeout(() => {
-          setCurrentSpeaker(null);
-          console.log(`📝 ${teamMember.name} finished speaking (text-only mode)`);
-        }, 2000); // Show speaker for 2 seconds
-        return Promise.resolve();
-      }
-    } catch (error) {
-      console.error('Error in playMessageAudio:', error);
-      setCurrentSpeaker(null);
-      setIsAudioPlaying(false);
-      return Promise.resolve();
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High': return 'bg-red-100 text-red-800';
+      case 'Medium': return 'bg-yellow-100 text-yellow-800';
+      case 'Low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // Stop current audio (interrupt AI speakers)
-  const stopCurrentAudio = () => {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-      setCurrentAudio(null);
-      setCurrentSpeaker(null);
-      setIsAudioPlaying(false);
-      setPlayingMessageId(null);
-      console.log('🛑 Audio stopped by user');
-    }
+  const handleDragStart = (e: React.DragEvent, storyId: string) => {
+    e.dataTransfer.setData('text/plain', storyId);
   };
 
-  // Add AI message with dynamic response
-  const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
-    console.log('📝 Adding AI message from:', teamMember.name);
-    console.log('🔊 Global audio enabled:', globalAudioEnabled);
-    
-    const message: Message = {
-      id: `msg_${Date.now()}_${Math.random()}`,
-      speaker: teamMember.name,
-      content: text,
-      timestamp: new Date().toISOString(),
-      role: teamMember.role,
-      stakeholderId: teamMember.name.toLowerCase()
-    };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
 
-    setTranscript(prev => {
-      console.log('📋 Adding message to transcript. Current length:', prev.length);
-      return [...prev, message];
+  const handleDrop = (e: React.DragEvent, columnId: string) => {
+    e.preventDefault();
+    const storyId = e.dataTransfer.getData('text/plain');
+    
+    setKanbanColumns(prev => {
+      const newColumns = { ...prev };
+      
+      // Remove from all columns
+      Object.keys(newColumns).forEach(key => {
+        newColumns[key as keyof typeof newColumns].stories = 
+          newColumns[key as keyof typeof newColumns].stories.filter(id => id !== storyId);
+      });
+      
+      // Add to target column
+      newColumns[columnId as keyof typeof newColumns].stories.push(storyId);
+      
+      return newColumns;
     });
-    
-    // Play audio using voice meeting logic
-    console.log('🎵 Attempting to play audio for:', teamMember.name);
-    await playMessageAudio(message.id, text, teamMember, true);
   };
 
-  // Handle meeting start
+  const openStoryEditor = (story: AgileTicket) => {
+    setEditingStory(story);
+    setIsEditingStory(true);
+  };
+
+  const saveStoryChanges = () => {
+    if (editingStory) {
+      // In a real app, this would save to the database
+      console.log('Saving story changes:', editingStory);
+      setIsEditingStory(false);
+      setEditingStory(null);
+    }
+  };
+
   const startMeeting = async () => {
     setMeetingStarted(true);
+    setMeetingStartTime(Date.now());
+    setGlobalAudioEnabled(true); // Enable audio when meeting starts
     
-    // Ensure audio is enabled for the meeting
-    if (!globalAudioEnabled) {
-      setGlobalAudioEnabled(true);
-    }
-    
-    // Wait a bit for audio context to initialize, then start greeting
+    // Scrum Master greeting with delay for audio context
     setTimeout(async () => {
-      console.log('🎬 Starting Scrum Master greeting...');
-      await addAIMessage(
-        teamMembers[0], // Sarah (Scrum Master)
-        `Hello everyone! I'm Sarah, your Scrum Master for today's refinement session. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review. Let's start by having our Business Analyst present the first story.`
-      );
-    }, 1500); // Increased delay to ensure audio context is ready
+      const scrumMaster = teamMembers.find(m => m.role === 'Scrum Master') || teamMembers[0];
+      const greeting = `Welcome to our Sprint Planning meeting! I'm ${scrumMaster.name}, your Scrum Master. Today we'll review ${stories.length} refined stories and decide which ones to include in our upcoming sprint. Let's start by discussing the first story. What questions do you have?`;
+      await addAIMessage(scrumMaster, greeting);
+    }, 1500); // Increased delay for audio context initialization
   };
 
-  // Generate dynamic AI response (using voice-only meeting pattern)
-  const generateAIResponse = async (userMessage: string) => {
-    try {
-      console.log('🤖 Generating dynamic AI response for:', userMessage);
-      
-      // Use the same dynamic AI service as voice-only meeting
-      const dynamicAIService = AIService.getInstance();
-      
-      // Convert team members to stakeholder format for AIService
-      const availableTeamMembers = teamMembers.map(member => ({
-        name: member.name,
-        role: member.role,
-        department: 'Engineering',
-        priorities: [`${member.role} responsibilities`, 'Story refinement', 'Quality delivery'],
-        personality: member.personality || 'Professional and collaborative',
-        expertise: member.expertise || [member.role.toLowerCase(), 'agile', 'software development']
-      }));
+  const addAIMessage = async (speaker: SprintPlanningMember, content: string) => {
+    const message: Message = {
+      id: Date.now().toString(),
+      role: 'ai',
+      content,
+      speaker: speaker.name,
+      timestamp: new Date()
+    };
 
-      // Detect who should respond (like voice-only meeting)
-      const mentionResult = await dynamicAIService.detectStakeholderMentions(userMessage, availableTeamMembers);
-      
-      let responder;
-      if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-        // Someone was specifically mentioned
-        responder = mentionResult.mentionedStakeholders[0];
-        console.log('🎯 Specific team member mentioned:', responder.name);
-      } else {
-        // Smart context-based selection
-        const currentStory = stories.find(s => kanbanColumns.discussing.stories.includes(s.id)) || stories[0];
-        
-        // Context-based selection logic
-        if (userMessage.toLowerCase().includes('test') || userMessage.toLowerCase().includes('quality')) {
-          responder = availableTeamMembers.find(m => m.role === 'Tester') || availableTeamMembers[2];
-        } else if (userMessage.toLowerCase().includes('technical') || userMessage.toLowerCase().includes('develop')) {
-          responder = availableTeamMembers.find(m => m.role === 'Developer') || availableTeamMembers[1];
-        } else if (userMessage.toLowerCase().includes('process') || userMessage.toLowerCase().includes('sprint')) {
-          responder = availableTeamMembers.find(m => m.role === 'Scrum Master') || availableTeamMembers[0];
-        } else {
-          // Round-robin or random selection
-          const randomIndex = Math.floor(Math.random() * availableTeamMembers.length);
-          responder = availableTeamMembers[randomIndex];
-        }
-        console.log('🎲 Context-based selection:', responder.name, 'for message about:', userMessage.substring(0, 50));
+    setTranscript(prev => [...prev, message]);
+    setCurrentSpeaker(speaker);
+
+    // Play audio if available
+    try {
+      await playMessageAudio(content, speaker);
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+
+    setCurrentSpeaker(null);
+  };
+
+  const playMessageAudio = async (text: string, speaker: SprintPlanningMember): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!globalAudioEnabled) {
+        console.log('🔇 Audio disabled, skipping TTS');
+        resolve();
+        return;
       }
 
+      if (isAzureTTSAvailable()) {
+        console.log(`🎵 Playing audio for ${speaker.name}: "${text.substring(0, 50)}..."`);
+        playAudio(text, speaker.name)
+          .then(() => resolve())
+          .catch((error) => {
+            console.error('Error playing audio:', error);
+            resolve();
+          });
+      } else {
+        console.warn('Azure TTS not configured. Please add VITE_AZURE_TTS_KEY to your environment variables.');
+        // Visual feedback when audio is not available
+        setTimeout(() => resolve(), 2000);
+      }
+    });
+  };
+
+  const handleSendMessage = async (messageText?: string) => {
+    const text = messageText || userInput.trim();
+    if (!text || !meetingStarted) return;
+
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: text,
+      speaker: user?.full_name || 'You',
+      timestamp: new Date()
+    };
+
+    setTranscript(prev => [...prev, userMessage]);
+    setUserInput('');
+
+    // Generate AI response using dynamic AI service
+    setTimeout(() => generateAIResponse(text), 1000);
+  };
+
+  const generateAIResponse = async (userMessage: string) => {
+    try {
+      // Convert team members to stakeholder format for AIService
+      const availableTeamMembers = teamMembers.map(member => ({
+        id: member.name.toLowerCase().replace(/\s+/g, '_'),
+        name: member.name,
+        role: member.role,
+        department: 'Development',
+        bio: `${member.role} participating in sprint planning`,
+        photo: '',
+        personality: member.role === 'Scrum Master' ? 'facilitating' : 'collaborative',
+        priorities: member.role === 'Scrum Master' ? ['facilitation', 'process'] : ['development', 'quality'],
+        voice: member.name,
+        expertise: [member.role.toLowerCase()]
+      }));
+
+      // Use AIService for intelligent speaker selection
+      const responder = await AIService.detectStakeholderMentions(
+        userMessage,
+        availableTeamMembers,
+        transcript.map(t => ({ speaker: t.speaker, content: t.content }))
+      );
+
       if (responder) {
-        // Create conversation context (like voice-only meeting)
+        // Create conversation context for sprint planning
         const conversationContext = {
           project: {
-            name: 'Story Refinement Session',
-            description: 'Agile story refinement and planning session',
-            type: 'Refinement Meeting'
+            name: 'Sprint Planning Session',
+            description: 'Agile sprint planning and story acceptance session',
+            type: 'Sprint Planning Meeting'
           },
           conversationHistory: transcript,
           stakeholders: availableTeamMembers,
           currentContext: {
-            currentStory: stories.find(s => kanbanColumns.discussing.stories.includes(s.id)),
-            storiesInDiscussion: kanbanColumns.discussing.stories,
+            storiesUnderReview: kanbanColumns.reviewing.stories,
+            acceptedStories: kanbanColumns.accepted.stories,
             totalStories: stories.length,
-            refinedStories: kanbanColumns.refined.stories.length
+            sprintGoal: 'Plan and commit to stories for the upcoming sprint'
           }
         };
 
-        // Generate dynamic response using AIService (like voice-only meeting)
+        // Generate dynamic response using AIService
         const response = await dynamicAIService.generateStakeholderResponse(
           userMessage,
           responder,
           conversationContext,
-          'refinement_discussion'
+          'sprint_planning_discussion'
         );
         
         // Find the corresponding team member for audio
@@ -431,11 +317,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       console.error('Error generating AI response:', error);
       // Fallback to simple response
       const fallbackMember = teamMembers[Math.floor(Math.random() * teamMembers.length)];
-      await addAIMessage(fallbackMember, "I understand. Let's continue with the story refinement.");
+      await addAIMessage(fallbackMember, "I understand. Let's continue planning our sprint with these stories.");
     }
   };
 
-  // Voice Input (reused from voice meeting)
+  // Voice Input (similar to refinement meeting)
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -482,142 +368,95 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       
       if (transcribedText && transcribedText.trim()) {
         console.log('✅ Setting transcribed text to input field:', transcribedText);
-        // First populate the input field (like voice-only meeting)
+        // First populate the input field
         setUserInput(transcribedText);
         
         // Wait a moment for user to see the transcribed text
         setTimeout(async () => {
           console.log('📤 Auto-sending transcribed message');
           await handleSendMessage(transcribedText);
-        }, 1000); // Increased to 1 second so user can see the text
+        }, 1000);
       } else {
         console.warn('❌ No transcription received or transcription was empty');
-        setUserInput(''); // Clear input if transcription failed
+        setUserInput('');
       }
     } catch (error) {
       console.error('❌ Error transcribing audio:', error);
-      // Show user-friendly error
-      setUserInput(''); // Clear input on error
-      if (error.message?.includes('VITE_OPENAI_API_KEY')) {
-        console.error('💡 Hint: Add VITE_OPENAI_API_KEY to .env file for voice transcription');
+      setUserInput('');
+      if (error instanceof Error && error.message.includes('API key')) {
+        console.warn('💡 Hint: Make sure VITE_OPENAI_API_KEY is set in your .env file');
       }
     } finally {
       setIsTranscribing(false);
     }
   };
 
-  // Send message (voice or text)
-  const handleSendMessage = async (messageText?: string) => {
-    const text = messageText || userInput;
-    if (!text.trim()) return;
-
-    // Stop any current AI audio
-    stopCurrentAudio();
-
-    // Add user message
-    const userMessage: Message = {
-      id: `msg_${Date.now()}_${Math.random()}`,
-      speaker: 'user',
-      content: text,
-      timestamp: new Date().toISOString(),
-      role: 'Business Analyst',
-      stakeholderId: 'user'
-    };
-
-    setTranscript(prev => [...prev, userMessage]);
-    setUserInput('');
-
-    // Generate AI response
-    setTimeout(() => {
-      generateAIResponse(text);
-    }, 1000);
-  };
-
-  // Story card editing (Jira-style)
-  const openStoryEditor = (story: AgileTicket) => {
-    setEditingStory({ ...story });
-    setIsEditingStory(true);
-  };
-
-  const saveStoryChanges = () => {
-    if (!editingStory) return;
-    
-    setStories(prev => prev.map(s => 
-      s.id === editingStory.id ? editingStory : s
-    ));
-    setIsEditingStory(false);
-    setEditingStory(null);
-  };
-
-  // Drag and drop handlers
-  const handleDragStart = (e: React.DragEvent, storyId: string) => {
-    e.dataTransfer.setData('text/plain', storyId);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
-    e.preventDefault();
-    const storyId = e.dataTransfer.getData('text/plain');
-    
-    setKanbanColumns(prev => {
-      const newColumns = { ...prev };
-      
-      // Remove from all columns
-      Object.keys(newColumns).forEach(columnId => {
-        newColumns[columnId].stories = newColumns[columnId].stories.filter(id => id !== storyId);
-      });
-      
-      // Add to target column
-      newColumns[targetColumnId].stories.push(storyId);
-      
-      return newColumns;
-    });
-
-    // Update story status - Auto change to 'Refined' when moved to refined column
-    const statusMap = {
-      'ready': 'Ready for Refinement',
-      'discussing': 'Ready for Refinement', // Still in refinement
-      'refined': 'Refined' // Auto change to Refined status
-    };
-    
-    setStories(prev => prev.map(s => 
-      s.id === storyId 
-        ? { ...s, status: statusMap[targetColumnId] as any }
-        : s
-    ));
-  };
-
-  // End meeting
   const handleEndMeeting = async () => {
-    // Stop any current audio first
-    stopCurrentAudio();
-    
+    if (!meetingStarted) return;
+
     try {
-      // Generate meeting summary
-      const summary = await aiService.generateRefinementSummary(transcript, stories);
-      
-      onMeetingEnd({
+      // Calculate accepted and rejected stories
+      const acceptedStories = stories.filter(s => kanbanColumns.accepted.stories.includes(s.id));
+      const rejectedStories = stories.filter(s => kanbanColumns.rejected.stories.includes(s.id));
+
+      const results: SprintPlanningResults = {
         transcript,
-        summary,
-        refinedStories: stories.filter(s => kanbanColumns.refined.stories.includes(s.id)),
+        acceptedStories,
+        rejectedStories,
         duration: Date.now() - meetingStartTime
-      });
+      };
+
+      onMeetingEnd(results);
     } catch (error) {
-      console.error('Error ending meeting:', error);
+      console.error('Error ending sprint planning meeting:', error);
       onMeetingEnd({
         transcript,
-        refinedStories: stories.filter(s => kanbanColumns.refined.stories.includes(s.id)),
+        acceptedStories: stories.filter(s => kanbanColumns.accepted.stories.includes(s.id)),
+        rejectedStories: stories.filter(s => kanbanColumns.rejected.stories.includes(s.id)),
         duration: Date.now() - meetingStartTime
       });
     }
   };
 
+  // Participant Card Component
+  const ParticipantCard: React.FC<{
+    participant: { name: string };
+    isCurrentSpeaker: boolean;
+    isUser: boolean;
+  }> = ({ participant, isCurrentSpeaker, isUser }) => (
+    <div className={`relative bg-gray-800 rounded-lg p-4 border-2 transition-all duration-300 ${
+      isCurrentSpeaker ? 'border-green-500 ring-2 ring-green-500/30' : 'border-gray-600'
+    }`}>
+      <div className="flex flex-col items-center space-y-2">
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl ${
+          isCurrentSpeaker ? 'bg-green-600' : 'bg-gray-700'
+        }`}>
+          {isUser ? '👤' : teamMembers.find(m => m.name === participant.name)?.avatar || '🤖'}
+        </div>
+        
+        <div className="text-center">
+          <div className="text-white font-medium text-sm">{participant.name}</div>
+          {!isUser && (
+            <div className="text-gray-400 text-xs">
+              {teamMembers.find(m => m.name === participant.name)?.role}
+            </div>
+          )}
+        </div>
+        
+        {isCurrentSpeaker && (
+          <div className="absolute -top-1 -right-1">
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+              <Volume2 className="w-3 h-3 text-white" />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-gray-900 text-white flex flex-col z-50 overflow-hidden">
-      {/* Header with Navigation - Dark mode like voice meetings */}
+      {/* Header */}
       <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
@@ -632,12 +471,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             {meetingStarted ? (
               <>
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="font-medium">Refinement Meeting - Live</span>
+                <span className="font-medium">Sprint Planning - Live</span>
               </>
             ) : (
               <>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="font-medium">Refinement Meeting - Ready to Start</span>
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="font-medium">Sprint Planning - Ready to Start</span>
               </>
             )}
           </div>
@@ -667,23 +506,23 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                Story Refinement Board
+                Sprint Planning Board
               </h2>
               
-              {/* Start Meeting Button - Visible with kanban board */}
+              {/* Start Meeting Button */}
               {!meetingStarted && (
                 <button
                   onClick={startMeeting}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
                 >
                   <Play size={20} />
-                  <span>Start Meeting</span>
+                  <span>Start Planning</span>
                 </button>
               )}
             </div>
             
             {/* Kanban Columns */}
-            <div className="flex-1 grid grid-cols-3 gap-4">
+            <div className="flex-1 grid grid-cols-4 gap-4">
               {Object.values(kanbanColumns).map(column => (
                 <div 
                   key={column.id} 
@@ -769,7 +608,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                   </div>
                 </div>
               ))}
-                        </div>
+            </div>
           </div>
         </div>
 
@@ -777,11 +616,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         <div className="w-96 bg-gray-900 border-l border-gray-700 flex flex-col overflow-hidden">
           {/* Participants Header */}
           <div className="p-4 border-b border-gray-700">
-            <h3 className="font-medium text-white mb-2">Meeting Participants</h3>
+            <h3 className="font-medium text-white mb-2">Sprint Planning Team</h3>
             <div className="text-sm text-gray-400">{teamMembers.length + 1} people in this meeting</div>
           </div>
 
-                    {/* Participant Video Grid (3 grids: 2+2+1 Layout) - Now Bigger */}
+          {/* Participant Video Grid */}
           <div className="flex-1 p-6 space-y-6">
             {/* First Grid - 2 participants */}
             <div className="grid grid-cols-2 gap-4">
@@ -834,7 +673,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         </div>
       </div>
 
-      {/* Meeting Controls - Voice-Only Style */}
+      {/* Meeting Controls */}
       {meetingStarted && (
         <div className="px-6 py-3 bg-gray-900 border-t border-gray-700">
           <div className="flex items-center space-x-2">
@@ -893,13 +732,13 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         </div>
       )}
 
-      {/* Message Input Area - Matches Kanban Board Width */}
+      {/* Message Input Area */}
       <div className="flex relative">
-        {/* Left Side - Input Area (matches kanban board width) */}
+        {/* Left Side - Input Area */}
         <div className="flex-1 px-6 py-4 bg-gray-900 border-t border-gray-700 relative">
           {/* Dynamic Feedback Display */}
           {meetingStarted && (isRecording || isTranscribing) && (
-            <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+            <div className="mb-3 bg-gradient-to-r from-blue-900/80 to-green-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-blue-500/30 shadow-lg">
               <span className="text-white text-sm font-medium">
                 {isRecording ? '🎤 Recording your message... Release to send' : 
                  isTranscribing ? '🔄 Processing and transcribing your message...' : ''}
@@ -918,7 +757,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400 disabled:opacity-50"
             />
             
-            {/* Speak Button - Voice-Only Style */}
+            {/* Speak Button */}
             <button
               onMouseDown={startRecording}
               onMouseUp={stopRecording}
@@ -945,11 +784,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             </button>
           </div>
 
-          {/* Sliding Transcript Panel - Voice-Only Style */}
+          {/* Sliding Transcript Panel */}
           {meetingStarted && (
-            <>
-
-            {/* Transcript Panel - slides up from text area, matches input width */}
             <div 
               className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
                 transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
@@ -958,8 +794,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               {/* Transcript Header */}
               <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600">
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                  <h3 className="text-white font-medium text-sm">Transcript</h3>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                  <h3 className="text-white font-medium text-sm">Sprint Planning Transcript</h3>
                   <span className="text-gray-400 text-xs">({transcript.length})</span>
                 </div>
                 <div className="flex items-center space-x-1">
@@ -1001,7 +837,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                             message.role === 'user' 
                               ? 'bg-blue-600 text-white' 
-                              : 'bg-purple-600 text-white'
+                              : 'bg-green-600 text-white'
                           }`}>
                             {message.role === 'user' 
                               ? 'U' 
@@ -1027,20 +863,19 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                 )}
               </div>
             </div>
-          </>
-        )}
+          )}
         </div>
         
-        {/* Right Side Spacer - Matches Participants Panel Width */}
+        {/* Right Side Spacer */}
         <div className="w-96 bg-gray-900 border-t border-gray-700"></div>
       </div>
 
-      {/* Jira-Style Story Editor Modal */}
+      {/* Story Editor Modal (same as refinement meeting) */}
       {isEditingStory && editingStory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Edit Story</h2>
+              <h2 className="text-xl font-semibold">Story Details</h2>
               <button
                 onClick={() => setIsEditingStory(false)}
                 className="p-2 hover:bg-gray-100 rounded"
@@ -1054,33 +889,23 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               <div className="col-span-2 space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={editingStory.title}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, title: e.target.value } : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    {editingStory.title}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    value={editingStory.description}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, description: e.target.value } : null)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 min-h-[100px]">
+                    {editingStory.description}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Acceptance Criteria</label>
-                  <textarea
-                    value={editingStory.acceptanceCriteria || ''}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, acceptanceCriteria: e.target.value } : null)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Given... When... Then..."
-                  />
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 min-h-[100px]">
+                    {editingStory.acceptanceCriteria || 'Not specified'}
+                  </div>
                 </div>
               </div>
 
@@ -1088,71 +913,51 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Ticket Number</label>
-                  <input
-                    type="text"
-                    value={editingStory.ticketNumber}
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Type</label>
-                  <select
-                    value={editingStory.type}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, type: e.target.value as any } : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Story">Story</option>
-                    <option value="Task">Task</option>
-                    <option value="Bug">Bug</option>
-                    <option value="Spike">Spike</option>
-                  </select>
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    {editingStory.ticketNumber}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Priority</label>
-                  <select
-                    value={editingStory.priority}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, priority: e.target.value as any } : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                  </select>
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    {editingStory.priority}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Story Points</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={editingStory.storyPoints || ''}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, storyPoints: e.target.value ? parseInt(e.target.value) : undefined } : null)}
-                    placeholder="Enter story points"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                    {editingStory.storyPoints || 'Not estimated'}
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
-                  <select
-                    value={editingStory.status}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, status: e.target.value as any } : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Draft">Draft</option>
-                    <option value="Ready for Refinement">Ready for Refinement</option>
-                    <option value="Refined">Refined</option>
-                    <option value="In Sprint">In Sprint</option>
-                    <option value="To Do">To Do</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="In Test">In Test</option>
-                    <option value="Done">Done</option>
-                  </select>
-                </div>
+                {editingStory.refinementScore && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Refinement Score</label>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="text-center mb-2">
+                        <span className="text-2xl font-bold text-green-600">
+                          {editingStory.refinementScore.overall}/10
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="text-center">
+                          <div className="text-gray-600">Clarity</div>
+                          <div className="font-medium">{editingStory.refinementScore.clarity}/10</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-gray-600">Complete</div>
+                          <div className="font-medium">{editingStory.refinementScore.completeness}/10</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-gray-600">Testable</div>
+                          <div className="font-medium">{editingStory.refinementScore.testability}/10</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1161,13 +966,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                 onClick={() => setIsEditingStory(false)}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800"
               >
-                Cancel
-              </button>
-              <button
-                onClick={saveStoryChanges}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Save Changes
+                Close
               </button>
             </div>
           </div>
