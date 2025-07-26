@@ -1530,7 +1530,7 @@ export const AgileHubView: React.FC = () => {
                     </div>
 
                     {/* Stories List - Clickable to Edit */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                       {storiesReadyForRefinement.map((story) => (
                         <div 
                           key={story.id} 
@@ -1538,40 +1538,43 @@ export const AgileHubView: React.FC = () => {
                             setSelectedTicket(story);
                             setShowEditModal(true);
                           }}
-                          className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer"
+                          className="bg-white dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 p-2 hover:shadow-sm hover:border-gray-400 transition-all cursor-pointer"
                         >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center space-x-2">
-                              <BookOpen className="w-5 h-5 text-blue-600" />
-                              <span className="text-sm font-medium text-blue-600">Story</span>
-                              <span className="text-sm text-gray-500">#{story.ticketNumber}</span>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center space-x-1">
+                              <BookOpen className="w-3 h-3 text-blue-600" />
+                              <span className="text-xs font-medium text-blue-600">{story.ticketNumber}</span>
                             </div>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                              {story.priority}
-                            </span>
+                            <div className="flex items-center space-x-1">
+                              {story.storyPoints && (
+                                <span className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs font-medium">
+                                  {story.storyPoints}
+                                </span>
+                              )}
+                              <span className={`px-1 py-0.5 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                                {story.priority.charAt(0)}
+                              </span>
+                            </div>
                           </div>
                           
-                          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{story.title}</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{story.description}</p>
+                          <h4 className="font-medium text-gray-900 dark:text-white text-xs line-clamp-2 leading-tight mb-1">
+                            {story.title}
+                          </h4>
                           
-                          {story.acceptanceCriteria && (
-                            <div className="mb-4">
-                              <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                                Acceptance Criteria
-                              </h5>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{story.acceptanceCriteria}</p>
-                            </div>
+                          {story.description && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 leading-tight mb-1">
+                              {story.description.length > 40 
+                                ? `${story.description.substring(0, 40)}...` 
+                                : story.description
+                              }
+                            </p>
                           )}
                           
-                          {/* Status indicator and edit hint */}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-orange-600 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded-full">
-                              Ready for Refinement
+                            <span className="text-xs text-orange-600 bg-orange-100 dark:bg-orange-900/20 px-1.5 py-0.5 rounded">
+                              Ready
                             </span>
-                            <span className="text-xs text-gray-400 hover:text-gray-600 flex items-center space-x-1">
-                              <Edit3 size={12} />
-                              <span>Click to edit</span>
-                            </span>
+                            <Edit3 className="w-3 h-3 text-gray-400 hover:text-gray-600" />
                           </div>
                         </div>
                       ))}
