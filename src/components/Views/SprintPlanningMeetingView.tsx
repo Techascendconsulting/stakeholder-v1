@@ -779,8 +779,8 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
       {/* Main Meeting Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Side - Modern Jira-style Sprint Planning */}
-        <div className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 overflow-hidden border-r border-slate-200">
-          <div className="h-full flex flex-col">
+        <div className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 overflow-y-auto border-r border-slate-200">
+          <div className="min-h-full flex flex-col">
             {/* Simplified Header */}
             <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg">
               <div className="px-6 py-4">
@@ -806,7 +806,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
             <div className="flex-1 flex flex-col bg-white/50 backdrop-blur-sm">
               {/* Sprint Section - Top */}
               <div className="border-b border-slate-200 flex flex-col shadow-sm">
-                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-b border-emerald-200/50 px-6 py-3 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-b border-emerald-200/50 px-4 py-2 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow-lg text-sm">
                       S1
@@ -843,7 +843,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                 </div>
                 
                 <div 
-                  className="max-h-[40vh] overflow-y-auto bg-white/80 backdrop-blur-sm"
+                  className="h-[30vh] overflow-y-auto bg-white/80 backdrop-blur-sm"
                   onDragOver={!sprintStarted ? handleDragOver : undefined}
                   onDrop={!sprintStarted ? (e) => handleDrop(e, 'sprint') : undefined}
                 >
@@ -861,7 +861,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                       <div className="grid grid-cols-4 gap-4 h-full">
                         {/* To Do Column */}
                         <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-                          <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 rounded-t-lg">
+                          <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 rounded-t-lg">
                             <div className="flex items-center justify-between">
                               <h4 className="font-semibold text-slate-800 flex items-center">
                                 <span className="mr-2">📋</span>
@@ -872,7 +872,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                               </span>
                             </div>
                           </div>
-                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
+                          <div className="p-2 space-y-2 max-h-[25vh] overflow-y-auto">
                             {sprintStories.map(storyId => {
                               const story = stories.find(s => s.id === storyId);
                               if (!story) return null;
@@ -880,22 +880,22 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                               return (
                                 <div
                                   key={storyId}
-                                  className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                  className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                                   onClick={() => openStoryEditor(story)}
                                 >
-                                  <div className="flex items-start justify-between mb-2">
-                                    <span className="font-medium text-blue-600 text-sm">{story.ticketNumber}</span>
-                                    <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(story.priority)}`}>
+                                  <div className="flex items-start justify-between mb-1">
+                                    <span className="font-medium text-blue-600 text-xs">{story.ticketNumber}</span>
+                                    <span className={`text-xs px-1 py-0.5 rounded-full ${getPriorityColor(story.priority)}`}>
                                       {story.priority}
                                     </span>
                                   </div>
-                                  <h5 className="font-medium text-slate-900 text-sm mb-2 line-clamp-2">{story.title}</h5>
+                                  <h5 className="font-medium text-slate-900 text-sm mb-1 line-clamp-2">{story.title}</h5>
                                   {story.description && (
-                                    <p className="text-xs text-slate-600 line-clamp-2 mb-2">{story.description}</p>
+                                    <p className="text-xs text-slate-600 line-clamp-1 mb-1">{story.description}</p>
                                   )}
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-1">
-                                      <span className="text-xs text-slate-500">Points:</span>
+                                      <span className="text-xs text-slate-500">SP:</span>
                                       <span className="text-xs font-medium text-slate-700">{story.storyPoints || '?'}</span>
                                     </div>
                                     {story.refinementScore && (
@@ -912,7 +912,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
 
                         {/* In Progress Column */}
                         <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-                          <div className="bg-orange-50 px-4 py-3 border-b border-orange-200 rounded-t-lg">
+                          <div className="bg-orange-50 px-3 py-2 border-b border-orange-200 rounded-t-lg">
                             <div className="flex items-center justify-between">
                               <h4 className="font-semibold text-orange-800 flex items-center">
                                 <span className="mr-2">⚡</span>
@@ -923,11 +923,11 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                               </span>
                             </div>
                           </div>
-                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
-                            <div className="flex items-center justify-center h-32 text-slate-400">
+                          <div className="p-2 space-y-2 max-h-[25vh] overflow-y-auto">
+                            <div className="flex items-center justify-center h-20 text-slate-400">
                               <div className="text-center">
-                                <div className="text-2xl mb-2">⚡</div>
-                                <p className="text-sm">No stories in progress</p>
+                                <div className="text-xl mb-1">⚡</div>
+                                <p className="text-xs">No stories in progress</p>
                               </div>
                             </div>
                           </div>
@@ -935,7 +935,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
 
                         {/* In Test Column */}
                         <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-                          <div className="bg-yellow-50 px-4 py-3 border-b border-yellow-200 rounded-t-lg">
+                          <div className="bg-yellow-50 px-3 py-2 border-b border-yellow-200 rounded-t-lg">
                             <div className="flex items-center justify-between">
                               <h4 className="font-semibold text-yellow-800 flex items-center">
                                 <span className="mr-2">🧪</span>
@@ -946,11 +946,11 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                               </span>
                             </div>
                           </div>
-                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
-                            <div className="flex items-center justify-center h-32 text-slate-400">
+                          <div className="p-2 space-y-2 max-h-[25vh] overflow-y-auto">
+                            <div className="flex items-center justify-center h-20 text-slate-400">
                               <div className="text-center">
-                                <div className="text-2xl mb-2">🧪</div>
-                                <p className="text-sm">No stories in test</p>
+                                <div className="text-xl mb-1">🧪</div>
+                                <p className="text-xs">No stories in test</p>
                               </div>
                             </div>
                           </div>
@@ -958,7 +958,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
 
                         {/* Done Column */}
                         <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-                          <div className="bg-green-50 px-4 py-3 border-b border-green-200 rounded-t-lg">
+                          <div className="bg-green-50 px-3 py-2 border-b border-green-200 rounded-t-lg">
                             <div className="flex items-center justify-between">
                               <h4 className="font-semibold text-green-800 flex items-center">
                                 <span className="mr-2">✅</span>
@@ -969,11 +969,11 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                               </span>
                             </div>
                           </div>
-                          <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
-                            <div className="flex items-center justify-center h-32 text-slate-400">
+                          <div className="p-2 space-y-2 max-h-[25vh] overflow-y-auto">
+                            <div className="flex items-center justify-center h-20 text-slate-400">
                               <div className="text-center">
-                                <div className="text-2xl mb-2">🎉</div>
-                                <p className="text-sm">No completed stories</p>
+                                <div className="text-xl mb-1">🎉</div>
+                                <p className="text-xs">No completed stories</p>
                               </div>
                             </div>
                           </div>
@@ -985,13 +985,13 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                     <div className="p-2">
                       <table className="w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <thead className="bg-gradient-to-r from-emerald-50 to-blue-50">
-                          <tr>
-                            <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Issue</th>
-                            <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Summary</th>
-                            <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Priority</th>
-                            <th className="text-center py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Story Points</th>
-                            <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Status</th>
-                          </tr>
+                                                      <tr>
+                              <th className="text-left py-2 px-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Issue</th>
+                              <th className="text-left py-2 px-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Summary</th>
+                              <th className="text-left py-2 px-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Priority</th>
+                              <th className="text-center py-2 px-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Story Points</th>
+                              <th className="text-left py-2 px-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Status</th>
+                            </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {sprintStories.map((storyId, index) => {
@@ -1003,40 +1003,40 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                                 key={storyId}
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, storyId)}
-                                className="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-blue-50 cursor-move transition-all duration-200 group"
+                                className="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-blue-50 cursor-move transition-all duration-200 group h-12"
                                 onClick={() => openStoryEditor(story)}
                               >
-                                <td className="py-4 px-6">
-                                  <div className="flex items-center space-x-3">
-                                    <GripVertical size={14} className="text-slate-400 group-hover:text-emerald-500 transition-colors" />
-                                    <div className="flex items-center space-x-2">
-                                      <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                                <td className="py-2 px-3">
+                                  <div className="flex items-center space-x-2">
+                                    <GripVertical size={12} className="text-slate-400 group-hover:text-emerald-500 transition-colors" />
+                                    <div className="flex items-center space-x-1">
+                                      <div className="w-4 h-4 rounded bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-bold flex items-center justify-center">
                                         {index + 1}
                                       </div>
-                                      <span className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">{story.ticketNumber}</span>
+                                      <span className="font-medium text-blue-600 hover:text-blue-700 transition-colors text-sm">{story.ticketNumber}</span>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="py-4 px-6">
+                                <td className="py-2 px-3">
                                   <div className="max-w-md">
-                                    <p className="font-semibold text-slate-900 text-sm mb-1 group-hover:text-emerald-700 transition-colors">{story.title}</p>
+                                    <p className="font-medium text-slate-900 text-sm group-hover:text-emerald-700 transition-colors line-clamp-1">{story.title}</p>
                                     {story.description && (
-                                      <p className="text-xs text-slate-600 line-clamp-1">{story.description}</p>
+                                      <p className="text-xs text-slate-500 line-clamp-1">{story.description}</p>
                                     )}
                                   </div>
                                 </td>
-                                <td className="py-4 px-6">
-                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(story.priority)} shadow-sm`}>
+                                <td className="py-2 px-3">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
                                     {story.priority}
                                   </span>
                                 </td>
-                                <td className="py-4 px-6 text-center">
-                                  <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-700">
+                                <td className="py-2 px-3 text-center">
+                                  <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 font-medium text-slate-700 text-xs">
                                     {story.storyPoints || '?'}
                                   </div>
                                 </td>
-                                <td className="py-4 px-6">
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 shadow-sm">
+                                <td className="py-2 px-3">
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                                     ✅ In Sprint
                                   </span>
                                 </td>
@@ -1053,7 +1053,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
               {/* Backlog Section - Only show during planning */}
               {!sprintStarted && (
                 <div className="flex-1 flex flex-col">
-                  <div className="bg-gradient-to-r from-slate-100 to-purple-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+                  <div className="bg-gradient-to-r from-slate-100 to-purple-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg text-sm">
                         📋
@@ -1071,7 +1071,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                   </div>
                   
                   <div 
-                    className="flex-1 overflow-y-auto bg-white/80 backdrop-blur-sm"
+                    className="h-[50vh] overflow-y-auto bg-white/80 backdrop-blur-sm"
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, 'backlog')}
                   >
@@ -1087,13 +1087,13 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                       <div className="p-2">
                         <table className="w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                           <thead className="bg-gradient-to-r from-slate-50 to-purple-50 sticky top-0">
-                            <tr>
-                              <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Issue</th>
-                              <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Summary</th>
-                              <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Priority</th>
-                              <th className="text-center py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Story Points</th>
-                              <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
-                            </tr>
+                                                         <tr>
+                               <th className="text-left py-2 px-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Issue</th>
+                               <th className="text-left py-2 px-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Summary</th>
+                               <th className="text-left py-2 px-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Priority</th>
+                               <th className="text-center py-2 px-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Story Points</th>
+                               <th className="text-left py-2 px-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
+                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {backlogStories.map(storyId => {
@@ -1101,56 +1101,56 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                               if (!story) return null;
                               
                               return (
-                                <tr 
-                                  key={storyId}
-                                  draggable
-                                  onDragStart={(e) => handleDragStart(e, storyId)}
-                                  className="hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50 cursor-move transition-all duration-200 group"
-                                  onClick={() => openStoryEditor(story)}
-                                >
-                                  <td className="py-4 px-6">
-                                    <div className="flex items-center space-x-3">
-                                      <GripVertical size={14} className="text-slate-400 group-hover:text-purple-500 transition-colors" />
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-purple-600 text-white text-xs font-bold flex items-center justify-center">
-                                          📋
-                                        </div>
-                                        <span className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">{story.ticketNumber}</span>
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="py-4 px-6">
-                                    <div className="max-w-md">
-                                      <p className="font-semibold text-slate-900 text-sm mb-1 group-hover:text-purple-700 transition-colors">{story.title}</p>
-                                      {story.description && (
-                                        <p className="text-xs text-slate-600 line-clamp-1">{story.description}</p>
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td className="py-4 px-6">
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(story.priority)} shadow-sm`}>
-                                      {story.priority}
-                                    </span>
-                                  </td>
-                                  <td className="py-4 px-6 text-center">
-                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 font-bold text-slate-700">
-                                      {story.storyPoints || '?'}
-                                    </div>
-                                  </td>
-                                  <td className="py-4 px-6">
-                                    <div className="flex items-center space-x-2">
-                                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(story.status)} shadow-sm`}>
-                                        <span className="mr-1">{getStatusEmoji(story.status)}</span>
-                                        {story.status}
-                                      </span>
-                                      {story.refinementScore && (
-                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                                          {story.refinementScore.overall}/10
-                                        </span>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
+                                                                 <tr 
+                                   key={storyId}
+                                   draggable
+                                   onDragStart={(e) => handleDragStart(e, storyId)}
+                                   className="hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50 cursor-move transition-all duration-200 group h-12"
+                                   onClick={() => openStoryEditor(story)}
+                                 >
+                                   <td className="py-2 px-3">
+                                     <div className="flex items-center space-x-2">
+                                       <GripVertical size={12} className="text-slate-400 group-hover:text-purple-500 transition-colors" />
+                                       <div className="flex items-center space-x-1">
+                                         <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-500 to-purple-600 text-white text-xs font-bold flex items-center justify-center">
+                                           📋
+                                         </div>
+                                         <span className="font-medium text-blue-600 hover:text-blue-700 transition-colors text-sm">{story.ticketNumber}</span>
+                                       </div>
+                                     </div>
+                                   </td>
+                                   <td className="py-2 px-3">
+                                     <div className="max-w-md">
+                                       <p className="font-medium text-slate-900 text-sm group-hover:text-purple-700 transition-colors line-clamp-1">{story.title}</p>
+                                       {story.description && (
+                                         <p className="text-xs text-slate-500 line-clamp-1">{story.description}</p>
+                                       )}
+                                     </div>
+                                   </td>
+                                   <td className="py-2 px-3">
+                                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                                       {story.priority}
+                                     </span>
+                                   </td>
+                                   <td className="py-2 px-3 text-center">
+                                     <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 font-medium text-slate-700 text-xs">
+                                       {story.storyPoints || '?'}
+                                     </div>
+                                   </td>
+                                   <td className="py-2 px-3">
+                                     <div className="flex items-center space-x-1">
+                                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(story.status)}`}>
+                                         <span className="mr-1">{getStatusEmoji(story.status)}</span>
+                                         {story.status}
+                                       </span>
+                                       {story.refinementScore && (
+                                         <span className="inline-flex items-center px-1 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                           {story.refinementScore.overall}/10
+                                         </span>
+                                       )}
+                                     </div>
+                                   </td>
+                                 </tr>
                               );
                             })}
                           </tbody>
