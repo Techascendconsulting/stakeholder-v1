@@ -85,7 +85,7 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   const { user } = useAuth();
   
   return (
-    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-full">
+    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-20">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
         <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
@@ -687,27 +687,64 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             <div className="text-sm text-gray-400">{teamMembers.length + 1} people in this meeting</div>
           </div>
 
-          {/* Participant Video Grid */}
-          <div className="flex-1 p-4 space-y-4">
-            {/* User */}
-            <div className="w-full h-24">
+          {/* Participant Video Grid (3+2 Layout) */}
+          <div className="p-4 space-y-3">
+            {/* First Row - 3 participants */}
+            <div className="grid grid-cols-3 gap-3">
+              {/* User */}
               <ParticipantCard
                 participant={{ name: user?.full_name || 'You' }}
                 isCurrentSpeaker={false}
                 isUser={true}
               />
-            </div>
-            
-            {/* AI Team Members */}
-            {teamMembers.map(member => (
-              <div key={member.name} className="w-full h-24">
+              
+              {/* First 2 AI Team Members */}
+              {teamMembers.slice(0, 2).map(member => (
                 <ParticipantCard
+                  key={member.name}
                   participant={member}
                   isCurrentSpeaker={currentSpeaker?.name === member.name}
                   isUser={false}
                 />
+              ))}
+            </div>
+
+            {/* Second Row - 2 participants centered */}
+            {teamMembers.length > 2 && (
+              <div className="flex justify-center">
+                <div className="grid grid-cols-2 gap-3 w-2/3">
+                  {teamMembers.slice(2, 4).map(member => (
+                    <ParticipantCard
+                      key={member.name}
+                      participant={member}
+                      isCurrentSpeaker={currentSpeaker?.name === member.name}
+                      isUser={false}
+                    />
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
+          </div>
+
+          {/* Live Transcription Area */}
+          <div className="flex-1 p-4 border-t border-gray-700">
+            <div className="h-full bg-gray-800 rounded-lg p-3 overflow-y-auto">
+              <h4 className="text-sm font-medium text-gray-300 mb-2">Live Transcription</h4>
+              {transcript.length > 0 ? (
+                <div className="space-y-2">
+                  {transcript.slice(-10).map((entry, index) => (
+                    <div key={index} className="text-sm">
+                      <span className="font-medium text-white">{entry.speaker}:</span>
+                      <span className="text-gray-300 ml-2">{entry.content}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-sm italic">
+                  Live conversation will appear here...
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Voice Input Area */}
