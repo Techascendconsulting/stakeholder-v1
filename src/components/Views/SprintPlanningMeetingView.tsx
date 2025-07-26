@@ -819,7 +819,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    {!sprintStarted && sprintStories.length > 0 && (
+                    {!sprintStarted && sprintStories.length > 0 && meetingStarted && (
                       <button
                         onClick={startSprint}
                         className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm"
@@ -834,7 +834,12 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                         <span>Sprint Active</span>
                       </div>
                     )}
-                    {!sprintStarted && (
+                    {!sprintStarted && !meetingStarted && (
+                      <div className="text-slate-600 text-sm font-medium bg-slate-100/50 px-3 py-1 rounded-full border border-slate-200">
+                        🎯 Start meeting to begin sprint planning
+                      </div>
+                    )}
+                    {!sprintStarted && meetingStarted && (
                       <div className="text-emerald-600 text-sm font-medium bg-emerald-100/50 px-3 py-1 rounded-full border border-emerald-200">
                         📋 → 🎯 Drop zone
                       </div>
@@ -844,15 +849,22 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                 
                 <div 
                   className="h-[30vh] overflow-y-auto bg-white/80 backdrop-blur-sm"
-                  onDragOver={!sprintStarted ? handleDragOver : undefined}
-                  onDrop={!sprintStarted ? (e) => handleDrop(e, 'sprint') : undefined}
+                  onDragOver={!sprintStarted && meetingStarted ? handleDragOver : undefined}
+                  onDrop={!sprintStarted && meetingStarted ? (e) => handleDrop(e, 'sprint') : undefined}
                 >
                   {sprintStories.length === 0 ? (
                     <div className="flex items-center justify-center h-48 text-slate-500 bg-gradient-to-br from-emerald-25 to-blue-25">
                       <div className="text-center p-8 rounded-2xl bg-white/50 backdrop-blur-sm border border-emerald-200/50 shadow-lg">
                         <div className="text-4xl mb-4">🎯</div>
-                        <h4 className="font-semibold text-slate-700 mb-2">Start Planning Your Sprint</h4>
-                        <p className="text-sm text-slate-600">Drag refined issues from the backlog below to commit them to this sprint</p>
+                        <h4 className="font-semibold text-slate-700 mb-2">
+                          {meetingStarted ? "Start Planning Your Sprint" : "Ready for Sprint Planning"}
+                        </h4>
+                        <p className="text-sm text-slate-600">
+                          {meetingStarted 
+                            ? "Drag refined issues from the backlog below to commit them to this sprint"
+                            : "Start the meeting to begin collaborative sprint planning with your AI team"
+                          }
+                        </p>
                       </div>
                     </div>
                   ) : sprintStarted ? (
@@ -1001,9 +1013,9 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                             return (
                               <tr 
                                 key={storyId}
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, storyId)}
-                                className="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-blue-50 cursor-move transition-all duration-200 group h-12"
+                                draggable={meetingStarted && !sprintStarted}
+                                onDragStart={meetingStarted && !sprintStarted ? (e) => handleDragStart(e, storyId) : undefined}
+                                className={`hover:bg-gradient-to-r hover:from-emerald-50 hover:to-blue-50 transition-all duration-200 group h-12 ${meetingStarted && !sprintStarted ? 'cursor-move' : 'cursor-pointer'}`}
                                 onClick={() => openStoryEditor(story)}
                               >
                                 <td className="py-2 px-3">
@@ -1072,8 +1084,8 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                   
                   <div 
                     className="h-[50vh] overflow-y-auto bg-white/80 backdrop-blur-sm"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, 'backlog')}
+                    onDragOver={meetingStarted ? handleDragOver : undefined}
+                    onDrop={meetingStarted ? (e) => handleDrop(e, 'backlog') : undefined}
                   >
                     {backlogStories.length === 0 ? (
                       <div className="flex items-center justify-center h-48 text-slate-500">
@@ -1103,9 +1115,9 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                               return (
                                                                  <tr 
                                    key={storyId}
-                                   draggable
-                                   onDragStart={(e) => handleDragStart(e, storyId)}
-                                   className="hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50 cursor-move transition-all duration-200 group h-12"
+                                   draggable={meetingStarted}
+                                   onDragStart={meetingStarted ? (e) => handleDragStart(e, storyId) : undefined}
+                                   className={`hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50 transition-all duration-200 group h-12 ${meetingStarted ? 'cursor-move' : 'cursor-pointer'}`}
                                    onClick={() => openStoryEditor(story)}
                                  >
                                    <td className="py-2 px-3">
