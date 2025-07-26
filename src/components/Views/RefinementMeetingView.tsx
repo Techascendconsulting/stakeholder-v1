@@ -318,6 +318,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   // Handle meeting start
   const startMeeting = () => {
     setMeetingStarted(true);
+    // Ensure audio is enabled for the meeting
+    if (!globalAudioEnabled) {
+      setGlobalAudioEnabled(true);
+    }
     setTimeout(() => {
       addAIMessage(
         teamMembers[0], // Sarah (Scrum Master)
@@ -557,29 +561,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         </div>
 
         <div className="flex items-center space-x-3">
-          {/* Stop Button (to interrupt AI speakers) */}
-          {isAudioPlaying && (
-            <button
-              onClick={stopCurrentAudio}
-              className="p-2 bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors"
-              title="Stop current speaker"
-            >
-              <Square size={20} />
-            </button>
-          )}
-          
           <button
-            onClick={() => setGlobalAudioEnabled(!globalAudioEnabled)}
-            className={`p-2 rounded-lg ${globalAudioEnabled ? 'bg-green-600' : 'bg-red-600'}`}
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
           >
-            {globalAudioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-          </button>
-          
-          <button
-            onClick={handleEndMeeting}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-          >
-            <PhoneOff size={20} />
+            <ArrowLeft size={20} />
           </button>
         </div>
       </div>
@@ -770,68 +756,111 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
             </button>
 
-            {/* Stop Button */}
+            {/* Transcribe Toggle Button */}
             <button
-              onClick={stopCurrentAudio}
-              className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
-              title="Stop current speaker"
+              onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                transcriptPanelOpen
+                  ? 'bg-purple-600 hover:bg-purple-700'
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title={transcriptPanelOpen ? 'Hide Transcript' : 'Show Transcript'}
             >
-              <Square className="w-4 h-4 text-white" />
+              <Volume2 className="w-4 h-4 text-white" />
+            </button>
+
+            {/* Audio Toggle Button */}
+            <button
+              onClick={() => setGlobalAudioEnabled(!globalAudioEnabled)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                globalAudioEnabled
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
+              title={globalAudioEnabled ? 'Disable Audio' : 'Enable Audio'}
+            >
+              {globalAudioEnabled ? <Volume2 className="w-4 h-4 text-white" /> : <MicOff className="w-4 h-4 text-white" />}
+            </button>
+
+            {/* End Meeting Button */}
+            <button
+              onClick={handleEndMeeting}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <PhoneOff size={16} />
+              <span className="text-sm">End</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Message Input Area - Voice-Only Style */}
-      <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
-        {/* Dynamic Feedback Display */}
-        {meetingStarted && (isRecording || isTranscribing) && (
-          <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
-            <span className="text-white text-sm font-medium">
-              {isRecording ? '🎤 Recording your message... Release to send' : 
-               isTranscribing ? '🔄 Processing and transcribing your message...' : ''}
-            </span>
+      {/* Message Input Area - Matches Kanban Board Width */}
+      <div className="flex">
+        {/* Left Side - Input Area (matches kanban board width) */}
+        <div className="flex-1 px-6 py-4 bg-gray-900 border-t border-gray-700">
+          {/* Dynamic Feedback Display */}
+          {meetingStarted && (isRecording || isTranscribing) && (
+            <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+              <span className="text-white text-sm font-medium">
+                {isRecording ? '🎤 Recording your message... Release to send' : 
+                 isTranscribing ? '🔄 Processing and transcribing your message...' : ''}
+              </span>
+            </div>
+          )}
+          
+          <div className="flex space-x-3">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Type a message"
+              disabled={!meetingStarted}
+              className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400 disabled:opacity-50"
+            />
+            
+            {/* Speak Button - Voice-Only Style */}
+            <button
+              onMouseDown={startRecording}
+              onMouseUp={stopRecording}
+              onMouseLeave={stopRecording}
+              disabled={!meetingStarted}
+              className={`p-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                isRecording 
+                  ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
+                  : isTranscribing
+                  ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title={isRecording ? 'Release to Send' : isTranscribing ? 'Processing...' : 'Hold to Record & Send'}
+            >
+              {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
+            </button>
+            
+            <button
+              onClick={() => handleSendMessage()}
+              disabled={!userInput.trim() || !meetingStarted}
+              className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
+            >
+              <Send className="w-4 h-4 text-white" />
+            </button>
           </div>
-        )}
-        
-        <div className="flex space-x-3">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Type a message"
-            disabled={!meetingStarted}
-            className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400 disabled:opacity-50"
-          />
-          <button
-            onClick={() => handleSendMessage()}
-            disabled={!userInput.trim() || !meetingStarted}
-            className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
-          >
-            <Send className="w-4 h-4 text-white" />
-          </button>
         </div>
+        
+        {/* Right Side Spacer - Matches Participants Panel Width */}
+        <div className="w-96 bg-gray-900 border-t border-gray-700"></div>
+      </div>
 
         {/* Sliding Transcript Panel - Voice-Only Style */}
         {meetingStarted && (
           <>
-            {/* Floating Transcript Button (when minimized) */}
-            {!transcriptPanelOpen && (
-              <button
-                onClick={() => setTranscriptPanelOpen(true)}
-                className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg shadow-lg transition-all duration-200 text-xs font-medium"
-                title="Show transcript"
-              >
-                Transcript ({transcript.length})
-              </button>
-            )}
 
-            {/* Transcript Panel - slides up from text area */}
+            {/* Transcript Panel - slides up from text area, only over left side */}
             <div 
-              className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
+              className={`absolute bottom-full left-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
                 transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
               }`}
+              style={{ right: '384px' }} // Match right sidebar width (w-96 = 384px)
             >
               {/* Transcript Header */}
               <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600">
