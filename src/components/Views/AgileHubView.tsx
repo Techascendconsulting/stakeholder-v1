@@ -1897,7 +1897,7 @@ export const AgileHubView: React.FC = () => {
             currentProject && 
             t.projectId === currentProject.id && 
             t.type === 'Story' && 
-            t.status === 'Refined'
+            (t.status === 'Refined' || t.status === 'Ready for Refinement' || t.status === 'Draft')
           )}
           onMeetingEnd={(results) => {
             const { acceptedStories, rejectedStories, transcript, duration } = results;

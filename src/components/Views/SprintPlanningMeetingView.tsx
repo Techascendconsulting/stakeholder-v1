@@ -173,6 +173,10 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [isEditingStory, setIsEditingStory] = useState(false);
+  
+  // Inline editing states
+  const [editingField, setEditingField] = useState<{storyId: string, field: 'priority' | 'status' | 'storyPoints'} | null>(null);
+  const [tempValue, setTempValue] = useState<string>('');
   const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
 
   // Refs for audio recording
@@ -195,6 +199,66 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       case 'Medium': return 'bg-yellow-100 text-yellow-800';
       case 'Low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Draft': return 'bg-gray-100 text-gray-800';
+      case 'Ready for Refinement': return 'bg-blue-100 text-blue-800';
+      case 'Refined': return 'bg-green-100 text-green-800';
+      case 'In Sprint': return 'bg-purple-100 text-purple-800';
+      case 'To Do': return 'bg-slate-100 text-slate-800';
+      case 'In Progress': return 'bg-orange-100 text-orange-800';
+      case 'In Test': return 'bg-yellow-100 text-yellow-800';
+      case 'Done': return 'bg-emerald-100 text-emerald-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusEmoji = (status: string) => {
+    switch (status) {
+      case 'Draft': return '📝';
+      case 'Ready for Refinement': return '🔍';
+      case 'Refined': return '✨';
+      case 'In Sprint': return '🏃';
+      case 'To Do': return '📋';
+      case 'In Progress': return '⚡';
+      case 'In Test': return '🧪';
+      case 'Done': return '✅';
+      default: return '❓';
+    }
+  };
+
+  // Inline editing functions
+  const startInlineEdit = (storyId: string, field: 'priority' | 'status' | 'storyPoints', currentValue: string) => {
+    setEditingField({storyId, field});
+    setTempValue(currentValue);
+  };
+
+  const saveInlineEdit = () => {
+    if (!editingField) return;
+    
+    const story = stories.find(s => s.id === editingField.storyId);
+    if (!story) return;
+
+    // Here we would normally update the story via a prop function
+    // For now, we'll just cancel the edit since we don't have update functionality
+    console.log(`Would update ${editingField.field} to ${tempValue} for story ${editingField.storyId}`);
+    
+    cancelInlineEdit();
+  };
+
+  const cancelInlineEdit = () => {
+    setEditingField(null);
+    setTempValue('');
+  };
+
+  const handleInlineKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      saveInlineEdit();
+    } else if (e.key === 'Escape') {
+      cancelInlineEdit();
     }
   };
 
@@ -693,12 +757,12 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
         <div className="flex-1 bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 overflow-hidden border-r border-slate-200">
           <div className="h-full flex flex-col">
             {/* Simplified Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+            <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg">
               <div className="px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-2xl font-bold">Sprint Planning</h1>
-                    <p className="text-blue-100 text-sm">Plan your next sprint with AI-powered team collaboration</p>
+                    <p className="text-gray-300 text-sm">Plan your next sprint with AI-powered team collaboration</p>
                   </div>
                   {!meetingStarted && (
                     <button
@@ -755,7 +819,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                             <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Issue</th>
                             <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Summary</th>
                             <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Priority</th>
-                            <th className="text-center py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Points</th>
+                            <th className="text-center py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Story Points</th>
                             <th className="text-left py-4 px-6 text-xs font-bold text-emerald-700 uppercase tracking-wider">Status</th>
                           </tr>
                         </thead>
@@ -843,9 +907,9 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                   {backlogStories.length === 0 ? (
                     <div className="flex items-center justify-center h-48 text-slate-500">
                       <div className="text-center p-8 rounded-2xl bg-white/50 backdrop-blur-sm border border-purple-200/50 shadow-lg">
-                        <div className="text-4xl mb-4">🎉</div>
-                        <h4 className="font-semibold text-slate-700 mb-2">Sprint Fully Planned!</h4>
-                        <p className="text-sm text-slate-600">All refined issues have been committed to the sprint</p>
+                        <div className="text-4xl mb-4">📋</div>
+                        <h4 className="font-semibold text-slate-700 mb-2">All Stories in Sprint</h4>
+                        <p className="text-sm text-slate-600">All available stories have been committed to this sprint</p>
                       </div>
                     </div>
                   ) : (
@@ -856,7 +920,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
                             <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Issue</th>
                             <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Summary</th>
                             <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Priority</th>
-                            <th className="text-center py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Points</th>
+                            <th className="text-center py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Story Points</th>
                             <th className="text-left py-4 px-6 text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
                           </tr>
                         </thead>
