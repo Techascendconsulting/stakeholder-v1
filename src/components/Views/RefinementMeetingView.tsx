@@ -746,103 +746,151 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               </div>
             )}
 
-            {/* Transcript Display Area */}
-            <div className="flex-1 bg-gray-800 rounded-lg p-3 overflow-y-auto min-h-32">
-              <h4 className="text-sm font-medium text-gray-300 mb-2">Live Transcript</h4>
-              {transcript.length > 0 ? (
-                <div className="space-y-2">
-                  {transcript.map((message, index) => (
-                    <div key={message.id} className="flex space-x-2">
-                      <div className="flex-shrink-0">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                          message.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
-                        }`}>
-                          {message.role === 'user' ? 'U' : message.speaker?.charAt(0) || 'A'}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline space-x-2">
-                          <span className="text-white font-medium text-xs">
-                            {message.role === 'user' ? 'You' : message.speaker}
-                          </span>
-                          <span className="text-gray-400 text-xs">
-                            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-gray-300 text-xs mt-0.5 break-words">
-                          {message.content}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={transcriptEndRef} />
-                </div>
-              ) : (
-                <div className="text-gray-500 text-sm italic text-center py-8">
-                  Live conversation will appear here...
-                </div>
-              )}
-            </div>
+
           </div>
 
-          {/* Voice Input Area */}
-          <div className="p-4 border-t border-gray-700">
+          {/* Message Input Area - Voice-Only Style */}
+          <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
             {meetingStarted && (
-              <div className="space-y-3">
-                {/* Voice Recording Button */}
-                <button
-                  onMouseDown={startRecording}
-                  onMouseUp={stopRecording}
-                  onMouseLeave={stopRecording}
-                  disabled={isTranscribing || isAudioPlaying}
-                  className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all ${
-                    isRecording
-                      ? 'bg-red-600 text-white'
-                      : isTranscribing
-                      ? 'bg-yellow-600 text-white'
-                      : isAudioPlaying
-                      ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  {isRecording ? (
-                    <>
-                      <MicOff size={20} />
-                      <span>Release to Send</span>
-                    </>
-                  ) : isTranscribing ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Transcribing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mic size={20} />
-                      <span>Hold to Speak</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Text Input */}
-                <div className="flex space-x-2">
+              <>
+                {/* Dynamic Feedback Display */}
+                {(isRecording || isTranscribing) && (
+                  <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+                    <span className="text-white text-sm font-medium">
+                      {isRecording ? '🎤 Recording your message... Release to send' : 
+                       isTranscribing ? '🔄 Processing and transcribing your message...' : ''}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="flex space-x-3">
                   <input
                     type="text"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type message..."
-                    disabled={isAudioPlaying}
-                    className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 text-sm"
+                    placeholder="Type a message"
+                    className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400"
                   />
                   <button
                     onClick={() => handleSendMessage()}
-                    disabled={!userInput.trim() || isAudioPlaying}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white"
+                    disabled={!userInput.trim()}
+                    className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
                   >
-                    <Send size={16} />
+                    <Send className="w-4 h-4 text-white" />
+                  </button>
+                  
+                  {/* Mic Button - Voice-Only Style */}
+                  <button
+                    onMouseDown={startRecording}
+                    onMouseUp={stopRecording}
+                    onMouseLeave={stopRecording}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isRecording 
+                        ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
+                        : isTranscribing
+                        ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
+                        : 'bg-gray-700 hover:bg-gray-600'
+                    }`}
+                    title={isRecording ? 'Release to Send' : isTranscribing ? 'Processing...' : 'Hold to Record'}
+                  >
+                    {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
                   </button>
                 </div>
-              </div>
+
+                {/* Sliding Transcript Panel - Voice-Only Style */}
+                <>
+                  {/* Floating Transcript Button (when minimized) */}
+                  {!transcriptPanelOpen && (
+                    <button
+                      onClick={() => setTranscriptPanelOpen(true)}
+                      className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg shadow-lg transition-all duration-200 text-xs font-medium"
+                      title="Show transcript"
+                    >
+                      Transcript ({transcript.length})
+                    </button>
+                  )}
+
+                  {/* Transcript Panel - slides up from text area */}
+                  <div 
+                    className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
+                      transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
+                    }`}
+                  >
+                    {/* Transcript Header */}
+                    <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                        <h3 className="text-white font-medium text-sm">Transcript</h3>
+                        <span className="text-gray-400 text-xs">({transcript.length})</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
+                          className="text-gray-400 hover:text-white transition-colors p-1"
+                          title={transcriptPanelOpen ? "Minimize transcript" : "Show transcript"}
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setTranscript([])}
+                          className="text-gray-400 hover:text-red-400 transition-colors p-1"
+                          title="Clear transcript"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Transcript Content */}
+                    <div className="overflow-y-auto p-3 space-y-2" style={{ height: '80px' }}>
+                      {transcript.length === 0 ? (
+                        <div className="flex items-center justify-center h-full text-gray-400">
+                          <div className="text-center">
+                            <div className="w-6 h-6 mx-auto mb-1 opacity-50">
+                              <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                              </svg>
+                            </div>
+                            <p className="text-xs">Transcript appears here</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {transcript.map((message, index) => (
+                            <div key={message.id} className="flex space-x-2">
+                              <div className="flex-shrink-0">
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                                  message.role === 'user' 
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'bg-purple-600 text-white'
+                                }`}>
+                                  {message.role === 'user' 
+                                    ? 'U' 
+                                    : message.speaker?.charAt(0) || 'A'
+                                  }
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-1 mb-1">
+                                  <span className="text-white font-medium text-xs">
+                                    {message.role === 'user' ? 'You' : message.speaker}
+                                  </span>
+                                  <span className="text-gray-500 text-xs">
+                                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <p className="text-gray-200 text-xs leading-relaxed">{message.content}</p>
+                              </div>
+                            </div>
+                          ))}
+                          <div ref={transcriptEndRef} />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </>
+              </>
             )}
           </div>
         </div>
