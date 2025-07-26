@@ -106,43 +106,68 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   const [meetingStartTime, setMeetingStartTime] = useState(0);
   
   // Sprint planning specific state - Jira style with persistence
-  const [backlogStories, setBacklogStories] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
+  const [backlogStories, setBacklogStories] = useState<string[]>([]);
+  const [sprintStories, setSprintStories] = useState<string[]>([]);
+  
+  // Initialize state from localStorage and stories on component mount
+  useEffect(() => {
+    console.log('🔧 Initializing sprint planning state...');
+    
+    try {
       const savedBacklog = localStorage.getItem('sprint_planning_backlog');
-      if (savedBacklog) {
-        try {
-          const parsed = JSON.parse(savedBacklog);
-          // Filter to only include stories that still exist
-          const validStories = parsed.filter((id: string) => stories.some(s => s.id === id));
-          // Add any new stories that weren't in the saved state
-          const allStoryIds = stories.map(s => s.id);
-          const savedSprint = localStorage.getItem('sprint_planning_sprint');
-          const sprintIds = savedSprint ? JSON.parse(savedSprint) : [];
-          const newStories = allStoryIds.filter(id => !validStories.includes(id) && !sprintIds.includes(id));
-          return [...validStories, ...newStories];
-        } catch (error) {
-          console.error('Error loading backlog from localStorage:', error);
-        }
-      }
-    }
-    return stories.map(s => s.id);
-  });
-
-  const [sprintStories, setSprintStories] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
       const savedSprint = localStorage.getItem('sprint_planning_sprint');
+      
+      let backlogIds: string[] = [];
+      let sprintIds: string[] = [];
+      
       if (savedSprint) {
-        try {
-          const parsed = JSON.parse(savedSprint);
-          // Filter to only include stories that still exist
-          return parsed.filter((id: string) => stories.some(s => s.id === id));
-        } catch (error) {
-          console.error('Error loading sprint from localStorage:', error);
-        }
+        sprintIds = JSON.parse(savedSprint).filter((id: string) => stories.some(s => s.id === id));
+        console.log('📥 Loaded sprint stories from localStorage:', sprintIds);
+      }
+      
+      if (savedBacklog) {
+        backlogIds = JSON.parse(savedBacklog).filter((id: string) => stories.some(s => s.id === id));
+        console.log('📥 Loaded backlog stories from localStorage:', backlogIds);
+      }
+      
+      // Add any new stories to backlog if they're not already in sprint or backlog
+      const allStoryIds = stories.map(s => s.id);
+      const newStories = allStoryIds.filter(id => !sprintIds.includes(id) && !backlogIds.includes(id));
+      backlogIds = [...backlogIds, ...newStories];
+      
+      if (newStories.length > 0) {
+        console.log('➕ Added new stories to backlog:', newStories);
+      }
+      
+      setSprintStories(sprintIds);
+      setBacklogStories(backlogIds);
+      
+      console.log('✅ Sprint planning state initialized:', {
+        sprint: sprintIds.length,
+        backlog: backlogIds.length,
+        total: stories.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Error loading sprint planning state:', error);
+      // Fallback: put all stories in backlog
+      setBacklogStories(stories.map(s => s.id));
+      setSprintStories([]);
+    }
+  }, [stories]);
+
+  // Save state to localStorage whenever sprint or backlog changes
+  useEffect(() => {
+    if (sprintStories.length > 0 || backlogStories.length > 0) {
+      try {
+        localStorage.setItem('sprint_planning_sprint', JSON.stringify(sprintStories));
+        localStorage.setItem('sprint_planning_backlog', JSON.stringify(backlogStories));
+        console.log('💾 Auto-saved state change - Sprint:', sprintStories.length, 'Backlog:', backlogStories.length);
+      } catch (error) {
+        console.error('❌ Error auto-saving to localStorage:', error);
       }
     }
-    return [];
-  });
+  }, [sprintStories, backlogStories]);
 
 
   
@@ -191,24 +216,44 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       if (!sprintStories.includes(storyId)) {
         const newBacklog = backlogStories.filter(id => id !== storyId);
         const newSprint = [...sprintStories, storyId];
+        
+        console.log('📤 Moving story to sprint:', storyId);
+        console.log('📊 New state - Sprint:', newSprint.length, 'Backlog:', newBacklog.length);
+        
+        // Update state
         setBacklogStories(newBacklog);
         setSprintStories(newSprint);
         
-        // Save to localStorage
-        localStorage.setItem('sprint_planning_backlog', JSON.stringify(newBacklog));
-        localStorage.setItem('sprint_planning_sprint', JSON.stringify(newSprint));
+        // Save to localStorage immediately
+        try {
+          localStorage.setItem('sprint_planning_backlog', JSON.stringify(newBacklog));
+          localStorage.setItem('sprint_planning_sprint', JSON.stringify(newSprint));
+          console.log('💾 Saved to localStorage successfully');
+        } catch (error) {
+          console.error('❌ Error saving to localStorage:', error);
+        }
       }
     } else {
       // Moving back to backlog
       if (!backlogStories.includes(storyId)) {
         const newSprint = sprintStories.filter(id => id !== storyId);
         const newBacklog = [...backlogStories, storyId];
+        
+        console.log('📤 Moving story to backlog:', storyId);
+        console.log('📊 New state - Sprint:', newSprint.length, 'Backlog:', newBacklog.length);
+        
+        // Update state
         setSprintStories(newSprint);
         setBacklogStories(newBacklog);
         
-        // Save to localStorage
-        localStorage.setItem('sprint_planning_backlog', JSON.stringify(newBacklog));
-        localStorage.setItem('sprint_planning_sprint', JSON.stringify(newSprint));
+        // Save to localStorage immediately
+        try {
+          localStorage.setItem('sprint_planning_backlog', JSON.stringify(newBacklog));
+          localStorage.setItem('sprint_planning_sprint', JSON.stringify(newSprint));
+          console.log('💾 Saved to localStorage successfully');
+        } catch (error) {
+          console.error('❌ Error saving to localStorage:', error);
+        }
       }
     }
   };
