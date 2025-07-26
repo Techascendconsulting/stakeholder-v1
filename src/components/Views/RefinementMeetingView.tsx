@@ -587,7 +587,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       {/* Main Meeting Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Side - Kanban Board */}
-        <div className="flex-1 bg-white text-gray-900 p-6 overflow-auto">
+        <div className="flex-1 bg-gray-50 text-gray-900 p-6 overflow-auto border-r border-gray-200">
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -598,7 +598,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               {!meetingStarted && (
                 <button
                   onClick={startMeeting}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
                 >
                   <Play size={20} />
                   <span>Start Meeting</span>
@@ -607,19 +607,19 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             </div>
             
             {/* Kanban Columns */}
-            <div className="flex-1 grid grid-cols-3 gap-6">
+            <div className="flex-1 grid grid-cols-3 gap-4">
               {Object.values(kanbanColumns).map(column => (
                 <div 
                   key={column.id} 
-                  className="bg-gray-50 rounded-lg p-4 h-full"
+                  className="bg-gray-100 rounded-lg p-4 h-full border border-gray-200 shadow-sm"
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, column.id)}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-gray-800 text-sm uppercase tracking-wide">
                       {column.title}
                     </h3>
-                    <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm">
+                    <span className="bg-gray-300 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">
                       {column.stories.length}
                     </span>
                   </div>
@@ -637,36 +637,36 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                           draggable
                           onDragStart={(e) => handleDragStart(e, storyId)}
                           onClick={() => openStoryEditor(story)}
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg bg-white ${
+                          className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md bg-white ${
                             isSelected
-                              ? 'border-blue-500 shadow-lg transform scale-105'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-blue-500 shadow-md ring-2 ring-blue-200'
+                              : 'border-gray-300 hover:border-gray-400 hover:shadow-sm'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-2">
-                              <GripVertical size={16} className="text-gray-400" />
-                              <span className="font-medium text-gray-900">
+                              <GripVertical size={14} className="text-gray-400" />
+                              <span className="font-medium text-blue-600 text-sm">
                                 {story.ticketNumber}
                               </span>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                                {story.priority}
-                              </span>
+                            <div className="flex items-center space-x-1">
                               {story.storyPoints && (
-                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                                  {story.storyPoints} pts
+                                <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-xs font-medium">
+                                  {story.storyPoints}
                                 </span>
                               )}
+                              <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                                {story.priority.charAt(0)}
+                              </span>
                             </div>
                           </div>
                           
-                          <h4 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                          <h4 className="font-medium text-gray-900 mb-1 text-sm line-clamp-2">
                             {story.title}
                           </h4>
                           
-                          <p className="text-sm text-gray-600 line-clamp-3">
+                          <p className="text-xs text-gray-600 line-clamp-2">
                             {story.description}
                           </p>
                           
@@ -745,7 +745,6 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                 </div>
               </div>
             )}
-          </div>
           </div>
         </div>
       </div>

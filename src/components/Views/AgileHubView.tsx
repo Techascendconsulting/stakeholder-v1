@@ -869,7 +869,7 @@ export const AgileHubView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1211,9 +1211,9 @@ export const AgileHubView: React.FC = () => {
                     <div className={`${selectedTicket ? 'w-1/2' : 'w-full'} transition-all duration-300`}>
                       <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                      <thead className="bg-gray-50 dark:bg-gray-900">
+                      <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600">
                         <tr>
-                          <th className="px-3 py-3 text-left">
+                          <th className="px-3 py-2 text-left">
                             <input
                               type="checkbox"
                               checked={filteredTickets.length > 0 && selectedTickets.size === filteredTickets.length}
@@ -1221,28 +1221,28 @@ export const AgileHubView: React.FC = () => {
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
                           </th>
-                          <th className="px-3 py-3 text-left">
+                          <th className="px-3 py-2 text-left">
                             <GripVertical className="w-4 h-4 text-gray-400" title="Drag to reorder" />
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Key
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Summary
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Type
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Priority
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Story Points
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Status
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -1258,7 +1258,7 @@ export const AgileHubView: React.FC = () => {
                             onDrop={(e) => handleDrop(e, ticket.id)}
                           >
                             {/* Checkbox Column */}
-                            <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                               <input
                                 type="checkbox"
                                 checked={selectedTickets.has(ticket.id)}
@@ -1268,7 +1268,7 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Drag Handle Column */}
-                            <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                               <div className="flex items-center space-x-1">
                                 <button
                                   onClick={() => moveTicket(ticket.id, 'up')}
@@ -1291,22 +1291,22 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Key Column */}
-                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
+                            <td className="px-3 py-2" onClick={() => editTicket(ticket)}>
                               <div className="flex items-center space-x-2">
                                 <span className={getTypeColor(ticket.type)}>
                                   {getTypeIcon(ticket.type)}
                                 </span>
-                                <span className="text-sm font-medium text-blue-600 hover:text-blue-800">
+                                <span className="text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
                                   {ticket.ticketNumber}
                                 </span>
                               </div>
                             </td>
                             
                             {/* Summary Column */}
-                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
+                            <td className="px-3 py-2" onClick={() => editTicket(ticket)}>
                               <div>
                                 <div className="flex items-center space-x-2">
-                                  <div className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600">
+                                  <div className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer">
                                     {ticket.title}
                                   </div>
                                   <div className="flex items-center space-x-1">
@@ -1324,20 +1324,20 @@ export const AgileHubView: React.FC = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-md">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-md mt-0.5">
                                   {ticket.description}
                                 </div>
                               </div>
                             </td>
                             
                             {/* Type Column */}
-                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                               {editingType === ticket.id ? (
                                 <select
                                   value={ticket.type}
                                   onChange={(e) => updateTicketField(ticket.id, 'type', e.target.value)}
                                   onBlur={() => setEditingType(null)}
-                                  className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                   autoFocus
                                 >
                                   <option value="Story">Story</option>
@@ -1348,7 +1348,7 @@ export const AgileHubView: React.FC = () => {
                               ) : (
                                 <button
                                   onClick={(e) => handleTypeClick(ticket.id, e)}
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${getTypeColor(ticket.type).replace('text-', 'bg-').replace('-600', '-100')} ${getTypeColor(ticket.type)}`}
+                                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${getTypeColor(ticket.type).replace('text-', 'bg-').replace('-600', '-100')} ${getTypeColor(ticket.type)}`}
                                   title="Click to change type"
                                 >
                                   {getTypeIcon(ticket.type)}
@@ -1358,14 +1358,14 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Priority Column */}
-                            <td className="px-6 py-4" onClick={() => editTicket(ticket)}>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
+                            <td className="px-3 py-2" onClick={() => editTicket(ticket)}>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
                                 {ticket.priority}
                               </span>
                             </td>
                             
                             {/* Story Points Column */}
-                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                               {editingStoryPoints === ticket.id ? (
                                 <input
                                   type="number"
@@ -1375,27 +1375,27 @@ export const AgileHubView: React.FC = () => {
                                   onChange={(e) => updateTicketField(ticket.id, 'storyPoints', e.target.value ? parseInt(e.target.value) : undefined)}
                                   onBlur={() => setEditingStoryPoints(null)}
                                   onKeyPress={(e) => e.key === 'Enter' && setEditingStoryPoints(null)}
-                                  className="w-16 px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs text-center text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  className="w-12 px-1 py-0.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs text-center text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                   autoFocus
                                 />
                               ) : (
                                 <span 
                                   onClick={() => setEditingStoryPoints(ticket.id)}
-                                  className="inline-flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full text-xs font-medium text-gray-900 dark:text-white cursor-pointer"
+                                  className="inline-flex items-center justify-center w-6 h-6 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white cursor-pointer"
                                 >
-                                  {ticket.storyPoints || '?'}
+                                  {ticket.storyPoints || '—'}
                                 </span>
                               )}
                             </td>
                             
                             {/* Status Column */}
-                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                               {editingStatus === ticket.id ? (
                                 <select
                                   value={ticket.status}
                                   onChange={(e) => updateTicketField(ticket.id, 'status', e.target.value)}
                                   onBlur={() => setEditingStatus(null)}
-                                  className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                   autoFocus
                                 >
                                   <option value="Draft">Draft</option>
@@ -1409,15 +1409,15 @@ export const AgileHubView: React.FC = () => {
                               ) : (
                                 <button
                                   onClick={(e) => handleStatusClick(ticket.id, e)}
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${getStatusColor(ticket.status)}`}
+                                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${getStatusColor(ticket.status)}`}
                                   title="Click to change status"
                                 >
                                   {ticket.status}
                                 </button>
                               )}
                             </td>
-                                                                                     {/* Actions Column */}
-                            <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                            {/* Actions Column */}
+                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                               <div className="flex items-center space-x-2">
 
                                 
