@@ -678,46 +678,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         <div className="bg-gray-900 border-t border-gray-700 p-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between">
-              {/* Left Side - Participants */}
-              <div className="flex items-center space-x-4">
-                {/* User */}
-                <div className="w-16 h-16">
-                  <ParticipantCard
-                    participant={{ name: user?.full_name || 'You' }}
-                    isCurrentSpeaker={false}
-                    isUser={true}
-                  />
-                </div>
-                
-                {/* AI Team Members */}
-                {teamMembers.map(member => (
-                  <div key={member.name} className="w-16 h-16">
-                    <ParticipantCard
-                      participant={member}
-                      isCurrentSpeaker={currentSpeaker?.name === member.name}
-                      isUser={false}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Center - Live Transcription */}
-              <div className="flex-1 mx-8 max-w-md">
-                <div className="bg-gray-800 rounded-lg p-3 max-h-16 overflow-y-auto">
-                  {transcript.length > 0 ? (
-                    <div className="text-sm">
-                      <span className="font-medium text-white">{transcript.slice(-1)[0]?.speaker}:</span>
-                      <span className="text-gray-300 ml-2">{transcript.slice(-1)[0]?.content.slice(0, 80)}...</span>
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 text-sm italic text-center">
-                      Live conversation...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Side - Voice Controls */}
+              {/* Left Side - Voice Controls */}
               <div className="flex items-center space-x-3">
                 {meetingStarted ? (
                   <>
