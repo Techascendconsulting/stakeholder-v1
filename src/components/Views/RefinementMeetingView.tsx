@@ -612,7 +612,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, column.id)}
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-gray-800 text-sm uppercase tracking-wide">
                       {column.title}
                     </h3>
@@ -621,7 +621,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                     </span>
                   </div>
                   
-                  <div className="space-y-3 h-full overflow-y-auto">
+                  <div className="space-y-2 h-full overflow-y-auto">
                     {column.stories.map(storyId => {
                       const story = stories.find(s => s.id === storyId);
                       if (!story) return null;
@@ -634,44 +634,49 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                           draggable
                           onDragStart={(e) => handleDragStart(e, storyId)}
                           onClick={() => openStoryEditor(story)}
-                          className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md bg-white ${
+                          className={`p-2 rounded border cursor-pointer transition-all hover:shadow-sm bg-white ${
                             isSelected
-                              ? 'border-blue-500 shadow-md ring-2 ring-blue-200'
-                              : 'border-gray-300 hover:border-gray-400 hover:shadow-sm'
+                              ? 'border-blue-500 shadow-sm ring-1 ring-blue-200'
+                              : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center space-x-2">
-                              <GripVertical size={14} className="text-gray-400" />
-                              <span className="font-medium text-blue-600 text-sm">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center space-x-1">
+                              <GripVertical size={12} className="text-gray-400" />
+                              <span className="font-medium text-blue-600 text-xs">
                                 {story.ticketNumber}
                               </span>
                             </div>
                             <div className="flex items-center space-x-1">
                               {story.storyPoints && (
-                                <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-xs font-medium">
+                                <span className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs font-medium">
                                   {story.storyPoints}
                                 </span>
                               )}
-                              <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
+                              <span className={`px-1 py-0.5 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
                                 {story.priority.charAt(0)}
                               </span>
                             </div>
                           </div>
                           
-                          <h4 className="font-medium text-gray-900 mb-1 text-sm line-clamp-2">
+                          <h4 className="font-medium text-gray-900 text-xs line-clamp-2 leading-tight mb-1">
                             {story.title}
                           </h4>
                           
-                          <p className="text-xs text-gray-600 line-clamp-2">
-                            {story.description}
-                          </p>
+                          {story.description && (
+                            <p className="text-xs text-gray-500 line-clamp-1 leading-tight">
+                              {story.description.length > 40 
+                                ? `${story.description.substring(0, 40)}...` 
+                                : story.description
+                              }
+                            </p>
+                          )}
                           
                           {story.refinementScore && (
-                            <div className="mt-3 flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span className="text-sm text-green-600 font-medium">
-                                Score: {story.refinementScore.overall}/10
+                            <div className="mt-1 flex items-center space-x-1">
+                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                              <span className="text-xs text-green-600 font-medium">
+                                {story.refinementScore.overall}/10
                               </span>
                             </div>
                           )}
