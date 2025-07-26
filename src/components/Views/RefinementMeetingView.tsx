@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, Edit3, Save, Trash2, Plus, GripVertical } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, Edit3, Save, Trash2, Plus, GripVertical, FileText } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
@@ -766,7 +766,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
               }`}
               title={transcriptPanelOpen ? 'Hide Transcript' : 'Show Transcript'}
             >
-              <Volume2 className="w-4 h-4 text-white" />
+              <FileText className="w-4 h-4 text-white" />
             </button>
 
             {/* Audio Toggle Button */}
