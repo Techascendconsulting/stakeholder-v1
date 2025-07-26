@@ -1458,19 +1458,7 @@ export const AgileHubView: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Debug Info */}
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Debug:</strong> Total tickets: {tickets.length} | 
-                    Stories in current project: {tickets.filter(t => currentProject && t.projectId === currentProject.id && t.type === 'Story').length} | 
-                    Ready for refinement: {storiesReadyForRefinement.length}
-                  </p>
-                  {storiesReadyForRefinement.length > 0 && (
-                    <p className="text-sm text-yellow-800 mt-1">
-                      Ready stories: {storiesReadyForRefinement.map(s => s.title).join(', ')}
-                    </p>
-                  )}
-                </div>
+
 
                 {storiesReadyForRefinement.length === 0 ? (
                   <div className="text-center py-12">

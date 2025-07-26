@@ -713,7 +713,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                           draggable
                           onDragStart={(e) => handleDragStart(e, storyId)}
                           onClick={() => openStoryEditor(story)}
-                          className={`p-2 rounded border cursor-pointer transition-all hover:shadow-sm bg-white ${
+                          className={`p-2 rounded border cursor-pointer transition-all hover:shadow-sm bg-white h-20 flex flex-col ${
                             isSelected
                               ? 'border-blue-500 shadow-sm ring-1 ring-blue-200'
                               : 'border-gray-300 hover:border-gray-400'
@@ -738,27 +738,31 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
                             </div>
                           </div>
                           
-                          <h4 className="font-medium text-gray-900 text-xs line-clamp-2 leading-tight mb-1">
+                          <h4 className="font-medium text-gray-900 text-xs line-clamp-2 leading-tight mb-1 flex-1">
                             {story.title}
                           </h4>
                           
-                          {story.description && (
-                            <p className="text-xs text-gray-500 line-clamp-1 leading-tight">
-                              {story.description.length > 40 
-                                ? `${story.description.substring(0, 40)}...` 
-                                : story.description
-                              }
-                            </p>
-                          )}
+                          <div className="h-3 mb-1">
+                            {story.description && (
+                              <p className="text-xs text-gray-500 line-clamp-1 leading-tight">
+                                {story.description.length > 40 
+                                  ? `${story.description.substring(0, 40)}...` 
+                                  : story.description
+                                }
+                              </p>
+                            )}
+                          </div>
                           
-                          {story.refinementScore && (
-                            <div className="mt-1 flex items-center space-x-1">
-                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                              <span className="text-xs text-green-600 font-medium">
-                                {story.refinementScore.overall}/10
-                              </span>
-                            </div>
-                          )}
+                          <div className="h-4 flex items-center">
+                            {story.refinementScore && (
+                              <div className="flex items-center space-x-1">
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                <span className="text-xs text-green-600 font-medium">
+                                  {story.refinementScore.overall}/10
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
