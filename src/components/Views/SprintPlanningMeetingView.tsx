@@ -3,7 +3,7 @@ import { ArrowLeft, PhoneOff, FileText, Square, Mic, Send, Volume2, MicOff, Play
 import { useAuth } from '../../contexts/AuthContext';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { playAudio, isAzureTTSAvailable } from '../../lib/azureTTS';
-import { AIService } from '../../lib/ai/AIService';
+import AIService from '../../services/aiService';
 
 // Types - Same as refinement meeting but focused on sprint planning
 interface AgileTicket {
@@ -87,8 +87,7 @@ const teamMembers: SprintPlanningMember[] = [
   }
 ];
 
-// Initialize AI Service
-const dynamicAIService = new AIService();
+// Initialize AI Service (will be done in the component)
 
 export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
   stories,
@@ -262,26 +261,37 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
 
   const generateAIResponse = async (userMessage: string) => {
     try {
+      // Use the same dynamic AI service as refinement meeting
+      const dynamicAIService = AIService.getInstance();
+      
       // Convert team members to stakeholder format for AIService
       const availableTeamMembers = teamMembers.map(member => ({
-        id: member.name.toLowerCase().replace(/\s+/g, '_'),
         name: member.name,
         role: member.role,
         department: 'Development',
-        bio: `${member.role} participating in sprint planning`,
-        photo: '',
-        personality: member.role === 'Scrum Master' ? 'facilitating' : 'collaborative',
-        priorities: member.role === 'Scrum Master' ? ['facilitation', 'process'] : ['development', 'quality'],
-        voice: member.name,
-        expertise: [member.role.toLowerCase()]
+        priorities: [`${member.role} responsibilities`, 'Sprint planning', 'Story acceptance'],
+        personality: member.role === 'Scrum Master' ? 'Facilitating and process-focused' : 'Collaborative and technical',
+        expertise: member.role === 'Scrum Master' ? ['scrum', 'facilitation', 'agile'] : [member.role.toLowerCase(), 'development', 'agile']
       }));
 
-      // Use AIService for intelligent speaker selection
-      const responder = await AIService.detectStakeholderMentions(
-        userMessage,
-        availableTeamMembers,
-        transcript.map(t => ({ speaker: t.speaker, content: t.content }))
-      );
+      // Detect who should respond (like refinement meeting)
+      const mentionResult = await dynamicAIService.detectStakeholderMentions(userMessage, availableTeamMembers);
+      
+      let responder;
+      if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        // Someone was specifically mentioned
+        responder = mentionResult.mentionedStakeholders[0];
+        console.log('🎯 Specific team member mentioned:', responder.name);
+      } else {
+        // Select based on context or randomly
+        const contextualResponder = await dynamicAIService.selectResponderByContext(
+          userMessage,
+          availableTeamMembers,
+          transcript.map(t => ({ speaker: t.speaker, content: t.content }))
+        );
+        responder = contextualResponder || availableTeamMembers[Math.floor(Math.random() * availableTeamMembers.length)];
+        console.log('🎲 Contextual/Random selection:', responder.name);
+      }
 
       if (responder) {
         // Create conversation context for sprint planning
@@ -291,7 +301,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
             description: 'Agile sprint planning and story acceptance session',
             type: 'Sprint Planning Meeting'
           },
-          conversationHistory: transcript,
+          conversationHistory: transcript.map(t => ({ speaker: t.speaker, content: t.content })),
           stakeholders: availableTeamMembers,
           currentContext: {
             storiesUnderReview: kanbanColumns.reviewing.stories,
