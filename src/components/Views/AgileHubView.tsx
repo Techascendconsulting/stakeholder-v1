@@ -950,125 +950,83 @@ export const AgileHubView: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {currentProject ? tickets.filter(t => t.projectId === currentProject.id).length : 0}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Total Tickets</div>
-              </div>
-            </div>
-          </div>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-orange-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{storiesReadyForRefinement.length}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Ready for Refinement</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{refinedStories.length}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Refined Stories</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {currentProject ? refinementMeetings.filter(meeting => {
-                    const ticket = tickets.find(t => t.id === meeting.ticketId);
-                    return ticket && ticket.projectId === currentProject.id;
-                  }).length : 0}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Meetings Completed</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
+        {/* Compact Tabs with Integrated Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex space-x-8 px-6">
+            <nav className="flex space-x-1 px-2">
               <button
                 onClick={() => setActiveTab('backlog')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg transition-colors ${
                   activeTab === 'backlog'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <div className="flex items-center space-x-2">
                   <FileText size={16} />
                   <span>My Backlog</span>
+                  <span className="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full text-xs font-medium">
+                    {currentProject ? tickets.filter(t => t.projectId === currentProject.id).length : 0}
+                  </span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab('refinement')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg transition-colors ${
                   activeTab === 'refinement'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-900/20'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <div className="flex items-center space-x-2">
                   <Brain size={16} />
                   <span>Ready for Refinement</span>
-                  {storiesReadyForRefinement.length > 0 && (
-                    <span className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full">
-                      {storiesReadyForRefinement.length}
-                    </span>
-                  )}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    storiesReadyForRefinement.length > 0 
+                      ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200' 
+                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {storiesReadyForRefinement.length}
+                  </span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab('feedback')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg transition-colors ${
                   activeTab === 'feedback'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <div className="flex items-center space-x-2">
                   <BarChart3 size={16} />
                   <span>Feedback & Scoring</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    refinementMeetings.length > 0 
+                      ? 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200' 
+                      : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                  }`}>
+                    {currentProject ? refinementMeetings.filter(meeting => {
+                      const ticket = tickets.find(t => t.id === meeting.ticketId);
+                      return ticket && ticket.projectId === currentProject.id;
+                    }).length : 0}
+                  </span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab('ceremonies')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 px-4 border-b-2 font-medium text-sm rounded-t-lg transition-colors ${
                   activeTab === 'ceremonies'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-900/20'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <div className="flex items-center space-x-2">
                   <Calendar size={16} />
                   <span>Agile Ceremonies</span>
-                  <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                  <span className="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full text-xs font-medium">
                     Coming Soon
                   </span>
                 </div>
