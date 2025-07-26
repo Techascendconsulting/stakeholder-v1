@@ -44,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'core-concepts', label: 'Core BA Concepts', icon: BookOpen },
-    { id: 'training-projects', label: 'Training Projects', icon: FolderOpen },
+    { id: 'guided-practice-hub', label: 'Training Projects', icon: FolderOpen },
     { id: 'custom-project', label: 'Create Your Project', icon: Plus },
     { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
     { id: 'my-meetings', label: 'My Meetings', icon: Calendar },
