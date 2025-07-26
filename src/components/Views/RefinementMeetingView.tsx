@@ -6,6 +6,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import { azureTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
+import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 
@@ -351,37 +352,86 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }, 1500); // Increased delay to ensure audio context is ready
   };
 
-  // Generate dynamic AI response (no hardcoding)
+  // Generate dynamic AI response (using voice-only meeting pattern)
   const generateAIResponse = async (userMessage: string) => {
     try {
-      const context = {
-        stories: stories.map(s => ({
-          id: s.id,
-          title: s.title,
-          description: s.description,
-          acceptanceCriteria: s.acceptanceCriteria,
-          priority: s.priority,
-          ticketNumber: s.ticketNumber
-        })),
-        conversationHistory: transcript,
-        teamMembers: teamMembers
-      };
-
-      const currentStory = stories.find(s => kanbanColumns.discussing.stories.includes(s.id)) || stories[0];
-      const nextSpeaker = aiService.selectNextSpeaker(teamMembers, userMessage);
+      console.log('🤖 Generating dynamic AI response for:', userMessage);
       
-      if (nextSpeaker) {
-        const response = await aiService.generateTeamMemberResponse(
-          nextSpeaker,
+      // Use the same dynamic AI service as voice-only meeting
+      const dynamicAIService = AIService.getInstance();
+      
+      // Convert team members to stakeholder format for AIService
+      const availableTeamMembers = teamMembers.map(member => ({
+        name: member.name,
+        role: member.role,
+        department: 'Engineering',
+        priorities: [`${member.role} responsibilities`, 'Story refinement', 'Quality delivery'],
+        personality: member.personality || 'Professional and collaborative',
+        expertise: member.expertise || [member.role.toLowerCase(), 'agile', 'software development']
+      }));
+
+      // Detect who should respond (like voice-only meeting)
+      const mentionResult = await dynamicAIService.detectStakeholderMentions(userMessage, availableTeamMembers);
+      
+      let responder;
+      if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        // Someone was specifically mentioned
+        responder = mentionResult.mentionedStakeholders[0];
+        console.log('🎯 Specific team member mentioned:', responder.name);
+      } else {
+        // Smart context-based selection
+        const currentStory = stories.find(s => kanbanColumns.discussing.stories.includes(s.id)) || stories[0];
+        
+        // Context-based selection logic
+        if (userMessage.toLowerCase().includes('test') || userMessage.toLowerCase().includes('quality')) {
+          responder = availableTeamMembers.find(m => m.role === 'Tester') || availableTeamMembers[2];
+        } else if (userMessage.toLowerCase().includes('technical') || userMessage.toLowerCase().includes('develop')) {
+          responder = availableTeamMembers.find(m => m.role === 'Developer') || availableTeamMembers[1];
+        } else if (userMessage.toLowerCase().includes('process') || userMessage.toLowerCase().includes('sprint')) {
+          responder = availableTeamMembers.find(m => m.role === 'Scrum Master') || availableTeamMembers[0];
+        } else {
+          // Round-robin or random selection
+          const randomIndex = Math.floor(Math.random() * availableTeamMembers.length);
+          responder = availableTeamMembers[randomIndex];
+        }
+        console.log('🎲 Context-based selection:', responder.name, 'for message about:', userMessage.substring(0, 50));
+      }
+
+      if (responder) {
+        // Create conversation context (like voice-only meeting)
+        const conversationContext = {
+          project: {
+            name: 'Story Refinement Session',
+            description: 'Agile story refinement and planning session',
+            type: 'Refinement Meeting'
+          },
+          conversationHistory: transcript,
+          stakeholders: availableTeamMembers,
+          currentContext: {
+            currentStory: stories.find(s => kanbanColumns.discussing.stories.includes(s.id)),
+            storiesInDiscussion: kanbanColumns.discussing.stories,
+            totalStories: stories.length,
+            refinedStories: kanbanColumns.refined.stories.length
+          }
+        };
+
+        // Generate dynamic response using AIService (like voice-only meeting)
+        const response = await dynamicAIService.generateStakeholderResponse(
           userMessage,
-          context,
-          currentStory
+          responder,
+          conversationContext,
+          'refinement_discussion'
         );
         
-        await addAIMessage(nextSpeaker, response);
+        // Find the corresponding team member for audio
+        const teamMember = teamMembers.find(m => m.name === responder.name) || teamMembers[0];
+        await addAIMessage(teamMember, response);
       }
     } catch (error) {
       console.error('Error generating AI response:', error);
+      // Fallback to simple response
+      const fallbackMember = teamMembers[Math.floor(Math.random() * teamMembers.length)];
+      await addAIMessage(fallbackMember, "I understand. Let's continue with the story refinement.");
     }
   };
 
