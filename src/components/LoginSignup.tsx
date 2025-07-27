@@ -129,16 +129,16 @@ const LoginSignup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Header */}
         <div className="p-8 text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <User className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             BA Training Platform
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Professional Business Analysis Development
           </p>
         </div>
@@ -155,8 +155,8 @@ const LoginSignup: React.FC = () => {
               }}
               className={`flex-1 py-3 px-4 rounded-md font-medium transition-all duration-200 ${
                 activeTab === 'signin'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               Sign In
@@ -170,8 +170,8 @@ const LoginSignup: React.FC = () => {
               }}
               className={`flex-1 py-3 px-4 rounded-md font-medium transition-all duration-200 ${
                 activeTab === 'signup'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               Sign Up
@@ -201,18 +201,18 @@ const LoginSignup: React.FC = () => {
             <form onSubmit={handleSignIn} className="space-y-4">
               {/* Email Field */}
               <div>
-                <label htmlFor="signin-email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="signin-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
                   <input
                     type="email"
                     id="signin-email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                      errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    className={`w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                      errors.email ? 'border-red-300 bg-red-50' : ''
                     }`}
                     placeholder="Enter your email"
                     required
@@ -223,18 +223,18 @@ const LoginSignup: React.FC = () => {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="signin-password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="signin-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="signin-password"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                      errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    className={`w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                      errors.password ? 'border-red-300 bg-red-50' : ''
                     }`}
                     placeholder="Enter your password"
                     required
@@ -242,7 +242,7 @@ const LoginSignup: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -280,7 +280,7 @@ const LoginSignup: React.FC = () => {
 
               {/* Sign Up Link */}
               <div className="text-center mt-4">
-                <span className="text-sm text-gray-600">Don't have an account? </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Don't have an account? </span>
                 <button
                   type="button"
                   onClick={() => setActiveTab('signup')}
@@ -294,18 +294,18 @@ const LoginSignup: React.FC = () => {
             <form onSubmit={handleSignUp} className="space-y-4">
               {/* Name Field */}
               <div>
-                <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
                   <input
                     type="text"
                     id="signup-name"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                      errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    className={`w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                      errors.name ? 'border-red-300 bg-red-50' : ''
                     }`}
                     placeholder="Enter your full name"
                     required
@@ -316,18 +316,18 @@ const LoginSignup: React.FC = () => {
 
               {/* Email Field */}
               <div>
-                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
                   <input
                     type="email"
                     id="signup-email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                      errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    className={`w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                      errors.email ? 'border-red-300 bg-red-50' : ''
                     }`}
                     placeholder="Enter your email"
                     required
@@ -338,18 +338,18 @@ const LoginSignup: React.FC = () => {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="signup-password"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                      errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    className={`w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                      errors.password ? 'border-red-300 bg-red-50' : ''
                     }`}
                     placeholder="Create a password"
                     required
@@ -357,7 +357,7 @@ const LoginSignup: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -367,18 +367,18 @@ const LoginSignup: React.FC = () => {
 
               {/* Confirm Password Field */}
               <div>
-                <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     id="signup-confirm-password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                      errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    className={`w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                      errors.confirmPassword ? 'border-red-300 bg-red-50' : ''
                     }`}
                     placeholder="Confirm your password"
                     required
@@ -386,7 +386,7 @@ const LoginSignup: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -412,7 +412,7 @@ const LoginSignup: React.FC = () => {
 
               {/* Sign In Link */}
               <div className="text-center mt-4">
-                <span className="text-sm text-gray-600">Already have an account? </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Already have an account? </span>
                 <button
                   type="button"
                   onClick={() => setActiveTab('signin')}

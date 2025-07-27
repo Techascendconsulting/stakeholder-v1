@@ -287,7 +287,7 @@ const DebugConsole: React.FC = () => {
       case 'state': return 'text-green-600 bg-green-50'
       case 'render': return 'text-orange-600 bg-orange-50'
       case 'error': return 'text-red-600 bg-red-50'
-      default: return 'text-gray-600 bg-gray-50'
+              default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700'
     }
   }
 
@@ -304,7 +304,7 @@ const DebugConsole: React.FC = () => {
   }
 
   return (
-    <div className={`fixed bottom-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl z-50 ${
+          <div className={`fixed bottom-4 right-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl z-50 ${
       isMinimized ? 'w-80 h-12' : 'w-96 h-96'
     }`}>
       {/* Header */}
@@ -457,8 +457,8 @@ const DebugConsole: React.FC = () => {
                 <div className="break-words">{log.message}</div>
                 {log.data && (
                   <details className="mt-1">
-                    <summary className="cursor-pointer text-xs text-gray-500">Data</summary>
-                    <pre className="text-xs bg-gray-100 p-1 rounded mt-1 overflow-x-auto">
+                    <summary className="cursor-pointer text-xs text-gray-500 dark:text-gray-400">Data</summary>
+                                          <pre className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-300 p-1 rounded mt-1 overflow-x-auto">
                       {JSON.stringify(log.data, null, 2)}
                     </pre>
                   </details>
