@@ -56,6 +56,13 @@ export const AZURE_VOICES: Record<string, VoiceConfig> = {
     locale: 'en-GB',
     displayName: 'Abbi (Female, UK)',
     description: 'Clear British female voice, ideal for compliance and risk'
+  },
+  'en-US-AndrewNeural': {
+    name: 'en-US-AndrewNeural',
+    gender: 'Male',
+    locale: 'en-US',
+    displayName: 'Andrew (Male, US)',
+    description: 'Professional American male voice, ideal for technical roles'
   }
 }
 
@@ -64,7 +71,7 @@ export const getDefaultVoiceForStakeholder = (role: string, preferredGender?: 'M
   const roleVoiceMap: Record<string, string> = {
     'Head of Operations': 'en-GB-RyanNeural',
     'Customer Service Manager': 'en-GB-SoniaNeural',
-    'IT Systems Lead': 'en-GB-ThomasNeural',
+    'IT Systems Lead': 'en-US-AndrewNeural',
     'HR Business Partner': 'en-GB-LibbyNeural',
     'Compliance and Risk Manager': 'en-GB-AbbiNeural'
   }
@@ -110,8 +117,12 @@ class AzureTTSService {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;')
 
+    // Determine the language code based on voice name
+    const isUSVoice = voiceName.startsWith('en-US-')
+    const xmlLang = isUSVoice ? 'en-US' : 'en-GB'
+
     return `
-      <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-GB">
+      <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${xmlLang}">
         <voice name="${voiceName}">
           <prosody rate="1.05" pitch="+2%" volume="+10%">
             ${cleanText}
