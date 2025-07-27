@@ -56,13 +56,6 @@ export const AZURE_VOICES: Record<string, VoiceConfig> = {
     locale: 'en-GB',
     displayName: 'Abbi (Female, UK)',
     description: 'Clear British female voice, ideal for compliance and risk'
-  },
-  'en-US-AlloyNeural': {
-    name: 'en-US-AlloyNeural',
-    gender: 'Male',
-    locale: 'en-US',
-    displayName: 'Alloy (Male, US)',
-    description: 'Modern American male voice with clear articulation'
   }
 }
 
@@ -71,7 +64,7 @@ export const getDefaultVoiceForStakeholder = (role: string, preferredGender?: 'M
   const roleVoiceMap: Record<string, string> = {
     'Head of Operations': 'en-GB-RyanNeural',
     'Customer Service Manager': 'en-GB-SoniaNeural',
-    'IT Systems Lead': 'en-US-AlloyNeural',
+    'IT Systems Lead': 'en-GB-ThomasNeural',
     'HR Business Partner': 'en-GB-LibbyNeural',
     'Compliance and Risk Manager': 'en-GB-AbbiNeural'
   }

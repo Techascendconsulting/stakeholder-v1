@@ -227,7 +227,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Technical, analytical, security-conscious',
     priorities: ['System security', 'Technical feasibility', 'Integration capabilities'],
     expertise: ['IT systems architecture', 'Enterprise technology solutions', 'System integration', 'Security implementation', 'Technical feasibility assessment'],
-    voice: 'en-US-AlloyNeural'
+    voice: 'en-GB-ThomasNeural'
   },
   {
     id: 'stake-4',
