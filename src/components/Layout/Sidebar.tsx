@@ -45,6 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'core-concepts', label: 'Core BA Concepts', icon: BookOpen },
     { id: 'guided-practice-hub', label: 'Training Projects', icon: FolderOpen },
+    { id: 'elevenlabs-meeting', label: 'ElevenLabs Multi-Agent', icon: Zap, isNew: true },
     { id: 'custom-project', label: 'Create Your Project', icon: Plus },
     { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
     { id: 'my-meetings', label: 'My Meetings', icon: Calendar },
@@ -170,7 +171,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                   title={isCollapsed ? item.label : ''}
                 >
                   <Icon size={isCollapsed ? 28 : 20} className={isActive ? 'text-white' : 'text-purple-200'} />
-                  {!isCollapsed && <span>{item.label}</span>}
+                  {!isCollapsed && (
+                    <div className="flex items-center justify-between w-full">
+                      <span>{item.label}</span>
+                      {item.isNew && (
+                        <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
+                          NEW
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </button>
 
                 {/* Tooltip for collapsed mode */}

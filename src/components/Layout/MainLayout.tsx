@@ -22,6 +22,7 @@ import AnalysisView from '../Views/AnalysisView'
 import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
 import { AgileHubView } from '../Views/AgileHubView'
+import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting'
 import DebugConsole from '../Debug/DebugConsole'
 
 const MainLayout: React.FC = () => {
@@ -92,6 +93,9 @@ const MainLayout: React.FC = () => {
         return <CustomStakeholdersView />
       case 'agile-hub':
         return <AgileHubView />
+      case 'elevenlabs-meeting':
+        console.log('🎤 RENDER: Rendering ElevenLabsMultiAgentMeeting component')
+        return <ElevenLabsMultiAgentMeeting />
       default:
         return <ProjectsView />
     }
