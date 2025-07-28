@@ -32,7 +32,7 @@ class PersonalityAzureTTS {
       role: 'Head of Customer Success'
     },
     'stake-2': { // Aisha Ahmed  
-      voice: 'en-GB-SoniaNeural',
+      voice: 'en-GB-MaisieNeural',
       personalityId: 'aisha_ahmed',
       role: 'Customer Service Manager'
     },
@@ -42,12 +42,12 @@ class PersonalityAzureTTS {
       role: 'IT Systems Lead'
     },
     'stake-4': { // Sarah Patel
-      voice: 'en-US-AvaMultilingualNeural',
+      voice: 'en-GB-SoniaNeural',
       personalityId: 'sarah_patel',
       role: 'UX Designer'
     },
     'stake-5': { // Emily Robinson
-      voice: 'en-US-EmmaMultilingualNeural',
+      voice: 'en-GB-LibbyNeural',
       personalityId: 'emily_robinson',
       role: 'Marketing Director'
     }

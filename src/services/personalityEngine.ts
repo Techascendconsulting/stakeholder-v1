@@ -84,9 +84,11 @@ class PersonalityEngine {
 
     // Step 1: Analyze and enhance text content
     const enhancedText = this.enhanceTextContent(text, personality, context, options);
+    console.log(`📝 Enhanced text: "${text}" -> "${enhancedText}"`);
     
     // Step 2: Apply emotional context
     const emotionalSettings = this.calculateEmotionalSettings(personality, context);
+    console.log(`🎯 Emotional settings:`, emotionalSettings);
     
     // Step 3: Generate dynamic SSML
     const ssml = this.buildSSML(enhancedText, personality, emotionalSettings, context);
@@ -136,11 +138,23 @@ class PersonalityEngine {
     const { fillers } = personality.characteristics;
     const probability = this.getFillerProbability(context);
     
-    if (Math.random() < probability) {
+    // Always add fillers for personality demonstration
+    if (Math.random() < Math.max(probability, 0.7)) { // Increased minimum probability
       const randomFiller = fillers[Math.floor(Math.random() * fillers.length)];
       
       // Add filler at the beginning with natural capitalization
       const capitalizedFiller = randomFiller.charAt(0).toUpperCase() + randomFiller.slice(1);
+      
+      // Also sometimes add mid-sentence fillers for more personality
+      if (text.length > 30 && Math.random() < 0.4) {
+        const sentences = text.split('. ');
+        if (sentences.length > 1) {
+          const midFiller = fillers[Math.floor(Math.random() * fillers.length)];
+          sentences.splice(1, 0, `${midFiller}`);
+          return `${capitalizedFiller}, ${sentences.join('. ').charAt(0).toLowerCase() + sentences.join('. ').slice(1)}`;
+        }
+      }
+      
       return `${capitalizedFiller}, ${text.charAt(0).toLowerCase() + text.slice(1)}`;
     }
     
@@ -279,6 +293,10 @@ class PersonalityEngine {
     const { pausePatterns } = personality.characteristics;
     let processed = text;
     
+    // Always add a small thinking pause at the beginning for personality
+    const initialPause = `<break time="${pausePatterns.short}ms"/>`;
+    processed = `${initialPause}${processed}`;
+    
     // Add thinking pause for complex responses
     if (context.complexity > 0.6 || context.type === 'technical_explanation') {
       const thinkingPause = `<break time="${pausePatterns.thinking}ms"/>`;
@@ -291,9 +309,14 @@ class PersonalityEngine {
       processed = processed.replace(/!/g, `!${greetingPause}`);
     }
     
-    // Add natural pauses at sentence boundaries
+    // Add natural pauses at sentence boundaries (more aggressive)
     processed = processed.replace(/\. /g, `.<break time="${pausePatterns.medium}ms"/> `);
-    processed = processed.replace(/\? /g, `?<break time="${pausePatterns.short}ms"/> `);
+    processed = processed.replace(/\? /g, `?<break time="${pausePatterns.medium}ms"/> `);
+    processed = processed.replace(/\, /g, `,<break time="${pausePatterns.short}ms"/> `);
+    
+    // Add pauses before important words
+    processed = processed.replace(/\b(however|but|and|also|actually|specifically|basically)\b/gi, 
+      `<break time="${pausePatterns.short}ms"/>$1`);
     
     return processed;
   }
@@ -315,17 +338,26 @@ class PersonalityEngine {
 
   // Helper methods
   private shouldAddTransition(context: ConversationContext): boolean {
-    return context.type === 'explanation' || context.type === 'technical_explanation';
+    // More aggressive transition adding for personality
+    return context.type === 'explanation' || 
+           context.type === 'technical_explanation' || 
+           context.type === 'question_response' ||
+           Math.random() < 0.4; // 40% chance to add transitions for personality
   }
 
   private shouldAddAcknowledgment(context: ConversationContext): boolean {
-    return context.type === 'acknowledgment' || (context.userMood === 'confused' || context.userMood === 'frustrated');
+    // More aggressive acknowledgment adding
+    return context.type === 'acknowledgment' || 
+           (context.userMood === 'confused' || context.userMood === 'frustrated') ||
+           (!context.isFirstMessage && Math.random() < 0.6); // 60% chance for non-first messages
   }
 
   private getFillerProbability(context: ConversationContext): number {
-    if (context.type === 'greeting') return 0.2;
-    if (context.complexity > 0.7) return 0.4;
-    return 0.3;
+    // Increased probabilities for more personality
+    if (context.type === 'greeting') return 0.8;
+    if (context.complexity > 0.7) return 0.9;
+    if (context.type === 'question_response') return 0.7;
+    return 0.6; // Base probability increased
   }
 
   private getContextKey(context: ConversationContext): string {
