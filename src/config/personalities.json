@@ -45,8 +45,8 @@
       "id": "aisha_ahmed", 
       "name": "Aisha Ahmed",
       "role": "Customer Service Manager",
-      "voice": "en-GB-MaisieNeural",
-      "baseStyle": "cheerful",
+      "voice": "en-GB-SoniaNeural",
+      "baseStyle": "customerservice",
       "characteristics": {
         "fillers": ["uhm", "got it", "you know", "I mean", "well", "actually"],
         "greetings": ["Hi there", "Hey", "Good morning everyone", "Hello", "Hi folks"],
@@ -127,8 +127,8 @@
       "id": "sarah_patel",
       "name": "Sarah Patel",
       "role": "UX Designer",
-      "voice": "en-GB-SoniaNeural", 
-      "baseStyle": "customerservice",
+      "voice": "en-US-AvaMultilingualNeural", 
+      "baseStyle": "chat",
       "characteristics": {
         "fillers": ["you know", "I think", "actually", "so", "well", "hmm"],
         "greetings": ["Hi everyone", "Hey there", "Good morning", "Hello", "Hi folks"],
@@ -168,7 +168,7 @@
       "id": "emily_robinson",
       "name": "Emily Robinson",
       "role": "Marketing Director", 
-      "voice": "en-GB-LibbyNeural",
+      "voice": "en-US-EmmaMultilingualNeural",
       "baseStyle": "cheerful",
       "characteristics": {
         "fillers": ["you know", "I mean", "honestly", "so", "well", "actually"],
