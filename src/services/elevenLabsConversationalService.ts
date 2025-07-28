@@ -103,10 +103,7 @@ class ElevenLabsConversationalService {
         
         // Send initialization message if needed
         const initMessage = {
-          type: 'conversation_initiation_client_data',
-          conversation_config_override: {
-            agent_id: stakeholder.agentId
-          }
+          type: 'conversation_initiation_client_data'
         };
         websocket.send(JSON.stringify(initMessage));
       };
@@ -242,12 +239,9 @@ class ElevenLabsConversationalService {
       const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
       const message = {
-        type: 'audio_input',
-        audio_config: {
-          encoding: 'webm',
-          sample_rate: 44100
-        },
-        audio: base64Audio
+        type: 'audio_chunk',
+        audio_data: base64Audio,
+        sequence_id: Date.now()
       };
 
       console.log(`🎤 Sending audio to ${session.stakeholder.name}`, { size: audioBlob.size, type: audioBlob.type });
@@ -270,10 +264,11 @@ class ElevenLabsConversationalService {
 
     try {
       const message = {
-        type: 'text_input',
-        text: text
+        type: 'user_message',
+        message: text
       };
 
+      console.log(`💬 Sending text to ${session.stakeholder.name}:`, text);
       session.websocket.send(JSON.stringify(message));
     } catch (error) {
       console.error('Error sending text input:', error);

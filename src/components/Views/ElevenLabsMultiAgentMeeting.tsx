@@ -59,6 +59,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   const [activeConversations, setActiveConversations] = useState<Map<string, string>>(new Map()); // stakeholderId -> conversationId
   const [isMuted, setIsMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [textInput, setTextInput] = useState('');
 
   // Refs
   const conversationalServiceRef = useRef<ElevenLabsConversationalService | null>(null);
@@ -282,6 +283,19 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       setIsRecording(true);
     }
   }, [isRecording, setupAudioRecording, startVoiceDetection, stopVoiceDetection]);
+
+  // Send text message for testing
+  const sendTextMessage = useCallback(async () => {
+    if (!conversationalServiceRef.current || !textInput.trim()) return;
+
+    const service = conversationalServiceRef.current;
+    const promises = Array.from(activeConversations.values()).map(conversationId => 
+      service.sendTextInput(conversationId, textInput.trim()).catch(console.error)
+    );
+    
+    await Promise.all(promises);
+    setTextInput('');
+  }, [textInput, activeConversations]);
 
   // End all conversations
   const endAllConversations = useCallback(async () => {
