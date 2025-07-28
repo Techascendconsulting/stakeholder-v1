@@ -458,14 +458,15 @@ class ElevenLabsConversationalService {
   }
 
   // Static audio queue to prevent overlapping audio
-  private static audioQueue: { buffer: AudioBuffer; context: AudioContext }[] = [];
+  private static audioQueue: { buffer: AudioBuffer; context: AudioContext; conversationId: string }[] = [];
   private static isPlaying = false;
   private static globalAudioContext: AudioContext | null = null;
+  private static currentConversationId: string | null = null;
 
   /**
    * Play audio chunk from agent response using Web Audio API with queuing
    */
-  private async playAudioChunk(base64Audio: string): Promise<void> {
+  private async playAudioChunk(base64Audio: string, conversationId?: string): Promise<void> {
     try {
       console.log('🎵 Processing audio chunk, base64 length:', base64Audio.length);
       
@@ -499,8 +500,25 @@ class ElevenLabsConversationalService {
         channelData[i] = pcmData[i] / 32768.0;
       }
       
-      // Add to queue instead of playing immediately
-      ElevenLabsConversationalService.audioQueue.push({ buffer: audioBuffer, context: audioContext });
+      // Only add to queue if it's from the current active conversation
+      const currentConvId = conversationId || 'unknown';
+      
+      // If this is a new conversation, clear old audio and set as current
+      if (ElevenLabsConversationalService.currentConversationId !== currentConvId) {
+        console.log(`🔄 New conversation detected: ${currentConvId}, clearing old audio`);
+        ElevenLabsConversationalService.audioQueue = [];
+        ElevenLabsConversationalService.currentConversationId = currentConvId;
+        ElevenLabsConversationalService.isPlaying = false;
+      }
+      
+      // Add to queue with conversation ID
+      ElevenLabsConversationalService.audioQueue.push({ 
+        buffer: audioBuffer, 
+        context: audioContext,
+        conversationId: currentConvId
+      });
+      
+      console.log(`🎵 Added audio chunk to queue. Queue length: ${ElevenLabsConversationalService.audioQueue.length}`);
       
       // Start playing queue if not already playing
       if (!ElevenLabsConversationalService.isPlaying) {
@@ -523,7 +541,9 @@ class ElevenLabsConversationalService {
     }
 
     ElevenLabsConversationalService.isPlaying = true;
-    const { buffer, context } = ElevenLabsConversationalService.audioQueue.shift()!;
+    const { buffer, context, conversationId } = ElevenLabsConversationalService.audioQueue.shift()!;
+    
+    console.log(`🎵 Playing audio chunk from conversation: ${conversationId}, remaining in queue: ${ElevenLabsConversationalService.audioQueue.length}`);
     
     // Create and play audio source
     const source = context.createBufferSource();
@@ -532,11 +552,21 @@ class ElevenLabsConversationalService {
     
     source.onended = () => {
       console.log('🎵 Audio chunk finished, playing next...');
-      // Play next chunk in queue
-      this.playNextInQueue();
+      // Play next chunk in queue after a small delay to prevent gaps
+      setTimeout(() => {
+        this.playNextInQueue();
+      }, 10);
     };
     
-    console.log('🎵 Playing audio chunk via Web Audio API...');
+    source.onerror = (error) => {
+      console.error('❌ Audio playback error:', error);
+      // Continue with next chunk even if this one fails
+      setTimeout(() => {
+        this.playNextInQueue();
+      }, 10);
+    };
+    
+    console.log('🎵 Starting audio chunk playback...');
     source.start(0);
   }
 
