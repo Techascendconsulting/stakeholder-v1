@@ -160,11 +160,11 @@ class ElevenLabsConversationalService {
         console.log('🤖 Agent response:', data);
         statusHandler?.('speaking');
         
-        if (messageHandler && data.agent_response) {
+        if (messageHandler && data.agent_response_event?.agent_response) {
           const message: ConversationMessage = {
             id: `msg-${Date.now()}`,
             agentId: session.agentId,
-            content: data.agent_response,
+            content: data.agent_response_event.agent_response,
             type: 'agent_response',
             timestamp: new Date(),
             metadata: {
@@ -179,11 +179,11 @@ class ElevenLabsConversationalService {
       case 'user_transcript':
         console.log('👤 User transcript:', data);
         
-        if (messageHandler && data.user_transcript) {
+        if (messageHandler && data.user_transcription_event?.user_transcript) {
           const message: ConversationMessage = {
             id: `msg-${Date.now()}`,
             agentId: session.agentId,
-            content: data.user_transcript,
+            content: data.user_transcription_event.user_transcript,
             type: 'user_input',
             timestamp: new Date()
           };
@@ -211,10 +211,21 @@ class ElevenLabsConversationalService {
         statusHandler?.('thinking');
         break;
 
+      case 'audio':
+        console.log('🔊 Received audio chunk:', data);
+        if (data.audio_event?.audio_base_64) {
+          this.playAudioChunk(data.audio_event.audio_base_64);
+        }
+        break;
+
       case 'ping':
         // Respond to ping to keep connection alive
         if (session.websocket && session.websocket.readyState === WebSocket.OPEN) {
-          session.websocket.send(JSON.stringify({ type: 'pong' }));
+          const pongMessage = {
+            type: 'pong',
+            event_id: data.ping_event?.event_id || Date.now()
+          };
+          session.websocket.send(JSON.stringify(pongMessage));
         }
         break;
 
@@ -239,9 +250,7 @@ class ElevenLabsConversationalService {
       const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
       const message = {
-        type: 'audio_chunk',
-        audio_data: base64Audio,
-        sequence_id: Date.now()
+        user_audio_chunk: base64Audio
       };
 
       console.log(`🎤 Sending audio to ${session.stakeholder.name}`, { size: audioBlob.size, type: audioBlob.type });
@@ -265,7 +274,7 @@ class ElevenLabsConversationalService {
     try {
       const message = {
         type: 'user_message',
-        message: text
+        text: text
       };
 
       console.log(`💬 Sending text to ${session.stakeholder.name}:`, text);
@@ -312,6 +321,40 @@ class ElevenLabsConversationalService {
     }
 
     this.cleanup(conversationId);
+  }
+
+  /**
+   * Play audio chunk from agent response
+   */
+  private playAudioChunk(base64Audio: string): void {
+    try {
+      // Decode base64 to binary
+      const binaryString = atob(base64Audio);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create blob and play audio
+      const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = (error) => {
+        console.error('Error playing audio:', error);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.play().catch(error => {
+        console.error('Failed to play audio:', error);
+      });
+    } catch (error) {
+      console.error('Error processing audio chunk:', error);
+    }
   }
 
   /**
