@@ -121,6 +121,8 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<Map<string, 'idle' | 'speaking' | 'thinking' | 'listening'>>(new Map());
   const [activeConversations, setActiveConversations] = useState<Map<string, string>>(new Map()); // stakeholderId -> conversationId
+  const [lastResponseTime, setLastResponseTime] = useState<number>(0);
+  const [respondingAgent, setRespondingAgent] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -343,30 +345,33 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
          const uint8Array = new Uint8Array(pcm16.buffer);
          const base64 = btoa(String.fromCharCode(...uint8Array));
          
-         // Send immediately to ElevenLabs - but only if conversations are still active
-         if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0) {
-           const service = conversationalServiceRef.current;
-           const activeIds = Array.from(activeConversations.values());
-           
-           // Only send to conversations that are still active
-           const promises = activeIds.map(async (conversationId) => {
-             try {
-               await service.sendAudioInputPCM(conversationId, base64);
-             } catch (error) {
-               // If conversation ended, remove it from active list
-               if (error.message.includes('No active session')) {
-                 console.log('🔌 Conversation ended, removing from active list');
-                 activeConversations.forEach((id, key) => {
-                   if (id === conversationId) {
-                     activeConversations.delete(key);
-                   }
-                 });
-               }
-               // Don't throw the error to avoid console spam
-             }
-           });
-           await Promise.all(promises);
-         }
+                   // Send audio to only ONE agent at a time (round-robin) to prevent multiple responses
+          if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0) {
+            const service = conversationalServiceRef.current;
+            const activeIds = Array.from(activeConversations.values());
+            
+            if (activeIds.length > 0) {
+              // Select one agent using round-robin based on time
+              const now = Date.now();
+              const agentIndex = Math.floor((now / 3000)) % activeIds.length; // Switch every 3 seconds
+              const selectedConversationId = activeIds[agentIndex];
+              
+              try {
+                await service.sendAudioInputPCM(selectedConversationId, base64);
+                console.log(`🎯 Sent audio to agent ${agentIndex + 1}/${activeIds.length} (round-robin)`);
+              } catch (error) {
+                // If conversation ended, remove it from active list
+                if (error.message.includes('No active session')) {
+                  console.log('🔌 Conversation ended, removing from active list');
+                  activeConversations.forEach((id, key) => {
+                    if (id === selectedConversationId) {
+                      activeConversations.delete(key);
+                    }
+                  });
+                }
+              }
+            }
+          }
        };
       
       source.connect(processorNode);
