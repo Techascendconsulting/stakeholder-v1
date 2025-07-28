@@ -434,7 +434,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
                   <Users className="w-6 h-6 mr-3 text-purple-600" />
-                  Select Stakeholders
+                  Select a Stakeholder
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {selectedProject.name} - Choose who you want to speak with
@@ -531,10 +531,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                 className="inline-flex items-center px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
               >
                 <Play className="w-5 h-5 mr-2" />
-                Start Meeting with {selectedStakeholders.length} Stakeholder{selectedStakeholders.length !== 1 ? 's' : ''}
+                {selectedStakeholders.length > 0 ? `Start Conversation with ${selectedStakeholders[0].name}` : 'Select a Stakeholder'}
               </button>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                You'll be able to speak with all selected stakeholders in real-time
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  Have a real-time voice conversation with your selected stakeholder
               </p>
             </div>
           )}
@@ -553,10 +553,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
                 <Zap className="w-6 h-6 mr-3 text-purple-600" />
-                ElevenLabs Voice Meeting
+                ElevenLabs Voice Conversation
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {selectedProject?.name || 'Multi-Stakeholder Conversation'}
+                {selectedProject?.name} - {selectedStakeholders[0]?.name || 'Conversation'}
               </p>
             </div>
             <div className="flex items-center space-x-4">
