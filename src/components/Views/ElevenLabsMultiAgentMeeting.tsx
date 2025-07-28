@@ -854,57 +854,55 @@ Make it feel like real people having a natural business conversation!`;
                 Choose Meeting Mode
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Multi-Voice Simulation */}
-                <div 
-                  onClick={() => setMeetingMode('multi-voice')}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                    meetingMode === 'multi-voice' 
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
-                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
-                  }`}
-                >
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-white font-bold">💰</span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Multi-Voice Simulation
-                    </h4>
-                    <span className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded-full">
-                      Recommended
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    One AI agent roleplays all stakeholders with different personalities. 
-                    <strong> Cost-effective!</strong> UI shows which person is speaking.
-                  </p>
-                </div>
+                                 {/* Collaborative Meeting */}
+                 <div 
+                   onClick={() => setMeetingMode('multi-voice')}
+                   className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                     meetingMode === 'multi-voice' 
+                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                       : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                   }`}
+                 >
+                   <div className="flex items-center mb-2">
+                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                       <span className="text-white font-bold">🤝</span>
+                     </div>
+                     <h4 className="font-semibold text-gray-900 dark:text-white">
+                       Collaborative Meeting
+                     </h4>
+                     <span className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded-full">
+                       Recommended
+                     </span>
+                   </div>
+                   <p className="text-sm text-gray-600 dark:text-gray-400">
+                     Dynamic group discussion where stakeholders naturally respond to each other and build on ideas together.
+                   </p>
+                 </div>
 
-                {/* Multi-Agent (Real) */}
-                <div 
-                  onClick={() => setMeetingMode('multi-agent')}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                    meetingMode === 'multi-agent' 
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
-                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
-                  }`}
-                >
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-white font-bold">💸</span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Real Multi-Agent
-                    </h4>
-                    <span className="ml-2 px-2 py-1 text-xs bg-orange-500 text-white rounded-full">
-                      Premium
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Separate AI agents for each stakeholder. More realistic but 
-                    <strong> 3x the cost!</strong> Each agent runs independently.
-                  </p>
-                </div>
+                 {/* Individual Responses */}
+                 <div 
+                   onClick={() => setMeetingMode('multi-agent')}
+                   className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                     meetingMode === 'multi-agent' 
+                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                       : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                   }`}
+                 >
+                   <div className="flex items-center mb-2">
+                     <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-3">
+                       <span className="text-white font-bold">👥</span>
+                     </div>
+                     <h4 className="font-semibold text-gray-900 dark:text-white">
+                       Individual Responses
+                     </h4>
+                     <span className="ml-2 px-2 py-1 text-xs bg-purple-500 text-white rounded-full">
+                       Advanced
+                     </span>
+                   </div>
+                   <p className="text-sm text-gray-600 dark:text-gray-400">
+                     Each stakeholder responds independently with their own unique perspective and expertise.
+                   </p>
+                 </div>
               </div>
             </div>
           )}
@@ -922,8 +920,8 @@ Make it feel like real people having a natural business conversation!`;
                       selectedStakeholders.length === 1 
                         ? `Conversation with ${selectedStakeholders[0].name}`
                         : meetingMode === 'multi-voice' 
-                          ? `Multi-Voice Simulation (${selectedStakeholders.length} voices)`
-                          : `Real Multi-Agent Meeting (${selectedStakeholders.length} agents)`
+                          ? `Collaborative Meeting`
+                          : `Individual Response Meeting`
                     }`
                   : 'Select Stakeholders'}
               </button>
@@ -976,7 +974,7 @@ Make it feel like real people having a natural business conversation!`;
               <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
               <Zap className="w-6 h-6 mr-3 text-purple-600" />
-              ElevenLabs Multi-Agent Meeting
+              Stakeholder Meeting
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {selectedProject?.name} - {selectedStakeholders.length} participant{selectedStakeholders.length > 1 ? 's' : ''}: {selectedStakeholders.map(s => s.name).join(', ')}
