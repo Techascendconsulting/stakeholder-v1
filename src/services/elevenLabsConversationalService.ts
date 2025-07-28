@@ -296,7 +296,11 @@ class ElevenLabsConversationalService {
         if (!session.isInitialized && session.websocket.readyState === WebSocket.OPEN) {
           const initMessage = {
             type: 'conversation_initiation_client_data',
-            conversation_config_override: {},
+            conversation_config_override: {
+              agent_does_not_speak_first: true,
+              user_starts_speaking_first: true,
+              require_user_input_to_start: true
+            },
             custom_llm_extra_body: {},
             dynamic_variables: {}
           };
@@ -346,7 +350,11 @@ class ElevenLabsConversationalService {
       if (!session.isInitialized && session.websocket.readyState === WebSocket.OPEN) {
         const initMessage = {
           type: 'conversation_initiation_client_data',
-          conversation_config_override: {},
+          conversation_config_override: {
+            agent_does_not_speak_first: true,
+            user_starts_speaking_first: true,
+            require_user_input_to_start: true
+          },
           custom_llm_extra_body: {},
           dynamic_variables: {}
         };

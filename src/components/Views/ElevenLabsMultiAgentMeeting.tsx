@@ -699,8 +699,9 @@ You were specifically mentioned or asked for your input. You can respond briefly
             const service = conversationalServiceRef.current;
             const activeIds = Array.from(activeConversations.values());
             
-            // Check if this is the first user input (no instructions sent yet)
-            const isFirstUserInput = !(window as any).elevenLabsInstructionsSent;
+            // Check if this is the first user input (both no instructions sent AND no user messages in history)
+            const isFirstUserInput = !(window as any).elevenLabsInstructionsSent && 
+                                    conversationHistory.filter(msg => msg.type === 'user_input').length === 0;
             
             if (isFirstUserInput) {
               console.log('🎤 First user input detected - sending instructions to stakeholders');
@@ -754,30 +755,62 @@ Now listen to what the user is saying and participate naturally in this business
               await new Promise(resolve => setTimeout(resolve, 500));
             }
             
-                         // Send audio to only ONE relevant agent to prevent multiple responses
-             const selectedConversationId = selectBestStakeholderForAudio(activeIds);
-             
-             if (selectedConversationId) {
-               try {
-                 await service.sendAudioInputPCM(selectedConversationId, base64);
-                 console.log(`🎯 Sent audio to selected stakeholder only`);
-                 
-                                   // Don't send system messages - they get spoken out loud
-                  // Instead, rely on smart audio routing to prevent multiple responses
-                  console.log(`🔇 Other stakeholders won't receive audio - preventing multiple responses`);
-                 
-               } catch (error) {
-                 // If conversation ended, remove it from active list
-                 if (error.message.includes('No active session')) {
-                   console.log('🔌 Conversation ended, removing from active list');
-                   activeConversations.forEach((id, key) => {
-                     if (id === selectedConversationId) {
-                       activeConversations.delete(key);
-                     }
-                   });
-                 }
-               }
-             }
+                                     // Use the same isFirstUserInput check from above
+            
+            if (isFirstUserInput) {
+              console.log('👋 First user input - sending to ALL stakeholders for greeting');
+              // Send to all stakeholders for initial greeting - they'll respond in turns
+              for (const conversationId of activeIds) {
+                try {
+                  await service.sendAudioInputPCM(conversationId, base64);
+                  console.log(`📤 Sent greeting audio to ${conversationId}`);
+                } catch (error) {
+                  console.error(`Failed to send greeting to ${conversationId}:`, error);
+                }
+              }
+            } else {
+              // For subsequent inputs, use smart routing with fallback
+              const selectedConversationId = selectBestStakeholderForAudio(activeIds);
+              
+              if (selectedConversationId) {
+                try {
+                  await service.sendAudioInputPCM(selectedConversationId, base64);
+                  console.log(`🎯 Sent audio to selected stakeholder: ${selectedConversationId}`);
+                  
+                  // Set up fallback timer in case no response
+                  setTimeout(async () => {
+                    const recentResponses = conversationHistory.filter(msg => 
+                      msg.type === 'agent_response' && 
+                      Date.now() - msg.timestamp.getTime() < 8000
+                    );
+                    
+                    if (recentResponses.length === 0) {
+                      console.log('⚠️ No response detected - trying fallback stakeholder');
+                      const fallbackId = activeIds.find(id => id !== selectedConversationId);
+                      if (fallbackId) {
+                        try {
+                          await service.sendAudioInputPCM(fallbackId, base64);
+                          console.log(`🔄 Sent fallback audio to ${fallbackId}`);
+                        } catch (error) {
+                          console.error('Fallback failed:', error);
+                        }
+                      }
+                    }
+                  }, 5000); // Wait 5 seconds for response
+                  
+                } catch (error) {
+                  // If conversation ended, remove it from active list
+                  if (error.message.includes('No active session')) {
+                    console.log('🔌 Conversation ended, removing from active list');
+                    activeConversations.forEach((id, key) => {
+                      if (id === selectedConversationId) {
+                        activeConversations.delete(key);
+                      }
+                    });
+                  }
+                }
+              }
+            }
           }
        };
       
@@ -815,8 +848,8 @@ Now listen to what the user is saying and participate naturally in this business
         processorNode
       };
       
-      // Auto-start recording for continuous listening
-      startRecording();
+      // Don't auto-start recording - let user control when to start
+      console.log('🎤 Audio setup complete - ready for user to start recording');
       
     } catch (error) {
       console.error('Error setting up audio recording:', error);
