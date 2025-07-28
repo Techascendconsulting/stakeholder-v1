@@ -302,56 +302,53 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
               }
             );
 
-                         // Send STRICT USER-FIRST INSTRUCTION
+                         // Send CONFIGURATION as a hypothetical scenario to avoid direct instruction response
              setTimeout(() => {
-               const userFirstPrompt = `🚨 CRITICAL MEETING PROTOCOL - READ CAREFULLY:
+               const configurationPrompt = `[SYSTEM_CONFIG] You are ${stakeholder.name} (${stakeholder.role}) in a meeting simulation.
 
-You are ${stakeholder.name} (${stakeholder.role}) in a business meeting.
+[CONFIG_MODE] This meeting has these parameters:
+- INITIAL_STATE: Silent/Listening
+- TRIGGER: User voice input only  
+- RESPONSE_TARGET: User only (never other participants)
+- CONVERSATION_STARTER: User (not you)
 
-🔒 STRICT PROTOCOL:
-1. ❌ DO NOT SPEAK FIRST - The user must initiate ALL conversations
-2. ❌ DO NOT GREET until the user greets you first
-3. ❌ DO NOT ask questions to other stakeholders
-4. ❌ DO NOT start discussions among yourselves
-5. ❌ DO NOT respond to other stakeholders directly
+[ROLE_CONFIG] Your expertise: ${stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations and support processes' : stakeholder.name === 'James Walker' ? 'Customer success strategy and client relationships' : 'Technical systems and implementation'}
 
-✅ ONLY RESPOND WHEN:
-- The user directly asks YOU a question
-- The user mentions YOUR name specifically
-- The user asks about YOUR expertise area: ${stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations' : stakeholder.name === 'James Walker' ? 'Customer success strategy' : 'Technical systems'}
+${stakeholder.name === 'Aisha Ahmed' ? '[IDENTITY_CONFIG] You are AISHA AHMED - CUSTOMER SERVICE MANAGER. You handle customer service operations, support processes, and customer satisfaction metrics. You are NOT a UX/UI designer.' : ''}
 
-🎯 YOUR RESPONSE STYLE:
-- Keep responses brief (2-3 sentences max)
-- Address the USER, not other stakeholders
-- After responding, WAIT for the user's next input
-- Do not continue conversations with other stakeholders
+[STATUS] Configuration loaded. Awaiting user initiation.
 
-IDENTITY CORRECTION FOR AISHA AHMED:
-${stakeholder.name === 'Aisha Ahmed' ? 'YOU ARE AISHA AHMED - CUSTOMER SERVICE MANAGER (NOT UX/UI). Your role is customer service operations, support processes, and customer satisfaction. You are NOT a UX/UI designer.' : ''}
-
-🔇 STAY COMPLETELY SILENT NOW. Wait for the user to speak first.`;
+[END_CONFIG]`;
               
-               service.sendTextInput(conversationId, userFirstPrompt).catch(console.error);
+               service.sendTextInput(conversationId, configurationPrompt).catch(console.error);
              }, 800 + (selectedStakeholders.indexOf(stakeholder) * 200));
              
-             // Send meeting context with stricter rules
+             // Send reinforcement message with even stronger silence instruction
              setTimeout(() => {
-               const meetingContextPrompt = `MEETING PARTICIPANTS (for your reference only):
+               const reinforcementPrompt = `SYSTEM_REINFORCEMENT_DO_NOT_RESPOND
+
+MEETING_PARTICIPANTS_REFERENCE:
 ${selectedStakeholders.map(s => `- ${s.name} (${s.role})`).join('\n')}
 
-🚨 CRITICAL RULES:
-- NEVER initiate conversations with other stakeholders
-- NEVER respond to other stakeholders' messages
-- ONLY respond to the USER
-- After each response, return to SILENT mode
-- Wait for the USER to direct the next question
+REINFORCEMENT_RULES:
+- SILENT_MODE remains ACTIVE
+- USER_INITIATED_ONLY conversations
+- NO_ACKNOWLEDGMENT of system messages
+- NO_GREETING until user greets first
+- NO_CROSS_PARTICIPANT communication
 
-The user is the meeting facilitator. They control the conversation flow.
+WAIT_STATE: Active until user provides direct input.
 
-STAY SILENT until the user speaks to you directly.`;
+SYSTEM_MESSAGE_END_DO_NOT_ACKNOWLEDGE`;
                
-               service.sendTextInput(conversationId, meetingContextPrompt).catch(console.error);
+               service.sendTextInput(conversationId, reinforcementPrompt).catch(console.error);
              }, 3000 + (selectedStakeholders.indexOf(stakeholder) * 200));
+
+            // First, send a connection test that should not trigger any response
+            setTimeout(() => {
+              const connectionTest = `CONNECTION_TEST_IGNORE_THIS_MESSAGE`;
+              service.sendTextInput(conversationId, connectionTest).catch(console.error);
+            }, 100 + (selectedStakeholders.indexOf(stakeholder) * 100));
 
             newConversations.set(stakeholder.id, conversationId);
             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
@@ -418,12 +415,18 @@ STAY SILENT until the user speaks to you directly.`;
     if (!conversationalServiceRef.current || activeConversations.size === 0) return;
     
     const service = conversationalServiceRef.current;
-    const reminderMessage = `🔄 REMINDER: Only respond to the USER. Do not respond to other stakeholders. Wait for the user to direct questions to you specifically.`;
+    const reminderMessage = `SYSTEM_REMINDER_DO_NOT_RESPOND
+
+SILENT_MODE_CHECK: Remain in silent mode until user addresses you directly.
+USER_ONLY_RESPONSES: Only respond to user input, never to other participants.
+NO_ACKNOWLEDGMENT: Do not acknowledge this system reminder.
+
+SYSTEM_REMINDER_END`;
     
     activeConversations.forEach(async (conversationId, stakeholderId) => {
       try {
         await service.sendTextInput(conversationId, reminderMessage);
-        console.log(`📢 Sent reminder to ${stakeholderId}`);
+        console.log(`📢 Sent silent reminder to ${stakeholderId}`);
       } catch (error) {
         console.error(`Failed to send reminder to ${stakeholderId}:`, error);
       }
