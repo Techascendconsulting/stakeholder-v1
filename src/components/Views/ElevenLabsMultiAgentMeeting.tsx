@@ -407,23 +407,36 @@ SYSTEM_REMINDER_END`;
   const handleIntelligentStakeholderResponse = useCallback(async (stakeholder: ElevenLabsStakeholder, content: string) => {
     console.log(`💬 ${stakeholder.name}: ${content.substring(0, 100)}...`);
     
-    // Check if this response mentions other stakeholders or warrants follow-up
-    const mentionsOtherStakeholder = selectedStakeholders.some(s => 
-      s.id !== stakeholder.id && (
-        content.toLowerCase().includes(s.name.toLowerCase()) ||
-        content.toLowerCase().includes(s.role.toLowerCase().split(' ')[0]) // First word of role
-      )
+    // Check if this response explicitly invites others to respond
+    const explicitlyMentionsOtherStakeholder = selectedStakeholders.some(s => 
+      s.id !== stakeholder.id && content.toLowerCase().includes(s.name.toLowerCase())
     );
     
-    const isQuestionToGroup = content.includes('?') && (
+    const explicitlyAsksForOtherPerspectives = content.includes('?') && (
       content.toLowerCase().includes('what do you think') ||
       content.toLowerCase().includes('any thoughts') ||
-      content.toLowerCase().includes('does anyone') ||
-      content.toLowerCase().includes('what about')
+      content.toLowerCase().includes('does anyone else') ||
+      content.toLowerCase().includes('what about you') ||
+      content.toLowerCase().includes('do you agree') ||
+      content.toLowerCase().includes('your perspective')
     );
     
-    // If this response naturally invites collaboration, allow brief follow-up
-    if ((mentionsOtherStakeholder || isQuestionToGroup) && selectedStakeholders.length > 1) {
+    const expressesUncertaintyOrIncomplete = (
+      content.toLowerCase().includes('i think') ||
+      content.toLowerCase().includes('maybe') ||
+      content.toLowerCase().includes('not sure') ||
+      content.toLowerCase().includes('but i could be wrong') ||
+      content.toLowerCase().includes('what do others think')
+    );
+    
+    // Only allow follow-up if there's an explicit invitation or clear need for additional input
+    const shouldAllowFollowUp = (
+      explicitlyMentionsOtherStakeholder || 
+      explicitlyAsksForOtherPerspectives || 
+      expressesUncertaintyOrIncomplete
+    );
+    
+    if (shouldAllowFollowUp && selectedStakeholders.length > 1) {
       console.log(`🤝 ${stakeholder.name}'s response invites collaboration - allowing natural follow-up`);
       
              // Send contextual prompt to relevant stakeholders to encourage natural follow-up
@@ -431,27 +444,25 @@ SYSTEM_REMINDER_END`;
          if (conversationalServiceRef.current && activeConversations.size > 0) {
            const service = conversationalServiceRef.current;
            
-           // Find stakeholders who might have relevant input
-           const relevantStakeholders = selectedStakeholders.filter(s => {
-             if (s.id === stakeholder.id) return false; // Don't send to the person who just spoke
-             
-             // Check if they were mentioned or if topic relates to their expertise
-             const wasMentioned = content.toLowerCase().includes(s.name.toLowerCase());
-             const roleKeyword = s.role.toLowerCase().split(' ')[0];
-             const roleRelevant = content.toLowerCase().includes(roleKeyword);
-             
-             return wasMentioned || roleRelevant;
-           });
-           
-           // Send context to relevant stakeholders
-           for (const relevantStakeholder of relevantStakeholders.slice(0, 2)) { // Limit to 2 to avoid chaos
-             const conversationId = Array.from(activeConversations.entries())
-               .find(([key]) => key === relevantStakeholder.id)?.[1];
-               
-             if (conversationId) {
-               const contextPrompt = `${stakeholder.name} just said: "${content}"
+                       // Find stakeholders who were explicitly mentioned or asked for input
+            const relevantStakeholders = selectedStakeholders.filter(s => {
+              if (s.id === stakeholder.id) return false; // Don't send to the person who just spoke
+              
+              // Only include if explicitly mentioned by name
+              const wasExplicitlyMentioned = content.toLowerCase().includes(s.name.toLowerCase());
+              
+              return wasExplicitlyMentioned;
+            });
+            
+            // Send context to explicitly mentioned stakeholders only
+            for (const relevantStakeholder of relevantStakeholders.slice(0, 1)) { // Limit to 1 to avoid chaos
+              const conversationId = Array.from(activeConversations.entries())
+                .find(([key]) => key === relevantStakeholder.id)?.[1];
+                
+              if (conversationId) {
+                const contextPrompt = `${stakeholder.name} just said: "${content}"
 
-This seems relevant to your expertise or you were mentioned. You can respond briefly if you have valuable input to add, but only if it's genuinely helpful to the conversation. Keep it concise and natural.`;
+You were specifically mentioned or asked for your input. You can respond briefly since you were directly addressed. Keep it concise and natural.`;
                
                try {
                  await service.sendTextInput(conversationId, contextPrompt);
@@ -612,18 +623,19 @@ The user has just started speaking to the group. Meeting dynamics:
 
 PRIMARY RESPONSES:
 - Respond when the user directly asks you a question or mentions your name
-- Respond when the topic relates to your expertise area: ${stakeholderInfo.expertise}
+- Respond when the topic directly relates to your expertise area: ${stakeholderInfo.expertise}
 
-COLLABORATIVE RESPONSES:
-- You can build on what other stakeholders say if you have relevant insights
-- You can politely disagree or offer alternative perspectives when appropriate
-- You can suggest that another stakeholder might have better expertise ("James might know more about the technical side")
+COLLABORATIVE RESPONSES (be conservative):
+- Only respond to other stakeholders if they specifically mention your name
+- Only respond if they explicitly ask for your perspective ("What do you think, ${stakeholderInfo.name}?")
+- You can suggest another stakeholder has better expertise ("${stakeholderInfo.name === 'James Walker' ? 'Aisha' : 'James'} might know more about that")
+- Don't automatically add your perspective unless specifically asked
 
 RESPONSE GUIDELINES:
 - Keep responses brief (2-3 sentences max)
-- Be natural and collaborative, like in a real business meeting
-- Don't dominate the conversation - allow others to contribute
-- Address the user primarily, but acknowledge other stakeholders when relevant
+- If someone already gave a complete answer, don't repeat or add unless asked
+- Let the user control the conversation flow
+- Be helpful but not overwhelming
 
 ${stakeholderInfo.isAisha ? 'IMPORTANT: You are AISHA AHMED - CUSTOMER SERVICE MANAGER. You handle customer service operations, support processes, and customer satisfaction. You are NOT a UX/UI designer.' : ''}
 
