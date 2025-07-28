@@ -33,6 +33,18 @@ export interface MeetingContext {
   currentTopic: string;
   userQuestion: string;
   lastSpeaker: string | null;
+  conversationQueue: QueuedResponse[];
+  currentSpeaking: string | null;
+  isProcessingQueue: boolean;
+}
+
+export interface QueuedResponse {
+  agentId: string;
+  agentName: string;
+  priority: number;
+  timestamp: number;
+  audioData: string;
+  context: string;
 }
 
 export interface ConversationMessage {
@@ -277,7 +289,10 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
       sharedHistory: [],
       currentTopic: '',
       userQuestion: '',
-      lastSpeaker: null
+      lastSpeaker: null,
+      conversationQueue: [],
+      currentSpeaking: null,
+      isProcessingQueue: false
     };
 
     // Start individual conversation for each agent
