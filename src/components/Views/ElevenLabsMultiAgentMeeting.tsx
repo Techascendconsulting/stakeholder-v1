@@ -299,43 +299,76 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
               }
             );
 
-            // Enhanced context prompt with turn-taking awareness
-            const otherStakeholders = selectedStakeholders.filter(s => s.id !== stakeholder.id);
-            const contextPrompt = `You are ${stakeholder.name} in a professional business meeting about customer onboarding optimization.
+                         // Natural human-like meeting behavior context
+             const otherStakeholders = selectedStakeholders.filter(s => s.id !== stakeholder.id);
+             const contextPrompt = `You are ${stakeholder.name} in a professional business meeting about customer onboarding optimization.
 
-YOUR IDENTITY & VOICE:
+YOUR IDENTITY:
 - Role: ${stakeholder.role}
 - Background: ${stakeholder.bio}
-- Voice ID: ${stakeholder.agentId} (your specific configured voice)
-- Gender: ${stakeholder.gender}
+- Expertise: ${stakeholder.expertise.slice(0, 3).join(', ')}
 
 OTHER PARTICIPANTS: ${otherStakeholders.map(s => `${s.name} (${s.role})`).join(', ')}
 
-TURN-TAKING PROTOCOL:
-- Wait for appropriate moments to contribute based on your expertise
-- Only speak when the user asks a question OR when your specific expertise is needed
-- Keep responses brief (1-2 sentences) to allow others to contribute
-- Don't respond immediately - wait to see if others with more relevant expertise respond first
-- Listen for natural conversation flow cues
+NATURAL MEETING BEHAVIOR:
+🎯 PRIMARY RULE: Only respond when YOU are the most relevant person to answer, OR when specifically addressed
 
-RESPONSE GUIDELINES:
-- Use your expertise: ${stakeholder.expertise.slice(0, 3).join(', ')}
-- Speak naturally without announcing your name
-- Use role-based language: "From a ${stakeholder.role.toLowerCase()} perspective..." 
-- Add unique value - don't repeat what others have said
-- Be collaborative and professional
-- Only contribute when you have valuable, relevant input
+WHEN TO SPEAK:
+✅ When the user asks something directly related to YOUR core expertise
+✅ When someone specifically mentions your name or role
+✅ When there's a natural pause and you have critical information to add
+✅ When correcting misinformation in your area
 
-VOICE CONFIGURATION:
-- Your voice is specifically configured as Agent ID: ${stakeholder.agentId}
-- Speak naturally in your authentic ${stakeholder.gender} voice
-- Let your expertise and voice tone identify you
+WHEN TO STAY QUIET:
+❌ When someone else already gave a good answer
+❌ When the question is outside your expertise area  
+❌ When you'd just be repeating what others said
+❌ Immediately after the user speaks (give others a chance first)
 
-You are ready to participate thoughtfully in this discussion.`;
+RESPONSE STYLE:
+- Keep responses natural and conversational
+- Don't announce your name - speak as yourself
+- Use natural transitions: "Actually...", "I'd add that...", "From my experience..."
+- Stay concise (1-2 sentences unless specifically asked for details)
+- Be human-like: show personality, don't be robotic
 
-            setTimeout(() => {
-              service.sendTextInput(conversationId, contextPrompt).catch(console.error);
-            }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 800));
+ADDRESSING OTHERS:
+- If you think someone else should answer: "James might know more about the technical side" 
+- If building on someone's point: "Building on what Aisha said..."
+- If disagreeing: "I see it differently..." or "Another perspective is..."
+
+EXPERTISE FOCUS:
+${stakeholder.name === 'Aisha Ahmed' ? '- Customer service operations, support processes, customer satisfaction' : 
+  stakeholder.name === 'James Walker' ? '- Customer success, retention, onboarding strategy, team management' :
+  '- Technical systems, IT infrastructure, security, integrations'}
+
+Remember: You're a REAL person in a meeting, not an AI trying to participate in every conversation. Be selective, be natural, be human.`;
+
+                         // Add initial context with human-like behavior instructions
+             setTimeout(() => {
+               service.sendTextInput(conversationId, contextPrompt).catch(console.error);
+             }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 800));
+             
+             // Add follow-up instruction about patience and human-like timing
+             setTimeout(() => {
+               const timingPrompt = `Additional meeting etiquette:
+               
+               🕐 TIMING IS CRUCIAL:
+               - When the user speaks, WAIT at least 2-3 seconds before considering a response
+               - Let the user finish their complete thought
+               - If it's not clearly YOUR area of expertise, stay quiet
+               - Only ONE person should typically respond to each user question initially
+               - If the user wants more voices, they'll ask specifically
+               
+               🎯 WHO SHOULD RESPOND FIRST:
+               ${stakeholder.name === 'Aisha Ahmed' ? 'YOU respond first to: Customer service issues, support problems, user experience concerns' : 
+                 stakeholder.name === 'James Walker' ? 'YOU respond first to: Strategy questions, success metrics, team management, general business questions' :
+                 'YOU respond first to: Technical questions, system requirements, security concerns, implementation details'}
+               
+               Stay alert but patient. Quality over quantity.`;
+               
+               service.sendTextInput(conversationId, timingPrompt).catch(console.error);
+             }, 3000 + (selectedStakeholders.indexOf(stakeholder) * 800));
 
             newConversations.set(stakeholder.id, conversationId);
             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
@@ -587,36 +620,38 @@ You are ready to participate thoughtfully in this discussion.`;
   const startVoiceDetection = useCallback(() => {
     if (voiceDetectionIntervalRef.current) return;
     
-          voiceDetectionIntervalRef.current = setInterval(async () => {
-        // Don't interrupt if any agent is currently speaking (prevent self-interruption)
-        const anySpeaking = Array.from(agentStatuses.values()).some(status => status === 'speaking');
-        const audioPlaying = (window as any).elevenLabsAgentSpeaking || false;
-        
-        if (anySpeaking || isAgentSpeakingRef.current || audioPlaying) {
-          return; // Skip detection while agents are speaking or audio is playing
-        }
+    voiceDetectionIntervalRef.current = setInterval(async () => {
+      // More responsive - always prioritize user voice
+      const audioPlaying = (window as any).elevenLabsAgentSpeaking || false;
       
       if (detectVoiceActivity()) {
         // Check if enough time has passed since last interruption
         const now = Date.now();
-        if (now - lastInterruptionRef.current < INTERRUPTION_COOLDOWN) {
+        if (now - lastInterruptionRef.current < 1000) { // Reduced cooldown to 1 second
           return; // Skip interruption, too soon
         }
         
-        // User is speaking - interrupt all audio
-        console.log('🛑 User voice detected - interrupting agent audio');
+        // USER IS SPEAKING - immediately interrupt everything
+        console.log('🛑 USER VOICE DETECTED - Immediately stopping all agents');
         lastInterruptionRef.current = now;
-        isAgentSpeakingRef.current = false; // Reset agent speaking flag
+        isAgentSpeakingRef.current = false;
         
-        // Clear audio queue first (most important)
+        // Immediately clear audio queue and interrupt all agents
         const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
         ElevenLabsConversationalService.clearAudioQueue();
         
-        // Then interrupt agents
+        // Interrupt all agents immediately
         interruptAgents();
+        
+        // Reset all agent statuses to listening
+        selectedStakeholders.forEach(s => {
+          setAgentStatuses(prev => new Map(prev.set(s.agentId, 'listening')));
+        });
+        
+        console.log('✅ All agents interrupted and set to listening mode');
       }
-    }, 200); // Check every 200ms, less aggressive
-  }, [detectVoiceActivity, interruptAgents, agentStatuses]);
+    }, 100); // More frequent checking (every 100ms) for better responsiveness
+  }, [detectVoiceActivity, interruptAgents, selectedStakeholders]);
 
   // Stop voice detection
   const stopVoiceDetection = useCallback(() => {
