@@ -171,11 +171,18 @@ class ElevenLabsConversationalService {
     switch (data.type) {
       case 'conversation_initiation_metadata':
         console.log('🎤 Conversation initiated:', data);
-        console.log('📋 Conversation metadata:', {
+        const metadata = {
           conversationId: data.conversation_initiation_metadata_event?.conversation_id,
           agentAudioFormat: data.conversation_initiation_metadata_event?.agent_output_audio_format,
           userAudioFormat: data.conversation_initiation_metadata_event?.user_input_audio_format
-        });
+        };
+        console.log('📋 Conversation metadata:', metadata);
+        
+        // Store the audio format for proper playback
+        if (session) {
+          (session as any).agentAudioFormat = metadata.agentAudioFormat;
+        }
+        
         statusHandler?.('listening');
         break;
 
@@ -451,105 +458,58 @@ class ElevenLabsConversationalService {
   }
 
   /**
-   * Play audio chunk from agent response
+   * Play audio chunk from agent response using Web Audio API
    */
-  private playAudioChunk(base64Audio: string): void {
+  private async playAudioChunk(base64Audio: string): Promise<void> {
     try {
       console.log('🎵 Processing audio chunk, base64 length:', base64Audio.length);
       
       // Decode base64 to binary
       const binaryString = atob(base64Audio);
-      const pcmData = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        pcmData[i] = binaryString.charCodeAt(i);
+      const pcmData = new Int16Array(binaryString.length / 2);
+      
+      // Convert bytes to 16-bit signed integers (little-endian)
+      for (let i = 0; i < pcmData.length; i++) {
+        const byte1 = binaryString.charCodeAt(i * 2);
+        const byte2 = binaryString.charCodeAt(i * 2 + 1);
+        pcmData[i] = byte1 | (byte2 << 8);
+        // Convert to signed 16-bit
+        if (pcmData[i] > 32767) pcmData[i] -= 65536;
       }
 
-      console.log('🎵 PCM data length:', pcmData.length);
+      console.log('🎵 PCM samples:', pcmData.length);
 
-      // Convert raw PCM to WAV format with proper headers
-      const wavData = this.createWavFile(pcmData, 16000, 1, 16);
-      const audioBlob = new Blob([wavData], { type: 'audio/wav' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // Create Web Audio API context
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      audio.onloadstart = () => {
-        console.log('🎵 WAV audio loading started');
+      // Create audio buffer
+      const audioBuffer = audioContext.createBuffer(1, pcmData.length, 16000);
+      const channelData = audioBuffer.getChannelData(0);
+      
+      // Convert 16-bit PCM to float32 (-1 to 1 range)
+      for (let i = 0; i < pcmData.length; i++) {
+        channelData[i] = pcmData[i] / 32768.0;
+      }
+      
+      // Create and play audio source
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      
+      source.onended = () => {
+        console.log('🎵 Audio finished playing');
+        audioContext.close();
       };
       
-      audio.oncanplay = () => {
-        console.log('🎵 WAV audio can play');
-      };
+      console.log('🎵 Playing audio via Web Audio API...');
+      source.start(0);
       
-      audio.onplay = () => {
-        console.log('🎵 WAV audio started playing');
-      };
-      
-      audio.onended = () => {
-        console.log('🎵 WAV audio finished playing');
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      audio.onerror = (error) => {
-        console.error('❌ Error playing WAV audio:', error);
-        console.error('❌ WAV audio error details:', audio.error);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      console.log('🎵 Attempting to play WAV audio...');
-      audio.play().catch(error => {
-        console.error('❌ Failed to play WAV audio:', error);
-      });
     } catch (error) {
       console.error('❌ Error processing audio chunk:', error);
     }
   }
 
-  /**
-   * Create WAV file from raw PCM data
-   */
-  private createWavFile(pcmData: Uint8Array, sampleRate: number, channels: number, bitsPerSample: number): ArrayBuffer {
-    const byteRate = sampleRate * channels * bitsPerSample / 8;
-    const blockAlign = channels * bitsPerSample / 8;
-    const dataSize = pcmData.length;
-    const fileSize = 36 + dataSize;
 
-    const buffer = new ArrayBuffer(44 + dataSize);
-    const view = new DataView(buffer);
-
-    // RIFF header
-    this.writeString(view, 0, 'RIFF');
-    view.setUint32(4, fileSize, true);
-    this.writeString(view, 8, 'WAVE');
-
-    // fmt chunk
-    this.writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true); // fmt chunk size
-    view.setUint16(20, 1, true); // PCM format
-    view.setUint16(22, channels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, byteRate, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, bitsPerSample, true);
-
-    // data chunk
-    this.writeString(view, 36, 'data');
-    view.setUint32(40, dataSize, true);
-
-    // PCM data
-    const uint8Array = new Uint8Array(buffer, 44);
-    uint8Array.set(pcmData);
-
-    return buffer;
-  }
-
-  /**
-   * Write string to DataView
-   */
-  private writeString(view: DataView, offset: number, str: string): void {
-    for (let i = 0; i < str.length; i++) {
-      view.setUint8(offset + i, str.charCodeAt(i));
-    }
-  }
 
   /**
    * Clean up session resources
