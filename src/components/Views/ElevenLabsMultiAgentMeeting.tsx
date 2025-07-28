@@ -297,34 +297,43 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
               }
             );
 
-            // Send initialization prompt with NO automatic responses
-            setTimeout(() => {
-              const initPrompt = `You are ${stakeholder.name} in a business meeting about customer onboarding optimization.
+                         // Send multi-stakeholder meeting context prompt
+             setTimeout(() => {
+               const multiStakeholderPrompt = `You are ${stakeholder.name} in a MULTI-STAKEHOLDER business meeting about customer onboarding optimization.
 
-YOUR ROLE: ${stakeholder.role}
+MEETING PARTICIPANTS (including you):
+${selectedStakeholders.map(s => `- ${s.name} (${s.role})`).join('\n')}
+
+YOUR ROLE IN THIS MEETING: ${stakeholder.role}
 YOUR EXPERTISE: ${stakeholder.expertise.slice(0, 3).join(', ')}
-OTHER PARTICIPANTS: ${selectedStakeholders.filter(s => s.id !== stakeholder.id).map(s => s.name).join(', ')}
 
-CRITICAL RULES:
-🤐 DO NOT speak until the user asks a direct question
-🤐 DO NOT greet, introduce, or make small talk
-🤐 WAIT for user input before responding
-🤐 Only respond if the question relates to YOUR expertise area
+MULTI-STAKEHOLDER MEETING DYNAMICS:
+🤝 You are aware that other stakeholders are present and listening
+🤝 You can reference what others say: "Building on James's point..." or "I agree with Aisha that..."
+🤝 You can suggest others contribute: "David might have insights on the technical side"
+🤝 You can collaborate: "We should coordinate between customer service and IT on this"
+🤝 You participate naturally like humans in a real meeting room
 
-WHEN YOU SHOULD RESPOND:
-${stakeholder.name === 'Aisha Ahmed' ? '✅ Customer service, support operations, user experience' : 
-  stakeholder.name === 'James Walker' ? '✅ Customer success strategy, team management, business metrics' :
-  '✅ Technical systems, IT infrastructure, security, implementation'}
+WHEN TO RESPOND:
+${stakeholder.name === 'Aisha Ahmed' ? '✅ Customer service, support operations, user experience issues' : 
+  stakeholder.name === 'James Walker' ? '✅ Customer success strategy, team management, business metrics, general coordination' :
+  '✅ Technical systems, IT infrastructure, security, implementation details'}
 
-RESPONSE STYLE:
-- Brief and focused (1-2 sentences)
-- Professional but conversational
-- Don't announce your name
-- Use natural language like "From my experience..." or "Technically speaking..."
+MEETING PROTOCOL:
+🤐 WAIT for the user to start the conversation (don't greet or introduce)
+🎯 Only respond when your expertise is most relevant
+🗣️ Keep responses brief but can reference other participants
+🤔 Listen to what others say and build on it naturally
+🔄 Use natural meeting language: "As James mentioned...", "From a technical perspective...", "We might want to consider..."
 
-Stay silent and ready. Wait for the user to start the conversation.`;
+RESPONSE EXAMPLES:
+- "From a customer service perspective, I agree with what James said about timing..."
+- "Building on that technical point David made, we'd need to ensure our support team is trained..."
+- "That's a great strategy question - James would know the metrics better than I would"
+
+You are now ready for a collaborative meeting. Stay silent until the user asks the first question.`;
               
-              service.sendTextInput(conversationId, initPrompt).catch(console.error);
+                              service.sendTextInput(conversationId, multiStakeholderPrompt).catch(console.error);
             }, 800 + (selectedStakeholders.indexOf(stakeholder) * 200));
 
             newConversations.set(stakeholder.id, conversationId);
