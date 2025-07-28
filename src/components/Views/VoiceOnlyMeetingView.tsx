@@ -290,6 +290,32 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     messageCount: 0
   });
 
+  // Hands-free mode state
+  const [isHandsFreeMode, setIsHandsFreeMode] = useState(false);
+
+  // Hands-free mode functions
+  const startHandsFreeMeeting = () => {
+    console.log('🚀 Starting hands-free meeting mode');
+    setIsHandsFreeMode(true);
+    
+    // Auto-start recording after a brief delay
+    setTimeout(() => {
+      if (!isRecording) {
+        console.log('🎤 Auto-starting recording for hands-free mode');
+        handleMicClick();
+      }
+    }, 1000);
+  };
+
+  const endHandsFreeMeeting = () => {
+    console.log('🛑 Ending hands-free meeting mode');
+    setIsHandsFreeMode(false);
+    
+    if (isRecording) {
+      handleMicClick(); // Stop recording
+    }
+  };
+
   // Background transcript capture function (always captures, regardless of UI)
   const addToBackgroundTranscript = (message: Message) => {
     console.log('📝 BACKGROUND TRANSCRIPT - Adding message:', {
@@ -2088,6 +2114,22 @@ Please review the raw transcript for detailed conversation content.`;
               <Square className="w-4 h-4 text-white" />
             </button>
 
+            {/* Hands-Free Mode Toggle */}
+            <button
+              onClick={isHandsFreeMode ? endHandsFreeMeeting : startHandsFreeMeeting}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                isHandsFreeMode 
+                  ? 'bg-red-600 hover:bg-red-700 text-white' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+              title={isHandsFreeMode ? 'Exit hands-free mode' : 'Enter hands-free mode'}
+            >
+              {isHandsFreeMode ? <Phone className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              <span className="text-sm">
+                {isHandsFreeMode ? 'End Meeting' : 'Hands-Free'}
+              </span>
+            </button>
+
             {/* Debug Button - Remove after testing */}
             <button
               onClick={() => {
@@ -2309,16 +2351,80 @@ Please review the raw transcript for detailed conversation content.`;
           </div>
         </div>
 
-        {/* Message Input Area */}
-        <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
-          {/* Dynamic Feedback Display */}
-          {dynamicFeedback && (
-            <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
-              <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
+        {/* Hands-Free Mode Overlay */}
+        {isHandsFreeMode && (
+          <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="text-center space-y-6 max-w-md">
+              <div className="w-24 h-24 mx-auto">
+                <div className={`w-full h-full rounded-full border-4 border-blue-500 flex items-center justify-center ${
+                  isRecording ? 'bg-blue-500 animate-pulse' : 'bg-gray-700'
+                }`}>
+                  <Mic className={`w-8 h-8 ${isRecording ? 'text-white' : 'text-gray-400'}`} />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-white">
+                  {isRecording ? 'Listening...' : 'Ready to Listen'}
+                </h2>
+                <p className="text-gray-400">
+                  {isRecording 
+                    ? 'Speak naturally. I\'ll respond when you\'re done.'
+                    : 'Click anywhere to start talking'
+                  }
+                </p>
+              </div>
+
+              {/* Current Speaker Indicator */}
+              {currentSpeaker && (
+                <div className="bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm border border-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-gray-300">Currently speaking:</span>
+                    <span className="font-medium text-white">{currentSpeaker.name}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Feedback */}
+              {dynamicFeedback && (
+                <div className="bg-purple-900/50 rounded-lg p-3 backdrop-blur-sm border border-purple-500/30">
+                  <p className="text-purple-200 text-sm">{dynamicFeedback}</p>
+                </div>
+              )}
+
+              {/* Click to talk when not recording */}
+              {!isRecording && (
+                <div 
+                  onClick={handleMicClick}
+                  className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium transition-colors flex items-center space-x-3 mx-auto w-fit"
+                >
+                  <Mic className="w-6 h-6" />
+                  <span>Click to Talk</span>
+                </div>
+              )}
+
+              {/* Meeting Info */}
+              <div className="text-xs text-gray-500 border-t border-gray-700 pt-4">
+                <p>Meeting with {selectedStakeholders.map(s => s.name).join(', ')}</p>
+                <p className="mt-1">Duration: {formatTime(elapsedTime)}</p>
+                <p className="mt-1 text-blue-400">Hands-Free Mode Active</p>
+              </div>
             </div>
-          )}
-          
-          <div className="flex space-x-3">
+          </div>
+        )}
+
+        {/* Message Input Area */}
+        {!isHandsFreeMode && (
+          <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
+            {/* Dynamic Feedback Display */}
+            {dynamicFeedback && (
+              <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+                <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
+              </div>
+            )}
+            
+            <div className="flex space-x-3">
             <input
               ref={inputRef}
               type="text"
@@ -2430,6 +2536,7 @@ Please review the raw transcript for detailed conversation content.`;
             </>
           )}
         </div>
+        )}
 
       </div>
     </div>
