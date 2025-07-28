@@ -623,6 +623,8 @@ You were specifically mentioned or asked for your input. You can respond briefly
       
       let isRecordingRef = { value: false };
       let lastInterruptTime = 0;
+      let silenceTimer: NodeJS.Timeout | null = null;
+      let isUserSpeaking = false;
       
              processorNode.onaudioprocess = async (event) => {
          if (!isRecordingRef.value) return;
@@ -639,13 +641,27 @@ You were specifically mentioned or asked for your input. You can respond briefly
          const hasSpeech = average > voiceThreshold || peaks > 10;
          
          if (hasSpeech) {
-           // More responsive interruption - allow every 500ms
-           const now = Date.now();
-           if (now - lastInterruptTime > 500) {
-             console.log('🎤 User voice detected - immediate interruption');
+           // User is speaking
+           if (!isUserSpeaking) {
+             console.log('🎤 User started speaking');
+             isUserSpeaking = true;
              interruptAllStakeholders();
-             lastInterruptTime = now;
            }
+           
+           // Clear any existing silence timer
+           if (silenceTimer) {
+             clearTimeout(silenceTimer);
+             silenceTimer = null;
+           }
+           
+           // Set a timer to detect when user stops speaking
+           silenceTimer = setTimeout(() => {
+             if (isUserSpeaking) {
+               console.log('🤫 User stopped speaking - processing audio');
+               isUserSpeaking = false;
+               // This will trigger the audio processing below
+             }
+           }, 1500); // Wait 1.5 seconds of silence before processing
          }
          
          // Convert float32 PCM to 16-bit PCM at 16kHz
@@ -678,8 +694,8 @@ You were specifically mentioned or asked for your input. You can respond briefly
          const uint8Array = new Uint8Array(pcm16.buffer);
          const base64 = btoa(String.fromCharCode(...uint8Array));
          
-                   // First time user speaks - send instructions, then send audio
-          if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0) {
+                   // Only process audio when user has stopped speaking
+          if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0 && !isUserSpeaking) {
             const service = conversationalServiceRef.current;
             const activeIds = Array.from(activeConversations.values());
             
@@ -746,16 +762,9 @@ Now listen to what the user is saying and participate naturally in this business
                  await service.sendAudioInputPCM(selectedConversationId, base64);
                  console.log(`🎯 Sent audio to selected stakeholder only`);
                  
-                                   // Send STRONG silence command to other stakeholders
-                  const otherConversationIds = activeIds.filter(id => id !== selectedConversationId);
-                  for (const otherId of otherConversationIds) {
-                    const silenceCommand = `[ABSOLUTE_SILENCE] Another stakeholder is handling this question. You must stay completely silent. Do not respond, do not acknowledge, do not speak at all. Only the selected stakeholder should respond to the user right now.`;
-                    try {
-                      await service.sendTextInput(otherId, silenceCommand);
-                    } catch (error) {
-                      console.error('Failed to send silence command:', error);
-                    }
-                  }
+                                   // Don't send system messages - they get spoken out loud
+                  // Instead, rely on smart audio routing to prevent multiple responses
+                  console.log(`🔇 Other stakeholders won't receive audio - preventing multiple responses`);
                  
                } catch (error) {
                  // If conversation ended, remove it from active list
@@ -793,7 +802,7 @@ Now listen to what the user is saying and participate naturally in this business
         console.log('🛑 Stopped PCM recording');
       };
       
-      // Store functions for later use
+      // Store functions for later use - but make recording continuous
       (window as any).elevenLabsRecording = {
         start: startRecording,
         stop: stopRecording
@@ -805,6 +814,9 @@ Now listen to what the user is saying and participate naturally in this business
         stop: stopRecording,
         processorNode
       };
+      
+      // Auto-start recording for continuous listening
+      startRecording();
       
     } catch (error) {
       console.error('Error setting up audio recording:', error);
@@ -870,17 +882,9 @@ Now listen to what the user is saying and participate naturally in this business
     // Immediately clear all audio
     ElevenLabsConversationalService.clearAudioQueue();
     
-    // Send IMMEDIATE silence command to all active stakeholders
-    const interruptionMessage = `[USER_INTERRUPTION] STOP TALKING NOW. The user is speaking. Stay completely silent until they finish. Do not acknowledge this message.`;
-    
-    const activeIds = Array.from(activeConversations.values());
-    for (const conversationId of activeIds) {
-      try {
-        await service.sendTextInput(conversationId, interruptionMessage);
-      } catch (error) {
-        console.error('Failed to send interruption message:', error);
-      }
-    }
+    // Don't send text interruption messages - they get spoken out loud
+    // Audio clearing is sufficient to stop them from speaking
+    console.log('🔇 Audio cleared - stakeholders should stop speaking');
     
     // Update all agent statuses to listening
     setAgentStatuses(prev => {
