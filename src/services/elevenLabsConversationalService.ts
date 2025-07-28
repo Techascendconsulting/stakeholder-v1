@@ -11,6 +11,7 @@ interface ConversationSession {
   websocket: WebSocket | null;
   isActive: boolean;
   stakeholder: ElevenLabsStakeholder;
+  isInitialized: boolean;
 }
 
 interface ConversationMessage {
@@ -40,6 +41,7 @@ class ElevenLabsConversationalService {
    */
   private async getSignedUrl(agentId: string): Promise<string> {
     try {
+      console.log(`🔐 Requesting signed URL for agent: ${agentId}`);
       const response = await fetch(
         `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${agentId}`,
         {
@@ -49,14 +51,19 @@ class ElevenLabsConversationalService {
         }
       );
 
+      console.log(`🔐 Signed URL response status: ${response.status}`);
+      
       if (!response.ok) {
-        throw new Error('Failed to get signed URL');
+        const errorText = await response.text();
+        console.error(`❌ Signed URL error: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to get signed URL: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log(`🔐 Signed URL received:`, data.signed_url.substring(0, 100) + '...');
       return data.signed_url;
     } catch (error) {
-      console.error('Error getting signed URL:', error);
+      console.error('❌ Error getting signed URL:', error);
       throw error;
     }
   }
@@ -84,7 +91,8 @@ class ElevenLabsConversationalService {
         agentId: stakeholder.agentId,
         websocket,
         isActive: false,
-        stakeholder
+        stakeholder,
+        isInitialized: false
       };
 
       // Store handlers
@@ -102,12 +110,8 @@ class ElevenLabsConversationalService {
         this.activeSessions.set(conversationId, session);
         onStatusChange?.(stakeholder.agentId, 'listening');
         
-        // Send initialization message - keeping it simple as per docs
-        const initMessage = {
-          type: 'conversation_initiation_client_data'
-        };
-        websocket.send(JSON.stringify(initMessage));
-        console.log('📤 Sent initialization message');
+        // Don't send initialization message immediately - wait for first user action
+        console.log('🔗 WebSocket connection established, ready for interaction');
       };
 
       websocket.onmessage = (event) => {
@@ -280,7 +284,23 @@ class ElevenLabsConversationalService {
       throw new Error('No active session or WebSocket connection');
     }
 
-    try {
+          try {
+        // Send initialization message first if this is the first interaction
+        if (!session.isInitialized && session.websocket.readyState === WebSocket.OPEN) {
+          const initMessage = {
+            type: 'conversation_initiation_client_data',
+            conversation_config_override: {},
+            custom_llm_extra_body: {},
+            dynamic_variables: {}
+          };
+          session.websocket.send(JSON.stringify(initMessage));
+          console.log('📤 Sent initialization message before audio');
+          session.isInitialized = true;
+          
+          // Add a small delay to ensure initialization is processed
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
       // Convert blob to base64 using FileReader for better compatibility
       const base64Audio = await this.blobToBase64(audioBlob);
       
