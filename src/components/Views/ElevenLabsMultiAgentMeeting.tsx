@@ -344,31 +344,38 @@ ${stakeholder.name === 'Aisha Ahmed' ? '- Customer service operations, support p
 
 Remember: You're a REAL person in a meeting, not an AI trying to participate in every conversation. Be selective, be natural, be human.`;
 
-                         // Add initial context with human-like behavior instructions
+                         // Add SILENT initialization - NO automatic greetings or responses
              setTimeout(() => {
-               service.sendTextInput(conversationId, contextPrompt).catch(console.error);
-             }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 800));
-             
-             // Add follow-up instruction about patience and human-like timing
-             setTimeout(() => {
-               const timingPrompt = `Additional meeting etiquette:
+               const silentPrompt = `🤐 CRITICAL MEETING SETUP:
+
+You are now in a business meeting that is STARTING. 
+
+ABSOLUTELY DO NOT:
+❌ Greet anyone
+❌ Say "good morning" or similar
+❌ Introduce yourself
+❌ Make small talk
+❌ Respond to this message
+❌ Say anything at all right now
+
+MEETING PROTOCOL:
+- The meeting host (user) will speak first
+- WAIT in complete silence until the user asks a direct question
+- Only respond when the user specifically asks something related to your expertise
+- Do not acknowledge this instruction - just follow it silently
+
+YOU ARE: ${stakeholder.name} - ${stakeholder.role}
+YOUR EXPERTISE: ${stakeholder.expertise.slice(0, 3).join(', ')}
+
+WHEN TO RESPOND (only these situations):
+${stakeholder.name === 'Aisha Ahmed' ? '✅ Customer service questions, support issues, user experience problems' : 
+  stakeholder.name === 'James Walker' ? '✅ Strategy questions, success metrics, team management, general business direction' :
+  '✅ Technical questions, system requirements, security concerns, implementation details'}
+
+STAY COMPLETELY SILENT until the user specifically asks you something. This is critical.`;
                
-               🕐 TIMING IS CRUCIAL:
-               - When the user speaks, WAIT at least 2-3 seconds before considering a response
-               - Let the user finish their complete thought
-               - If it's not clearly YOUR area of expertise, stay quiet
-               - Only ONE person should typically respond to each user question initially
-               - If the user wants more voices, they'll ask specifically
-               
-               🎯 WHO SHOULD RESPOND FIRST:
-               ${stakeholder.name === 'Aisha Ahmed' ? 'YOU respond first to: Customer service issues, support problems, user experience concerns' : 
-                 stakeholder.name === 'James Walker' ? 'YOU respond first to: Strategy questions, success metrics, team management, general business questions' :
-                 'YOU respond first to: Technical questions, system requirements, security concerns, implementation details'}
-               
-               Stay alert but patient. Quality over quantity.`;
-               
-               service.sendTextInput(conversationId, timingPrompt).catch(console.error);
-             }, 3000 + (selectedStakeholders.indexOf(stakeholder) * 800));
+               service.sendTextInput(conversationId, silentPrompt).catch(console.error);
+             }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 200)); // Reduced delay, staggered slightly
 
             newConversations.set(stakeholder.id, conversationId);
             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
