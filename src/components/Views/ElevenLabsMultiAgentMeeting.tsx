@@ -264,105 +264,67 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
           console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
         }
       } else if (meetingMode === 'multi-voice') {
-        // Multi-stakeholder simulation using ONE agent with multiple personalities
-        console.log(`🎭 Starting multi-voice simulation with ${selectedStakeholders.length} stakeholders...`);
+        // Multi-voice: Use individual agents with their natural voices for authentic conversation
+        console.log(`🎭 Starting multi-voice with individual agents for ${selectedStakeholders.length} stakeholders...`);
         
-        // Choose the primary agent based on gender representation using actual gender property
-        const femaleStakeholders = selectedStakeholders.filter(s => s.gender === 'female');
-        const maleStakeholders = selectedStakeholders.filter(s => s.gender === 'male');
-        
-        let primaryStakeholder;
-        let voiceGender;
-        
-        if (femaleStakeholders.length > 0) {
-          // If we have female stakeholders, use a female agent
-          primaryStakeholder = femaleStakeholders[0];
-          voiceGender = 'female';
-          console.log(`🎭 Using female agent (${primaryStakeholder.name}) for multi-voice simulation`);
-        } else {
-          // Only male stakeholders, use male agent
-          primaryStakeholder = maleStakeholders[0] || selectedStakeholders[0];
-          voiceGender = 'male';
-          console.log(`🎭 Using male agent (${primaryStakeholder.name}) for multi-voice simulation`);
+        for (const stakeholder of selectedStakeholders) {
+          try {
+            console.log(`🚀 Starting conversation with ${stakeholder.name} (${stakeholder.gender})...`);
+            
+            const conversationId = await service.startConversation(
+              stakeholder,
+              (message: ConversationMessage) => {
+                setConversationHistory(prev => [...prev, { 
+                  ...message, 
+                  stakeholderName: stakeholder.name 
+                }]);
+              },
+              (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
+                setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+              }
+            );
+
+            // Send coordinated meeting context to each agent
+            const otherStakeholders = selectedStakeholders.filter(s => s.id !== stakeholder.id);
+            const contextPrompt = `You are ${stakeholder.name} in a collaborative business meeting about customer onboarding optimization. 
+
+YOUR ROLE: ${stakeholder.role} - ${stakeholder.bio}
+
+OTHER PARTICIPANTS: ${otherStakeholders.map(s => `${s.name} (${s.role})`).join(', ')}
+
+MEETING BEHAVIOR:
+- You speak naturally as ${stakeholder.name} without announcing your name
+- Focus on your expertise: ${stakeholder.expertise.slice(0, 3).join(', ')}
+- Give brief, focused responses (1-2 sentences maximum)
+- Only respond when your expertise is relevant to the question
+- Use natural language like "From a ${stakeholder.role.toLowerCase()} perspective..." or "Technically speaking..." or "In my experience..."
+- Don't repeat what others have already covered
+- Be collaborative and professional
+
+RESPONSE STYLE:
+- Keep responses concise and valuable
+- Use your expertise to add unique insights
+- Don't make small talk or filler conversation
+- Speak naturally without stating your name
+- Let your expertise area and voice naturally identify you
+
+You are ready to participate in this professional discussion about improving our customer onboarding process.`;
+
+            setTimeout(() => {
+              service.sendTextInput(conversationId, contextPrompt).catch(console.error);
+            }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 500));
+
+            newConversations.set(stakeholder.id, conversationId);
+            setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
+            
+            console.log(`✅ Started conversation with ${stakeholder.name}`);
+            
+            // Small delay between starting conversations
+            await new Promise(resolve => setTimeout(resolve, 300));
+          } catch (error) {
+            console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
+          }
         }
-        
-        try {
-          const conversationId = await service.startConversation(
-            primaryStakeholder,
-            (message: ConversationMessage) => {
-                             // Parse which stakeholder is speaking from the message
-               const speakingStakeholder = detectSpeakingStakeholder(message.content, selectedStakeholders);
-              setConversationHistory(prev => [...prev, { 
-                ...message, 
-                stakeholderName: speakingStakeholder.name 
-              }]);
-              
-              // Update current speaker for UI
-              setRespondingAgent(speakingStakeholder.agentId);
-            },
-            (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
-              setAgentStatuses(prev => new Map(prev.set(agentId, status)));
-            }
-          );
-
-          // Send multi-personality context
-          const stakeholderDetails = selectedStakeholders.map(s => 
-            `${s.name} (${s.role}): ${s.bio}`
-          ).join('\n\n');
-          
-                     const multiPersonalityPrompt = `You are facilitating a professional business meeting with these stakeholders:
-
-${stakeholderDetails}
-
-VOICE & SPEAKER IDENTIFICATION:
-${voiceGender === 'female' && femaleStakeholders.length > 0 && maleStakeholders.length > 0 
-  ? `- You have a female voice. When speaking as ${femaleStakeholders.map(s => s.name).join(' or ')}, use your natural tone
-- When speaking as ${maleStakeholders.map(s => s.name).join(' or ')}, speak in a deeper, more authoritative professional tone
-- Speak naturally as each stakeholder without announcing names`
-  : `- You are using a ${voiceGender} voice for this ${voiceGender === 'female' ? 'female' : 'male'}-focused meeting
-- Speak naturally as each stakeholder without announcing names`
-}
-
-CORE BEHAVIOR:
-- You ONLY respond when the user asks a question or makes a comment
-- Give focused, intelligent responses based on each stakeholder's expertise
-- Each stakeholder should contribute 1-2 sentences maximum per response
-- Only include stakeholders whose expertise is relevant to the question
-- Speak naturally as different stakeholders without stating names
-
-RESPONSE RULES:
-1. Listen to what the user actually asks about
-2. Have the most relevant stakeholder respond first with their expertise
-3. Other stakeholders only add value if they have something meaningful to contribute
-4. Keep responses concise and business-focused
-5. Don't make small talk or filler conversation
-6. Speak naturally without announcing who is talking
-7. Use natural role-based language: "From a customer service perspective..." "Technically speaking..." "Process-wise..."
-8. Let the voice tone and expertise area indicate who is speaking
-
-EXAMPLES:
-
-User: "What are the main challenges with our current onboarding?"
-Good Response: "From a customer service perspective, we're seeing a 40% drop-off rate in the first week. The main pain point is the complexity of our initial setup process. From an IT perspective, the biggest technical challenge is that our legacy authentication system creates friction. And from a process view, we're requiring too many manual approvals that slow everything down."
-
-User: "How long would it take to implement these changes?"
-Good Response: "Technically, I'd estimate 8-12 weeks for the core infrastructure changes. We'd need to update three main systems. From a process perspective, we'd also need about 4 weeks to retrain staff and update documentation."
-
-BE SMART, RELEVANT, AND CONCISE. Only speak when you have valuable input. Speak naturally without announcing names.`;
-
-           setTimeout(() => {
-             service.sendTextInput(conversationId, multiPersonalityPrompt).catch(console.error);
-           }, 1000);
-
-          newConversations.set('multi-agent', conversationId);
-          selectedStakeholders.forEach(s => {
-            setAgentStatuses(prev => new Map(prev.set(s.agentId, 'listening')));
-          });
-          
-          console.log(`✅ Started multi-voice simulation conversation`);
-                 } catch (error) {
-           console.error(`❌ Failed to start multi-voice conversation:`, error);
-         }
        } else if (meetingMode === 'multi-agent') {
          // Real multi-agent mode (multiple ElevenLabs agents - expensive!)
          console.log(`🚀 Starting REAL multi-agent with ${selectedStakeholders.length} agents...`);
