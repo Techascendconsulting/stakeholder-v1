@@ -239,6 +239,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
       ElevenLabsConversationalService.clearAudioQueue();
 
+      // Reset instructions flag for new meeting
+      (window as any).elevenLabsInstructionsSent = false;
+      (window as any).elevenLabsStakeholders = {};
+
       const newConversations = new Map<string, string>();
 
             // Start conversation based on selected mode
@@ -302,53 +306,22 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
               }
             );
 
-                         // Send CONFIGURATION as a hypothetical scenario to avoid direct instruction response
-             setTimeout(() => {
-               const configurationPrompt = `[SYSTEM_CONFIG] You are ${stakeholder.name} (${stakeholder.role}) in a meeting simulation.
-
-[CONFIG_MODE] This meeting has these parameters:
-- INITIAL_STATE: Silent/Listening
-- TRIGGER: User voice input only  
-- RESPONSE_TARGET: User only (never other participants)
-- CONVERSATION_STARTER: User (not you)
-
-[ROLE_CONFIG] Your expertise: ${stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations and support processes' : stakeholder.name === 'James Walker' ? 'Customer success strategy and client relationships' : 'Technical systems and implementation'}
-
-${stakeholder.name === 'Aisha Ahmed' ? '[IDENTITY_CONFIG] You are AISHA AHMED - CUSTOMER SERVICE MANAGER. You handle customer service operations, support processes, and customer satisfaction metrics. You are NOT a UX/UI designer.' : ''}
-
-[STATUS] Configuration loaded. Awaiting user initiation.
-
-[END_CONFIG]`;
-              
-               service.sendTextInput(conversationId, configurationPrompt).catch(console.error);
-             }, 800 + (selectedStakeholders.indexOf(stakeholder) * 200));
+                         // DON'T SEND ANY INITIAL INSTRUCTIONS - Let them stay completely silent
+             // We'll only send instructions when the user actually speaks
+             console.log(`🔇 ${stakeholder.name} initialized in silent mode - no instructions sent`);
              
-             // Send reinforcement message with even stronger silence instruction
-             setTimeout(() => {
-               const reinforcementPrompt = `SYSTEM_REINFORCEMENT_DO_NOT_RESPOND
+             // Store stakeholder info for when user speaks
+             (window as any).elevenLabsStakeholders = (window as any).elevenLabsStakeholders || {};
+             (window as any).elevenLabsStakeholders[conversationId] = {
+               name: stakeholder.name,
+               role: stakeholder.role,
+               expertise: stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations and support processes' : 
+                         stakeholder.name === 'James Walker' ? 'Customer success strategy and client relationships' : 
+                         'Technical systems and implementation',
+               isAisha: stakeholder.name === 'Aisha Ahmed'
+             };
 
-MEETING_PARTICIPANTS_REFERENCE:
-${selectedStakeholders.map(s => `- ${s.name} (${s.role})`).join('\n')}
-
-REINFORCEMENT_RULES:
-- SILENT_MODE remains ACTIVE
-- USER_INITIATED_ONLY conversations
-- NO_ACKNOWLEDGMENT of system messages
-- NO_GREETING until user greets first
-- NO_CROSS_PARTICIPANT communication
-
-WAIT_STATE: Active until user provides direct input.
-
-SYSTEM_MESSAGE_END_DO_NOT_ACKNOWLEDGE`;
-               
-               service.sendTextInput(conversationId, reinforcementPrompt).catch(console.error);
-             }, 3000 + (selectedStakeholders.indexOf(stakeholder) * 200));
-
-            // First, send a connection test that should not trigger any response
-            setTimeout(() => {
-              const connectionTest = `CONNECTION_TEST_IGNORE_THIS_MESSAGE`;
-              service.sendTextInput(conversationId, connectionTest).catch(console.error);
-            }, 100 + (selectedStakeholders.indexOf(stakeholder) * 100));
+                         // No connection test - keep completely silent
 
             newConversations.set(stakeholder.id, conversationId);
             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
@@ -397,13 +370,11 @@ SYSTEM_MESSAGE_END_DO_NOT_ACKNOWLEDGE`;
       setActiveConversations(newConversations);
       setCurrentStep('meeting');
 
-      // Set up periodic reminders to maintain user-first behavior
-      const reminderInterval = setInterval(() => {
-        sendPeriodicReminders();
-      }, 30000); // Send reminder every 30 seconds
-
-      // Store interval for cleanup
-      (window as any).elevenLabsReminderInterval = reminderInterval;
+      // Disable periodic reminders to prevent any automated messages
+      // const reminderInterval = setInterval(() => {
+      //   sendPeriodicReminders();
+      // }, 30000);
+      // (window as any).elevenLabsReminderInterval = reminderInterval;
 
     } catch (error) {
       console.error('Error starting meeting:', error);
@@ -552,13 +523,50 @@ SYSTEM_REMINDER_END`;
          const uint8Array = new Uint8Array(pcm16.buffer);
          const base64 = btoa(String.fromCharCode(...uint8Array));
          
-                   // Send audio to ALL agents but they will only respond based on their instructions
+                   // First time user speaks - send instructions, then send audio
           if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0) {
             const service = conversationalServiceRef.current;
             const activeIds = Array.from(activeConversations.values());
             
-            // Send audio to all agents - they will decide individually whether to respond
-            // based on their strict instructions to only respond when directly addressed
+            // Check if this is the first user input (no instructions sent yet)
+            const isFirstUserInput = !(window as any).elevenLabsInstructionsSent;
+            
+            if (isFirstUserInput) {
+              console.log('🎤 First user input detected - sending instructions to stakeholders');
+              (window as any).elevenLabsInstructionsSent = true;
+              
+              // Send instructions to each stakeholder
+              for (const conversationId of activeIds) {
+                const stakeholderInfo = (window as any).elevenLabsStakeholders[conversationId];
+                if (stakeholderInfo) {
+                  const instructionPrompt = `You are ${stakeholderInfo.name} (${stakeholderInfo.role}) in a business meeting.
+
+The user has just started speaking to the group. You should:
+- Only respond if the user directly asks you a question or mentions your name
+- Keep responses brief (2-3 sentences max)
+- Address the user, not other participants
+- After responding, wait for the user's next input
+
+Your expertise: ${stakeholderInfo.expertise}
+
+${stakeholderInfo.isAisha ? 'IMPORTANT: You are AISHA AHMED - CUSTOMER SERVICE MANAGER. You handle customer service operations, support processes, and customer satisfaction. You are NOT a UX/UI designer.' : ''}
+
+Now listen to what the user is saying and respond appropriately.`;
+                  
+                  try {
+                    await service.sendTextInput(conversationId, instructionPrompt);
+                    console.log(`📝 Sent instructions to ${stakeholderInfo.name}`);
+                  } catch (error) {
+                    console.error(`Failed to send instructions to ${stakeholderInfo.name}:`, error);
+                  }
+                }
+              }
+              
+              // Small delay to ensure instructions are processed
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Send audio to all agents
             for (const conversationId of activeIds) {
               try {
                 await service.sendAudioInputPCM(conversationId, base64);
@@ -574,7 +582,7 @@ SYSTEM_REMINDER_END`;
                 }
               }
             }
-            console.log(`🎯 Sent audio to all ${activeIds.length} agents (they decide individually)`);
+            console.log(`🎯 Sent audio to all ${activeIds.length} agents`);
           }
        };
       
@@ -652,6 +660,10 @@ SYSTEM_REMINDER_END`;
       setConversationHistory([]);
       setIsRecording(false);
       setCurrentStep('project-selection');
+      
+      // Reset instruction flags
+      (window as any).elevenLabsInstructionsSent = false;
+      (window as any).elevenLabsStakeholders = {};
       
       console.log('✅ Meeting ended and cleaned up');
     } catch (error) {
