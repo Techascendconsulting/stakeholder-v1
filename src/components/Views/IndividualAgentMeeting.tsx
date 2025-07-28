@@ -94,12 +94,17 @@ const IndividualAgentMeeting: React.FC = () => {
       setMeetingStarted(true);
       setAgentStatus('listening');
       
+      // Automatically start recording when meeting starts
+      await setupAudioRecording();
+      setIsRecording(true);
+      console.log('🎤 Auto-started recording');
+      
       console.log(`✅ Meeting started with ${selectedStakeholder.name}`);
       
     } catch (error) {
       console.error('❌ Error starting meeting:', error);
     }
-  }, [selectedStakeholder]);
+  }, [selectedStakeholder, setupAudioRecording]);
 
   // End meeting
   const endMeeting = useCallback(async () => {
@@ -384,12 +389,12 @@ You are now ready to discuss this project. Wait for the user to start the conver
                     onClick={toggleRecording}
                     className={`px-6 py-2 rounded-lg transition-colors flex items-center ${
                       isRecording 
-                        ? 'bg-red-600 text-white hover:bg-red-700' 
-                        : 'bg-green-600 text-white hover:bg-green-700'
+                        ? 'bg-green-600 text-white hover:bg-green-700' 
+                        : 'bg-red-600 text-white hover:bg-red-700'
                     }`}
                   >
-                    {isRecording ? <MicOff className="w-5 h-5 mr-2" /> : <Mic className="w-5 h-5 mr-2" />}
-                    {isRecording ? 'Stop Recording' : 'Start Recording'}
+                    {isRecording ? <Mic className="w-5 h-5 mr-2" /> : <MicOff className="w-5 h-5 mr-2" />}
+                    {isRecording ? 'Microphone On' : 'Microphone Off'}
                   </button>
                   
                   <button
