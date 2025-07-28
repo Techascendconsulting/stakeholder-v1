@@ -19,7 +19,8 @@ import {
   Sun,
   Moon,
   Calendar,
-  Workflow
+  Workflow,
+  Zap
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
