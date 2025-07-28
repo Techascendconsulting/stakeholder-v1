@@ -163,14 +163,14 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     setCurrentStep('stakeholder-selection');
   }, []);
 
-  // Handle stakeholder selection (single selection only for ElevenLabs)
+  // Handle stakeholder selection (multiple selection enabled for multi-agent meetings)
   const handleStakeholderToggle = useCallback((stakeholder: ElevenLabsStakeholder) => {
     setSelectedStakeholders(prev => {
       const isSelected = prev.some(s => s.id === stakeholder.id);
       if (isSelected) {
-        return []; // Deselect if clicking the same stakeholder
+        return prev.filter(s => s.id !== stakeholder.id); // Remove if already selected
       } else {
-        return [stakeholder]; // Replace with new selection (single only)
+        return [...prev, stakeholder]; // Add to selection (multiple allowed)
       }
     });
   }, []);
@@ -195,29 +195,38 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
 
       const newConversations = new Map<string, string>();
 
-      // Start conversation with only the first selected stakeholder (one-to-one)
-      const stakeholder = selectedStakeholders[0];
-      console.log(`🚀 Starting single conversation with ${stakeholder.name}...`);
+      // Start conversations with all selected stakeholders (multi-agent support)
+      console.log(`🚀 Starting conversations with ${selectedStakeholders.length} stakeholders...`);
       
-      try {
-        const conversationId = await service.startConversation(
-          stakeholder,
-          (message: ConversationMessage) => {
-            // Add message to conversation history
-            setConversationHistory(prev => [...prev, message]);
-          },
-          (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
-            // Update agent status
-            setAgentStatuses(prev => new Map(prev.set(agentId, status)));
-          }
-        );
+      for (const stakeholder of selectedStakeholders) {
+        try {
+          console.log(`🚀 Starting conversation with ${stakeholder.name}...`);
+          
+          const conversationId = await service.startConversation(
+            stakeholder,
+            (message: ConversationMessage) => {
+              // Add message to conversation history with stakeholder name
+              setConversationHistory(prev => [...prev, { 
+                ...message, 
+                stakeholderName: stakeholder.name 
+              }]);
+            },
+            (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
+              // Update agent status
+              setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+            }
+          );
 
-        newConversations.set(stakeholder.id, conversationId);
-        setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
-        
-        console.log(`✅ Started conversation with ${stakeholder.name}`);
-      } catch (error) {
-        console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
+          newConversations.set(stakeholder.id, conversationId);
+          setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
+          
+          console.log(`✅ Started conversation with ${stakeholder.name}`);
+          
+          // Small delay between starting conversations to avoid overwhelming the system
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error) {
+          console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
+        }
       }
 
       setActiveConversations(newConversations);
@@ -593,10 +602,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-                  <Users className="w-6 h-6 mr-3 text-purple-600" />
-                  Select a Stakeholder
-                </h1>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+              <Users className="w-6 h-6 mr-3 text-purple-600" />
+              Select Stakeholders
+            </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {selectedProject.name} - Choose who you want to speak with
                 </p>
@@ -692,10 +701,12 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                 className="inline-flex items-center px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
               >
                 <Play className="w-5 h-5 mr-2" />
-                {selectedStakeholders.length > 0 ? `Start Conversation with ${selectedStakeholders[0].name}` : 'Select a Stakeholder'}
+                {selectedStakeholders.length > 0 
+                  ? `Start Multi-Agent Meeting (${selectedStakeholders.length} stakeholder${selectedStakeholders.length > 1 ? 's' : ''})`
+                  : 'Select Stakeholders'}
               </button>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  Have a real-time voice conversation with your selected stakeholder
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Have a real-time voice conversation with multiple AI stakeholders simultaneously
               </p>
             </div>
           )}
@@ -741,13 +752,13 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-                  <Zap className="w-6 h-6 mr-3 text-purple-600" />
-                  ElevenLabs Voice Conversation
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {selectedProject?.name} - {selectedStakeholders[0]?.name || 'Conversation'}
-                </p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+              <Zap className="w-6 h-6 mr-3 text-purple-600" />
+              ElevenLabs Multi-Agent Meeting
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {selectedProject?.name} - {selectedStakeholders.length} participant{selectedStakeholders.length > 1 ? 's' : ''}: {selectedStakeholders.map(s => s.name).join(', ')}
+            </p>
               </div>
               <div className="flex items-center space-x-4">
                 <button

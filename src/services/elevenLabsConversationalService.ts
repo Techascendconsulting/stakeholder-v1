@@ -245,7 +245,7 @@ class ElevenLabsConversationalService {
         console.log('🔊 Received audio chunk:', data);
         if (data.audio_event?.audio_base_64) {
           console.log('🎵 Playing audio chunk, length:', data.audio_event.audio_base_64.length);
-          this.playAudioChunk(data.audio_event.audio_base_64);
+          this.playAudioChunk(data.audio_event.audio_base_64, conversationId);
         } else {
           console.warn('⚠️ Audio event received but no audio_base_64 data');
         }
