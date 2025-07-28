@@ -70,11 +70,13 @@ export const IndividualAgentMeeting: React.FC = () => {
         (agentId: string, status: string) => {
           setAgentStatuses(prev => new Map(prev.set(agentId, status)));
           
-          // Track current speaking agent
+          // Track current speaking agent - EXACT COPY from voice-only
           if (status === 'speaking') {
             setCurrentSpeaking(agentId);
           } else if (status === 'listening' && currentSpeaking === agentId) {
             setCurrentSpeaking(null);
+            // Move to next in queue by removing current speaker
+            setConversationQueue(prev => prev.filter(id => id !== agentId));
           }
         }
       );
