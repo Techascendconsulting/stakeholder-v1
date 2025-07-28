@@ -256,10 +256,24 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
           const conversationId = await service.startConversation(
             stakeholder,
             (message: ConversationMessage) => {
-              setConversationHistory(prev => [...prev, { 
-                ...message, 
-                stakeholderName: stakeholder.name 
-              }]);
+              // Filter out system messages - any message with system indicators
+              const isSystemMessage = (
+                message.content.startsWith('[') ||  // Messages starting with brackets
+                message.content.includes('DO NOT ACKNOWLEDGE') ||
+                message.content.includes('SYSTEM_') ||
+                message.content.includes('CONNECTION_TEST') ||
+                message.content.includes('STAY SILENT') ||
+                message.content.includes('CRITICAL INSTRUCTION') ||
+                message.content.length < 10  // Very short responses are likely acknowledgments
+              );
+              
+              // Only add conversational messages to history
+              if (!isSystemMessage) {
+                setConversationHistory(prev => [...prev, { 
+                  ...message, 
+                  stakeholderName: stakeholder.name 
+                }]);
+              }
             },
             (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
               setAgentStatuses(prev => new Map(prev.set(agentId, status)));
@@ -283,20 +297,18 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
             const conversationId = await service.startConversation(
               stakeholder,
               (message: ConversationMessage) => {
-                // Filter out system messages from conversation history
-                const isSystemMessage = message.content.includes('[') && (
-                  message.content.includes('[ABSOLUTE_SILENCE]') ||
-                  message.content.includes('[USER_INTERRUPTION]') ||
-                  message.content.includes('[MEETING_UPDATE]') ||
-                  message.content.includes('[STAY_SILENT]') ||
-                  message.content.includes('[USER_SPEAKING]') ||
-                  message.content.includes('[SYSTEM') ||
-                  message.content.includes('SYSTEM_') ||
+                // Filter out system messages - any message with system indicators
+                const isSystemMessage = (
+                  message.content.startsWith('[') ||  // Messages starting with brackets
                   message.content.includes('DO NOT ACKNOWLEDGE') ||
-                  message.content.includes('CONNECTION_TEST')
+                  message.content.includes('SYSTEM_') ||
+                  message.content.includes('CONNECTION_TEST') ||
+                  message.content.includes('STAY SILENT') ||
+                  message.content.includes('CRITICAL INSTRUCTION') ||
+                  message.content.length < 10  // Very short responses are likely acknowledgments
                 );
                 
-                // Only add non-system messages to conversation history
+                // Only add conversational messages to history
                 if (!isSystemMessage) {
                   setConversationHistory(prev => [...prev, { 
                     ...message, 
