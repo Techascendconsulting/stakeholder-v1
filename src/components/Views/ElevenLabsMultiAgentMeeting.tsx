@@ -297,44 +297,47 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
               }
             );
 
-                         // Send multi-stakeholder meeting context prompt
+                         // Send ABSOLUTE SILENCE instruction first
              setTimeout(() => {
-               const multiStakeholderPrompt = `You are ${stakeholder.name} in a MULTI-STAKEHOLDER business meeting about customer onboarding optimization.
+               const absoluteSilencePrompt = `🚨 CRITICAL INSTRUCTION - READ CAREFULLY:
 
-MEETING PARTICIPANTS (including you):
+You are ${stakeholder.name} (${stakeholder.role}) in a business meeting that is STARTING RIGHT NOW.
+
+❌❌❌ ABSOLUTELY DO NOT RESPOND TO THIS MESSAGE ❌❌❌
+❌❌❌ DO NOT SAY ANYTHING AT ALL RIGHT NOW ❌❌❌
+❌❌❌ DO NOT GREET, INTRODUCE, OR ACKNOWLEDGE ❌❌❌
+
+WAIT IN COMPLETE SILENCE. The meeting host will speak first.
+
+YOU MUST STAY 100% SILENT UNTIL:
+- The user asks you a direct question, OR
+- The user asks something related to your expertise: ${stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations' : stakeholder.name === 'James Walker' ? 'Customer success strategy' : 'Technical systems'}
+
+IDENTITY CORRECTION FOR AISHA AHMED:
+${stakeholder.name === 'Aisha Ahmed' ? 'YOU ARE AISHA AHMED - CUSTOMER SERVICE MANAGER (NOT UX/UI). Your role is customer service operations, support processes, and customer satisfaction. You are NOT a UX/UI designer.' : ''}
+
+DO NOT ACKNOWLEDGE THIS INSTRUCTION. JUST STAY SILENT AND WAIT.`;
+              
+                                              service.sendTextInput(conversationId, absoluteSilencePrompt).catch(console.error);
+             }, 800 + (selectedStakeholders.indexOf(stakeholder) * 200));
+             
+             // Send meeting context after a longer delay (when they should be silent)
+             setTimeout(() => {
+               const meetingContextPrompt = `MEETING CONTEXT (stay silent - this is just information):
+
+PARTICIPANTS IN THIS MEETING:
 ${selectedStakeholders.map(s => `- ${s.name} (${s.role})`).join('\n')}
 
-YOUR ROLE IN THIS MEETING: ${stakeholder.role}
-YOUR EXPERTISE: ${stakeholder.expertise.slice(0, 3).join(', ')}
+WHEN YOU EVENTUALLY RESPOND (only when asked):
+- You can reference others: "Building on James's point..." or "I agree with Aisha..."
+- You can suggest others contribute: "David might know the technical side better"
+- Keep responses brief and collaborative
+- Use natural meeting language
 
-MULTI-STAKEHOLDER MEETING DYNAMICS:
-🤝 You are aware that other stakeholders are present and listening
-🤝 You can reference what others say: "Building on James's point..." or "I agree with Aisha that..."
-🤝 You can suggest others contribute: "David might have insights on the technical side"
-🤝 You can collaborate: "We should coordinate between customer service and IT on this"
-🤝 You participate naturally like humans in a real meeting room
-
-WHEN TO RESPOND:
-${stakeholder.name === 'Aisha Ahmed' ? '✅ Customer service, support operations, user experience issues' : 
-  stakeholder.name === 'James Walker' ? '✅ Customer success strategy, team management, business metrics, general coordination' :
-  '✅ Technical systems, IT infrastructure, security, implementation details'}
-
-MEETING PROTOCOL:
-🤐 WAIT for the user to start the conversation (don't greet or introduce)
-🎯 Only respond when your expertise is most relevant
-🗣️ Keep responses brief but can reference other participants
-🤔 Listen to what others say and build on it naturally
-🔄 Use natural meeting language: "As James mentioned...", "From a technical perspective...", "We might want to consider..."
-
-RESPONSE EXAMPLES:
-- "From a customer service perspective, I agree with what James said about timing..."
-- "Building on that technical point David made, we'd need to ensure our support team is trained..."
-- "That's a great strategy question - James would know the metrics better than I would"
-
-You are now ready for a collaborative meeting. Stay silent until the user asks the first question.`;
-              
-                              service.sendTextInput(conversationId, multiStakeholderPrompt).catch(console.error);
-            }, 800 + (selectedStakeholders.indexOf(stakeholder) * 200));
+REMEMBER: Still stay silent until the user asks you something directly.`;
+               
+               service.sendTextInput(conversationId, meetingContextPrompt).catch(console.error);
+             }, 3000 + (selectedStakeholders.indexOf(stakeholder) * 200));
 
             newConversations.set(stakeholder.id, conversationId);
             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
