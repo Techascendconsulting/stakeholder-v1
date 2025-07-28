@@ -175,45 +175,58 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     });
   }, []);
 
-  // Start conversations with selected stakeholders
+  // Start conversations with selected stakeholders (one-to-one only)
   const startMeeting = useCallback(async () => {
     if (!conversationalServiceRef.current || selectedStakeholders.length === 0) return;
 
     try {
       const service = conversationalServiceRef.current;
+      
+      // End any existing conversations first
+      if (activeConversations.size > 0) {
+        console.log('🛑 Ending existing conversations...');
+        await service.endAllConversations();
+        setActiveConversations(new Map());
+      }
+
+      // Clear any playing audio
+      const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
+      ElevenLabsConversationalService.clearAudioQueue();
+
       const newConversations = new Map<string, string>();
 
-      // Start conversation with each selected stakeholder
-      for (const stakeholder of selectedStakeholders) {
-        try {
-          const conversationId = await service.startConversation(
-            stakeholder,
-            (message: ConversationMessage) => {
-              // Add message to conversation history
-              setConversationHistory(prev => [...prev, message]);
-            },
-            (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
-              // Update agent status
-              setAgentStatuses(prev => new Map(prev.set(agentId, status)));
-            }
-          );
+      // Start conversation with only the first selected stakeholder (one-to-one)
+      const stakeholder = selectedStakeholders[0];
+      console.log(`🚀 Starting single conversation with ${stakeholder.name}...`);
+      
+      try {
+        const conversationId = await service.startConversation(
+          stakeholder,
+          (message: ConversationMessage) => {
+            // Add message to conversation history
+            setConversationHistory(prev => [...prev, message]);
+          },
+          (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
+            // Update agent status
+            setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+          }
+        );
 
-          newConversations.set(stakeholder.id, conversationId);
-          setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
-          
-          console.log(`✅ Started conversation with ${stakeholder.name}`);
-        } catch (error) {
-          console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
-        }
+        newConversations.set(stakeholder.id, conversationId);
+        setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
+        
+        console.log(`✅ Started conversation with ${stakeholder.name}`);
+      } catch (error) {
+        console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
       }
 
       setActiveConversations(newConversations);
       setCurrentStep('meeting');
 
     } catch (error) {
-      console.error('Error starting meetings:', error);
+      console.error('Error starting meeting:', error);
     }
-  }, [selectedStakeholders]);
+  }, [selectedStakeholders, activeConversations]);
 
   // Voice activity detection
   const detectVoiceActivity = useCallback(() => {
@@ -360,6 +373,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   // Interrupt agents (stop them from speaking)
   const interruptAgents = useCallback(async () => {
     if (!conversationalServiceRef.current) return;
+
+    // Clear any playing audio immediately
+    const { ElevenLabsConversationalService } = await import('../../../services/elevenLabsConversationalService');
+    ElevenLabsConversationalService.clearAudioQueue();
 
     const service = conversationalServiceRef.current;
     const promises = Array.from(activeConversations.values()).map(conversationId => 

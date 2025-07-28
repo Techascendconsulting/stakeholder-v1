@@ -457,8 +457,13 @@ class ElevenLabsConversationalService {
     this.cleanup(conversationId);
   }
 
+  // Static audio queue to prevent overlapping audio
+  private static audioQueue: { buffer: AudioBuffer; context: AudioContext }[] = [];
+  private static isPlaying = false;
+  private static globalAudioContext: AudioContext | null = null;
+
   /**
-   * Play audio chunk from agent response using Web Audio API
+   * Play audio chunk from agent response using Web Audio API with queuing
    */
   private async playAudioChunk(base64Audio: string): Promise<void> {
     try {
@@ -479,8 +484,11 @@ class ElevenLabsConversationalService {
 
       console.log('🎵 PCM samples:', pcmData.length);
 
-      // Create Web Audio API context
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Use a single global audio context to prevent multiple contexts
+      if (!ElevenLabsConversationalService.globalAudioContext) {
+        ElevenLabsConversationalService.globalAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const audioContext = ElevenLabsConversationalService.globalAudioContext;
       
       // Create audio buffer
       const audioBuffer = audioContext.createBuffer(1, pcmData.length, 16000);
@@ -491,22 +499,54 @@ class ElevenLabsConversationalService {
         channelData[i] = pcmData[i] / 32768.0;
       }
       
-      // Create and play audio source
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
+      // Add to queue instead of playing immediately
+      ElevenLabsConversationalService.audioQueue.push({ buffer: audioBuffer, context: audioContext });
       
-      source.onended = () => {
-        console.log('🎵 Audio finished playing');
-        audioContext.close();
-      };
-      
-      console.log('🎵 Playing audio via Web Audio API...');
-      source.start(0);
+      // Start playing queue if not already playing
+      if (!ElevenLabsConversationalService.isPlaying) {
+        this.playNextInQueue();
+      }
       
     } catch (error) {
       console.error('❌ Error processing audio chunk:', error);
     }
+  }
+
+  /**
+   * Play next audio buffer in queue
+   */
+  private playNextInQueue(): void {
+    if (ElevenLabsConversationalService.audioQueue.length === 0) {
+      ElevenLabsConversationalService.isPlaying = false;
+      console.log('🎵 Audio queue empty, stopping playback');
+      return;
+    }
+
+    ElevenLabsConversationalService.isPlaying = true;
+    const { buffer, context } = ElevenLabsConversationalService.audioQueue.shift()!;
+    
+    // Create and play audio source
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    
+    source.onended = () => {
+      console.log('🎵 Audio chunk finished, playing next...');
+      // Play next chunk in queue
+      this.playNextInQueue();
+    };
+    
+    console.log('🎵 Playing audio chunk via Web Audio API...');
+    source.start(0);
+  }
+
+  /**
+   * Clear audio queue (for interruptions)
+   */
+  static clearAudioQueue(): void {
+    ElevenLabsConversationalService.audioQueue = [];
+    ElevenLabsConversationalService.isPlaying = false;
+    console.log('🛑 Audio queue cleared');
   }
 
 
