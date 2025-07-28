@@ -466,10 +466,24 @@ class ElevenLabsConversationalService {
 
       console.log('🎵 Audio bytes created, length:', bytes.length);
 
-      // Create blob and play audio
-      const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // ElevenLabs sends PCM audio for conversational AI, not MP3
+      // Try PCM format first, then fallback to MP3
+      let audioBlob: Blob;
+      let audioUrl: string;
+      let audio: HTMLAudioElement;
+      
+      try {
+        // First try as PCM 16kHz (which is what ElevenLabs sends)
+        audioBlob = new Blob([bytes], { type: 'audio/wav' });
+        audioUrl = URL.createObjectURL(audioBlob);
+        audio = new Audio(audioUrl);
+        console.log('🎵 Trying as WAV/PCM format');
+      } catch (error) {
+        console.log('🎵 WAV failed, trying as MP3');
+        audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
+        audioUrl = URL.createObjectURL(audioBlob);
+        audio = new Audio(audioUrl);
+      }
       
       audio.onloadstart = () => {
         console.log('🎵 Audio loading started');
