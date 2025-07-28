@@ -202,20 +202,35 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         try {
           console.log(`🚀 Starting conversation with ${stakeholder.name}...`);
           
-          const conversationId = await service.startConversation(
-            stakeholder,
-            (message: ConversationMessage) => {
-              // Add message to conversation history with stakeholder name
-              setConversationHistory(prev => [...prev, { 
-                ...message, 
-                stakeholderName: stakeholder.name 
-              }]);
-            },
-            (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
-              // Update agent status
-              setAgentStatuses(prev => new Map(prev.set(agentId, status)));
-            }
-          );
+                     const conversationId = await service.startConversation(
+             stakeholder,
+             (message: ConversationMessage) => {
+               // Add message to conversation history with stakeholder name
+               setConversationHistory(prev => [...prev, { 
+                 ...message, 
+                 stakeholderName: stakeholder.name 
+               }]);
+             },
+             (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
+               // Update agent status
+               setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+             }
+           );
+
+           // Send context message to make agent aware of multi-agent meeting
+           if (selectedStakeholders.length > 1) {
+             const otherStakeholders = selectedStakeholders
+               .filter(s => s.id !== stakeholder.id)
+               .map(s => s.name)
+               .join(' and ');
+             
+             const contextMessage = `You are now in a multi-agent meeting with ${otherStakeholders}. Please keep your responses concise and be aware that other stakeholders will also respond. Wait for your turn and acknowledge when others have spoken.`;
+             
+             // Send context via text message
+             setTimeout(() => {
+               service.sendTextInput(conversationId, contextMessage).catch(console.error);
+             }, 1000);
+           }
 
           newConversations.set(stakeholder.id, conversationId);
           setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
@@ -408,14 +423,24 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     await Promise.all(promises);
   }, [activeConversations]);
 
-  // Auto interruption detection with aggressive audio clearing
+  // Auto interruption detection with cooldown to prevent spam
+  const lastInterruptionRef = useRef<number>(0);
+  const INTERRUPTION_COOLDOWN = 2000; // 2 seconds cooldown
+  
   const startVoiceDetection = useCallback(() => {
     if (voiceDetectionIntervalRef.current) return;
     
     voiceDetectionIntervalRef.current = setInterval(async () => {
       if (detectVoiceActivity()) {
-        // User is speaking - immediately interrupt all audio
-        console.log('🛑 Voice detected - immediately interrupting all audio');
+        // Check if enough time has passed since last interruption
+        const now = Date.now();
+        if (now - lastInterruptionRef.current < INTERRUPTION_COOLDOWN) {
+          return; // Skip interruption, too soon
+        }
+        
+        // User is speaking - interrupt all audio
+        console.log('🛑 Voice detected - interrupting all audio (with cooldown)');
+        lastInterruptionRef.current = now;
         
         // Clear audio queue first (most important)
         const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
@@ -424,7 +449,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         // Then interrupt agents
         interruptAgents();
       }
-    }, 50); // Check every 50ms for faster interruption
+    }, 100); // Check every 100ms, less aggressive
   }, [detectVoiceActivity, interruptAgents]);
 
   // Stop voice detection
