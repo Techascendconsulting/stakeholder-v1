@@ -99,14 +99,14 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     setCurrentStep('stakeholder-selection');
   }, []);
 
-  // Handle stakeholder selection
+  // Handle stakeholder selection (single selection only for ElevenLabs)
   const handleStakeholderToggle = useCallback((stakeholder: ElevenLabsStakeholder) => {
     setSelectedStakeholders(prev => {
       const isSelected = prev.some(s => s.id === stakeholder.id);
       if (isSelected) {
-        return prev.filter(s => s.id !== stakeholder.id);
+        return []; // Deselect if clicking the same stakeholder
       } else {
-        return [...prev, stakeholder];
+        return [stakeholder]; // Replace with new selection (single only)
       }
     });
   }, []);
