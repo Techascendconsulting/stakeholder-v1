@@ -58,12 +58,15 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   const [agentStatuses, setAgentStatuses] = useState<Map<string, 'idle' | 'speaking' | 'thinking' | 'listening'>>(new Map());
   const [activeConversations, setActiveConversations] = useState<Map<string, string>>(new Map()); // stakeholderId -> conversationId
   const [isMuted, setIsMuted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   // Refs
   const conversationalServiceRef = useRef<ElevenLabsConversationalService | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const isRecordingRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const voiceDetectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize the conversational service
   const initializeSystem = useCallback(async () => {
@@ -147,7 +150,23 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     }
   }, [selectedStakeholders]);
 
-  // Setup audio recording
+  // Voice activity detection
+  const detectVoiceActivity = useCallback(() => {
+    if (!analyserRef.current) return false;
+    
+    const bufferLength = analyserRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyserRef.current.getByteFrequencyData(dataArray);
+    
+    // Calculate average volume
+    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+    
+    // Voice activity threshold (adjust as needed)
+    const threshold = 20;
+    return average > threshold;
+  }, []);
+
+  // Setup audio recording with voice detection
   const setupAudioRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -159,6 +178,17 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       });
       
       streamRef.current = stream;
+      
+      // Setup audio context for voice detection
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      
+      analyser.fftSize = 2048;
+      source.connect(analyser);
+      
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
@@ -185,7 +215,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         }
         
         audioChunks.length = 0;
-        isRecordingRef.current = false;
+        setIsRecording(false);
       };
       
       mediaRecorderRef.current = mediaRecorder;
@@ -195,22 +225,52 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     }
   }, [activeConversations]);
 
-  // Start/stop recording
+  // Auto interruption detection
+  const startVoiceDetection = useCallback(() => {
+    if (voiceDetectionIntervalRef.current) return;
+    
+    voiceDetectionIntervalRef.current = setInterval(() => {
+      if (detectVoiceActivity()) {
+        // User is speaking - interrupt agents if they're talking
+        const speakingAgents = Array.from(agentStatuses.entries())
+          .filter(([_, status]) => status === 'speaking')
+          .map(([agentId, _]) => agentId);
+          
+        if (speakingAgents.length > 0) {
+          console.log('🛑 Voice detected - interrupting agents');
+          interruptAgents();
+        }
+      }
+    }, 100); // Check every 100ms
+  }, [detectVoiceActivity, agentStatuses, interruptAgents]);
+
+  // Stop voice detection
+  const stopVoiceDetection = useCallback(() => {
+    if (voiceDetectionIntervalRef.current) {
+      clearInterval(voiceDetectionIntervalRef.current);
+      voiceDetectionIntervalRef.current = null;
+    }
+  }, []);
+
+  // Toggle recording (click once to start, click again to stop)
   const toggleRecording = useCallback(async () => {
     if (!mediaRecorderRef.current) {
       await setupAudioRecording();
       return;
     }
 
-    if (isRecordingRef.current) {
+    if (isRecording) {
       // Stop recording
       mediaRecorderRef.current.stop();
+      stopVoiceDetection();
+      setIsRecording(false);
     } else {
       // Start recording
-      isRecordingRef.current = true;
       mediaRecorderRef.current.start();
+      startVoiceDetection();
+      setIsRecording(true);
     }
-  }, [setupAudioRecording]);
+  }, [isRecording, setupAudioRecording, startVoiceDetection, stopVoiceDetection]);
 
   // Interrupt agents (stop them from speaking)
   const interruptAgents = useCallback(async () => {
@@ -230,6 +290,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     const service = conversationalServiceRef.current;
     await service.endAllConversations();
     
+    // Stop recording and voice detection
+    stopVoiceDetection();
+    setIsRecording(false);
+    
     setActiveConversations(new Map());
     setConversationHistory([]);
     setAgentStatuses(new Map());
@@ -237,12 +301,17 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     setSelectedProject(null);
     setSelectedStakeholders([]);
 
-    // Stop media stream
+    // Stop media stream and audio context
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
-  }, []);
+    
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+  }, [stopVoiceDetection]);
 
   // Get stakeholder by agent ID
   const getStakeholderByAgentId = useCallback((agentId: string) => {
@@ -662,14 +731,14 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                 onClick={toggleRecording}
                 disabled={activeConversations.size === 0}
                 className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-                  isRecordingRef.current
-                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg scale-110'
+                  isRecording
+                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg scale-110 animate-pulse'
                     : activeConversations.size === 0
                     ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed'
                     : 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:scale-105'
                 }`}
               >
-                {isRecordingRef.current ? (
+                {isRecording ? (
                   <Square className="w-6 h-6" />
                 ) : (
                   <Mic className="w-6 h-6" />
@@ -723,18 +792,22 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                   <span className="text-gray-500 dark:text-gray-400">
                     🔗 Connecting to stakeholders...
                   </span>
-                ) : isRecordingRef.current ? (
+                ) : isRecording ? (
                   <span className="text-red-600 dark:text-red-400 font-medium">
-                    🎤 Recording... Release to send audio
+                    🎤 Recording... Click again to stop and send audio
                   </span>
                 ) : (
                   <span>
-                    🎙️ Hold the microphone button to speak with your stakeholders
+                    🎙️ Click the microphone to start speaking with your stakeholders
                   </span>
                 )}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                You can interrupt agents at any time by speaking or using the interrupt button
+                {isRecording ? (
+                  '🤖 Automatic interruption detection is active - speak to interrupt agents'
+                ) : (
+                  'Agents will be automatically interrupted when you speak during their responses'
+                )}
               </p>
             </div>
           </div>
