@@ -377,10 +377,12 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
     
     console.log(`🎯 Routing user input to agents: ${targetAgents.join(', ')}`);
 
-    // Process each agent through the queue system (ONE AT A TIME) - EXACT COPY from voice-only
-    for (const agentId of targetAgents) {
-      const agent = this.activeAgents.get(agentId);
+    // Process ONLY THE FIRST agent - no multiple agents at once to prevent talking over themselves
+    if (targetAgents.length > 0) {
+      const firstAgentId = targetAgents[0];
+      const agent = this.activeAgents.get(firstAgentId);
       if (agent) {
+        console.log(`🎯 Processing ONLY ${agent.name} to prevent simultaneous speaking`);
         await this.processDynamicAgentResponse(agent, audioData, userMessage);
       }
     }
