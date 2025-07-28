@@ -302,7 +302,13 @@ class ElevenLabsConversationalService {
         user_audio_chunk: base64Audio
       };
 
-      console.log(`🎤 Sending audio to ${session.stakeholder.name}`, { size: audioBlob.size, type: audioBlob.type });
+      console.log(`🎤 Sending audio to ${session.stakeholder.name}`, { 
+        size: audioBlob.size, 
+        type: audioBlob.type,
+        base64Length: base64Audio.length,
+        messageStructure: Object.keys(message)
+      });
+      console.log('🎤 Audio message being sent:', JSON.stringify(message).substring(0, 200) + '...');
       session.websocket.send(JSON.stringify(message));
     } catch (error) {
       console.error('Error sending audio input:', error);
