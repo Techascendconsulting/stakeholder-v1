@@ -283,11 +283,26 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
             const conversationId = await service.startConversation(
               stakeholder,
               (message: ConversationMessage) => {
-                // Add to conversation history
-                setConversationHistory(prev => [...prev, { 
-                  ...message, 
-                  stakeholderName: stakeholder.name 
-                }]);
+                // Filter out system messages from conversation history
+                const isSystemMessage = message.content.includes('[') && (
+                  message.content.includes('[ABSOLUTE_SILENCE]') ||
+                  message.content.includes('[USER_INTERRUPTION]') ||
+                  message.content.includes('[MEETING_UPDATE]') ||
+                  message.content.includes('[STAY_SILENT]') ||
+                  message.content.includes('[USER_SPEAKING]') ||
+                  message.content.includes('[SYSTEM') ||
+                  message.content.includes('SYSTEM_') ||
+                  message.content.includes('DO NOT ACKNOWLEDGE') ||
+                  message.content.includes('CONNECTION_TEST')
+                );
+                
+                // Only add non-system messages to conversation history
+                if (!isSystemMessage) {
+                  setConversationHistory(prev => [...prev, { 
+                    ...message, 
+                    stakeholderName: stakeholder.name 
+                  }]);
+                }
                 
                 // Process stakeholder responses with smart conversation management
                 console.log(`📝 ${stakeholder.name} responded: ${message.content.substring(0, 50)}...`);
