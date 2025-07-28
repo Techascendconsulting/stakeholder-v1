@@ -420,12 +420,8 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
           // Add context-aware instructions
           const contextualPrompt = this.generateContextualPrompt(agent, userMessage);
           
-          // Send contextual prompt first (if needed)
-          if (contextualPrompt) {
-            await this.elevenLabsService.sendTextInput(conversationId, contextualPrompt);
-          }
-          
-          // Send audio input
+          // DO NOT send contextual prompt as text - it gets spoken
+          // Just send the audio input directly
           await this.elevenLabsService.sendAudioInputPCM(conversationId, audioData);
           console.log(`📤 Sent audio to ${agent.name}`);
           
