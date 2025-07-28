@@ -177,7 +177,19 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     });
   }, []);
 
-  // Start conversations with selected stakeholders (one-to-one only)
+  // Detect which stakeholder is speaking from message content
+  const detectSpeakingStakeholder = useCallback((content: string, stakeholders: ElevenLabsStakeholder[]) => {
+    // Look for "[Name]:" pattern at the start of messages
+    for (const stakeholder of stakeholders) {
+      if (content.includes(`[${stakeholder.name}]:`)) {
+        return stakeholder;
+      }
+    }
+    // Default to first stakeholder if no clear indicator
+    return stakeholders[0];
+  }, []);
+
+  // Start conversations with selected stakeholders (with multi-voice simulation)
   const startMeeting = useCallback(async () => {
     if (!conversationalServiceRef.current || selectedStakeholders.length === 0) return;
 
@@ -197,52 +209,87 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
 
       const newConversations = new Map<string, string>();
 
-      // Start conversations with all selected stakeholders (multi-agent support)
-      console.log(`🚀 Starting conversations with ${selectedStakeholders.length} stakeholders...`);
-      
-      for (const stakeholder of selectedStakeholders) {
+            // Start single conversation simulating multiple stakeholders (cost-effective approach)
+      if (selectedStakeholders.length === 1) {
+        // Single stakeholder - normal conversation
+        const stakeholder = selectedStakeholders[0];
+        console.log(`🚀 Starting single conversation with ${stakeholder.name}...`);
+        
         try {
-          console.log(`🚀 Starting conversation with ${stakeholder.name}...`);
-          
-                     const conversationId = await service.startConversation(
-             stakeholder,
-             (message: ConversationMessage) => {
-               // Add message to conversation history with stakeholder name
-               setConversationHistory(prev => [...prev, { 
-                 ...message, 
-                 stakeholderName: stakeholder.name 
-               }]);
-             },
-             (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
-               // Update agent status
-               setAgentStatuses(prev => new Map(prev.set(agentId, status)));
-             }
-           );
-
-           // Send context message to make agent aware of multi-agent meeting
-           if (selectedStakeholders.length > 1) {
-             const otherStakeholders = selectedStakeholders
-               .filter(s => s.id !== stakeholder.id)
-               .map(s => s.name)
-               .join(' and ');
-             
-             const contextMessage = `You are now in a multi-agent meeting with ${otherStakeholders}. Please keep your responses concise and be aware that other stakeholders will also respond. Wait for your turn and acknowledge when others have spoken.`;
-             
-             // Send context via text message
-             setTimeout(() => {
-               service.sendTextInput(conversationId, contextMessage).catch(console.error);
-             }, 1000);
-           }
+          const conversationId = await service.startConversation(
+            stakeholder,
+            (message: ConversationMessage) => {
+              setConversationHistory(prev => [...prev, { 
+                ...message, 
+                stakeholderName: stakeholder.name 
+              }]);
+            },
+            (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
+              setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+            }
+          );
 
           newConversations.set(stakeholder.id, conversationId);
           setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
-          
           console.log(`✅ Started conversation with ${stakeholder.name}`);
-          
-          // Small delay between starting conversations to avoid overwhelming the system
-          await new Promise(resolve => setTimeout(resolve, 500));
         } catch (error) {
           console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
+        }
+      } else {
+        // Multi-stakeholder simulation using ONE agent with multiple personalities
+        console.log(`🎭 Starting multi-voice simulation with ${selectedStakeholders.length} stakeholders...`);
+        
+        // Use the first stakeholder's agent but with multi-personality prompt
+        const primaryStakeholder = selectedStakeholders[0];
+        
+        try {
+          const conversationId = await service.startConversation(
+            primaryStakeholder,
+            (message: ConversationMessage) => {
+                             // Parse which stakeholder is speaking from the message
+               const speakingStakeholder = detectSpeakingStakeholder(message.content, selectedStakeholders);
+              setConversationHistory(prev => [...prev, { 
+                ...message, 
+                stakeholderName: speakingStakeholder.name 
+              }]);
+              
+              // Update current speaker for UI
+              setRespondingAgent(speakingStakeholder.agentId);
+            },
+            (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
+              setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+            }
+          );
+
+          // Send multi-personality context
+          const stakeholderDetails = selectedStakeholders.map(s => 
+            `${s.name} (${s.role}): ${s.bio}`
+          ).join('\n\n');
+          
+          const multiPersonalityPrompt = `You are facilitating a meeting with multiple stakeholders. When responding, you should roleplay as different people and clearly indicate who is speaking. Here are the participants:
+
+${stakeholderDetails}
+
+IMPORTANT INSTRUCTIONS:
+- Start your responses with "[NAME]:" to indicate who is speaking
+- Rotate between different stakeholders naturally
+- Each stakeholder should have their own perspective and speaking style
+- Keep individual responses concise (2-3 sentences max per person)
+- Multiple stakeholders can respond to the same user input
+- Example format: "[James Walker]: I think the user experience is crucial here. [Aisha Ahmed]: From a process perspective, I agree with James but we need to consider efficiency."`;
+
+          setTimeout(() => {
+            service.sendTextInput(conversationId, multiPersonalityPrompt).catch(console.error);
+          }, 1000);
+
+          newConversations.set('multi-agent', conversationId);
+          selectedStakeholders.forEach(s => {
+            setAgentStatuses(prev => new Map(prev.set(s.agentId, 'listening')));
+          });
+          
+          console.log(`✅ Started multi-voice simulation conversation`);
+        } catch (error) {
+          console.error(`❌ Failed to start multi-voice conversation:`, error);
         }
       }
 
@@ -252,7 +299,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     } catch (error) {
       console.error('Error starting meeting:', error);
     }
-  }, [selectedStakeholders, activeConversations]);
+  }, [selectedStakeholders, activeConversations, detectSpeakingStakeholder]);
 
   // Voice activity detection with better filtering
   const detectVoiceActivity = useCallback(() => {
