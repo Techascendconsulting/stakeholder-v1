@@ -70,11 +70,20 @@ class ElevenLabsConversationalService {
     onStatusChange?: (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => void
   ): Promise<string> {
     try {
-      // Get signed URL for this agent
-      const signedUrl = await this.getSignedUrl(stakeholder.agentId);
+      let websocketUrl: string;
+      
+      try {
+        // Try to get signed URL for this agent
+        websocketUrl = await this.getSignedUrl(stakeholder.agentId);
+        console.log(`🔗 Using signed URL for ${stakeholder.name}`);
+      } catch (error) {
+        // Fallback to direct connection
+        websocketUrl = `wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${stakeholder.agentId}`;
+        console.log(`🔗 Using direct connection for ${stakeholder.name}`);
+      }
       
       // Create WebSocket connection
-      const websocket = new WebSocket(signedUrl);
+      const websocket = new WebSocket(websocketUrl);
       
       const conversationId = `conv-${stakeholder.id}-${Date.now()}`;
       
@@ -101,9 +110,28 @@ class ElevenLabsConversationalService {
         this.activeSessions.set(conversationId, session);
         onStatusChange?.(stakeholder.agentId, 'listening');
         
-        // Send initialization message if needed
+        // Send initialization message with conversation config
         const initMessage = {
-          type: 'conversation_initiation_client_data'
+          type: 'conversation_initiation_client_data',
+          conversation_config_override: {
+            agent: {
+              prompt: null, // Use agent's configured prompt
+              first_message: null, // Use agent's configured first message  
+              language: 'en'
+            },
+            tts: {
+              voice_id: null // Use agent's configured voice
+            }
+          },
+          custom_llm_extra_body: {
+            temperature: 0.7,
+            max_tokens: 150
+          },
+          dynamic_variables: {
+            user_name: 'User',
+            project_context: 'Customer Onboarding Optimization Project',
+            meeting_type: 'stakeholder_discussion'
+          }
         };
         websocket.send(JSON.stringify(initMessage));
       };
@@ -153,6 +181,11 @@ class ElevenLabsConversationalService {
     switch (data.type) {
       case 'conversation_initiation_metadata':
         console.log('🎤 Conversation initiated:', data);
+        console.log('📋 Conversation metadata:', {
+          conversationId: data.conversation_initiation_metadata_event?.conversation_id,
+          agentAudioFormat: data.conversation_initiation_metadata_event?.agent_output_audio_format,
+          userAudioFormat: data.conversation_initiation_metadata_event?.user_input_audio_format
+        });
         statusHandler?.('listening');
         break;
 
@@ -214,7 +247,10 @@ class ElevenLabsConversationalService {
       case 'audio':
         console.log('🔊 Received audio chunk:', data);
         if (data.audio_event?.audio_base_64) {
+          console.log('🎵 Playing audio chunk, length:', data.audio_event.audio_base_64.length);
           this.playAudioChunk(data.audio_event.audio_base_64);
+        } else {
+          console.warn('⚠️ Audio event received but no audio_base_64 data');
         }
         break;
 
@@ -227,6 +263,19 @@ class ElevenLabsConversationalService {
           };
           session.websocket.send(JSON.stringify(pongMessage));
         }
+        break;
+
+      case 'interruption':
+        console.log('🛑 Interruption event:', data);
+        statusHandler?.('listening');
+        break;
+
+      case 'vad_score':
+        // Voice Activity Detection score - can be ignored for now
+        break;
+
+      case 'internal_tentative_agent_response':
+        console.log('🤔 Tentative agent response:', data);
         break;
 
       default:
@@ -328,6 +377,8 @@ class ElevenLabsConversationalService {
    */
   private playAudioChunk(base64Audio: string): void {
     try {
+      console.log('🎵 Processing audio chunk, base64 length:', base64Audio.length);
+      
       // Decode base64 to binary
       const binaryString = atob(base64Audio);
       const bytes = new Uint8Array(binaryString.length);
@@ -335,25 +386,50 @@ class ElevenLabsConversationalService {
         bytes[i] = binaryString.charCodeAt(i);
       }
 
-      // Create blob and play audio
-      const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
+      console.log('🎵 Audio bytes created, length:', bytes.length);
+
+      // Create blob and play audio (try different formats)
+      const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
+      audio.onloadstart = () => {
+        console.log('🎵 Audio loading started');
+      };
+      
+      audio.oncanplay = () => {
+        console.log('🎵 Audio can play');
+      };
+      
+      audio.onplay = () => {
+        console.log('🎵 Audio started playing');
+      };
+      
       audio.onended = () => {
+        console.log('🎵 Audio finished playing');
         URL.revokeObjectURL(audioUrl);
       };
       
       audio.onerror = (error) => {
-        console.error('Error playing audio:', error);
+        console.error('❌ Error playing audio:', error);
+        console.error('❌ Audio error details:', audio.error);
         URL.revokeObjectURL(audioUrl);
       };
       
+      console.log('🎵 Attempting to play audio...');
       audio.play().catch(error => {
-        console.error('Failed to play audio:', error);
+        console.error('❌ Failed to play audio:', error);
+        // Try with different MIME type
+        const audioBlob2 = new Blob([bytes], { type: 'audio/wav' });
+        const audioUrl2 = URL.createObjectURL(audioBlob2);
+        const audio2 = new Audio(audioUrl2);
+        audio2.play().catch(error2 => {
+          console.error('❌ Failed to play audio with WAV format too:', error2);
+          URL.revokeObjectURL(audioUrl2);
+        });
       });
     } catch (error) {
-      console.error('Error processing audio chunk:', error);
+      console.error('❌ Error processing audio chunk:', error);
     }
   }
 
