@@ -105,13 +105,17 @@ class ElevenLabsConversationalService {
 
       // Set up WebSocket event handlers
       websocket.onopen = () => {
-        console.log(`✅ Connected to ElevenLabs agent: ${stakeholder.name}`);
+        console.log(`✅ DEBUG: Connected to ElevenLabs agent: ${stakeholder.name}`, {
+          conversationId,
+          agentId: stakeholder.agentId,
+          readyState: websocket.readyState
+        });
         session.isActive = true;
         this.activeSessions.set(conversationId, session);
         onStatusChange?.(stakeholder.agentId, 'listening');
         
         // Don't send initialization message immediately - wait for first user action
-        console.log('🔗 WebSocket connection established, ready for interaction');
+        console.log('🔗 DEBUG: WebSocket connection established, ready for interaction');
       };
 
       websocket.onmessage = (event) => {
@@ -125,26 +129,31 @@ class ElevenLabsConversationalService {
       };
 
       websocket.onclose = (event) => {
-        console.log(`🔌 Connection closed for agent: ${stakeholder.name}`, {
+        console.log(`🔌 DEBUG: Connection closed for agent: ${stakeholder.name}`, {
+          conversationId,
+          agentId: stakeholder.agentId,
           code: event.code,
           reason: event.reason,
-          wasClean: event.wasClean
+          wasClean: event.wasClean,
+          sessionWasActive: session.isActive
         });
         
         // Log specific error codes
         if (event.code === 1008) {
-          console.error('❌ Invalid message format sent to ElevenLabs');
+          console.error('❌ DEBUG: Invalid message format sent to ElevenLabs');
         } else if (event.code === 1006) {
-          console.error('❌ Connection closed abnormally');
+          console.error('❌ DEBUG: Connection closed abnormally');
         } else if (event.code === 1000) {
-          console.log('✅ Normal closure');
+          console.log('✅ DEBUG: Normal closure');
         }
         
         session.isActive = false;
         onStatusChange?.(stakeholder.agentId, 'idle');
         
         // Don't cleanup immediately - allow for potential reconnection
+        console.log(`🔍 DEBUG: Scheduling cleanup for ${conversationId} in 1 second`);
         setTimeout(() => {
+          console.log(`🧹 DEBUG: Cleaning up session ${conversationId}`);
           this.cleanup(conversationId);
         }, 1000);
       };
@@ -413,8 +422,18 @@ class ElevenLabsConversationalService {
    */
   isSessionActive(conversationId: string): boolean {
     const session = this.activeSessions.get(conversationId);
-    return session?.isActive === true && 
-           session.websocket?.readyState === WebSocket.OPEN;
+    const isActive = session?.isActive === true && 
+                    session.websocket?.readyState === WebSocket.OPEN;
+    
+    console.log(`🔍 DEBUG: Session active check for ${conversationId}:`, {
+      hasSession: !!session,
+      sessionIsActive: session?.isActive,
+      websocketReadyState: session?.websocket?.readyState,
+      websocketOpen: session?.websocket?.readyState === WebSocket.OPEN,
+      finalResult: isActive
+    });
+    
+    return isActive;
   }
 
   /**
