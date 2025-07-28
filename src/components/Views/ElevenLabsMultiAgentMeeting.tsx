@@ -636,6 +636,7 @@ You were specifically mentioned or asked for your input. You can respond briefly
       let lastInterruptTime = 0;
       let silenceTimer: NodeJS.Timeout | null = null;
       let isUserSpeaking = false;
+      let isProcessingAudio = false; // CRITICAL: Prevent infinite processing loop
       
              processorNode.onaudioprocess = async (event) => {
          if (!isRecordingRef.value) return;
@@ -714,15 +715,12 @@ You were specifically mentioned or asked for your input. You can respond briefly
          const uint8Array = new Uint8Array(pcm16.buffer);
          const base64 = btoa(String.fromCharCode(...uint8Array));
          
-                   // Only process audio when user has stopped speaking AND we haven't processed this audio yet
-          if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0 && !isUserSpeaking) {
-            // Prevent duplicate processing by checking if we already processed this audio
-            const audioHash = base64.substring(0, 50); // Use first 50 chars as hash
-            if ((window as any).lastProcessedAudio === audioHash) {
-              console.log('🔄 DEBUG: Skipping duplicate audio processing');
-              return;
-            }
-            (window as any).lastProcessedAudio = audioHash;
+                   // CRITICAL: Only process audio when user has stopped speaking AND not already processing
+          if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0 && !isUserSpeaking && !isProcessingAudio) {
+            
+            // LOCK: Prevent multiple simultaneous processing
+            isProcessingAudio = true;
+            console.log('🔒 DEBUG: LOCKED audio processing - preventing duplicates');
             
             // Reset fallback attempts for new user input
             setFallbackAttempts(0);
@@ -839,10 +837,24 @@ Now listen to what the user is saying and participate naturally in this business
                     if (isActive) {
                       await service.sendAudioInputPCM(selectedConversationId, base64);
                       console.log(`🎯 SUCCESS: Sent audio to selected stakeholder: ${selectedConversationId}`);
-                    } else {
-                      console.warn(`⚠️ SKIP: Selected stakeholder connection not active: ${selectedConversationId}`);
-                      return; // Don't set up fallback if primary connection is dead
-                    }
+                                         } else {
+                       console.warn(`⚠️ SKIP: Selected stakeholder connection not active: ${selectedConversationId}`);
+                       
+                       // Try to find ANY active connection instead of giving up
+                       const anyActiveId = activeIds.find(id => service.isSessionActive(id));
+                       if (anyActiveId) {
+                         console.log(`🔄 DEBUG: Trying any active connection: ${anyActiveId}`);
+                         try {
+                           await service.sendAudioInputPCM(anyActiveId, base64);
+                           console.log(`✅ SUCCESS: Sent audio to any active stakeholder: ${anyActiveId}`);
+                         } catch (error) {
+                           console.error(`❌ FAILED: Any active stakeholder:`, error);
+                         }
+                       } else {
+                         console.error(`❌ CRITICAL: No active connections available!`);
+                       }
+                       return; // Don't set up fallback if no connections
+                     }
                   
                                      // Set up fallback timer in case no response (limit attempts)
                                         setTimeout(async () => {
@@ -909,10 +921,16 @@ Now listen to what the user is saying and participate naturally in this business
                     });
                   }
                 }
-              }
-            }
-          }
-       };
+                             }
+             }
+             
+             // UNLOCK: Allow next audio processing
+             setTimeout(() => {
+               isProcessingAudio = false;
+               console.log('🔓 DEBUG: UNLOCKED audio processing');
+             }, 1000); // Wait 1 second before allowing next processing
+           }
+         };
       
       source.connect(processorNode);
       processorNode.connect(audioContext.destination);
