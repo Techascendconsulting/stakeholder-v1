@@ -225,6 +225,17 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     }
   }, [activeConversations]);
 
+  // Interrupt agents (stop them from speaking)
+  const interruptAgents = useCallback(async () => {
+    if (!conversationalServiceRef.current) return;
+
+    const service = conversationalServiceRef.current;
+    const promises = Array.from(activeConversations.values()).map(conversationId => 
+      service.interruptAgent(conversationId).catch(console.error)
+    );
+    await Promise.all(promises);
+  }, [activeConversations]);
+
   // Auto interruption detection
   const startVoiceDetection = useCallback(() => {
     if (voiceDetectionIntervalRef.current) return;
@@ -271,17 +282,6 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       setIsRecording(true);
     }
   }, [isRecording, setupAudioRecording, startVoiceDetection, stopVoiceDetection]);
-
-  // Interrupt agents (stop them from speaking)
-  const interruptAgents = useCallback(async () => {
-    if (!conversationalServiceRef.current) return;
-
-    const service = conversationalServiceRef.current;
-    const promises = Array.from(activeConversations.values()).map(conversationId => 
-      service.interruptAgent(conversationId).catch(console.error)
-    );
-    await Promise.all(promises);
-  }, [activeConversations]);
 
   // End all conversations
   const endAllConversations = useCallback(async () => {
