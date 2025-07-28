@@ -288,12 +288,11 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                   stakeholderName: stakeholder.name 
                 }]);
                 
-                // Only process stakeholder responses in user-first mode
-                // Stakeholders should only respond to user, not to each other
+                // Process stakeholder responses with smart conversation management
                 console.log(`📝 ${stakeholder.name} responded: ${message.content.substring(0, 50)}...`);
                 
-                // Don't use queue system for multi-voice - let each stakeholder respond directly to user only
-                // The queue system was causing stakeholders to respond to each other
+                // Use intelligent response management to prevent over-talking while allowing natural flow
+                handleIntelligentStakeholderResponse(stakeholder, message.content);
               },
               (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
                 setAgentStatuses(prev => new Map(prev.set(agentId, status)));
@@ -404,14 +403,78 @@ SYSTEM_REMINDER_END`;
     });
   }, [activeConversations]);
 
-  // Handle stakeholder response with user-first enforcement
+  // Handle intelligent stakeholder responses with context awareness
+  const handleIntelligentStakeholderResponse = useCallback(async (stakeholder: ElevenLabsStakeholder, content: string) => {
+    console.log(`💬 ${stakeholder.name}: ${content.substring(0, 100)}...`);
+    
+    // Check if this response mentions other stakeholders or warrants follow-up
+    const mentionsOtherStakeholder = selectedStakeholders.some(s => 
+      s.id !== stakeholder.id && (
+        content.toLowerCase().includes(s.name.toLowerCase()) ||
+        content.toLowerCase().includes(s.role.toLowerCase().split(' ')[0]) // First word of role
+      )
+    );
+    
+    const isQuestionToGroup = content.includes('?') && (
+      content.toLowerCase().includes('what do you think') ||
+      content.toLowerCase().includes('any thoughts') ||
+      content.toLowerCase().includes('does anyone') ||
+      content.toLowerCase().includes('what about')
+    );
+    
+    // If this response naturally invites collaboration, allow brief follow-up
+    if ((mentionsOtherStakeholder || isQuestionToGroup) && selectedStakeholders.length > 1) {
+      console.log(`🤝 ${stakeholder.name}'s response invites collaboration - allowing natural follow-up`);
+      
+             // Send contextual prompt to relevant stakeholders to encourage natural follow-up
+       setTimeout(async () => {
+         if (conversationalServiceRef.current && activeConversations.size > 0) {
+           const service = conversationalServiceRef.current;
+           
+           // Find stakeholders who might have relevant input
+           const relevantStakeholders = selectedStakeholders.filter(s => {
+             if (s.id === stakeholder.id) return false; // Don't send to the person who just spoke
+             
+             // Check if they were mentioned or if topic relates to their expertise
+             const wasMentioned = content.toLowerCase().includes(s.name.toLowerCase());
+             const roleKeyword = s.role.toLowerCase().split(' ')[0];
+             const roleRelevant = content.toLowerCase().includes(roleKeyword);
+             
+             return wasMentioned || roleRelevant;
+           });
+           
+           // Send context to relevant stakeholders
+           for (const relevantStakeholder of relevantStakeholders.slice(0, 2)) { // Limit to 2 to avoid chaos
+             const conversationId = Array.from(activeConversations.entries())
+               .find(([key]) => key === relevantStakeholder.id)?.[1];
+               
+             if (conversationId) {
+               const contextPrompt = `${stakeholder.name} just said: "${content}"
+
+This seems relevant to your expertise or you were mentioned. You can respond briefly if you have valuable input to add, but only if it's genuinely helpful to the conversation. Keep it concise and natural.`;
+               
+               try {
+                 await service.sendTextInput(conversationId, contextPrompt);
+                 console.log(`🎯 Sent context to ${relevantStakeholder.name} for potential follow-up`);
+               } catch (error) {
+                 console.error(`Failed to send context to ${relevantStakeholder.name}:`, error);
+               }
+             }
+           }
+         }
+       }, 1500); // Slightly longer delay for more natural timing
+    }
+    
+    // Update speaking state management
+    if (currentSpeaking === stakeholder.id) {
+      setCurrentSpeaking(null);
+    }
+  }, [selectedStakeholders, currentSpeaking]);
+
+  // Handle stakeholder response with user-first enforcement (legacy - keeping for compatibility)
   const handleStakeholderResponse = useCallback(async (stakeholder: ElevenLabsStakeholder, content: string) => {
     console.log(`📝 ${stakeholder.name} responded: ${content.substring(0, 100)}...`);
-    
-    // In user-first mode, stakeholders should not trigger responses from other stakeholders
-    // Each stakeholder only responds directly to the user
-    
-    // No queue management needed - each stakeholder responds independently to user only
+    // This is now handled by handleIntelligentStakeholderResponse
   }, []);
 
   // Process conversation queue (adapted from voice-only meeting)
@@ -535,23 +598,36 @@ SYSTEM_REMINDER_END`;
               console.log('🎤 First user input detected - sending instructions to stakeholders');
               (window as any).elevenLabsInstructionsSent = true;
               
-              // Send instructions to each stakeholder
-              for (const conversationId of activeIds) {
-                const stakeholderInfo = (window as any).elevenLabsStakeholders[conversationId];
-                if (stakeholderInfo) {
-                  const instructionPrompt = `You are ${stakeholderInfo.name} (${stakeholderInfo.role}) in a business meeting.
+                             // Send instructions to each stakeholder
+               for (const conversationId of activeIds) {
+                 const stakeholderInfo = (window as any).elevenLabsStakeholders[conversationId];
+                 if (stakeholderInfo) {
+                   const allStakeholders = Object.values((window as any).elevenLabsStakeholders).map(s => `${s.name} (${s.role})`).join(', ');
+                   
+                   const instructionPrompt = `You are ${stakeholderInfo.name} (${stakeholderInfo.role}) in a business meeting.
 
-The user has just started speaking to the group. You should:
-- Only respond if the user directly asks you a question or mentions your name
+MEETING PARTICIPANTS: ${allStakeholders}
+
+The user has just started speaking to the group. Meeting dynamics:
+
+PRIMARY RESPONSES:
+- Respond when the user directly asks you a question or mentions your name
+- Respond when the topic relates to your expertise area: ${stakeholderInfo.expertise}
+
+COLLABORATIVE RESPONSES:
+- You can build on what other stakeholders say if you have relevant insights
+- You can politely disagree or offer alternative perspectives when appropriate
+- You can suggest that another stakeholder might have better expertise ("James might know more about the technical side")
+
+RESPONSE GUIDELINES:
 - Keep responses brief (2-3 sentences max)
-- Address the user, not other participants
-- After responding, wait for the user's next input
-
-Your expertise: ${stakeholderInfo.expertise}
+- Be natural and collaborative, like in a real business meeting
+- Don't dominate the conversation - allow others to contribute
+- Address the user primarily, but acknowledge other stakeholders when relevant
 
 ${stakeholderInfo.isAisha ? 'IMPORTANT: You are AISHA AHMED - CUSTOMER SERVICE MANAGER. You handle customer service operations, support processes, and customer satisfaction. You are NOT a UX/UI designer.' : ''}
 
-Now listen to what the user is saying and respond appropriately.`;
+Now listen to what the user is saying and participate naturally in this business meeting.`;
                   
                   try {
                     await service.sendTextInput(conversationId, instructionPrompt);
@@ -1301,7 +1377,7 @@ Now listen to what the user is saying and respond appropriately.`;
             <div className="flex items-center justify-center space-x-2 text-blue-700 dark:text-blue-300">
               <Target className="w-4 h-4" />
               <span className="text-sm font-medium">
-                💬 <strong>You lead the conversation!</strong> Start by saying hello or asking a question. Stakeholders will respond only when you address them directly.
+                💬 <strong>You lead the conversation!</strong> Start by saying hello or asking a question. Stakeholders will collaborate naturally and can respond to each other when relevant.
               </span>
             </div>
           </div>
@@ -1572,18 +1648,18 @@ Now listen to what the user is saying and respond appropriately.`;
                     <span className="text-red-600 dark:text-red-400 font-medium">
                       🎤 Recording... Click again to stop and send audio
                     </span>
-                  ) : (
-                    <span>
-                      🎙️ <strong>You start the conversation!</strong> Click the microphone and say hello or ask a question
-                    </span>
-                  )}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {isRecording ? (
-                    '🤖 Stakeholders are listening and will respond when you stop recording'
-                  ) : (
-                    '💡 Stakeholders will wait for you to speak first, then respond only when addressed directly'
-                  )}
+                                      ) : (
+                      <span>
+                        🎙️ <strong>You start the conversation!</strong> Click the microphone and say hello or ask a question
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {isRecording ? (
+                      '🤖 Stakeholders are listening and will respond when you stop recording'
+                    ) : (
+                      '💡 Stakeholders will wait for you to speak first, then collaborate naturally based on expertise and context'
+                    )}
                 </p>
               </div>
             </div>
