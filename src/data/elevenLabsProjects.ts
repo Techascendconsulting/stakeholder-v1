@@ -105,7 +105,8 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
           'Performance optimization'
         ],
         agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj', // David Thompson agent ID
-        bio: 'David leads IT systems architecture with 12 years of experience in enterprise technology solutions. He specializes in secure system integrations and has implemented onboarding automation systems that reduced manual processing by 80%.'
+        bio: 'David leads IT systems architecture with 12 years of experience in enterprise technology solutions. He specializes in secure system integrations and has implemented onboarding automation systems that reduced manual processing by 80%.',
+        gender: 'male'
       }
     ],
     context: {

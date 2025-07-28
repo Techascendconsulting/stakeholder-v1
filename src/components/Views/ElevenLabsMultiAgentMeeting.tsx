@@ -267,19 +267,15 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         // Multi-stakeholder simulation using ONE agent with multiple personalities
         console.log(`🎭 Starting multi-voice simulation with ${selectedStakeholders.length} stakeholders...`);
         
-        // Choose the primary agent based on gender representation - prioritize female agent if Aisha is selected
-        const femaleStakeholders = selectedStakeholders.filter(s => 
-          s.name.toLowerCase().includes('aisha') || s.role.toLowerCase().includes('service')
-        );
-        const maleStakeholders = selectedStakeholders.filter(s => 
-          !s.name.toLowerCase().includes('aisha') && !s.role.toLowerCase().includes('service')
-        );
+        // Choose the primary agent based on gender representation using actual gender property
+        const femaleStakeholders = selectedStakeholders.filter(s => s.gender === 'female');
+        const maleStakeholders = selectedStakeholders.filter(s => s.gender === 'male');
         
         let primaryStakeholder;
         let voiceGender;
         
         if (femaleStakeholders.length > 0) {
-          // If we have female stakeholders, use a female agent (Aisha's)
+          // If we have female stakeholders, use a female agent
           primaryStakeholder = femaleStakeholders[0];
           voiceGender = 'female';
           console.log(`🎭 Using female agent (${primaryStakeholder.name}) for multi-voice simulation`);
