@@ -45,8 +45,8 @@
       "id": "aisha_ahmed", 
       "name": "Aisha Ahmed",
       "role": "Customer Service Manager",
-      "voice": "en-GB-MaisieNeural",
-      "baseStyle": "cheerful",
+      "voice": "en-US-AvaMultilingualNeural",
+      "baseStyle": "customerservice",
       "characteristics": {
         "fillers": ["uhm", "got it", "you know", "I mean", "well", "actually"],
         "greetings": ["Hi there", "Hey", "Good morning everyone", "Hello", "Hi folks"],
@@ -61,16 +61,16 @@
           "long": 550
         },
         "prosody": {
-          "baseRate": 0.95,
-          "basePitch": "-5%",
+          "baseRate": 1.0,
+          "basePitch": "+2%",
           "baseVolume": "medium"
         },
         "emotionalRanges": {
-          "confident": { "pitch": "+2%", "rate": 1.0, "volume": "medium" },
-          "empathetic": { "pitch": "-2%", "rate": 0.9, "volume": "soft" },
-          "excited": { "pitch": "+5%", "rate": 1.1, "volume": "medium" },
-          "thoughtful": { "pitch": "-3%", "rate": 0.85, "volume": "medium" },
-          "friendly": { "pitch": "+1%", "rate": 1.0, "volume": "medium" }
+          "confident": { "pitch": "+4%", "rate": 1.05, "volume": "medium" },
+          "empathetic": { "pitch": "+1%", "rate": 0.95, "volume": "soft" },
+          "excited": { "pitch": "+6%", "rate": 1.1, "volume": "medium" },
+          "thoughtful": { "pitch": "+2%", "rate": 0.9, "volume": "medium" },
+          "friendly": { "pitch": "+3%", "rate": 1.0, "volume": "medium" }
         },
         "emphasis_words": ["help", "support", "solve", "easy", "simple", "customers"],
         "personality_traits": {
@@ -127,8 +127,8 @@
       "id": "sarah_patel",
       "name": "Sarah Patel",
       "role": "UX Designer",
-      "voice": "en-GB-SoniaNeural", 
-      "baseStyle": "customerservice",
+      "voice": "en-US-EmmaMultilingualNeural", 
+      "baseStyle": "chat",
       "characteristics": {
         "fillers": ["you know", "I think", "actually", "so", "well", "hmm"],
         "greetings": ["Hi everyone", "Hey there", "Good morning", "Hello", "Hi folks"],
