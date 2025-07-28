@@ -6,6 +6,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
+import personalityTTS from '../../lib/azureTTSPersonality';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
@@ -278,6 +279,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     introducedMembers: new Set<string>()
   });
 
+  // Conversation history for personality engine
+  const [conversationHistory, setConversationHistory] = useState<{
+    userMessages: string[];
+    assistantMessages: string[];
+    messageCount: number;
+  }>({
+    userMessages: [],
+    assistantMessages: [],
+    messageCount: 0
+  });
+
   // Background transcript capture function (always captures, regardless of UI)
   const addToBackgroundTranscript = (message: Message) => {
     console.log('📝 BACKGROUND TRANSCRIPT - Adding message:', {
@@ -499,6 +511,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Add to background transcript (always captured)
       addToBackgroundTranscript(responseMessage);
+
+      // Update conversation history for personality engine
+      setConversationHistory(prev => ({
+        userMessages: prev.userMessages,
+        assistantMessages: [...prev.assistantMessages, response],
+        messageCount: prev.messageCount + 1
+      }));
       
       // Force cleanup of thinking state to prevent display issues
       setTimeout(() => {
@@ -584,8 +603,23 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
       
       if (isAzureTTSAvailable() && voiceName) {
-        console.log('✅ Using Azure TTS for audio synthesis');
-        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
+        console.log('✅ Using Personality-Enhanced Azure TTS for audio synthesis');
+        
+        // Check if personality is available for this stakeholder
+        const audioBlob = personalityTTS.hasPersonality(stakeholder.id) 
+          ? await personalityTTS.synthesizeWithPersonality(text, {
+              stakeholderId: stakeholder.id,
+              stakeholderRole: stakeholder.role,
+              conversationHistory,
+              enhancementOptions: {
+                addFillers: true,
+                addPauses: true,
+                adjustEmotion: true,
+                emphasizeKeywords: true,
+                useTransitions: true
+              }
+            })
+          : await azureTTS.synthesizeSpeech(text, voiceName);
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         
@@ -679,6 +713,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
     // Add user message to background transcript (always captured)
     addToBackgroundTranscript(userMessage);
+
+    // Update conversation history for personality engine
+    setConversationHistory(prev => ({
+      userMessages: [...prev.userMessages, messageContent],
+      assistantMessages: prev.assistantMessages,
+      messageCount: prev.messageCount + 1
+    }));
 
     try {
       // Check for direct stakeholder mentions in user message FIRST
