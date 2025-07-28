@@ -217,7 +217,7 @@ export const mockStakeholders: Stakeholder[] = [
     priorities: ['Customer satisfaction', 'Service quality', 'Team efficiency'],
     expertise: ['Customer experience management', 'Service delivery optimization', 'Customer satisfaction improvement', 'Team performance management', 'Service quality assurance'],
     voice: 'en-GB-SoniaNeural',
-    agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
+    agentId: 'agent_3601k16fe93ject9vy38wev45tym' // ElevenLabs agent ID
   },
   {
     id: 'stake-3',
