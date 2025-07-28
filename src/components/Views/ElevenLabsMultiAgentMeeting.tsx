@@ -250,6 +250,9 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       // Reset instructions flag for new meeting
       (window as any).elevenLabsInstructionsSent = false;
       (window as any).elevenLabsStakeholders = {};
+      (window as any).isGreetingPhase = false;
+      (window as any).greetingQueue = [];
+      (window as any).lastGreetingAudio = null;
       (window as any).lastElevenLabsResponder = '';
 
       const newConversations = new Map<string, string>();
@@ -329,6 +332,32 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                 
                 // Process stakeholder responses with smart conversation management
                 console.log(`📝 ${stakeholder.name} responded: ${message.content.substring(0, 50)}...`);
+                
+                // Check if we're in greeting phase and need to continue sequential greetings
+                if ((window as any).isGreetingPhase && (window as any).greetingQueue?.length > 0) {
+                  console.log('🔄 DEBUG: Continuing sequential greeting');
+                  setTimeout(async () => {
+                    const nextStakeholderId = (window as any).greetingQueue.shift();
+                    if (nextStakeholderId && conversationalServiceRef.current) {
+                      try {
+                        // Get the original greeting audio (stored from first input)
+                        const greetingAudio = (window as any).lastGreetingAudio;
+                        if (greetingAudio) {
+                          await conversationalServiceRef.current.sendAudioInputPCM(nextStakeholderId, greetingAudio);
+                          console.log(`📤 SUCCESS: Sent greeting to next stakeholder: ${nextStakeholderId}`);
+                        }
+                      } catch (error) {
+                        console.error('❌ FAILED: Sequential greeting:', error);
+                      }
+                      
+                      // End greeting phase when queue is empty
+                      if ((window as any).greetingQueue.length === 0) {
+                        (window as any).isGreetingPhase = false;
+                        console.log('✅ DEBUG: Sequential greeting phase completed');
+                      }
+                    }
+                  }, 2000); // Wait 2 seconds between greetings
+                }
                 
                 // Use intelligent response management to prevent over-talking while allowing natural flow
                 handleIntelligentStakeholderResponse(stakeholder, message.content);
@@ -796,25 +825,33 @@ Now listen to what the user is saying and participate naturally in this business
                                      // Use the same isFirstUserInput check from above
             
             if (isFirstUserInput) {
-              console.log('👋 DEBUG: First user input - sending to ALL stakeholders for greeting', {
+              console.log('👋 DEBUG: First user input - using SEQUENTIAL greeting to prevent talking over each other', {
                 activeIds,
                 stakeholderCount: activeIds.length
               });
-              // Send to all stakeholders for initial greeting - they'll respond in turns
-              for (const conversationId of activeIds) {
+              
+              // SEQUENTIAL greeting: Send to first stakeholder only, others will follow after response
+              const firstActiveId = activeIds.find(id => service.isSessionActive(id));
+              if (firstActiveId) {
                 try {
-                  const isActive = service.isSessionActive(conversationId);
-                  console.log(`🔍 DEBUG: Checking connection for ${conversationId}:`, { isActive });
+                  // Store greeting audio for sequential use
+                  (window as any).lastGreetingAudio = base64;
                   
-                  if (isActive) {
-                    await service.sendAudioInputPCM(conversationId, base64);
-                    console.log(`📤 SUCCESS: Sent greeting audio to ${conversationId}`);
-                  } else {
-                    console.warn(`⚠️ SKIP: Connection not active for ${conversationId}`);
-                  }
+                  await service.sendAudioInputPCM(firstActiveId, base64);
+                  console.log(`📤 SUCCESS: Sent greeting audio to FIRST stakeholder: ${firstActiveId}`);
+                  
+                  // Set up sequential greeting chain
+                  (window as any).greetingQueue = activeIds.filter(id => 
+                    id !== firstActiveId && service.isSessionActive(id)
+                  );
+                  (window as any).isGreetingPhase = true;
+                  console.log('🔄 DEBUG: Greeting queue set up:', (window as any).greetingQueue);
+                  
                 } catch (error) {
-                  console.error(`❌ FAILED: Greeting to ${conversationId}:`, error);
+                  console.error(`❌ FAILED: First greeting:`, error);
                 }
+              } else {
+                console.error('❌ CRITICAL: No active stakeholders for greeting');
               }
                           } else {
                 // For subsequent inputs, use smart routing with fallback
@@ -840,20 +877,24 @@ Now listen to what the user is saying and participate naturally in this business
                                          } else {
                        console.warn(`⚠️ SKIP: Selected stakeholder connection not active: ${selectedConversationId}`);
                        
-                       // Try to find ANY active connection instead of giving up
-                       const anyActiveId = activeIds.find(id => service.isSessionActive(id));
-                       if (anyActiveId) {
-                         console.log(`🔄 DEBUG: Trying any active connection: ${anyActiveId}`);
-                         try {
-                           await service.sendAudioInputPCM(anyActiveId, base64);
-                           console.log(`✅ SUCCESS: Sent audio to any active stakeholder: ${anyActiveId}`);
-                         } catch (error) {
-                           console.error(`❌ FAILED: Any active stakeholder:`, error);
-                         }
-                       } else {
-                         console.error(`❌ CRITICAL: No active connections available!`);
-                       }
-                       return; // Don't set up fallback if no connections
+                                               // Try to find ANY active connection instead of giving up
+                        const anyActiveId = activeIds.find(id => service.isSessionActive(id));
+                        if (anyActiveId) {
+                          console.log(`🔄 DEBUG: Trying any active connection: ${anyActiveId}`);
+                          try {
+                            await service.sendAudioInputPCM(anyActiveId, base64);
+                            console.log(`✅ SUCCESS: Sent audio to any active stakeholder: ${anyActiveId}`);
+                            
+                            // Still set up fallback for this case
+                            // Don't return here - let fallback logic run
+                          } catch (error) {
+                            console.error(`❌ FAILED: Any active stakeholder:`, error);
+                            return; // Only return on actual failure
+                          }
+                        } else {
+                          console.error(`❌ CRITICAL: No active connections available!`);
+                          return; // Don't set up fallback if no connections
+                        }
                      }
                   
                                      // Set up fallback timer in case no response (limit attempts)
