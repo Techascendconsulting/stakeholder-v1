@@ -129,6 +129,24 @@ export const IndividualAgentMeeting: React.FC = () => {
     }
   }, [isRecording]);
 
+  // Process audio input with individual agents - EXACT COPY from working ElevenLabs meeting
+  const processAudioInput = useCallback(async (base64Audio: string) => {
+    if (!individualAgentServiceRef.current) return;
+    
+    try {
+      console.log('🎯 Processing user input with individual agents');
+      
+      // Send to individual agent service for intelligent routing
+      await individualAgentServiceRef.current.processUserInput(
+        base64Audio,
+        "User spoke" // This would be actual transcription
+      );
+      
+    } catch (error) {
+      console.error('❌ Error processing audio input:', error);
+    }
+  }, []);
+
   // Setup audio recording - EXACT COPY from working ElevenLabs meeting
   const setupAudioRecording = useCallback(async () => {
     try {
@@ -246,24 +264,6 @@ export const IndividualAgentMeeting: React.FC = () => {
       console.error('❌ Error setting up audio recording:', error);
     }
   }, [processAudioInput]);
-
-  // Process audio input with individual agents - EXACT COPY from working ElevenLabs meeting
-  const processAudioInput = useCallback(async (base64Audio: string) => {
-    if (!individualAgentServiceRef.current) return;
-    
-    try {
-      console.log('🎯 Processing user input with individual agents');
-      
-      // Send to individual agent service for intelligent routing
-      await individualAgentServiceRef.current.processUserInput(
-        base64Audio,
-        "User spoke" // This would be actual transcription
-      );
-      
-    } catch (error) {
-      console.error('❌ Error processing audio input:', error);
-    }
-  }, []);
 
   // Start recording once - stays on until meeting ends
   const startRecording = useCallback(async () => {
