@@ -242,6 +242,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       // Reset instructions flag for new meeting
       (window as any).elevenLabsInstructionsSent = false;
       (window as any).elevenLabsStakeholders = {};
+      (window as any).lastElevenLabsResponder = '';
 
       const newConversations = new Map<string, string>();
 
@@ -403,6 +404,43 @@ SYSTEM_REMINDER_END`;
     });
   }, [activeConversations]);
 
+  // Select the best stakeholder to handle the user's audio input
+  const selectBestStakeholderForAudio = useCallback((activeIds: string[]) => {
+    // Strategy: Route to one stakeholder at a time to prevent multiple responses
+    // Priority order:
+    // 1. If user just spoke to someone specific, continue with them
+    // 2. If it's a general question, use fair rotation
+    // 3. Ensure only ONE stakeholder gets the audio
+    
+    const stakeholderInfos = Object.entries((window as any).elevenLabsStakeholders || {});
+    
+    // Simple but effective: rotate through stakeholders fairly
+    // This ensures only one person responds at a time
+    const lastResponderId = (window as any).lastElevenLabsResponder || '';
+    const availableIds = activeIds.filter(id => id !== lastResponderId);
+    
+    let selectedId;
+    if (availableIds.length > 0) {
+      // Pick the first available stakeholder who didn't just respond
+      selectedId = availableIds[0];
+    } else {
+      // If everyone responded recently, pick the first one
+      selectedId = activeIds[0];
+    }
+    
+    // Store who's responding to avoid immediate repeats
+    (window as any).lastElevenLabsResponder = selectedId;
+    
+    // Find stakeholder name for logging
+    const stakeholderInfo = stakeholderInfos.find(([conversationId]) => conversationId === selectedId)?.[1];
+    
+    if (stakeholderInfo) {
+      console.log(`🎯 Routing to ${stakeholderInfo.name} (preventing multiple responses)`);
+    }
+    
+    return selectedId;
+  }, []);
+
   // Handle intelligent stakeholder responses with context awareness
   const handleIntelligentStakeholderResponse = useCallback(async (stakeholder: ElevenLabsStakeholder, content: string) => {
     console.log(`💬 ${stakeholder.name}: ${content.substring(0, 100)}...`);
@@ -429,12 +467,9 @@ SYSTEM_REMINDER_END`;
       content.toLowerCase().includes('what do others think')
     );
     
-    // Only allow follow-up if there's an explicit invitation or clear need for additional input
-    const shouldAllowFollowUp = (
-      explicitlyMentionsOtherStakeholder || 
-      explicitlyAsksForOtherPerspectives || 
-      expressesUncertaintyOrIncomplete
-    );
+    // DISABLE automatic follow-ups to prevent talking over each other
+    // Only allow follow-up if explicitly mentioned by name
+    const shouldAllowFollowUp = explicitlyMentionsOtherStakeholder;
     
     if (shouldAllowFollowUp && selectedStakeholders.length > 1) {
       console.log(`🤝 ${stakeholder.name}'s response invites collaboration - allowing natural follow-up`);
@@ -636,21 +671,24 @@ MEETING PARTICIPANTS: ${allStakeholders}
 
 The user has just started speaking to the group. Meeting dynamics:
 
-PRIMARY RESPONSES:
-- Respond when the user directly asks you a question or mentions your name
-- Respond when the topic directly relates to your expertise area: ${stakeholderInfo.expertise}
+🚨 CRITICAL: Only ONE person should respond to each user input!
 
-COLLABORATIVE RESPONSES (be conservative):
-- Only respond to other stakeholders if they specifically mention your name
-- Only respond if they explicitly ask for your perspective ("What do you think, ${stakeholderInfo.name}?")
-- You can suggest another stakeholder has better expertise ("${stakeholderInfo.name === 'James Walker' ? 'Aisha' : 'James'} might know more about that")
-- Don't automatically add your perspective unless specifically asked
+PRIMARY RESPONSES:
+- Only respond if you receive the user's audio directly
+- If you don't receive audio but see others responding, STAY SILENT
+- Only speak when the user specifically mentions your name
+
+STRICT RULES:
+- If another stakeholder is already responding, DO NOT ADD YOUR OPINION
+- Wait for the user to specifically ask for your input
+- Never give multiple perspectives on the same question
+- One complete answer per user question is sufficient
 
 RESPONSE GUIDELINES:
 - Keep responses brief (2-3 sentences max)
-- If someone already gave a complete answer, don't repeat or add unless asked
-- Let the user control the conversation flow
-- Be helpful but not overwhelming
+- Give a complete answer so others don't need to add to it
+- If you don't know something, say so and suggest who might know
+- Let the user ask follow-up questions if they want more detail
 
 ${stakeholderInfo.isAisha ? 'IMPORTANT: You are AISHA AHMED - CUSTOMER SERVICE MANAGER. You handle customer service operations, support processes, and customer satisfaction. You are NOT a UX/UI designer.' : ''}
 
@@ -669,23 +707,37 @@ Now listen to what the user is saying and participate naturally in this business
               await new Promise(resolve => setTimeout(resolve, 500));
             }
             
-            // Send audio to all agents
-            for (const conversationId of activeIds) {
-              try {
-                await service.sendAudioInputPCM(conversationId, base64);
-              } catch (error) {
-                // If conversation ended, remove it from active list
-                if (error.message.includes('No active session')) {
-                  console.log('🔌 Conversation ended, removing from active list');
-                  activeConversations.forEach((id, key) => {
-                    if (id === conversationId) {
-                      activeConversations.delete(key);
-                    }
-                  });
-                }
-              }
-            }
-            console.log(`🎯 Sent audio to all ${activeIds.length} agents`);
+                         // Send audio to only ONE relevant agent to prevent multiple responses
+             const selectedConversationId = selectBestStakeholderForAudio(activeIds);
+             
+             if (selectedConversationId) {
+               try {
+                 await service.sendAudioInputPCM(selectedConversationId, base64);
+                 console.log(`🎯 Sent audio to selected stakeholder only`);
+                 
+                 // Notify other stakeholders that someone is handling the question
+                 const otherConversationIds = activeIds.filter(id => id !== selectedConversationId);
+                 for (const otherId of otherConversationIds) {
+                   const notificationPrompt = `[MEETING_UPDATE] Another stakeholder is responding to the user's input. Stay silent unless the user specifically asks for your input or mentions your name.`;
+                   try {
+                     await service.sendTextInput(otherId, notificationPrompt);
+                   } catch (error) {
+                     console.error('Failed to send notification:', error);
+                   }
+                 }
+                 
+               } catch (error) {
+                 // If conversation ended, remove it from active list
+                 if (error.message.includes('No active session')) {
+                   console.log('🔌 Conversation ended, removing from active list');
+                   activeConversations.forEach((id, key) => {
+                     if (id === selectedConversationId) {
+                       activeConversations.delete(key);
+                     }
+                   });
+                 }
+               }
+             }
           }
        };
       
@@ -767,6 +819,7 @@ Now listen to what the user is saying and participate naturally in this business
       // Reset instruction flags
       (window as any).elevenLabsInstructionsSent = false;
       (window as any).elevenLabsStakeholders = {};
+      (window as any).lastElevenLabsResponder = '';
       
       console.log('✅ Meeting ended and cleaned up');
     } catch (error) {
