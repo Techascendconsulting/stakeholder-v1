@@ -191,19 +191,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
       
-      // Try different audio formats to ensure compatibility
-      let mimeType = 'audio/webm;codecs=opus';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = 'audio/webm';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = 'audio/mp4';
-          if (!MediaRecorder.isTypeSupported(mimeType)) {
-            mimeType = ''; // Use default
-          }
-        }
-      }
-      
-      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      // Use simple webm format which is widely supported
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm'
+      });
       
       const audioChunks: Blob[] = [];
       
@@ -214,7 +205,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       };
       
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         
         // Send audio to all active conversations
         if (conversationalServiceRef.current) {

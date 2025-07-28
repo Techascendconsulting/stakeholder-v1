@@ -70,17 +70,9 @@ class ElevenLabsConversationalService {
     onStatusChange?: (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => void
   ): Promise<string> {
     try {
-      let websocketUrl: string;
-      
-      try {
-        // Try to get signed URL for this agent
-        websocketUrl = await this.getSignedUrl(stakeholder.agentId);
-        console.log(`🔗 Using signed URL for ${stakeholder.name}`);
-      } catch (error) {
-        // Fallback to direct connection
-        websocketUrl = `wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${stakeholder.agentId}`;
-        console.log(`🔗 Using direct connection for ${stakeholder.name}`);
-      }
+      // Use signed URL for proper authentication
+      console.log(`🔗 Getting signed URL for ${stakeholder.name} (${stakeholder.agentId})`);
+      const websocketUrl = await this.getSignedUrl(stakeholder.agentId);
       
       // Create WebSocket connection
       const websocket = new WebSocket(websocketUrl);
@@ -110,30 +102,12 @@ class ElevenLabsConversationalService {
         this.activeSessions.set(conversationId, session);
         onStatusChange?.(stakeholder.agentId, 'listening');
         
-        // Send initialization message with conversation config
+        // Send initialization message - keeping it simple as per docs
         const initMessage = {
-          type: 'conversation_initiation_client_data',
-          conversation_config_override: {
-            agent: {
-              prompt: null, // Use agent's configured prompt
-              first_message: null, // Use agent's configured first message  
-              language: 'en'
-            },
-            tts: {
-              voice_id: null // Use agent's configured voice
-            }
-          },
-          custom_llm_extra_body: {
-            temperature: 0.7,
-            max_tokens: 150
-          },
-          dynamic_variables: {
-            user_name: 'User',
-            project_context: 'Customer Onboarding Optimization Project',
-            meeting_type: 'stakeholder_discussion'
-          }
+          type: 'conversation_initiation_client_data'
         };
         websocket.send(JSON.stringify(initMessage));
+        console.log('📤 Sent initialization message');
       };
 
       websocket.onmessage = (event) => {
@@ -147,7 +121,19 @@ class ElevenLabsConversationalService {
       };
 
       websocket.onclose = (event) => {
-        console.log(`🔌 Connection closed for agent: ${stakeholder.name}`, event.code, event.reason);
+        console.log(`🔌 Connection closed for agent: ${stakeholder.name}`, {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean
+        });
+        
+        // Log specific error codes
+        if (event.code === 1008) {
+          console.error('❌ Invalid message format sent to ElevenLabs');
+        } else if (event.code === 1006) {
+          console.error('❌ Connection closed abnormally');
+        }
+        
         session.isActive = false;
         onStatusChange?.(stakeholder.agentId, 'idle');
         this.cleanup(conversationId);
@@ -254,17 +240,6 @@ class ElevenLabsConversationalService {
         }
         break;
 
-      case 'ping':
-        // Respond to ping to keep connection alive
-        if (session.websocket && session.websocket.readyState === WebSocket.OPEN) {
-          const pongMessage = {
-            type: 'pong',
-            event_id: data.ping_event?.event_id || Date.now()
-          };
-          session.websocket.send(JSON.stringify(pongMessage));
-        }
-        break;
-
       case 'interruption':
         console.log('🛑 Interruption event:', data);
         statusHandler?.('listening');
@@ -278,13 +253,25 @@ class ElevenLabsConversationalService {
         console.log('🤔 Tentative agent response:', data);
         break;
 
+      case 'ping':
+        // Respond to ping to keep connection alive
+        if (session.websocket && session.websocket.readyState === WebSocket.OPEN) {
+          const pongMessage = {
+            type: 'pong',
+            event_id: data.ping_event?.event_id || Date.now()
+          };
+          session.websocket.send(JSON.stringify(pongMessage));
+          console.log('🏓 Responded to ping');
+        }
+        break;
+
       default:
         console.log('📨 Unknown message type:', data.type, data);
     }
   }
 
   /**
-   * Send user audio input to agent
+   * Send user audio input to agent using proper format
    */
   async sendAudioInput(conversationId: string, audioBlob: Blob): Promise<void> {
     const session = this.activeSessions.get(conversationId);
@@ -294,10 +281,10 @@ class ElevenLabsConversationalService {
     }
 
     try {
-      // Convert blob to base64
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
+      // Convert blob to base64 using FileReader for better compatibility
+      const base64Audio = await this.blobToBase64(audioBlob);
+      
+      // Send the message in the exact format from ElevenLabs docs
       const message = {
         user_audio_chunk: base64Audio
       };
@@ -305,15 +292,33 @@ class ElevenLabsConversationalService {
       console.log(`🎤 Sending audio to ${session.stakeholder.name}`, { 
         size: audioBlob.size, 
         type: audioBlob.type,
-        base64Length: base64Audio.length,
-        messageStructure: Object.keys(message)
+        base64Length: base64Audio.length
       });
-      console.log('🎤 Audio message being sent:', JSON.stringify(message).substring(0, 200) + '...');
+      
+      // Send as JSON string
       session.websocket.send(JSON.stringify(message));
+      console.log('✅ Audio sent successfully');
     } catch (error) {
-      console.error('Error sending audio input:', error);
+      console.error('❌ Error sending audio input:', error);
       throw error;
     }
+  }
+
+  /**
+   * Convert blob to base64 using FileReader for better compatibility
+   */
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data URL prefix (e.g., "data:audio/webm;base64,")
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 
   /**
@@ -334,8 +339,9 @@ class ElevenLabsConversationalService {
 
       console.log(`💬 Sending text to ${session.stakeholder.name}:`, text);
       session.websocket.send(JSON.stringify(message));
+      console.log('✅ Text sent successfully');
     } catch (error) {
-      console.error('Error sending text input:', error);
+      console.error('❌ Error sending text input:', error);
       throw error;
     }
   }
@@ -394,7 +400,7 @@ class ElevenLabsConversationalService {
 
       console.log('🎵 Audio bytes created, length:', bytes.length);
 
-      // Create blob and play audio (try different formats)
+      // Create blob and play audio
       const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
@@ -425,14 +431,6 @@ class ElevenLabsConversationalService {
       console.log('🎵 Attempting to play audio...');
       audio.play().catch(error => {
         console.error('❌ Failed to play audio:', error);
-        // Try with different MIME type
-        const audioBlob2 = new Blob([bytes], { type: 'audio/wav' });
-        const audioUrl2 = URL.createObjectURL(audioBlob2);
-        const audio2 = new Audio(audioUrl2);
-        audio2.play().catch(error2 => {
-          console.error('❌ Failed to play audio with WAV format too:', error2);
-          URL.revokeObjectURL(audioUrl2);
-        });
       });
     } catch (error) {
       console.error('❌ Error processing audio chunk:', error);
