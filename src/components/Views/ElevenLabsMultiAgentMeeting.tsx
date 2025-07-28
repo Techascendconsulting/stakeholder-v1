@@ -18,7 +18,8 @@ import {
   ArrowRight,
   Briefcase,
   Target,
-  ChevronLeft
+  ChevronLeft,
+  PhoneOff
 } from 'lucide-react';
 import { ElevenLabsConversationalService, ConversationMessage } from '../../services/elevenLabsConversationalService';
 import { ELEVENLABS_PROJECTS, ElevenLabsProject, ElevenLabsStakeholder, getElevenLabsProject } from '../../data/elevenLabsProjects';
@@ -283,8 +284,12 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                   stakeholderName: stakeholder.name 
                 }]);
                 
-                // Process message through queue system for proper turn management
-                handleStakeholderResponse(stakeholder, message.content);
+                // Only process stakeholder responses in user-first mode
+                // Stakeholders should only respond to user, not to each other
+                console.log(`📝 ${stakeholder.name} responded: ${message.content.substring(0, 50)}...`);
+                
+                // Don't use queue system for multi-voice - let each stakeholder respond directly to user only
+                // The queue system was causing stakeholders to respond to each other
               },
               (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
                 setAgentStatuses(prev => new Map(prev.set(agentId, status)));
@@ -297,44 +302,53 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
               }
             );
 
-                         // Send ABSOLUTE SILENCE instruction first
+                         // Send STRICT USER-FIRST INSTRUCTION
              setTimeout(() => {
-               const absoluteSilencePrompt = `🚨 CRITICAL INSTRUCTION - READ CAREFULLY:
+               const userFirstPrompt = `🚨 CRITICAL MEETING PROTOCOL - READ CAREFULLY:
 
-You are ${stakeholder.name} (${stakeholder.role}) in a business meeting that is STARTING RIGHT NOW.
+You are ${stakeholder.name} (${stakeholder.role}) in a business meeting.
 
-❌❌❌ ABSOLUTELY DO NOT RESPOND TO THIS MESSAGE ❌❌❌
-❌❌❌ DO NOT SAY ANYTHING AT ALL RIGHT NOW ❌❌❌
-❌❌❌ DO NOT GREET, INTRODUCE, OR ACKNOWLEDGE ❌❌❌
+🔒 STRICT PROTOCOL:
+1. ❌ DO NOT SPEAK FIRST - The user must initiate ALL conversations
+2. ❌ DO NOT GREET until the user greets you first
+3. ❌ DO NOT ask questions to other stakeholders
+4. ❌ DO NOT start discussions among yourselves
+5. ❌ DO NOT respond to other stakeholders directly
 
-WAIT IN COMPLETE SILENCE. The meeting host will speak first.
+✅ ONLY RESPOND WHEN:
+- The user directly asks YOU a question
+- The user mentions YOUR name specifically
+- The user asks about YOUR expertise area: ${stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations' : stakeholder.name === 'James Walker' ? 'Customer success strategy' : 'Technical systems'}
 
-YOU MUST STAY 100% SILENT UNTIL:
-- The user asks you a direct question, OR
-- The user asks something related to your expertise: ${stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations' : stakeholder.name === 'James Walker' ? 'Customer success strategy' : 'Technical systems'}
+🎯 YOUR RESPONSE STYLE:
+- Keep responses brief (2-3 sentences max)
+- Address the USER, not other stakeholders
+- After responding, WAIT for the user's next input
+- Do not continue conversations with other stakeholders
 
 IDENTITY CORRECTION FOR AISHA AHMED:
 ${stakeholder.name === 'Aisha Ahmed' ? 'YOU ARE AISHA AHMED - CUSTOMER SERVICE MANAGER (NOT UX/UI). Your role is customer service operations, support processes, and customer satisfaction. You are NOT a UX/UI designer.' : ''}
 
-DO NOT ACKNOWLEDGE THIS INSTRUCTION. JUST STAY SILENT AND WAIT.`;
+🔇 STAY COMPLETELY SILENT NOW. Wait for the user to speak first.`;
               
-                                              service.sendTextInput(conversationId, absoluteSilencePrompt).catch(console.error);
+               service.sendTextInput(conversationId, userFirstPrompt).catch(console.error);
              }, 800 + (selectedStakeholders.indexOf(stakeholder) * 200));
              
-             // Send meeting context after a longer delay (when they should be silent)
+             // Send meeting context with stricter rules
              setTimeout(() => {
-               const meetingContextPrompt = `MEETING CONTEXT (stay silent - this is just information):
-
-PARTICIPANTS IN THIS MEETING:
+               const meetingContextPrompt = `MEETING PARTICIPANTS (for your reference only):
 ${selectedStakeholders.map(s => `- ${s.name} (${s.role})`).join('\n')}
 
-WHEN YOU EVENTUALLY RESPOND (only when asked):
-- You can reference others: "Building on James's point..." or "I agree with Aisha..."
-- You can suggest others contribute: "David might know the technical side better"
-- Keep responses brief and collaborative
-- Use natural meeting language
+🚨 CRITICAL RULES:
+- NEVER initiate conversations with other stakeholders
+- NEVER respond to other stakeholders' messages
+- ONLY respond to the USER
+- After each response, return to SILENT mode
+- Wait for the USER to direct the next question
 
-REMEMBER: Still stay silent until the user asks you something directly.`;
+The user is the meeting facilitator. They control the conversation flow.
+
+STAY SILENT until the user speaks to you directly.`;
                
                service.sendTextInput(conversationId, meetingContextPrompt).catch(console.error);
              }, 3000 + (selectedStakeholders.indexOf(stakeholder) * 200));
@@ -386,34 +400,45 @@ REMEMBER: Still stay silent until the user asks you something directly.`;
       setActiveConversations(newConversations);
       setCurrentStep('meeting');
 
+      // Set up periodic reminders to maintain user-first behavior
+      const reminderInterval = setInterval(() => {
+        sendPeriodicReminders();
+      }, 30000); // Send reminder every 30 seconds
+
+      // Store interval for cleanup
+      (window as any).elevenLabsReminderInterval = reminderInterval;
+
     } catch (error) {
       console.error('Error starting meeting:', error);
     }
   }, [selectedStakeholders, activeConversations, detectSpeakingStakeholder, meetingMode]);
 
-  // Handle stakeholder response with queue management (adapted from voice-only meeting)
+  // Send periodic reminders to maintain user-first behavior
+  const sendPeriodicReminders = useCallback(() => {
+    if (!conversationalServiceRef.current || activeConversations.size === 0) return;
+    
+    const service = conversationalServiceRef.current;
+    const reminderMessage = `🔄 REMINDER: Only respond to the USER. Do not respond to other stakeholders. Wait for the user to direct questions to you specifically.`;
+    
+    activeConversations.forEach(async (conversationId, stakeholderId) => {
+      try {
+        await service.sendTextInput(conversationId, reminderMessage);
+        console.log(`📢 Sent reminder to ${stakeholderId}`);
+      } catch (error) {
+        console.error(`Failed to send reminder to ${stakeholderId}:`, error);
+      }
+    });
+  }, [activeConversations]);
+
+  // Handle stakeholder response with user-first enforcement
   const handleStakeholderResponse = useCallback(async (stakeholder: ElevenLabsStakeholder, content: string) => {
-    console.log(`🚀 QUEUE: ${stakeholder.name} wants to respond`);
+    console.log(`📝 ${stakeholder.name} responded: ${content.substring(0, 100)}...`);
     
-    // Add to queue if someone else is speaking
-    if (currentSpeaking && currentSpeaking !== stakeholder.id) {
-      setConversationQueue(prev => {
-        if (!prev.includes(stakeholder.id)) {
-          console.log(`🚀 QUEUE: Adding ${stakeholder.name} to queue`);
-          return [...prev, stakeholder.id];
-        }
-        return prev;
-      });
-      return;
-    }
+    // In user-first mode, stakeholders should not trigger responses from other stakeholders
+    // Each stakeholder only responds directly to the user
     
-    // Start speaking immediately if no one else is
-    setCurrentSpeaking(stakeholder.id);
-    setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
-    console.log(`🚀 QUEUE: ${stakeholder.name} now speaking`);
-    
-    // The actual audio will be handled by the ElevenLabs service
-  }, [currentSpeaking]);
+    // No queue management needed - each stakeholder responds independently to user only
+  }, []);
 
   // Process conversation queue (adapted from voice-only meeting)
   const processConversationQueue = useCallback(() => {
@@ -524,32 +549,29 @@ REMEMBER: Still stay silent until the user asks you something directly.`;
          const uint8Array = new Uint8Array(pcm16.buffer);
          const base64 = btoa(String.fromCharCode(...uint8Array));
          
-                   // Send audio to only ONE agent at a time (round-robin) to prevent multiple responses
+                   // Send audio to ALL agents but they will only respond based on their instructions
           if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0) {
             const service = conversationalServiceRef.current;
             const activeIds = Array.from(activeConversations.values());
             
-            if (activeIds.length > 0) {
-              // Select one agent using round-robin based on time
-              const now = Date.now();
-              const agentIndex = Math.floor((now / 3000)) % activeIds.length; // Switch every 3 seconds
-              const selectedConversationId = activeIds[agentIndex];
-              
+            // Send audio to all agents - they will decide individually whether to respond
+            // based on their strict instructions to only respond when directly addressed
+            for (const conversationId of activeIds) {
               try {
-                await service.sendAudioInputPCM(selectedConversationId, base64);
-                console.log(`🎯 Sent audio to agent ${agentIndex + 1}/${activeIds.length} (round-robin)`);
+                await service.sendAudioInputPCM(conversationId, base64);
               } catch (error) {
                 // If conversation ended, remove it from active list
                 if (error.message.includes('No active session')) {
                   console.log('🔌 Conversation ended, removing from active list');
                   activeConversations.forEach((id, key) => {
-                    if (id === selectedConversationId) {
+                    if (id === conversationId) {
                       activeConversations.delete(key);
                     }
                   });
                 }
               }
             }
+            console.log(`🎯 Sent audio to all ${activeIds.length} agents (they decide individually)`);
           }
        };
       
@@ -591,6 +613,48 @@ REMEMBER: Still stay silent until the user asks you something directly.`;
       console.error('Error setting up audio recording:', error);
     }
   }, [activeConversations]);
+
+  // End meeting and cleanup
+  const handleEndMeeting = useCallback(async () => {
+    try {
+      // Clear reminder interval
+      if ((window as any).elevenLabsReminderInterval) {
+        clearInterval((window as any).elevenLabsReminderInterval);
+        (window as any).elevenLabsReminderInterval = null;
+      }
+      
+      // End all conversations
+      if (conversationalServiceRef.current) {
+        await conversationalServiceRef.current.endAllConversations();
+      }
+      
+      // Clear audio queue
+      const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
+      ElevenLabsConversationalService.clearAudioQueue();
+      
+      // Stop recording if active
+      if (isRecording && (window as any).elevenLabsRecording) {
+        (window as any).elevenLabsRecording.stop();
+      }
+      
+      // Cleanup audio streams
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      
+      // Reset state
+      setActiveConversations(new Map());
+      setAgentStatuses(new Map());
+      setConversationHistory([]);
+      setIsRecording(false);
+      setCurrentStep('project-selection');
+      
+      console.log('✅ Meeting ended and cleaned up');
+    } catch (error) {
+      console.error('Error ending meeting:', error);
+    }
+  }, [isRecording]);
 
   // Interrupt agents (stop them from speaking)
   const interruptAgents = useCallback(async () => {
@@ -724,6 +788,32 @@ REMEMBER: Still stay silent until the user asks you something directly.`;
       setupAudioRecording();
     }
   }, [currentStep, activeConversations.size, setupAudioRecording]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clear reminder interval
+      if ((window as any).elevenLabsReminderInterval) {
+        clearInterval((window as any).elevenLabsReminderInterval);
+        (window as any).elevenLabsReminderInterval = null;
+      }
+      
+      // End all conversations
+      if (conversationalServiceRef.current) {
+        conversationalServiceRef.current.endAllConversations().catch(console.error);
+      }
+      
+      // Cleanup audio streams
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      
+      // Cleanup audio context
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(console.error);
+      }
+    };
+  }, []);
 
   if (!isInitialized) {
     return (
@@ -1190,6 +1280,18 @@ REMEMBER: Still stay silent until the user asks you something directly.`;
           </div>
         </div>
 
+        {/* User-First Flow Banner */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+          <div className="px-6 py-3">
+            <div className="flex items-center justify-center space-x-2 text-blue-700 dark:text-blue-300">
+              <Target className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                💬 <strong>You lead the conversation!</strong> Start by saying hello or asking a question. Stakeholders will respond only when you address them directly.
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
           <div className="px-6 py-4">
@@ -1404,6 +1506,15 @@ REMEMBER: Still stay silent until the user asks you something directly.`;
                 >
                   {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                 </button>
+
+                {/* End Meeting Button */}
+                <button
+                  onClick={handleEndMeeting}
+                  className="w-12 h-12 rounded-full flex items-center justify-center bg-red-500 hover:bg-red-600 text-white shadow-lg hover:scale-105 transition-all"
+                  title="End Meeting"
+                >
+                  <PhoneOff className="w-5 h-5" />
+                </button>
               </div>
 
               {/* Connection Status */}
@@ -1448,15 +1559,15 @@ REMEMBER: Still stay silent until the user asks you something directly.`;
                     </span>
                   ) : (
                     <span>
-                      🎙️ Click the microphone to start speaking with your stakeholders
+                      🎙️ <strong>You start the conversation!</strong> Click the microphone and say hello or ask a question
                     </span>
                   )}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {isRecording ? (
-                    '🤖 Automatic interruption detection is active - speak to interrupt agents'
+                    '🤖 Stakeholders are listening and will respond when you stop recording'
                   ) : (
-                    'Agents will be automatically interrupted when you speak during their responses'
+                    '💡 Stakeholders will wait for you to speak first, then respond only when addressed directly'
                   )}
                 </p>
               </div>
