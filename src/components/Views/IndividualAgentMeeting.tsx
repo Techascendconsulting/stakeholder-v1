@@ -32,6 +32,7 @@ const IndividualAgentMeeting: React.FC = () => {
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const isRecordingRef = useRef<boolean>(false);
 
   // Initialize ElevenLabs service
   useEffect(() => {
@@ -43,7 +44,9 @@ const IndividualAgentMeeting: React.FC = () => {
 
   // Setup audio recording - exactly like ElevenLabs sales agent
   const setupAudioRecording = useCallback(async () => {
+    console.log('🎤 setupAudioRecording called, current isRecording:', isRecording);
     try {
+      console.log('🎤 Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           sampleRate: 44100,
@@ -52,6 +55,7 @@ const IndividualAgentMeeting: React.FC = () => {
           noiseSuppression: true
         }
       });
+      console.log('🎤 Got media stream successfully');
       
       streamRef.current = stream;
       
@@ -66,8 +70,8 @@ const IndividualAgentMeeting: React.FC = () => {
       let isProcessing = false;
       
       processor.onaudioprocess = async (event) => {
-        if (!isRecording || isProcessing || !conversationIdRef.current || !elevenLabsServiceRef.current) {
-          console.log('🚫 Audio processing skipped:', { isRecording, isProcessing, hasConversationId: !!conversationIdRef.current, hasService: !!elevenLabsServiceRef.current });
+        if (!isRecordingRef.current || isProcessing || !conversationIdRef.current || !elevenLabsServiceRef.current) {
+          console.log('🚫 Audio processing skipped:', { isRecording: isRecordingRef.current, isProcessing, hasConversationId: !!conversationIdRef.current, hasService: !!elevenLabsServiceRef.current });
           return;
         }
         
@@ -123,10 +127,13 @@ const IndividualAgentMeeting: React.FC = () => {
       source.connect(processor);
       processor.connect(audioContext.destination);
       
+      console.log('🎤 Audio recording setup completed successfully');
+      
     } catch (error) {
       console.error('❌ Error setting up audio:', error);
+      throw error; // Re-throw so the calling function can catch it
     }
-  }, [isRecording]);
+  }, []); // Remove isRecording dependency since we're using ref
 
   // Start meeting with selected stakeholder
   const startMeeting = useCallback(async () => {
@@ -182,9 +189,19 @@ const IndividualAgentMeeting: React.FC = () => {
       setAgentStatus('listening');
       
       // Automatically start recording when meeting starts
-      await setupAudioRecording();
-      setIsRecording(true);
-      console.log('🎤 Auto-started recording');
+      console.log('🎤 About to setup audio recording...');
+             try {
+         await setupAudioRecording();
+         setIsRecording(true);
+         isRecordingRef.current = true;
+         console.log('🎤 Auto-started recording - isRecording should now be true');
+         // Check the state immediately after setting it
+         setTimeout(() => {
+           console.log('🎤 State check after setIsRecording - isRecording:', isRecording, 'ref:', isRecordingRef.current);
+         }, 100);
+       } catch (audioError) {
+         console.error('❌ Failed to setup audio recording:', audioError);
+       }
       
       console.log(`✅ Meeting started with ${selectedStakeholder.name}`);
       
@@ -218,6 +235,7 @@ const IndividualAgentMeeting: React.FC = () => {
       // Reset state
       setMeetingStarted(false);
       setIsRecording(false);
+      isRecordingRef.current = false;
       setAgentStatus('idle');
       conversationIdRef.current = null;
       
@@ -235,9 +253,11 @@ const IndividualAgentMeeting: React.FC = () => {
     if (!isRecording) {
       await setupAudioRecording();
       setIsRecording(true);
+      isRecordingRef.current = true;
       console.log('🎤 Started recording');
     } else {
       setIsRecording(false);
+      isRecordingRef.current = false;
       console.log('🛑 Stopped recording');
     }
   }, [isRecording, meetingStarted, setupAudioRecording]);
