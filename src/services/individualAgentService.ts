@@ -446,8 +446,9 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
           });
           
           // Send audio input directly (no text prompts that get spoken)
+          console.log(`📤 Sending audio to ${agent.name}, data length: ${audioData.length}, conversationId: ${conversationId}`);
           await this.elevenLabsService.sendAudioInputPCM(conversationId, audioData);
-          console.log(`📤 Sent audio to ${agent.name}`);
+          console.log(`✅ Successfully sent audio to ${agent.name}`);
           
           // Wait for actual response to complete
           await responsePromise;
