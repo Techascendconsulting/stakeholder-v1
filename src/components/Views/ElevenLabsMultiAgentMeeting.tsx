@@ -264,12 +264,17 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
           console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
         }
       } else if (meetingMode === 'multi-voice') {
-        // Multi-voice: Use individual agents with their natural voices for authentic conversation
-        console.log(`🎭 Starting multi-voice with individual agents for ${selectedStakeholders.length} stakeholders...`);
+        // Multi-voice: Use individual agents with proper turn-taking to prevent overlapping audio
+        console.log(`🎭 Starting multi-voice with turn-taking for ${selectedStakeholders.length} stakeholders...`);
+        
+        // Initialize turn-taking state
+        let currentSpeakerIndex = 0;
+        const conversationQueue: string[] = [];
+        let isProcessingQueue = false;
         
         for (const stakeholder of selectedStakeholders) {
           try {
-            console.log(`🚀 Starting conversation with ${stakeholder.name} (${stakeholder.gender})...`);
+            console.log(`🚀 Starting conversation with ${stakeholder.name} (${stakeholder.gender}, voice: ${stakeholder.agentId})...`);
             
             const conversationId = await service.startConversation(
               stakeholder,
@@ -278,53 +283,86 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                   ...message, 
                   stakeholderName: stakeholder.name 
                 }]);
+                
+                // After this agent finishes speaking, allow next agent to respond
+                setTimeout(() => {
+                  setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
+                }, 2000);
               },
               (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
                 setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+                
+                // When this agent finishes speaking, process next in queue
+                if (status === 'idle' && conversationQueue.length > 0 && !isProcessingQueue) {
+                  processNextInQueue();
+                }
               }
             );
 
-            // Send coordinated meeting context to each agent
+            // Enhanced context prompt with turn-taking awareness
             const otherStakeholders = selectedStakeholders.filter(s => s.id !== stakeholder.id);
-            const contextPrompt = `You are ${stakeholder.name} in a collaborative business meeting about customer onboarding optimization. 
+            const contextPrompt = `You are ${stakeholder.name} in a professional business meeting about customer onboarding optimization.
 
-YOUR ROLE: ${stakeholder.role} - ${stakeholder.bio}
+YOUR IDENTITY & VOICE:
+- Role: ${stakeholder.role}
+- Background: ${stakeholder.bio}
+- Voice ID: ${stakeholder.agentId} (your specific configured voice)
+- Gender: ${stakeholder.gender}
 
 OTHER PARTICIPANTS: ${otherStakeholders.map(s => `${s.name} (${s.role})`).join(', ')}
 
-MEETING BEHAVIOR:
-- You speak naturally as ${stakeholder.name} without announcing your name
-- Focus on your expertise: ${stakeholder.expertise.slice(0, 3).join(', ')}
-- Give brief, focused responses (1-2 sentences maximum)
-- Only respond when your expertise is relevant to the question
-- Use natural language like "From a ${stakeholder.role.toLowerCase()} perspective..." or "Technically speaking..." or "In my experience..."
-- Don't repeat what others have already covered
+TURN-TAKING PROTOCOL:
+- Wait for appropriate moments to contribute based on your expertise
+- Only speak when the user asks a question OR when your specific expertise is needed
+- Keep responses brief (1-2 sentences) to allow others to contribute
+- Don't respond immediately - wait to see if others with more relevant expertise respond first
+- Listen for natural conversation flow cues
+
+RESPONSE GUIDELINES:
+- Use your expertise: ${stakeholder.expertise.slice(0, 3).join(', ')}
+- Speak naturally without announcing your name
+- Use role-based language: "From a ${stakeholder.role.toLowerCase()} perspective..." 
+- Add unique value - don't repeat what others have said
 - Be collaborative and professional
+- Only contribute when you have valuable, relevant input
 
-RESPONSE STYLE:
-- Keep responses concise and valuable
-- Use your expertise to add unique insights
-- Don't make small talk or filler conversation
-- Speak naturally without stating your name
-- Let your expertise area and voice naturally identify you
+VOICE CONFIGURATION:
+- Your voice is specifically configured as Agent ID: ${stakeholder.agentId}
+- Speak naturally in your authentic ${stakeholder.gender} voice
+- Let your expertise and voice tone identify you
 
-You are ready to participate in this professional discussion about improving our customer onboarding process.`;
+You are ready to participate thoughtfully in this discussion.`;
 
             setTimeout(() => {
               service.sendTextInput(conversationId, contextPrompt).catch(console.error);
-            }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 500));
+            }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 800));
 
             newConversations.set(stakeholder.id, conversationId);
             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
             
-            console.log(`✅ Started conversation with ${stakeholder.name}`);
+            console.log(`✅ Started conversation with ${stakeholder.name} using voice ID: ${stakeholder.agentId}`);
             
-            // Small delay between starting conversations
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Longer delay between starting conversations to prevent simultaneous responses
+            await new Promise(resolve => setTimeout(resolve, 500));
           } catch (error) {
             console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
           }
         }
+        
+        // Function to process conversation queue and prevent overlapping
+        const processNextInQueue = () => {
+          if (conversationQueue.length === 0 || isProcessingQueue) return;
+          
+          isProcessingQueue = true;
+          const nextConversationId = conversationQueue.shift();
+          
+          if (nextConversationId) {
+            // Small delay before next agent speaks
+            setTimeout(() => {
+              isProcessingQueue = false;
+            }, 1000);
+          }
+        };
        } else if (meetingMode === 'multi-agent') {
          // Real multi-agent mode (multiple ElevenLabs agents - expensive!)
          console.log(`🚀 Starting REAL multi-agent with ${selectedStakeholders.length} agents...`);

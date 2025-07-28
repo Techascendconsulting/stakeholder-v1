@@ -458,7 +458,7 @@ class ElevenLabsConversationalService {
   }
 
   // Static audio queue to prevent overlapping audio
-  private static audioQueue: { buffer: AudioBuffer; context: AudioContext; conversationId: string }[] = [];
+  private static audioQueue: { buffer: AudioBuffer; context: AudioContext; conversationId: string; stakeholderName?: string; agentId?: string }[] = [];
   private static isPlaying = false;
   private static globalAudioContext: AudioContext | null = null;
   private static currentConversationId: string | null = null;
@@ -500,22 +500,20 @@ class ElevenLabsConversationalService {
         channelData[i] = pcmData[i] / 32768.0;
       }
       
-      // Only add to queue if it's from the current active conversation
-      const currentConvId = conversationId || 'unknown';
+      // Get stakeholder information for better logging
+      const session = this.activeSessions.get(conversationId || '');
+      const stakeholderName = session?.stakeholder.name || 'Unknown';
+      const agentId = session?.stakeholder.agentId || 'unknown';
       
-      // If this is a new conversation, clear old audio and set as current
-      if (ElevenLabsConversationalService.currentConversationId !== currentConvId) {
-        console.log(`🔄 New conversation detected: ${currentConvId}, clearing old audio`);
-        ElevenLabsConversationalService.audioQueue = [];
-        ElevenLabsConversationalService.currentConversationId = currentConvId;
-        ElevenLabsConversationalService.isPlaying = false;
-      }
+      console.log(`🎵 Audio from ${stakeholderName} (Agent ID: ${agentId})`);
       
-      // Add to queue with conversation ID
+      // Add to queue with stakeholder information
       ElevenLabsConversationalService.audioQueue.push({ 
         buffer: audioBuffer, 
         context: audioContext,
-        conversationId: currentConvId
+        conversationId: conversationId || 'unknown',
+        stakeholderName,
+        agentId
       });
       
       console.log(`🎵 Added audio chunk to queue. Queue length: ${ElevenLabsConversationalService.audioQueue.length}`);
@@ -543,9 +541,9 @@ class ElevenLabsConversationalService {
     }
 
     ElevenLabsConversationalService.isPlaying = true;
-    const { buffer, context, conversationId } = ElevenLabsConversationalService.audioQueue.shift()!;
+    const { buffer, context, conversationId, stakeholderName, agentId } = ElevenLabsConversationalService.audioQueue.shift()!;
     
-    console.log(`🎵 Playing audio chunk from conversation: ${conversationId}, remaining in queue: ${ElevenLabsConversationalService.audioQueue.length}`);
+    console.log(`🎵 Playing audio from ${stakeholderName || 'Unknown'} (Agent: ${agentId || 'unknown'}), remaining in queue: ${ElevenLabsConversationalService.audioQueue.length}`);
     
     // Signal that an agent is speaking
     (window as any).elevenLabsAgentSpeaking = true;
