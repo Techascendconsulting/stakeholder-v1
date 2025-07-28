@@ -459,61 +459,95 @@ class ElevenLabsConversationalService {
       
       // Decode base64 to binary
       const binaryString = atob(base64Audio);
-      const bytes = new Uint8Array(binaryString.length);
+      const pcmData = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+        pcmData[i] = binaryString.charCodeAt(i);
       }
 
-      console.log('🎵 Audio bytes created, length:', bytes.length);
+      console.log('🎵 PCM data length:', pcmData.length);
 
-      // ElevenLabs sends PCM audio for conversational AI, not MP3
-      // Try PCM format first, then fallback to MP3
-      let audioBlob: Blob;
-      let audioUrl: string;
-      let audio: HTMLAudioElement;
-      
-      try {
-        // First try as PCM 16kHz (which is what ElevenLabs sends)
-        audioBlob = new Blob([bytes], { type: 'audio/wav' });
-        audioUrl = URL.createObjectURL(audioBlob);
-        audio = new Audio(audioUrl);
-        console.log('🎵 Trying as WAV/PCM format');
-      } catch (error) {
-        console.log('🎵 WAV failed, trying as MP3');
-        audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
-        audioUrl = URL.createObjectURL(audioBlob);
-        audio = new Audio(audioUrl);
-      }
+      // Convert raw PCM to WAV format with proper headers
+      const wavData = this.createWavFile(pcmData, 16000, 1, 16);
+      const audioBlob = new Blob([wavData], { type: 'audio/wav' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
       
       audio.onloadstart = () => {
-        console.log('🎵 Audio loading started');
+        console.log('🎵 WAV audio loading started');
       };
       
       audio.oncanplay = () => {
-        console.log('🎵 Audio can play');
+        console.log('🎵 WAV audio can play');
       };
       
       audio.onplay = () => {
-        console.log('🎵 Audio started playing');
+        console.log('🎵 WAV audio started playing');
       };
       
       audio.onended = () => {
-        console.log('🎵 Audio finished playing');
+        console.log('🎵 WAV audio finished playing');
         URL.revokeObjectURL(audioUrl);
       };
       
       audio.onerror = (error) => {
-        console.error('❌ Error playing audio:', error);
-        console.error('❌ Audio error details:', audio.error);
+        console.error('❌ Error playing WAV audio:', error);
+        console.error('❌ WAV audio error details:', audio.error);
         URL.revokeObjectURL(audioUrl);
       };
       
-      console.log('🎵 Attempting to play audio...');
+      console.log('🎵 Attempting to play WAV audio...');
       audio.play().catch(error => {
-        console.error('❌ Failed to play audio:', error);
+        console.error('❌ Failed to play WAV audio:', error);
       });
     } catch (error) {
       console.error('❌ Error processing audio chunk:', error);
+    }
+  }
+
+  /**
+   * Create WAV file from raw PCM data
+   */
+  private createWavFile(pcmData: Uint8Array, sampleRate: number, channels: number, bitsPerSample: number): ArrayBuffer {
+    const byteRate = sampleRate * channels * bitsPerSample / 8;
+    const blockAlign = channels * bitsPerSample / 8;
+    const dataSize = pcmData.length;
+    const fileSize = 36 + dataSize;
+
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+
+    // RIFF header
+    this.writeString(view, 0, 'RIFF');
+    view.setUint32(4, fileSize, true);
+    this.writeString(view, 8, 'WAVE');
+
+    // fmt chunk
+    this.writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true); // fmt chunk size
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, channels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitsPerSample, true);
+
+    // data chunk
+    this.writeString(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // PCM data
+    const uint8Array = new Uint8Array(buffer, 44);
+    uint8Array.set(pcmData);
+
+    return buffer;
+  }
+
+  /**
+   * Write string to DataView
+   */
+  private writeString(view: DataView, offset: number, str: string): void {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
     }
   }
 
