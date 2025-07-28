@@ -715,16 +715,16 @@ Now listen to what the user is saying and participate naturally in this business
                  await service.sendAudioInputPCM(selectedConversationId, base64);
                  console.log(`🎯 Sent audio to selected stakeholder only`);
                  
-                 // Notify other stakeholders that someone is handling the question
-                 const otherConversationIds = activeIds.filter(id => id !== selectedConversationId);
-                 for (const otherId of otherConversationIds) {
-                   const notificationPrompt = `[MEETING_UPDATE] Another stakeholder is responding to the user's input. Stay silent unless the user specifically asks for your input or mentions your name.`;
-                   try {
-                     await service.sendTextInput(otherId, notificationPrompt);
-                   } catch (error) {
-                     console.error('Failed to send notification:', error);
-                   }
-                 }
+                                   // Send STRONG silence command to other stakeholders
+                  const otherConversationIds = activeIds.filter(id => id !== selectedConversationId);
+                  for (const otherId of otherConversationIds) {
+                    const silenceCommand = `[ABSOLUTE_SILENCE] Another stakeholder is handling this question. You must stay completely silent. Do not respond, do not acknowledge, do not speak at all. Only the selected stakeholder should respond to the user right now.`;
+                    try {
+                      await service.sendTextInput(otherId, silenceCommand);
+                    } catch (error) {
+                      console.error('Failed to send silence command:', error);
+                    }
+                  }
                  
                } catch (error) {
                  // If conversation ended, remove it from active list
