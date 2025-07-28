@@ -298,13 +298,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     console.log('🚀 Starting hands-free meeting mode');
     setIsHandsFreeMode(true);
     
-    // Auto-start recording after a brief delay
+    // Auto-start recording immediately
     setTimeout(() => {
       if (!isRecording) {
         console.log('🎤 Auto-starting recording for hands-free mode');
         handleMicClick();
       }
-    }, 1000);
+    }, 500);
   };
 
   const endHandsFreeMeeting = () => {
@@ -1010,6 +1010,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setTimeout(() => setDynamicFeedback(null), 5000);
     } finally {
       setIsTranscribing(false);
+      
+      // Auto-restart recording in hands-free mode after AI response
+      if (isHandsFreeMode) {
+        console.log('🔄 Hands-free mode: Auto-restarting recording after AI response');
+        // Wait for AI response to complete, then restart recording
+        setTimeout(() => {
+          if (isHandsFreeMode && !isRecording && !isGeneratingResponse) {
+            console.log('🎤 Auto-restarting recording for next input');
+            handleMicClick();
+          }
+        }, 3000); // Give time for AI to respond
+      }
     }
   };
 
@@ -2356,21 +2368,33 @@ Please review the raw transcript for detailed conversation content.`;
           <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm z-50 flex items-center justify-center">
             <div className="text-center space-y-6 max-w-md">
               <div className="w-24 h-24 mx-auto">
-                <div className={`w-full h-full rounded-full border-4 border-blue-500 flex items-center justify-center ${
-                  isRecording ? 'bg-blue-500 animate-pulse' : 'bg-gray-700'
+                <div className={`w-full h-full rounded-full border-4 flex items-center justify-center ${
+                  isRecording 
+                    ? 'border-blue-500 bg-blue-500 animate-pulse' 
+                    : isGeneratingResponse
+                    ? 'border-purple-500 bg-purple-500 animate-spin'
+                    : 'border-gray-500 bg-gray-700'
                 }`}>
-                  <Mic className={`w-8 h-8 ${isRecording ? 'text-white' : 'text-gray-400'}`} />
+                  <Mic className={`w-8 h-8 ${
+                    isRecording 
+                      ? 'text-white' 
+                      : isGeneratingResponse 
+                      ? 'text-white' 
+                      : 'text-gray-400'
+                  }`} />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-white">
-                  {isRecording ? 'Listening...' : 'Ready to Listen'}
+                  {isRecording ? 'Listening...' : isGeneratingResponse ? 'Processing...' : 'Ready to Listen'}
                 </h2>
                 <p className="text-gray-400">
                   {isRecording 
                     ? 'Speak naturally. I\'ll respond when you\'re done.'
-                    : 'Click anywhere to start talking'
+                    : isGeneratingResponse
+                    ? 'Generating response...'
+                    : 'Automatic recording will start soon...'
                   }
                 </p>
               </div>
@@ -2393,16 +2417,7 @@ Please review the raw transcript for detailed conversation content.`;
                 </div>
               )}
 
-              {/* Click to talk when not recording */}
-              {!isRecording && (
-                <div 
-                  onClick={handleMicClick}
-                  className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium transition-colors flex items-center space-x-3 mx-auto w-fit"
-                >
-                  <Mic className="w-6 h-6" />
-                  <span>Click to Talk</span>
-                </div>
-              )}
+
 
               {/* Meeting Info */}
               <div className="text-xs text-gray-500 border-t border-gray-700 pt-4">
