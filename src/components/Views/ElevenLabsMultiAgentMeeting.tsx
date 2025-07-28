@@ -261,54 +261,67 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       
       let isRecordingRef = { value: false };
       
-      processorNode.onaudioprocess = async (event) => {
-        if (!isRecordingRef.value) return;
-        
-        const inputBuffer = event.inputBuffer;
-        const inputData = inputBuffer.getChannelData(0);
-        
-        // Convert float32 PCM to 16-bit PCM at 16kHz
-        const targetSampleRate = 16000;
-        const sourceSampleRate = audioContext.sampleRate;
-        
-        // Downsample if needed
-        let pcmData: Float32Array;
-        if (sourceSampleRate !== targetSampleRate) {
-          const ratio = sourceSampleRate / targetSampleRate;
-          const newLength = Math.round(inputData.length / ratio);
-          pcmData = new Float32Array(newLength);
-          
-          for (let i = 0; i < newLength; i++) {
-            const sourceIndex = Math.round(i * ratio);
-            pcmData[i] = inputData[sourceIndex] || 0;
-          }
-        } else {
-          pcmData = inputData;
-        }
-        
-        // Convert to 16-bit PCM
-        const pcm16 = new Int16Array(pcmData.length);
-        for (let i = 0; i < pcmData.length; i++) {
-          const sample = Math.max(-1, Math.min(1, pcmData[i]));
-          pcm16[i] = Math.round(sample * 0x7FFF);
-        }
-        
-        // Convert to base64
-        const uint8Array = new Uint8Array(pcm16.buffer);
-        const base64 = btoa(String.fromCharCode(...uint8Array));
-        
-        // Create a blob to maintain compatibility with existing service
-        const pcmBlob = new Blob([uint8Array], { type: 'audio/pcm' });
-        
-        // Send immediately to ElevenLabs
-        if (conversationalServiceRef.current && base64.length > 0) {
-          const service = conversationalServiceRef.current;
-          const promises = Array.from(activeConversations.values()).map(conversationId => 
-            service.sendAudioInputPCM(conversationId, base64).catch(console.error)
-          );
-          await Promise.all(promises);
-        }
-      };
+             processorNode.onaudioprocess = async (event) => {
+         if (!isRecordingRef.value) return;
+         
+         const inputBuffer = event.inputBuffer;
+         const inputData = inputBuffer.getChannelData(0);
+         
+         // Convert float32 PCM to 16-bit PCM at 16kHz
+         const targetSampleRate = 16000;
+         const sourceSampleRate = audioContext.sampleRate;
+         
+         // Downsample if needed
+         let pcmData: Float32Array;
+         if (sourceSampleRate !== targetSampleRate) {
+           const ratio = sourceSampleRate / targetSampleRate;
+           const newLength = Math.round(inputData.length / ratio);
+           pcmData = new Float32Array(newLength);
+           
+           for (let i = 0; i < newLength; i++) {
+             const sourceIndex = Math.round(i * ratio);
+             pcmData[i] = inputData[sourceIndex] || 0;
+           }
+         } else {
+           pcmData = inputData;
+         }
+         
+         // Convert to 16-bit PCM
+         const pcm16 = new Int16Array(pcmData.length);
+         for (let i = 0; i < pcmData.length; i++) {
+           const sample = Math.max(-1, Math.min(1, pcmData[i]));
+           pcm16[i] = Math.round(sample * 0x7FFF);
+         }
+         
+         // Convert to base64
+         const uint8Array = new Uint8Array(pcm16.buffer);
+         const base64 = btoa(String.fromCharCode(...uint8Array));
+         
+         // Send immediately to ElevenLabs - but only if conversations are still active
+         if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0) {
+           const service = conversationalServiceRef.current;
+           const activeIds = Array.from(activeConversations.values());
+           
+           // Only send to conversations that are still active
+           const promises = activeIds.map(async (conversationId) => {
+             try {
+               await service.sendAudioInputPCM(conversationId, base64);
+             } catch (error) {
+               // If conversation ended, remove it from active list
+               if (error.message.includes('No active session')) {
+                 console.log('🔌 Conversation ended, removing from active list');
+                 activeConversations.forEach((id, key) => {
+                   if (id === conversationId) {
+                     activeConversations.delete(key);
+                   }
+                 });
+               }
+               // Don't throw the error to avoid console spam
+             }
+           });
+           await Promise.all(promises);
+         }
+       };
       
       source.connect(processorNode);
       processorNode.connect(audioContext.destination);
