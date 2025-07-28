@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { MessageSquareText, Mic, Users, Clock, FileText, Volume2 } from 'lucide-react';
+import { MessageSquareText, Mic, Users, Clock, FileText, Volume2, Brain, Zap } from 'lucide-react';
 
 const MeetingModeSelection: React.FC = () => {
   const { 
@@ -9,11 +9,13 @@ const MeetingModeSelection: React.FC = () => {
     setCurrentView 
   } = useApp();
 
-  const handleModeSelection = (mode: 'transcript' | 'voice-only') => {
+  const handleModeSelection = (mode: 'transcript' | 'voice-only' | 'individual-agents') => {
     if (mode === 'transcript') {
       setCurrentView('meeting');
-    } else {
+    } else if (mode === 'voice-only') {
       setCurrentView('voice-only-meeting');
+    } else if (mode === 'individual-agents') {
+      setCurrentView('individual-agent-meeting');
     }
   };
 
@@ -62,7 +64,7 @@ const MeetingModeSelection: React.FC = () => {
         </div>
 
         {/* Mode Options */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {/* With Transcripts Mode */}
           <div 
             onClick={() => handleModeSelection('transcript')}
@@ -132,6 +134,43 @@ const MeetingModeSelection: React.FC = () => {
               <div className="mt-6">
                 <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors w-full">
                   Start Voice Meeting
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Individual Agents Mode */}
+          <div 
+            onClick={() => handleModeSelection('individual-agents')}
+            className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl p-6 cursor-pointer hover:from-purple-100 hover:to-purple-200 hover:border-purple-300 transition-all duration-200 group"
+          >
+            <div className="text-center">
+              <div className="bg-purple-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-600 transition-colors">
+                <Brain className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-purple-900 mb-3">Individual AI Agents</h3>
+              <p className="text-purple-700 mb-4">
+                Each stakeholder is an individual AI with their own brain, knowledge, and human-like questioning behavior.
+              </p>
+              
+              <div className="space-y-2 text-sm text-purple-600">
+                <div className="flex items-center justify-center">
+                  <Brain className="w-4 h-4 mr-2" />
+                  <span>Individual AI brains</span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <Zap className="w-4 h-4 mr-2" />
+                  <span>Human-like questioning</span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <Users className="w-4 h-4 mr-2" />
+                  <span>Natural curiosity & engagement</span>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors w-full">
+                  Start Individual Agent Meeting
                 </button>
               </div>
             </div>

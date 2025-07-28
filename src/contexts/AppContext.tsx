@@ -89,6 +89,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'my-meetings',
         'voice-meeting',
         'elevenlabs-meeting',
+        'individual-agent-meeting',
         'settings',
         'profile',
         'projects',
