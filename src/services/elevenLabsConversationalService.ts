@@ -136,11 +136,17 @@ class ElevenLabsConversationalService {
           console.error('❌ Invalid message format sent to ElevenLabs');
         } else if (event.code === 1006) {
           console.error('❌ Connection closed abnormally');
+        } else if (event.code === 1000) {
+          console.log('✅ Normal closure');
         }
         
         session.isActive = false;
         onStatusChange?.(stakeholder.agentId, 'idle');
-        this.cleanup(conversationId);
+        
+        // Don't cleanup immediately - allow for potential reconnection
+        setTimeout(() => {
+          this.cleanup(conversationId);
+        }, 1000);
       };
 
       websocket.onerror = (error) => {
@@ -400,6 +406,15 @@ class ElevenLabsConversationalService {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+  }
+
+  /**
+   * Check if a session is active and connected
+   */
+  isSessionActive(conversationId: string): boolean {
+    const session = this.activeSessions.get(conversationId);
+    return session?.isActive === true && 
+           session.websocket?.readyState === WebSocket.OPEN;
   }
 
   /**

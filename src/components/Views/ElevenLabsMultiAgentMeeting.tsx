@@ -130,6 +130,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
   const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   const [meetingStarted, setMeetingStarted] = useState(false);
+  const [fallbackAttempts, setFallbackAttempts] = useState(0);
 
 
   // Refs
@@ -314,6 +315,9 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                     ...message, 
                     stakeholderName: stakeholder.name 
                   }]);
+                  
+                  // Reset fallback attempts when we get a successful response
+                  setFallbackAttempts(0);
                 }
                 
                 // Process stakeholder responses with smart conversation management
@@ -696,6 +700,8 @@ You were specifically mentioned or asked for your input. You can respond briefly
          
                    // Only process audio when user has stopped speaking
           if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0 && !isUserSpeaking) {
+            // Reset fallback attempts for new user input
+            setFallbackAttempts(0);
             const service = conversationalServiceRef.current;
             const activeIds = Array.from(activeConversations.values());
             
@@ -777,26 +783,41 @@ Now listen to what the user is saying and participate naturally in this business
                   await service.sendAudioInputPCM(selectedConversationId, base64);
                   console.log(`🎯 Sent audio to selected stakeholder: ${selectedConversationId}`);
                   
-                  // Set up fallback timer in case no response
-                  setTimeout(async () => {
-                    const recentResponses = conversationHistory.filter(msg => 
-                      msg.type === 'agent_response' && 
-                      Date.now() - msg.timestamp.getTime() < 8000
-                    );
-                    
-                    if (recentResponses.length === 0) {
-                      console.log('⚠️ No response detected - trying fallback stakeholder');
-                      const fallbackId = activeIds.find(id => id !== selectedConversationId);
-                      if (fallbackId) {
-                        try {
-                          await service.sendAudioInputPCM(fallbackId, base64);
-                          console.log(`🔄 Sent fallback audio to ${fallbackId}`);
-                        } catch (error) {
-                          console.error('Fallback failed:', error);
-                        }
-                      }
-                    }
-                  }, 5000); // Wait 5 seconds for response
+                                     // Set up fallback timer in case no response (limit attempts)
+                   setTimeout(async () => {
+                     const recentResponses = conversationHistory.filter(msg => 
+                       msg.type === 'agent_response' && 
+                       Date.now() - msg.timestamp.getTime() < 8000
+                     );
+                     
+                     if (recentResponses.length === 0 && fallbackAttempts < 2) {
+                       console.log(`⚠️ No response detected - checking for active fallback stakeholders (attempt ${fallbackAttempts + 1}/2)`);
+                       
+                       // Find active fallback stakeholders (check current active conversations)
+                       const currentActiveIds = Array.from(activeConversations.values());
+                       const fallbackId = currentActiveIds.find(id => id !== selectedConversationId);
+                       
+                       if (fallbackId && conversationalServiceRef.current) {
+                         try {
+                           // Verify the connection is still active before sending
+                           const isActive = conversationalServiceRef.current.isSessionActive(fallbackId);
+                           if (isActive) {
+                             setFallbackAttempts(prev => prev + 1);
+                             await conversationalServiceRef.current.sendAudioInputPCM(fallbackId, base64);
+                             console.log(`🔄 Sent fallback audio to active stakeholder: ${fallbackId}`);
+                           } else {
+                             console.log('⚠️ Fallback stakeholder connection is not active');
+                           }
+                         } catch (error) {
+                           console.error('Fallback failed:', error);
+                         }
+                       } else {
+                         console.log('⚠️ No active fallback stakeholders available');
+                       }
+                     } else if (fallbackAttempts >= 2) {
+                       console.log('⚠️ Maximum fallback attempts reached - stopping');
+                     }
+                   }, 5000); // Wait 5 seconds for response
                   
                 } catch (error) {
                   // If conversation ended, remove it from active list
