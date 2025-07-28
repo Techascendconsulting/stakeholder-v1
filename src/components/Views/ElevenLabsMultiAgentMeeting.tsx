@@ -125,6 +125,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   const [respondingAgent, setRespondingAgent] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [meetingMode, setMeetingMode] = useState<'single' | 'multi-voice' | 'multi-agent'>('single');
 
 
   // Refs
@@ -170,12 +171,22 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     setSelectedStakeholders(prev => {
       const isSelected = prev.some(s => s.id === stakeholder.id);
       if (isSelected) {
-        return prev.filter(s => s.id !== stakeholder.id); // Remove if already selected
+        const newSelection = prev.filter(s => s.id !== stakeholder.id);
+        // Reset to single mode if only one stakeholder left
+        if (newSelection.length <= 1) {
+          setMeetingMode('single');
+        }
+        return newSelection;
       } else {
-        return [...prev, stakeholder]; // Add to selection (multiple allowed)
+        const newSelection = [...prev, stakeholder];
+        // Set default to multi-voice mode when multiple stakeholders selected
+        if (newSelection.length > 1 && meetingMode === 'single') {
+          setMeetingMode('multi-voice');
+        }
+        return newSelection;
       }
     });
-  }, []);
+  }, [meetingMode]);
 
   // Detect which stakeholder is speaking from message content
   const detectSpeakingStakeholder = useCallback((content: string, stakeholders: ElevenLabsStakeholder[]) => {
@@ -209,8 +220,8 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
 
       const newConversations = new Map<string, string>();
 
-            // Start single conversation simulating multiple stakeholders (cost-effective approach)
-      if (selectedStakeholders.length === 1) {
+            // Start conversation based on selected mode
+      if (selectedStakeholders.length === 1 || meetingMode === 'single') {
         // Single stakeholder - normal conversation
         const stakeholder = selectedStakeholders[0];
         console.log(`🚀 Starting single conversation with ${stakeholder.name}...`);
@@ -235,7 +246,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         } catch (error) {
           console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
         }
-      } else {
+      } else if (meetingMode === 'multi-voice') {
         // Multi-stakeholder simulation using ONE agent with multiple personalities
         console.log(`🎭 Starting multi-voice simulation with ${selectedStakeholders.length} stakeholders...`);
         
@@ -288,10 +299,42 @@ IMPORTANT INSTRUCTIONS:
           });
           
           console.log(`✅ Started multi-voice simulation conversation`);
-        } catch (error) {
-          console.error(`❌ Failed to start multi-voice conversation:`, error);
-        }
-      }
+                 } catch (error) {
+           console.error(`❌ Failed to start multi-voice conversation:`, error);
+         }
+       } else if (meetingMode === 'multi-agent') {
+         // Real multi-agent mode (multiple ElevenLabs agents - expensive!)
+         console.log(`🚀 Starting REAL multi-agent with ${selectedStakeholders.length} agents...`);
+         
+         for (const stakeholder of selectedStakeholders) {
+           try {
+             console.log(`🚀 Starting conversation with ${stakeholder.name}...`);
+             
+             const conversationId = await service.startConversation(
+               stakeholder,
+               (message: ConversationMessage) => {
+                 setConversationHistory(prev => [...prev, { 
+                   ...message, 
+                   stakeholderName: stakeholder.name 
+                 }]);
+               },
+               (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
+                 setAgentStatuses(prev => new Map(prev.set(agentId, status)));
+               }
+             );
+
+             newConversations.set(stakeholder.id, conversationId);
+             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
+             
+             console.log(`✅ Started conversation with ${stakeholder.name}`);
+             
+             // Small delay between starting conversations
+             await new Promise(resolve => setTimeout(resolve, 500));
+           } catch (error) {
+             console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
+           }
+         }
+       }
 
       setActiveConversations(newConversations);
       setCurrentStep('meeting');
@@ -299,7 +342,7 @@ IMPORTANT INSTRUCTIONS:
     } catch (error) {
       console.error('Error starting meeting:', error);
     }
-  }, [selectedStakeholders, activeConversations, detectSpeakingStakeholder]);
+  }, [selectedStakeholders, activeConversations, detectSpeakingStakeholder, meetingMode]);
 
   // Voice activity detection with better filtering
   const detectVoiceActivity = useCallback(() => {
@@ -689,13 +732,13 @@ IMPORTANT INSTRUCTIONS:
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
               <Users className="w-6 h-6 mr-3 text-purple-600" />
-              Select Stakeholders
+              Select Stakeholders & Meeting Mode
             </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {selectedProject.name} - Choose who you want to speak with
-                </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {selectedProject.name} - Choose who you want to speak with and how
+            </p>
               </div>
               <button
                 onClick={() => setCurrentStep('project-selection')}
@@ -780,6 +823,68 @@ IMPORTANT INSTRUCTIONS:
             })}
           </div>
 
+          {/* Meeting Mode Selection */}
+          {selectedStakeholders.length > 1 && (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Choose Meeting Mode
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Multi-Voice Simulation */}
+                <div 
+                  onClick={() => setMeetingMode('multi-voice')}
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    meetingMode === 'multi-voice' 
+                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold">💰</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                      Multi-Voice Simulation
+                    </h4>
+                    <span className="ml-2 px-2 py-1 text-xs bg-green-500 text-white rounded-full">
+                      Recommended
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    One AI agent roleplays all stakeholders with different personalities. 
+                    <strong> Cost-effective!</strong> UI shows which person is speaking.
+                  </p>
+                </div>
+
+                {/* Multi-Agent (Real) */}
+                <div 
+                  onClick={() => setMeetingMode('multi-agent')}
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    meetingMode === 'multi-agent' 
+                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold">💸</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                      Real Multi-Agent
+                    </h4>
+                    <span className="ml-2 px-2 py-1 text-xs bg-orange-500 text-white rounded-full">
+                      Premium
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Separate AI agents for each stakeholder. More realistic but 
+                    <strong> 3x the cost!</strong> Each agent runs independently.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Start Meeting Button */}
           {selectedStakeholders.length > 0 && (
             <div className="text-center">
@@ -789,7 +894,13 @@ IMPORTANT INSTRUCTIONS:
               >
                 <Play className="w-5 h-5 mr-2" />
                 {selectedStakeholders.length > 0 
-                  ? `Start Multi-Agent Meeting (${selectedStakeholders.length} stakeholder${selectedStakeholders.length > 1 ? 's' : ''})`
+                  ? `Start ${
+                      selectedStakeholders.length === 1 
+                        ? `Conversation with ${selectedStakeholders[0].name}`
+                        : meetingMode === 'multi-voice' 
+                          ? `Multi-Voice Simulation (${selectedStakeholders.length} voices)`
+                          : `Real Multi-Agent Meeting (${selectedStakeholders.length} agents)`
+                    }`
                   : 'Select Stakeholders'}
               </button>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
