@@ -351,7 +351,7 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
   }
 
   /**
-   * Send user input to appropriate agent(s) based on context
+   * Send user input to appropriate agent(s) with queue processing (EXACT COPY from voice-only)
    */
   public async processUserInput(
     audioData: string,
@@ -371,12 +371,59 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
     
     console.log(`🎯 Routing user input to agents: ${targetAgents.join(', ')}`);
 
-    // Send audio to selected agents
+    // Process each agent through the queue system (ONE AT A TIME)
     for (const agentId of targetAgents) {
-      const conversationId = this.agentConnections.get(agentId);
       const agent = this.activeAgents.get(agentId);
+      if (agent) {
+        await this.processDynamicAgentResponse(agent, audioData, userMessage);
+      }
+    }
+  }
+
+  /**
+   * Process agent response with queue system (EXACT COPY from voice-only)
+   */
+  private async processDynamicAgentResponse(agent: IndividualAgentConfig, audioData: string, userMessage: string): Promise<void> {
+    if (!this.meetingContext) return;
+
+    console.log(`🚀 QUEUE DEBUG: ${agent.name} starting processDynamicAgentResponse`);
+    console.log(`🚀 QUEUE DEBUG: Current speaker before: ${this.meetingContext.currentSpeaking}`);
+    console.log(`🚀 QUEUE DEBUG: Current queue before: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
+    
+    try {
+      // Add to conversation queue to prevent simultaneous speaking
+      this.meetingContext.conversationQueue.push({
+        agentId: agent.id,
+        agentName: agent.name,
+        priority: 1,
+        timestamp: Date.now(),
+        audioData,
+        context: userMessage
+      });
       
-      if (conversationId && agent) {
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} added to queue. New queue: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
+      
+      // Wait for turn if someone else is speaking
+      let waitCount = 0;
+      while (this.meetingContext.currentSpeaking !== null && this.meetingContext.currentSpeaking !== agent.id) {
+        waitCount++;
+        console.log(`🚀 QUEUE DEBUG: ${agent.name} waiting (attempt ${waitCount}). Current speaker: ${this.meetingContext.currentSpeaking}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Safety break after 100 attempts (10 seconds)
+        if (waitCount > 100) {
+          console.error(`🚨 QUEUE ERROR: ${agent.name} waited too long! Breaking wait loop.`);
+          break;
+        }
+      }
+      
+      // Start speaking
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} now taking turn to speak`);
+      this.meetingContext.currentSpeaking = agent.id;
+      
+      // Send audio to this agent
+      const conversationId = this.agentConnections.get(agent.id);
+      if (conversationId) {
         try {
           // Add context-aware instructions
           const contextualPrompt = this.generateContextualPrompt(agent, userMessage);
@@ -390,10 +437,30 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
           await this.elevenLabsService.sendAudioInputPCM(conversationId, audioData);
           console.log(`📤 Sent audio to ${agent.name}`);
           
+          // Wait for response to complete (simulate response time)
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
         } catch (error) {
           console.error(`❌ Failed to send audio to ${agent.name}:`, error);
         }
       }
+      
+      // Finish speaking
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} finished speaking, clearing currentSpeaking`);
+      this.meetingContext.currentSpeaking = null;
+      this.meetingContext.conversationQueue = this.meetingContext.conversationQueue.filter(q => q.agentId !== agent.id);
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} removed from queue. New queue: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
+      
+    } catch (error) {
+      console.error(`🚨 QUEUE ERROR: Error in ${agent.name} response:`, error);
+      
+      // Clean up conversation state on error
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} error cleanup - clearing currentSpeaking`);
+      this.meetingContext.currentSpeaking = null;
+      this.meetingContext.conversationQueue = this.meetingContext.conversationQueue.filter(q => q.agentId !== agent.id);
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} error cleanup - removed from queue. New queue: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
+      
+      throw error;
     }
   }
 

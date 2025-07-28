@@ -17,6 +17,7 @@ export const IndividualAgentMeeting: React.FC = () => {
   // Individual agents
   const [individualAgents, setIndividualAgents] = useState<IndividualAgentConfig[]>([]);
   const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
+  const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   
   // Services
   const individualAgentServiceRef = useRef<IndividualAgentService | null>(null);
