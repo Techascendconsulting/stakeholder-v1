@@ -57,7 +57,7 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
           'Enhancing customer satisfaction scores',
           'Streamlining team workflows'
         ],
-        agentId: 'REPLACE_WITH_JAMES_WALKER_AGENT_ID', // Get this from https://elevenlabs.io/app/conversational-ai/agents
+        agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry', // James Walker agent ID
         bio: 'James leads the Customer Success team and has 8 years of experience in customer onboarding optimization. He specializes in creating seamless customer experiences and has successfully reduced churn by 40% in his previous roles.'
       },
       {
@@ -79,7 +79,7 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
           'Improving accessibility',
           'Maintaining design consistency'
         ],
-        agentId: 'REPLACE_WITH_AISHA_AHMED_AGENT_ID', // Get this from https://elevenlabs.io/app/conversational-ai/agents
+        agentId: 'agent_3601k16fe93ject9vy38wev45tym', // Aisha Ahmed agent ID
         bio: 'Aisha is a senior UX/UI designer with 6 years of experience in creating user-centered designs. She has led design initiatives that improved user engagement by 60% and specializes in onboarding flow optimization.'
       },
       {
@@ -101,7 +101,7 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
           'Integration capabilities',
           'Performance optimization'
         ],
-        agentId: 'REPLACE_WITH_DAVID_THOMPSON_AGENT_ID', // Get this from https://elevenlabs.io/app/conversational-ai/agents
+        agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj', // David Thompson agent ID
         bio: 'David leads IT systems architecture with 12 years of experience in enterprise technology solutions. He specializes in secure system integrations and has implemented onboarding automation systems that reduced manual processing by 80%.'
       }
     ],
