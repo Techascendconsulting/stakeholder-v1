@@ -59,6 +59,7 @@ export class IndividualAgentService {
   private conversationQueue: string[] = [];
   private currentSpeaking: string | null = null;
   private onStatusChange: ((agentId: string, status: string) => void) | null = null;
+  private responsePromises: Map<string, { resolve: () => void; reject: (error: any) => void }> = new Map();
 
   private constructor() {
     this.elevenLabsService = ElevenLabsConversationalService.getInstance();
@@ -329,6 +330,16 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
           },
           (agentId: string, status: string) => {
             onStatusChange(agent.id, status);
+            
+            // Handle response completion for queue management
+            if (status === 'listening' && this.currentSpeaking === agent.id) {
+              console.log(`🎯 Agent ${agent.name} finished speaking, resolving response promise`);
+              const promise = this.responsePromises.get(agent.id);
+              if (promise) {
+                promise.resolve();
+                this.responsePromises.delete(agent.id);
+              }
+            }
           }
         );
 
@@ -417,19 +428,33 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
       const conversationId = this.agentConnections.get(agent.id);
       if (conversationId) {
         try {
-          // Add context-aware instructions
-          const contextualPrompt = this.generateContextualPrompt(agent, userMessage);
+          // Create promise to wait for actual response completion
+          const responsePromise = new Promise<void>((resolve, reject) => {
+            this.responsePromises.set(agent.id, { resolve, reject });
+            
+            // Safety timeout after 30 seconds
+            setTimeout(() => {
+              console.warn(`⏰ Response timeout for ${agent.name}`);
+              const promise = this.responsePromises.get(agent.id);
+              if (promise) {
+                promise.resolve();
+                this.responsePromises.delete(agent.id);
+              }
+            }, 30000);
+          });
           
-          // DO NOT send contextual prompt as text - it gets spoken
-          // Just send the audio input directly
+          // Send audio input directly (no text prompts that get spoken)
           await this.elevenLabsService.sendAudioInputPCM(conversationId, audioData);
           console.log(`📤 Sent audio to ${agent.name}`);
           
-          // Wait for response to complete (simulate response time)
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          // Wait for actual response to complete
+          await responsePromise;
+          console.log(`✅ ${agent.name} response completed`);
           
         } catch (error) {
           console.error(`❌ Failed to send audio to ${agent.name}:`, error);
+          // Clean up promise on error
+          this.responsePromises.delete(agent.id);
         }
       }
       
@@ -452,6 +477,13 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
       this.currentSpeaking = null;
       this.conversationQueue = this.conversationQueue.filter(id => id !== agent.id);
       console.log(`🚀 QUEUE DEBUG: ${agent.name} error cleanup - removed from queue. New queue: [${this.conversationQueue.join(', ')}]`);
+      
+      // Clean up response promise on error
+      const promise = this.responsePromises.get(agent.id);
+      if (promise) {
+        promise.resolve();
+        this.responsePromises.delete(agent.id);
+      }
       
       // Notify UI of error status
       if (this.onStatusChange) {
@@ -644,6 +676,10 @@ Be genuinely human - show interest, ask questions, seek clarification, and engag
     // Clear queue state - EXACT COPY from voice-only
     this.conversationQueue = [];
     this.currentSpeaking = null;
+    
+    // Clean up any pending response promises
+    this.responsePromises.forEach(promise => promise.resolve());
+    this.responsePromises.clear();
     
     // End all agent conversations
     for (const [agentId, conversationId] of this.agentConnections) {
