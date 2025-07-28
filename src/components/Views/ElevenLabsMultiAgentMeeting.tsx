@@ -560,12 +560,23 @@ You were specifically mentioned or asked for your input. You can respond briefly
       const processorNode = audioContext.createScriptProcessor(4096, 1, 1);
       
       let isRecordingRef = { value: false };
+      let lastInterruptTime = 0;
       
              processorNode.onaudioprocess = async (event) => {
          if (!isRecordingRef.value) return;
          
          const inputBuffer = event.inputBuffer;
          const inputData = inputBuffer.getChannelData(0);
+         
+         // Detect voice activity to interrupt stakeholders when user speaks
+         const average = inputData.reduce((sum, value) => sum + Math.abs(value), 0) / inputData.length;
+         const voiceThreshold = 0.01; // Adjust based on sensitivity needed
+         
+         if (average > voiceThreshold) {
+           // User is speaking - immediately interrupt all stakeholders
+           console.log('🎤 User voice detected - interrupting all stakeholders');
+           interruptAllStakeholders();
+         }
          
          // Convert float32 PCM to 16-bit PCM at 16kHz
          const targetSampleRate = 16000;
@@ -759,7 +770,44 @@ Now listen to what the user is saying and participate naturally in this business
     }
   }, [isRecording]);
 
-  // Interrupt agents (stop them from speaking)
+  // Interrupt all stakeholders when user starts speaking (natural meeting behavior)
+  const interruptAllStakeholders = useCallback(async () => {
+    if (!conversationalServiceRef.current || activeConversations.size === 0) return;
+
+    console.log('🛑 Interrupting all stakeholders - user is speaking');
+    
+    const service = conversationalServiceRef.current;
+    const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
+    
+    // Immediately clear all audio
+    ElevenLabsConversationalService.clearAudioQueue();
+    
+    // Send interruption message to all active stakeholders
+    const interruptionMessage = `[USER_SPEAKING] The user has started speaking. Stop talking immediately and listen. Do not acknowledge this message - just go silent and listen to what the user is saying.`;
+    
+    const activeIds = Array.from(activeConversations.values());
+    for (const conversationId of activeIds) {
+      try {
+        await service.sendTextInput(conversationId, interruptionMessage);
+      } catch (error) {
+        console.error('Failed to send interruption message:', error);
+      }
+    }
+    
+    // Update all agent statuses to listening
+    setAgentStatuses(prev => {
+      const newStatuses = new Map(prev);
+      selectedStakeholders.forEach(stakeholder => {
+        newStatuses.set(stakeholder.agentId, 'listening');
+      });
+      return newStatuses;
+    });
+    
+    // Clear current speaking state
+    setCurrentSpeaking(null);
+  }, [conversationalServiceRef, activeConversations, selectedStakeholders]);
+
+  // Interrupt agents (stop them from speaking) - legacy function
   const interruptAgents = useCallback(async () => {
     if (!conversationalServiceRef.current) return;
 
