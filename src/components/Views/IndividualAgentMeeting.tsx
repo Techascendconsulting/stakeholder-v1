@@ -41,6 +41,93 @@ const IndividualAgentMeeting: React.FC = () => {
     }
   }, []);
 
+  // Setup audio recording - exactly like ElevenLabs sales agent
+  const setupAudioRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 44100,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      });
+      
+      streamRef.current = stream;
+      
+      // Create AudioContext for real-time processing
+      const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
+      
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      processorRef.current = processor;
+      
+      let isProcessing = false;
+      
+      processor.onaudioprocess = async (event) => {
+        if (!isRecording || isProcessing || !conversationIdRef.current || !elevenLabsServiceRef.current) {
+          console.log('🚫 Audio processing skipped:', { isRecording, isProcessing, hasConversationId: !!conversationIdRef.current, hasService: !!elevenLabsServiceRef.current });
+          return;
+        }
+        
+        const inputBuffer = event.inputBuffer;
+        const inputData = inputBuffer.getChannelData(0);
+        
+        console.log('🎤 Processing audio chunk, length:', inputData.length);
+        
+        // Convert to 16-bit PCM at 16kHz (ElevenLabs format)
+        const targetSampleRate = 16000;
+        const sourceSampleRate = audioContext.sampleRate;
+        
+        let pcmData: Float32Array;
+        if (sourceSampleRate !== targetSampleRate) {
+          const ratio = sourceSampleRate / targetSampleRate;
+          const newLength = Math.round(inputData.length / ratio);
+          pcmData = new Float32Array(newLength);
+          
+          for (let i = 0; i < newLength; i++) {
+            const sourceIndex = Math.round(i * ratio);
+            pcmData[i] = inputData[sourceIndex] || 0;
+          }
+        } else {
+          pcmData = inputData;
+        }
+        
+        // Convert to 16-bit PCM
+        const pcm16 = new Int16Array(pcmData.length);
+        for (let i = 0; i < pcmData.length; i++) {
+          const sample = Math.max(-1, Math.min(1, pcmData[i]));
+          pcm16[i] = Math.round(sample * 0x7FFF);
+        }
+        
+        // Convert to base64
+        const uint8Array = new Uint8Array(pcm16.buffer);
+        const base64 = btoa(String.fromCharCode(...uint8Array));
+        
+        if (base64.length > 0) {
+          isProcessing = true;
+          try {
+            console.log('📤 Sending audio to ElevenLabs, length:', base64.length);
+            await elevenLabsServiceRef.current.sendAudioInputPCM(conversationIdRef.current, base64);
+            console.log('✅ Audio sent successfully');
+          } catch (error) {
+            console.error('❌ Error sending audio:', error);
+          }
+          isProcessing = false;
+        } else {
+          console.log('⚠️ Empty audio data, skipping send');
+        }
+      };
+      
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+      
+    } catch (error) {
+      console.error('❌ Error setting up audio:', error);
+    }
+  }, [isRecording]);
+
   // Start meeting with selected stakeholder
   const startMeeting = useCallback(async () => {
     if (!selectedStakeholder || !elevenLabsServiceRef.current) return;
@@ -140,93 +227,6 @@ const IndividualAgentMeeting: React.FC = () => {
       console.error('❌ Error ending meeting:', error);
     }
   }, []);
-
-  // Setup audio recording - exactly like ElevenLabs sales agent
-  const setupAudioRecording = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 44100,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true
-        }
-      });
-      
-      streamRef.current = stream;
-      
-      // Create AudioContext for real-time processing
-      const audioContext = new AudioContext();
-      audioContextRef.current = audioContext;
-      
-      const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-      processorRef.current = processor;
-      
-      let isProcessing = false;
-      
-      processor.onaudioprocess = async (event) => {
-        if (!isRecording || isProcessing || !conversationIdRef.current || !elevenLabsServiceRef.current) {
-          console.log('🚫 Audio processing skipped:', { isRecording, isProcessing, hasConversationId: !!conversationIdRef.current, hasService: !!elevenLabsServiceRef.current });
-          return;
-        }
-        
-        const inputBuffer = event.inputBuffer;
-        const inputData = inputBuffer.getChannelData(0);
-        
-        console.log('🎤 Processing audio chunk, length:', inputData.length);
-        
-        // Convert to 16-bit PCM at 16kHz (ElevenLabs format)
-        const targetSampleRate = 16000;
-        const sourceSampleRate = audioContext.sampleRate;
-        
-        let pcmData: Float32Array;
-        if (sourceSampleRate !== targetSampleRate) {
-          const ratio = sourceSampleRate / targetSampleRate;
-          const newLength = Math.round(inputData.length / ratio);
-          pcmData = new Float32Array(newLength);
-          
-          for (let i = 0; i < newLength; i++) {
-            const sourceIndex = Math.round(i * ratio);
-            pcmData[i] = inputData[sourceIndex] || 0;
-          }
-        } else {
-          pcmData = inputData;
-        }
-        
-        // Convert to 16-bit PCM
-        const pcm16 = new Int16Array(pcmData.length);
-        for (let i = 0; i < pcmData.length; i++) {
-          const sample = Math.max(-1, Math.min(1, pcmData[i]));
-          pcm16[i] = Math.round(sample * 0x7FFF);
-        }
-        
-        // Convert to base64
-        const uint8Array = new Uint8Array(pcm16.buffer);
-        const base64 = btoa(String.fromCharCode(...uint8Array));
-        
-        if (base64.length > 0) {
-          isProcessing = true;
-          try {
-            console.log('📤 Sending audio to ElevenLabs, length:', base64.length);
-            await elevenLabsServiceRef.current.sendAudioInputPCM(conversationIdRef.current, base64);
-            console.log('✅ Audio sent successfully');
-          } catch (error) {
-            console.error('❌ Error sending audio:', error);
-          }
-          isProcessing = false;
-        } else {
-          console.log('⚠️ Empty audio data, skipping send');
-        }
-      };
-      
-      source.connect(processor);
-      processor.connect(audioContext.destination);
-      
-    } catch (error) {
-      console.error('❌ Error setting up audio:', error);
-    }
-  }, [isRecording]);
 
   // Toggle recording
   const toggleRecording = useCallback(async () => {
