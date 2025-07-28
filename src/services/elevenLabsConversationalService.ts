@@ -325,6 +325,52 @@ class ElevenLabsConversationalService {
   }
 
   /**
+   * Send PCM audio input directly to agent
+   */
+  async sendAudioInputPCM(conversationId: string, base64Audio: string): Promise<void> {
+    const session = this.activeSessions.get(conversationId);
+    
+    if (!session || !session.websocket || session.websocket.readyState !== WebSocket.OPEN) {
+      throw new Error('No active session or WebSocket connection');
+    }
+
+    try {
+      // Send initialization message first if this is the first interaction
+      if (!session.isInitialized && session.websocket.readyState === WebSocket.OPEN) {
+        const initMessage = {
+          type: 'conversation_initiation_client_data',
+          conversation_config_override: {},
+          custom_llm_extra_body: {},
+          dynamic_variables: {}
+        };
+        session.websocket.send(JSON.stringify(initMessage));
+        console.log('📤 Sent initialization message before PCM audio');
+        session.isInitialized = true;
+        
+        // Add a small delay to ensure initialization is processed
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // Send the PCM audio directly
+      const message = {
+        user_audio_chunk: base64Audio
+      };
+
+      console.log(`🎤 Sending PCM audio to ${session.stakeholder.name}`, { 
+        base64Length: base64Audio.length,
+        format: 'PCM 16kHz'
+      });
+      
+      // Send as JSON string
+      session.websocket.send(JSON.stringify(message));
+      console.log('✅ PCM Audio sent successfully');
+    } catch (error) {
+      console.error('❌ Error sending PCM audio input:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Convert blob to base64 using FileReader for better compatibility
    */
   private blobToBase64(blob: Blob): Promise<string> {

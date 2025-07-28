@@ -255,36 +255,89 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
       
-      // Use simple webm format which is widely supported
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm'
-      });
+      // Create AudioWorklet processor for PCM 16kHz conversion
+      // Use the existing audioContext
+      const processorNode = audioContext.createScriptProcessor(4096, 1, 1);
       
-      const audioChunks: Blob[] = [];
+      let isRecordingRef = { value: false };
       
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
-        }
-      };
-      
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      processorNode.onaudioprocess = async (event) => {
+        if (!isRecordingRef.value) return;
         
-        // Send audio to all active conversations
-        if (conversationalServiceRef.current) {
+        const inputBuffer = event.inputBuffer;
+        const inputData = inputBuffer.getChannelData(0);
+        
+        // Convert float32 PCM to 16-bit PCM at 16kHz
+        const targetSampleRate = 16000;
+        const sourceSampleRate = audioContext.sampleRate;
+        
+        // Downsample if needed
+        let pcmData: Float32Array;
+        if (sourceSampleRate !== targetSampleRate) {
+          const ratio = sourceSampleRate / targetSampleRate;
+          const newLength = Math.round(inputData.length / ratio);
+          pcmData = new Float32Array(newLength);
+          
+          for (let i = 0; i < newLength; i++) {
+            const sourceIndex = Math.round(i * ratio);
+            pcmData[i] = inputData[sourceIndex] || 0;
+          }
+        } else {
+          pcmData = inputData;
+        }
+        
+        // Convert to 16-bit PCM
+        const pcm16 = new Int16Array(pcmData.length);
+        for (let i = 0; i < pcmData.length; i++) {
+          const sample = Math.max(-1, Math.min(1, pcmData[i]));
+          pcm16[i] = Math.round(sample * 0x7FFF);
+        }
+        
+        // Convert to base64
+        const uint8Array = new Uint8Array(pcm16.buffer);
+        const base64 = btoa(String.fromCharCode(...uint8Array));
+        
+        // Create a blob to maintain compatibility with existing service
+        const pcmBlob = new Blob([uint8Array], { type: 'audio/pcm' });
+        
+        // Send immediately to ElevenLabs
+        if (conversationalServiceRef.current && base64.length > 0) {
           const service = conversationalServiceRef.current;
           const promises = Array.from(activeConversations.values()).map(conversationId => 
-            service.sendAudioInput(conversationId, audioBlob).catch(console.error)
+            service.sendAudioInputPCM(conversationId, base64).catch(console.error)
           );
           await Promise.all(promises);
         }
-        
-        audioChunks.length = 0;
-        setIsRecording(false);
       };
       
-      mediaRecorderRef.current = mediaRecorder;
+      source.connect(processorNode);
+      processorNode.connect(audioContext.destination);
+      
+      // Store recording state
+      const startRecording = () => {
+        isRecordingRef.value = true;
+        setIsRecording(true);
+        console.log('🎤 Started PCM recording at 16kHz');
+      };
+      
+      const stopRecording = () => {
+        isRecordingRef.value = false;
+        setIsRecording(false);
+        console.log('🛑 Stopped PCM recording');
+      };
+      
+      // Store functions for later use
+      (window as any).elevenLabsRecording = {
+        start: startRecording,
+        stop: stopRecording
+      };
+      
+      // Store processor node instead of mediaRecorder
+      (mediaRecorderRef as any).current = {
+        start: startRecording,
+        stop: stopRecording,
+        processorNode
+      };
       
     } catch (error) {
       console.error('Error setting up audio recording:', error);
@@ -331,19 +384,19 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
 
   // Toggle recording (click once to start, click again to stop)
   const toggleRecording = useCallback(async () => {
-    if (!mediaRecorderRef.current) {
+    const recorder = mediaRecorderRef.current as any;
+    if (!recorder) {
       await setupAudioRecording();
       return;
     }
 
     if (isRecording) {
       // Stop recording
-      mediaRecorderRef.current.stop();
+      recorder.stop();
       stopVoiceDetection();
-      setIsRecording(false);
     } else {
       // Start recording
-      mediaRecorderRef.current.start();
+      recorder.start();
       startVoiceDetection();
       setIsRecording(true);
     }
