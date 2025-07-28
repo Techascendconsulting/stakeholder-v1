@@ -62,7 +62,12 @@ export class IndividualAgentService {
   private responsePromises: Map<string, { resolve: () => void; reject: (error: any) => void }> = new Map();
 
   private constructor() {
-    this.elevenLabsService = ElevenLabsConversationalService.getInstance();
+    // Get API key from environment
+    const elevenLabsKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+    if (!elevenLabsKey) {
+      throw new Error('ElevenLabs API key not found in environment variables');
+    }
+    this.elevenLabsService = new ElevenLabsConversationalService(elevenLabsKey);
   }
 
   public static getInstance(): IndividualAgentService {
