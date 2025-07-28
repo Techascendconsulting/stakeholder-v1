@@ -859,14 +859,14 @@ BE SMART, RELEVANT, AND CONCISE. Only speak when you have valuable input.`;
               
               // Get role-based colors
               const getRoleColors = (role: string) => {
-                if (role.includes('Customer') || role.includes('Experience')) {
+                if (role.includes('Customer') || role.includes('Experience') || role.includes('Service')) {
                   return {
                     primary: 'from-blue-500 to-cyan-500',
                     bg: 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20',
                     border: 'border-blue-500',
                     badge: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
                   };
-                } else if (role.includes('Business') || role.includes('Process')) {
+                } else if (role.includes('Business') || role.includes('Process') || role.includes('Success')) {
                   return {
                     primary: 'from-green-500 to-emerald-500',
                     bg: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',

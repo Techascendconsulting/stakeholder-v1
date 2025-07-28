@@ -63,24 +63,24 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
       {
         id: 'aisha-ahmed',
         name: 'Aisha Ahmed',
-        role: 'UX/UI Designer',
-        department: 'Product Design',
+        role: 'Customer Service Manager',
+        department: 'Customer Service',
         expertise: [
-          'User experience design',
-          'User interface design',
-          'User research and testing',
-          'Design systems',
-          'Prototyping and wireframing'
+          'Customer support operations',
+          'Service level management',
+          'Customer satisfaction metrics',
+          'Support team training',
+          'Escalation management'
         ],
-        personality: 'Creative, user-empathetic, detail-oriented, innovative',
+        personality: 'Empathetic, service-oriented, problem-solver, team-focused',
         priorities: [
-          'Creating intuitive user interfaces',
-          'Reducing cognitive load in onboarding',
-          'Improving accessibility',
-          'Maintaining design consistency'
+          'Improving customer support experience',
+          'Reducing resolution times',
+          'Enhancing team efficiency',
+          'Maintaining service quality standards'
         ],
         agentId: 'agent_3601k16fe93ject9vy38wev45tym', // Aisha Ahmed agent ID
-        bio: 'Aisha is a senior UX/UI designer with 6 years of experience in creating user-centered designs. She has led design initiatives that improved user engagement by 60% and specializes in onboarding flow optimization.'
+        bio: 'Aisha manages the Customer Service team with 7 years of experience in customer support operations. She has successfully improved customer satisfaction scores by 45% and specializes in creating efficient support processes during customer onboarding.'
       },
       {
         id: 'david-thompson',
