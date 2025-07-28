@@ -573,9 +573,13 @@ You were specifically mentioned or asked for your input. You can respond briefly
          const voiceThreshold = 0.01; // Adjust based on sensitivity needed
          
          if (average > voiceThreshold) {
-           // User is speaking - immediately interrupt all stakeholders
-           console.log('🎤 User voice detected - interrupting all stakeholders');
-           interruptAllStakeholders();
+           // Throttle interruption calls to prevent spam
+           const now = Date.now();
+           if (now - lastInterruptTime > 1000) { // Only interrupt once per second
+             console.log('🎤 User voice detected - interrupting all stakeholders');
+             interruptAllStakeholders();
+             lastInterruptTime = now;
+           }
          }
          
          // Convert float32 PCM to 16-bit PCM at 16kHz
