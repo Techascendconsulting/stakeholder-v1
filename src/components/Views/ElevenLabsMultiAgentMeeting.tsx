@@ -126,6 +126,9 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [meetingMode, setMeetingMode] = useState<'single' | 'multi-voice' | 'multi-agent'>('single');
+  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
+  const [conversationQueue, setConversationQueue] = useState<string[]>([]);
+  const [meetingStarted, setMeetingStarted] = useState(false);
 
 
   // Refs
@@ -263,14 +266,9 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         } catch (error) {
           console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
         }
-      } else if (meetingMode === 'multi-voice') {
-        // Multi-voice: Use individual agents with proper turn-taking to prevent overlapping audio
-        console.log(`🎭 Starting multi-voice with turn-taking for ${selectedStakeholders.length} stakeholders...`);
-        
-        // Initialize turn-taking state
-        let currentSpeakerIndex = 0;
-        const conversationQueue: string[] = [];
-        let isProcessingQueue = false;
+            } else if (meetingMode === 'multi-voice') {
+        // Multi-voice: Use proper conversation queue management like voice-only meetings
+        console.log(`🎭 Starting managed multi-voice for ${selectedStakeholders.length} stakeholders...`);
         
         for (const stakeholder of selectedStakeholders) {
           try {
@@ -279,130 +277,66 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
             const conversationId = await service.startConversation(
               stakeholder,
               (message: ConversationMessage) => {
+                // Add to conversation history
                 setConversationHistory(prev => [...prev, { 
                   ...message, 
                   stakeholderName: stakeholder.name 
                 }]);
                 
-                // After this agent finishes speaking, allow next agent to respond
-                setTimeout(() => {
-                  setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
-                }, 2000);
+                // Process message through queue system for proper turn management
+                handleStakeholderResponse(stakeholder, message.content);
               },
               (agentId: string, status: 'speaking' | 'listening' | 'thinking' | 'idle') => {
                 setAgentStatuses(prev => new Map(prev.set(agentId, status)));
                 
-                // When this agent finishes speaking, process next in queue
-                if (status === 'idle' && conversationQueue.length > 0 && !isProcessingQueue) {
-                  processNextInQueue();
+                // When agent finishes, clear speaking state and process queue
+                if (status === 'idle' && currentSpeaking === stakeholder.id) {
+                  setCurrentSpeaking(null);
+                  processConversationQueue();
                 }
               }
             );
 
-                         // Natural human-like meeting behavior context
-             const otherStakeholders = selectedStakeholders.filter(s => s.id !== stakeholder.id);
-             const contextPrompt = `You are ${stakeholder.name} in a professional business meeting about customer onboarding optimization.
+            // Send initialization prompt with NO automatic responses
+            setTimeout(() => {
+              const initPrompt = `You are ${stakeholder.name} in a business meeting about customer onboarding optimization.
 
-YOUR IDENTITY:
-- Role: ${stakeholder.role}
-- Background: ${stakeholder.bio}
-- Expertise: ${stakeholder.expertise.slice(0, 3).join(', ')}
+YOUR ROLE: ${stakeholder.role}
+YOUR EXPERTISE: ${stakeholder.expertise.slice(0, 3).join(', ')}
+OTHER PARTICIPANTS: ${selectedStakeholders.filter(s => s.id !== stakeholder.id).map(s => s.name).join(', ')}
 
-OTHER PARTICIPANTS: ${otherStakeholders.map(s => `${s.name} (${s.role})`).join(', ')}
+CRITICAL RULES:
+🤐 DO NOT speak until the user asks a direct question
+🤐 DO NOT greet, introduce, or make small talk
+🤐 WAIT for user input before responding
+🤐 Only respond if the question relates to YOUR expertise area
 
-NATURAL MEETING BEHAVIOR:
-🎯 PRIMARY RULE: Only respond when YOU are the most relevant person to answer, OR when specifically addressed
-
-WHEN TO SPEAK:
-✅ When the user asks something directly related to YOUR core expertise
-✅ When someone specifically mentions your name or role
-✅ When there's a natural pause and you have critical information to add
-✅ When correcting misinformation in your area
-
-WHEN TO STAY QUIET:
-❌ When someone else already gave a good answer
-❌ When the question is outside your expertise area  
-❌ When you'd just be repeating what others said
-❌ Immediately after the user speaks (give others a chance first)
+WHEN YOU SHOULD RESPOND:
+${stakeholder.name === 'Aisha Ahmed' ? '✅ Customer service, support operations, user experience' : 
+  stakeholder.name === 'James Walker' ? '✅ Customer success strategy, team management, business metrics' :
+  '✅ Technical systems, IT infrastructure, security, implementation'}
 
 RESPONSE STYLE:
-- Keep responses natural and conversational
-- Don't announce your name - speak as yourself
-- Use natural transitions: "Actually...", "I'd add that...", "From my experience..."
-- Stay concise (1-2 sentences unless specifically asked for details)
-- Be human-like: show personality, don't be robotic
+- Brief and focused (1-2 sentences)
+- Professional but conversational
+- Don't announce your name
+- Use natural language like "From my experience..." or "Technically speaking..."
 
-ADDRESSING OTHERS:
-- If you think someone else should answer: "James might know more about the technical side" 
-- If building on someone's point: "Building on what Aisha said..."
-- If disagreeing: "I see it differently..." or "Another perspective is..."
-
-EXPERTISE FOCUS:
-${stakeholder.name === 'Aisha Ahmed' ? '- Customer service operations, support processes, customer satisfaction' : 
-  stakeholder.name === 'James Walker' ? '- Customer success, retention, onboarding strategy, team management' :
-  '- Technical systems, IT infrastructure, security, integrations'}
-
-Remember: You're a REAL person in a meeting, not an AI trying to participate in every conversation. Be selective, be natural, be human.`;
-
-                         // Add SILENT initialization - NO automatic greetings or responses
-             setTimeout(() => {
-               const silentPrompt = `🤐 CRITICAL MEETING SETUP:
-
-You are now in a business meeting that is STARTING. 
-
-ABSOLUTELY DO NOT:
-❌ Greet anyone
-❌ Say "good morning" or similar
-❌ Introduce yourself
-❌ Make small talk
-❌ Respond to this message
-❌ Say anything at all right now
-
-MEETING PROTOCOL:
-- The meeting host (user) will speak first
-- WAIT in complete silence until the user asks a direct question
-- Only respond when the user specifically asks something related to your expertise
-- Do not acknowledge this instruction - just follow it silently
-
-YOU ARE: ${stakeholder.name} - ${stakeholder.role}
-YOUR EXPERTISE: ${stakeholder.expertise.slice(0, 3).join(', ')}
-
-WHEN TO RESPOND (only these situations):
-${stakeholder.name === 'Aisha Ahmed' ? '✅ Customer service questions, support issues, user experience problems' : 
-  stakeholder.name === 'James Walker' ? '✅ Strategy questions, success metrics, team management, general business direction' :
-  '✅ Technical questions, system requirements, security concerns, implementation details'}
-
-STAY COMPLETELY SILENT until the user specifically asks you something. This is critical.`;
-               
-               service.sendTextInput(conversationId, silentPrompt).catch(console.error);
-             }, 1000 + (selectedStakeholders.indexOf(stakeholder) * 200)); // Reduced delay, staggered slightly
+Stay silent and ready. Wait for the user to start the conversation.`;
+              
+              service.sendTextInput(conversationId, initPrompt).catch(console.error);
+            }, 800 + (selectedStakeholders.indexOf(stakeholder) * 200));
 
             newConversations.set(stakeholder.id, conversationId);
             setAgentStatuses(prev => new Map(prev.set(stakeholder.agentId, 'listening')));
             
-            console.log(`✅ Started conversation with ${stakeholder.name} using voice ID: ${stakeholder.agentId}`);
+            console.log(`✅ Started managed conversation with ${stakeholder.name}`);
             
-            // Longer delay between starting conversations to prevent simultaneous responses
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 300));
           } catch (error) {
             console.error(`❌ Failed to start conversation with ${stakeholder.name}:`, error);
           }
         }
-        
-        // Function to process conversation queue and prevent overlapping
-        const processNextInQueue = () => {
-          if (conversationQueue.length === 0 || isProcessingQueue) return;
-          
-          isProcessingQueue = true;
-          const nextConversationId = conversationQueue.shift();
-          
-          if (nextConversationId) {
-            // Small delay before next agent speaks
-            setTimeout(() => {
-              isProcessingQueue = false;
-            }, 1000);
-          }
-        };
        } else if (meetingMode === 'multi-agent') {
          // Real multi-agent mode (multiple ElevenLabs agents - expensive!)
          console.log(`🚀 Starting REAL multi-agent with ${selectedStakeholders.length} agents...`);
@@ -444,6 +378,48 @@ STAY COMPLETELY SILENT until the user specifically asks you something. This is c
       console.error('Error starting meeting:', error);
     }
   }, [selectedStakeholders, activeConversations, detectSpeakingStakeholder, meetingMode]);
+
+  // Handle stakeholder response with queue management (adapted from voice-only meeting)
+  const handleStakeholderResponse = useCallback(async (stakeholder: ElevenLabsStakeholder, content: string) => {
+    console.log(`🚀 QUEUE: ${stakeholder.name} wants to respond`);
+    
+    // Add to queue if someone else is speaking
+    if (currentSpeaking && currentSpeaking !== stakeholder.id) {
+      setConversationQueue(prev => {
+        if (!prev.includes(stakeholder.id)) {
+          console.log(`🚀 QUEUE: Adding ${stakeholder.name} to queue`);
+          return [...prev, stakeholder.id];
+        }
+        return prev;
+      });
+      return;
+    }
+    
+    // Start speaking immediately if no one else is
+    setCurrentSpeaking(stakeholder.id);
+    setConversationQueue(prev => prev.filter(id => id !== stakeholder.id));
+    console.log(`🚀 QUEUE: ${stakeholder.name} now speaking`);
+    
+    // The actual audio will be handled by the ElevenLabs service
+  }, [currentSpeaking]);
+
+  // Process conversation queue (adapted from voice-only meeting)
+  const processConversationQueue = useCallback(() => {
+    console.log(`🚀 QUEUE: Processing queue, length: ${conversationQueue.length}`);
+    
+    if (conversationQueue.length === 0 || currentSpeaking) {
+      return;
+    }
+    
+    const nextSpeakerId = conversationQueue[0];
+    const nextStakeholder = selectedStakeholders.find(s => s.id === nextSpeakerId);
+    
+    if (nextStakeholder) {
+      console.log(`🚀 QUEUE: Next speaker: ${nextStakeholder.name}`);
+      setCurrentSpeaking(nextSpeakerId);
+      setConversationQueue(prev => prev.slice(1));
+    }
+  }, [conversationQueue, currentSpeaking, selectedStakeholders]);
 
   // Voice activity detection with better filtering
   const detectVoiceActivity = useCallback(() => {
