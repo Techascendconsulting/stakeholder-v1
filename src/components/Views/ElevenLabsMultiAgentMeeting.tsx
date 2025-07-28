@@ -775,6 +775,68 @@ Make it feel like real people having a natural business conversation!`;
           </div>
         </div>
 
+        {/* Meeting Mode Selection */}
+        {selectedStakeholders.length > 1 && (
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Choose Meeting Mode
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Collaborative Meeting */}
+                <div 
+                  onClick={() => setMeetingMode('multi-voice')}
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    meetingMode === 'multi-voice' 
+                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold">🤝</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                      Collaborative Meeting
+                    </h4>
+                    <span className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded-full">
+                      Recommended
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Dynamic group discussion where stakeholders naturally respond to each other and build on ideas together.
+                  </p>
+                </div>
+
+                {/* Individual Responses */}
+                <div 
+                  onClick={() => setMeetingMode('multi-agent')}
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    meetingMode === 'multi-agent' 
+                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white font-bold">👥</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">
+                      Individual Responses
+                    </h4>
+                    <span className="ml-2 px-2 py-1 text-xs bg-purple-500 text-white rounded-full">
+                      Advanced
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Each stakeholder responds independently with their own unique perspective and expertise.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stakeholder Selection */}
         <div className="max-w-4xl mx-auto p-6">
           <div className="mb-6">
