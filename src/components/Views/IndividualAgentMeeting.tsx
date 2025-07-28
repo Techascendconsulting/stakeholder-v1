@@ -127,12 +127,12 @@ export const IndividualAgentMeeting: React.FC = () => {
     }
   }, [isRecording]);
 
-  // Setup audio recording with speech-to-text
+  // Setup audio recording - EXACT COPY from working ElevenLabs meeting
   const setupAudioRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 16000,
+          sampleRate: 44100,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true
@@ -141,38 +141,94 @@ export const IndividualAgentMeeting: React.FC = () => {
       
       streamRef.current = stream;
       
-      // Create MediaRecorder for audio processing
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
+      // Create AudioContext for real-time processing - EXACT COPY
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
       
-      let audioChunks: Blob[] = [];
+      // Create AudioWorklet processor for PCM 16kHz conversion - EXACT COPY
+      const processorNode = audioContext.createScriptProcessor(4096, 1, 1);
       
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
+      let isRecordingRef = { value: false };
+      let isUserSpeaking = false;
+      let silenceTimer: NodeJS.Timeout | null = null;
+      
+      processorNode.onaudioprocess = async (event) => {
+        if (!isRecordingRef.value) return;
+        
+        const inputBuffer = event.inputBuffer;
+        const inputData = inputBuffer.getChannelData(0);
+        
+        // Voice activity detection - EXACT COPY
+        const average = inputData.reduce((sum, value) => sum + Math.abs(value), 0) / inputData.length;
+        const voiceThreshold = 0.005;
+        const peaks = inputData.filter(value => Math.abs(value) > 0.02).length;
+        const hasSpeech = average > voiceThreshold || peaks > 10;
+        
+        if (hasSpeech) {
+          if (!isUserSpeaking) {
+            console.log('🎤 User started speaking');
+            isUserSpeaking = true;
+          }
+          
+          if (silenceTimer) {
+            clearTimeout(silenceTimer);
+            silenceTimer = null;
+          }
+          
+          silenceTimer = setTimeout(() => {
+            if (isUserSpeaking) {
+              console.log('🤫 User stopped speaking - processing audio');
+              isUserSpeaking = false;
+            }
+          }, 1500);
+        }
+        
+        // Convert float32 PCM to 16-bit PCM at 16kHz - EXACT COPY
+        const targetSampleRate = 16000;
+        const sourceSampleRate = audioContext.sampleRate;
+        
+        let pcmData: Float32Array;
+        if (sourceSampleRate !== targetSampleRate) {
+          const ratio = sourceSampleRate / targetSampleRate;
+          const newLength = Math.round(inputData.length / ratio);
+          pcmData = new Float32Array(newLength);
+          
+          for (let i = 0; i < newLength; i++) {
+            const sourceIndex = Math.round(i * ratio);
+            pcmData[i] = inputData[sourceIndex] || 0;
+          }
+        } else {
+          pcmData = inputData;
+        }
+        
+        // Convert to 16-bit PCM - EXACT COPY
+        const pcm16 = new Int16Array(pcmData.length);
+        for (let i = 0; i < pcmData.length; i++) {
+          const sample = Math.max(-1, Math.min(1, pcmData[i]));
+          pcm16[i] = Math.round(sample * 0x7FFF);
+        }
+        
+        // Convert to base64 - EXACT COPY
+        const uint8Array = new Uint8Array(pcm16.buffer);
+        const base64 = btoa(String.fromCharCode(...uint8Array));
+        
+        // Process audio when user stops speaking - EXACT COPY
+        if (base64.length > 0 && !isUserSpeaking && isRecordingRef.value) {
+          await processAudioInput(base64);
         }
       };
       
-      mediaRecorder.onstop = async () => {
-        if (audioChunks.length > 0) {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          await processAudioInput(audioBlob);
-          audioChunks = [];
-        }
-      };
+      source.connect(processorNode);
+      processorNode.connect(audioContext.destination);
       
       const startRecording = () => {
-        audioChunks = [];
-        mediaRecorder.start();
+        isRecordingRef.value = true;
         setIsRecording(true);
         console.log('🎤 Started recording for individual agents');
       };
       
       const stopRecording = () => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
-        }
+        isRecordingRef.value = false;
         setIsRecording(false);
         console.log('🛑 Stopped recording');
       };
@@ -180,44 +236,26 @@ export const IndividualAgentMeeting: React.FC = () => {
       mediaRecorderRef.current = {
         start: startRecording,
         stop: stopRecording,
-        mediaRecorder
+        audioContext,
+        processorNode
       };
       
     } catch (error) {
       console.error('❌ Error setting up audio recording:', error);
     }
-  }, []);
+  }, [processAudioInput]);
 
-  // Process audio input with individual agents
-  const processAudioInput = useCallback(async (audioBlob: Blob) => {
+  // Process audio input with individual agents - EXACT COPY from working ElevenLabs meeting
+  const processAudioInput = useCallback(async (base64Audio: string) => {
     if (!individualAgentServiceRef.current) return;
     
     try {
-      // Convert audio to base64 PCM for ElevenLabs
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const audioContext = new AudioContext({ sampleRate: 16000 });
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      
-      // Convert to 16-bit PCM
-      const pcmData = audioBuffer.getChannelData(0);
-      const pcm16 = new Int16Array(pcmData.length);
-      
-      for (let i = 0; i < pcmData.length; i++) {
-        pcm16[i] = Math.max(-32768, Math.min(32767, pcmData[i] * 32768));
-      }
-      
-      const uint8Array = new Uint8Array(pcm16.buffer);
-      const base64Audio = btoa(String.fromCharCode(...uint8Array));
-      
-      // Simple speech-to-text simulation (in real implementation, use Whisper or similar)
-      const userMessage = "User spoke"; // This would be actual transcription
-      
       console.log('🎯 Processing user input with individual agents');
       
       // Send to individual agent service for intelligent routing
       await individualAgentServiceRef.current.processUserInput(
         base64Audio,
-        userMessage
+        "User spoke" // This would be actual transcription
       );
       
     } catch (error) {
