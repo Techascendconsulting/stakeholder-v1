@@ -100,14 +100,24 @@ class ElevenLabsConversationalService {
         session.isActive = true;
         this.activeSessions.set(conversationId, session);
         onStatusChange?.(stakeholder.agentId, 'listening');
+        
+        // Send initialization message if needed
+        const initMessage = {
+          type: 'conversation_initiation_client_data',
+          conversation_config_override: {
+            agent_id: stakeholder.agentId
+          }
+        };
+        websocket.send(JSON.stringify(initMessage));
       };
 
       websocket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          console.log(`📨 WebSocket message for ${stakeholder.name}:`, data);
           this.handleWebSocketMessage(conversationId, data);
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error('Error parsing WebSocket message:', error, 'Raw data:', event.data);
         }
       };
 
@@ -233,10 +243,14 @@ class ElevenLabsConversationalService {
 
       const message = {
         type: 'audio_input',
-        audio: base64Audio,
-        format: 'mp3' // or whatever format the blob is in
+        audio_config: {
+          encoding: 'webm',
+          sample_rate: 44100
+        },
+        audio: base64Audio
       };
 
+      console.log(`🎤 Sending audio to ${session.stakeholder.name}`, { size: audioBlob.size, type: audioBlob.type });
       session.websocket.send(JSON.stringify(message));
     } catch (error) {
       console.error('Error sending audio input:', error);
