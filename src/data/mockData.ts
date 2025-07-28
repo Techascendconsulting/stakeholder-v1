@@ -203,7 +203,8 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Strategic, process-focused, results-driven leadership style',
     priorities: ['Operational efficiency', 'Process standardization', 'Resource optimization'],
     expertise: ['Process optimization', 'Operational strategy', 'Cross-functional coordination', 'Efficiency improvements', 'Resource management'],
-    voice: 'en-GB-RyanNeural'
+    voice: 'en-GB-RyanNeural',
+    agentId: 'pNInz6obpgDQGcFmaJgB' // ElevenLabs agent ID
   },
   {
     id: 'stake-2',
@@ -215,7 +216,8 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Customer-focused, empathetic, performance-oriented',
     priorities: ['Customer satisfaction', 'Service quality', 'Team efficiency'],
     expertise: ['Customer experience management', 'Service delivery optimization', 'Customer satisfaction improvement', 'Team performance management', 'Service quality assurance'],
-    voice: 'en-GB-SoniaNeural'
+    voice: 'en-GB-SoniaNeural',
+    agentId: 'Xb7hH28rIHRkbqzjKnXU' // ElevenLabs agent ID
   },
   {
     id: 'stake-3',
@@ -227,7 +229,8 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Technical, analytical, security-conscious',
     priorities: ['System security', 'Technical feasibility', 'Integration capabilities'],
     expertise: ['IT systems architecture', 'Enterprise technology solutions', 'System integration', 'Security implementation', 'Technical feasibility assessment'],
-    voice: 'en-US-AndrewNeural'
+    voice: 'en-US-AndrewNeural',
+    agentId: '21m00Tcm4TlvDq8ikWAM' // ElevenLabs agent ID
   },
   {
     id: 'stake-4',

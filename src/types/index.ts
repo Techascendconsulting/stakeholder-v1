@@ -25,6 +25,7 @@ export interface Stakeholder {
   priorities: string[]
   voice: string
   expertise: string[]
+  agentId?: string // ElevenLabs agent ID for conversational AI
   isCustom?: boolean
 }
 
