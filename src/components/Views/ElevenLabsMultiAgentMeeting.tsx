@@ -603,15 +603,19 @@ You were specifically mentioned or asked for your input. You can respond briefly
          const inputBuffer = event.inputBuffer;
          const inputData = inputBuffer.getChannelData(0);
          
-         // Detect voice activity to interrupt stakeholders when user speaks
+         // Enhanced voice activity detection for immediate interruption
          const average = inputData.reduce((sum, value) => sum + Math.abs(value), 0) / inputData.length;
-         const voiceThreshold = 0.01; // Adjust based on sensitivity needed
+         const voiceThreshold = 0.005; // More sensitive threshold
          
-         if (average > voiceThreshold) {
-           // Throttle interruption calls to prevent spam
+         // Also check for peaks to catch sudden speech
+         const peaks = inputData.filter(value => Math.abs(value) > 0.02).length;
+         const hasSpeech = average > voiceThreshold || peaks > 10;
+         
+         if (hasSpeech) {
+           // More responsive interruption - allow every 500ms
            const now = Date.now();
-           if (now - lastInterruptTime > 1000) { // Only interrupt once per second
-             console.log('🎤 User voice detected - interrupting all stakeholders');
+           if (now - lastInterruptTime > 500) {
+             console.log('🎤 User voice detected - immediate interruption');
              interruptAllStakeholders();
              lastInterruptTime = now;
            }
@@ -839,8 +843,8 @@ Now listen to what the user is saying and participate naturally in this business
     // Immediately clear all audio
     ElevenLabsConversationalService.clearAudioQueue();
     
-    // Send interruption message to all active stakeholders
-    const interruptionMessage = `[USER_SPEAKING] The user has started speaking. Stop talking immediately and listen. Do not acknowledge this message - just go silent and listen to what the user is saying.`;
+    // Send IMMEDIATE silence command to all active stakeholders
+    const interruptionMessage = `[USER_INTERRUPTION] STOP TALKING NOW. The user is speaking. Stay completely silent until they finish. Do not acknowledge this message.`;
     
     const activeIds = Array.from(activeConversations.values());
     for (const conversationId of activeIds) {
