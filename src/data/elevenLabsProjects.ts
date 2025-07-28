@@ -8,6 +8,7 @@ interface ElevenLabsStakeholder {
   priorities: string[];
   agentId: string; // ElevenLabs Conversational AI Agent ID
   bio: string;
+  gender: 'male' | 'female'; // For proper voice selection
 }
 
 interface ElevenLabsProject {
@@ -58,7 +59,8 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
           'Streamlining team workflows'
         ],
         agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry', // James Walker agent ID
-        bio: 'James leads the Customer Success team and has 8 years of experience in customer onboarding optimization. He specializes in creating seamless customer experiences and has successfully reduced churn by 40% in his previous roles.'
+        bio: 'James leads the Customer Success team and has 8 years of experience in customer onboarding optimization. He specializes in creating seamless customer experiences and has successfully reduced churn by 40% in his previous roles.',
+        gender: 'male'
       },
       {
         id: 'aisha-ahmed',
@@ -80,7 +82,8 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
           'Maintaining service quality standards'
         ],
         agentId: 'agent_3601k16fe93ject9vy38wev45tym', // Aisha Ahmed agent ID
-        bio: 'Aisha manages the Customer Service team with 7 years of experience in customer support operations. She has successfully improved customer satisfaction scores by 45% and specializes in creating efficient support processes during customer onboarding.'
+        bio: 'Aisha manages the Customer Service team with 7 years of experience in customer support operations. She has successfully improved customer satisfaction scores by 45% and specializes in creating efficient support processes during customer onboarding.',
+        gender: 'female'
       },
       {
         id: 'david-thompson',
