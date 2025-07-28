@@ -237,7 +237,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     }
   }, [selectedStakeholders, activeConversations]);
 
-  // Voice activity detection with improved sensitivity
+  // Voice activity detection with better filtering
   const detectVoiceActivity = useCallback(() => {
     if (!analyserRef.current) return false;
     
@@ -248,15 +248,15 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     // Calculate average volume
     const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
     
-    // More sensitive threshold and peak detection
-    const threshold = 15; // Lower threshold for better detection
-    const peaks = dataArray.filter(value => value > 30).length; // Count peaks
+    // More conservative thresholds to avoid false positives
+    const threshold = 25; // Higher threshold to avoid background noise
+    const peaks = dataArray.filter(value => value > 50).length; // Higher peak threshold
     
-    // Voice detected if average is above threshold OR we have significant peaks
-    const hasVoiceActivity = average > threshold || peaks > 10;
+    // Voice detected only if BOTH average AND peaks are significant
+    const hasVoiceActivity = average > threshold && peaks > 8;
     
     if (hasVoiceActivity) {
-      console.log('🎤 Voice activity detected:', { average, peaks, threshold });
+      console.log('🎤 Strong voice activity detected:', { average, peaks, threshold });
     }
     
     return hasVoiceActivity;
