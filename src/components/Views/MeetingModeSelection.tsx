@@ -148,31 +148,31 @@ const MeetingModeSelection: React.FC = () => {
               <div className="bg-purple-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-600 transition-colors">
                 <Brain className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-purple-900 mb-3">Individual AI Agents</h3>
-              <p className="text-purple-700 mb-4">
-                Each stakeholder is an individual AI with their own brain, knowledge, and human-like questioning behavior.
-              </p>
-              
-              <div className="space-y-2 text-sm text-purple-600">
-                <div className="flex items-center justify-center">
-                  <Brain className="w-4 h-4 mr-2" />
-                  <span>Individual AI brains</span>
-                </div>
-                <div className="flex items-center justify-center">
-                  <Zap className="w-4 h-4 mr-2" />
-                  <span>Human-like questioning</span>
-                </div>
-                <div className="flex items-center justify-center">
-                  <Users className="w-4 h-4 mr-2" />
-                  <span>Natural curiosity & engagement</span>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors w-full">
-                  Start Individual Agent Meeting
-                </button>
-              </div>
+                                <h3 className="text-xl font-bold text-purple-900 mb-3">Individual AI Agent</h3>
+                  <p className="text-purple-700 mb-4">
+                    One-on-one conversation with a single stakeholder using ElevenLabs' conversational AI - exactly like their sales agent.
+                  </p>
+                  
+                  <div className="space-y-2 text-sm text-purple-600">
+                    <div className="flex items-center justify-center">
+                      <Brain className="w-4 h-4 mr-2" />
+                      <span>Single stakeholder focus</span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <Zap className="w-4 h-4 mr-2" />
+                      <span>ElevenLabs conversational AI</span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <Users className="w-4 h-4 mr-2" />
+                      <span>Real-time voice interaction</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors w-full">
+                      Start Individual Agent Meeting
+                    </button>
+                  </div>
             </div>
           </div>
         </div>

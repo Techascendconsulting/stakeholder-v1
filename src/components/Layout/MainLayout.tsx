@@ -23,7 +23,7 @@ import CustomProjectView from '../Views/CustomProjectView'
 import CustomStakeholdersView from '../Views/CustomStakeholdersView'
 import { AgileHubView } from '../Views/AgileHubView'
 import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting'
-import { IndividualAgentMeeting } from '../Views/IndividualAgentMeeting'
+import IndividualAgentMeeting from '../Views/IndividualAgentMeeting'
 import DebugConsole from '../Debug/DebugConsole'
 
 const MainLayout: React.FC = () => {
