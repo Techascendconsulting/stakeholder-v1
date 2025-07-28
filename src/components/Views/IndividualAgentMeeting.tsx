@@ -68,6 +68,7 @@ const IndividualAgentMeeting: React.FC = () => {
       processorRef.current = processor;
       
       let isProcessing = false;
+      let lastVoiceActivity = 0;
       
       processor.onaudioprocess = async (event) => {
         if (!isRecordingRef.current || isProcessing || !conversationIdRef.current || !elevenLabsServiceRef.current) {
@@ -77,6 +78,35 @@ const IndividualAgentMeeting: React.FC = () => {
         
         const inputBuffer = event.inputBuffer;
         const inputData = inputBuffer.getChannelData(0);
+        
+        // Voice Activity Detection (VAD)
+        let sum = 0;
+        let peaks = 0;
+        const threshold = 0.01; // Adjust sensitivity as needed
+        
+        for (let i = 0; i < inputData.length; i++) {
+          const sample = Math.abs(inputData[i]);
+          sum += sample;
+          if (sample > threshold) peaks++;
+        }
+        
+        const average = sum / inputData.length;
+        const voiceActivity = average > threshold && peaks > 10;
+        
+        if (voiceActivity) {
+          const now = Date.now();
+          if (now - lastVoiceActivity > 100) { // Debounce interruptions
+            console.log('🎤 User voice detected - interrupting agent');
+            try {
+              // Interrupt the agent by sending an interruption signal
+              await elevenLabsServiceRef.current.interruptAgent(conversationIdRef.current);
+              console.log('✅ Agent interrupted successfully');
+            } catch (error) {
+              console.error('❌ Error interrupting agent:', error);
+            }
+          }
+          lastVoiceActivity = now;
+        }
         
         console.log('🎤 Processing audio chunk, length:', inputData.length);
         
