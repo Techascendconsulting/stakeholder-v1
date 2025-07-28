@@ -85,6 +85,7 @@ export type AppView =
   | 'meeting-mode-selection'
   | 'meeting'
   | 'voice-only-meeting'
+  | 'elevenlabs-meeting'
   | 'meeting-history'
   | 'meeting-summary'
   | 'raw-transcript'

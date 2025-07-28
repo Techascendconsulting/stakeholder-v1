@@ -88,8 +88,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'agile-hub',
         'my-meetings',
         'voice-meeting',
+        'elevenlabs-meeting',
         'settings',
-        'profile'
+        'profile',
+        'projects',
+        'project-brief',
+        'stakeholders',
+        'meeting-mode-selection',
+        'meeting',
+        'voice-only-meeting',
+        'meeting-history',
+        'meeting-summary',
+        'raw-transcript',
+        'notes',
+        'deliverables',
+        'analysis',
+        'custom-project',
+        'custom-stakeholders'
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
