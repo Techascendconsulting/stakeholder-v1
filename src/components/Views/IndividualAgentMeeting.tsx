@@ -161,10 +161,15 @@ const IndividualAgentMeeting: React.FC = () => {
       let isProcessing = false;
       
       processor.onaudioprocess = async (event) => {
-        if (!isRecording || isProcessing || !conversationIdRef.current || !elevenLabsServiceRef.current) return;
+        if (!isRecording || isProcessing || !conversationIdRef.current || !elevenLabsServiceRef.current) {
+          console.log('🚫 Audio processing skipped:', { isRecording, isProcessing, hasConversationId: !!conversationIdRef.current, hasService: !!elevenLabsServiceRef.current });
+          return;
+        }
         
         const inputBuffer = event.inputBuffer;
         const inputData = inputBuffer.getChannelData(0);
+        
+        console.log('🎤 Processing audio chunk, length:', inputData.length);
         
         // Convert to 16-bit PCM at 16kHz (ElevenLabs format)
         const targetSampleRate = 16000;
@@ -198,11 +203,15 @@ const IndividualAgentMeeting: React.FC = () => {
         if (base64.length > 0) {
           isProcessing = true;
           try {
+            console.log('📤 Sending audio to ElevenLabs, length:', base64.length);
             await elevenLabsServiceRef.current.sendAudioInputPCM(conversationIdRef.current, base64);
+            console.log('✅ Audio sent successfully');
           } catch (error) {
             console.error('❌ Error sending audio:', error);
           }
           isProcessing = false;
+        } else {
+          console.log('⚠️ Empty audio data, skipping send');
         }
       };
       
