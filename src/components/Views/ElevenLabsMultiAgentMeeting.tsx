@@ -428,14 +428,23 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     await Promise.all(promises);
   }, [activeConversations]);
 
-  // Auto interruption detection with cooldown to prevent spam
+  // Auto interruption detection with agent audio awareness
   const lastInterruptionRef = useRef<number>(0);
   const INTERRUPTION_COOLDOWN = 2000; // 2 seconds cooldown
+  const isAgentSpeakingRef = useRef<boolean>(false);
   
   const startVoiceDetection = useCallback(() => {
     if (voiceDetectionIntervalRef.current) return;
     
-    voiceDetectionIntervalRef.current = setInterval(async () => {
+          voiceDetectionIntervalRef.current = setInterval(async () => {
+        // Don't interrupt if any agent is currently speaking (prevent self-interruption)
+        const anySpeaking = Array.from(agentStatuses.values()).some(status => status === 'speaking');
+        const audioPlaying = (window as any).elevenLabsAgentSpeaking || false;
+        
+        if (anySpeaking || isAgentSpeakingRef.current || audioPlaying) {
+          return; // Skip detection while agents are speaking or audio is playing
+        }
+      
       if (detectVoiceActivity()) {
         // Check if enough time has passed since last interruption
         const now = Date.now();
@@ -444,8 +453,9 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         }
         
         // User is speaking - interrupt all audio
-        console.log('🛑 Voice detected - interrupting all audio (with cooldown)');
+        console.log('🛑 User voice detected - interrupting agent audio');
         lastInterruptionRef.current = now;
+        isAgentSpeakingRef.current = false; // Reset agent speaking flag
         
         // Clear audio queue first (most important)
         const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
@@ -454,8 +464,8 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
         // Then interrupt agents
         interruptAgents();
       }
-    }, 100); // Check every 100ms, less aggressive
-  }, [detectVoiceActivity, interruptAgents]);
+    }, 200); // Check every 200ms, less aggressive
+  }, [detectVoiceActivity, interruptAgents, agentStatuses]);
 
   // Stop voice detection
   const stopVoiceDetection = useCallback(() => {

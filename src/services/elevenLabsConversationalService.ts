@@ -537,6 +537,8 @@ class ElevenLabsConversationalService {
     if (ElevenLabsConversationalService.audioQueue.length === 0) {
       ElevenLabsConversationalService.isPlaying = false;
       console.log('🎵 Audio queue empty, stopping playback');
+      // Signal that no agent is speaking anymore
+      (window as any).elevenLabsAgentSpeaking = false;
       return;
     }
 
@@ -544,6 +546,9 @@ class ElevenLabsConversationalService {
     const { buffer, context, conversationId } = ElevenLabsConversationalService.audioQueue.shift()!;
     
     console.log(`🎵 Playing audio chunk from conversation: ${conversationId}, remaining in queue: ${ElevenLabsConversationalService.audioQueue.length}`);
+    
+    // Signal that an agent is speaking
+    (window as any).elevenLabsAgentSpeaking = true;
     
     // Create and play audio source
     const source = context.createBufferSource();
