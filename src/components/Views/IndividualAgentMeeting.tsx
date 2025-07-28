@@ -25,6 +25,14 @@ const IndividualAgentMeeting: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [agentStatus, setAgentStatus] = useState<'idle' | 'listening' | 'thinking' | 'speaking'>('idle');
   const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([]);
+
+  // Debug: Watch for isRecording state changes
+  useEffect(() => {
+    console.log('🔍 isRecording state changed to:', isRecording, 'ref is:', isRecordingRef.current);
+    if (isRecording !== isRecordingRef.current) {
+      console.warn('⚠️ State/ref mismatch! isRecording:', isRecording, 'ref:', isRecordingRef.current);
+    }
+  }, [isRecording]);
   
   // Refs
   const elevenLabsServiceRef = useRef<ElevenLabsConversationalService | null>(null);
@@ -218,20 +226,30 @@ const IndividualAgentMeeting: React.FC = () => {
       setMeetingStarted(true);
       setAgentStatus('listening');
       
-      // Automatically start recording when meeting starts
-      console.log('🎤 About to setup audio recording...');
-             try {
-         await setupAudioRecording();
-         setIsRecording(true);
-         isRecordingRef.current = true;
-         console.log('🎤 Auto-started recording - isRecording should now be true');
-         // Check the state immediately after setting it
-         setTimeout(() => {
-           console.log('🎤 State check after setIsRecording - isRecording:', isRecording, 'ref:', isRecordingRef.current);
-         }, 100);
-       } catch (audioError) {
-         console.error('❌ Failed to setup audio recording:', audioError);
-       }
+              // Automatically start recording when meeting starts
+        console.log('🎤 About to setup audio recording...');
+        console.log('🎤 Current recording state before setup - isRecording:', isRecording, 'ref:', isRecordingRef.current);
+        try {
+          await setupAudioRecording();
+          console.log('🎤 Audio setup completed, now setting recording state...');
+          setIsRecording(true);
+          isRecordingRef.current = true;
+          console.log('🎤 Auto-started recording - state set to true, ref set to true');
+          console.log('🎤 Immediate check - isRecording:', isRecording, 'ref:', isRecordingRef.current);
+          
+          // Check the state after a delay
+          setTimeout(() => {
+            console.log('🎤 Delayed state check (100ms) - isRecording:', isRecording, 'ref:', isRecordingRef.current);
+          }, 100);
+          
+          // Check again after longer delay
+          setTimeout(() => {
+            console.log('🎤 Extended state check (1000ms) - isRecording:', isRecording, 'ref:', isRecordingRef.current);
+          }, 1000);
+        } catch (audioError) {
+          console.error('❌ Failed to setup audio recording:', audioError);
+          console.log('🎤 Recording state after error - isRecording:', isRecording, 'ref:', isRecordingRef.current);
+        }
       
       console.log(`✅ Meeting started with ${selectedStakeholder.name}`);
       
@@ -243,6 +261,7 @@ const IndividualAgentMeeting: React.FC = () => {
   // End meeting
   const endMeeting = useCallback(async () => {
     console.log('🛑 Ending individual agent meeting');
+    console.trace('🛑 END MEETING CALLED - Stack trace:');
     
     try {
       // Stop recording
@@ -286,6 +305,8 @@ const IndividualAgentMeeting: React.FC = () => {
       isRecordingRef.current = true;
       console.log('🎤 Started recording');
     } else {
+      console.log('🛑 Toggle recording - stopping recording');
+      console.trace('🛑 TOGGLE RECORDING STOP - Stack trace:');
       setIsRecording(false);
       isRecordingRef.current = false;
       console.log('🛑 Stopped recording');
