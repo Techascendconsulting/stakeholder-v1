@@ -228,7 +228,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     }
   }, [selectedStakeholders, activeConversations]);
 
-  // Voice activity detection
+  // Voice activity detection with improved sensitivity
   const detectVoiceActivity = useCallback(() => {
     if (!analyserRef.current) return false;
     
@@ -239,9 +239,18 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     // Calculate average volume
     const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
     
-    // Voice activity threshold (adjust as needed)
-    const threshold = 20;
-    return average > threshold;
+    // More sensitive threshold and peak detection
+    const threshold = 15; // Lower threshold for better detection
+    const peaks = dataArray.filter(value => value > 30).length; // Count peaks
+    
+    // Voice detected if average is above threshold OR we have significant peaks
+    const hasVoiceActivity = average > threshold || peaks > 10;
+    
+    if (hasVoiceActivity) {
+      console.log('🎤 Voice activity detected:', { average, peaks, threshold });
+    }
+    
+    return hasVoiceActivity;
   }, []);
 
   // Setup audio recording with voice detection
@@ -340,7 +349,12 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       processorNode.connect(audioContext.destination);
       
       // Store recording state
-      const startRecording = () => {
+      const startRecording = async () => {
+        // Immediately clear any playing audio when user starts speaking
+        const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
+        ElevenLabsConversationalService.clearAudioQueue();
+        console.log('🛑 Cleared audio queue on recording start');
+        
         isRecordingRef.value = true;
         setIsRecording(true);
         console.log('🎤 Started PCM recording at 16kHz');
@@ -385,24 +399,24 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     await Promise.all(promises);
   }, [activeConversations]);
 
-  // Auto interruption detection
+  // Auto interruption detection with aggressive audio clearing
   const startVoiceDetection = useCallback(() => {
     if (voiceDetectionIntervalRef.current) return;
     
-    voiceDetectionIntervalRef.current = setInterval(() => {
+    voiceDetectionIntervalRef.current = setInterval(async () => {
       if (detectVoiceActivity()) {
-        // User is speaking - interrupt agents if they're talking
-        const speakingAgents = Array.from(agentStatuses.entries())
-          .filter(([_, status]) => status === 'speaking')
-          .map(([agentId, _]) => agentId);
-          
-        if (speakingAgents.length > 0) {
-          console.log('🛑 Voice detected - interrupting agents');
-          interruptAgents();
-        }
+        // User is speaking - immediately interrupt all audio
+        console.log('🛑 Voice detected - immediately interrupting all audio');
+        
+        // Clear audio queue first (most important)
+        const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
+        ElevenLabsConversationalService.clearAudioQueue();
+        
+        // Then interrupt agents
+        interruptAgents();
       }
-    }, 100); // Check every 100ms
-  }, [detectVoiceActivity, agentStatuses, interruptAgents]);
+    }, 50); // Check every 50ms for faster interruption
+  }, [detectVoiceActivity, interruptAgents]);
 
   // Stop voice detection
   const stopVoiceDetection = useCallback(() => {
