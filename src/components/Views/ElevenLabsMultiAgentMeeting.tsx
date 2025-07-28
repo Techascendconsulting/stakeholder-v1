@@ -131,6 +131,20 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
   const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   const [meetingStarted, setMeetingStarted] = useState(false);
   const [fallbackAttempts, setFallbackAttempts] = useState(0);
+  
+  // Advanced queue management from VoiceOnlyMeetingView
+  const [responseQueue, setResponseQueue] = useState<{
+    current: string | null;
+    upcoming: { name: string; id?: string }[];
+  }>({ current: null, upcoming: [] });
+  
+  // Conversation dynamics for adaptive responses
+  const [conversationDynamics, setConversationDynamics] = useState({
+    phase: 'initial' as 'initial' | 'introduction_active' | 'discussion_active',
+    greetingIterations: 0,
+    leadSpeaker: null as any,
+    introducedMembers: new Set<string>()
+  });
 
 
   // Refs
@@ -250,10 +264,18 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
       // Reset instructions flag for new meeting
       (window as any).elevenLabsInstructionsSent = false;
       (window as any).elevenLabsStakeholders = {};
-      (window as any).isGreetingPhase = false;
-      (window as any).greetingQueue = [];
-      (window as any).lastGreetingAudio = null;
       (window as any).lastElevenLabsResponder = '';
+      
+      // Reset sophisticated queue system state
+      setConversationQueue([]);
+      setCurrentSpeaking(null);
+      setResponseQueue({ current: null, upcoming: [] });
+      setConversationDynamics({
+        phase: 'initial',
+        greetingIterations: 0,
+        leadSpeaker: null,
+        introducedMembers: new Set<string>()
+      });
 
       const newConversations = new Map<string, string>();
 
@@ -333,31 +355,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
                 // Process stakeholder responses with smart conversation management
                 console.log(`📝 ${stakeholder.name} responded: ${message.content.substring(0, 50)}...`);
                 
-                // Check if we're in greeting phase and need to continue sequential greetings
-                if ((window as any).isGreetingPhase && (window as any).greetingQueue?.length > 0) {
-                  console.log('🔄 DEBUG: Continuing sequential greeting');
-                  setTimeout(async () => {
-                    const nextStakeholderId = (window as any).greetingQueue.shift();
-                    if (nextStakeholderId && conversationalServiceRef.current) {
-                      try {
-                        // Get the original greeting audio (stored from first input)
-                        const greetingAudio = (window as any).lastGreetingAudio;
-                        if (greetingAudio) {
-                          await conversationalServiceRef.current.sendAudioInputPCM(nextStakeholderId, greetingAudio);
-                          console.log(`📤 SUCCESS: Sent greeting to next stakeholder: ${nextStakeholderId}`);
-                        }
-                      } catch (error) {
-                        console.error('❌ FAILED: Sequential greeting:', error);
-                      }
-                      
-                      // End greeting phase when queue is empty
-                      if ((window as any).greetingQueue.length === 0) {
-                        (window as any).isGreetingPhase = false;
-                        console.log('✅ DEBUG: Sequential greeting phase completed');
-                      }
-                    }
-                  }, 2000); // Wait 2 seconds between greetings
-                }
+                // Sophisticated queue system handles greeting continuation automatically
                 
                 // Use intelligent response management to prevent over-talking while allowing natural flow
                 handleIntelligentStakeholderResponse(stakeholder, message.content);
@@ -470,6 +468,150 @@ SYSTEM_REMINDER_END`;
       }
     });
   }, [activeConversations]);
+
+  // Sophisticated stakeholder response processing from VoiceOnlyMeetingView
+  const processDynamicStakeholderResponse = useCallback(async (
+    stakeholder: any, 
+    messageContent: string, 
+    responseContext: string,
+    audioData?: string
+  ): Promise<void> => {
+    console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} starting processDynamicStakeholderResponse`);
+    console.log(`🚀 QUEUE DEBUG: Current speaker before: ${currentSpeaking}`);
+    console.log(`🚀 QUEUE DEBUG: Current queue before: [${conversationQueue.join(', ')}]`);
+    
+    try {
+      // Add to conversation queue to prevent simultaneous speaking
+      setConversationQueue(prev => {
+        const newQueue = [...prev, stakeholder.id];
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} added to queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
+      
+      // Wait for turn if someone else is speaking
+      let waitCount = 0;
+      while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
+        waitCount++;
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Safety break after 100 attempts (10 seconds)
+        if (waitCount > 100) {
+          console.error(`🚨 QUEUE ERROR: ${stakeholder.name} waited too long! Breaking wait loop.`);
+          break;
+        }
+      }
+      
+      // Start speaking
+      console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} now taking turn to speak`);
+      setCurrentSpeaking(stakeholder.id);
+      
+      // Find the conversation ID for this stakeholder
+      const conversationId = Array.from(activeConversations.entries())
+        .find(([stakeholderId, _]) => stakeholderId === stakeholder.id)?.[1];
+      
+      if (conversationId && conversationalServiceRef.current && audioData) {
+        const service = conversationalServiceRef.current;
+        const isActive = service.isSessionActive(conversationId);
+        
+        if (isActive) {
+          try {
+            await service.sendAudioInputPCM(conversationId, audioData);
+            console.log(`✅ SUCCESS: Sent audio to ${stakeholder.name} via sophisticated queue`);
+          } catch (error) {
+            console.error(`❌ FAILED: Audio to ${stakeholder.name}:`, error);
+          }
+        } else {
+          console.warn(`⚠️ SKIP: ${stakeholder.name} connection not active in queue processing`);
+        }
+      }
+      
+      // Wait for response (simulate processing time)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Finish speaking
+      console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} finished speaking, clearing currentSpeaking`);
+      setCurrentSpeaking(null);
+      setConversationQueue(prev => {
+        const newQueue = prev.filter(id => id !== stakeholder.id);
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} removed from queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
+      
+    } catch (error) {
+      console.error(`🚨 QUEUE ERROR: Error in ${stakeholder.name} response:`, error);
+      
+      // Clean up conversation state on error
+      console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} error cleanup - clearing currentSpeaking`);
+      setCurrentSpeaking(null);
+      setConversationQueue(prev => {
+        const newQueue = prev.filter(id => id !== stakeholder.id);
+        console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} error cleanup - removed from queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
+      
+      throw error;
+    }
+  }, [currentSpeaking, conversationQueue, activeConversations, conversationalServiceRef]);
+
+  // Adaptive greeting handling from VoiceOnlyMeetingView
+  const handleAdaptiveGreeting = useCallback(async (audioData: string): Promise<void> => {
+    const greetingIteration = conversationDynamics.greetingIterations + 1;
+    
+    console.log(`👋 Adaptive greeting - iteration ${greetingIteration}, phase: ${conversationDynamics.phase}`);
+    console.log(`👥 Total stakeholders in meeting: ${selectedStakeholders.length}`);
+
+    if (greetingIteration === 1 || conversationDynamics.introducedMembers.size === 0) {
+      console.log(`🎯 Processing greeting for ALL ${selectedStakeholders.length} stakeholders`);
+      
+      // Set up response queue UI
+      setResponseQueue({
+        current: selectedStakeholders[0]?.name || null,
+        upcoming: selectedStakeholders.slice(1).map(s => ({ name: s.name, id: s.id }))
+      });
+      
+      // Process all stakeholders sequentially
+      for (let i = 0; i < selectedStakeholders.length; i++) {
+        const stakeholder = selectedStakeholders[i];
+        const responseType = i === 0 ? 'introduction_lead' : 'self_introduction';
+        
+        console.log(`✅ About to trigger greeting response for: ${stakeholder.name} (${i + 1}/${selectedStakeholders.length})`);
+        
+        await processDynamicStakeholderResponse(
+          stakeholder, 
+          'greeting', 
+          responseType,
+          audioData
+        );
+        
+        console.log(`✅ Completed greeting response for: ${stakeholder.name}`);
+        
+        // Update conversation dynamics
+        setConversationDynamics(prev => ({
+          ...prev,
+          phase: 'introduction_active',
+          leadSpeaker: i === 0 ? stakeholder : prev.leadSpeaker,
+          greetingIterations: greetingIteration,
+          introducedMembers: new Set([...prev.introducedMembers, stakeholder.id])
+        }));
+        
+        // Update response queue - move to next stakeholder
+        if (i < selectedStakeholders.length - 1) {
+          setResponseQueue(prev => ({
+            current: prev.upcoming[0]?.name || null,
+            upcoming: prev.upcoming.slice(1)
+          }));
+          
+          console.log(`⏸️ Pausing 2s before next stakeholder greeting`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+      
+      // Clear response queue when complete
+      setResponseQueue({ current: null, upcoming: [] });
+      console.log(`🏁 All ${selectedStakeholders.length} stakeholders have completed their greetings`);
+    }
+  }, [conversationDynamics, selectedStakeholders, processDynamicStakeholderResponse]);
 
   // Select the best stakeholder to handle the user's audio input
   const selectBestStakeholderForAudio = useCallback((activeIds: string[]) => {
@@ -825,144 +967,62 @@ Now listen to what the user is saying and participate naturally in this business
                                      // Use the same isFirstUserInput check from above
             
             if (isFirstUserInput) {
-              console.log('👋 DEBUG: First user input - using SEQUENTIAL greeting to prevent talking over each other', {
+              console.log('👋 DEBUG: First user input - using SOPHISTICATED QUEUING SYSTEM', {
                 activeIds,
-                stakeholderCount: activeIds.length
+                stakeholderCount: activeIds.length,
+                phase: conversationDynamics.phase
               });
               
-              // SEQUENTIAL greeting: Send to first stakeholder only, others will follow after response
-              const firstActiveId = activeIds.find(id => service.isSessionActive(id));
-              if (firstActiveId) {
-                try {
-                  // Store greeting audio for sequential use
-                  (window as any).lastGreetingAudio = base64;
-                  
-                  await service.sendAudioInputPCM(firstActiveId, base64);
-                  console.log(`📤 SUCCESS: Sent greeting audio to FIRST stakeholder: ${firstActiveId}`);
-                  
-                  // Set up sequential greeting chain
-                  (window as any).greetingQueue = activeIds.filter(id => 
-                    id !== firstActiveId && service.isSessionActive(id)
-                  );
-                  (window as any).isGreetingPhase = true;
-                  console.log('🔄 DEBUG: Greeting queue set up:', (window as any).greetingQueue);
-                  
-                } catch (error) {
-                  console.error(`❌ FAILED: First greeting:`, error);
-                }
-              } else {
-                console.error('❌ CRITICAL: No active stakeholders for greeting');
+              // Use sophisticated adaptive greeting system
+              try {
+                await handleAdaptiveGreeting(base64);
+                console.log('✅ SUCCESS: Sophisticated greeting system completed');
+              } catch (error) {
+                console.error('❌ FAILED: Sophisticated greeting system:', error);
               }
-                          } else {
-                // For subsequent inputs, use smart routing with fallback
-                const selectedConversationId = selectBestStakeholderForAudio(activeIds);
-                
-                console.log('🔍 DEBUG: Smart routing for subsequent input', {
-                  selectedConversationId,
+                                        } else {
+                // For subsequent inputs, use sophisticated queue system
+                console.log('🔍 DEBUG: Subsequent input - using sophisticated queue system', {
                   availableIds: activeIds,
-                  lastResponder: (window as any).lastElevenLabsResponder
+                  conversationPhase: conversationDynamics.phase,
+                  currentSpeaking,
+                  queueLength: conversationQueue.length
                 });
                 
-                if (selectedConversationId) {
+                // Select best stakeholder using existing logic
+                const selectedConversationId = selectBestStakeholderForAudio(activeIds);
+                const selectedStakeholder = selectedStakeholders.find(s => 
+                  activeConversations.get(s.id) === selectedConversationId
+                );
+                
+                if (selectedStakeholder) {
+                  console.log(`🎯 DEBUG: Selected ${selectedStakeholder.name} for sophisticated queue processing`);
+                  
                   try {
-                    const isActive = service.isSessionActive(selectedConversationId);
-                    console.log(`🔍 DEBUG: Selected stakeholder connection check:`, { 
-                      conversationId: selectedConversationId, 
-                      isActive 
-                    });
+                    // Use sophisticated queue system instead of direct audio sending
+                    await processDynamicStakeholderResponse(
+                      selectedStakeholder,
+                      'user_question',
+                      'general_question',
+                      base64
+                    );
+                    console.log(`✅ SUCCESS: Sophisticated queue processing completed for ${selectedStakeholder.name}`);
+                  } catch (error) {
+                    console.error(`❌ FAILED: Sophisticated queue processing:`, error);
                     
-                    if (isActive) {
-                      await service.sendAudioInputPCM(selectedConversationId, base64);
-                      console.log(`🎯 SUCCESS: Sent audio to selected stakeholder: ${selectedConversationId}`);
-                                         } else {
-                       console.warn(`⚠️ SKIP: Selected stakeholder connection not active: ${selectedConversationId}`);
-                       
-                                               // Try to find ANY active connection instead of giving up
-                        const anyActiveId = activeIds.find(id => service.isSessionActive(id));
-                        if (anyActiveId) {
-                          console.log(`🔄 DEBUG: Trying any active connection: ${anyActiveId}`);
-                          try {
-                            await service.sendAudioInputPCM(anyActiveId, base64);
-                            console.log(`✅ SUCCESS: Sent audio to any active stakeholder: ${anyActiveId}`);
-                            
-                            // Still set up fallback for this case
-                            // Don't return here - let fallback logic run
-                          } catch (error) {
-                            console.error(`❌ FAILED: Any active stakeholder:`, error);
-                            return; // Only return on actual failure
-                          }
-                        } else {
-                          console.error(`❌ CRITICAL: No active connections available!`);
-                          return; // Don't set up fallback if no connections
-                        }
-                     }
-                  
-                                     // Set up fallback timer in case no response (limit attempts)
-                                        setTimeout(async () => {
-                       const recentResponses = conversationHistory.filter(msg => 
-                         msg.type === 'agent_response' && 
-                         Date.now() - msg.timestamp.getTime() < 8000
-                       );
-                       
-                       console.log('🔍 DEBUG: Fallback timer triggered', {
-                         recentResponsesCount: recentResponses.length,
-                         fallbackAttempts,
-                         maxAttempts: 2,
-                         shouldTryFallback: recentResponses.length === 0 && fallbackAttempts < 2
-                       });
-                       
-                       if (recentResponses.length === 0 && fallbackAttempts < 2) {
-                         console.log(`⚠️ DEBUG: No response detected - checking for active fallback stakeholders (attempt ${fallbackAttempts + 1}/2)`);
-                         
-                         // Find active fallback stakeholders (check current active conversations)
-                         const currentActiveIds = Array.from(activeConversations.values());
-                         const fallbackId = currentActiveIds.find(id => id !== selectedConversationId);
-                         
-                         console.log('🔍 DEBUG: Fallback selection', {
-                           currentActiveIds,
-                           selectedConversationId,
-                           fallbackId,
-                           hasService: !!conversationalServiceRef.current
-                         });
-                         
-                         if (fallbackId && conversationalServiceRef.current) {
-                           try {
-                             // Verify the connection is still active before sending
-                             const isActive = conversationalServiceRef.current.isSessionActive(fallbackId);
-                             console.log(`🔍 DEBUG: Fallback connection check:`, { fallbackId, isActive });
-                             
-                             if (isActive) {
-                               setFallbackAttempts(prev => prev + 1);
-                               await conversationalServiceRef.current.sendAudioInputPCM(fallbackId, base64);
-                               console.log(`🔄 SUCCESS: Sent fallback audio to active stakeholder: ${fallbackId}`);
-                             } else {
-                               console.log('⚠️ SKIP: Fallback stakeholder connection is not active');
-                             }
-                           } catch (error) {
-                             console.error('❌ FAILED: Fallback attempt:', error);
-                           }
-                         } else {
-                           console.log('⚠️ DEBUG: No active fallback stakeholders available');
-                         }
-                       } else if (fallbackAttempts >= 2) {
-                         console.log('⚠️ DEBUG: Maximum fallback attempts reached - stopping');
-                       } else {
-                         console.log('✅ DEBUG: Recent response found - no fallback needed');
-                       }
-                     }, 5000); // Wait 5 seconds for response
-                  
-                } catch (error) {
-                  // If conversation ended, remove it from active list
-                  if (error.message.includes('No active session')) {
-                    console.log('🔌 Conversation ended, removing from active list');
-                    activeConversations.forEach((id, key) => {
-                      if (id === selectedConversationId) {
-                        activeConversations.delete(key);
+                    // Fallback to direct audio sending if queue system fails
+                    if (selectedConversationId && service.isSessionActive(selectedConversationId)) {
+                      try {
+                        await service.sendAudioInputPCM(selectedConversationId, base64);
+                        console.log(`🔄 FALLBACK: Direct audio sent to ${selectedStakeholder.name}`);
+                      } catch (fallbackError) {
+                        console.error(`❌ FALLBACK FAILED:`, fallbackError);
                       }
-                    });
+                    }
                   }
+                } else {
+                  console.error('❌ CRITICAL: Could not find selected stakeholder for queue processing');
                 }
-                             }
              }
              
              // UNLOCK: Allow next audio processing
