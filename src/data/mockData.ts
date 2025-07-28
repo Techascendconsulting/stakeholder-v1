@@ -242,7 +242,8 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'People-focused, collaborative, change management expert',
     priorities: ['Employee engagement', 'Change management', 'Training effectiveness'],
     expertise: ['HR business partnering', 'HR strategy alignment', 'Change management', 'Employee engagement', 'Organizational development'],
-    voice: 'en-GB-LibbyNeural'
+    voice: 'en-GB-LibbyNeural',
+    agentId: 'bVMeCyTHy18fd5WBVXJR' // ElevenLabs agent ID
   },
   {
     id: 'stake-5',
@@ -254,6 +255,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Detail-oriented, risk-aware, compliance-focused',
     priorities: ['Regulatory compliance', 'Risk mitigation', 'Policy adherence'],
     expertise: ['Regulatory compliance', 'Risk assessment', 'Policy development', 'Compliance management', 'Risk mitigation strategies'],
-    voice: 'en-GB-AbbiNeural'
+    voice: 'en-GB-AbbiNeural',
+    agentId: 'cgSgspJ2msm6clMCkdW9' // ElevenLabs agent ID
   }
 ]
