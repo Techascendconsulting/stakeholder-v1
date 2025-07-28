@@ -375,7 +375,7 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
     if (!conversationalServiceRef.current) return;
 
     // Clear any playing audio immediately
-    const { ElevenLabsConversationalService } = await import('../../../services/elevenLabsConversationalService');
+    const { ElevenLabsConversationalService } = await import('../../services/elevenLabsConversationalService');
     ElevenLabsConversationalService.clearAudioQueue();
 
     const service = conversationalServiceRef.current;
