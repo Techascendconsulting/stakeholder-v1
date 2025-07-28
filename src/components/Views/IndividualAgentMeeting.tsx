@@ -98,7 +98,9 @@ export const IndividualAgentMeeting: React.FC = () => {
     try {
       // Stop recording
       if (mediaRecorderRef.current && isRecording) {
-        mediaRecorderRef.current.stop();
+        if (mediaRecorderRef.current.audioContext) {
+          mediaRecorderRef.current.audioContext.close();
+        }
         setIsRecording(false);
       }
       
@@ -263,16 +265,17 @@ export const IndividualAgentMeeting: React.FC = () => {
     }
   }, []);
 
-  // Toggle recording
-  const toggleRecording = useCallback(async () => {
+  // Start recording once - stays on until meeting ends
+  const startRecording = useCallback(async () => {
     if (!mediaRecorderRef.current) {
       await setupAudioRecording();
-      return;
-    }
-
-    if (isRecording) {
-      mediaRecorderRef.current.stop();
-    } else {
+      // After setup, start recording immediately
+      setTimeout(() => {
+        if (mediaRecorderRef.current && !isRecording) {
+          mediaRecorderRef.current.start();
+        }
+      }, 100);
+    } else if (!isRecording) {
       mediaRecorderRef.current.start();
     }
   }, [isRecording, setupAudioRecording]);
@@ -530,23 +533,19 @@ export const IndividualAgentMeeting: React.FC = () => {
               <div className="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 p-4">
                 <div className="flex items-center justify-center space-x-6">
                   
-                  {/* Recording Button */}
+                  {/* Recording Button - Click once to start, stays on */}
                   <button
-                    onClick={toggleRecording}
-                    disabled={!meetingStarted}
+                    onClick={startRecording}
+                    disabled={!meetingStarted || isRecording}
                     className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
                       isRecording
-                        ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg scale-110 animate-pulse'
+                        ? 'bg-green-500 text-white shadow-lg animate-pulse cursor-default'
                         : !meetingStarted
                         ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed'
                         : 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:scale-105'
                     }`}
                   >
-                    {isRecording ? (
-                      <Square className="w-6 h-6" />
-                    ) : (
-                      <Mic className="w-6 h-6" />
-                    )}
+                    <Mic className="w-6 h-6" />
                   </button>
 
                   {/* Mute Toggle */}
@@ -580,7 +579,7 @@ export const IndividualAgentMeeting: React.FC = () => {
                       ? 'Start the meeting to begin conversation with individual AI agents'
                       : isRecording 
                       ? 'Speak naturally - agents will respond and ask questions like real humans'
-                      : 'Click the microphone to start speaking'
+                      : 'Click the microphone once to start listening - it will stay on until you end the meeting'
                     }
                   </p>
                 </div>
