@@ -33,18 +33,6 @@ export interface MeetingContext {
   currentTopic: string;
   userQuestion: string;
   lastSpeaker: string | null;
-  conversationQueue: QueuedResponse[];
-  currentSpeaking: string | null;
-  isProcessingQueue: boolean;
-}
-
-export interface QueuedResponse {
-  agentId: string;
-  agentName: string;
-  priority: number;
-  timestamp: number;
-  audioData: string;
-  context: string;
 }
 
 export interface ConversationMessage {
@@ -66,6 +54,11 @@ export class IndividualAgentService {
   private agentConnections: Map<string, string> = new Map(); // agentId -> conversationId
   private meetingContext: MeetingContext | null = null;
   private elevenLabsService: ElevenLabsConversationalService;
+  
+  // Queue system - EXACT COPY from voice-only meeting
+  private conversationQueue: string[] = [];
+  private currentSpeaking: string | null = null;
+  private onStatusChange: ((agentId: string, status: string) => void) | null = null;
 
   private constructor() {
     this.elevenLabsService = ElevenLabsConversationalService.getInstance();
@@ -108,11 +101,11 @@ export class IndividualAgentService {
     });
   }
 
-     /**
-    * Generate ElevenLabs-style system prompt for individual agent
-    */
-   private generateSystemPrompt(stakeholder: any): string {
-     return `# Personality
+  /**
+   * Generate ElevenLabs-style system prompt for individual agent
+   */
+  private generateSystemPrompt(stakeholder: any): string {
+    return `# Personality
 
 You are ${stakeholder.name}, a ${stakeholder.role} at this company.
 You have deep expertise in ${stakeholder.department} and are known for being ${stakeholder.personality}.
@@ -281,6 +274,7 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
     onStatusChange: (agentId: string, status: string) => void
   ): Promise<Map<string, string>> {
     const connections = new Map<string, string>();
+    this.onStatusChange = onStatusChange;
 
     // Initialize meeting context
     this.meetingContext = {
@@ -289,11 +283,12 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
       sharedHistory: [],
       currentTopic: '',
       userQuestion: '',
-      lastSpeaker: null,
-      conversationQueue: [],
-      currentSpeaking: null,
-      isProcessingQueue: false
+      lastSpeaker: null
     };
+
+    // Reset queue state
+    this.conversationQueue = [];
+    this.currentSpeaking = null;
 
     // Start individual conversation for each agent
     for (const agent of agentConfigs) {
@@ -351,7 +346,7 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
   }
 
   /**
-   * Send user input to appropriate agent(s) with queue processing (EXACT COPY from voice-only)
+   * Send user input to appropriate agent(s) with queue processing - EXACT COPY from voice-only
    */
   public async processUserInput(
     audioData: string,
@@ -371,7 +366,7 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
     
     console.log(`🎯 Routing user input to agents: ${targetAgents.join(', ')}`);
 
-    // Process each agent through the queue system (ONE AT A TIME)
+    // Process each agent through the queue system (ONE AT A TIME) - EXACT COPY from voice-only
     for (const agentId of targetAgents) {
       const agent = this.activeAgents.get(agentId);
       if (agent) {
@@ -381,45 +376,42 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
   }
 
   /**
-   * Process agent response with queue system (EXACT COPY from voice-only)
+   * Process agent response with queue system - EXACT COPY from voice-only meeting
    */
   private async processDynamicAgentResponse(agent: IndividualAgentConfig, audioData: string, userMessage: string): Promise<void> {
     if (!this.meetingContext) return;
 
     console.log(`🚀 QUEUE DEBUG: ${agent.name} starting processDynamicAgentResponse`);
-    console.log(`🚀 QUEUE DEBUG: Current speaker before: ${this.meetingContext.currentSpeaking}`);
-    console.log(`🚀 QUEUE DEBUG: Current queue before: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
+    console.log(`🚀 QUEUE DEBUG: Current speaker before: ${this.currentSpeaking}`);
+    console.log(`🚀 QUEUE DEBUG: Current queue before: [${this.conversationQueue.join(', ')}]`);
     
     try {
-      // Add to conversation queue to prevent simultaneous speaking
-      this.meetingContext.conversationQueue.push({
-        agentId: agent.id,
-        agentName: agent.name,
-        priority: 1,
-        timestamp: Date.now(),
-        audioData,
-        context: userMessage
-      });
+      // Add to conversation queue to prevent simultaneous speaking - EXACT COPY
+      this.conversationQueue = [...this.conversationQueue, agent.id];
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} added to queue. New queue: [${this.conversationQueue.join(', ')}]`);
       
-      console.log(`🚀 QUEUE DEBUG: ${agent.name} added to queue. New queue: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
-      
-      // Wait for turn if someone else is speaking
+      // Wait for turn if someone else is speaking - EXACT COPY
       let waitCount = 0;
-      while (this.meetingContext.currentSpeaking !== null && this.meetingContext.currentSpeaking !== agent.id) {
+      while (this.currentSpeaking !== null && this.currentSpeaking !== agent.id) {
         waitCount++;
-        console.log(`🚀 QUEUE DEBUG: ${agent.name} waiting (attempt ${waitCount}). Current speaker: ${this.meetingContext.currentSpeaking}`);
+        console.log(`🚀 QUEUE DEBUG: ${agent.name} waiting (attempt ${waitCount}). Current speaker: ${this.currentSpeaking}`);
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Safety break after 100 attempts (10 seconds)
+        // Safety break after 100 attempts (10 seconds) - EXACT COPY
         if (waitCount > 100) {
           console.error(`🚨 QUEUE ERROR: ${agent.name} waited too long! Breaking wait loop.`);
           break;
         }
       }
       
-      // Start speaking
+      // Start speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${agent.name} now taking turn to speak`);
-      this.meetingContext.currentSpeaking = agent.id;
+      this.currentSpeaking = agent.id;
+      
+      // Notify UI of speaking status
+      if (this.onStatusChange) {
+        this.onStatusChange(agent.id, 'speaking');
+      }
       
       // Send audio to this agent
       const conversationId = this.agentConnections.get(agent.id);
@@ -438,27 +430,37 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
           console.log(`📤 Sent audio to ${agent.name}`);
           
           // Wait for response to complete (simulate response time)
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
           
         } catch (error) {
           console.error(`❌ Failed to send audio to ${agent.name}:`, error);
         }
       }
       
-      // Finish speaking
+      // Finish speaking - EXACT COPY from voice-only
       console.log(`🚀 QUEUE DEBUG: ${agent.name} finished speaking, clearing currentSpeaking`);
-      this.meetingContext.currentSpeaking = null;
-      this.meetingContext.conversationQueue = this.meetingContext.conversationQueue.filter(q => q.agentId !== agent.id);
-      console.log(`🚀 QUEUE DEBUG: ${agent.name} removed from queue. New queue: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
+      this.currentSpeaking = null;
+      this.conversationQueue = this.conversationQueue.filter(id => id !== agent.id);
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} removed from queue. New queue: [${this.conversationQueue.join(', ')}]`);
+      
+      // Notify UI of listening status
+      if (this.onStatusChange) {
+        this.onStatusChange(agent.id, 'listening');
+      }
       
     } catch (error) {
       console.error(`🚨 QUEUE ERROR: Error in ${agent.name} response:`, error);
       
-      // Clean up conversation state on error
+      // Clean up conversation state on error - EXACT COPY from voice-only
       console.log(`🚀 QUEUE DEBUG: ${agent.name} error cleanup - clearing currentSpeaking`);
-      this.meetingContext.currentSpeaking = null;
-      this.meetingContext.conversationQueue = this.meetingContext.conversationQueue.filter(q => q.agentId !== agent.id);
-      console.log(`🚀 QUEUE DEBUG: ${agent.name} error cleanup - removed from queue. New queue: [${this.meetingContext.conversationQueue.map(q => q.agentName).join(', ')}]`);
+      this.currentSpeaking = null;
+      this.conversationQueue = this.conversationQueue.filter(id => id !== agent.id);
+      console.log(`🚀 QUEUE DEBUG: ${agent.name} error cleanup - removed from queue. New queue: [${this.conversationQueue.join(', ')}]`);
+      
+      // Notify UI of error status
+      if (this.onStatusChange) {
+        this.onStatusChange(agent.id, 'error');
+      }
       
       throw error;
     }
@@ -511,22 +513,22 @@ Your responses should reflect your individual expertise in ${stakeholder.departm
     return selectedAgents;
   }
 
-     /**
-    * Generate contextual prompt for agent
-    */
-   private generateContextualPrompt(agent: IndividualAgentConfig, userMessage: string): string {
-     if (!this.meetingContext) return '';
+  /**
+   * Generate contextual prompt for agent
+   */
+  private generateContextualPrompt(agent: IndividualAgentConfig, userMessage: string): string {
+    if (!this.meetingContext) return '';
 
-     const recentHistory = this.meetingContext.sharedHistory
-       .slice(-3)
-       .map(msg => `${msg.agentName || 'User'}: ${msg.content}`)
-       .join('\n');
+    const recentHistory = this.meetingContext.sharedHistory
+      .slice(-3)
+      .map(msg => `${msg.agentName || 'User'}: ${msg.content}`)
+      .join('\n');
 
-     // Determine if this should encourage questioning behavior
-     const shouldEncourageQuestions = this.shouldEncourageQuestions(userMessage, agent);
-     const questionPrompts = this.generateQuestionPrompts(userMessage, agent);
+    // Determine if this should encourage questioning behavior
+    const shouldEncourageQuestions = this.shouldEncourageQuestions(userMessage, agent);
+    const questionPrompts = this.generateQuestionPrompts(userMessage, agent);
 
-     return `[CONTEXT UPDATE - HUMAN BEHAVIOR MODE]
+    return `[CONTEXT UPDATE - HUMAN BEHAVIOR MODE]
 Recent conversation:
 ${recentHistory}
 
@@ -545,82 +547,82 @@ Remember: Real humans ask questions when they're curious, need clarification, or
 Respond with your expertise in ${agent.department}, but ALSO show natural human curiosity and engagement. Ask follow-up questions if something interests you or if you need more information to provide better input.
 
 Be genuinely human - show interest, ask questions, seek clarification, and engage naturally.`;
-   }
+  }
 
-   /**
-    * Determine if agent should be encouraged to ask questions
-    */
-   private shouldEncourageQuestions(userMessage: string, agent: IndividualAgentConfig): boolean {
-     const message = userMessage.toLowerCase();
-     
-     // Encourage questions for vague or complex topics
-     if (message.includes('problem') || message.includes('issue') || message.includes('challenge')) {
-       return true;
-     }
-     
-     // Encourage questions for proposals or changes
-     if (message.includes('should we') || message.includes('what if') || message.includes('propose')) {
-       return true;
-     }
-     
-     // Encourage questions for topics related to their expertise
-     const expertise = agent.expertise.join(' ').toLowerCase();
-     const department = agent.department.toLowerCase();
-     
-     if (message.includes(department) || expertise.split(' ').some(skill => message.includes(skill))) {
-       return true;
-     }
-     
-     return false;
-   }
+  /**
+   * Determine if agent should be encouraged to ask questions
+   */
+  private shouldEncourageQuestions(userMessage: string, agent: IndividualAgentConfig): boolean {
+    const message = userMessage.toLowerCase();
+    
+    // Encourage questions for vague or complex topics
+    if (message.includes('problem') || message.includes('issue') || message.includes('challenge')) {
+      return true;
+    }
+    
+    // Encourage questions for proposals or changes
+    if (message.includes('should we') || message.includes('what if') || message.includes('propose')) {
+      return true;
+    }
+    
+    // Encourage questions for topics related to their expertise
+    const expertise = agent.expertise.join(' ').toLowerCase();
+    const department = agent.department.toLowerCase();
+    
+    if (message.includes(department) || expertise.split(' ').some(skill => message.includes(skill))) {
+      return true;
+    }
+    
+    return false;
+  }
 
-   /**
-    * Generate specific question prompts based on context
-    */
-   private generateQuestionPrompts(userMessage: string, agent: IndividualAgentConfig): string {
-     const message = userMessage.toLowerCase();
-     const prompts: string[] = [];
+  /**
+   * Generate specific question prompts based on context
+   */
+  private generateQuestionPrompts(userMessage: string, agent: IndividualAgentConfig): string {
+    const message = userMessage.toLowerCase();
+    const prompts: string[] = [];
 
-     // Role-specific question patterns
-     switch (agent.role.toLowerCase()) {
-       case 'customer success manager':
-         if (message.includes('customer') || message.includes('client')) {
-           prompts.push("- Ask about customer impact: 'How will this affect our customers?'");
-           prompts.push("- Seek specifics: 'Which customer segments are we talking about?'");
-           prompts.push("- Inquire about metrics: 'What does success look like from a customer perspective?'");
-         }
-         break;
-         
-       case 'customer service manager':
-         if (message.includes('service') || message.includes('support')) {
-           prompts.push("- Ask about implementation: 'How would we roll this out to the support team?'");
-           prompts.push("- Seek timeline: 'What's the timeline for implementing this?'");
-           prompts.push("- Inquire about training: 'Would this require additional training for our team?'");
-         }
-         break;
-         
-       case 'technical lead':
-         if (message.includes('system') || message.includes('technical')) {
-           prompts.push("- Ask about technical details: 'What are the technical requirements for this?'");
-           prompts.push("- Seek architecture info: 'How does this fit with our current architecture?'");
-           prompts.push("- Inquire about scalability: 'Can this scale with our growth projections?'");
-         }
-         break;
-     }
+    // Role-specific question patterns
+    switch (agent.role.toLowerCase()) {
+      case 'customer success manager':
+        if (message.includes('customer') || message.includes('client')) {
+          prompts.push("- Ask about customer impact: 'How will this affect our customers?'");
+          prompts.push("- Seek specifics: 'Which customer segments are we talking about?'");
+          prompts.push("- Inquire about metrics: 'What does success look like from a customer perspective?'");
+        }
+        break;
+        
+      case 'customer service manager':
+        if (message.includes('service') || message.includes('support')) {
+          prompts.push("- Ask about implementation: 'How would we roll this out to the support team?'");
+          prompts.push("- Seek timeline: 'What's the timeline for implementing this?'");
+          prompts.push("- Inquire about training: 'Would this require additional training for our team?'");
+        }
+        break;
+        
+      case 'technical lead':
+        if (message.includes('system') || message.includes('technical')) {
+          prompts.push("- Ask about technical details: 'What are the technical requirements for this?'");
+          prompts.push("- Seek architecture info: 'How does this fit with our current architecture?'");
+          prompts.push("- Inquire about scalability: 'Can this scale with our growth projections?'");
+        }
+        break;
+    }
 
-     // General human curiosity prompts
-     if (message.includes('problem') || message.includes('issue')) {
-       prompts.push("- Show curiosity: 'Can you tell me more about what's causing this?'");
-       prompts.push("- Seek context: 'How long has this been an issue?'");
-     }
+    // General human curiosity prompts
+    if (message.includes('problem') || message.includes('issue')) {
+      prompts.push("- Show curiosity: 'Can you tell me more about what's causing this?'");
+      prompts.push("- Seek context: 'How long has this been an issue?'");
+    }
 
-     if (message.includes('solution') || message.includes('idea')) {
-       prompts.push("- Ask for details: 'What would that look like in practice?'");
-       prompts.push("- Inquire about alternatives: 'Have we considered other approaches?'");
-     }
+    if (message.includes('solution') || message.includes('idea')) {
+      prompts.push("- Ask for details: 'What would that look like in practice?'");
+      prompts.push("- Inquire about alternatives: 'Have we considered other approaches?'");
+    }
 
-     return prompts.length > 0 ? prompts.join('\n') : "- Ask natural follow-up questions based on your professional curiosity and expertise.";
-   }
+    return prompts.length > 0 ? prompts.join('\n') : "- Ask natural follow-up questions based on your professional curiosity and expertise.";
+  }
 
   /**
    * Extract topic from user message
@@ -643,6 +645,10 @@ Be genuinely human - show interest, ask questions, seek clarification, and engag
   public async endMeeting(): Promise<void> {
     console.log('🛑 Ending individual agent meeting');
     
+    // Clear queue state - EXACT COPY from voice-only
+    this.conversationQueue = [];
+    this.currentSpeaking = null;
+    
     // End all agent conversations
     for (const [agentId, conversationId] of this.agentConnections) {
       try {
@@ -657,6 +663,7 @@ Be genuinely human - show interest, ask questions, seek clarification, and engag
     this.agentConnections.clear();
     this.activeAgents.clear();
     this.meetingContext = null;
+    this.onStatusChange = null;
   }
 
   /**
