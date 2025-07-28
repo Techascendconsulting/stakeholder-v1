@@ -190,14 +190,31 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
 
   // Detect which stakeholder is speaking from message content
   const detectSpeakingStakeholder = useCallback((content: string, stakeholders: ElevenLabsStakeholder[]) => {
-    // Look for "[Name]:" pattern at the start of messages
+    const lowerContent = content.toLowerCase();
+    
+    // Look for role-based indicators and expertise keywords
     for (const stakeholder of stakeholders) {
-      if (content.includes(`[${stakeholder.name}]:`)) {
+      const indicators = [
+        // Role-based
+        stakeholder.role.toLowerCase(),
+        // Name-based (without brackets)
+        stakeholder.name.toLowerCase(),
+        // Expertise keywords based on roles
+        ...(stakeholder.role.includes('Customer') ? ['customer', 'user experience', 'ux', 'user satisfaction'] : []),
+        ...(stakeholder.role.includes('Business') ? ['business', 'process', 'operational', 'efficiency'] : []),
+        ...(stakeholder.role.includes('IT') || stakeholder.role.includes('Systems') ? ['technical', 'it', 'system', 'implementation', 'development'] : [])
+      ];
+      
+      // Check if any indicators are present
+      if (indicators.some(indicator => lowerContent.includes(indicator))) {
         return stakeholder;
       }
     }
-    // Default to first stakeholder if no clear indicator
-    return stakeholders[0];
+    
+    // Rotate through stakeholders based on message timing if no clear indicator
+    const messageTime = Date.now();
+    const stakeholderIndex = Math.floor((messageTime / 10000)) % stakeholders.length; // Switch every 10 seconds
+    return stakeholders[stakeholderIndex];
   }, []);
 
   // Start conversations with selected stakeholders (with multi-voice simulation)
@@ -277,21 +294,28 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
             `${s.name} (${s.role}): ${s.bio}`
           ).join('\n\n');
           
-          const multiPersonalityPrompt = `You are facilitating a meeting with multiple stakeholders. When responding, you should roleplay as different people and clearly indicate who is speaking. Here are the participants:
+                     const multiPersonalityPrompt = `You are in a meeting room with these stakeholders. You will speak AS different people, naturally switching between their perspectives. Here are the participants:
 
 ${stakeholderDetails}
 
-IMPORTANT INSTRUCTIONS:
-- Start your responses with "[NAME]:" to indicate who is speaking
-- Rotate between different stakeholders naturally
-- Each stakeholder should have their own perspective and speaking style
-- Keep individual responses concise (2-3 sentences max per person)
-- Multiple stakeholders can respond to the same user input
-- Example format: "[James Walker]: I think the user experience is crucial here. [Aisha Ahmed]: From a process perspective, I agree with James but we need to consider efficiency."`;
+CRITICAL RULES:
+1. NEVER use name tags like "[James Walker]:" - speak naturally as each person
+2. Use role-based transitions: "From a customer experience perspective..." or "On the technical side..."
+3. Stakeholders MUST respond to each other's questions and comments
+4. When someone asks "What do you think, [Name]?" - that person responds next
+5. Build on each other's ideas, agree/disagree, ask follow-up questions
+6. Keep individual contributions 2-3 sentences, then naturally transition
+7. Show different expertise: UX concerns vs business processes vs technical constraints
 
-          setTimeout(() => {
-            service.sendTextInput(conversationId, multiPersonalityPrompt).catch(console.error);
-          }, 1000);
+INTERACTION EXAMPLES:
+User: "How should we approach this project?"
+Response: "From a customer experience standpoint, we need to focus on user journey mapping first. The data shows our current onboarding has a 40% drop-off rate. But I'm curious about the technical feasibility - what's your take on the development timeline? Well, from the IT side, we're looking at about 12 weeks if we use our existing framework. Though Aisha might have concerns about how this impacts current business processes. Actually yes, we'd need to coordinate with three different departments, which could add complexity to the rollout timeline."
+
+Make it feel like real people having a natural business conversation!`;
+
+           setTimeout(() => {
+             service.sendTextInput(conversationId, multiPersonalityPrompt).catch(console.error);
+           }, 1000);
 
           newConversations.set('multi-agent', conversationId);
           selectedStakeholders.forEach(s => {
