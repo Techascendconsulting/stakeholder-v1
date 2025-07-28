@@ -9,6 +9,8 @@ interface ElevenLabsStakeholder {
   agentId: string; // ElevenLabs Conversational AI Agent ID
   bio: string;
   gender: 'male' | 'female'; // For proper voice selection
+  voice?: string; // Azure TTS voice (for compatibility)
+  systemPrompt?: string; // System context prompt
 }
 
 interface ElevenLabsProject {

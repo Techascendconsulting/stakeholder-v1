@@ -180,6 +180,9 @@ const IndividualAgentMeeting: React.FC = () => {
     console.log(`🚀 Starting individual meeting with ${selectedStakeholder.name}`);
     
     try {
+      // Generate contextual system prompt
+      const systemPrompt = generateStakeholderPrompt(selectedStakeholder);
+
       // Create stakeholder object for ElevenLabs
       const stakeholderForService = {
         id: selectedStakeholder.id,
@@ -190,11 +193,9 @@ const IndividualAgentMeeting: React.FC = () => {
         department: selectedStakeholder.department,
         personality: selectedStakeholder.personality,
         priorities: selectedStakeholder.priorities,
-        expertise: selectedStakeholder.expertise
+        expertise: selectedStakeholder.expertise,
+        systemPrompt: systemPrompt // Add the system prompt
       };
-
-      // Generate contextual system prompt
-      const systemPrompt = generateStakeholderPrompt(selectedStakeholder);
 
       // Start conversation with ElevenLabs
       const conversationId = await elevenLabsServiceRef.current.startConversation(
@@ -315,36 +316,16 @@ const IndividualAgentMeeting: React.FC = () => {
 
   // Generate stakeholder-specific system prompt
   const generateStakeholderPrompt = (stakeholder: any): string => {
-    return `You are ${stakeholder.name}, ${stakeholder.role} at a company, participating in a business meeting about "${selectedProject?.name}".
+    return `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. We're here today to discuss "${selectedProject?.name}".
 
-ABOUT YOU:
-- Role: ${stakeholder.role}
-- Department: ${stakeholder.department}
-- Personality: ${stakeholder.personality}
-- Priorities: ${stakeholder.priorities?.join(', ')}
-- Expertise: ${stakeholder.expertise?.join(', ')}
+Let me share some context about this project:
+- ${selectedProject?.description}
+- Current situation: ${selectedProject?.businessContext}
+- The main challenge we're facing: ${selectedProject?.problemStatement}
 
-PROJECT CONTEXT:
-${selectedProject?.description}
+From my perspective as ${stakeholder.role}, I'm particularly focused on ${stakeholder.priorities?.join(', ')}. My expertise in ${stakeholder.expertise?.join(', ')} will be valuable for this discussion.
 
-BUSINESS CONTEXT:
-${selectedProject?.businessContext}
-
-PROBLEM STATEMENT:
-${selectedProject?.problemStatement}
-
-GOALS:
-${selectedProject?.businessGoals?.join('\n')}
-
-INSTRUCTIONS:
-- Respond as ${stakeholder.name} would, with your specific expertise and perspective
-- Be conversational and professional
-- Ask relevant questions about the project
-- Share insights from your department's perspective
-- Keep responses concise (2-3 sentences typically)
-- Act like a real human colleague, not an AI assistant
-
-You are now ready to discuss this project. Wait for the user to start the conversation.`;
+I'm ready to dive into the details and share insights from my department's perspective. What would you like to discuss first?`;
   };
 
   // If no stakeholders selected, show error

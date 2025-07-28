@@ -12,6 +12,7 @@ interface ConversationSession {
   isActive: boolean;
   stakeholder: ElevenLabsStakeholder;
   isInitialized: boolean;
+  systemPrompt?: string;
 }
 
 interface ConversationMessage {
@@ -104,7 +105,7 @@ class ElevenLabsConversationalService {
       }
 
       // Set up WebSocket event handlers
-      websocket.onopen = () => {
+      websocket.onopen = async () => {
         console.log(`✅ DEBUG: Connected to ElevenLabs agent: ${stakeholder.name}`, {
           conversationId,
           agentId: stakeholder.agentId,
@@ -114,7 +115,24 @@ class ElevenLabsConversationalService {
         this.activeSessions.set(conversationId, session);
         onStatusChange?.(stakeholder.agentId, 'listening');
         
-        // Don't send initialization message immediately - wait for first user action
+        // Send initial context as a user message to set the scene
+        if (stakeholder.systemPrompt) {
+          try {
+            // Wait a moment for the connection to fully establish
+            setTimeout(async () => {
+              try {
+                console.log('📝 Sending initial context message...');
+                await this.sendTextInput(conversationId, stakeholder.systemPrompt);
+                console.log('✅ Initial context message sent successfully');
+              } catch (error) {
+                console.error('❌ Error sending initial context:', error);
+              }
+            }, 500);
+          } catch (error) {
+            console.error('❌ Error setting up initial context:', error);
+          }
+        }
+        
         console.log('🔗 DEBUG: WebSocket connection established, ready for interaction');
       };
 
