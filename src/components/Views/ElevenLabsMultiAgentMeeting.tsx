@@ -714,8 +714,16 @@ You were specifically mentioned or asked for your input. You can respond briefly
          const uint8Array = new Uint8Array(pcm16.buffer);
          const base64 = btoa(String.fromCharCode(...uint8Array));
          
-                   // Only process audio when user has stopped speaking
+                   // Only process audio when user has stopped speaking AND we haven't processed this audio yet
           if (conversationalServiceRef.current && base64.length > 0 && activeConversations.size > 0 && !isUserSpeaking) {
+            // Prevent duplicate processing by checking if we already processed this audio
+            const audioHash = base64.substring(0, 50); // Use first 50 chars as hash
+            if ((window as any).lastProcessedAudio === audioHash) {
+              console.log('🔄 DEBUG: Skipping duplicate audio processing');
+              return;
+            }
+            (window as any).lastProcessedAudio = audioHash;
+            
             // Reset fallback attempts for new user input
             setFallbackAttempts(0);
             const service = conversationalServiceRef.current;
