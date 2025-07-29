@@ -7,17 +7,17 @@
       "voice": "en-GB-RyanNeural",
       "baseStyle": "customerservice",
       "characteristics": {
-        "fillers": ["you know", "specifically", "clearly", "absolutely", "from my perspective"],
+        "fillers": ["you know", "specifically", "clearly", "absolutely", "from my perspective", "well", "so", "actually", "I mean", "basically", "essentially", "obviously", "frankly", "honestly"],
         "greetings": ["Hey there", "Good to see you", "Thanks for joining", "Morning everyone"],
         "transitions": ["So here's the thing", "What I'm thinking is", "From a customer standpoint", "The way I see it"],
         "acknowledgments": ["absolutely", "got it", "that makes sense", "I hear you"],
         "pausePatterns": {
-          "beforeImportantPoint": 400,
-          "afterGreeting": 300,
-          "thinking": 500,
-          "short": 200,
-          "medium": 350,
-          "long": 600
+          "beforeImportantPoint": 600,
+          "afterGreeting": 450,
+          "thinking": 800,
+          "short": 300,
+          "medium": 500,
+          "long": 900
         },
         "prosody": {
           "baseRate": 0.95,
@@ -25,11 +25,11 @@
           "baseVolume": "medium"
         },
         "emotionalRanges": {
-          "confident": { "pitch": "+5%", "rate": 1.0, "volume": "medium" },
-          "empathetic": { "pitch": "+2%", "rate": 0.9, "volume": "soft" },
-          "excited": { "pitch": "+8%", "rate": 1.1, "volume": "medium" },
-          "thoughtful": { "pitch": "+1%", "rate": 0.85, "volume": "medium" },
-          "friendly": { "pitch": "+4%", "rate": 1.0, "volume": "medium" }
+          "confident": { "pitch": "+8%", "rate": 1.05, "volume": "medium" },
+          "empathetic": { "pitch": "+3%", "rate": 0.85, "volume": "soft" },
+          "excited": { "pitch": "+12%", "rate": 1.2, "volume": "medium" },
+          "thoughtful": { "pitch": "+1%", "rate": 0.8, "volume": "medium" },
+          "friendly": { "pitch": "+6%", "rate": 1.0, "volume": "medium" }
         },
         "emphasis_words": ["customer", "experience", "success", "retention", "satisfaction"],
         "personality_traits": {
@@ -48,7 +48,7 @@
       "voice": "en-US-AvaMultilingualNeural",
       "baseStyle": "customerservice",
       "characteristics": {
-        "fillers": ["uhm", "got it", "you know", "I mean", "well", "actually"],
+        "fillers": ["uhm", "got it", "you know", "I mean", "well", "actually", "so", "like", "basically", "honestly", "obviously", "definitely", "totally", "exactly"],
         "greetings": ["Hi there", "Hey", "Good morning everyone", "Hello", "Hi folks"],
         "transitions": ["So", "Actually", "Oh, and", "Plus", "What I'm finding is", "Here's what I think"],
         "acknowledgments": ["totally", "absolutely", "for sure", "no sweat", "I got you"],
