@@ -887,12 +887,71 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Direct voice recording functions
   const startDirectRecording = async () => {
     try {
+      console.log('🎤 Requesting microphone access for direct recording...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('✅ Microphone access granted - setting up recording');
       streamRef.current = stream;
       
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+
+      // Voice Activity Detection for hands-free mode
+      let vadContext: AudioContext | null = null;
+      let vadAnalyzer: AnalyserNode | null = null;
+      let vadSource: MediaStreamAudioSourceNode | null = null;
+      let vadTimer: NodeJS.Timeout | null = null;
+      let lastVoiceTime = Date.now();
+      
+      // Store VAD references for cleanup
+      const vadCleanup = () => {
+        if (vadTimer) {
+          clearTimeout(vadTimer);
+          vadTimer = null;
+        }
+        if (vadContext) {
+          vadContext.close();
+          vadContext = null;
+        }
+      };
+      
+      if (isHandsFreeMode) {
+        vadContext = new AudioContext();
+        vadAnalyzer = vadContext.createAnalyser();
+        vadSource = vadContext.createMediaStreamSource(stream);
+        vadSource.connect(vadAnalyzer);
+        
+        vadAnalyzer.fftSize = 256;
+        const bufferLength = vadAnalyzer.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        
+        const checkVoiceActivity = () => {
+          if (!vadAnalyzer || !mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') {
+            return;
+          }
+          
+          vadAnalyzer.getByteFrequencyData(dataArray);
+          const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+          const threshold = 20; // Adjust sensitivity
+          
+          if (average > threshold) {
+            lastVoiceTime = Date.now();
+            console.log('🔊 Voice detected, average:', average);
+          } else {
+            const silenceDuration = Date.now() - lastVoiceTime;
+            if (silenceDuration > 2000) { // 2 seconds of silence
+              console.log('🔇 Auto-stopping recording after 2 seconds of silence');
+              stopDirectRecording();
+              return;
+            }
+          }
+          
+          vadTimer = setTimeout(checkVoiceActivity, 100);
+        };
+        
+        // Start VAD after a brief delay
+        setTimeout(checkVoiceActivity, 500);
+      }
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -901,6 +960,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       };
 
       mediaRecorder.onstop = async () => {
+        console.log('🛑 Recording stopped, processing audio...');
+        
+        // Clean up VAD if it was being used
+        vadCleanup();
+        
         const audioBlob = new Blob(audioChunksRef.current, { type: getSupportedAudioFormat() });
         await transcribeAndSend(audioBlob);
         
@@ -914,9 +978,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       mediaRecorder.start();
       setIsRecording(true);
       setIsTranscribing(false); // Only set to true when actually transcribing
-      setDynamicFeedback('🎤 Recording your message... Click microphone to stop');
+      console.log('🎤 Direct recording started successfully');
+      
+      if (isHandsFreeMode) {
+        setDynamicFeedback('🎤 Listening... Speak naturally');
+      } else {
+        setDynamicFeedback('🎤 Recording your message... Click microphone to stop');
+      }
     } catch (error) {
-      console.error('Error starting recording:', error);
+      console.error('❌ Error starting recording:', error);
       setIsRecording(false);
       setIsTranscribing(false);
       
@@ -925,19 +995,31 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
           errorMessage += 'Microphone permission denied. Please allow microphone access.';
+          console.error('🚫 Microphone permission denied - user needs to grant access');
         } else if (error.name === 'NotFoundError') {
           errorMessage += 'No microphone found. Please check your audio devices.';
+          console.error('🚫 No microphone device found');
         } else if (error.name === 'NotSupportedError') {
           errorMessage += 'Recording not supported in this browser.';
+          console.error('🚫 Recording not supported in browser');
         } else {
           errorMessage += error.message;
+          console.error('🚫 Unknown recording error:', error.message);
         }
       } else {
         errorMessage += 'Please try again.';
+        console.error('🚫 Non-Error thrown:', error);
       }
       
       setDynamicFeedback(errorMessage);
       setTimeout(() => setDynamicFeedback(null), 5000);
+      
+      // If in hands-free mode and it's a permission issue, suggest exiting hands-free mode
+      if (isHandsFreeMode && error instanceof Error && error.name === 'NotAllowedError') {
+        setTimeout(() => {
+          setDynamicFeedback('💡 Try clicking "End Meeting" and then "Hands-Free" again to grant microphone access');
+        }, 5000);
+      }
     }
   };
 
