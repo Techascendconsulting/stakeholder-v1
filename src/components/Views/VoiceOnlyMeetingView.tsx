@@ -290,7 +290,207 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     messageCount: 0
   });
 
+  // Streaming conversation mode
+  const [isStreamingMode, setIsStreamingMode] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const streamingRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamingStreamRef = useRef<MediaStream | null>(null);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const vadContextRef = useRef<AudioContext | null>(null);
+  const vadAnalyzerRef = useRef<AnalyserNode | null>(null);
 
+
+
+  // Streaming conversation functions
+  const startStreamingConversation = async () => {
+    try {
+      console.log('🚀 Starting streaming conversation mode');
+      setIsStreamingMode(true);
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamingStreamRef.current = stream;
+      
+      // Set up voice activity detection
+      vadContextRef.current = new AudioContext();
+      vadAnalyzerRef.current = vadContextRef.current.createAnalyser();
+      const source = vadContextRef.current.createMediaStreamSource(stream);
+      source.connect(vadAnalyzerRef.current);
+      
+      vadAnalyzerRef.current.fftSize = 256;
+      
+      // Start continuous listening
+      startContinuousListening();
+      
+    } catch (error) {
+      console.error('❌ Error starting streaming conversation:', error);
+      setIsStreamingMode(false);
+    }
+  };
+
+  const endStreamingConversation = () => {
+    console.log('🛑 Ending streaming conversation mode');
+    setIsStreamingMode(false);
+    setIsListening(false);
+    
+    // Clean up all streaming resources
+    if (streamingRecorderRef.current && streamingRecorderRef.current.state !== 'inactive') {
+      streamingRecorderRef.current.stop();
+    }
+    if (streamingStreamRef.current) {
+      streamingStreamRef.current.getTracks().forEach(track => track.stop());
+      streamingStreamRef.current = null;
+    }
+    if (vadContextRef.current) {
+      vadContextRef.current.close();
+      vadContextRef.current = null;
+    }
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+  };
+
+  const startContinuousListening = () => {
+    if (!streamingStreamRef.current || !vadAnalyzerRef.current) return;
+    
+    console.log('👂 Starting continuous listening...');
+    setIsListening(true);
+    
+    const mediaRecorder = new MediaRecorder(streamingStreamRef.current);
+    streamingRecorderRef.current = mediaRecorder;
+    const audioChunks: BlobPart[] = [];
+    
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
+    };
+    
+    mediaRecorder.onstop = async () => {
+      console.log('🎯 Processing captured speech...');
+      setIsListening(false);
+      
+      if (audioChunks.length > 0) {
+        const audioBlob = new Blob(audioChunks, { type: getSupportedAudioFormat() });
+        await processStreamingAudio(audioBlob);
+      }
+    };
+    
+    // Start recording
+    mediaRecorder.start();
+    
+    // Start voice activity detection
+    monitorVoiceActivity();
+  };
+
+  const monitorVoiceActivity = () => {
+    if (!vadAnalyzerRef.current || !isStreamingMode) return;
+    
+    const bufferLength = vadAnalyzerRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    let lastVoiceTime = Date.now();
+    let hasDetectedVoice = false;
+    
+    const checkVoiceActivity = () => {
+      if (!vadAnalyzerRef.current || !isStreamingMode || !isListening) return;
+      
+      vadAnalyzerRef.current.getByteFrequencyData(dataArray);
+      const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+      const threshold = 20;
+      
+      if (average > threshold) {
+        lastVoiceTime = Date.now();
+        hasDetectedVoice = true;
+        
+        // Clear any existing silence timer
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
+        }
+      } else if (hasDetectedVoice) {
+        const silenceDuration = Date.now() - lastVoiceTime;
+        
+        // If we've detected voice before and now have 2 seconds of silence, process the audio
+        if (silenceDuration > 2000 && !silenceTimerRef.current) {
+          console.log('🔇 Detected end of speech, processing...');
+          
+          // Stop the current recording
+          if (streamingRecorderRef.current && streamingRecorderRef.current.state === 'recording') {
+            streamingRecorderRef.current.stop();
+          }
+          return; // Exit the monitoring loop
+        }
+      }
+      
+      // Continue monitoring
+      setTimeout(checkVoiceActivity, 100);
+    };
+    
+    checkVoiceActivity();
+  };
+
+  const processStreamingAudio = async (audioBlob: Blob) => {
+    try {
+      console.log('🎙️ Transcribing streaming audio...');
+      setIsTranscribing(true);
+      
+      // Transcribe the audio
+      const transcription = await whisper.transcribe(audioBlob);
+      console.log('📝 Streaming transcription:', transcription);
+      
+      if (transcription && transcription.trim()) {
+        // Auto-send the message
+        await handleAutoSendMessage(transcription.trim());
+      }
+      
+      setIsTranscribing(false);
+      
+      // After AI responds, start listening again
+      setTimeout(() => {
+        if (isStreamingMode && !isGeneratingResponse) {
+          console.log('🔄 Restarting continuous listening...');
+          startContinuousListening();
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error('❌ Error processing streaming audio:', error);
+      setIsTranscribing(false);
+      
+      // Restart listening even if there was an error
+      if (isStreamingMode) {
+        setTimeout(() => startContinuousListening(), 2000);
+      }
+    }
+  };
+
+  const handleAutoSendMessage = async (messageContent: string) => {
+    if (!messageContent.trim()) return;
+    
+    console.log('📤 Auto-sending message:', messageContent);
+    
+    // Add user message to conversation
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: messageContent,
+      speaker: 'user',
+      timestamp: new Date(),
+      stakeholderName: 'User'
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    addToBackgroundTranscript(userMessage);
+    
+    // Update conversation history
+    setConversationHistory(prev => ({
+      userMessages: [...prev.userMessages, messageContent],
+      assistantMessages: prev.assistantMessages,
+      messageCount: prev.messageCount + 1
+    }));
+    
+    // Generate AI response
+    await generateAIResponse(messageContent, [...messages, userMessage]);
+  };
 
   // Background transcript capture function (always captures, regardless of UI)
   const addToBackgroundTranscript = (message: Message) => {
@@ -2080,20 +2280,59 @@ Please review the raw transcript for detailed conversation content.`;
 
           {/* Meeting Controls */}
           <div className="flex items-center space-x-2">
-            {/* Mic Button */}
-            <button
-              onClick={handleMicClick}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                isRecording 
-                  ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
-                  : isTranscribing
-                  ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-              title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
-            >
-              {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
-            </button>
+            {!isStreamingMode ? (
+              <>
+                {/* Manual Mic Button */}
+                <button
+                  onClick={handleMicClick}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                    isRecording 
+                      ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
+                      : isTranscribing
+                      ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
+                      : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                  title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
+                >
+                  {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
+                </button>
+                
+                {/* Streaming Mode Button */}
+                <button
+                  onClick={startStreamingConversation}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
+                  title="Start streaming conversation - just talk naturally!"
+                >
+                  <Play className="w-4 h-4" />
+                  <span className="text-sm">Start Talking</span>
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Streaming Status */}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  isListening 
+                    ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' 
+                    : isTranscribing
+                    ? 'bg-blue-500 animate-pulse'
+                    : isGeneratingResponse
+                    ? 'bg-purple-500 animate-spin'
+                    : 'bg-gray-500'
+                }`}>
+                  <Mic className="w-4 h-4 text-white" />
+                </div>
+                
+                {/* End Streaming Button */}
+                <button
+                  onClick={endStreamingConversation}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
+                  title="End streaming conversation"
+                >
+                  <Square className="w-4 h-4" />
+                  <span className="text-sm">Stop Talking</span>
+                </button>
+              </>
+            )}
 
             {/* Stop Button */}
             <button
@@ -2327,14 +2566,47 @@ Please review the raw transcript for detailed conversation content.`;
           </div>
         </div>
 
-                {/* Message Input Area */}
-        <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
-          {/* Dynamic Feedback Display */}
-          {dynamicFeedback && (
-              <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
-                <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
+                {/* Streaming Mode Indicator */}
+        {isStreamingMode && (
+          <div className="px-6 py-3 bg-gradient-to-r from-green-900/80 to-blue-900/80 border-t border-green-500/30">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <div className={`w-3 h-3 rounded-full ${
+                  isListening 
+                    ? 'bg-green-400 animate-pulse' 
+                    : isTranscribing
+                    ? 'bg-blue-400 animate-pulse'
+                    : isGeneratingResponse
+                    ? 'bg-purple-400 animate-pulse'
+                    : 'bg-gray-400'
+                }`}></div>
+                <span className="text-white font-medium">
+                  {isListening 
+                    ? '🎤 Listening... Just talk naturally!' 
+                    : isTranscribing
+                    ? '📝 Processing your speech...'
+                    : isGeneratingResponse
+                    ? '🤖 AI is responding...'
+                    : '⏳ Getting ready...'
+                  }
+                </span>
               </div>
-            )}
+              <p className="text-gray-300 text-sm">
+                Automatic conversation mode - no buttons needed!
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Message Input Area - Hidden during streaming */}
+        {!isStreamingMode && (
+          <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
+            {/* Dynamic Feedback Display */}
+            {dynamicFeedback && (
+                <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+                  <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
+                </div>
+              )}
             
             <div className="flex space-x-3">
             <input
@@ -2448,6 +2720,7 @@ Please review the raw transcript for detailed conversation content.`;
             </>
           )}
         </div>
+        )}
 
       </div>
     </div>
