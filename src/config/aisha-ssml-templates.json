@@ -3,8 +3,8 @@
     "friendly_greeting": {
       "name": "Friendly Greeting",
       "description": "Warm, welcoming greeting with natural pauses",
-      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.9\" pitch=\"+1%\"><break time=\"200ms\"/>{{content}}<break time=\"300ms\"/></prosody></mstts:express-as></speak>",
-      "fallback_ssml": "<speak><prosody rate=\"0.9\" pitch=\"+1%\"><break time=\"200ms\"/>{{content}}<break time=\"300ms\"/></prosody></speak>",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.88\" pitch=\"+1%\"><break time=\"200ms\"/>{{content}}<break time=\"400ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.88\" pitch=\"+1%\"><break time=\"200ms\"/>{{content}}<break time=\"400ms\"/></prosody></speak>",
       "usage": "greeting"
     },
     "confirming_action": {
