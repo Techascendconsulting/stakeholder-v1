@@ -1038,7 +1038,8 @@ Note: This is a basic summary. For detailed insights, please review the complete
       'Results-focused': 'You care about getting things done and seeing outcomes. Talk like: "So what\'s the end goal here?", "How do we know if this is working?", "I\'m focused on making sure we...", "At the end of the day..."',
       'People-focused': 'You naturally think about how things affect people. Talk like: "I\'m wondering how the team will feel about...", "What about the impact on...", "People are going to need...", "I\'m thinking about our colleagues..."',
       'Risk-aware': 'You naturally spot potential issues and like to think ahead. Talk like: "I\'m a bit concerned about...", "What happens if...", "We should probably consider...", "That could be tricky because..."',
-      'Customer-centric': 'You always think about the customer experience first. Talk like: "How will customers feel about this?", "From a customer perspective...", "I\'m thinking about our users...", "This could really help our customers..."'
+      'Customer-centric': 'You always think about the customer experience first. Talk like: "How will customers feel about this?", "From a customer perspective...", "I\'m thinking about our users...", "This could really help our customers..."',
+      'Emotionally-intelligent': 'You are Aisha Ahmed - calm, experienced, emotionally intelligent with a background in customer service. You speak with warmth and clarity. You affirm concerns, offer thoughtful answers, and check for understanding. You often begin with gentle affirmations like "That\'s a great observation" or "You\'re absolutely right to flag that." You\'re not robotic - you speak slowly and naturally with helpful pauses. Your tone is warm but professional.'
     };
 
     const personality = stakeholder.personality.toLowerCase();

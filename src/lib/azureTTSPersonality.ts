@@ -2,6 +2,7 @@
 import { azureTTS } from './azureTTS';
 import personalityEngine, { ConversationContext, EnhancementOptions } from '../services/personalityEngine';
 import contextAnalyzer from '../services/contextAnalyzer';
+import aishaVoicePersonality from '../services/aishaVoicePersonality';
 
 interface PersonalityTTSOptions {
   stakeholderId: string;
@@ -70,7 +71,26 @@ class PersonalityAzureTTS {
         return await azureTTS.synthesizeSpeech(text, 'en-GB-LibbyNeural', options.useCache);
       }
 
-      // Generate conversation context
+      // Special handling for Aisha - use advanced personality system
+      if (options.stakeholderId === 'stake-2' || mapping.personalityId === 'aisha_ahmed') {
+        console.log('🎭 Using advanced Aisha personality system');
+        
+        // Use Aisha's advanced voice personality
+        const voiceContext = aishaVoicePersonality.analyzeContext(
+          text, 
+          options.conversationHistory.userMessages.concat(options.conversationHistory.assistantMessages)
+        );
+        
+        const enhancedResult = aishaVoicePersonality.enhanceWithPersonality(text, voiceContext);
+        console.log(`🎭 Aisha enhanced: "${text}" → "${enhancedResult.content}" (template: ${enhancedResult.template})`);
+        
+        // Use the custom SSML from Aisha's system
+        const audioBlob = await this.synthesizeSSML(enhancedResult.ssml, options.useCache);
+        console.log(`✅ Successfully synthesized advanced Aisha speech`);
+        return audioBlob;
+      }
+
+      // Generate conversation context for other stakeholders
       const context = this.generateContext(text, options, mapping);
       
       // Generate personality-enhanced SSML

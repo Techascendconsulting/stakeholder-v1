@@ -1,0 +1,71 @@
+{
+  "templates": {
+    "friendly_greeting": {
+      "name": "Friendly Greeting",
+      "description": "Warm, welcoming greeting with natural pauses",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.9\" pitch=\"+1%\"><break time=\"200ms\"/>{{content}}<break time=\"300ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.9\" pitch=\"+1%\"><break time=\"200ms\"/>{{content}}<break time=\"300ms\"/></prosody></speak>",
+      "usage": "greeting"
+    },
+    "confirming_action": {
+      "name": "Confirming Action",
+      "description": "Reassuring confirmation with thoughtful pacing",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.88\" pitch=\"+1%\"><break time=\"300ms\"/>{{content}}<break time=\"400ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.88\" pitch=\"+1%\"><break time=\"300ms\"/>{{content}}<break time=\"400ms\"/></prosody></speak>",
+      "usage": "confirmation"
+    },
+    "explaining_clearly": {
+      "name": "Clear Explanation",
+      "description": "Patient, methodical explanation with strategic pauses",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.85\" pitch=\"+2%\"><break time=\"400ms\"/>{{content}}<break time=\"500ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.85\" pitch=\"+2%\"><break time=\"400ms\"/>{{content}}<break time=\"500ms\"/></prosody></speak>",
+      "usage": "explanation"
+    },
+    "clarifying_question": {
+      "name": "Clarifying Question",
+      "description": "Gentle, curious questioning with upward inflection",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.9\" pitch=\"+3%\"><break time=\"250ms\"/>{{content}}<break time=\"600ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.9\" pitch=\"+3%\"><break time=\"250ms\"/>{{content}}<break time=\"600ms\"/></prosody></speak>",
+      "usage": "question"
+    },
+    "warm_closing": {
+      "name": "Warm Closing",
+      "description": "Caring, supportive closing with natural fade",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.88\" pitch=\"+1%\"><break time=\"350ms\"/>{{content}}<break time=\"400ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.88\" pitch=\"+1%\"><break time=\"350ms\"/>{{content}}<break time=\"400ms\"/></prosody></speak>",
+      "usage": "closing"
+    },
+    "empathetic_response": {
+      "name": "Empathetic Response",
+      "description": "Understanding, validating response with emotional warmth",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.85\" pitch=\"-1%\" volume=\"soft\"><break time=\"500ms\"/>{{content}}<break time=\"600ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.85\" pitch=\"-1%\" volume=\"soft\"><break time=\"500ms\"/>{{content}}<break time=\"600ms\"/></prosody></speak>",
+      "usage": "empathy"
+    },
+    "thinking_aloud": {
+      "name": "Thinking Aloud",
+      "description": "Reflective, processing thoughts with natural hesitation",
+      "ssml": "<speak><mstts:express-as style=\"empathetic\"><prosody rate=\"0.82\" pitch=\"+1%\"><break time=\"600ms\"/>{{content}}<break time=\"450ms\"/></prosody></mstts:express-as></speak>",
+      "fallback_ssml": "<speak><prosody rate=\"0.82\" pitch=\"+1%\"><break time=\"600ms\"/>{{content}}<break time=\"450ms\"/></prosody></speak>",
+      "usage": "thinking"
+    }
+  },
+  "context_mapping": {
+    "greeting": "friendly_greeting",
+    "acknowledgment": "confirming_action", 
+    "explanation": "explaining_clearly",
+    "technical_explanation": "explaining_clearly",
+    "question_response": "clarifying_question",
+    "empathy_needed": "empathetic_response",
+    "thinking": "thinking_aloud",
+    "closing": "warm_closing",
+    "default": "explaining_clearly"
+  },
+  "enhancement_rules": {
+    "add_breath_before_important": true,
+    "slow_down_for_complex": true,
+    "add_empathy_for_frustration": true,
+    "pause_after_questions": true,
+    "gentle_tone_for_clarification": true
+  }
+}
