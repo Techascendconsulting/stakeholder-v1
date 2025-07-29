@@ -121,7 +121,7 @@ class ContextAnalyzer {
   private extractTopics(text: string): string[] {
     const topics: string[] = [];
     
-    if (this.technicalPatterns.test(text)) topics.push('technical');
+    if (this.technicalPatterns.some(pattern => pattern.test(text))) topics.push('technical');
     if (/customer|user|client/i.test(text)) topics.push('customer');
     if (/design|ui|ux|interface/i.test(text)) topics.push('design');
     if (/marketing|campaign|brand/i.test(text)) topics.push('marketing');
@@ -142,7 +142,7 @@ class ContextAnalyzer {
       return 'question';
     }
     
-    if (this.frustrationPatterns.test(text)) {
+    if (this.frustrationPatterns.some(pattern => pattern.test(text))) {
       return 'complaint';
     }
     
@@ -157,10 +157,10 @@ class ContextAnalyzer {
    * Detect emotional tone in text
    */
   private detectEmotionalTone(text: string): TextAnalysis['emotionalTone'] {
-    if (this.excitementPatterns.test(text)) return 'excited';
-    if (this.frustrationPatterns.test(text)) return 'frustrated';
+    if (this.excitementPatterns.some(pattern => pattern.test(text))) return 'excited';
+    if (this.frustrationPatterns.some(pattern => pattern.test(text))) return 'frustrated';
     if (/(confused|not sure|don't understand|unclear)/i.test(text)) return 'confused';
-    if (this.technicalPatterns.test(text) || this.questionPatterns.some(p => p.test(text))) return 'engaged';
+    if (this.technicalPatterns.some(pattern => pattern.test(text)) || this.questionPatterns.some(p => p.test(text))) return 'engaged';
     
     return 'neutral';
   }
@@ -240,7 +240,7 @@ class ContextAnalyzer {
     // Check recent messages for mood patterns
     const recentMessages = history.userMessages.slice(-3).join(' ');
     
-    if (this.frustrationPatterns.test(recentMessages) || analysis.emotionalTone === 'frustrated') {
+    if (this.frustrationPatterns.some(pattern => pattern.test(recentMessages)) || analysis.emotionalTone === 'frustrated') {
       return 'frustrated';
     }
     
@@ -248,7 +248,7 @@ class ContextAnalyzer {
       return 'confused';
     }
     
-    if (this.excitementPatterns.test(recentMessages) || analysis.emotionalTone === 'excited') {
+    if (this.excitementPatterns.some(pattern => pattern.test(recentMessages)) || analysis.emotionalTone === 'excited') {
       return 'engaged';
     }
     
