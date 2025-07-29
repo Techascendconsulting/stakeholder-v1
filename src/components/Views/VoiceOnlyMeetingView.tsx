@@ -464,6 +464,50 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
+  const generateStreamingAIResponse = async (messageContent: string, currentMessages: Message[]) => {
+    setIsGeneratingResponse(true);
+    
+    try {
+      // Check for direct stakeholder mentions in user message FIRST
+      const aiService = AIService.getInstance();
+      const availableStakeholders = selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }));
+
+      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
+      
+      console.log('🔍 Streaming AI: User message analysis:', {
+        messageContent,
+        mentionResult: userMentionResult
+      });
+      
+      if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        // Handle direct mentions (simplified version)
+        const mentionedStakeholder = userMentionResult.mentionedStakeholders[0];
+        const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholder.name);
+        
+        if (stakeholder) {
+          console.log(`🎯 Streaming: ${stakeholder.name} responding to direct mention`);
+          await processDynamicStakeholderResponse(stakeholder, messageContent, currentMessages, 'direct_mention');
+        }
+      } else {
+        // Handle general conversation - pick random stakeholder
+        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+        console.log(`🎯 Streaming: ${randomStakeholder.name} responding to general message`);
+        await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages, 'general_question');
+      }
+    } catch (error) {
+      console.error('❌ Error generating streaming AI response:', error);
+    } finally {
+      setIsGeneratingResponse(false);
+    }
+  };
+
   const handleAutoSendMessage = async (messageContent: string) => {
     if (!messageContent.trim()) return;
     
@@ -488,8 +532,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       messageCount: prev.messageCount + 1
     }));
     
-    // Generate AI response
-    await generateAIResponse(messageContent, [...messages, userMessage]);
+    // Generate AI response using existing logic
+    await generateStreamingAIResponse(messageContent, [...messages, userMessage]);
   };
 
   // Background transcript capture function (always captures, regardless of UI)
