@@ -418,8 +418,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       } else if (hasDetectedVoice) {
         const silenceDuration = Date.now() - lastVoiceTime;
         
-        // If we've detected voice before and now have 1.5 seconds of silence, process the audio
-        if (silenceDuration > 1500 && !silenceTimerRef.current) {
+        // If we've detected voice before and now have 0.8 seconds of silence, process the audio
+        if (silenceDuration > 800 && !silenceTimerRef.current) {
           console.log('🔇 VAD: Detected end of speech after 2 seconds of silence, processing...');
           
           // Stop the current recording
@@ -458,7 +458,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // After processing, restart listening immediately if still in streaming mode
       if (isStreamingMode) {
         console.log('🔄 Restarting continuous listening...');
-        setTimeout(() => startContinuousListening(), 200);
+        setTimeout(() => startContinuousListening(), 100);
       }
       
     } catch (error) {
@@ -467,7 +467,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Restart listening even if there was an error
       if (isStreamingMode) {
-        setTimeout(() => startContinuousListening(), 2000);
+        setTimeout(() => startContinuousListening(), 500);
       }
     }
   };
@@ -519,7 +519,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         setTimeout(() => {
           console.log('🔄 Auto-restarting listening after AI response...');
           startContinuousListening();
-        }, 1000); // Wait for audio to start playing
+        }, 300); // Minimal wait for audio to start playing
       }
     }
   };
@@ -737,7 +737,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
         waitCount++;
         console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Removed artificial delay
         
         // Safety break after 100 attempts (10 seconds)
         if (waitCount > 100) {
@@ -1206,7 +1206,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (!apiKey || apiKey === 'your-openai-api-key-here') {
         // Test mode - simulate transcription
         console.log('🧪 Test mode: Simulating transcription');
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
+        // Removed artificial delay for faster response
         
         const testTranscription = "Hello, this is a test message from the voice recorder.";
         setDynamicFeedback('🧪 Test mode: Simulated transcription');
