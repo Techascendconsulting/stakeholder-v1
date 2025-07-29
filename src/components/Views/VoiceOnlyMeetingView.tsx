@@ -626,7 +626,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setTimeout(() => {
               console.log('🚀 AUTO-STARTING streaming conversation mode');
               startStreamingConversation();
-            }, 2000);
+            }, 3000);
           } else {
             console.error('🎯 INIT MEETING - Failed to create meeting, no ID returned');
             // Create fallback local meeting ID
@@ -639,7 +639,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setTimeout(() => {
               console.log('🚀 AUTO-STARTING streaming conversation mode (fallback)');
               startStreamingConversation();
-            }, 2000);
+            }, 3000);
           }
         } catch (error) {
           console.error('🎯 INIT MEETING - Error initializing meeting:', error);
@@ -648,6 +648,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setMeetingId(emergencyMeetingId);
           setMeetingStartTime(Date.now());
           console.log('🎯 Created emergency meeting ID:', emergencyMeetingId);
+          
+          // Auto-start streaming conversation mode for emergency too
+          setTimeout(() => {
+            console.log('🚀 AUTO-STARTING streaming conversation mode (emergency)');
+            startStreamingConversation();
+          }, 3000);
         }
       } else {
         console.log('🎯 INIT MEETING - Conditions not met:', {
@@ -662,6 +668,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setMeetingId(backupMeetingId);
           setMeetingStartTime(Date.now());
           console.log('🎯 Created backup meeting ID for conditions not met:', backupMeetingId);
+          
+          // Auto-start streaming conversation mode for backup too
+          setTimeout(() => {
+            console.log('🚀 AUTO-STARTING streaming conversation mode (backup)');
+            startStreamingConversation();
+          }, 3000);
         }
       }
     };
@@ -2353,11 +2365,11 @@ Please review the raw transcript for detailed conversation content.`;
             </button>
           </div>
 
-          {/* Meeting Controls */}
+          {/* Meeting Controls - Simplified when streaming is active */}
           <div className="flex items-center space-x-2">
             {!isStreamingMode ? (
               <>
-                {/* Manual Mic Button */}
+                {/* Manual Mic Button - Only shown when not streaming */}
                 <button
                   onClick={handleMicClick}
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
@@ -2371,20 +2383,10 @@ Please review the raw transcript for detailed conversation content.`;
                 >
                   {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
                 </button>
-                
-                {/* Streaming Mode Button */}
-                <button
-                  onClick={startStreamingConversation}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
-                  title="Start streaming conversation - just talk naturally!"
-                >
-                  <Play className="w-4 h-4" />
-                  <span className="text-sm">Start Talking</span>
-                </button>
               </>
             ) : (
               <>
-                {/* Streaming Status */}
+                {/* Streaming Status - Clean indicator */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   isListening 
                     ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' 
@@ -2395,14 +2397,14 @@ Please review the raw transcript for detailed conversation content.`;
                   <Mic className="w-4 h-4 text-white" />
                 </div>
                 
-                {/* End Streaming Button */}
+                {/* Only show end button - no start/stop needed */}
                 <button
                   onClick={endStreamingConversation}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
-                  title="End streaming conversation"
+                  title="End meeting"
                 >
                   <Square className="w-4 h-4" />
-                  <span className="text-sm">Stop Talking</span>
+                  <span className="text-sm">End Meeting</span>
                 </button>
               </>
             )}
