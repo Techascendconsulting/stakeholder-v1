@@ -435,7 +435,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setIsTranscribing(true);
       
       // Transcribe the audio
-      const transcription = await whisper.transcribe(audioBlob);
+      const transcription = await transcribeAudio(audioBlob);
       console.log('📝 Streaming transcription:', transcription);
       
       if (transcription && transcription.trim()) {
