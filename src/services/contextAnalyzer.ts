@@ -87,7 +87,7 @@ class ContextAnalyzer {
     const wordsPerSentence = words.length / Math.max(sentenceCount, 1);
     
     // Technical terms increase complexity
-    const technicalTerms = this.technicalPatterns.test(text) ? 0.3 : 0;
+    const technicalTerms = this.technicalPatterns.some(pattern => pattern.test(text)) ? 0.3 : 0;
     
     // Base complexity on word length, sentence structure, and technical content
     const baseComplexity = Math.min(

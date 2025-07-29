@@ -396,11 +396,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       vadAnalyzerRef.current.getByteFrequencyData(dataArray);
       const average = dataArray.reduce((a, b) => a + b) / bufferLength;
-      const threshold = 20;
+      const threshold = 15; // Lowered threshold for better detection
+      
+      // Debug logging every 1 second
+      if (Date.now() % 1000 < 100) {
+        console.log(`🔍 VAD: Audio level: ${average.toFixed(1)}, threshold: ${threshold}, hasDetectedVoice: ${hasDetectedVoice}`);
+      }
       
       if (average > threshold) {
         lastVoiceTime = Date.now();
-        hasDetectedVoice = true;
+        if (!hasDetectedVoice) {
+          console.log('🎤 VAD: Voice detected! Starting to listen...');
+          hasDetectedVoice = true;
+        }
         
         // Clear any existing silence timer
         if (silenceTimerRef.current) {
@@ -412,13 +420,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         // If we've detected voice before and now have 2 seconds of silence, process the audio
         if (silenceDuration > 2000 && !silenceTimerRef.current) {
-          console.log('🔇 Detected end of speech, processing...');
+          console.log('🔇 VAD: Detected end of speech after 2 seconds of silence, processing...');
           
           // Stop the current recording
           if (streamingRecorderRef.current && streamingRecorderRef.current.state === 'recording') {
             streamingRecorderRef.current.stop();
           }
           return; // Exit the monitoring loop
+        } else if (silenceDuration > 1000) {
+          console.log(`🔇 VAD: ${(silenceDuration/1000).toFixed(1)}s of silence so far...`);
         }
       }
       
