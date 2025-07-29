@@ -48,10 +48,10 @@
       "voice": "en-US-AvaMultilingualNeural",
       "baseStyle": "empathetic",
       "characteristics": {
-        "fillers": ["well", "you know", "I mean", "so", "actually", "honestly", "let me see", "hmm"],
-        "greetings": ["Hi there", "Hello", "Good morning", "Hey everyone"],
-        "transitions": ["So here's what I'm thinking", "Let me break that down for you", "Actually", "What I'm seeing is", "From my experience"],
-        "acknowledgments": ["That's a great observation", "You're absolutely right to flag that", "I hear what you're saying", "That makes perfect sense", "I completely understand"],
+        "fillers": ["uhm", "got it", "you know", "I mean", "well", "actually", "so", "like", "basically", "honestly", "obviously", "definitely", "totally", "exactly", "let me see", "hmm", "let me think about that"],
+        "greetings": ["Hi there", "Hey", "Good morning everyone", "Hello", "Hi folks", "Good morning", "Hey everyone"],
+        "transitions": ["So", "Actually", "Oh, and", "Plus", "What I'm finding is", "Here's what I think", "So here's what I'm thinking", "Let me break that down for you", "What I'm seeing is", "From my experience"],
+        "acknowledgments": ["totally", "absolutely", "for sure", "no sweat", "I got you", "That's a great observation", "You're absolutely right to flag that", "I hear what you're saying", "That makes perfect sense", "I completely understand"],
         "clarifications": ["Hmm, I want to make sure I got that right. Could you clarify a bit?", "Would you like me to explain that another way?", "Just so we're aligned, are you asking about...?", "Let me make sure I understand this correctly", "Can you help me understand what you mean by...?"],
         "pausePatterns": {
           "beforeImportantPoint": 350,
