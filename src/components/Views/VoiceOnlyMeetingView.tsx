@@ -927,20 +927,26 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         const checkVoiceActivity = () => {
           if (!vadAnalyzer || !mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') {
+            console.log('🔍 VAD check skipped - missing analyzer or recorder not recording');
             return;
           }
           
           vadAnalyzer.getByteFrequencyData(dataArray);
           const average = dataArray.reduce((a, b) => a + b) / bufferLength;
-          const threshold = 20; // Adjust sensitivity
+          const threshold = 15; // Lowered sensitivity threshold
+          
+          // Debug: log audio levels periodically
+          if (Math.random() < 0.1) { // 10% of the time
+            console.log('🔍 VAD debug - Audio level:', average, 'Threshold:', threshold);
+          }
           
           if (average > threshold) {
             lastVoiceTime = Date.now();
             console.log('🔊 Voice detected, average:', average);
           } else {
             const silenceDuration = Date.now() - lastVoiceTime;
-            if (silenceDuration > 2000) { // 2 seconds of silence
-              console.log('🔇 Auto-stopping recording after 2 seconds of silence');
+            if (silenceDuration > 3000) { // Increased to 3 seconds of silence
+              console.log('🔇 Auto-stopping recording after 3 seconds of silence');
               stopDirectRecording();
               return;
             }
@@ -950,7 +956,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         };
         
         // Start VAD after a brief delay
-        setTimeout(checkVoiceActivity, 500);
+        setTimeout(() => {
+          console.log('🎧 Starting Voice Activity Detection...');
+          checkVoiceActivity();
+        }, 500);
       }
 
       mediaRecorder.ondataavailable = (event) => {
@@ -2450,13 +2459,22 @@ Please review the raw transcript for detailed conversation content.`;
           <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm z-50 flex items-center justify-center">
             <div className="text-center space-y-6 max-w-md">
               <div className="w-24 h-24 mx-auto">
-                <div className={`w-full h-full rounded-full border-4 flex items-center justify-center ${
-                  isRecording 
-                    ? 'border-blue-500 bg-blue-500 animate-pulse' 
-                    : isGeneratingResponse
-                    ? 'border-purple-500 bg-purple-500 animate-spin'
-                    : 'border-gray-500 bg-gray-700'
-                }`}>
+                <div 
+                  className={`w-full h-full rounded-full border-4 flex items-center justify-center cursor-pointer transition-all ${
+                    isRecording 
+                      ? 'border-blue-500 bg-blue-500 animate-pulse hover:bg-blue-600' 
+                      : isGeneratingResponse
+                      ? 'border-purple-500 bg-purple-500 animate-spin'
+                      : 'border-gray-500 bg-gray-700 hover:bg-gray-600'
+                  }`}
+                  onClick={() => {
+                    if (isRecording) {
+                      console.log('🛑 Manual stop via microphone click in hands-free mode');
+                      handleMicClick();
+                    }
+                  }}
+                  title={isRecording ? 'Click to stop recording manually' : 'Automatic mode active'}
+                >
                   <Mic className={`w-8 h-8 ${
                     isRecording 
                       ? 'text-white' 
@@ -2473,7 +2491,7 @@ Please review the raw transcript for detailed conversation content.`;
                 </h2>
                 <p className="text-gray-400">
                   {isRecording 
-                    ? 'Speak naturally. I\'ll respond when you\'re done.'
+                    ? 'Speak naturally. Auto-stops in 3 seconds of silence. Click mic to stop manually.'
                     : isGeneratingResponse
                     ? 'Generating response...'
                     : 'Automatic recording will start soon...'
