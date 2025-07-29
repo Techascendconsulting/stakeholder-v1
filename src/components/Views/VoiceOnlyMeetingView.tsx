@@ -418,8 +418,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       } else if (hasDetectedVoice) {
         const silenceDuration = Date.now() - lastVoiceTime;
         
-        // If we've detected voice before and now have 2 seconds of silence, process the audio
-        if (silenceDuration > 2000 && !silenceTimerRef.current) {
+        // If we've detected voice before and now have 1.5 seconds of silence, process the audio
+        if (silenceDuration > 1500 && !silenceTimerRef.current) {
           console.log('🔇 VAD: Detected end of speech after 2 seconds of silence, processing...');
           
           // Stop the current recording
@@ -458,7 +458,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // After processing, restart listening immediately if still in streaming mode
       if (isStreamingMode) {
         console.log('🔄 Restarting continuous listening...');
-        setTimeout(() => startContinuousListening(), 500);
+        setTimeout(() => startContinuousListening(), 200);
       }
       
     } catch (error) {
@@ -519,7 +519,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         setTimeout(() => {
           console.log('🔄 Auto-restarting listening after AI response...');
           startContinuousListening();
-        }, 2000); // Wait for audio to start playing
+        }, 1000); // Wait for audio to start playing
       }
     }
   };
