@@ -418,8 +418,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       } else if (hasDetectedVoice) {
         const silenceDuration = Date.now() - lastVoiceTime;
         
-        // If we've detected voice before and now have 0.5 seconds of silence, process the audio
-        if (silenceDuration > 500 && !silenceTimerRef.current) {
+        // If we've detected voice before and now have 0.3 seconds of silence, process the audio
+        if (silenceDuration > 300 && !silenceTimerRef.current) {
           console.log('🔇 VAD: Detected end of speech after 2 seconds of silence, processing...');
           
           // Stop the current recording
@@ -458,7 +458,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // After processing, restart listening immediately if still in streaming mode
       if (isStreamingMode) {
         console.log('🔄 Restarting continuous listening...');
-        setTimeout(() => startContinuousListening(), 50);
+        setTimeout(() => startContinuousListening(), 25);
       }
       
     } catch (error) {
@@ -516,15 +516,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Auto-restart listening after AI response completes in streaming mode
       if (isStreamingMode) {
-        setTimeout(() => {
-          console.log('🔄 Auto-restarting listening after AI response...');
-          // Only restart if we're not already listening
-          if (!isListening) {
-            startContinuousListening();
-          } else {
-            console.log('🔄 Already listening, skipping restart');
-          }
-        }, 100); // Ultra-fast restart
+                      setTimeout(() => {
+                console.log('🔄 Auto-restarting listening after AI response...');
+                // Only restart if we're not already listening
+                if (!isListening) {
+                  startContinuousListening();
+                } else {
+                  console.log('🔄 Already listening, skipping restart');
+                }
+              }, 50); // Even faster restart
       }
     }
   };
@@ -720,19 +720,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     };
   };
 
-  // Dynamic contextually-aligned thinking message generator - EXACT COPY from transcript meeting
+  // Remove thinking message generator - users shouldn't see stakeholder thinking
   const generateThinkingMessage = (stakeholder: any, context: any) => {
-    const userQuestion = context.messageContent || '';
-    const responseContext = context.responseContext || '';
-    
-    // Simple thinking message based on context
-    if (responseContext === 'baton_pass') {
-      return `${stakeholder.name} is considering the question...`;
-    } else if (responseContext === 'introduction_lead') {
-      return `${stakeholder.name} is preparing to introduce the team...`;
-    } else {
-      return `${stakeholder.name} is thinking about your question...`;
-    }
+    // No more thinking messages shown to users
+    return null;
   };
 
   // Enhanced stakeholder response processing - EXACT COPY from transcript meeting
@@ -774,14 +765,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         conversationHistory: currentMessages,
         responseContext
       };
-      const thinkingMessage = generateThinkingMessage(stakeholder, thinkingContext);
-      setDynamicFeedback(thinkingMessage);
+      // Skip thinking message - users shouldn't see stakeholder thinking process
       
       // Generate contextual response using AI service
       const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
-      
-      // Clean up thinking state - ensure proper cleanup
-      setDynamicFeedback(null);
       
       // Create and add message with dynamic indexing
       const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
@@ -926,7 +913,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                 } else {
                   console.log('🔄 Already listening, skipping restart');
                 }
-              }, 500);
+                              }, 200);
             }
             
             resolve();
@@ -2403,8 +2390,6 @@ Please review the raw transcript for detailed conversation content.`;
                     ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' 
                     : isTranscribing
                     ? 'bg-blue-500 animate-pulse'
-                    : isGeneratingResponse
-                    ? 'bg-purple-500 animate-spin'
                     : 'bg-gray-500'
                 }`}>
                   <Mic className="w-4 h-4 text-white" />
@@ -2673,8 +2658,6 @@ Please review the raw transcript for detailed conversation content.`;
                     ? '🎤 Listening... Just talk naturally!' 
                     : isTranscribing
                     ? '📝 Processing your speech...'
-                    : isGeneratingResponse
-                    ? '🤖 AI is responding...'
                     : '⏳ Getting ready...'
                   }
                 </span>
