@@ -418,8 +418,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       } else if (hasDetectedVoice) {
         const silenceDuration = Date.now() - lastVoiceTime;
         
-        // If we've detected voice before and now have 0.8 seconds of silence, process the audio
-        if (silenceDuration > 800 && !silenceTimerRef.current) {
+        // If we've detected voice before and now have 0.5 seconds of silence, process the audio
+        if (silenceDuration > 500 && !silenceTimerRef.current) {
           console.log('🔇 VAD: Detected end of speech after 2 seconds of silence, processing...');
           
           // Stop the current recording
@@ -458,7 +458,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // After processing, restart listening immediately if still in streaming mode
       if (isStreamingMode) {
         console.log('🔄 Restarting continuous listening...');
-        setTimeout(() => startContinuousListening(), 100);
+        setTimeout(() => startContinuousListening(), 50);
       }
       
     } catch (error) {
@@ -467,7 +467,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Restart listening even if there was an error
       if (isStreamingMode) {
-        setTimeout(() => startContinuousListening(), 500);
+        setTimeout(() => startContinuousListening(), 100);
       }
     }
   };
@@ -519,7 +519,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         setTimeout(() => {
           console.log('🔄 Auto-restarting listening after AI response...');
           startContinuousListening();
-        }, 300); // Minimal wait for audio to start playing
+        }, 100); // Ultra-fast restart
       }
     }
   };
@@ -1057,8 +1057,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             
             console.log(`🚀 MAIN DEBUG: Completed stakeholder ${i + 1}/${userMentionResult.mentionedStakeholders.length}: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`);
             
-            // Keep the current speaker visible for a moment after they finish
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Removed delay for 2-second max response
             
             // Update response queue - move to next stakeholder (only if there are more)
             if (i < userMentionResult.mentionedStakeholders.length - 1) {
@@ -1071,15 +1070,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               });
               
               console.log(`⏸️ Pausing 1.5s before next stakeholder response`);
-              await new Promise(resolve => setTimeout(resolve, 1500));
+              // Removed delay for 2-second max response
             }
           } else {
             console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`);
           }
         }
         
-        // Keep the final speaker visible for a moment, then clear
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Removed delay for 2-second max response
         
         // Clear the response queue when all responses are complete
         setResponseQueue({ current: null, upcoming: [] });
@@ -2239,8 +2237,7 @@ Please review the raw transcript for detailed conversation content.`;
         
         // Natural pause between stakeholders (except for the last one)
         if (i < selectedStakeholders.length - 1) {
-          console.log(`⏸️ Pausing 2s before next stakeholder greeting`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Removed delay for 2-second max response
         }
       }
       
