@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, FileText } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
@@ -2380,13 +2380,40 @@ Please review the raw transcript for detailed conversation content.`;
               </div>
             )}
 
-            {/* Stop Button */}
+            {/* Transcript Toggle Button */}
             <button
-              onClick={handleStopCurrent}
-              className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
-              title="Stop current speaker"
+              onClick={() => {
+                setTranscriptionEnabled(!transcriptionEnabled);
+                if (!transcriptionEnabled) {
+                  setTranscriptPanelOpen(true);
+                  // Add existing messages to transcript when enabling
+                  setTranscriptMessages(messages);
+                } else {
+                  setTranscriptPanelOpen(false);
+                }
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white ${
+                transcriptionEnabled ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-600 hover:bg-gray-700'
+              }`}
+              title="Toggle transcript"
             >
-              <Square className="w-4 h-4 text-white" />
+              <FileText className="w-4 h-4" />
+              <span className="text-sm">Transcript</span>
+            </button>
+
+            {/* End Meeting Button */}
+            <button
+              onClick={() => {
+                if (isStreamingMode) {
+                  endStreamingConversation();
+                }
+                handleStopCurrent();
+              }}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
+              title="End meeting"
+            >
+              <Square className="w-4 h-4" />
+              <span className="text-sm">End Meeting</span>
             </button>
 
 
