@@ -121,7 +121,7 @@ class ContextAnalyzer {
   private extractTopics(text: string): string[] {
     const topics: string[] = [];
     
-    if (this.technicalPatterns.test(text)) topics.push('technical');
+    if (this.technicalPatterns.some(pattern => pattern.test(text))) topics.push('technical');
     if (/customer|user|client/i.test(text)) topics.push('customer');
     if (/design|ui|ux|interface/i.test(text)) topics.push('design');
     if (/marketing|campaign|brand/i.test(text)) topics.push('marketing');
