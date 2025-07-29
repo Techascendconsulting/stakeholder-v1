@@ -455,13 +455,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       setIsTranscribing(false);
       
-      // After AI responds, start listening again
-      setTimeout(() => {
-        if (isStreamingMode && !isGeneratingResponse) {
-          console.log('🔄 Restarting continuous listening...');
-          startContinuousListening();
-        }
-      }, 1000);
+      // After processing, restart listening immediately if still in streaming mode
+      if (isStreamingMode) {
+        console.log('🔄 Restarting continuous listening...');
+        setTimeout(() => startContinuousListening(), 500);
+      }
       
     } catch (error) {
       console.error('❌ Error processing streaming audio:', error);
@@ -515,6 +513,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.error('❌ Error generating streaming AI response:', error);
     } finally {
       setIsGeneratingResponse(false);
+      
+      // Auto-restart listening after AI response completes in streaming mode
+      if (isStreamingMode) {
+        setTimeout(() => {
+          console.log('🔄 Auto-restarting listening after AI response...');
+          startContinuousListening();
+        }, 2000); // Wait for audio to start playing
+      }
     }
   };
 
