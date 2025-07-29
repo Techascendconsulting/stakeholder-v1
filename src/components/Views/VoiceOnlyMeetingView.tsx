@@ -518,7 +518,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (isStreamingMode) {
         setTimeout(() => {
           console.log('🔄 Auto-restarting listening after AI response...');
-          startContinuousListening();
+          // Only restart if we're not already listening
+          if (!isListening) {
+            startContinuousListening();
+          } else {
+            console.log('🔄 Already listening, skipping restart');
+          }
         }, 100); // Ultra-fast restart
       }
     }
@@ -910,6 +915,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setCurrentSpeaker(null);
             setIsAudioPlaying(false);
             console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} audio naturally ended`);
+            
+            // Auto-restart listening in streaming mode after audio ends
+            if (isStreamingMode) {
+              setTimeout(() => {
+                console.log('🔄 Auto-restarting listening after audio playback ended...');
+                // Only restart if we're not already listening
+                if (!isListening) {
+                  startContinuousListening();
+                } else {
+                  console.log('🔄 Already listening, skipping restart');
+                }
+              }, 500);
+            }
+            
             resolve();
           };
           
