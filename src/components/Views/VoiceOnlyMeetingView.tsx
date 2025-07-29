@@ -616,6 +616,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setMeetingId(newMeetingId);
             setMeetingStartTime(Date.now());
             console.log('🎯 Meeting initialized in database:', newMeetingId);
+            
+            // Auto-start streaming conversation mode after meeting initialization
+            setTimeout(() => {
+              console.log('🚀 AUTO-STARTING streaming conversation mode');
+              startStreamingConversation();
+            }, 2000);
           } else {
             console.error('🎯 INIT MEETING - Failed to create meeting, no ID returned');
             // Create fallback local meeting ID
@@ -623,6 +629,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setMeetingId(fallbackMeetingId);
             setMeetingStartTime(Date.now());
             console.log('🎯 Created fallback meeting ID:', fallbackMeetingId);
+            
+            // Auto-start streaming conversation mode for fallback too
+            setTimeout(() => {
+              console.log('🚀 AUTO-STARTING streaming conversation mode (fallback)');
+              startStreamingConversation();
+            }, 2000);
           }
         } catch (error) {
           console.error('🎯 INIT MEETING - Error initializing meeting:', error);
