@@ -2365,48 +2365,19 @@ Please review the raw transcript for detailed conversation content.`;
             </button>
           </div>
 
-          {/* Meeting Controls - Simplified when streaming is active */}
+          {/* Essential Controls Only */}
           <div className="flex items-center space-x-2">
-            {!isStreamingMode ? (
-              <>
-                {/* Manual Mic Button - Only shown when not streaming */}
-                <button
-                  onClick={handleMicClick}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    isRecording 
-                      ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
-                      : isTranscribing
-                      ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
-                      : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                  title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
-                >
-                  {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Streaming Status - Clean indicator */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  isListening 
-                    ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' 
-                    : isTranscribing
-                    ? 'bg-blue-500 animate-pulse'
-                    : 'bg-gray-500'
-                }`}>
-                  <Mic className="w-4 h-4 text-white" />
-                </div>
-                
-                {/* Only show end button - no start/stop needed */}
-                <button
-                  onClick={endStreamingConversation}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
-                  title="End meeting"
-                >
-                  <Square className="w-4 h-4" />
-                  <span className="text-sm">End Meeting</span>
-                </button>
-              </>
+            {/* Streaming Status Indicator - Always visible when streaming */}
+            {isStreamingMode && (
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                isListening 
+                  ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' 
+                  : isTranscribing
+                  ? 'bg-blue-500 animate-pulse'
+                  : 'bg-gray-500'
+              }`}>
+                <Mic className="w-4 h-4 text-white" />
+              </div>
             )}
 
             {/* Stop Button */}
