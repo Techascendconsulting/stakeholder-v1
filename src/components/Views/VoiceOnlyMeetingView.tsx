@@ -622,11 +622,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setMeetingStartTime(Date.now());
             console.log('🎯 Meeting initialized in database:', newMeetingId);
             
-            // Auto-start streaming conversation mode after meeting initialization
-            setTimeout(() => {
-              console.log('🚀 AUTO-STARTING streaming conversation mode');
-              startStreamingConversation();
-            }, 3000);
+            // Removed auto-start - users must click "Start Talking" button when ready
           } else {
             console.error('🎯 INIT MEETING - Failed to create meeting, no ID returned');
             // Create fallback local meeting ID
@@ -635,11 +631,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setMeetingStartTime(Date.now());
             console.log('🎯 Created fallback meeting ID:', fallbackMeetingId);
             
-            // Auto-start streaming conversation mode for fallback too
-            setTimeout(() => {
-              console.log('🚀 AUTO-STARTING streaming conversation mode (fallback)');
-              startStreamingConversation();
-            }, 3000);
+            // Removed auto-start - users must click "Start Talking" button when ready
           }
         } catch (error) {
           console.error('🎯 INIT MEETING - Error initializing meeting:', error);
@@ -649,11 +641,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setMeetingStartTime(Date.now());
           console.log('🎯 Created emergency meeting ID:', emergencyMeetingId);
           
-          // Auto-start streaming conversation mode for emergency too
-          setTimeout(() => {
-            console.log('🚀 AUTO-STARTING streaming conversation mode (emergency)');
-            startStreamingConversation();
-          }, 3000);
+          // Removed auto-start - users must click "Start Talking" button when ready
         }
       } else {
         console.log('🎯 INIT MEETING - Conditions not met:', {
@@ -669,11 +657,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setMeetingStartTime(Date.now());
           console.log('🎯 Created backup meeting ID for conditions not met:', backupMeetingId);
           
-          // Auto-start streaming conversation mode for backup too
-          setTimeout(() => {
-            console.log('🚀 AUTO-STARTING streaming conversation mode (backup)');
-            startStreamingConversation();
-          }, 3000);
+          // Removed auto-start - users must click "Start Talking" button when ready
         }
       }
     };
@@ -708,7 +692,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         priorities: s.priorities,
         personality: s.personality,
         expertise: s.expertise || []
-      }))
+      })) || []
     };
 
     const aiService = AIService.getInstance();
@@ -2367,6 +2351,18 @@ Please review the raw transcript for detailed conversation content.`;
 
           {/* Essential Controls Only */}
           <div className="flex items-center space-x-2">
+            {/* Start Talking Button - Only show when not streaming */}
+            {!isStreamingMode && (
+              <button
+                onClick={startStreamingConversation}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
+                title="Start continuous conversation - click once and talk naturally!"
+              >
+                <Play className="w-4 h-4" />
+                <span className="text-sm">Start Talking</span>
+              </button>
+            )}
+
             {/* Streaming Status Indicator - Always visible when streaming */}
             {isStreamingMode && (
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
