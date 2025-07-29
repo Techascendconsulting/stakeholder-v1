@@ -5,39 +5,98 @@
       "name": "James Walker",
       "role": "Head of Customer Success",
       "voice": "en-GB-RyanNeural",
-      "baseStyle": "customerservice",
+      "baseStyle": "cheerful",
       "characteristics": {
-        "fillers": ["you know", "specifically", "clearly", "absolutely", "from my perspective", "well", "so", "actually", "I mean", "basically", "essentially", "obviously", "frankly", "honestly"],
-        "greetings": ["Hey there", "Good to see you", "Thanks for joining", "Morning everyone"],
-        "transitions": ["So here's the thing", "What I'm thinking is", "From a customer standpoint", "The way I see it"],
-        "acknowledgments": ["absolutely", "got it", "that makes sense", "I hear you"],
+        "fillers": ["you know", "well", "so", "actually", "I mean", "right", "exactly", "hmm", "let's see", "interesting", "ah yes", "that's fascinating", "oh absolutely", "quite right"],
+        "greetings": ["Hey there!", "Good to see you!", "Brilliant to connect!", "Morning everyone!", "Great to have you here!", "Lovely to meet you!", "Thanks for joining us!", "What a pleasure!", "Fantastic to see you!"],
+        "transitions": ["So here's what's interesting", "You know what I find fascinating", "Here's something curious", "What I'm wondering is", "This is quite intriguing", "Let me share something", "Here's what caught my attention", "I'm curious about this", "That's a brilliant point"],
+        "acknowledgments": ["absolutely brilliant", "that's spot on", "I love that perspective", "that's really insightful", "fantastic point", "you're absolutely right", "that's exactly it", "brilliant observation", "that's fascinating", "I'm really interested in that"],
+        "curiosity_phrases": ["I'm curious", "That's interesting", "Tell me more about", "I'd love to understand", "What's your take on", "How do you see", "I'm wondering", "That raises a great question", "Help me understand"],
+        "witty_responses": ["That's a cracking point", "Now that's clever", "I like your thinking", "You've hit the nail on the head", "That's rather brilliant", "Spot on there", "Now we're cooking", "That's the ticket"],
         "pausePatterns": {
           "beforeImportantPoint": 600,
-          "afterGreeting": 450,
+          "afterGreeting": 400,
           "thinking": 800,
           "short": 300,
           "medium": 500,
-          "long": 900
+          "long": 900,
+          "curiosity": 350,
+          "cheerful": 200,
+          "natural": 450,
+          "conversational": 250
         },
         "prosody": {
           "baseRate": 0.95,
-          "basePitch": "+3%",
+          "basePitch": "+6%",
           "baseVolume": "medium"
         },
         "emotionalRanges": {
-          "confident": { "pitch": "+8%", "rate": 1.05, "volume": "medium" },
-          "empathetic": { "pitch": "+3%", "rate": 0.85, "volume": "soft" },
-          "excited": { "pitch": "+12%", "rate": 1.2, "volume": "medium" },
-          "thoughtful": { "pitch": "+1%", "rate": 0.8, "volume": "medium" },
-          "friendly": { "pitch": "+6%", "rate": 1.0, "volume": "medium" }
+          "cheerful": { "pitch": "+12%", "rate": 1.05, "volume": "medium" },
+          "friendly": { "pitch": "+8%", "rate": 1.02, "volume": "medium" },
+          "curious": { "pitch": "+10%", "rate": 0.98, "volume": "medium" },
+          "knowledgeable": { "pitch": "+4%", "rate": 0.92, "volume": "medium" },
+          "professional": { "pitch": "+5%", "rate": 0.95, "volume": "medium" },
+          "relaxed": { "pitch": "+3%", "rate": 0.88, "volume": "soft" },
+          "witty": { "pitch": "+9%", "rate": 1.08, "volume": "medium" },
+          "conversational": { "pitch": "+7%", "rate": 1.00, "volume": "medium" },
+          "attentive": { "pitch": "+6%", "rate": 0.90, "volume": "medium" },
+          "personable": { "pitch": "+8%", "rate": 1.03, "volume": "medium" }
         },
-        "emphasis_words": ["customer", "experience", "success", "retention", "satisfaction"],
+        "emphasis_words": ["customer", "experience", "success", "brilliant", "fantastic", "interesting", "curious", "wonderful", "excellent", "amazing", "partnership", "collaboration", "value", "relationship"],
         "personality_traits": {
-          "warmth": 0.8,
-          "confidence": 0.9,
-          "analytical": 0.6,
-          "empathy": 0.8,
-          "enthusiasm": 0.7
+          "cheerfulness": 0.95,
+          "friendliness": 0.98,
+          "knowledge": 0.90,
+          "professionalism": 0.88,
+          "curiosity": 0.92,
+          "relaxed_nature": 0.85,
+          "wit": 0.80,
+          "conversational_ease": 0.95,
+          "naturalness": 0.93,
+          "attentiveness": 0.90,
+          "personability": 0.96
+        },
+        "speech_patterns": {
+          "asks_follow_up_questions": true,
+          "uses_positive_language": true,
+          "shows_genuine_interest": true,
+          "builds_on_others_ideas": true,
+          "uses_conversational_tone": true,
+          "includes_light_humor": true,
+          "demonstrates_expertise_naturally": true,
+          "maintains_professional_warmth": true
+        },
+        "ssml_enhancements": {
+          "breath_patterns": {
+            "cheerful_pause": "<break time=\"200ms\"/>",
+            "curious_pause": "<break time=\"350ms\"/>",
+            "friendly_pause": "<break time=\"300ms\"/>",
+            "natural_breath": "<break time=\"450ms\"/>",
+            "attentive_pause": "<break time=\"400ms\"/>",
+            "conversational_flow": "<break time=\"250ms\"/>"
+          },
+          "emphasis_levels": {
+            "positive_words": "strong",
+            "curious_questions": "moderate",
+            "professional_terms": "moderate",
+            "friendly_acknowledgments": "reduced",
+            "witty_remarks": "moderate"
+          },
+          "volume_variations": {
+            "cheerful_moments": "medium",
+            "curious_questions": "medium",
+            "friendly_responses": "medium",
+            "professional_insights": "medium",
+            "relaxed_conversation": "soft",
+            "witty_comments": "medium"
+          },
+          "pitch_variations": {
+            "curiosity_rise": "+2%",
+            "cheerful_lift": "+4%",
+            "friendly_warmth": "+3%",
+            "professional_confidence": "+1%",
+            "conversational_flow": "+2%"
+          }
         }
       }
     },
@@ -306,6 +365,64 @@
     "technical_explanation": {
       "pattern": "{pause_thinking}{transition}{pause_short}{technical_content}{pause_long}",
       "emotional_weight": 0.5
+    }
+  },
+
+  "james_walker_ssml_templates": {
+    "cheerful_greeting": {
+      "pattern": "<break time=\"200ms\"/><prosody pitch=\"+12%\" rate=\"1.05\">{cheerful_greeting}</prosody><break time=\"400ms\"/>{main_content}<break time=\"300ms\"/>",
+      "emotional_weight": 0.95,
+      "voice_style": "cheerful"
+    },
+    "curious_question": {
+      "pattern": "<break time=\"350ms\"/><prosody pitch=\"+10%\" rate=\"0.98\">{curiosity_phrase}</prosody><break time=\"250ms\"/>{question_content}<break time=\"400ms\"/>",
+      "emotional_weight": 0.85,
+      "voice_style": "curious"
+    },
+    "friendly_acknowledgment": {
+      "pattern": "<break time=\"300ms\"/><prosody pitch=\"+8%\" rate=\"1.02\" volume=\"medium\"><emphasis level=\"reduced\">{friendly_response}</emphasis></prosody><break time=\"250ms\"/>{follow_up}<break time=\"350ms\"/>",
+      "emotional_weight": 0.9,
+      "voice_style": "friendly"
+    },
+    "knowledgeable_insight": {
+      "pattern": "<break time=\"450ms\"/><prosody pitch=\"+4%\" rate=\"0.92\">{professional_transition}</prosody><break time=\"300ms\"/><emphasis level=\"moderate\">{expertise_content}</emphasis><break time=\"400ms\"/>",
+      "emotional_weight": 0.8,
+      "voice_style": "knowledgeable"
+    },
+    "witty_comment": {
+      "pattern": "<break time=\"250ms\"/><prosody pitch=\"+9%\" rate=\"1.08\"><emphasis level=\"moderate\">{witty_remark}</emphasis></prosody><break time=\"300ms\"/>{continuation}<break time=\"250ms\"/>",
+      "emotional_weight": 0.75,
+      "voice_style": "witty"
+    },
+    "conversational_flow": {
+      "pattern": "<break time=\"250ms\"/><prosody pitch=\"+7%\" rate=\"1.00\">{conversational_transition}</prosody><break time=\"200ms\"/>{main_point}<break time=\"350ms\"/>",
+      "emotional_weight": 0.8,
+      "voice_style": "conversational"
+    },
+    "attentive_listening": {
+      "pattern": "<break time=\"400ms\"/><prosody pitch=\"+6%\" rate=\"0.90\" volume=\"medium\">{attentive_acknowledgment}</prosody><break time=\"300ms\"/>{thoughtful_response}<break time=\"450ms\"/>",
+      "emotional_weight": 0.85,
+      "voice_style": "attentive"
+    },
+    "relaxed_explanation": {
+      "pattern": "<break time=\"450ms\"/><prosody pitch=\"+3%\" rate=\"0.88\" volume=\"soft\">{relaxed_intro}</prosody><break time=\"300ms\"/>{explanation}<break time=\"400ms\"/>",
+      "emotional_weight": 0.7,
+      "voice_style": "relaxed"
+    },
+    "personable_connection": {
+      "pattern": "<break time=\"300ms\"/><prosody pitch=\"+8%\" rate=\"1.03\">{personal_connection}</prosody><break time=\"250ms\"/>{shared_experience}<break time=\"350ms\"/>",
+      "emotional_weight": 0.9,
+      "voice_style": "personable"
+    },
+    "professional_warmth": {
+      "pattern": "<break time=\"350ms\"/><prosody pitch=\"+5%\" rate=\"0.95\">{professional_opener}</prosody><break time=\"250ms\"/><emphasis level=\"moderate\">{warm_content}</emphasis><break time=\"400ms\"/>",
+      "emotional_weight": 0.85,
+      "voice_style": "professional"
+    },
+    "natural_enthusiasm": {
+      "pattern": "<break time=\"200ms\"/><prosody pitch=\"+10%\" rate=\"1.05\" volume=\"medium\"><emphasis level=\"strong\">{enthusiastic_content}</emphasis></prosody><break time=\"300ms\"/>{follow_through}<break time=\"250ms\"/>",
+      "emotional_weight": 0.9,
+      "voice_style": "cheerful"
     }
   }
 }

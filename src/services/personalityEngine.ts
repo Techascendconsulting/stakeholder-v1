@@ -237,15 +237,25 @@ class PersonalityEngine {
     emotionalSettings: any, 
     context: ConversationContext
   ): string {
-    const template = this.ssmlTemplates[context.type] || this.ssmlTemplates.explanation;
+    // Check for James Walker specific templates
+    let template = this.ssmlTemplates[context.type] || this.ssmlTemplates.explanation;
+    
+    if (personality.id === 'james_walker') {
+      template = this.getJamesWalkerTemplate(text, context) || template;
+    }
     
     // Build SSML with voice and style
     let ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">`;
     ssml += `<voice name="${personality.voice}">`;
     
-    // Add expression style if available
+    // Add expression style if available - adjust for James's context
+    let styleIntensity = "0.8";
+    if (personality.id === 'james_walker') {
+      styleIntensity = this.getJamesStyleIntensity(context, emotionalSettings);
+    }
+    
     if (personality.baseStyle) {
-      ssml += `<mstts:express-as style="${personality.baseStyle}" styledegree="0.8">`;
+      ssml += `<mstts:express-as style="${personality.baseStyle}" styledegree="${styleIntensity}">`;
     }
     
     // Add prosody settings
@@ -264,6 +274,118 @@ class PersonalityEngine {
     ssml += `</voice></speak>`;
     
     return ssml;
+  }
+
+  /**
+   * Get appropriate James Walker template based on content analysis
+   */
+  private getJamesWalkerTemplate(text: string, context: ConversationContext): any {
+    const jamesTemplates = (this.personalitiesConfig as any).james_walker_ssml_templates;
+    if (!jamesTemplates) return null;
+    
+    // Analyze text content to determine best template
+    const lowerText = text.toLowerCase();
+    
+    // Check for cheerful greetings
+    if (context.type === 'greeting' || lowerText.match(/\b(hey|hello|hi|good|morning|brilliant|fantastic)\b/gi)) {
+      return jamesTemplates.cheerful_greeting;
+    }
+    
+    // Check for curious questions
+    if (lowerText.includes('curious') || lowerText.includes('interesting') || lowerText.includes('wondering') || 
+        lowerText.includes('tell me') || lowerText.includes('help me understand') || text.includes('?')) {
+      return jamesTemplates.curious_question;
+    }
+    
+    // Check for friendly acknowledgments
+    if (lowerText.includes('that\'s spot on') || lowerText.includes('I love that') || 
+        lowerText.includes('fantastic point') || lowerText.includes('brilliant observation') ||
+        lowerText.includes('absolutely brilliant')) {
+      return jamesTemplates.friendly_acknowledgment;
+    }
+    
+    // Check for knowledgeable insights
+    if (lowerText.includes('experience') || lowerText.includes('expertise') || 
+        lowerText.includes('knowledge') || lowerText.includes('professional')) {
+      return jamesTemplates.knowledgeable_insight;
+    }
+    
+    // Check for witty comments
+    if (lowerText.includes('cracking') || lowerText.includes('clever') || 
+        lowerText.includes('cooking') || lowerText.includes('ticket') ||
+        lowerText.includes('nail on the head')) {
+      return jamesTemplates.witty_comment;
+    }
+    
+    // Check for conversational flow
+    if (lowerText.includes('so') || lowerText.includes('well') || 
+        lowerText.includes('actually') || lowerText.includes('you know')) {
+      return jamesTemplates.conversational_flow;
+    }
+    
+    // Check for attentive listening
+    if (lowerText.includes('I hear you') || lowerText.includes('that\'s insightful') || 
+        lowerText.includes('help me understand') || lowerText.includes('tell me more')) {
+      return jamesTemplates.attentive_listening;
+    }
+    
+    // Check for relaxed explanations
+    if (context.emotion === 'relaxed' || lowerText.includes('let me explain') || 
+        lowerText.includes('basically') || lowerText.includes('simply put')) {
+      return jamesTemplates.relaxed_explanation;
+    }
+    
+    // Check for personable connections
+    if (lowerText.includes('partnership') || lowerText.includes('together') || 
+        lowerText.includes('collaborate') || lowerText.includes('personal')) {
+      return jamesTemplates.personable_connection;
+    }
+    
+    // Check for professional warmth
+    if (lowerText.includes('professional') || lowerText.includes('customer') || 
+        lowerText.includes('success') || context.type === 'technical_explanation') {
+      return jamesTemplates.professional_warmth;
+    }
+    
+    // Check for natural enthusiasm
+    if (context.emotion === 'excited' || lowerText.includes('excited') || 
+        lowerText.includes('passionate') || lowerText.includes('love')) {
+      return jamesTemplates.natural_enthusiasm;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get appropriate style intensity for James Walker based on context
+   */
+  private getJamesStyleIntensity(context: ConversationContext, emotionalSettings: any): string {
+    // Higher intensity for cheerful and enthusiastic moments
+    if (context.emotion === 'cheerful' || context.emotion === 'excited' || context.emotion === 'personable') {
+      return "1.0";
+    }
+    
+    // High intensity for friendly and witty moments
+    if (context.emotion === 'friendly' || context.emotion === 'witty' || context.emotion === 'conversational') {
+      return "0.9";
+    }
+    
+    // Medium-high intensity for curious and attentive moments
+    if (context.emotion === 'curious' || context.emotion === 'attentive') {
+      return "0.8";
+    }
+    
+    // Medium intensity for professional and knowledgeable content
+    if (context.emotion === 'professional' || context.emotion === 'knowledgeable' || context.type === 'technical_explanation') {
+      return "0.7";
+    }
+    
+    // Lower intensity for relaxed moments to sound natural
+    if (context.emotion === 'relaxed') {
+      return "0.6";
+    }
+    
+    return "0.8"; // Default - maintains cheerful baseline
   }
 
   /**
@@ -292,6 +414,11 @@ class PersonalityEngine {
   private addContextualPauses(text: string, personality: PersonalityConfig, context: ConversationContext): string {
     const { pausePatterns } = personality.characteristics;
     let processed = text;
+    
+    // James Walker specific enhancements
+    if (personality.id === 'james_walker') {
+      processed = this.applyJamesWalkerSSMLEnhancements(processed, personality, context);
+    }
     
     // Always add a natural thinking pause at the beginning - ElevenLabs style
     const initialPause = `<break time="${pausePatterns.medium}ms"/>`;
@@ -338,9 +465,113 @@ class PersonalityEngine {
     const { emphasis_words } = personality.characteristics;
     let processed = text;
     
-    emphasis_words.forEach(word => {
+    // James Walker specific emphasis handling
+    if (personality.id === 'james_walker') {
+      processed = this.applyJamesWalkerEmphasis(processed, personality);
+    } else {
+      emphasis_words.forEach(word => {
+        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+        processed = processed.replace(regex, `<emphasis level="moderate">${word}</emphasis>`);
+      });
+    }
+    
+    return processed;
+  }
+
+  /**
+   * Apply James Walker specific SSML enhancements
+   */
+  private applyJamesWalkerSSMLEnhancements(text: string, personality: PersonalityConfig, context: ConversationContext): string {
+    let processed = text;
+    const ssmlEnhancements = personality.characteristics.ssml_enhancements;
+    
+    if (!ssmlEnhancements) return processed;
+    
+    // Apply cheerful pauses for positive expressions
+    if (text.match(/\b(brilliant|fantastic|wonderful|excellent|amazing)\b/gi)) {
+      processed = processed.replace(/\b(brilliant|fantastic|wonderful|excellent|amazing)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.cheerful_pause}$1`);
+    }
+    
+    // Add curious pauses before questions
+    if (text.match(/\b(curious|interesting|wondering|tell me|help me understand)\b/gi)) {
+      processed = processed.replace(/\b(curious|interesting|wondering|tell me|help me understand)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.curious_pause}$1`);
+    }
+    
+    // Add friendly pauses for acknowledgments
+    if (text.match(/\b(that's spot on|I love that|fantastic point|brilliant observation)\b/gi)) {
+      processed = processed.replace(/\b(that's spot on|I love that|fantastic point|brilliant observation)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.friendly_pause}$1`);
+    }
+    
+    // Add natural breathing patterns for conversational flow
+    if (text.length > 60 && Math.random() < 0.7) {
+      const words = processed.split(' ');
+      const breathPosition = Math.floor(words.length * 0.5); // Middle of sentence
+      if (breathPosition > 0 && breathPosition < words.length - 1) {
+        words.splice(breathPosition, 0, ssmlEnhancements.breath_patterns.natural_breath);
+        processed = words.join(' ');
+      }
+    }
+    
+    // Add attentive pauses when responding to others
+    if (text.match(/\b(I hear you|that's insightful|help me understand|tell me more)\b/gi)) {
+      processed = processed.replace(/\b(I hear you|that's insightful|help me understand|tell me more)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.attentive_pause}$1`);
+    }
+    
+    // Add conversational flow pauses
+    if (text.match(/\b(so|well|actually|you know|right)\b/gi)) {
+      processed = processed.replace(/\b(so|well|actually|you know|right)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.conversational_flow}$1`);
+    }
+    
+    return processed;
+  }
+
+  /**
+   * Apply James Walker specific emphasis patterns
+   */
+  private applyJamesWalkerEmphasis(text: string, personality: PersonalityConfig): string {
+    let processed = text;
+    const { emphasis_words, ssml_enhancements } = personality.characteristics;
+    
+    if (!ssml_enhancements) return processed;
+    
+    // Strong emphasis for positive and enthusiastic words
+    const positiveWords = ['brilliant', 'fantastic', 'wonderful', 'excellent', 'amazing', 'incredible', 'outstanding', 'superb'];
+    positiveWords.forEach(word => {
       const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      processed = processed.replace(regex, `<emphasis level="moderate">${word}</emphasis>`);
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.positive_words}">${word}</emphasis>`);
+    });
+    
+    // Moderate emphasis for curious questions and phrases
+    const curiousWords = ['curious', 'interesting', 'fascinating', 'intriguing', 'wondering', 'question'];
+    curiousWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.curious_questions}">${word}</emphasis>`);
+    });
+    
+    // Moderate emphasis for professional terms
+    const professionalWords = ['customer', 'experience', 'success', 'partnership', 'collaboration', 'strategy', 'solution'];
+    professionalWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.professional_terms}">${word}</emphasis>`);
+    });
+    
+    // Reduced emphasis for friendly acknowledgments to sound natural
+    const friendlyWords = ['absolutely', 'exactly', 'spot on', 'right', 'indeed', 'quite right'];
+    friendlyWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.friendly_acknowledgments}">${word}</emphasis>`);
+    });
+    
+    // Moderate emphasis for witty remarks
+    const wittyWords = ['cracking', 'clever', 'brilliant', 'cooking', 'ticket'];
+    wittyWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.witty_remarks}">${word}</emphasis>`);
     });
     
     return processed;
