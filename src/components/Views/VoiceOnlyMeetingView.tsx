@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
@@ -290,31 +290,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     messageCount: 0
   });
 
-  // Hands-free mode state
-  const [isHandsFreeMode, setIsHandsFreeMode] = useState(false);
 
-  // Hands-free mode functions
-  const startHandsFreeMeeting = () => {
-    console.log('🚀 Starting hands-free meeting mode');
-    setIsHandsFreeMode(true);
-    
-    // Auto-start recording immediately
-    setTimeout(() => {
-      if (!isRecording) {
-        console.log('🎤 Auto-starting recording for hands-free mode');
-        handleMicClick();
-      }
-    }, 500);
-  };
-
-  const endHandsFreeMeeting = () => {
-    console.log('🛑 Ending hands-free meeting mode');
-    setIsHandsFreeMode(false);
-    
-    if (isRecording) {
-      handleMicClick(); // Stop recording
-    }
-  };
 
   // Background transcript capture function (always captures, regardless of UI)
   const addToBackgroundTranscript = (message: Message) => {
@@ -896,71 +872,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
-      // Voice Activity Detection for hands-free mode
-      let vadContext: AudioContext | null = null;
-      let vadAnalyzer: AnalyserNode | null = null;
-      let vadSource: MediaStreamAudioSourceNode | null = null;
-      let vadTimer: NodeJS.Timeout | null = null;
-      let lastVoiceTime = Date.now();
-      
-      // Store VAD references for cleanup
-      const vadCleanup = () => {
-        if (vadTimer) {
-          clearTimeout(vadTimer);
-          vadTimer = null;
-        }
-        if (vadContext) {
-          vadContext.close();
-          vadContext = null;
-        }
-      };
-      
-      if (isHandsFreeMode) {
-        vadContext = new AudioContext();
-        vadAnalyzer = vadContext.createAnalyser();
-        vadSource = vadContext.createMediaStreamSource(stream);
-        vadSource.connect(vadAnalyzer);
-        
-        vadAnalyzer.fftSize = 256;
-        const bufferLength = vadAnalyzer.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        
-        const checkVoiceActivity = () => {
-          if (!vadAnalyzer || !mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') {
-            console.log('🔍 VAD check skipped - missing analyzer or recorder not recording');
-            return;
-          }
-          
-          vadAnalyzer.getByteFrequencyData(dataArray);
-          const average = dataArray.reduce((a, b) => a + b) / bufferLength;
-          const threshold = 15; // Lowered sensitivity threshold
-          
-          // Debug: log audio levels periodically
-          if (Math.random() < 0.1) { // 10% of the time
-            console.log('🔍 VAD debug - Audio level:', average, 'Threshold:', threshold);
-          }
-          
-          if (average > threshold) {
-            lastVoiceTime = Date.now();
-            console.log('🔊 Voice detected, average:', average);
-          } else {
-            const silenceDuration = Date.now() - lastVoiceTime;
-            if (silenceDuration > 3000) { // Increased to 3 seconds of silence
-              console.log('🔇 Auto-stopping recording after 3 seconds of silence');
-              stopDirectRecording();
-              return;
-            }
-          }
-          
-          vadTimer = setTimeout(checkVoiceActivity, 100);
-        };
-        
-        // Start VAD after a brief delay
-        setTimeout(() => {
-          console.log('🎧 Starting Voice Activity Detection...');
-          checkVoiceActivity();
-        }, 500);
-      }
+
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -970,9 +882,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       mediaRecorder.onstop = async () => {
         console.log('🛑 Recording stopped, processing audio...');
-        
-        // Clean up VAD if it was being used
-        vadCleanup();
         
         const audioBlob = new Blob(audioChunksRef.current, { type: getSupportedAudioFormat() });
         await transcribeAndSend(audioBlob);
@@ -988,12 +897,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setIsRecording(true);
       setIsTranscribing(false); // Only set to true when actually transcribing
       console.log('🎤 Direct recording started successfully');
-      
-      if (isHandsFreeMode) {
-        setDynamicFeedback('🎤 Listening... Speak naturally');
-      } else {
-        setDynamicFeedback('🎤 Recording your message... Click microphone to stop');
-      }
+      setDynamicFeedback('🎤 Recording your message... Click microphone to stop');
     } catch (error) {
       console.error('❌ Error starting recording:', error);
       setIsRecording(false);
@@ -1022,13 +926,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       setDynamicFeedback(errorMessage);
       setTimeout(() => setDynamicFeedback(null), 5000);
-      
-      // If in hands-free mode and it's a permission issue, suggest exiting hands-free mode
-      if (isHandsFreeMode && error instanceof Error && error.name === 'NotAllowedError') {
-        setTimeout(() => {
-          setDynamicFeedback('💡 Try clicking "End Meeting" and then "Hands-Free" again to grant microphone access');
-        }, 5000);
-      }
     }
   };
 
@@ -1102,17 +999,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     } finally {
       setIsTranscribing(false);
       
-      // Auto-restart recording in hands-free mode after AI response
-      if (isHandsFreeMode) {
-        console.log('🔄 Hands-free mode: Auto-restarting recording after AI response');
-        // Wait for AI response to complete, then restart recording
-        setTimeout(() => {
-          if (isHandsFreeMode && !isRecording && !isGeneratingResponse) {
-            console.log('🎤 Auto-restarting recording for next input');
-            handleMicClick();
-          }
-        }, 3000); // Give time for AI to respond
-      }
+
     }
   };
 
@@ -2217,21 +2104,7 @@ Please review the raw transcript for detailed conversation content.`;
               <Square className="w-4 h-4 text-white" />
             </button>
 
-            {/* Hands-Free Mode Toggle */}
-            <button
-              onClick={isHandsFreeMode ? endHandsFreeMeeting : startHandsFreeMeeting}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
-                isHandsFreeMode 
-                  ? 'bg-red-600 hover:bg-red-700 text-white' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
-              title={isHandsFreeMode ? 'Exit hands-free mode' : 'Enter hands-free mode'}
-            >
-              {isHandsFreeMode ? <Phone className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              <span className="text-sm">
-                {isHandsFreeMode ? 'End Meeting' : 'Hands-Free'}
-              </span>
-            </button>
+
 
             {/* Debug Button - Remove after testing */}
             <button
@@ -2454,86 +2327,10 @@ Please review the raw transcript for detailed conversation content.`;
           </div>
         </div>
 
-        {/* Hands-Free Mode Overlay */}
-        {isHandsFreeMode && (
-          <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="text-center space-y-6 max-w-md">
-              <div className="w-24 h-24 mx-auto">
-                <div 
-                  className={`w-full h-full rounded-full border-4 flex items-center justify-center cursor-pointer transition-all ${
-                    isRecording 
-                      ? 'border-blue-500 bg-blue-500 animate-pulse hover:bg-blue-600' 
-                      : isGeneratingResponse
-                      ? 'border-purple-500 bg-purple-500 animate-spin'
-                      : 'border-gray-500 bg-gray-700 hover:bg-gray-600'
-                  }`}
-                  onClick={() => {
-                    if (isRecording) {
-                      console.log('🛑 Manual stop via microphone click in hands-free mode');
-                      handleMicClick();
-                    }
-                  }}
-                  title={isRecording ? 'Click to stop recording manually' : 'Automatic mode active'}
-                >
-                  <Mic className={`w-8 h-8 ${
-                    isRecording 
-                      ? 'text-white' 
-                      : isGeneratingResponse 
-                      ? 'text-white' 
-                      : 'text-gray-400'
-                  }`} />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-white">
-                  {isRecording ? 'Listening...' : isGeneratingResponse ? 'Processing...' : 'Ready to Listen'}
-                </h2>
-                <p className="text-gray-400">
-                  {isRecording 
-                    ? 'Speak naturally. Auto-stops in 3 seconds of silence. Click mic to stop manually.'
-                    : isGeneratingResponse
-                    ? 'Generating response...'
-                    : 'Automatic recording will start soon...'
-                  }
-                </p>
-              </div>
-
-              {/* Current Speaker Indicator */}
-              {currentSpeaker && (
-                <div className="bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm border border-gray-700">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-gray-300">Currently speaking:</span>
-                    <span className="font-medium text-white">{currentSpeaker.name}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Dynamic Feedback */}
-              {dynamicFeedback && (
-                <div className="bg-purple-900/50 rounded-lg p-3 backdrop-blur-sm border border-purple-500/30">
-                  <p className="text-purple-200 text-sm">{dynamicFeedback}</p>
-                </div>
-              )}
-
-
-
-              {/* Meeting Info */}
-              <div className="text-xs text-gray-500 border-t border-gray-700 pt-4">
-                <p>Meeting with {selectedStakeholders.map(s => s.name).join(', ')}</p>
-                <p className="mt-1">Duration: {formatTime(elapsedTime)}</p>
-                <p className="mt-1 text-blue-400">Hands-Free Mode Active</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Message Input Area */}
-        {!isHandsFreeMode && (
-          <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
-            {/* Dynamic Feedback Display */}
-            {dynamicFeedback && (
+                {/* Message Input Area */}
+        <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
+          {/* Dynamic Feedback Display */}
+          {dynamicFeedback && (
               <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
                 <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
               </div>
@@ -2651,7 +2448,6 @@ Please review the raw transcript for detailed conversation content.`;
             </>
           )}
         </div>
-        )}
 
       </div>
     </div>
