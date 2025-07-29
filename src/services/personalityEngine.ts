@@ -237,15 +237,25 @@ class PersonalityEngine {
     emotionalSettings: any, 
     context: ConversationContext
   ): string {
-    const template = this.ssmlTemplates[context.type] || this.ssmlTemplates.explanation;
+    // Check for James Walker specific templates
+    let template = this.ssmlTemplates[context.type] || this.ssmlTemplates.explanation;
+    
+    if (personality.id === 'james_walker') {
+      template = this.getJamesWalkerTemplate(text, context) || template;
+    }
     
     // Build SSML with voice and style
     let ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">`;
     ssml += `<voice name="${personality.voice}">`;
     
-    // Add expression style if available
+    // Add expression style if available - adjust for James's context
+    let styleIntensity = "0.8";
+    if (personality.id === 'james_walker') {
+      styleIntensity = this.getJamesStyleIntensity(context, emotionalSettings);
+    }
+    
     if (personality.baseStyle) {
-      ssml += `<mstts:express-as style="${personality.baseStyle}" styledegree="0.8">`;
+      ssml += `<mstts:express-as style="${personality.baseStyle}" styledegree="${styleIntensity}">`;
     }
     
     // Add prosody settings
@@ -264,6 +274,76 @@ class PersonalityEngine {
     ssml += `</voice></speak>`;
     
     return ssml;
+  }
+
+  /**
+   * Get appropriate James Walker template based on content analysis
+   */
+  private getJamesWalkerTemplate(text: string, context: ConversationContext): any {
+    const jamesTemplates = (this.personalitiesConfig as any).james_walker_ssml_templates;
+    if (!jamesTemplates) return null;
+    
+    // Analyze text content to determine best template
+    const lowerText = text.toLowerCase();
+    
+    // Check for customer insights
+    if (lowerText.includes('customer') || lowerText.includes('experience') || lowerText.includes('satisfaction')) {
+      return jamesTemplates.customer_insight;
+    }
+    
+    // Check for experience sharing
+    if (lowerText.includes('experience') || lowerText.includes('we\'ve found') || lowerText.includes('years')) {
+      return jamesTemplates.experience_sharing;
+    }
+    
+    // Check for empathetic responses
+    if (lowerText.includes('understand') || lowerText.includes('hear you') || lowerText.includes('appreciate')) {
+      return jamesTemplates.empathetic_response;
+    }
+    
+    // Check for data presentation
+    if (/\d+/.test(text) || lowerText.includes('data') || lowerText.includes('metrics') || lowerText.includes('numbers')) {
+      return jamesTemplates.data_presentation;
+    }
+    
+    // Check for solution proposals
+    if (lowerText.includes('solution') || lowerText.includes('approach') || lowerText.includes('strategy') || lowerText.includes('plan')) {
+      return jamesTemplates.solution_proposal;
+    }
+    
+    // Check for relationship building
+    if (lowerText.includes('partnership') || lowerText.includes('together') || lowerText.includes('collaborate')) {
+      return jamesTemplates.relationship_building;
+    }
+    
+    // Check for passionate advocacy
+    if (lowerText.includes('passionate') || lowerText.includes('believe') || lowerText.includes('committed') || context.emotion === 'excited') {
+      return jamesTemplates.passionate_advocacy;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get appropriate style intensity for James Walker based on context
+   */
+  private getJamesStyleIntensity(context: ConversationContext, emotionalSettings: any): string {
+    // Higher intensity for confident or passionate moments
+    if (context.emotion === 'confident' || context.emotion === 'excited') {
+      return "1.0";
+    }
+    
+    // Lower intensity for empathetic or thoughtful moments
+    if (context.emotion === 'empathetic' || context.emotion === 'thoughtful') {
+      return "0.6";
+    }
+    
+    // Medium intensity for analytical content
+    if (context.type === 'technical_explanation' || context.complexity > 0.7) {
+      return "0.7";
+    }
+    
+    return "0.8"; // Default
   }
 
   /**
@@ -292,6 +372,11 @@ class PersonalityEngine {
   private addContextualPauses(text: string, personality: PersonalityConfig, context: ConversationContext): string {
     const { pausePatterns } = personality.characteristics;
     let processed = text;
+    
+    // James Walker specific enhancements
+    if (personality.id === 'james_walker') {
+      processed = this.applyJamesWalkerSSMLEnhancements(processed, personality, context);
+    }
     
     // Always add a natural thinking pause at the beginning - ElevenLabs style
     const initialPause = `<break time="${pausePatterns.medium}ms"/>`;
@@ -338,9 +423,87 @@ class PersonalityEngine {
     const { emphasis_words } = personality.characteristics;
     let processed = text;
     
-    emphasis_words.forEach(word => {
+    // James Walker specific emphasis handling
+    if (personality.id === 'james_walker') {
+      processed = this.applyJamesWalkerEmphasis(processed, personality);
+    } else {
+      emphasis_words.forEach(word => {
+        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+        processed = processed.replace(regex, `<emphasis level="moderate">${word}</emphasis>`);
+      });
+    }
+    
+    return processed;
+  }
+
+  /**
+   * Apply James Walker specific SSML enhancements
+   */
+  private applyJamesWalkerSSMLEnhancements(text: string, personality: PersonalityConfig, context: ConversationContext): string {
+    let processed = text;
+    const ssmlEnhancements = personality.characteristics.ssml_enhancements;
+    
+    if (!ssmlEnhancements) return processed;
+    
+    // Apply breath patterns based on content type
+    if (text.includes('customer') || text.includes('experience')) {
+      processed = processed.replace(/\b(customer|experience)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.before_key_points}$1`);
+    }
+    
+    // Add thoughtful pauses before sharing insights
+    if (text.match(/\b(I think|my perspective|what we've found|the reality is)\b/gi)) {
+      processed = processed.replace(/\b(I think|my perspective|what we've found|the reality is)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.thoughtful_pause}$1`);
+    }
+    
+    // Add confidence pauses before strong statements
+    if (text.match(/\b(absolutely|exactly|precisely|indeed)\b/gi)) {
+      processed = processed.replace(/\b(absolutely|exactly|precisely|indeed)\b/gi, 
+        `${ssmlEnhancements.breath_patterns.confidence_pause}$1`);
+    }
+    
+    // Add pauses after presenting statistics or numbers
+    const numberPattern = /\b\d+(\.\d+)?%?\b/g;
+    processed = processed.replace(numberPattern, 
+      `$&${ssmlEnhancements.breath_patterns.after_statistics}`);
+    
+    return processed;
+  }
+
+  /**
+   * Apply James Walker specific emphasis patterns
+   */
+  private applyJamesWalkerEmphasis(text: string, personality: PersonalityConfig): string {
+    let processed = text;
+    const { emphasis_words, ssml_enhancements } = personality.characteristics;
+    
+    if (!ssml_enhancements) return processed;
+    
+    // Strong emphasis for customer-related words
+    const customerWords = ['customer', 'experience', 'success', 'satisfaction', 'value', 'relationship', 'trust', 'loyalty'];
+    customerWords.forEach(word => {
       const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      processed = processed.replace(regex, `<emphasis level="moderate">${word}</emphasis>`);
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.customer_words}">${word}</emphasis>`);
+    });
+    
+    // Moderate emphasis for statistics and numbers
+    const numberPattern = /\b\d+(\.\d+)?%?\b/g;
+    processed = processed.replace(numberPattern, 
+      `<emphasis level="${ssml_enhancements.emphasis_levels.numbers_stats}">$&</emphasis>`);
+    
+    // Moderate emphasis for solution-oriented words
+    const solutionWords = ['solution', 'approach', 'strategy', 'plan', 'results', 'impact', 'growth', 'improvement'];
+    solutionWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.solutions}">${word}</emphasis>`);
+    });
+    
+    // Reduced emphasis for experience references to sound more natural
+    const experienceWords = ['experience', 'years', 'background', 'expertise'];
+    experienceWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      processed = processed.replace(regex, `<emphasis level="${ssml_enhancements.emphasis_levels.experience_references}">${word}</emphasis>`);
     });
     
     return processed;

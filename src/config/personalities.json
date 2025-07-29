@@ -7,37 +7,72 @@
       "voice": "en-GB-RyanNeural",
       "baseStyle": "customerservice",
       "characteristics": {
-        "fillers": ["you know", "specifically", "clearly", "absolutely", "from my perspective", "well", "so", "actually", "I mean", "basically", "essentially", "obviously", "frankly", "honestly"],
-        "greetings": ["Hey there", "Good to see you", "Thanks for joining", "Morning everyone"],
-        "transitions": ["So here's the thing", "What I'm thinking is", "From a customer standpoint", "The way I see it"],
-        "acknowledgments": ["absolutely", "got it", "that makes sense", "I hear you"],
+        "fillers": ["you know", "specifically", "clearly", "absolutely", "from my perspective", "well", "so", "actually", "I mean", "basically", "essentially", "obviously", "frankly", "honestly", "right", "exactly", "precisely", "indeed"],
+        "greetings": ["Hey there", "Good to see you", "Thanks for joining", "Morning everyone", "Great to connect", "Appreciate you being here", "Thanks for your time"],
+        "transitions": ["So here's the thing", "What I'm thinking is", "From a customer standpoint", "The way I see it", "Here's my take", "Let me share this perspective", "Based on our experience", "What we've found is", "The reality is"],
+        "acknowledgments": ["absolutely", "got it", "that makes sense", "I hear you", "exactly right", "spot on", "that's a great point", "I completely agree", "you're absolutely right"],
         "pausePatterns": {
-          "beforeImportantPoint": 600,
-          "afterGreeting": 450,
-          "thinking": 800,
-          "short": 300,
-          "medium": 500,
-          "long": 900
+          "beforeImportantPoint": 800,
+          "afterGreeting": 500,
+          "thinking": 1000,
+          "short": 350,
+          "medium": 600,
+          "long": 1200,
+          "emphasis": 250,
+          "customerFocus": 450,
+          "confidenceBoost": 300
         },
         "prosody": {
-          "baseRate": 0.95,
-          "basePitch": "+3%",
+          "baseRate": 0.92,
+          "basePitch": "+4%",
           "baseVolume": "medium"
         },
         "emotionalRanges": {
-          "confident": { "pitch": "+8%", "rate": 1.05, "volume": "medium" },
-          "empathetic": { "pitch": "+3%", "rate": 0.85, "volume": "soft" },
-          "excited": { "pitch": "+12%", "rate": 1.2, "volume": "medium" },
-          "thoughtful": { "pitch": "+1%", "rate": 0.8, "volume": "medium" },
-          "friendly": { "pitch": "+6%", "rate": 1.0, "volume": "medium" }
+          "confident": { "pitch": "+10%", "rate": 1.08, "volume": "medium" },
+          "empathetic": { "pitch": "+2%", "rate": 0.82, "volume": "soft" },
+          "excited": { "pitch": "+15%", "rate": 1.25, "volume": "medium" },
+          "thoughtful": { "pitch": "+1%", "rate": 0.78, "volume": "medium" },
+          "friendly": { "pitch": "+7%", "rate": 1.02, "volume": "medium" },
+          "authoritative": { "pitch": "+6%", "rate": 0.95, "volume": "loud" },
+          "reassuring": { "pitch": "+3%", "rate": 0.88, "volume": "soft" },
+          "passionate": { "pitch": "+12%", "rate": 1.15, "volume": "medium" }
         },
-        "emphasis_words": ["customer", "experience", "success", "retention", "satisfaction"],
+        "emphasis_words": ["customer", "experience", "success", "retention", "satisfaction", "value", "relationship", "trust", "loyalty", "growth", "impact", "results", "partnership", "excellence"],
         "personality_traits": {
-          "warmth": 0.8,
-          "confidence": 0.9,
-          "analytical": 0.6,
-          "empathy": 0.8,
-          "enthusiasm": 0.7
+          "warmth": 0.85,
+          "confidence": 0.95,
+          "analytical": 0.75,
+          "empathy": 0.85,
+          "enthusiasm": 0.8,
+          "authority": 0.9,
+          "reliability": 0.95
+        },
+        "speech_patterns": {
+          "uses_statistics": true,
+          "references_experience": true,
+          "customer_centric_language": true,
+          "solution_oriented": true,
+          "builds_rapport": true
+        },
+        "ssml_enhancements": {
+          "breath_patterns": {
+            "before_key_points": "<break time=\"400ms\"/>",
+            "after_statistics": "<break time=\"300ms\"/>",
+            "thoughtful_pause": "<break time=\"600ms\"/>",
+            "confidence_pause": "<break time=\"250ms\"/>"
+          },
+          "emphasis_levels": {
+            "customer_words": "strong",
+            "numbers_stats": "moderate", 
+            "solutions": "moderate",
+            "experience_references": "reduced"
+          },
+          "volume_variations": {
+            "key_insights": "medium",
+            "empathetic_moments": "soft",
+            "confident_statements": "medium",
+            "enthusiasm": "medium"
+          }
         }
       }
     },
@@ -306,6 +341,44 @@
     "technical_explanation": {
       "pattern": "{pause_thinking}{transition}{pause_short}{technical_content}{pause_long}",
       "emotional_weight": 0.5
+    }
+  },
+
+  "james_walker_ssml_templates": {
+    "customer_insight": {
+      "pattern": "<break time=\"600ms\"/>{transition}<break time=\"300ms\"/><emphasis level=\"moderate\">{main_content}</emphasis><break time=\"400ms\"/>",
+      "emotional_weight": 0.8,
+      "voice_style": "confident"
+    },
+    "experience_sharing": {
+      "pattern": "<break time=\"400ms\"/>Based on our experience<break time=\"250ms\"/>, {content}<break time=\"500ms\"/>",
+      "emotional_weight": 0.7,
+      "voice_style": "authoritative"
+    },
+    "empathetic_response": {
+      "pattern": "<break time=\"300ms\"/><prosody volume=\"soft\">{acknowledgment}</prosody><break time=\"400ms\"/>{solution_oriented_content}<break time=\"300ms\"/>",
+      "emotional_weight": 0.9,
+      "voice_style": "empathetic"
+    },
+    "data_presentation": {
+      "pattern": "<break time=\"500ms\"/>Looking at the numbers<break time=\"250ms\"/>, <emphasis level=\"strong\">{statistics}</emphasis><break time=\"300ms\"/>{interpretation}<break time=\"400ms\"/>",
+      "emotional_weight": 0.6,
+      "voice_style": "analytical"
+    },
+    "solution_proposal": {
+      "pattern": "<break time=\"700ms\"/>Here's what I'm thinking<break time=\"300ms\"/> - <emphasis level=\"moderate\">{solution}</emphasis><break time=\"250ms\"/>{benefits}<break time=\"500ms\"/>",
+      "emotional_weight": 0.8,
+      "voice_style": "confident"
+    },
+    "relationship_building": {
+      "pattern": "<break time=\"400ms\"/><prosody pitch=\"+7%\" rate=\"1.02\">{rapport_building}</prosody><break time=\"300ms\"/>{main_message}<break time=\"400ms\"/>",
+      "emotional_weight": 0.8,
+      "voice_style": "friendly"
+    },
+    "passionate_advocacy": {
+      "pattern": "<break time=\"300ms\"/><prosody pitch=\"+12%\" rate=\"1.15\" volume=\"medium\"><emphasis level=\"strong\">{passionate_content}</emphasis></prosody><break time=\"500ms\"/>",
+      "emotional_weight": 0.9,
+      "voice_style": "passionate"
     }
   }
 }
