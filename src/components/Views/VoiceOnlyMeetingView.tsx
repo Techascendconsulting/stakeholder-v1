@@ -2194,7 +2194,7 @@ Please review the raw transcript for detailed conversation content.`;
               {isEndingMeeting ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Phone className="w-4 h-4 text-white transform rotate-[135deg]" />
+                <PhoneOff className="w-4 h-4 text-white" />
               )}
             </button>
           </div>
