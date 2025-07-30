@@ -370,32 +370,32 @@
 
   "james_walker_ssml_templates": {
     "cheerful_greeting": {
-      "pattern": "<speak><prosody rate=\"0.88\" pitch=\"+2%\" volume=\"medium\"><break time=\"300ms\"/>{{content}}<break time=\"500ms\"/></prosody></speak>",
+      "pattern": "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-GB-RyanNeural\"><prosody rate=\"0.88\" pitch=\"+2%\" volume=\"medium\"><break time=\"300ms\"/>{{content}}<break time=\"500ms\"/></prosody></voice></speak>",
       "emotional_weight": 0.95,
       "voice_style": "cheerful"
     },
     "curious_question": {
-      "pattern": "<speak><prosody rate=\"0.85\" pitch=\"+3%\" volume=\"medium\"><break time=\"400ms\"/>{{content}}<break time=\"600ms\"/></prosody></speak>",
+      "pattern": "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-GB-RyanNeural\"><prosody rate=\"0.85\" pitch=\"+3%\" volume=\"medium\"><break time=\"400ms\"/>{{content}}<break time=\"600ms\"/></prosody></voice></speak>",
       "emotional_weight": 0.85,
       "voice_style": "curious"
     },
     "friendly_acknowledgment": {
-      "pattern": "<speak><prosody rate=\"0.88\" pitch=\"+1%\" volume=\"medium\"><break time=\"250ms\"/>{{content}}<break time=\"450ms\"/></prosody></speak>",
+      "pattern": "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-GB-RyanNeural\"><prosody rate=\"0.88\" pitch=\"+1%\" volume=\"medium\"><break time=\"250ms\"/>{{content}}<break time=\"450ms\"/></prosody></voice></speak>",
       "emotional_weight": 0.9,
       "voice_style": "friendly"
     },
     "knowledgeable_insight": {
-      "pattern": "<speak><prosody rate=\"0.82\" pitch=\"+1%\" volume=\"medium\"><break time=\"400ms\"/>{{content}}<break time=\"500ms\"/></prosody></speak>",
+      "pattern": "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-GB-RyanNeural\"><prosody rate=\"0.82\" pitch=\"+1%\" volume=\"medium\"><break time=\"400ms\"/>{{content}}<break time=\"500ms\"/></prosody></voice></speak>",
       "emotional_weight": 0.8,
       "voice_style": "knowledgeable"
     },
     "witty_comment": {
-      "pattern": "<speak><prosody rate=\"0.90\" pitch=\"+2%\" volume=\"medium\"><break time=\"300ms\"/>{{content}}<break time=\"400ms\"/></prosody></speak>",
+      "pattern": "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-GB-RyanNeural\"><prosody rate=\"0.90\" pitch=\"+2%\" volume=\"medium\"><break time=\"300ms\"/>{{content}}<break time=\"400ms\"/></prosody></voice></speak>",
       "emotional_weight": 0.75,
       "voice_style": "witty"
     },
     "conversational_flow": {
-      "pattern": "<speak><prosody rate=\"0.88\" pitch=\"+1%\" volume=\"medium\"><break time=\"250ms\"/>{{content}}<break time=\"400ms\"/></prosody></speak>",
+      "pattern": "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-GB-RyanNeural\"><prosody rate=\"0.88\" pitch=\"+1%\" volume=\"medium\"><break time=\"250ms\"/>{{content}}<break time=\"400ms\"/></prosody></voice></speak>",
       "emotional_weight": 0.8,
       "voice_style": "conversational"
     },

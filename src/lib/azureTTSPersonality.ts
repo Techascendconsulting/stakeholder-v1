@@ -250,10 +250,16 @@ class PersonalityAzureTTS {
         } catch (fallbackError) {
           console.error('❌ Fallback SSML also failed, trying basic synthesis:', fallbackError);
           
-          // Final fallback: Basic SSML with just text
+          // Final fallback: Basic SSML with just text and proper voice
           try {
-            const basicSSML = `<speak>${ssml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}</speak>`;
-            console.log('🔄 Trying basic SSML:', basicSSML);
+            const textOnly = ssml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            // Detect voice from original SSML or use default
+            let voiceName = 'en-GB-RyanNeural'; // Default for James Walker
+            if (ssml.includes('en-GB-SoniaNeural')) {
+              voiceName = 'en-GB-SoniaNeural'; // For Aisha Ahmed
+            }
+            const basicSSML = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="${voiceName}">${textOnly}</voice></speak>`;
+            console.log('🔄 Trying basic SSML with voice:', voiceName, 'Content:', textOnly);
             
             const basicResponse = await fetch(config.endpoint, {
               method: 'POST',
@@ -275,7 +281,20 @@ class PersonalityAzureTTS {
               }
             }
           } catch (basicError) {
-            console.error('❌ Even basic SSML failed:', basicError);
+            console.error('❌ Even basic SSML failed, trying ultra-simple fallback:', basicError);
+            
+            // Ultra-simple fallback: Use basic azureTTS service
+            try {
+              const textOnly = ssml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+              let voiceName = 'en-GB-RyanNeural';
+              if (ssml.includes('en-GB-SoniaNeural')) {
+                voiceName = 'en-GB-SoniaNeural';
+              }
+              console.log('🔄 Ultra-simple fallback with azureTTS service');
+              return await azureTTS.synthesizeSpeech(textOnly, voiceName, false);
+            } catch (ultraError) {
+              console.error('❌ Ultra-simple fallback also failed:', ultraError);
+            }
           }
         }
       
