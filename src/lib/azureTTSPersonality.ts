@@ -278,7 +278,6 @@ class PersonalityAzureTTS {
             console.error('❌ Even basic SSML failed:', basicError);
           }
         }
-      }
       
       throw error;
     }
