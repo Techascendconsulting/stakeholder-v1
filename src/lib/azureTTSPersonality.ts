@@ -207,12 +207,21 @@ class PersonalityAzureTTS {
     } catch (error) {
       console.error('SSML synthesis error:', error);
       
-      // If SSML contains mstts:express-as, try fallback without it
-      if (ssml.includes('mstts:express-as')) {
-        console.log('🔄 Trying fallback SSML without mstts:express-as...');
-        const fallbackSSML = ssml
-          .replace(/<mstts:express-as[^>]*>/g, '')
-          .replace(/<\/mstts:express-as>/g, '');
+      // Try multiple fallback strategies
+      console.log('🔄 Trying fallback SSML strategies...');
+      
+      // Strategy 1: Remove mstts:express-as
+      let fallbackSSML = ssml
+        .replace(/<mstts:express-as[^>]*>/g, '')
+        .replace(/<\/mstts:express-as>/g, '');
+      
+      // Strategy 2: If still failing, simplify prosody
+      if (ssml.includes('prosody')) {
+        fallbackSSML = fallbackSSML
+          .replace(/rate="[^"]*"/g, 'rate="1.0"')
+          .replace(/pitch="[^"]*"/g, 'pitch="+0%"')
+          .replace(/volume="[^"]*"/g, 'volume="medium"');
+      }
         
         try {
           const fallbackResponse = await fetch(config.endpoint, {
@@ -239,7 +248,35 @@ class PersonalityAzureTTS {
             }
           }
         } catch (fallbackError) {
-          console.error('❌ Fallback SSML also failed:', fallbackError);
+          console.error('❌ Fallback SSML also failed, trying basic synthesis:', fallbackError);
+          
+          // Final fallback: Basic SSML with just text
+          try {
+            const basicSSML = `<speak>${ssml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}</speak>`;
+            console.log('🔄 Trying basic SSML:', basicSSML);
+            
+            const basicResponse = await fetch(config.endpoint, {
+              method: 'POST',
+              headers: {
+                'Ocp-Apim-Subscription-Key': config.subscriptionKey,
+                'Content-Type': 'application/ssml+xml',
+                'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+                'User-Agent': 'BA-Training-Platform-Personality'
+              },
+              body: basicSSML
+            });
+
+            if (basicResponse.ok) {
+              console.log('✅ Basic SSML synthesis successful');
+              const audioBlob = await basicResponse.blob();
+              
+              if (audioBlob.size > 0) {
+                return audioBlob;
+              }
+            }
+          } catch (basicError) {
+            console.error('❌ Even basic SSML failed:', basicError);
+          }
         }
       }
       

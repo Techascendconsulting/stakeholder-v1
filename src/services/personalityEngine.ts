@@ -242,10 +242,16 @@ class PersonalityEngine {
     
     if (personality.id === 'james_walker') {
       try {
-        template = this.getJamesWalkerTemplate(text, context) || template;
+        const jamesTemplate = this.getJamesWalkerTemplate(text, context);
+        if (jamesTemplate && jamesTemplate.pattern) {
+          // James Walker templates are complete SSML, just replace content and return
+          const jamesSSML = jamesTemplate.pattern.replace('{{content}}', text);
+          console.log('✅ Using James Walker human-like template:', jamesTemplate.voice_style);
+          return jamesSSML;
+        }
       } catch (error) {
         console.error('❌ Error getting James Walker template, using fallback:', error);
-        // Keep using the default template
+        // Continue with default template building
       }
     }
     

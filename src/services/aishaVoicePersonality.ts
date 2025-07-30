@@ -305,7 +305,44 @@ class AishaVoicePersonality {
     // Handle em dashes for thoughtful pauses
     ssml = ssml.replace(/—/g, '<break time="300ms"/>');
     
+    // Clean up and validate SSML
+    ssml = this.cleanupSSML(ssml);
+    
     return ssml;
+  }
+
+  /**
+   * Clean up and validate SSML for Azure TTS compatibility
+   */
+  private cleanupSSML(ssml: string): string {
+    let cleaned = ssml;
+    
+    // Remove consecutive breaks (invalid SSML)
+    cleaned = cleaned.replace(/(<break[^>]*\/>)\s*(<break[^>]*\/>)/g, '$2');
+    
+    // Ensure prosody rate values are within valid range (0.5 to 2.0)
+    cleaned = cleaned.replace(/rate="([^"]*)"/, (match, rate) => {
+      const numRate = parseFloat(rate);
+      if (isNaN(numRate) || numRate < 0.5) return 'rate="0.5"';
+      if (numRate > 2.0) return 'rate="2.0"';
+      return match;
+    });
+    
+    // Ensure pitch values are valid (Azure TTS accepts -50% to +50%)
+    cleaned = cleaned.replace(/pitch="([^"]*)"/, (match, pitch) => {
+      if (pitch.includes('%')) {
+        const numPitch = parseFloat(pitch.replace('%', ''));
+        if (isNaN(numPitch)) return 'pitch="+0%"';
+        if (numPitch < -50) return 'pitch="-50%"';
+        if (numPitch > 50) return 'pitch="+50%"';
+      }
+      return match;
+    });
+    
+    // Remove any double spaces
+    cleaned = cleaned.replace(/\s+/g, ' ');
+    
+    return cleaned;
   }
 
   /**
@@ -316,7 +353,7 @@ class AishaVoicePersonality {
     
     // Add breath before important points
     if (this.enhancementRules.add_breath_before_important && context.intent === 'explanation') {
-      enhanced = enhanced.replace('<break time="400ms"/>', '<break time="200ms"/><break time="400ms"/>');
+      enhanced = enhanced.replace('<break time="400ms"/>', '<break time="600ms"/>');
     }
     
     // Slow down for complex content

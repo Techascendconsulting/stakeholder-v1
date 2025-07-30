@@ -370,32 +370,32 @@
 
   "james_walker_ssml_templates": {
     "cheerful_greeting": {
-      "pattern": "<break time=\"200ms\"/><prosody pitch=\"+12%\" rate=\"1.05\">{cheerful_greeting}</prosody><break time=\"400ms\"/>{main_content}<break time=\"300ms\"/>",
+      "pattern": "<speak><prosody rate=\"0.88\" pitch=\"+2%\" volume=\"medium\"><break time=\"300ms\"/>{{content}}<break time=\"500ms\"/></prosody></speak>",
       "emotional_weight": 0.95,
       "voice_style": "cheerful"
     },
     "curious_question": {
-      "pattern": "<break time=\"350ms\"/><prosody pitch=\"+10%\" rate=\"0.98\">{curiosity_phrase}</prosody><break time=\"250ms\"/>{question_content}<break time=\"400ms\"/>",
+      "pattern": "<speak><prosody rate=\"0.85\" pitch=\"+3%\" volume=\"medium\"><break time=\"400ms\"/>{{content}}<break time=\"600ms\"/></prosody></speak>",
       "emotional_weight": 0.85,
       "voice_style": "curious"
     },
     "friendly_acknowledgment": {
-      "pattern": "<break time=\"300ms\"/><prosody pitch=\"+8%\" rate=\"1.02\" volume=\"medium\"><emphasis level=\"reduced\">{friendly_response}</emphasis></prosody><break time=\"250ms\"/>{follow_up}<break time=\"350ms\"/>",
+      "pattern": "<speak><prosody rate=\"0.88\" pitch=\"+1%\" volume=\"medium\"><break time=\"250ms\"/>{{content}}<break time=\"450ms\"/></prosody></speak>",
       "emotional_weight": 0.9,
       "voice_style": "friendly"
     },
     "knowledgeable_insight": {
-      "pattern": "<break time=\"450ms\"/><prosody pitch=\"+4%\" rate=\"0.92\">{professional_transition}</prosody><break time=\"300ms\"/><emphasis level=\"moderate\">{expertise_content}</emphasis><break time=\"400ms\"/>",
+      "pattern": "<speak><prosody rate=\"0.82\" pitch=\"+1%\" volume=\"medium\"><break time=\"400ms\"/>{{content}}<break time=\"500ms\"/></prosody></speak>",
       "emotional_weight": 0.8,
       "voice_style": "knowledgeable"
     },
     "witty_comment": {
-      "pattern": "<break time=\"250ms\"/><prosody pitch=\"+9%\" rate=\"1.08\"><emphasis level=\"moderate\">{witty_remark}</emphasis></prosody><break time=\"300ms\"/>{continuation}<break time=\"250ms\"/>",
+      "pattern": "<speak><prosody rate=\"0.90\" pitch=\"+2%\" volume=\"medium\"><break time=\"300ms\"/>{{content}}<break time=\"400ms\"/></prosody></speak>",
       "emotional_weight": 0.75,
       "voice_style": "witty"
     },
     "conversational_flow": {
-      "pattern": "<break time=\"250ms\"/><prosody pitch=\"+7%\" rate=\"1.00\">{conversational_transition}</prosody><break time=\"200ms\"/>{main_point}<break time=\"350ms\"/>",
+      "pattern": "<speak><prosody rate=\"0.88\" pitch=\"+1%\" volume=\"medium\"><break time=\"250ms\"/>{{content}}<break time=\"400ms\"/></prosody></speak>",
       "emotional_weight": 0.8,
       "voice_style": "conversational"
     },
