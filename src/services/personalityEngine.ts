@@ -241,7 +241,12 @@ class PersonalityEngine {
     let template = this.ssmlTemplates[context.type] || this.ssmlTemplates.explanation;
     
     if (personality.id === 'james_walker') {
-      template = this.getJamesWalkerTemplate(text, context) || template;
+      try {
+        template = this.getJamesWalkerTemplate(text, context) || template;
+      } catch (error) {
+        console.error('❌ Error getting James Walker template, using fallback:', error);
+        // Keep using the default template
+      }
     }
     
     // Build SSML with voice and style
@@ -280,8 +285,24 @@ class PersonalityEngine {
    * Get appropriate James Walker template based on content analysis
    */
   private getJamesWalkerTemplate(text: string, context: ConversationContext): any {
-    const jamesTemplates = (personalitiesConfig as any).james_walker_ssml_templates;
-    if (!jamesTemplates) return null;
+    console.log('🔍 DEBUG: personalitiesConfig type:', typeof personalitiesConfig);
+    console.log('🔍 DEBUG: personalitiesConfig keys:', Object.keys(personalitiesConfig || {}));
+    console.log('🔍 DEBUG: looking for james_walker_ssml_templates');
+    
+    // Multiple ways to access the templates in case of different JSON structure
+    let jamesTemplates = null;
+    
+    if (personalitiesConfig) {
+      jamesTemplates = (personalitiesConfig as any).james_walker_ssml_templates ||
+                      (personalitiesConfig as any)['james_walker_ssml_templates'] ||
+                      ((personalitiesConfig as any).personalities && (personalitiesConfig as any).personalities.james_walker_ssml_templates);
+    }
+    
+    console.log('🔍 DEBUG: jamesTemplates found:', !!jamesTemplates);
+    if (!jamesTemplates) {
+      console.warn('⚠️ James Walker SSML templates not found in config, using fallback');
+      return null;
+    }
     
     // Analyze text content to determine best template
     const lowerText = text.toLowerCase();
