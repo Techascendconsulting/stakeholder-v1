@@ -280,7 +280,7 @@ class PersonalityEngine {
    * Get appropriate James Walker template based on content analysis
    */
   private getJamesWalkerTemplate(text: string, context: ConversationContext): any {
-    const jamesTemplates = (this.personalitiesConfig as any).james_walker_ssml_templates;
+    const jamesTemplates = (personalitiesConfig as any).james_walker_ssml_templates;
     if (!jamesTemplates) return null;
     
     // Analyze text content to determine best template

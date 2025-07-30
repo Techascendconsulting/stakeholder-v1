@@ -167,6 +167,8 @@ class PersonalityAzureTTS {
     }
 
     try {
+      console.log('🔍 SSML being sent to Azure TTS:', ssml);
+      
       const response = await fetch(config.endpoint, {
         method: 'POST',
         headers: {
@@ -179,7 +181,14 @@ class PersonalityAzureTTS {
       });
 
       if (!response.ok) {
-        throw new Error(`Azure TTS request failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('❌ Azure TTS Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorBody: errorText,
+          ssmlSent: ssml
+        });
+        throw new Error(`Azure TTS request failed: ${response.status} ${response.statusText}. Error: ${errorText}`);
       }
 
       const audioBlob = await response.blob();
@@ -197,6 +206,43 @@ class PersonalityAzureTTS {
 
     } catch (error) {
       console.error('SSML synthesis error:', error);
+      
+      // If SSML contains mstts:express-as, try fallback without it
+      if (ssml.includes('mstts:express-as')) {
+        console.log('🔄 Trying fallback SSML without mstts:express-as...');
+        const fallbackSSML = ssml
+          .replace(/<mstts:express-as[^>]*>/g, '')
+          .replace(/<\/mstts:express-as>/g, '');
+        
+        try {
+          const fallbackResponse = await fetch(config.endpoint, {
+            method: 'POST',
+            headers: {
+              'Ocp-Apim-Subscription-Key': config.subscriptionKey,
+              'Content-Type': 'application/ssml+xml',
+              'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+              'User-Agent': 'BA-Training-Platform-Personality'
+            },
+            body: fallbackSSML
+          });
+
+          if (fallbackResponse.ok) {
+            console.log('✅ Fallback SSML synthesis successful');
+            const audioBlob = await fallbackResponse.blob();
+            
+            if (audioBlob.size > 0) {
+              // Cache the result with fallback SSML
+              if (useCache && (azureTTS as any).audioCache) {
+                (azureTTS as any).audioCache.set(cacheKey, audioBlob);
+              }
+              return audioBlob;
+            }
+          }
+        } catch (fallbackError) {
+          console.error('❌ Fallback SSML also failed:', fallbackError);
+        }
+      }
+      
       throw error;
     }
   }
