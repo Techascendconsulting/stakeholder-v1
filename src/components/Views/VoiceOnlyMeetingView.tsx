@@ -1103,7 +1103,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       };
 
       mediaRecorder.onstop = async () => {
+        console.log('🎬 MediaRecorder stopped, processing audio...');
         const audioBlob = new Blob(audioChunksRef.current, { type: getSupportedDeepgramFormats().preferredMimeType });
+        console.log('📦 Audio blob created:', { size: audioBlob.size, type: audioBlob.type });
         await transcribeAndSend(audioBlob);
         
         // Clean up
@@ -1144,10 +1146,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   const stopDirectRecording = () => {
+    console.log('🛑 Stop recording clicked');
     if (mediaRecorderRef.current && isRecording) {
+      console.log('🎙️ Stopping MediaRecorder...');
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setDynamicFeedback('🔄 Processing and transcribing your message...');
+    } else {
+      console.log('⚠️ MediaRecorder not available or not recording');
     }
   };
 
@@ -1177,9 +1183,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               const transcription = await transcribeWithDeepgram(audioBlob);
       
       if (transcription && transcription.trim()) {
+        console.log('🚀 Auto-sending transcribed message:', transcription);
         // Automatically send the transcription
-        setInputMessage(transcription);
-        // Trigger the send message with the transcribed text
         await handleSendMessageWithText(transcription);
         
         // Clear feedback after message is fully processed
