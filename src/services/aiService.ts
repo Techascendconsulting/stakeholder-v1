@@ -1471,6 +1471,8 @@ Detailed info: ${stakeholderRoles}
 
 TASK: Detect if this response mentions stakeholder(s) in a way that naturally calls for their input.
 
+IMPORTANT: When a message contains both acknowledgment and a new question (e.g., "Thank you David. Aisha, can you help?"), focus on WHO is being asked the question, not who is being thanked. The person being asked should respond.
+
 MENTION TYPES TO DETECT:
 1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?", "aisha what is your process?")
 2. "at_mention" - Using @ symbol (e.g., "@David, your thoughts?")
@@ -1498,6 +1500,9 @@ EXAMPLES OF WHAT TO DETECT:
 - "aisha, david, what do you think?"
 - "can aisha and david help with this?"
 - "I'd like to hear from sarah and emily"
+- "Thank you David for the info. Aisha can you tell me about your team?" (should detect: Aisha)
+- "Thanks Sarah. Now David, what's your view?" (should detect: David)
+- "Got it James. Emily, can you elaborate?" (should detect: Emily)
 - "hey guys" (should return ALL stakeholder names)
 - "hello everyone" (should return ALL stakeholder names)
 - "hi all" (should return ALL stakeholder names)
