@@ -701,6 +701,101 @@ Generate only the greeting, nothing else.`;
     return cleanResponse;
   }
 
+  // Generate stakeholder response with real-time streaming
+  async generateStakeholderResponseStreaming(
+    userMessage: string,
+    stakeholder: StakeholderContext,
+    context: ConversationContext,
+    responseType: 'greeting' | 'discussion' | 'baton_pass' | 'direct_mention' = 'discussion',
+    onChunk?: (chunk: string) => void
+  ): Promise<string> {
+    try {
+      console.log(`🚀 Starting streaming response for ${stakeholder.name}...`);
+      
+      // Build the same prompt as the non-streaming version
+      let prompt: string;
+      
+      if (this.isGreetingMessage(userMessage)) {
+        // Handle greetings with streaming
+        const greetingPrompt = this.buildGreetingPrompt(stakeholder, context);
+        prompt = greetingPrompt;
+      } else if (responseType === 'direct_mention') {
+        prompt = this.buildDirectMentionPrompt(userMessage, stakeholder, context);
+      } else {
+        prompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
+      }
+      
+      const completion = await openai.chat.completions.create({
+        model: this.getModel('primary'),
+        messages: [
+          {
+            role: "system",
+            content: prompt
+          },
+          {
+            role: "user", 
+            content: userMessage
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+        stream: true // Enable streaming
+      });
+
+      let fullResponse = '';
+      let currentChunk = '';
+      let wordCount = 0;
+      
+      for await (const chunk of completion) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          fullResponse += content;
+          currentChunk += content;
+          
+          // Count words to determine when to send chunks
+          const words = content.split(/\s+/).filter(w => w.length > 0);
+          wordCount += words.length;
+          
+          // Send chunk when we have enough words or hit punctuation
+          const shouldSendChunk = 
+            wordCount >= 8 || // Every 8 words
+            content.includes('.') || 
+            content.includes('!') || 
+            content.includes('?') || 
+            content.includes(',') ||
+            currentChunk.length > 60; // Or every 60 characters
+          
+          if (shouldSendChunk && currentChunk.trim() && onChunk) {
+            console.log(`📝 STREAMING: "${currentChunk.trim()}" (${wordCount} words)`);
+            onChunk(currentChunk.trim());
+            currentChunk = '';
+            wordCount = 0;
+          }
+        }
+      }
+      
+      // Send any remaining content
+      if (currentChunk.trim() && onChunk) {
+        console.log(`📝 STREAMING: Final chunk "${currentChunk.trim()}"`);
+        onChunk(currentChunk.trim());
+      }
+      
+      console.log(`✅ Streaming completed for ${stakeholder.name}: "${fullResponse.substring(0, 50)}..."`);
+      
+      // Update conversation state with the full response
+      await this.updateConversationState(stakeholder, userMessage, fullResponse, context);
+      
+      return fullResponse.trim();
+      
+    } catch (error) {
+      console.error(`❌ Error in streaming response for ${stakeholder.name}:`, error);
+      
+      // Fallback to non-streaming version
+      console.log(`🔄 Falling back to non-streaming for ${stakeholder.name}`);
+      return await this.generateStakeholderResponse(userMessage, stakeholder, context, responseType);
+    }
+  }
+
   // Generate comprehensive interview notes with progressive feedback
   async generateInterviewNotes(meetingData: any, progressCallback?: (progress: string) => void): Promise<string> {
     try {
@@ -2162,3 +2257,76 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
 }
 
 export default AIService;
+  // Generate stakeholder response with real-time streaming
+  async generateStakeholderResponseStreaming(
+    userMessage: string,
+    stakeholder: StakeholderContext,
+    context: ConversationContext,
+    responseType: "greeting" | "discussion" | "baton_pass" | "direct_mention" = "discussion",
+    onChunk?: (chunk: string) => void
+  ): Promise<string> {
+    try {
+      console.log(`�� Starting streaming response for ${stakeholder.name}...`);
+      
+      // Build contextual prompt
+      const prompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
+      
+      const completion = await openai.chat.completions.create({
+        model: this.getModel("primary"),
+        messages: [
+          {
+            role: "system",
+            content: prompt
+          },
+          {
+            role: "user", 
+            content: userMessage
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+        stream: true
+      });
+
+      let fullResponse = "";
+      let currentChunk = "";
+      let wordCount = 0;
+      
+      for await (const chunk of completion) {
+        const content = chunk.choices[0]?.delta?.content || "";
+        if (content) {
+          fullResponse += content;
+          currentChunk += content;
+          
+          const words = content.split(/\s+/).filter(w => w.length > 0);
+          wordCount += words.length;
+          
+          const shouldSendChunk = 
+            wordCount >= 6 ||
+            content.includes(".") || 
+            content.includes("!") || 
+            content.includes("?") || 
+            currentChunk.length > 50;
+          
+          if (shouldSendChunk && currentChunk.trim() && onChunk) {
+            console.log(`📝 STREAMING: "${currentChunk.trim()}" (${wordCount} words)`);
+            onChunk(currentChunk.trim());
+            currentChunk = "";
+            wordCount = 0;
+          }
+        }
+      }
+      
+      if (currentChunk.trim() && onChunk) {
+        onChunk(currentChunk.trim());
+      }
+      
+      console.log(`✅ Streaming completed for ${stakeholder.name}`);
+      return fullResponse.trim();
+      
+    } catch (error) {
+      console.error(`❌ Streaming error for ${stakeholder.name}:`, error);
+      return await this.generateStakeholderResponse(userMessage, stakeholder, context, responseType);
+    }
+  }
+
