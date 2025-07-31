@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, FileText } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
-// Removed personalityTTS import for fast mode
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
@@ -279,284 +278,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     introducedMembers: new Set<string>()
   });
 
-  // Conversation history for personality engine
-  const [conversationHistory, setConversationHistory] = useState<{
-    userMessages: string[];
-    assistantMessages: string[];
-    messageCount: number;
-  }>({
-    userMessages: [],
-    assistantMessages: [],
-    messageCount: 0
-  });
-
-  // Streaming conversation mode
-  const [isStreamingMode, setIsStreamingMode] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const streamingRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamingStreamRef = useRef<MediaStream | null>(null);
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const vadContextRef = useRef<AudioContext | null>(null);
-  const vadAnalyzerRef = useRef<AnalyserNode | null>(null);
-
-
-
-  // Streaming conversation functions
-  const startStreamingConversation = async () => {
-    try {
-      console.log('🚀 Starting streaming conversation mode');
-      setIsStreamingMode(true);
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamingStreamRef.current = stream;
-      
-      // Set up voice activity detection
-      vadContextRef.current = new AudioContext();
-      vadAnalyzerRef.current = vadContextRef.current.createAnalyser();
-      const source = vadContextRef.current.createMediaStreamSource(stream);
-      source.connect(vadAnalyzerRef.current);
-      
-      vadAnalyzerRef.current.fftSize = 256;
-      
-      // Start continuous listening
-      startContinuousListening();
-      
-    } catch (error) {
-      console.error('❌ Error starting streaming conversation:', error);
-      setIsStreamingMode(false);
-    }
-  };
-
-  const endStreamingConversation = () => {
-    console.log('🛑 Ending streaming conversation mode');
-    setIsStreamingMode(false);
-    setIsListening(false);
-    
-    // Clean up all streaming resources
-    if (streamingRecorderRef.current && streamingRecorderRef.current.state !== 'inactive') {
-      streamingRecorderRef.current.stop();
-    }
-    if (streamingStreamRef.current) {
-      streamingStreamRef.current.getTracks().forEach(track => track.stop());
-      streamingStreamRef.current = null;
-    }
-    if (vadContextRef.current) {
-      vadContextRef.current.close();
-      vadContextRef.current = null;
-    }
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-  };
-
-  const startContinuousListening = () => {
-    if (!streamingStreamRef.current || !vadAnalyzerRef.current) return;
-    
-    console.log('👂 Starting continuous listening...');
-    setIsListening(true);
-    
-    const mediaRecorder = new MediaRecorder(streamingStreamRef.current);
-    streamingRecorderRef.current = mediaRecorder;
-    const audioChunks: BlobPart[] = [];
-    
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.push(event.data);
-      }
-    };
-    
-    mediaRecorder.onstop = async () => {
-      console.log('🎯 Processing captured speech...');
-      setIsListening(false);
-      
-      if (audioChunks.length > 0) {
-        const audioBlob = new Blob(audioChunks, { type: getSupportedAudioFormat() });
-        await processStreamingAudio(audioBlob);
-      }
-    };
-    
-    // Start recording
-    mediaRecorder.start();
-    
-    // Start voice activity detection
-    monitorVoiceActivity();
-  };
-
-  const monitorVoiceActivity = () => {
-    if (!vadAnalyzerRef.current || !isStreamingMode) return;
-    
-    const bufferLength = vadAnalyzerRef.current.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    let lastVoiceTime = Date.now();
-    let hasDetectedVoice = false;
-    
-    const checkVoiceActivity = () => {
-      if (!vadAnalyzerRef.current || !isStreamingMode || !isListening) return;
-      
-      vadAnalyzerRef.current.getByteFrequencyData(dataArray);
-      const average = dataArray.reduce((a, b) => a + b) / bufferLength;
-      const threshold = 15; // Lowered threshold for better detection
-      
-      // Debug logging every 1 second
-      if (Date.now() % 1000 < 100) {
-        console.log(`🔍 VAD: Audio level: ${average.toFixed(1)}, threshold: ${threshold}, hasDetectedVoice: ${hasDetectedVoice}`);
-      }
-      
-      if (average > threshold) {
-        lastVoiceTime = Date.now();
-        if (!hasDetectedVoice) {
-          console.log('🎤 VAD: Voice detected! Starting to listen...');
-          hasDetectedVoice = true;
-        }
-        
-        // Clear any existing silence timer
-        if (silenceTimerRef.current) {
-          clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = null;
-        }
-      } else if (hasDetectedVoice) {
-        const silenceDuration = Date.now() - lastVoiceTime;
-        
-        // If we've detected voice before and now have 0.3 seconds of silence, process the audio
-        if (silenceDuration > 300 && !silenceTimerRef.current) {
-          console.log('🔇 VAD: Detected end of speech after 2 seconds of silence, processing...');
-          
-          // Stop the current recording
-          if (streamingRecorderRef.current && streamingRecorderRef.current.state === 'recording') {
-            streamingRecorderRef.current.stop();
-          }
-          return; // Exit the monitoring loop
-        } else if (silenceDuration > 1000) {
-          console.log(`🔇 VAD: ${(silenceDuration/1000).toFixed(1)}s of silence so far...`);
-        }
-      }
-      
-      // Continue monitoring
-      setTimeout(checkVoiceActivity, 100);
-    };
-    
-    checkVoiceActivity();
-  };
-
-  const processStreamingAudio = async (audioBlob: Blob) => {
-    try {
-      console.log('🎙️ Transcribing streaming audio...');
-      setIsTranscribing(true);
-      
-      // Transcribe the audio
-      const transcription = await transcribeAudio(audioBlob);
-      console.log('📝 Streaming transcription:', transcription);
-      
-      if (transcription && transcription.trim()) {
-        // Auto-send the message
-        await handleAutoSendMessage(transcription.trim());
-      }
-      
-      setIsTranscribing(false);
-      
-      // After processing, restart listening immediately if still in streaming mode
-      if (isStreamingMode) {
-        console.log('🔄 Restarting continuous listening...');
-        setTimeout(() => startContinuousListening(), 25);
-      }
-      
-    } catch (error) {
-      console.error('❌ Error processing streaming audio:', error);
-      setIsTranscribing(false);
-      
-      // Restart listening even if there was an error
-      if (isStreamingMode) {
-        setTimeout(() => startContinuousListening(), 100);
-      }
-    }
-  };
-
-  const generateStreamingAIResponse = async (messageContent: string, currentMessages: Message[]) => {
-    setIsGeneratingResponse(true);
-    
-    try {
-      // Check for direct stakeholder mentions in user message FIRST
-      const aiService = AIService.getInstance();
-      const availableStakeholders = selectedStakeholders.map(s => ({
-        name: s.name,
-        role: s.role,
-        department: s.department,
-        priorities: s.priorities,
-        personality: s.personality,
-        expertise: s.expertise || []
-      }));
-
-      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
-      
-      console.log('🔍 Streaming AI: User message analysis:', {
-        messageContent,
-        mentionResult: userMentionResult
-      });
-      
-      if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-        // Handle direct mentions (simplified version)
-        const mentionedStakeholder = userMentionResult.mentionedStakeholders[0];
-        const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholder.name);
-        
-        if (stakeholder) {
-          console.log(`🎯 Streaming: ${stakeholder.name} responding to direct mention`);
-          await processDynamicStakeholderResponse(stakeholder, messageContent, currentMessages, 'direct_mention');
-        }
-      } else {
-        // Handle general conversation - pick random stakeholder
-        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-        console.log(`🎯 Streaming: ${randomStakeholder.name} responding to general message`);
-        await processDynamicStakeholderResponse(randomStakeholder, messageContent, currentMessages, 'general_question');
-      }
-    } catch (error) {
-      console.error('❌ Error generating streaming AI response:', error);
-    } finally {
-      setIsGeneratingResponse(false);
-      
-      // Auto-restart listening after AI response completes in streaming mode
-      if (isStreamingMode) {
-                      setTimeout(() => {
-                console.log('🔄 Auto-restarting listening after AI response...');
-                // Only restart if we're not already listening
-                if (!isListening) {
-                  startContinuousListening();
-                } else {
-                  console.log('🔄 Already listening, skipping restart');
-                }
-              }, 50); // Even faster restart
-      }
-    }
-  };
-
-  const handleAutoSendMessage = async (messageContent: string) => {
-    if (!messageContent.trim()) return;
-    
-    console.log('📤 Auto-sending message:', messageContent);
-    
-    // Add user message to conversation
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: messageContent,
-      speaker: 'user',
-      timestamp: new Date(),
-      stakeholderName: 'User'
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    addToBackgroundTranscript(userMessage);
-    
-    // Update conversation history
-    setConversationHistory(prev => ({
-      userMessages: [...prev.userMessages, messageContent],
-      assistantMessages: prev.assistantMessages,
-      messageCount: prev.messageCount + 1
-    }));
-    
-    // Generate AI response using existing logic
-    await generateStreamingAIResponse(messageContent, [...messages, userMessage]);
-  };
-
   // Background transcript capture function (always captures, regardless of UI)
   const addToBackgroundTranscript = (message: Message) => {
     console.log('📝 BACKGROUND TRANSCRIPT - Adding message:', {
@@ -621,8 +342,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setMeetingId(newMeetingId);
             setMeetingStartTime(Date.now());
             console.log('🎯 Meeting initialized in database:', newMeetingId);
-            
-            // Removed auto-start - users must click "Start Talking" button when ready
           } else {
             console.error('🎯 INIT MEETING - Failed to create meeting, no ID returned');
             // Create fallback local meeting ID
@@ -630,8 +349,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setMeetingId(fallbackMeetingId);
             setMeetingStartTime(Date.now());
             console.log('🎯 Created fallback meeting ID:', fallbackMeetingId);
-            
-            // Removed auto-start - users must click "Start Talking" button when ready
           }
         } catch (error) {
           console.error('🎯 INIT MEETING - Error initializing meeting:', error);
@@ -640,8 +357,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setMeetingId(emergencyMeetingId);
           setMeetingStartTime(Date.now());
           console.log('🎯 Created emergency meeting ID:', emergencyMeetingId);
-          
-          // Removed auto-start - users must click "Start Talking" button when ready
         }
       } else {
         console.log('🎯 INIT MEETING - Conditions not met:', {
@@ -656,14 +371,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setMeetingId(backupMeetingId);
           setMeetingStartTime(Date.now());
           console.log('🎯 Created backup meeting ID for conditions not met:', backupMeetingId);
-          
-          // Removed auto-start - users must click "Start Talking" button when ready
         }
       }
     };
 
-    // Fast mode: Minimal delay for context loading
-    const timeoutId = setTimeout(initializeMeeting, 100);
+    // Small delay to ensure all context is loaded
+    const timeoutId = setTimeout(initializeMeeting, 500);
     return () => clearTimeout(timeoutId);
   }, [selectedProject, selectedStakeholders, user?.id, meetingId]);
 
@@ -692,7 +405,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         priorities: s.priorities,
         personality: s.personality,
         expertise: s.expertise || []
-      })) || []
+      }))
     };
 
     const aiService = AIService.getInstance();
@@ -716,10 +429,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     };
   };
 
-  // Remove thinking message generator - users shouldn't see stakeholder thinking
+  // Dynamic contextually-aligned thinking message generator - EXACT COPY from transcript meeting
   const generateThinkingMessage = (stakeholder: any, context: any) => {
-    // No more thinking messages shown to users
-    return null;
+    const userQuestion = context.messageContent || '';
+    const responseContext = context.responseContext || '';
+    
+    // Simple thinking message based on context
+    if (responseContext === 'baton_pass') {
+      return `${stakeholder.name} is considering the question...`;
+    } else if (responseContext === 'introduction_lead') {
+      return `${stakeholder.name} is preparing to introduce the team...`;
+    } else {
+      return `${stakeholder.name} is thinking about your question...`;
+    }
   };
 
   // Enhanced stakeholder response processing - EXACT COPY from transcript meeting
@@ -741,7 +463,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       while (currentSpeaking !== null && currentSpeaking !== stakeholder.id) {
         waitCount++;
         console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
-        // Removed artificial delay
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         // Safety break after 100 attempts (10 seconds)
         if (waitCount > 100) {
@@ -761,10 +483,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         conversationHistory: currentMessages,
         responseContext
       };
-      // Skip thinking message - users shouldn't see stakeholder thinking process
+      const thinkingMessage = generateThinkingMessage(stakeholder, thinkingContext);
+      setDynamicFeedback(thinkingMessage);
       
       // Generate contextual response using AI service
       const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
+      
+      // Clean up thinking state - ensure proper cleanup
+      setDynamicFeedback(null);
       
       // Create and add message with dynamic indexing
       const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
@@ -773,13 +499,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Add to background transcript (always captured)
       addToBackgroundTranscript(responseMessage);
-
-      // Update conversation history for personality engine
-      setConversationHistory(prev => ({
-        userMessages: prev.userMessages,
-        assistantMessages: [...prev.assistantMessages, response],
-        messageCount: prev.messageCount + 1
-      }));
       
       // Force cleanup of thinking state to prevent display issues
       setTimeout(() => {
@@ -865,9 +584,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
       
       if (isAzureTTSAvailable() && voiceName) {
-        console.log('⚡ Using Fast Mode - Direct Azure TTS for optimal speed');
-        
-        // Fast Mode: Direct Azure TTS synthesis for maximum speed
+        console.log('✅ Using Azure TTS for audio synthesis');
         const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
@@ -885,20 +602,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setCurrentSpeaker(null);
             setIsAudioPlaying(false);
             console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} audio naturally ended`);
-            
-            // Auto-restart listening in streaming mode after audio ends
-            if (isStreamingMode) {
-              setTimeout(() => {
-                console.log('🔄 Auto-restarting listening after audio playback ended...');
-                // Only restart if we're not already listening
-                if (!isListening) {
-                  startContinuousListening();
-                } else {
-                  console.log('🔄 Already listening, skipping restart');
-                }
-                              }, 200);
-            }
-            
             resolve();
           };
           
@@ -977,13 +680,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     // Add user message to background transcript (always captured)
     addToBackgroundTranscript(userMessage);
 
-    // Update conversation history for personality engine
-    setConversationHistory(prev => ({
-      userMessages: [...prev.userMessages, messageContent],
-      assistantMessages: prev.assistantMessages,
-      messageCount: prev.messageCount + 1
-    }));
-
     try {
       // Check for direct stakeholder mentions in user message FIRST
       const aiService = AIService.getInstance();
@@ -1021,7 +717,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           ? `🎯 ${mentionedNames} will respond shortly...`
           : `🎯 ${userMentionResult.mentionedStakeholders[0].name} will respond shortly...`;
         setDynamicFeedback(feedbackText);
-        setTimeout(() => setDynamicFeedback(null), 1000); // Fast mode: reduced feedback time
+        setTimeout(() => setDynamicFeedback(null), 2000);
         
         // Set up the response queue to show users what to expect
         const responseQueueData = userMentionResult.mentionedStakeholders.map(s => ({
@@ -1058,7 +754,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             
             console.log(`🚀 MAIN DEBUG: Completed stakeholder ${i + 1}/${userMentionResult.mentionedStakeholders.length}: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`);
             
-            // Removed delay for 2-second max response
+            // Keep the current speaker visible for a moment after they finish
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             // Update response queue - move to next stakeholder (only if there are more)
             if (i < userMentionResult.mentionedStakeholders.length - 1) {
@@ -1071,14 +768,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               });
               
               console.log(`⏸️ Pausing 1.5s before next stakeholder response`);
-              // Removed delay for 2-second max response
+              await new Promise(resolve => setTimeout(resolve, 1500));
             }
           } else {
             console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`);
           }
         }
         
-        // Removed delay for 2-second max response
+        // Keep the final speaker visible for a moment, then clear
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Clear the response queue when all responses are complete
         setResponseQueue({ current: null, upcoming: [] });
@@ -1122,16 +820,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Direct voice recording functions
   const startDirectRecording = async () => {
     try {
-      console.log('🎤 Requesting microphone access for direct recording...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('✅ Microphone access granted - setting up recording');
       streamRef.current = stream;
       
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-
-
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -1140,8 +834,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       };
 
       mediaRecorder.onstop = async () => {
-        console.log('🛑 Recording stopped, processing audio...');
-        
         const audioBlob = new Blob(audioChunksRef.current, { type: getSupportedAudioFormat() });
         await transcribeAndSend(audioBlob);
         
@@ -1155,10 +847,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       mediaRecorder.start();
       setIsRecording(true);
       setIsTranscribing(false); // Only set to true when actually transcribing
-      console.log('🎤 Direct recording started successfully');
       setDynamicFeedback('🎤 Recording your message... Click microphone to stop');
     } catch (error) {
-      console.error('❌ Error starting recording:', error);
+      console.error('Error starting recording:', error);
       setIsRecording(false);
       setIsTranscribing(false);
       
@@ -1167,20 +858,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
           errorMessage += 'Microphone permission denied. Please allow microphone access.';
-          console.error('🚫 Microphone permission denied - user needs to grant access');
         } else if (error.name === 'NotFoundError') {
           errorMessage += 'No microphone found. Please check your audio devices.';
-          console.error('🚫 No microphone device found');
         } else if (error.name === 'NotSupportedError') {
           errorMessage += 'Recording not supported in this browser.';
-          console.error('🚫 Recording not supported in browser');
         } else {
           errorMessage += error.message;
-          console.error('🚫 Unknown recording error:', error.message);
         }
       } else {
         errorMessage += 'Please try again.';
-        console.error('🚫 Non-Error thrown:', error);
       }
       
       setDynamicFeedback(errorMessage);
@@ -1205,7 +891,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (!apiKey || apiKey === 'your-openai-api-key-here') {
         // Test mode - simulate transcription
         console.log('🧪 Test mode: Simulating transcription');
-        // Removed artificial delay for faster response
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
         
         const testTranscription = "Hello, this is a test message from the voice recorder.";
         setDynamicFeedback('🧪 Test mode: Simulated transcription');
@@ -1257,8 +943,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setTimeout(() => setDynamicFeedback(null), 5000);
     } finally {
       setIsTranscribing(false);
-      
-
     }
   };
 
@@ -2238,7 +1922,8 @@ Please review the raw transcript for detailed conversation content.`;
         
         // Natural pause between stakeholders (except for the last one)
         if (i < selectedStakeholders.length - 1) {
-          // Removed delay for 2-second max response
+          console.log(`⏸️ Pausing 2s before next stakeholder greeting`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
       
@@ -2336,70 +2021,31 @@ Please review the raw transcript for detailed conversation content.`;
             </button>
           </div>
 
-          {/* Essential Controls Only */}
+          {/* Meeting Controls */}
           <div className="flex items-center space-x-2">
-            {/* Start Talking Button - Only show when not streaming */}
-            {!isStreamingMode && (
-              <button
-                onClick={startStreamingConversation}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
-                title="Start continuous conversation - click once and talk naturally!"
-              >
-                <Play className="w-4 h-4" />
-                <span className="text-sm">Start Talking</span>
-              </button>
-            )}
-
-            {/* Streaming Status Indicator - Always visible when streaming */}
-            {isStreamingMode && (
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                isListening 
-                  ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' 
+            {/* Mic Button */}
+            <button
+              onClick={handleMicClick}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                isRecording 
+                  ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
                   : isTranscribing
-                  ? 'bg-blue-500 animate-pulse'
-                  : 'bg-gray-500'
-              }`}>
-                <Mic className="w-4 h-4 text-white" />
-              </div>
-            )}
-
-            {/* Transcript Toggle Button */}
-            <button
-              onClick={() => {
-                setTranscriptionEnabled(!transcriptionEnabled);
-                if (!transcriptionEnabled) {
-                  setTranscriptPanelOpen(true);
-                  // Add existing messages to transcript when enabling
-                  setTranscriptMessages(messages);
-                } else {
-                  setTranscriptPanelOpen(false);
-                }
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white ${
-                transcriptionEnabled ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-600 hover:bg-gray-700'
+                  ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
+                  : 'bg-gray-700 hover:bg-gray-600'
               }`}
-              title="Toggle transcript"
+              title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
             >
-              <FileText className="w-4 h-4" />
-              <span className="text-sm">Transcript</span>
+              {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
             </button>
 
-            {/* End Meeting Button */}
+            {/* Stop Button */}
             <button
-              onClick={() => {
-                if (isStreamingMode) {
-                  endStreamingConversation();
-                }
-                handleStopCurrent();
-              }}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors flex items-center space-x-2 text-white"
-              title="End meeting"
+              onClick={handleStopCurrent}
+              className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
+              title="Stop current speaker"
             >
-              <Square className="w-4 h-4" />
-              <span className="text-sm">End Meeting</span>
+              <Square className="w-4 h-4 text-white" />
             </button>
-
-
 
             {/* Debug Button - Remove after testing */}
             <button
@@ -2489,7 +2135,7 @@ Please review the raw transcript for detailed conversation content.`;
               {isEndingMeeting ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <PhoneOff className="w-4 h-4 text-white" />
+                <Phone className="w-4 h-4 text-white transform rotate-[135deg]" />
               )}
             </button>
           </div>
@@ -2622,47 +2268,16 @@ Please review the raw transcript for detailed conversation content.`;
           </div>
         </div>
 
-                {/* Streaming Mode Indicator */}
-        {isStreamingMode && (
-          <div className="px-6 py-3 bg-gradient-to-r from-green-900/80 to-blue-900/80 border-t border-green-500/30">
-            <div className="text-center">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                <div className={`w-3 h-3 rounded-full ${
-                  isListening 
-                    ? 'bg-green-400 animate-pulse' 
-                    : isTranscribing
-                    ? 'bg-blue-400 animate-pulse'
-                    : isGeneratingResponse
-                    ? 'bg-purple-400 animate-pulse'
-                    : 'bg-gray-400'
-                }`}></div>
-                <span className="text-white font-medium">
-                  {isListening 
-                    ? '🎤 Listening... Just talk naturally!' 
-                    : isTranscribing
-                    ? '📝 Processing your speech...'
-                    : '⏳ Getting ready...'
-                  }
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm">
-                Automatic conversation mode - no buttons needed!
-              </p>
+        {/* Message Input Area */}
+        <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
+          {/* Dynamic Feedback Display */}
+          {dynamicFeedback && (
+            <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
+              <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
             </div>
-          </div>
-        )}
-
-        {/* Message Input Area - Hidden during streaming */}
-        {!isStreamingMode && (
-          <div className="relative px-6 py-4 bg-gray-900 border-t border-gray-700">
-            {/* Dynamic Feedback Display */}
-            {dynamicFeedback && (
-                <div className="mb-3 bg-gradient-to-r from-purple-900/80 to-blue-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-center border border-purple-500/30 shadow-lg">
-                  <span className="text-white text-sm font-medium">{dynamicFeedback}</span>
-                </div>
-              )}
-            
-            <div className="flex space-x-3">
+          )}
+          
+          <div className="flex space-x-3">
             <input
               ref={inputRef}
               type="text"
@@ -2774,7 +2389,6 @@ Please review the raw transcript for detailed conversation content.`;
             </>
           )}
         </div>
-        )}
 
       </div>
     </div>
