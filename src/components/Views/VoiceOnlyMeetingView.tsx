@@ -444,6 +444,143 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
+  // NEW: Parallel processing function for multiple stakeholders
+  const processStakeholdersInParallel = async (mentionedStakeholders: any[], messageContent: string, currentMessages: Message[], responseContext: string) => {
+    console.log(`⚡ PARALLEL: Processing ${mentionedStakeholders.length} stakeholders simultaneously`);
+    
+    // Phase 1: Generate all responses and audio in parallel
+    const stakeholderPromises = mentionedStakeholders.map(async (mentionedStakeholderContext, index) => {
+      const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholderContext.name);
+      
+      if (!stakeholder) {
+        console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`);
+        return null;
+      }
+
+      console.log(`⚡ PARALLEL: Starting GPT + Voice generation for ${stakeholder.name}`);
+      
+      try {
+        // Generate GPT response
+        const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
+        
+        // Generate voice audio (in parallel with other stakeholders)
+        let audioBlob = null;
+        if (globalAudioEnabled) {
+          const voiceName = stakeholder.voice;
+          if (isAzureTTSAvailable() && voiceName) {
+            audioBlob = await azureTTS.synthesizeSpeech(response, voiceName);
+          }
+        }
+        
+        // Create message object
+        const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length + index);
+        
+        console.log(`✅ PARALLEL: Completed GPT + Voice for ${stakeholder.name}`);
+        
+        return {
+          stakeholder,
+          response,
+          responseMessage,
+          audioBlob,
+          index
+        };
+        
+      } catch (error) {
+        console.error(`❌ PARALLEL: Error processing ${stakeholder.name}:`, error);
+        return null;
+      }
+    });
+
+    // Wait for all stakeholders to finish thinking and voice generation
+    console.log(`⏳ PARALLEL: Waiting for all ${mentionedStakeholders.length} stakeholders to complete...`);
+    const results = await Promise.all(stakeholderPromises);
+    const validResults = results.filter(result => result !== null);
+    
+    console.log(`✅ PARALLEL: All stakeholders completed! ${validResults.length}/${mentionedStakeholders.length} successful`);
+
+    // Phase 2: Play audio sequentially in the correct order
+    let workingMessages = currentMessages;
+    
+    for (let i = 0; i < validResults.length; i++) {
+      const result = validResults[i];
+      const { stakeholder, response, responseMessage, audioBlob } = result;
+      
+      console.log(`🎵 SEQUENTIAL: Playing ${stakeholder.name} (${i + 1}/${validResults.length})`);
+      
+      // Add message to state
+      workingMessages = [...workingMessages, responseMessage];
+      setMessages(workingMessages);
+      
+      // Add to background transcript
+      addToBackgroundTranscript(responseMessage);
+      
+      // Set current speaker for UI
+      setCurrentSpeaker(stakeholder);
+      setCurrentSpeaking(stakeholder.id);
+      
+      // Play pre-generated audio
+      if (globalAudioEnabled && audioBlob) {
+        try {
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          setCurrentAudio(audio);
+          setPlayingMessageId(responseMessage.id);
+          setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
+          
+          // Wait for audio to finish
+          await new Promise((resolve) => {
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+              setCurrentAudio(null);
+              setPlayingMessageId(null);
+              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+              console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} audio naturally ended`);
+              resolve(void 0);
+            };
+            
+            audio.onerror = (error) => {
+              console.error(`❌ Audio playback error for ${stakeholder.name}:`, error);
+              URL.revokeObjectURL(audioUrl);
+              setCurrentAudio(null);
+              setPlayingMessageId(null);
+              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+              resolve(void 0);
+            };
+            
+            audio.play().catch(error => {
+              console.error(`❌ Audio play error for ${stakeholder.name}:`, error);
+              resolve(void 0);
+            });
+          });
+          
+        } catch (error) {
+          console.error(`❌ Audio setup error for ${stakeholder.name}:`, error);
+        }
+      }
+      
+      // Clear current speaker
+      setCurrentSpeaker(null);
+      setCurrentSpeaking(null);
+      
+      // Update response queue for UI
+      if (i < validResults.length - 1) {
+        setResponseQueue(prev => {
+          const remaining = prev.upcoming.slice(1);
+          return {
+            current: prev.upcoming[0]?.name || null,
+            upcoming: remaining
+          };
+        });
+        
+        // Brief pause between speakers for natural flow
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    
+    console.log(`🏁 PARALLEL: All stakeholders completed speaking sequentially`);
+  };
+
   // Enhanced stakeholder response processing - EXACT COPY from transcript meeting
   const processDynamicStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string): Promise<Message[]> => {
     console.log(`🚀 QUEUE DEBUG: ${stakeholder.name} starting processDynamicStakeholderResponse`);
@@ -730,50 +867,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           upcoming: responseQueueData.slice(1)
         });
         
-        // Trigger all mentioned stakeholders to respond
-        console.log(`🚀 MAIN DEBUG: Starting sequential processing of ${userMentionResult.mentionedStakeholders.length} stakeholders`);
-        let workingMessages = currentMessages;
-        for (let i = 0; i < userMentionResult.mentionedStakeholders.length; i++) {
-          const mentionedStakeholderContext = userMentionResult.mentionedStakeholders[i];
-          const mentionedStakeholder = selectedStakeholders.find(s => 
-            s.name === mentionedStakeholderContext.name
-          );
-          
-          console.log(`🔍 Processing stakeholder: ${mentionedStakeholderContext.name}`, {
-            found: !!mentionedStakeholder,
-            stakeholderId: mentionedStakeholder?.id,
-            stakeholderName: mentionedStakeholder?.name,
-            currentMessageCount: workingMessages.length
-          });
-          
-          if (mentionedStakeholder) {
-            console.log(`🚀 MAIN DEBUG: About to process stakeholder ${i + 1}/${userMentionResult.mentionedStakeholders.length}: ${mentionedStakeholder.name}`);
-            
-            // Process the response and update working messages
-            workingMessages = await processDynamicStakeholderResponse(mentionedStakeholder, messageContent, workingMessages, 'direct_mention');
-            
-            console.log(`🚀 MAIN DEBUG: Completed stakeholder ${i + 1}/${userMentionResult.mentionedStakeholders.length}: ${mentionedStakeholder.name}, messages now: ${workingMessages.length}`);
-            
-            // Keep the current speaker visible for a moment after they finish
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Update response queue - move to next stakeholder (only if there are more)
-            if (i < userMentionResult.mentionedStakeholders.length - 1) {
-              setResponseQueue(prev => {
-                const remaining = prev.upcoming.slice(1);
-                return {
-                  current: prev.upcoming[0]?.name || null,
-                  upcoming: remaining
-                };
-              });
-              
-              console.log(`⏸️ Pausing 1.5s before next stakeholder response`);
-              await new Promise(resolve => setTimeout(resolve, 1500));
-            }
-          } else {
-            console.log(`❌ Could not find stakeholder object for: ${mentionedStakeholderContext.name}`);
-          }
-        }
+        // Trigger all mentioned stakeholders to respond with parallel processing
+        console.log(`🚀 PARALLEL DEBUG: Starting parallel processing of ${userMentionResult.mentionedStakeholders.length} stakeholders`);
+        await processStakeholdersInParallel(userMentionResult.mentionedStakeholders, messageContent, currentMessages, 'direct_mention');
         
         // Keep the final speaker visible for a moment, then clear
         await new Promise(resolve => setTimeout(resolve, 2000));
