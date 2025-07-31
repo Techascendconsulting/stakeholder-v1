@@ -918,7 +918,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         expertise: s.expertise || []
       }));
 
-      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
+      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders, user?.id || "anonymous");
+      const lastSpeaker = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].stakeholderName : null;
+      const conversationContext = currentMessages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
+      
+      const userMentionResult = await aiService.detectStakeholderMentions(
+        messageContent, 
+        availableStakeholders, 
+        user?.id || 'anonymous',
+        lastSpeaker,
+        conversationContext
+      );
       
       // Enhanced debugging for mention detection
       console.log('🔍 DEBUG: User message analysis:', {
