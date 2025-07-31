@@ -581,7 +581,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         });
         
         // Brief pause between speakers for natural flow
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
     
@@ -1281,9 +1281,24 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         return;
       }
       
-      // If no direct mention, trigger normal conversation flow
-      console.log('🔄 No direct mentions, using normal conversation flow');
-      setIsGeneratingResponse(false);
+             // If no direct mention, pick a random stakeholder to respond
+       console.log('🔄 No direct mentions, picking random stakeholder to respond');
+       const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+       console.log(`🎲 Random stakeholder selected: ${randomStakeholder.name}`);
+       
+       const randomStakeholderForAI = {
+         name: randomStakeholder.name,
+         role: randomStakeholder.role,
+         department: randomStakeholder.department,
+         priorities: randomStakeholder.priorities,
+         personality: randomStakeholder.personality,
+         expertise: randomStakeholder.expertise || []
+       };
+       
+       // Trigger the random stakeholder to respond
+       await processStakeholdersInParallel([randomStakeholderForAI], messageContent, currentMessages, 'general_question');
+       
+       setIsGeneratingResponse(false);
       
     } catch (error) {
       console.error('❌ Error in auto-send AI processing:', error);
