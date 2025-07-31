@@ -1247,10 +1247,48 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     console.log('📝 Adding user message to transcript:', userMessage);
     setMessages(prev => [...prev, userMessage]);
 
-    // Process AI responses
+    // Process AI responses - copy exact logic from handleSendMessage
     console.log('🤖 Processing AI responses...');
-    await generateStreamingAIResponse(messageContent);
-    console.log('✅ Auto-send completed');
+    
+    let currentMessages = [...messages, userMessage];
+    
+    // Add user message to background transcript (always captured)
+    addToBackgroundTranscript(userMessage);
+
+    try {
+      // Check for direct stakeholder mentions in user message FIRST
+      const aiService = AIService.getInstance();
+      const availableStakeholders = selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }));
+
+      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
+      
+      if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
+        console.log(`🎯 User directly mentioned stakeholder(s): ${mentionedNames}`);
+        
+        // Trigger all mentioned stakeholders to respond with parallel processing
+        await processStakeholdersInParallel(userMentionResult.mentionedStakeholders, messageContent, currentMessages, 'direct_mention');
+        
+        setIsGeneratingResponse(false);
+        console.log('✅ Auto-send completed');
+        return;
+      }
+      
+      // If no direct mention, trigger normal conversation flow
+      console.log('🔄 No direct mentions, using normal conversation flow');
+      setIsGeneratingResponse(false);
+      
+    } catch (error) {
+      console.error('❌ Error in auto-send AI processing:', error);
+      setIsGeneratingResponse(false);
+    }
   };
 
   // Handle microphone button click - start/stop recording
