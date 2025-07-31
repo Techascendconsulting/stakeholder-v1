@@ -805,7 +805,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   // EXACT COPY of transcript meeting's handleSendMessage - NO MODIFICATIONS
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    console.log('🎯 handleSendMessage called, inputMessage:', inputMessage);
+    if (!inputMessage.trim()) {
+      console.log('❌ handleSendMessage: Empty inputMessage, returning');
+      return;
+    }
 
     const messageContent = inputMessage.trim();
     setIsGeneratingResponse(true);
@@ -1221,13 +1225,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   const handleSendMessageWithText = async (messageText: string) => {
-    if (!messageText.trim()) return;
+    console.log('📤 handleSendMessageWithText called with:', messageText);
+    if (!messageText.trim()) {
+      console.log('❌ Empty message text, returning');
+      return;
+    }
     
     // Set the input message and trigger the existing handleSendMessage logic
+    console.log('📝 Setting input message...');
     setInputMessage(messageText);
     
     // Use the existing handleSendMessage function which has all the proper logic
+    console.log('🚀 Calling handleSendMessage...');
     await handleSendMessage();
+    console.log('✅ handleSendMessage completed');
   };
 
   // Handle microphone button click - start/stop recording
