@@ -1226,10 +1226,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   const handleMicClick = () => {
-    if (isListening) {
-      stopStreamingVoiceInput();
+    if (isRecording) {
+      stopDirectRecording();
     } else {
-      startStreamingVoiceInput();
+      startDirectRecording();
     }
   };
 
@@ -2290,29 +2290,7 @@ Please review the raw transcript for detailed conversation content.`;
             </button>
           </div>
 
-          {/* Live Transcript Display */}
-          {(isListening || liveTranscript) && (
-            <div className="mb-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
-              <div className="flex items-center space-x-2 mb-2">
-                <div className={`w-2 h-2 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></div>
-                <span className="text-sm text-gray-400">
-                  {isListening ? 'Listening...' : 'Processing'}
-                </span>
-              </div>
-              <div className="text-white min-h-[24px]">
-                {finalTranscript && (
-                  <span className="text-green-400">{finalTranscript}</span>
-                )}
-                {finalTranscript && liveTranscript && <span className="text-gray-400"> </span>}
-                {liveTranscript && (
-                  <span className="text-gray-300 italic">{liveTranscript}</span>
-                )}
-                {!finalTranscript && !liveTranscript && isListening && (
-                  <span className="text-gray-500">Start speaking...</span>
-                )}
-              </div>
-            </div>
-          )}
+
 
           {/* Meeting Controls */}
           <div className="flex items-center space-x-2">
@@ -2320,16 +2298,16 @@ Please review the raw transcript for detailed conversation content.`;
             <button
               onClick={handleMicClick}
               className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                isListening 
+                isRecording 
                   ? 'bg-red-500 hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/50' 
                   : isGeneratingResponse
                   ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
                   : 'bg-green-600 hover:bg-green-700'
               }`}
-              title={isListening ? 'Stop Speaking (or wait for silence)' : isGeneratingResponse ? 'AI Responding...' : 'Speak'}
+              title={isRecording ? 'Stop Recording' : isGeneratingResponse ? 'AI Responding...' : 'Start Recording'}
               disabled={isGeneratingResponse}
             >
-              {isListening ? <Square className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
+              {isRecording ? <Square className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
             </button>
 
             {/* Stop Button */}
