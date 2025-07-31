@@ -1471,7 +1471,10 @@ Detailed info: ${stakeholderRoles}
 
 TASK: Detect if this response mentions stakeholder(s) in a way that naturally calls for their input.
 
-IMPORTANT: When a message contains both acknowledgment and a new question (e.g., "Thank you David. Aisha, can you help?"), focus on WHO is being asked the question, not who is being thanked. The person being asked should respond.
+IMPORTANT: 
+1. When a message contains both acknowledgment and a new question (e.g., "Thank you David. Aisha, can you help?"), focus on WHO is being asked the question, not who is being thanked. The person being asked should respond.
+2. IGNORE self-introductions and self-references (e.g., "Hi, I'm David", "This is Sarah speaking", "As David mentioned", "I'm Emily from Finance"). These are NOT mentions that require responses.
+3. ONLY detect when someone is directly asking, addressing, or requesting input from another person.
 
 MENTION TYPES TO DETECT:
 1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?", "aisha what is your process?")
@@ -1514,6 +1517,12 @@ EXAMPLES OF WHAT NOT TO DETECT:
 - "We need to consult with another department" (too vague)
 - "Someone else should handle this" (deflection)
 - "Let's form a committee" (not specific)
+- "Hi, I'm David from IT" (self-introduction)
+- "This is Sarah speaking" (self-reference)
+- "As Emily mentioned earlier" (reference to past conversation)
+- "I'm James, the operations manager" (self-introduction)
+- "David here, happy to help" (self-identification)
+- "Sarah from customer service checking in" (self-introduction)
 
 RESPONSE FORMAT:
 - stakeholder_names: comma-separated list of exact names from list or "${AIService.CONFIG.mention.noMentionToken}"
@@ -1528,7 +1537,10 @@ Examples:
 - Group greeting: ${stakeholderNames}|group_greeting|0.9
 - None: ${AIService.CONFIG.mention.noMentionToken}|none|0.0
 
-SPECIAL RULE: For group greetings like "hey guys", "hello everyone", "hi all" - return ALL available stakeholder names separated by commas.
+SPECIAL RULES: 
+1. For group greetings like "hey guys", "hello everyone", "hi all" - return ALL available stakeholder names separated by commas.
+2. NEVER detect self-introductions or self-references as mentions requiring responses.
+3. ONLY detect when someone is asking/addressing another person for input or response.
 
 Return format: stakeholder_names|mention_type|confidence`
           },
