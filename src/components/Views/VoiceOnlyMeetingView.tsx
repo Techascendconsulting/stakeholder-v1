@@ -6,7 +6,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
-import personalityTTS from '../../lib/azureTTSPersonality';
+// Removed personalityTTS import for fast mode
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
@@ -662,8 +662,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       }
     };
 
-    // Small delay to ensure all context is loaded
-    const timeoutId = setTimeout(initializeMeeting, 500);
+    // Fast mode: Minimal delay for context loading
+    const timeoutId = setTimeout(initializeMeeting, 100);
     return () => clearTimeout(timeoutId);
   }, [selectedProject, selectedStakeholders, user?.id, meetingId]);
 
@@ -865,23 +865,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
       
       if (isAzureTTSAvailable() && voiceName) {
-        console.log('✅ Using Personality-Enhanced Azure TTS for audio synthesis');
+        console.log('⚡ Using Fast Mode - Direct Azure TTS for optimal speed');
         
-        // Check if personality is available for this stakeholder
-        const audioBlob = personalityTTS.hasPersonality(stakeholder.id) 
-          ? await personalityTTS.synthesizeWithPersonality(text, {
-              stakeholderId: stakeholder.id,
-              stakeholderRole: stakeholder.role,
-              conversationHistory,
-              enhancementOptions: {
-                addFillers: true,
-                addPauses: true,
-                adjustEmotion: true,
-                emphasizeKeywords: true,
-                useTransitions: true
-              }
-            })
-          : await azureTTS.synthesizeSpeech(text, voiceName);
+        // Fast Mode: Direct Azure TTS synthesis for maximum speed
+        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         
@@ -1034,7 +1021,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           ? `🎯 ${mentionedNames} will respond shortly...`
           : `🎯 ${userMentionResult.mentionedStakeholders[0].name} will respond shortly...`;
         setDynamicFeedback(feedbackText);
-        setTimeout(() => setDynamicFeedback(null), 2000);
+        setTimeout(() => setDynamicFeedback(null), 1000); // Fast mode: reduced feedback time
         
         // Set up the response queue to show users what to expect
         const responseQueueData = userMentionResult.mentionedStakeholders.map(s => ({
