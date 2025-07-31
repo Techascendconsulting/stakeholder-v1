@@ -8,8 +8,6 @@ import AIService, { StakeholderContext, ConversationContext } from '../../servic
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
-import StreamingTTSService from "../../services/streamingTTS";
-import StreamingTTSService from "../../services/streamingTTS";
 import StreamingTTSService from '../../services/streamingTTS';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
