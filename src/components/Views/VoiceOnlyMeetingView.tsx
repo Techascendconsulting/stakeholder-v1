@@ -524,6 +524,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     } catch (error) {
       console.error(`❌ FAST: Error processing ${stakeholder.name}:`, error);
     }
+    
+    // Clear any persistent feedback messages
+    setDynamicFeedback(null);
   };
 
   // NEW: Parallel processing function for multiple stakeholders
@@ -1386,6 +1389,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     } catch (error) {
       console.error('❌ Error in auto-send AI processing:', error);
       setIsGeneratingResponse(false);
+      setDynamicFeedback(null); // Clear persistent feedback on error
     }
   };
 
@@ -1505,6 +1509,7 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
   };
 
   const handleEndMeeting = async () => {
+    console.log('🔚 END MEETING BUTTON CLICKED!');
     // Prevent multiple clicks
     if (isEndingMeeting) {
       console.log('🔚 END MEETING - Already ending, ignoring additional clicks');
@@ -1912,7 +1917,11 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
 
   // Generate AI-powered meeting summary using the proper AIService method
   const generateMeetingSummary = async (transcript: Message[]): Promise<string> => {
-    if (transcript.length === 0) return 'No conversation recorded.';
+    console.log('🚀 generateMeetingSummary called with transcript length:', transcript.length);
+    if (transcript.length === 0) {
+      console.log('❌ No conversation recorded for summary');
+      return 'No conversation recorded.';
+    }
     
     try {
       console.log('📝 Generating summary using AIService.generateInterviewNotes...');
