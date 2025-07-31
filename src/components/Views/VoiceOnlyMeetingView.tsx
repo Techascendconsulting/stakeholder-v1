@@ -451,6 +451,81 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
+  // FAST: Single stakeholder response (no parallel overhead)
+  const processSingleStakeholderFast = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string) => {
+    console.log(`🚀 FAST: Processing single stakeholder ${stakeholder.name}`);
+    
+    try {
+      // Generate GPT response
+      const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
+      
+      // Create message object
+      const responseMessage: Message = {
+        id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        speaker: stakeholder.id,
+        content: response,
+        timestamp: new Date().toISOString(),
+        stakeholderName: stakeholder.name
+      };
+
+      // Add message immediately
+      const updatedMessages = [...currentMessages, responseMessage];
+      setMessages(updatedMessages);
+      addToBackgroundTranscript(responseMessage);
+
+      // Generate and play audio immediately
+      if (globalAudioEnabled) {
+        const voiceName = stakeholder.voice;
+        if (isAzureTTSAvailable() && voiceName) {
+          console.log(`🎵 FAST: Generating voice for ${stakeholder.name}`);
+          const audioBlob = await azureTTS.synthesizeSpeech(response, voiceName);
+          
+          if (audioBlob) {
+            setCurrentSpeaker(stakeholder);
+            setCurrentSpeaking(stakeholder.id);
+            
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            
+            setCurrentAudio(audio);
+            setPlayingMessageId(responseMessage.id);
+            setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
+            
+            await new Promise((resolve) => {
+              audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+                setCurrentAudio(null);
+                setPlayingMessageId(null);
+                setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+                setCurrentSpeaker(null);
+                setCurrentSpeaking(null);
+                console.log(`🚀 FAST: ${stakeholder.name} completed`);
+                resolve(void 0);
+              };
+              
+              audio.onerror = () => {
+                URL.revokeObjectURL(audioUrl);
+                setCurrentAudio(null);
+                setPlayingMessageId(null);
+                setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+                setCurrentSpeaker(null);
+                setCurrentSpeaking(null);
+                resolve(void 0);
+              };
+              
+              audio.play().catch(() => resolve(void 0));
+            });
+          }
+        }
+      }
+      
+      console.log(`✅ FAST: ${stakeholder.name} response completed`);
+      
+    } catch (error) {
+      console.error(`❌ FAST: Error processing ${stakeholder.name}:`, error);
+    }
+  };
+
   // NEW: Parallel processing function for multiple stakeholders
   const processStakeholdersInParallel = async (mentionedStakeholders: any[], messageContent: string, currentMessages: Message[], responseContext: string) => {
     console.log(`⚡ PARALLEL: Processing ${mentionedStakeholders.length} stakeholders simultaneously`);
@@ -1273,8 +1348,16 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
         console.log(`🎯 User directly mentioned stakeholder(s): ${mentionedNames}`);
         
-        // Trigger all mentioned stakeholders to respond with parallel processing
-        await processStakeholdersInParallel(userMentionResult.mentionedStakeholders, messageContent, currentMessages, 'direct_mention');
+        // Use fast single response for one stakeholder, parallel for multiple
+        if (userMentionResult.mentionedStakeholders.length === 1) {
+          const stakeholder = selectedStakeholders.find(s => s.name === userMentionResult.mentionedStakeholders[0].name);
+          if (stakeholder) {
+            await processSingleStakeholderFast(stakeholder, messageContent, currentMessages, 'direct_mention');
+          }
+        } else {
+          // Use parallel processing only for multiple stakeholders
+          await processStakeholdersInParallel(userMentionResult.mentionedStakeholders, messageContent, currentMessages, 'direct_mention');
+        }
         
         setIsGeneratingResponse(false);
         console.log('✅ Auto-send completed');
@@ -1295,8 +1378,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
          expertise: randomStakeholder.expertise || []
        };
        
-       // Trigger the random stakeholder to respond
-       await processStakeholdersInParallel([randomStakeholderForAI], messageContent, currentMessages, 'general_question');
+       // Use fast single stakeholder response instead of parallel processing
+       await processSingleStakeholderFast(randomStakeholder, messageContent, currentMessages, 'general_question');
        
        setIsGeneratingResponse(false);
       
