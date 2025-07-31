@@ -8,6 +8,9 @@ import AIService, { StakeholderContext, ConversationContext } from '../../servic
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
+import StreamingTTSService from "../../services/streamingTTS";
+import StreamingTTSService from "../../services/streamingTTS";
+import StreamingTTSService from '../../services/streamingTTS';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
@@ -451,13 +454,78 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // FAST: Single stakeholder response (no parallel overhead)
-  const processSingleStakeholderFast = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string) => {
-    console.log(`🚀 FAST: Processing single stakeholder ${stakeholder.name}`);
+  // STREAMING: Real-time stakeholder response with immediate audio playback
+  const processSingleStakeholderStreaming = async (stakeholder: any, messageContent: string, currentMessages: Message[], responseContext: string) => {
+    console.log(`🎤 STREAMING: Starting real-time response for ${stakeholder.name}`);
     
     try {
-      // Generate GPT response
-      const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
+      const streamingTTS = StreamingTTSService.getInstance();
+      const sessionId = `${stakeholder.id}-${Date.now()}`;
+      let chunkOrder = 0;
+      let fullResponse = '';
+      
+      // Start streaming TTS session
+      streamingTTS.startStreamingSession(
+        sessionId,
+        stakeholder.name,
+        stakeholder.voice,
+        () => {
+          console.log(`🎉 Streaming session completed for ${stakeholder.name}`);
+          setCurrentSpeaker(null);
+          setCurrentSpeaking(null);
+        },
+        (error) => {
+          console.error(`❌ Streaming session error for ${stakeholder.name}:`, error);
+        }
+      );
+      
+      // Set current speaker immediately
+      setCurrentSpeaker(stakeholder);
+      setCurrentSpeaking(stakeholder.id);
+      
+      // Generate GPT response with streaming
+      const aiService = AIService.getInstance();
+      const stakeholderContext = {
+        name: stakeholder.name,
+        role: stakeholder.role,
+        department: stakeholder.department,
+        priorities: stakeholder.priorities,
+        personality: stakeholder.personality,
+        expertise: stakeholder.expertise || []
+      };
+
+      const conversationContext = {
+        project: {
+          name: selectedProject?.name || 'Current Project',
+          description: selectedProject?.description || 'Project description',
+          type: selectedProject?.type || 'General'
+        },
+        conversationHistory: currentMessages,
+        stakeholders: selectedStakeholders.map(s => ({
+          name: s.name,
+          role: s.role,
+          department: s.department,
+          priorities: s.priorities,
+          personality: s.personality,
+          expertise: s.expertise || []
+        }))
+      };
+      
+      const response = await aiService.generateStakeholderResponseStreaming(
+        messageContent,
+        stakeholderContext,
+        conversationContext,
+        responseContext as any,
+        (chunk: string) => {
+          // This callback fires for each text chunk from GPT
+          console.log(`📝 Received chunk ${chunkOrder}: "${chunk}"`);
+          fullResponse += chunk + ' ';
+          
+          // Immediately send to TTS for audio conversion
+          streamingTTS.addTextChunk(sessionId, chunk, chunkOrder);
+          chunkOrder++;
+        }
+      );
       
       // Create message object
       const responseMessage: Message = {
@@ -1403,7 +1471,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         if (userMentionResult.mentionedStakeholders.length === 1) {
           const stakeholder = selectedStakeholders.find(s => s.name === userMentionResult.mentionedStakeholders[0].name);
           if (stakeholder) {
-            await processSingleStakeholderFast(stakeholder, messageContent, currentMessages, 'direct_mention');
+            await processSingleStakeholderStreaming(stakeholder, messageContent, currentMessages, 'direct_mention');
           }
         } else {
           // Use parallel processing only for multiple stakeholders
@@ -1431,7 +1499,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
        };
        
        // Use fast single stakeholder response instead of parallel processing
-       await processSingleStakeholderFast(randomStakeholder, messageContent, currentMessages, 'general_question');
+       await processSingleStakeholderStreaming(randomStakeholder, messageContent, currentMessages, 'general_question');
        
        setIsGeneratingResponse(false);
       
