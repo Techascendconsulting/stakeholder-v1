@@ -1478,16 +1478,20 @@ ${lastSpeaker ? `Last speaker: ${lastSpeaker}` : ''}
 ${conversationContext ? `Conversation context: ${conversationContext}` : ''}
 
 TASK: Determine who should respond using this priority order:
-1. DIRECT MENTIONS (highest priority)
-2. TOPIC/DOMAIN EXPERTISE (when no direct mention)
+1. DIRECT MENTIONS (highest priority) 
+2. ROLE/RESPONSIBILITY EXPERTISE (when no direct mention)
 3. CONVERSATION CONTINUITY (follow-up to last speaker)
-4. ROLE-BASED FALLBACK (appropriate department/role)
+4. RANDOM SELECTION (if truly ambiguous)
 
 ROUTING LOGIC:
 - If someone is directly mentioned by name → route to them (direct_question, at_mention, etc.)
-- If no direct mention BUT topic clearly belongs to someone's domain → route based on expertise (topic_routing)
-- If ambiguous and related to last speaker's domain → continue with last speaker
-- If still unclear → route to most relevant role/department
+- If no direct mention BUT question is about someone's role/responsibility area → route based on expertise (topic_routing)
+  * Technical questions → IT/Technical roles
+  * Process/workflow questions → Operations roles  
+  * Customer impact questions → Customer Service roles
+  * Verification/validation questions → QA/Compliance roles
+- If follow-up to previous speaker's area → continue with last speaker
+- If still unclear → random selection from available stakeholders
 
 MENTION TYPES TO DETECT:
 1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?", "aisha what is your process?")
@@ -1496,6 +1500,7 @@ MENTION TYPES TO DETECT:
 4. "expertise_request" - Requesting someone's expertise (e.g., "the IT team should weigh in", "someone from Finance")
 5. "multiple_mention" - Multiple stakeholders mentioned (e.g., "aisha and david how are you?", "Sarah and James, what do you think?")
 6. "group_greeting" - Group greetings that should include all stakeholders (e.g., "hey guys", "hello everyone", "hi all", "good morning team", "hey there")
+7. "topic_routing" - No direct mention but question fits someone's role/responsibility area
 
 EXAMPLES OF WHAT TO DETECT:
 - "Sarah, what's your perspective on this?"
@@ -1519,6 +1524,15 @@ EXAMPLES OF WHAT TO DETECT:
 - "Thank you David for the info. Aisha can you tell me about your team?" (should detect: Aisha)
 - "Thanks Sarah. Now David, what's your view?" (should detect: David)
 - "Got it James. Emily, can you elaborate?" (should detect: Emily)
+
+ROLE-BASED ROUTING EXAMPLES (topic_routing):
+- "How do we verify this process?" → Route to QA/Compliance role (e.g., Aisha if she handles verification)
+- "What's the technical implementation?" → Route to IT/Technical role (e.g., David if he's technical)
+- "How does this impact customers?" → Route to Customer Service role (e.g., Sarah if she handles customers)
+- "What's the current workflow?" → Route to Operations role (e.g., James if he handles operations)
+- "How do we validate the data?" → Route to person responsible for validation
+- "What are the system requirements?" → Route to technical person
+- "How do we handle exceptions?" → Route to process owner
 - "hey guys" (should return ALL stakeholder names)
 - "hello everyone" (should return ALL stakeholder names)
 - "hi all" (should return ALL stakeholder names)
@@ -1541,21 +1555,23 @@ RESPONSE FORMAT:
 - stakeholder_names: comma-separated list of exact names from list or "${AIService.CONFIG.mention.noMentionToken}"
 - mention_type: one of the types above or "none" 
 - confidence: 0.0-1.0 (how confident you are this needs a response)
+- routing_reason: brief explanation (only for topic_routing type)
 
 IMPORTANT: Return ONLY the pipe-separated format below, no quotes, no equals, no extra text.
 
 Examples:
-- Multiple specific: Sarah Patel,David Thompson|multiple_mention|0.9
-- Single: Sarah Patel|direct_question|0.9
-- Group greeting: ${stakeholderNames}|group_greeting|0.9
-- None: ${AIService.CONFIG.mention.noMentionToken}|none|0.0
+- Direct mention: Sarah Patel|direct_question|0.9|
+- Role-based routing: Aisha Ahmed|topic_routing|0.8|verification question
+- Multiple specific: Sarah Patel,David Thompson|multiple_mention|0.9|
+- Group greeting: ${stakeholderNames}|group_greeting|0.9|
+- None: ${AIService.CONFIG.mention.noMentionToken}|none|0.0|
 
 SPECIAL RULES: 
 1. For group greetings like "hey guys", "hello everyone", "hi all" - return ALL available stakeholder names separated by commas.
 2. NEVER detect self-introductions or self-references as mentions requiring responses.
 3. ONLY detect when someone is asking/addressing another person for input or response.
 
-Return format: stakeholder_names|mention_type|confidence`
+Return format: stakeholder_names|mention_type|confidence|routing_reason`
           },
           {
             role: "user",
@@ -1584,10 +1600,10 @@ Return format: stakeholder_names|mention_type|confidence`
       console.log('🔍 Splitting result by |:')
       console.log('  Parts:', parts)
       console.log('  Parts length:', parts.length)
-      console.log('  Expected: 3 parts')
+      console.log('  Expected: 4 parts (with routing reason)')
       
-      if (parts.length !== 3) {
-        console.log('❌ Invalid format from AI - Expected format: stakeholder_names|mention_type|confidence')
+      if (parts.length < 3) {
+        console.log('❌ Invalid format from AI - Expected format: stakeholder_names|mention_type|confidence|routing_reason')
         console.log('  Got:', result)
         console.log('  Parts:', parts)
         
@@ -1603,7 +1619,7 @@ Return format: stakeholder_names|mention_type|confidence`
       }
 
       // Clean up the AI response format (remove quotes and key= prefixes)
-      let [stakeholderNamesStr, mentionType, confidenceStr] = parts;
+      let [stakeholderNamesStr, mentionType, confidenceStr, routingReason = ''] = parts;
       
       // Remove key= prefixes and quotes if present
       stakeholderNamesStr = stakeholderNamesStr.replace(/^stakeholder_names\s*=\s*["']?/, '').replace(/["']$/, '');
