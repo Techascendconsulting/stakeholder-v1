@@ -918,7 +918,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         expertise: s.expertise || []
       }));
 
-      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders, user?.id || "anonymous");
+      // Get session context for smarter routing
       const lastSpeaker = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].stakeholderName : null;
       const conversationContext = currentMessages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
       
@@ -1135,7 +1135,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         expertise: s.expertise || []
       }));
 
-      const userMentionResult = await aiService.detectStakeholderMentions(transcript, availableStakeholders);
+      // Get session context for smarter routing  
+      const lastSpeaker = messages.length > 0 ? messages[messages.length - 1].stakeholderName : null;
+      const conversationContext = messages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
+
+      const userMentionResult = await aiService.detectStakeholderMentions(
+        transcript, 
+        availableStakeholders, 
+        user?.id || 'anonymous',
+        lastSpeaker,
+        conversationContext
+      );
       
       console.log('🔍 Auto-processing: User message analysis:', {
         transcript,
@@ -1357,7 +1367,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         expertise: s.expertise || []
       }));
 
-      const userMentionResult = await aiService.detectStakeholderMentions(messageContent, availableStakeholders);
+      // Get session context for smarter routing
+      const lastSpeaker = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].stakeholderName : null;
+      const conversationContext = currentMessages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
+      
+      const userMentionResult = await aiService.detectStakeholderMentions(
+        messageContent, 
+        availableStakeholders, 
+        user?.id || 'anonymous',
+        lastSpeaker,
+        conversationContext
+      );
       
       if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
         const mentionedNames = userMentionResult.mentionedStakeholders.map(s => s.name).join(', ');
