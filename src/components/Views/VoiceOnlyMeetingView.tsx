@@ -7,6 +7,7 @@ import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
+import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
@@ -220,6 +221,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState<any>(null);
+  
+  // New streaming voice input state
+  const [isListening, setIsListening] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [streamingService, setStreamingService] = useState<DeepgramStreaming | null>(null);
   
   // Dynamic UX state management
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
@@ -913,7 +919,111 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setIsTranscribing(transcribing);
   };
 
-  // Direct voice recording functions
+  // NEW: Streaming voice input functions
+  const startStreamingVoiceInput = async () => {
+    if (isListening) {
+      // Stop current session
+      await stopStreamingVoiceInput();
+      return;
+    }
+
+    try {
+      console.log('🎤 Starting streaming voice input...');
+      setIsListening(true);
+      setLiveTranscript('');
+      
+      const streaming = createDeepgramStreaming({
+        onTranscript: (transcript: string, isFinal: boolean) => {
+          console.log(`📝 Live transcript (${isFinal ? 'FINAL' : 'INTERIM'}): "${transcript}"`);
+          setLiveTranscript(transcript);
+          
+          // Auto-process when we get a final transcript
+          if (isFinal && transcript.trim()) {
+            handleFinalTranscript(transcript.trim());
+          }
+        },
+        
+        onSilenceDetected: () => {
+          console.log('🔇 Silence detected, auto-stopping...');
+          stopStreamingVoiceInput();
+        },
+        
+        onError: (error: Error) => {
+          console.error('❌ Streaming error:', error);
+          setIsListening(false);
+          setLiveTranscript('');
+        },
+        
+        onClose: () => {
+          console.log('🔌 Streaming session closed');
+          setIsListening(false);
+        }
+      });
+      
+      setStreamingService(streaming);
+      await streaming.startStreaming();
+      
+      console.log('✅ Streaming voice input started');
+      
+    } catch (error) {
+      console.error('❌ Failed to start streaming voice input:', error);
+      setIsListening(false);
+      setLiveTranscript('');
+    }
+  };
+
+  const stopStreamingVoiceInput = async () => {
+    if (!streamingService || !isListening) return;
+    
+    try {
+      console.log('🛑 Stopping streaming voice input...');
+      await streamingService.stopStreaming();
+      setStreamingService(null);
+      setIsListening(false);
+      
+      // Process final transcript if we have one
+      if (liveTranscript.trim()) {
+        handleFinalTranscript(liveTranscript.trim());
+      }
+      
+      setLiveTranscript('');
+      
+    } catch (error) {
+      console.error('❌ Error stopping streaming:', error);
+      setIsListening(false);
+      setLiveTranscript('');
+    }
+  };
+
+  const handleFinalTranscript = async (transcript: string) => {
+    if (!transcript.trim()) return;
+    
+    console.log('🚀 Auto-processing final transcript:', transcript);
+    
+    // Create user message
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      speaker: 'user',
+      content: transcript,
+      timestamp: new Date().toISOString(),
+      stakeholderName: 'User'
+    };
+    
+    // Add to messages and transcript
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    addToBackgroundTranscript(userMessage);
+    
+    // Auto-trigger AI response (no send button needed)
+    await processStakeholdersInParallel(
+      selectedStakeholders.map(s => ({ name: s.name })), 
+      transcript, 
+      updatedMessages, 
+      'direct_mention'
+    );
+  };
+
+  // Legacy: Direct voice recording functions (keeping for fallback)
   const startDirectRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1065,10 +1175,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   };
 
   const handleMicClick = () => {
-    if (isRecording) {
-      stopDirectRecording();
+    if (isListening) {
+      stopStreamingVoiceInput();
     } else {
-      startDirectRecording();
+      startStreamingVoiceInput();
     }
   };
 
@@ -2129,21 +2239,37 @@ Please review the raw transcript for detailed conversation content.`;
             </button>
           </div>
 
+          {/* Live Transcript Display */}
+          {(isListening || liveTranscript) && (
+            <div className="mb-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className={`w-2 h-2 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                <span className="text-sm text-gray-400">
+                  {isListening ? 'Listening...' : 'Processing'}
+                </span>
+              </div>
+              <div className="text-white min-h-[24px]">
+                {liveTranscript || (isListening ? 'Start speaking...' : '')}
+              </div>
+            </div>
+          )}
+
           {/* Meeting Controls */}
           <div className="flex items-center space-x-2">
             {/* Mic Button */}
             <button
               onClick={handleMicClick}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                isRecording 
-                  ? 'bg-purple-600 hover:bg-purple-700 animate-pulse shadow-lg shadow-purple-500/50' 
-                  : isTranscribing
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                isListening 
+                  ? 'bg-red-500 hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/50' 
+                  : isGeneratingResponse
                   ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
-                  : 'bg-gray-700 hover:bg-gray-600'
+                  : 'bg-green-600 hover:bg-green-700'
               }`}
-              title={isRecording ? 'Stop Recording' : isTranscribing ? 'Processing...' : 'Start Recording'}
+              title={isListening ? 'Stop Speaking (or wait for silence)' : isGeneratingResponse ? 'AI Responding...' : 'Speak'}
+              disabled={isGeneratingResponse}
             >
-              {isRecording ? <Square className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-white" />}
+              {isListening ? <Square className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
             </button>
 
             {/* Stop Button */}
