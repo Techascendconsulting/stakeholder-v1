@@ -954,7 +954,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         onSilenceDetected: () => {
           console.log('🔇 Silence detected, auto-stopping...');
-          stopStreamingVoiceInput();
+          // Process any accumulated transcript before stopping
+          setTimeout(() => {
+            stopStreamingVoiceInput();
+          }, 100); // Small delay to catch any final transcripts
         },
         
         onError: (error: Error) => {
@@ -990,12 +993,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setStreamingService(null);
       setIsListening(false);
       
-      // Process final transcript if we have one
-      if (liveTranscript.trim()) {
-        handleFinalTranscript(liveTranscript.trim());
+      // Process any accumulated final transcript
+      const transcriptToProcess = finalTranscript.trim() || liveTranscript.trim();
+      if (transcriptToProcess) {
+        console.log('🚀 Processing transcript on stop:', transcriptToProcess);
+        handleFinalTranscript(transcriptToProcess);
+      } else {
+        console.log('⚠️ No transcript to process');
       }
       
       setLiveTranscript('');
+      setFinalTranscript('');
       
     } catch (error) {
       console.error('❌ Error stopping streaming:', error);
@@ -1023,13 +1031,47 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setMessages(updatedMessages);
     addToBackgroundTranscript(userMessage);
     
-    // Auto-trigger AI response (no send button needed)
-    await processStakeholdersInParallel(
-      selectedStakeholders.map(s => ({ name: s.name })), 
-      transcript, 
-      updatedMessages, 
-      'direct_mention'
-    );
+    // Auto-trigger AI response using existing mention detection logic
+    try {
+      const aiService = AIService.getInstance();
+      const availableStakeholders = selectedStakeholders.map(s => ({
+        name: s.name,
+        role: s.role,
+        department: s.department,
+        priorities: s.priorities,
+        personality: s.personality,
+        expertise: s.expertise || []
+      }));
+
+      const userMentionResult = await aiService.detectStakeholderMentions(transcript, availableStakeholders);
+      
+      console.log('🔍 Auto-processing: User message analysis:', {
+        transcript,
+        mentionResult: userMentionResult
+      });
+      
+      if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
+        // Process mentioned stakeholders in parallel
+        await processStakeholdersInParallel(
+          userMentionResult.mentionedStakeholders, 
+          transcript, 
+          updatedMessages, 
+          'direct_mention'
+        );
+      } else {
+        // General conversation - pick random stakeholder
+        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+        console.log(`🎯 Auto-processing: ${randomStakeholder.name} responding to general message`);
+        await processStakeholdersInParallel(
+          [{ name: randomStakeholder.name }], 
+          transcript, 
+          updatedMessages, 
+          'general_question'
+        );
+      }
+    } catch (error) {
+      console.error('❌ Error in auto-processing:', error);
+    }
   };
 
   // Legacy: Direct voice recording functions (keeping for fallback)
@@ -2258,7 +2300,16 @@ Please review the raw transcript for detailed conversation content.`;
                 </span>
               </div>
               <div className="text-white min-h-[24px]">
-                {liveTranscript || (isListening ? 'Start speaking...' : '')}
+                {finalTranscript && (
+                  <span className="text-green-400">{finalTranscript}</span>
+                )}
+                {finalTranscript && liveTranscript && <span className="text-gray-400"> </span>}
+                {liveTranscript && (
+                  <span className="text-gray-300 italic">{liveTranscript}</span>
+                )}
+                {!finalTranscript && !liveTranscript && isListening && (
+                  <span className="text-gray-500">Start speaking...</span>
+                )}
               </div>
             </div>
           )}
