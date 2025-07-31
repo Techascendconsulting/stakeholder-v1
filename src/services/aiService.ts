@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { Message } from '../types';
+import SessionCacheService from './sessionCache';
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -53,6 +54,9 @@ interface StakeholderState {
 export class AIService {
   private static instance: AIService;
   private conversationState: ConversationState;
+  private sessionCache = SessionCacheService.getInstance();
+  private sessionCache: SessionCacheService;
+  private sessionCache: SessionCacheService;
   
   // Helper method to get cost-effective model based on environment
   private getModel(type: 'primary' | 'phaseDetection' | 'noteGeneration' | 'greeting' = 'primary'): string {
@@ -134,6 +138,7 @@ export class AIService {
   static getInstance(): AIService {
     if (!AIService.instance) {
       AIService.instance = new AIService();
+      AIService.instance.sessionCache = SessionCacheService.getInstance();
     }
     return AIService.instance;
   }
@@ -1453,6 +1458,7 @@ Return "YES" if directly addressed, "NO" if not.`
   async detectStakeholderMentions(
     response: string, 
     availableStakeholders: StakeholderContext[],
+    userId: string,
     lastSpeaker?: string,
     conversationContext?: string
   ): Promise<{
@@ -1462,6 +1468,32 @@ Return "YES" if directly addressed, "NO" if not.`
     routingReason?: string
   }> {
     try {
+      // Add message to session history
+      this.sessionCache.addMessage(userId, 'user', response);
+      
+      // Check if we should use cached result for low-confidence scenarios
+      const shouldUseCache = this.sessionCache.shouldUseCachedResult(userId, response, 0.5); // Initial confidence check
+      
+      if (shouldUseCache) {
+        const cachedDetection = this.sessionCache.getCachedDetection(userId);
+        if (cachedDetection && cachedDetection.lastStakeholder) {
+          const cachedStakeholder = availableStakeholders.find(s => s.name === cachedDetection.lastStakeholder);
+          if (cachedStakeholder) {
+            console.log(`🎯 Using cached stakeholder: ${cachedDetection.lastStakeholder} (confidence: ${cachedDetection.lastConfidence})`);
+            return {
+              mentionedStakeholders: [cachedStakeholder],
+              mentionType: 'topic_routing',
+              confidence: cachedDetection.lastConfidence,
+              routingReason: 'cached from previous context'
+            };
+          }
+        }
+      }
+      
+      // Get enhanced context from session cache
+      const sessionLastSpeaker = lastSpeaker || this.sessionCache.getLastSpeaker(userId);
+      const sessionConversationContext = conversationContext || this.sessionCache.getConversationContext(userId);
+      
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       const stakeholderRoles = availableStakeholders.map(s => `${s.name} (${s.role}, ${s.department})`).join('; ');
       
@@ -1673,10 +1705,21 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
         return { mentionedStakeholders: [], mentionType: 'none', confidence };
       }
 
+      // Update session cache with successful detection
+      const primaryStakeholder = mentionedStakeholders[0]?.name || null;
+      this.sessionCache.updateDetectionCache(
+        userId,
+        primaryStakeholder,
+        null, // phase will be updated separately
+        response.substring(0, 100), // topic snippet
+        confidence
+      );
+
       return { 
         mentionedStakeholders, 
-        mentionType: mentionType as 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'group_greeting' | 'none', 
-        confidence 
+        mentionType: mentionType as 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'group_greeting' | 'topic_routing' | 'none', 
+        confidence,
+        routingReason
       };
 
     } catch (error) {
