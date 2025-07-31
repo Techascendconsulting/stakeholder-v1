@@ -608,15 +608,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       index: number;
     }> = [];
     
-    let currentlySpeaking = false;
     let completedCount = 0;
     let workingMessages = currentMessages;
     
     // Function to process the next item in the speaking queue
     const processNextInQueue = async () => {
-      if (currentlySpeaking || speakingQueue.length === 0) return;
+      if (currentSpeaking || speakingQueue.length === 0) return;
       
-      currentlySpeaking = true;
+      setCurrentSpeaking('speaking');
       const nextItem = speakingQueue.shift()!;
       const { stakeholder, response, responseMessage, audioBlob, index } = nextItem;
       
@@ -674,8 +673,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setCurrentSpeaker(null);
       setCurrentSpeaking(null);
       
-      currentlySpeaking = false;
-      
       // Process next in queue
       processNextInQueue();
     };
@@ -724,7 +721,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`📝 STREAMING: Added ${stakeholder.name} to speaking queue (${completedCount}/${mentionedStakeholders.length} ready)`);
         
         // Start processing queue if this is the first completed stakeholder
-        if (!currentlySpeaking) {
+        if (!currentSpeaking) {
           processNextInQueue();
         }
         
