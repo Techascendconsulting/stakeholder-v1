@@ -529,11 +529,92 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setDynamicFeedback(null);
   };
 
-  // NEW: Parallel processing function for multiple stakeholders
+  // NEW: Streaming parallel processing - stakeholders start speaking as soon as ready
   const processStakeholdersInParallel = async (mentionedStakeholders: any[], messageContent: string, currentMessages: Message[], responseContext: string) => {
-    console.log(`⚡ PARALLEL: Processing ${mentionedStakeholders.length} stakeholders simultaneously`);
+    console.log(`🚀 STREAMING: Processing ${mentionedStakeholders.length} stakeholders with streaming responses`);
     
-    // Phase 1: Generate all responses and audio in parallel
+    // Create a queue to manage speaking order while allowing parallel generation
+    const speakingQueue: Array<{
+      stakeholder: any;
+      response: string;
+      responseMessage: any;
+      audioBlob: Blob | null;
+      index: number;
+    }> = [];
+    
+    let currentlySpeaking = false;
+    let completedCount = 0;
+    let workingMessages = currentMessages;
+    
+    // Function to process the next item in the speaking queue
+    const processNextInQueue = async () => {
+      if (currentlySpeaking || speakingQueue.length === 0) return;
+      
+      currentlySpeaking = true;
+      const nextItem = speakingQueue.shift()!;
+      const { stakeholder, response, responseMessage, audioBlob, index } = nextItem;
+      
+      console.log(`🎵 STREAMING: ${stakeholder.name} starting to speak (${index + 1}/${mentionedStakeholders.length})`);
+      
+      // Add message to state immediately
+      workingMessages = [...workingMessages, responseMessage];
+      setMessages(workingMessages);
+      addToBackgroundTranscript(responseMessage);
+      
+      // Set current speaker for UI
+      setCurrentSpeaker(stakeholder);
+      setCurrentSpeaking(stakeholder.id);
+      
+      // Play audio if available
+      if (globalAudioEnabled && audioBlob) {
+        try {
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          setCurrentAudio(audio);
+          setPlayingMessageId(responseMessage.id);
+          setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
+          
+          await new Promise((resolve) => {
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+              setCurrentAudio(null);
+              setPlayingMessageId(null);
+              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+              console.log(`✅ STREAMING: ${stakeholder.name} finished speaking`);
+              resolve(void 0);
+            };
+            
+            audio.onerror = () => {
+              URL.revokeObjectURL(audioUrl);
+              setCurrentAudio(null);
+              setPlayingMessageId(null);
+              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+              resolve(void 0);
+            };
+            
+            audio.play().catch(() => resolve(void 0));
+          });
+          
+          // Brief pause between speakers
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+        } catch (error) {
+          console.error(`❌ STREAMING: Audio error for ${stakeholder.name}:`, error);
+        }
+      }
+      
+      // Clear current speaker
+      setCurrentSpeaker(null);
+      setCurrentSpeaking(null);
+      
+      currentlySpeaking = false;
+      
+      // Process next in queue
+      processNextInQueue();
+    };
+    
+    // Start parallel generation for all stakeholders
     const stakeholderPromises = mentionedStakeholders.map(async (mentionedStakeholderContext, index) => {
       const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholderContext.name);
       
@@ -560,9 +641,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         // Create message object
         const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length + index);
         
-        console.log(`✅ PARALLEL: Completed GPT + Voice for ${stakeholder.name}`);
+        console.log(`✅ STREAMING: Completed GPT + Voice for ${stakeholder.name}`);
         
-        return {
+        // Add to speaking queue as soon as ready
+        const queueItem = {
           stakeholder,
           response,
           responseMessage,
@@ -570,100 +652,34 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           index
         };
         
+        speakingQueue.push(queueItem);
+        completedCount++;
+        
+        console.log(`📝 STREAMING: Added ${stakeholder.name} to speaking queue (${completedCount}/${mentionedStakeholders.length} ready)`);
+        
+        // Start processing queue if this is the first completed stakeholder
+        if (!currentlySpeaking) {
+          processNextInQueue();
+        }
+        
+        return queueItem;
+        
       } catch (error) {
-        console.error(`❌ PARALLEL: Error processing ${stakeholder.name}:`, error);
+        console.error(`❌ STREAMING: Error processing ${stakeholder.name}:`, error);
+        completedCount++;
         return null;
       }
     });
 
-    // Wait for all stakeholders to finish thinking and voice generation
-    console.log(`⏳ PARALLEL: Waiting for all ${mentionedStakeholders.length} stakeholders to complete...`);
-    const results = await Promise.all(stakeholderPromises);
-    const validResults = results.filter(result => result !== null);
+    // Wait for all stakeholders to complete generation (but speaking happens in parallel)
+    console.log(`⏳ STREAMING: All stakeholders generating responses in parallel...`);
+    await Promise.all(stakeholderPromises);
     
-    console.log(`✅ PARALLEL: All stakeholders completed! ${validResults.length}/${mentionedStakeholders.length} successful`);
-
-    // Phase 2: Play audio sequentially in the correct order
-    let workingMessages = currentMessages;
+    console.log(`✅ STREAMING: All stakeholders completed generation! Speaking queue will handle playback order.`);
     
-    for (let i = 0; i < validResults.length; i++) {
-      const result = validResults[i];
-      const { stakeholder, response, responseMessage, audioBlob } = result;
-      
-      console.log(`🎵 SEQUENTIAL: Playing ${stakeholder.name} (${i + 1}/${validResults.length})`);
-      
-      // Add message to state
-      workingMessages = [...workingMessages, responseMessage];
-      setMessages(workingMessages);
-      
-      // Add to background transcript
-      addToBackgroundTranscript(responseMessage);
-      
-      // Set current speaker for UI
-      setCurrentSpeaker(stakeholder);
-      setCurrentSpeaking(stakeholder.id);
-      
-      // Play pre-generated audio
-      if (globalAudioEnabled && audioBlob) {
-        try {
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          
-          setCurrentAudio(audio);
-          setPlayingMessageId(responseMessage.id);
-          setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
-          
-          // Wait for audio to finish
-          await new Promise((resolve) => {
-            audio.onended = () => {
-              URL.revokeObjectURL(audioUrl);
-              setCurrentAudio(null);
-              setPlayingMessageId(null);
-              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
-              console.log(`🚀 AUDIO DEBUG: ${stakeholder.name} audio naturally ended`);
-              resolve(void 0);
-            };
-            
-            audio.onerror = (error) => {
-              console.error(`❌ Audio playback error for ${stakeholder.name}:`, error);
-              URL.revokeObjectURL(audioUrl);
-              setCurrentAudio(null);
-              setPlayingMessageId(null);
-              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
-              resolve(void 0);
-            };
-            
-            audio.play().catch(error => {
-              console.error(`❌ Audio play error for ${stakeholder.name}:`, error);
-              resolve(void 0);
-            });
-          });
-          
-        } catch (error) {
-          console.error(`❌ Audio setup error for ${stakeholder.name}:`, error);
-        }
-      }
-      
-      // Clear current speaker
-      setCurrentSpeaker(null);
-      setCurrentSpeaking(null);
-      
-      // Update response queue for UI
-      if (i < validResults.length - 1) {
-        setResponseQueue(prev => {
-          const remaining = prev.upcoming.slice(1);
-          return {
-            current: prev.upcoming[0]?.name || null,
-            upcoming: remaining
-          };
-        });
-        
-        // Brief pause between speakers for natural flow
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-    }
-    
-    console.log(`🏁 PARALLEL: All stakeholders completed speaking sequentially`);
+    // Note: Speaking happens automatically via the streaming queue as each stakeholder completes
+    // No need to wait - the first ready stakeholder starts speaking immediately
+    // while others continue generating in the background
   };
 
   // Enhanced stakeholder response processing - EXACT COPY from transcript meeting
