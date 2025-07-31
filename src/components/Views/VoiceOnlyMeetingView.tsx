@@ -1231,14 +1231,26 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       return;
     }
     
-    // Set the input message and trigger the existing handleSendMessage logic
-    console.log('📝 Setting input message...');
-    setInputMessage(messageText);
-    
-    // Use the existing handleSendMessage function which has all the proper logic
-    console.log('🚀 Calling handleSendMessage...');
-    await handleSendMessage();
-    console.log('✅ handleSendMessage completed');
+    // Direct send without relying on inputMessage state
+    console.log('🚀 Sending message directly...');
+    const messageContent = messageText.trim();
+    setIsGeneratingResponse(true);
+    setInputMessage(''); // Clear input
+
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      speaker: 'user',
+      content: messageContent,
+      timestamp: new Date().toISOString()
+    };
+
+    console.log('📝 Adding user message to transcript:', userMessage);
+    setMessages(prev => [...prev, userMessage]);
+
+    // Process AI responses
+    console.log('🤖 Processing AI responses...');
+    await generateStreamingAIResponse(messageContent);
+    console.log('✅ Auto-send completed');
   };
 
   // Handle microphone button click - start/stop recording
