@@ -205,11 +205,14 @@ export class DeepgramStreaming {
   private handleWebSocketMessage(event: MessageEvent): void {
     try {
       const message: DeepgramMessage = JSON.parse(event.data);
+      console.log('🔍 Deepgram message:', message.type, message);
       
       if (message.type === 'Results' && message.channel?.alternatives?.[0]) {
         const alternative = message.channel.alternatives[0];
         const transcript = alternative.transcript;
         const isFinal = message.is_final || false;
+        
+        console.log(`📝 Raw transcript - Final: ${isFinal}, Content: "${transcript}"`);
         
         if (transcript && transcript.trim()) {
           console.log(`📝 ${isFinal ? 'FINAL' : 'INTERIM'}: "${transcript}"`);
@@ -220,6 +223,8 @@ export class DeepgramStreaming {
           
           // Notify callback
           this.options.onTranscript?.(transcript, isFinal);
+        } else if (isFinal) {
+          console.log('⚠️ Final result with empty transcript');
         }
       }
       

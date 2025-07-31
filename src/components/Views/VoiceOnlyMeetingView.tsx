@@ -225,6 +225,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // New streaming voice input state
   const [isListening, setIsListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
+  const [finalTranscript, setFinalTranscript] = useState('');
   const [streamingService, setStreamingService] = useState<DeepgramStreaming | null>(null);
   
   // Dynamic UX state management
@@ -931,15 +932,23 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log('🎤 Starting streaming voice input...');
       setIsListening(true);
       setLiveTranscript('');
+      setFinalTranscript('');
       
       const streaming = createDeepgramStreaming({
         onTranscript: (transcript: string, isFinal: boolean) => {
           console.log(`📝 Live transcript (${isFinal ? 'FINAL' : 'INTERIM'}): "${transcript}"`);
-          setLiveTranscript(transcript);
           
-          // Auto-process when we get a final transcript
-          if (isFinal && transcript.trim()) {
-            handleFinalTranscript(transcript.trim());
+          if (isFinal) {
+            // Accumulate final transcripts
+            setFinalTranscript(prev => {
+              const newFinal = prev ? `${prev} ${transcript}`.trim() : transcript.trim();
+              console.log(`📝 Accumulated final transcript: "${newFinal}"`);
+              return newFinal;
+            });
+            setLiveTranscript(''); // Clear interim
+          } else {
+            // Show interim transcript
+            setLiveTranscript(transcript);
           }
         },
         
