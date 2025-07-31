@@ -6,7 +6,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
-import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
+import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
@@ -823,7 +823,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       
-      const mediaRecorder = new MediaRecorder(stream);
+      // Use Deepgram-optimized audio format
+      const formats = getSupportedDeepgramFormats();
+      const options = { mimeType: formats.preferredMimeType };
+      
+      // Fallback to supported format if preferred is not available
+      let mediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        console.log('🎙️ Preferred format not supported, using default');
+        mediaRecorder = new MediaRecorder(stream);
+      }
+      
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -834,7 +846,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: getSupportedAudioFormat() });
+        const audioBlob = new Blob(audioChunksRef.current, { type: getSupportedDeepgramFormats().preferredMimeType });
         await transcribeAndSend(audioBlob);
         
         // Clean up
@@ -905,7 +917,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         return;
       }
       
-      const transcription = await transcribeAudio(audioBlob);
+              const transcription = await transcribeWithDeepgram(audioBlob);
       
       if (transcription && transcription.trim()) {
         // Automatically send the transcription
