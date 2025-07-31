@@ -1449,11 +1449,17 @@ Return "YES" if directly addressed, "NO" if not.`
     }
   }
 
-  // Enhanced stakeholder mention detection for cross-references
-  async detectStakeholderMentions(response: string, availableStakeholders: StakeholderContext[]): Promise<{
+  // Smart stakeholder routing with topic/domain awareness and caching
+  async detectStakeholderMentions(
+    response: string, 
+    availableStakeholders: StakeholderContext[],
+    lastSpeaker?: string,
+    conversationContext?: string
+  ): Promise<{
     mentionedStakeholders: StakeholderContext[],
-    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'group_greeting' | 'none',
-    confidence: number
+    mentionType: 'direct_question' | 'at_mention' | 'name_question' | 'expertise_request' | 'multiple_mention' | 'group_greeting' | 'topic_routing' | 'none',
+    confidence: number,
+    routingReason?: string
   }> {
     try {
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
@@ -1464,17 +1470,24 @@ Return "YES" if directly addressed, "NO" if not.`
         messages: [
           {
             role: "system",
-            content: `You are analyzing a stakeholder's response to detect mentions of other stakeholders that should trigger a response.
+            content: `You are an intelligent stakeholder routing system that determines who should respond based on direct mentions, topic expertise, and conversation context.
 
 Available stakeholders: ${stakeholderNames}
 Detailed info: ${stakeholderRoles}
+${lastSpeaker ? `Last speaker: ${lastSpeaker}` : ''}
+${conversationContext ? `Conversation context: ${conversationContext}` : ''}
 
-TASK: Detect if this response mentions stakeholder(s) in a way that naturally calls for their input.
+TASK: Determine who should respond using this priority order:
+1. DIRECT MENTIONS (highest priority)
+2. TOPIC/DOMAIN EXPERTISE (when no direct mention)
+3. CONVERSATION CONTINUITY (follow-up to last speaker)
+4. ROLE-BASED FALLBACK (appropriate department/role)
 
-IMPORTANT: 
-1. When a message contains both acknowledgment and a new question (e.g., "Thank you David. Aisha, can you help?"), focus on WHO is being asked the question, not who is being thanked. The person being asked should respond.
-2. IGNORE self-introductions and self-references (e.g., "Hi, I'm David", "This is Sarah speaking", "As David mentioned", "I'm Emily from Finance"). These are NOT mentions that require responses.
-3. ONLY detect when someone is directly asking, addressing, or requesting input from another person.
+ROUTING LOGIC:
+- If someone is directly mentioned by name → route to them (direct_question, at_mention, etc.)
+- If no direct mention BUT topic clearly belongs to someone's domain → route based on expertise (topic_routing)
+- If ambiguous and related to last speaker's domain → continue with last speaker
+- If still unclear → route to most relevant role/department
 
 MENTION TYPES TO DETECT:
 1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?", "aisha what is your process?")
