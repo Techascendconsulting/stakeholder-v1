@@ -1225,6 +1225,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     await handleSendMessage();
   };
 
+  // Handle microphone button click - start/stop recording
   const handleMicClick = () => {
     if (isRecording) {
       stopDirectRecording();
@@ -2665,4 +2666,5 @@ Please review the raw transcript for detailed conversation content.`;
       </div>
     </div>
   );
-};
+};// Updated audio button behavior
+// Audio button reverted to start/stop
