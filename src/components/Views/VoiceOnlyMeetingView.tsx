@@ -1234,6 +1234,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setDynamicFeedback('🔄 Processing and transcribing your message...');
+      // Safety timeout to clear feedback in case something goes wrong
+      setTimeout(() => setDynamicFeedback(null), 10000);
     } else {
       console.log('⚠️ MediaRecorder not available or not recording');
     }
@@ -1364,6 +1366,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         setIsGeneratingResponse(false);
         console.log('✅ Auto-send completed');
+        setDynamicFeedback(null); // Clear any persistent feedback
         return;
       }
       
@@ -2841,3 +2844,5 @@ Please review the raw transcript for detailed conversation content.`;
   );
 };// Updated audio button behavior
 // Audio button reverted to start/stop
+// Fix for persistent feedback message
+// Persistent feedback fix applied
