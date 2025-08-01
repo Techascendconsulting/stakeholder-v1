@@ -2436,6 +2436,15 @@ Please review the raw transcript for detailed conversation content.`;
       setCurrentAudio(null);
     }
     
+    // Stop all real-time streaming sessions
+    try {
+      const realTimeStreaming = RealTimeStreamingService.getInstance();
+      realTimeStreaming.stopAllSessions();
+      console.log('🛑 Stopped all real-time streaming sessions');
+    } catch (error) {
+      console.error('❌ Error stopping streaming sessions:', error);
+    }
+    
     setCurrentSpeaker(null);
     setIsAudioPlaying(false);
     setPlayingMessageId(null);

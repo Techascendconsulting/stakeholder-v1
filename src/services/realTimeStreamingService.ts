@@ -183,23 +183,13 @@ export class RealTimeStreamingService {
   }
 
   private async processTokenChunk(session: StreamingSession, token: string): Promise<void> {
+    // Just accumulate tokens - don't send to TTS in chunks (causes poor quality)
     session.tokenBuffer += token;
-    const now = Date.now();
-
-    // Send to TTS if we have a natural break or enough time has passed
-    const hasNaturalBreak = /[.!?,:;]\s*$/.test(session.tokenBuffer.trim());
-    const timeToSend = (now - session.lastSentTime) >= this.BUFFER_DELAY_MS;
-    const bufferFull = session.tokenBuffer.length >= 50;
-
-    if ((hasNaturalBreak && session.tokenBuffer.trim().length > 10) || timeToSend || bufferFull) {
-      await this.sendToTTS(session, session.tokenBuffer.trim());
-      session.tokenBuffer = '';
-      session.lastSentTime = now;
-    }
   }
 
   private async flushTokenBuffer(session: StreamingSession): Promise<void> {
     if (session.tokenBuffer.trim()) {
+      console.log(`📝 Sending complete response to TTS for ${session.stakeholder.name}: "${session.tokenBuffer.substring(0, 50)}..."`);
       await this.sendToTTS(session, session.tokenBuffer.trim());
       session.tokenBuffer = '';
     }
