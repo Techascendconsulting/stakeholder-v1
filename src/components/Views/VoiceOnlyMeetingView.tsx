@@ -9,7 +9,7 @@ import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTT
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
 import StreamingTTSService from '../../services/streamingTTS';
-import RealTimeStreamingService from '../../services/realTimeStreamingService';
+import { MurfTTSService } from '../../services/murfTTS';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
@@ -695,60 +695,38 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setCurrentSpeaker(stakeholder);
       setCurrentSpeaking(stakeholder.id);
       
-      // Generate and play audio in real-time using RealTimeStreamingService
-      if (globalAudioEnabled && nextItem.isRealTime) {
+      // Generate and play audio using Murf TTS (simple and reliable)
+      if (globalAudioEnabled && response) {
         try {
-          const voiceName = stakeholder.voice;
-          if (isAzureTTSAvailable() && voiceName) {
-            console.log(`🎤 Starting real-time streaming for ${stakeholder.name}`);
+          console.log(`🎤 MURF: Generating audio for ${stakeholder.name}`);
+          
+          const murfTTS = MurfTTSService.getInstance();
+          const voiceId = murfTTS.getVoiceForStakeholder(stakeholder.name);
+          
+          setPlayingMessageId(responseMessage.id);
+          setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
+          
+          // Generate audio with Murf TTS
+          const audioBlob = await murfTTS.synthesizeSpeech(response, voiceId);
+          
+          if (audioBlob) {
+            console.log(`🎵 MURF: Playing audio for ${stakeholder.name}`);
             
-            const sessionId = `${stakeholder.id}-${Date.now()}`;
-            const realTimeStreaming = RealTimeStreamingService.getInstance();
+            // Play the audio
+            await murfTTS.playAudio(audioBlob);
             
-            setPlayingMessageId(responseMessage.id);
-            setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
-            
-            // Start real-time streaming session
-            await realTimeStreaming.startStreamingSession(
-              sessionId,
-              stakeholder,
-              voiceName,
-              () => {
-                console.log(`✅ STREAMING: ${stakeholder.name} finished speaking`);
-                setCurrentAudio(null);
-                setPlayingMessageId(null);
-                setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
-              },
-              (error) => {
-                console.error(`❌ STREAMING: Error for ${stakeholder.name}:`, error);
-                setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
-              }
-            );
-            
-            // Build system prompt and start streaming OpenAI + TTS
-            const systemPrompt = await aiService.getSystemPromptForStreaming(stakeholder, {
-              project: selectedProject!,
-              conversationHistory: messages,
-              conversationPhase: 'as_is'
-            }, 'direct_mention');
-            
-            const contextualPrompt = await aiService.getContextualPromptForStreaming(messageContent, {
-              project: selectedProject!,
-              conversationHistory: messages,
-              conversationPhase: 'as_is'
-            }, stakeholder);
-            
-            // Start streaming - this will generate tokens and send to TTS in real-time
-            await realTimeStreaming.streamOpenAIResponse(sessionId, systemPrompt, contextualPrompt);
-            
-            // Brief pause between speakers
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
+            console.log(`✅ MURF: ${stakeholder.name} finished speaking`);
           } else {
-            console.log(`⏭️ Skipping audio for ${stakeholder.name} (audio disabled or no voice)`);
+            console.error(`❌ MURF: Failed to generate audio for ${stakeholder.name}`);
           }
+          
+          setCurrentAudio(null);
+          setPlayingMessageId(null);
+          setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+          
         } catch (error) {
-          console.error(`❌ STREAMING: Real-time error for ${stakeholder.name}:`, error);
+          console.error(`❌ MURF: Error for ${stakeholder.name}:`, error);
+          setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
         }
       }
       // Fallback for non-real-time responses
@@ -809,16 +787,29 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         // Create message object for transcript
         const responseMessage = createResponseMessage(stakeholder, '', currentMessages.length + index);
         
-        console.log(`🚀 STREAMING: Starting real-time generation for ${stakeholder.name}`);
+        console.log(`🚀 MURF: Starting AI generation for ${stakeholder.name}`);
         
-        // Add to speaking queue immediately (response will be generated and spoken in real-time)
+        // Generate AI response first, then add to speaking queue
+        const response = await aiService.generateStakeholderResponse(
+          stakeholder,
+          messageContent,
+          { 
+            project: selectedProject!,
+            conversationHistory: workingMessages,
+            conversationPhase: 'as_is'
+          },
+          'direct_mention'
+        );
+        
+        // Update response message with generated content
+        responseMessage.content = response;
+        
         const queueItem = {
           stakeholder,
-          response: '', // Will be built in real-time
+          response,
           responseMessage,
-          audioBlob: null, // Real-time streaming
-          index,
-          isRealTime: true
+          audioBlob: null,
+          index
         };
         
         speakingQueue.push(queueItem);
@@ -2436,14 +2427,8 @@ Please review the raw transcript for detailed conversation content.`;
       setCurrentAudio(null);
     }
     
-    // Stop all real-time streaming sessions
-    try {
-      const realTimeStreaming = RealTimeStreamingService.getInstance();
-      realTimeStreaming.stopAllSessions();
-      console.log('🛑 Stopped all real-time streaming sessions');
-    } catch (error) {
-      console.error('❌ Error stopping streaming sessions:', error);
-    }
+    // No complex streaming sessions to stop with Murf TTS
+    console.log('🛑 Audio cleanup complete');
     
     setCurrentSpeaker(null);
     setIsAudioPlaying(false);
