@@ -1318,6 +1318,7 @@ You're just ${stakeholder.name} being yourself - not giving a presentation!`;
         - Mention specific timeframes, approval steps, systems used, and manual touchpoints from the process details
         - Draw from your EXPERTISE and BACKGROUND to provide authentic process details
         - When explaining processes, describe the flow naturally without numbered lists - make it conversational
+        - NEVER use numbered lists (1. 2. 3.) - talk like a real person, not a robot
         - Focus on the actual workflow, handoffs, and pain points you experience daily
         - Reference specific steps from the current process but explain them in your own words as if you do this work`
         break
