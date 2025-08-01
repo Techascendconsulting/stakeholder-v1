@@ -1673,7 +1673,7 @@ MENTION TYPES TO DETECT:
 3. "name_question" - Name followed by question (e.g., "Emily might know this better?", "Has David looked at this?")
 4. "expertise_request" - Requesting someone's expertise (e.g., "the IT team should weigh in", "someone from Finance")
 5. "multiple_mention" - Multiple stakeholders mentioned (e.g., "aisha and david how are you?", "Sarah and James, what do you think?")
-6. "group_greeting" - Group greetings that should include all stakeholders (e.g., "hey guys", "hello everyone", "hi all", "good morning team", "hey there")
+6. "group_greeting" - Group greetings that should include all stakeholders (e.g., "hey guys", "hello everyone", "hi all", "good morning team", "hey there", "how are you", "how's everyone", "how are you all")
 7. "topic_routing" - No direct mention but question fits someone's role/responsibility area
 
 EXAMPLES OF WHAT TO DETECT:
@@ -1713,6 +1713,9 @@ ROLE-BASED ROUTING EXAMPLES (topic_routing):
 - "good morning team" (should return ALL stakeholder names)
 - "hey there" (should return ALL stakeholder names)
 - "hello folks" (should return ALL stakeholder names)
+- "how are you" (should return ALL stakeholder names)
+- "how's everyone" (should return ALL stakeholder names)
+- "how are you all" (should return ALL stakeholder names)
 
 EXAMPLES OF WHAT NOT TO DETECT:
 - "We need to consult with another department" (too vague)
@@ -2256,16 +2259,17 @@ ${context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMe
 }).filter(Boolean).join('\n')}
 
 RESPONSE REQUIREMENTS:
+- SIMPLE GREETINGS: If this is just "how are you", "how's it going", or similar casual greeting, give a SHORT, friendly response (e.g., "I'm good, thanks!" or "Doing well, how about you?") - DO NOT launch into process explanations
+- BUSINESS QUESTIONS: For actual business/process questions, use the CURRENT PROCESS DETAILS to give specific explanations
 - You were specifically mentioned/addressed, so respond directly and helpfully
 - Acknowledge that you're responding to their question/request naturally
-- Use the CURRENT PROCESS DETAILS to give specific, step-by-step explanations when asked about processes
-- Reference actual systems, timeframes, and workflows from the process details
+- Reference actual systems, timeframes, and workflows from the process details when relevant
 - Provide your expert perspective based on your role as ${stakeholder.role}
 - Be conversational and collaborative
-- Focus on your domain expertise: ${stakeholder.expertise.join(', ')}
+- Focus on your domain expertise: ${stakeholder.expertise.join(', ')} for business topics
 - Keep your response relevant to your department (${stakeholder.department}) perspective
 - Use natural language without any markdown formatting
-- Be helpful and specific in your response with real process details
+- NEVER use numbered lists (1. 2. 3.) - talk like a real person
 
 CRITICAL - PHASE-SPECIFIC GUIDANCE:`;
 
