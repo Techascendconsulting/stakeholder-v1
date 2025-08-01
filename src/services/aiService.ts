@@ -1245,7 +1245,8 @@ REMEMBER: You're not giving a presentation or formal response. You're just ${sta
 BE SUPER NATURAL AND HUMAN:
 - Start with a natural reaction: "Oh!", "Hmm", "Well", "You know what", "That's interesting"
 - Sound like you're thinking out loud: "So... from what I've seen..." or "In my experience..."
-- Keep it short and conversational - like 1-2 sentences, not a speech
+- Give detailed, realistic answers about actual business processes and current state
+- Use your specific expertise and background knowledge to provide authentic details
 - Show your personality: ${stakeholder.personality}
 - React emotionally if appropriate - excitement, concern, curiosity
 - Use filler words naturally: "um", "well", "you know"
@@ -1287,7 +1288,11 @@ You're just ${stakeholder.name} being yourself - not giving a presentation!`;
         - Explain step-by-step how current processes work in your department
         - Use the project context to explain current workflows and systems
         - If asked about solutions, say "Let's first understand the current process completely"
-        - Be specific about current tools, systems, and manual processes used today`
+        - Be specific about current tools, systems, and manual processes used today
+        - Reference the CURRENT BUSINESS STATE and CURRENT CHALLENGES provided in your context
+        - Give realistic, detailed examples of how processes actually work in your department
+        - Mention specific timeframes, approval steps, systems used, and manual touchpoints
+        - Draw from your EXPERTISE and BACKGROUND to provide authentic process details`
         break
         
       case 'pain_points':
@@ -1392,13 +1397,36 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
     }
     
     prompt += `YOUR ROLE: ${stakeholder.role} in ${stakeholder.department}\n`
-    prompt += `PROJECT: ${context.project.name}\n\n`
+    prompt += `PROJECT: ${context.project.name}\n`
     
-    prompt += `Respond naturally as a ${stakeholder.role} would in a meeting. Give a helpful but brief answer (2-3 sentences). Let them ask follow-up questions if they want more details.`
+    // Add detailed business process knowledge
+    if (context.project.currentState) {
+      prompt += `CURRENT BUSINESS STATE: ${context.project.currentState}\n`
+    }
+    
+    if (context.project.challenges && context.project.challenges.length > 0) {
+      prompt += `CURRENT CHALLENGES:\n`
+      context.project.challenges.forEach(challenge => {
+        prompt += `- ${challenge}\n`
+      })
+    }
+    
+    // Add stakeholder-specific expertise and priorities
+    if (stakeholder.expertise && stakeholder.expertise.length > 0) {
+      prompt += `YOUR EXPERTISE: ${stakeholder.expertise.join(', ')}\n`
+    }
+    
+    if (stakeholder.priorities && stakeholder.priorities.length > 0) {
+      prompt += `YOUR PRIORITIES: ${stakeholder.priorities.join(', ')}\n`
+    }
+    
+    if (stakeholder.bio) {
+      prompt += `YOUR BACKGROUND: ${stakeholder.bio}\n`
+    }
+    
+    prompt += `\nRespond naturally as a ${stakeholder.role} would in a meeting. Give a helpful but detailed answer about actual business processes and current state. Use your specific expertise and knowledge of the current challenges.`
     
     return prompt
-    prompt += `- Project Type: ${context.project.type}\n`
-    prompt += `- Project Description: ${context.project.description}\n`
     prompt += `- Use this project context to explain current processes and workflows in your department\n`
     prompt += `- Reference specific systems, tools, and procedures mentioned in the project scope\n`
     
