@@ -725,7 +725,7 @@ Generate only the greeting, nothing else.`;
       const prompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
       
       const completion = await openai.chat.completions.create({
-        model: this.getModel('primary'),
+        model: AIService.CONFIG.ai_models.primary,
         messages: [
           {
             role: "system",
@@ -1663,7 +1663,8 @@ ROUTING LOGIC:
   * Customer impact questions → Customer Service roles
   * Verification/validation questions → QA/Compliance roles
 - If follow-up to previous speaker's area → continue with last speaker
-- If still unclear → random selection from available stakeholders
+- If unclear/nonsensical input → pick the most relevant stakeholder based on general expertise (topic_routing)
+- NEVER return NONE - always route to at least ONE stakeholder
 
 MENTION TYPES TO DETECT:
 1. "direct_question" - Directly asking someone by name (e.g., "Sarah, what do you think?", "John, can you help?", "aisha what is your process?")
@@ -1736,7 +1737,7 @@ Examples:
 - Role-based routing: Aisha Ahmed|topic_routing|0.8|verification question
 - Multiple specific: Sarah Patel,David Thompson|multiple_mention|0.9|
 - Group greeting: ${stakeholderNames}|group_greeting|0.9|
-- None: ${AIService.CONFIG.mention.noMentionToken}|none|0.0|
+- Unclear input: James Walker|topic_routing|0.7|general business question
 
 SPECIAL RULES: 
 1. For group greetings like "hey guys", "hello everyone", "hi all" - return ALL available stakeholder names separated by commas.
