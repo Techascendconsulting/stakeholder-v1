@@ -1290,12 +1290,14 @@ You're just ${stakeholder.name} being yourself - not giving a presentation!`;
         - If asked about solutions, say "Let's first understand the current process completely"
         - Be specific about current tools, systems, and manual processes used today
         - Reference the CURRENT BUSINESS STATE and CURRENT CHALLENGES provided in your context
-        - Use YOUR DEPARTMENT'S CURRENT PROCESS as the foundation for detailed explanations
+        - Use the CURRENT PROCESS DETAILS as your primary source for step-by-step process explanations
+        - Use YOUR DEPARTMENT'S CURRENT PROCESS as additional context for your specific role
         - Give realistic, detailed examples of how processes actually work in your department
-        - Mention specific timeframes, approval steps, systems used, and manual touchpoints
+        - Mention specific timeframes, approval steps, systems used, and manual touchpoints from the process details
         - Draw from your EXPERTISE and BACKGROUND to provide authentic process details
-        - When explaining processes, describe the flow naturally without numbered lists
-        - Focus on the actual workflow, handoffs, and pain points you experience daily`
+        - When explaining processes, describe the flow naturally without numbered lists - make it conversational
+        - Focus on the actual workflow, handoffs, and pain points you experience daily
+        - Reference specific steps from the current process but explain them in your own words as if you do this work`
         break
         
       case 'pain_points':
@@ -1407,7 +1409,12 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
       prompt += `CURRENT BUSINESS STATE: ${context.project.currentState}\n`
     }
     
-    // Add department-specific process flow
+    // Add detailed current process information
+    if (context.project.asIsProcess) {
+      prompt += `CURRENT PROCESS DETAILS: ${context.project.asIsProcess}\n`
+    }
+    
+    // Add department-specific process flow (for ElevenLabs projects)
     if (context.project.currentProcessFlow) {
       const departmentKey = stakeholder.department.toLowerCase().replace(/\s+/g, '').replace('information', 'it').replace('technology', 'systems')
       const processFlow = context.project.currentProcessFlow[departmentKey]
