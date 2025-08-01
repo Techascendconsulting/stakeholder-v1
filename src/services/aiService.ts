@@ -693,6 +693,24 @@ Generate only the greeting, nothing else.`;
   }
 
   // Generate stakeholder response with real-time streaming
+  // Get system prompt for real-time streaming service
+  async getSystemPromptForStreaming(
+    stakeholder: StakeholderContext,
+    context: ConversationContext,
+    responseType: string = 'direct_mention'
+  ): Promise<string> {
+    return this.buildDynamicSystemPrompt(stakeholder, context, responseType);
+  }
+
+  // Get contextual prompt for real-time streaming service  
+  async getContextualPromptForStreaming(
+    userMessage: string,
+    context: ConversationContext,
+    stakeholder: StakeholderContext
+  ): Promise<string> {
+    return this.buildContextualPrompt(userMessage, context, stakeholder);
+  }
+
   async generateStakeholderResponseStreaming(
     userMessage: string,
     stakeholder: StakeholderContext,

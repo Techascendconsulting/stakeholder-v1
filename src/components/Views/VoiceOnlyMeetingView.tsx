@@ -9,6 +9,7 @@ import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTT
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
 import StreamingTTSService from '../../services/streamingTTS';
+import RealTimeStreamingService from '../../services/realTimeStreamingService';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
@@ -691,36 +692,51 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       setCurrentSpeaker(stakeholder);
       setCurrentSpeaking(stakeholder.id);
       
-      // Generate and play audio in real-time using StreamingTTSService
-      if (globalAudioEnabled) {
+      // Generate and play audio in real-time using RealTimeStreamingService
+      if (globalAudioEnabled && nextItem.isRealTime) {
         try {
           const voiceName = stakeholder.voice;
           if (isAzureTTSAvailable() && voiceName) {
-            console.log(`🎤 Starting real-time TTS for ${stakeholder.name}`);
+            console.log(`🎤 Starting real-time streaming for ${stakeholder.name}`);
             
             const sessionId = `${stakeholder.id}-${Date.now()}`;
-            const streamingTTS = StreamingTTSService.getInstance();
-            
-            // Start streaming session with callback for when speaking is complete
-            await streamingTTS.startStreamingSession(sessionId, voiceName, () => {
-              console.log(`✅ STREAMING: ${stakeholder.name} finished speaking`);
-              setCurrentAudio(null);
-              setPlayingMessageId(null);
-              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
-            });
+            const realTimeStreaming = RealTimeStreamingService.getInstance();
             
             setPlayingMessageId(responseMessage.id);
             setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
             
-            // Split response into natural speech chunks
-            const chunks = splitIntoNaturalChunks(response);
+            // Start real-time streaming session
+            await realTimeStreaming.startStreamingSession(
+              sessionId,
+              stakeholder,
+              voiceName,
+              () => {
+                console.log(`✅ STREAMING: ${stakeholder.name} finished speaking`);
+                setCurrentAudio(null);
+                setPlayingMessageId(null);
+                setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+              },
+              (error) => {
+                console.error(`❌ STREAMING: Error for ${stakeholder.name}:`, error);
+                setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+              }
+            );
             
-            for (let i = 0; i < chunks.length; i++) {
-              await streamingTTS.addTextChunk(sessionId, chunks[i], i);
-            }
+            // Build system prompt and start streaming OpenAI + TTS
+            const systemPrompt = await aiService.getSystemPromptForStreaming(stakeholder, {
+              project: selectedProject!,
+              conversationHistory: messages,
+              conversationPhase: 'as_is'
+            }, 'direct_mention');
             
-            // Wait for streaming to complete
-            await streamingTTS.completeStreamingSession(sessionId);
+            const contextualPrompt = await aiService.getContextualPromptForStreaming(messageContent, {
+              project: selectedProject!,
+              conversationHistory: messages,
+              conversationPhase: 'as_is'
+            }, stakeholder);
+            
+            // Start streaming - this will generate tokens and send to TTS in real-time
+            await realTimeStreaming.streamOpenAIResponse(sessionId, systemPrompt, contextualPrompt);
             
             // Brief pause between speakers
             await new Promise(resolve => setTimeout(resolve, 200));
@@ -729,7 +745,39 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             console.log(`⏭️ Skipping audio for ${stakeholder.name} (audio disabled or no voice)`);
           }
         } catch (error) {
-          console.error(`❌ STREAMING: Real-time TTS error for ${stakeholder.name}:`, error);
+          console.error(`❌ STREAMING: Real-time error for ${stakeholder.name}:`, error);
+        }
+      }
+      // Fallback for non-real-time responses
+      else if (globalAudioEnabled && response) {
+        try {
+          const voiceName = stakeholder.voice;
+          if (isAzureTTSAvailable() && voiceName) {
+            console.log(`🎤 Using fallback TTS for ${stakeholder.name}`);
+            
+            const audioBlob = await azureTTS.synthesizeSpeech(response, voiceName);
+            if (audioBlob) {
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const audio = new Audio(audioUrl);
+              
+              setCurrentAudio(audio);
+              setPlayingMessageId(responseMessage.id);
+              setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
+              
+              await new Promise<void>((resolve) => {
+                audio.onended = () => {
+                  URL.revokeObjectURL(audioUrl);
+                  setCurrentAudio(null);
+                  setPlayingMessageId(null);
+                  setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
+                  resolve();
+                };
+                audio.play().catch(() => resolve());
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Fallback TTS error for ${stakeholder.name}:`, error);
         }
       }
       
@@ -755,21 +803,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log(`⚡ PARALLEL: Starting GPT + Voice generation for ${stakeholder.name}`);
       
       try {
-        // Generate GPT response
-        const response = await generateStakeholderResponse(stakeholder, messageContent, currentMessages, responseContext);
+        // Create message object for transcript
+        const responseMessage = createResponseMessage(stakeholder, '', currentMessages.length + index);
         
-        // Create message object immediately
-        const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length + index);
+        console.log(`🚀 STREAMING: Starting real-time generation for ${stakeholder.name}`);
         
-        console.log(`✅ STREAMING: Completed GPT response for ${stakeholder.name}`);
-        
-        // Add to speaking queue immediately (audio will be generated in real-time)
+        // Add to speaking queue immediately (response will be generated and spoken in real-time)
         const queueItem = {
           stakeholder,
-          response,
+          response: '', // Will be built in real-time
           responseMessage,
-          audioBlob: null, // Will be generated in real-time by StreamingTTSService
-          index
+          audioBlob: null, // Real-time streaming
+          index,
+          isRealTime: true
         };
         
         speakingQueue.push(queueItem);
