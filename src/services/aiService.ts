@@ -1290,9 +1290,12 @@ You're just ${stakeholder.name} being yourself - not giving a presentation!`;
         - If asked about solutions, say "Let's first understand the current process completely"
         - Be specific about current tools, systems, and manual processes used today
         - Reference the CURRENT BUSINESS STATE and CURRENT CHALLENGES provided in your context
+        - Use YOUR DEPARTMENT'S CURRENT PROCESS as the foundation for detailed explanations
         - Give realistic, detailed examples of how processes actually work in your department
         - Mention specific timeframes, approval steps, systems used, and manual touchpoints
-        - Draw from your EXPERTISE and BACKGROUND to provide authentic process details`
+        - Draw from your EXPERTISE and BACKGROUND to provide authentic process details
+        - When explaining processes, describe the flow naturally without numbered lists
+        - Focus on the actual workflow, handoffs, and pain points you experience daily`
         break
         
       case 'pain_points':
@@ -1402,6 +1405,15 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
     // Add detailed business process knowledge
     if (context.project.currentState) {
       prompt += `CURRENT BUSINESS STATE: ${context.project.currentState}\n`
+    }
+    
+    // Add department-specific process flow
+    if (context.project.currentProcessFlow) {
+      const departmentKey = stakeholder.department.toLowerCase().replace(/\s+/g, '').replace('information', 'it').replace('technology', 'systems')
+      const processFlow = context.project.currentProcessFlow[departmentKey]
+      if (processFlow) {
+        prompt += `YOUR DEPARTMENT'S CURRENT PROCESS: ${processFlow}\n`
+      }
     }
     
     if (context.project.challenges && context.project.challenges.length > 0) {

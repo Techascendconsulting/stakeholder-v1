@@ -113,6 +113,11 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
     ],
     context: {
       currentState: 'Manual onboarding process taking 2-3 weeks, high customer confusion, 25% drop-off rate during first month',
+      currentProcessFlow: {
+        customerSuccess: 'When a new customer signs up, I receive a notification in our CRM. I then manually create their profile in three different systems - our main platform, the billing system, and the support portal. After that, I send them a welcome email with login credentials and schedule a kickoff call. During the call, I walk them through the platform basics and answer questions. Then I follow up weekly to check their progress and address any issues. The whole process involves a lot of back-and-forth emails and manual data entry between systems.',
+        customerService: 'Once customers are in the system, they start reaching out with questions. Most of the time, they are confused about where to find things or how to complete basic tasks. I spend a lot of time on calls explaining the same processes over and over. When they have technical issues, I have to create tickets in our internal system and then follow up with IT. I also track all their interactions in a spreadsheet since our systems don\'t talk to each other well. If they need account changes, I have to coordinate with James and sometimes David for system access.',
+        itSystems: 'From the technical side, when James creates new customer accounts, I get requests to set up their system access and configure their environment. This involves manually provisioning accounts in about five different systems - our main application, database access, API keys, monitoring tools, and backup systems. Each system has its own process and approval workflow. I also have to ensure their data is properly segmented and secured according to our compliance requirements. When customers have technical issues, I troubleshoot by checking logs across multiple systems and often have to coordinate with our development team.'
+      },
       challenges: [
         'Lengthy manual verification processes',
         'Lack of clear progress indicators',
