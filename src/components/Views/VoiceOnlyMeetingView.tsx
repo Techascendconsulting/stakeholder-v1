@@ -198,6 +198,65 @@ const SpeakingQueueHeader: React.FC<SpeakingQueueHeaderProps> = ({
   );
 };
 
+// Helper function to split text into natural speech chunks
+const splitIntoNaturalChunks = (text: string): string[] => {
+  // Split by sentence-ending punctuation first
+  const sentences = text.split(/([.!?]+\s*)/).filter(s => s.trim().length > 0);
+  const chunks: string[] = [];
+  let currentChunk = '';
+  
+  for (const sentence of sentences) {
+    // If adding this sentence would make chunk too long, start new chunk
+    if (currentChunk && (currentChunk + sentence).length > 100) {
+      chunks.push(currentChunk.trim());
+      currentChunk = sentence;
+    } else {
+      currentChunk += sentence;
+    }
+    
+    // If sentence ends with punctuation, it's a good break point
+    if (sentence.match(/[.!?]+\s*$/)) {
+      chunks.push(currentChunk.trim());
+      currentChunk = '';
+    }
+  }
+  
+  // Add any remaining text
+  if (currentChunk.trim()) {
+    chunks.push(currentChunk.trim());
+  }
+  
+  // If no natural breaks found, fall back to phrase-based chunking
+  if (chunks.length === 0 || chunks[0].length > 150) {
+    return splitByPhrases(text);
+  }
+  
+  return chunks.filter(chunk => chunk.length > 0);
+};
+
+// Fallback: Split by phrases and natural pauses
+const splitByPhrases = (text: string): string[] => {
+  // Split by commas, conjunctions, and other natural pause points
+  const phrases = text.split(/(\s*[,;]\s*|\s+(?:and|but|or|so|because|when|while|if|although)\s+)/i);
+  const chunks: string[] = [];
+  let currentChunk = '';
+  
+  for (const phrase of phrases) {
+    if ((currentChunk + phrase).length > 80 && currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+      currentChunk = phrase;
+    } else {
+      currentChunk += phrase;
+    }
+  }
+  
+  if (currentChunk.trim()) {
+    chunks.push(currentChunk.trim());
+  }
+  
+  return chunks.filter(chunk => chunk.length > 0);
+};
+
 export const VoiceOnlyMeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView, user, setSelectedMeeting } = useApp();
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
@@ -653,13 +712,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             setPlayingMessageId(responseMessage.id);
             setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
             
-            // Split response into chunks and stream them
-            const words = response.split(' ');
-            const chunkSize = 8; // 8 words per chunk for smooth streaming
+            // Split response into natural speech chunks
+            const chunks = splitIntoNaturalChunks(response);
             
-            for (let i = 0; i < words.length; i += chunkSize) {
-              const chunk = words.slice(i, i + chunkSize).join(' ');
-              await streamingTTS.addTextChunk(sessionId, chunk, Math.floor(i / chunkSize));
+            for (let i = 0; i < chunks.length; i++) {
+              await streamingTTS.addTextChunk(sessionId, chunks[i], i);
             }
             
             // Wait for streaming to complete
