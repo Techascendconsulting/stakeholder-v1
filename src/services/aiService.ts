@@ -2259,7 +2259,7 @@ ${context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMe
 }).filter(Boolean).join('\n')}
 
 RESPONSE REQUIREMENTS:
-- SIMPLE GREETINGS: If this is just "how are you", "how's it going", or similar casual greeting, give a SHORT, friendly response (e.g., "I'm good, thanks!" or "Doing well, how about you?") - DO NOT launch into process explanations
+- CRITICAL: If the message is JUST A GREETING like "how are you", "how's it going", "how are you doing" - respond with ONLY 1-2 sentences like "I'm good, thanks!" or "Doing well, how about you?" - ABSOLUTELY NO business process explanations or project details
 - BUSINESS QUESTIONS: For actual business/process questions, use the CURRENT PROCESS DETAILS to give specific explanations
 - You were specifically mentioned/addressed, so respond directly and helpfully
 - Acknowledge that you're responding to their question/request naturally

@@ -247,18 +247,23 @@ export class RealTimeStreamingService {
 
   private async playAudioChunk(session: StreamingSession, audioBlob: Blob): Promise<void> {
     try {
-      // Convert blob to ArrayBuffer for MediaSource
-      const arrayBuffer = await audioBlob.arrayBuffer();
+      // SIMPLE APPROACH: Just use a basic audio element with blob URL
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
       
-      if (session.sourceBuffer && !session.sourceBuffer.updating) {
-        session.sourceBuffer.appendBuffer(arrayBuffer);
-        
-        // Start playing if not already playing
-        if (!session.isPlaying && session.audioElement.readyState >= 2) {
-          session.audioElement.play();
-          session.isPlaying = true;
-        }
-      }
+      await new Promise<void>((resolve, reject) => {
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+        audio.onerror = (error) => {
+          URL.revokeObjectURL(audioUrl);
+          reject(error);
+        };
+        audio.play().catch(reject);
+      });
+      
+      session.isPlaying = true;
     } catch (error) {
       console.error(`❌ Failed to play audio chunk for ${session.stakeholder.name}:`, error);
     }
