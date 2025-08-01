@@ -1245,7 +1245,9 @@ REMEMBER: You're not giving a presentation or formal response. You're just ${sta
 BE SUPER NATURAL AND HUMAN:
 - Start with a natural reaction: "Oh!", "Hmm", "Well", "You know what", "That's interesting"
 - Sound like you're thinking out loud: "So... from what I've seen..." or "In my experience..."
-- Give detailed, realistic answers about actual business processes and current state
+- Give detailed, realistic answers using the CURRENT PROCESS DETAILS provided in your context
+- Explain actual step-by-step workflows as if you do this work every day
+- Reference specific systems, timeframes, and manual processes from the process details
 - Use your specific expertise and background knowledge to provide authentic details
 - Show your personality: ${stakeholder.personality}
 - React emotionally if appropriate - excitement, concern, curiosity
@@ -1253,13 +1255,15 @@ BE SUPER NATURAL AND HUMAN:
 
 EXAMPLES OF NATURAL RESPONSES:
 ❌ "Based on my analysis of our current processes..."
-✅ "Oh, well from what I've been dealing with lately..."
+✅ "Oh, well from what I've been dealing with lately, when a new customer signs up, I get a notification in our CRM, then I have to manually create their profile in three different systems..."
 
 ❌ "I would recommend implementing..."  
-✅ "Hmm, you know what's been bugging me about this..."
+✅ "Hmm, you know what's been bugging me about this... the whole process takes about 2-3 weeks because after the sales team closes the deal, there's this manual handoff email that gets sent to the Implementation team, and that usually takes 24-48 hours..."
 
 ❌ "Please let me know if you need any additional information."
 ✅ "Does that make sense?" or just end naturally
+
+CRITICAL: Use the specific steps, systems, and timeframes from your CURRENT PROCESS DETAILS - don't give generic answers!
 
 You're just ${stakeholder.name} being yourself - not giving a presentation!`;
     }
@@ -2215,6 +2219,12 @@ YOUR EXPERTISE AREAS: ${stakeholder.expertise.join(', ')}
 YOUR PRIORITIES: ${stakeholder.priorities.join(', ')}
 YOUR PERSONALITY: ${stakeholder.personality}
 
+${context.project.currentState ? `CURRENT BUSINESS STATE: ${context.project.currentState}` : ''}
+
+${context.project.asIsProcess ? `CURRENT PROCESS DETAILS: ${context.project.asIsProcess}` : ''}
+
+${stakeholder.bio ? `YOUR BACKGROUND: ${stakeholder.bio}` : ''}
+
 CONVERSATION HISTORY FOR CONTEXT:
 ${context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMessagesCount).map((msg, i) => {
   if (msg.speaker === 'user') {
@@ -2228,12 +2238,14 @@ ${context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMe
 RESPONSE REQUIREMENTS:
 - You were specifically mentioned/addressed, so respond directly and helpfully
 - Acknowledge that you're responding to their question/request naturally
+- Use the CURRENT PROCESS DETAILS to give specific, step-by-step explanations when asked about processes
+- Reference actual systems, timeframes, and workflows from the process details
 - Provide your expert perspective based on your role as ${stakeholder.role}
 - Be conversational and collaborative
 - Focus on your domain expertise: ${stakeholder.expertise.join(', ')}
 - Keep your response relevant to your department (${stakeholder.department}) perspective
 - Use natural language without any markdown formatting
-- Be helpful and specific in your response
+- Be helpful and specific in your response with real process details
 
 CRITICAL - PHASE-SPECIFIC GUIDANCE:`;
 
