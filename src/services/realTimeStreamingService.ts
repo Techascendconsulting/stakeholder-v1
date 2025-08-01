@@ -113,31 +113,29 @@ export class RealTimeStreamingService {
 
   private async setupAzureTTSWebSocket(session: StreamingSession): Promise<void> {
     return new Promise((resolve, reject) => {
-      const wsUrl = `wss://${this.AZURE_TTS_REGION}.tts.speech.microsoft.com/cognitiveservices/websocket/v1`;
+      // Correct Azure TTS WebSocket URL with authentication
+      const wsUrl = `wss://${this.AZURE_TTS_REGION}.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Ocp-Apim-Subscription-Key=${this.AZURE_TTS_KEY}`;
       session.websocket = new WebSocket(wsUrl);
 
       session.websocket.onopen = () => {
         console.log(`🔗 Azure TTS WebSocket connected for ${session.stakeholder.name}`);
         
-        // Send configuration message
-        const configMessage = {
-          'X-RequestId': session.sessionId,
-          'Content-Type': 'application/json',
-          'X-Timestamp': new Date().toISOString(),
-          'Authorization': `Bearer ${this.AZURE_TTS_KEY}`,
-          'Path': 'speech.config',
-          'Synthesis': {
-            'audio': {
-              'metadataoptions': {
-                'sentenceBoundaryEnabled': 'false',
-                'wordBoundaryEnabled': 'false'
-              },
-              'outputFormat': 'audio-24khz-48kbitrate-mono-mp3'
+        // Send configuration message with correct format
+        const configMessage = `X-RequestId:${session.sessionId}\r\nContent-Type:application/json\r\nPath:speech.config\r\n\r\n{
+          "context": {
+            "synthesis": {
+              "audio": {
+                "metadataoptions": {
+                  "sentenceBoundaryEnabled": "false",
+                  "wordBoundaryEnabled": "false"
+                },
+                "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+              }
             }
           }
-        };
+        }`;
 
-        session.websocket!.send(JSON.stringify(configMessage));
+        session.websocket!.send(configMessage);
         resolve();
       };
 
@@ -242,24 +240,12 @@ export class RealTimeStreamingService {
 
     console.log(`📤 Sending to TTS for ${session.stakeholder.name}: "${text}"`);
 
-    const ssml = `
-      <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
-        <voice name="${session.voiceName}">
-          ${text}
-        </voice>
-      </speak>
-    `;
+    const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="${session.voiceName}">${text}</voice></speak>`;
 
-    const message = {
-      'X-RequestId': session.sessionId,
-      'Content-Type': 'application/ssml+xml',
-      'X-Timestamp': new Date().toISOString(),
-      'Path': 'ssml',
-      'Data': ssml
-    };
+    const message = `X-RequestId:${session.sessionId}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n${ssml}`;
 
     try {
-      session.websocket.send(JSON.stringify(message));
+      session.websocket.send(message);
     } catch (error) {
       console.error(`❌ Failed to send to TTS for ${session.stakeholder.name}:`, error);
     }
@@ -270,12 +256,8 @@ export class RealTimeStreamingService {
 
     // Send end message to TTS
     if (session.websocket) {
-      const endMessage = {
-        'X-RequestId': session.sessionId,
-        'Path': 'audio.end',
-        'X-Timestamp': new Date().toISOString()
-      };
-      session.websocket.send(JSON.stringify(endMessage));
+      const endMessage = `X-RequestId:${session.sessionId}\r\nPath:audio.end\r\n\r\n`;
+      session.websocket.send(endMessage);
     }
 
     // Wait for audio to finish

@@ -261,6 +261,9 @@ const splitByPhrases = (text: string): string[] => {
 export const VoiceOnlyMeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView, user, setSelectedMeeting } = useApp();
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
+  
+  // Component-level aiService instance
+  const aiService = AIService.getInstance();
 
   // Debug component mount
   useEffect(() => {
