@@ -17,8 +17,10 @@ interface StreamingSession {
   onComplete: () => void;
   onError: (error: Error) => void;
   websocket: WebSocket | null;
+  useRestFallback?: boolean;
   tokenBuffer: string;
   lastSentTime: number;
+  audioChunks?: Blob[];
 }
 
 export class RealTimeStreamingService {
@@ -113,44 +115,12 @@ export class RealTimeStreamingService {
 
   private async setupAzureTTSWebSocket(session: StreamingSession): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Correct Azure TTS WebSocket URL with authentication
-      const wsUrl = `wss://${this.AZURE_TTS_REGION}.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Ocp-Apim-Subscription-Key=${this.AZURE_TTS_KEY}`;
-      session.websocket = new WebSocket(wsUrl);
-
-      session.websocket.onopen = () => {
-        console.log(`🔗 Azure TTS WebSocket connected for ${session.stakeholder.name}`);
-        
-        // Send configuration message with correct format
-        const configMessage = `X-RequestId:${session.sessionId}\r\nContent-Type:application/json\r\nPath:speech.config\r\n\r\n{
-          "context": {
-            "synthesis": {
-              "audio": {
-                "metadataoptions": {
-                  "sentenceBoundaryEnabled": "false",
-                  "wordBoundaryEnabled": "false"
-                },
-                "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
-              }
-            }
-          }
-        }`;
-
-        session.websocket!.send(configMessage);
-        resolve();
-      };
-
-      session.websocket.onmessage = (event) => {
-        this.handleTTSResponse(session, event.data);
-      };
-
-      session.websocket.onerror = (error) => {
-        console.error(`❌ Azure TTS WebSocket error for ${session.stakeholder.name}:`, error);
-        reject(error);
-      };
-
-      session.websocket.onclose = () => {
-        console.log(`🔌 Azure TTS WebSocket closed for ${session.stakeholder.name}`);
-      };
+      console.log(`⚠️ FALLBACK: WebSocket streaming not available, falling back to REST API for ${session.stakeholder.name}`);
+      
+      // Since Azure TTS WebSocket requires complex binary protocol implementation,
+      // we'll fall back to the REST API approach for now
+      session.useRestFallback = true;
+      resolve();
     });
   }
 
@@ -236,28 +206,86 @@ export class RealTimeStreamingService {
   }
 
   private async sendToTTS(session: StreamingSession, text: string): Promise<void> {
-    if (!session.websocket || !text.trim()) return;
+    if (!text.trim()) return;
 
     console.log(`📤 Sending to TTS for ${session.stakeholder.name}: "${text}"`);
 
-    const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="${session.voiceName}">${text}</voice></speak>`;
+    if (session.useRestFallback) {
+      // Use REST API fallback for immediate synthesis
+      await this.synthesizeWithRestAPI(session, text);
+    } else {
+      // Original WebSocket approach (not working currently)
+      if (!session.websocket) return;
+      
+      const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="${session.voiceName}">${text}</voice></speak>`;
+      const message = `X-RequestId:${session.sessionId}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n${ssml}`;
 
-    const message = `X-RequestId:${session.sessionId}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n${ssml}`;
+      try {
+        session.websocket.send(message);
+      } catch (error) {
+        console.error(`❌ Failed to send to TTS for ${session.stakeholder.name}:`, error);
+      }
+    }
+  }
 
+  private async synthesizeWithRestAPI(session: StreamingSession, text: string): Promise<void> {
     try {
-      session.websocket.send(message);
+      const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US"><voice name="${session.voiceName}">${text}</voice></speak>`;
+      
+      const response = await fetch(`https://${this.AZURE_TTS_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+        method: 'POST',
+        headers: {
+          'Ocp-Apim-Subscription-Key': this.AZURE_TTS_KEY,
+          'Content-Type': 'application/ssml+xml',
+          'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+          'User-Agent': 'StakeholderApp'
+        },
+        body: ssml
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        await this.playAudioChunk(session, audioBlob);
+        console.log(`🎵 Audio chunk played for ${session.stakeholder.name} (${audioBlob.size} bytes)`);
+      } else {
+        console.error(`❌ TTS REST API error for ${session.stakeholder.name}:`, response.status, response.statusText);
+      }
     } catch (error) {
-      console.error(`❌ Failed to send to TTS for ${session.stakeholder.name}:`, error);
+      console.error(`❌ TTS REST API failed for ${session.stakeholder.name}:`, error);
+    }
+  }
+
+  private async playAudioChunk(session: StreamingSession, audioBlob: Blob): Promise<void> {
+    try {
+      // Convert blob to ArrayBuffer for MediaSource
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      
+      if (session.sourceBuffer && !session.sourceBuffer.updating) {
+        session.sourceBuffer.appendBuffer(arrayBuffer);
+        
+        // Start playing if not already playing
+        if (!session.isPlaying && session.audioElement.readyState >= 2) {
+          session.audioElement.play();
+          session.isPlaying = true;
+        }
+      }
+    } catch (error) {
+      console.error(`❌ Failed to play audio chunk for ${session.stakeholder.name}:`, error);
     }
   }
 
   private async completeSession(session: StreamingSession): Promise<void> {
     console.log(`🏁 Completing streaming session for ${session.stakeholder.name}`);
 
-    // Send end message to TTS
-    if (session.websocket) {
-      const endMessage = `X-RequestId:${session.sessionId}\r\nPath:audio.end\r\n\r\n`;
-      session.websocket.send(endMessage);
+    if (session.useRestFallback) {
+      // For REST fallback, we don't need to send end message to WebSocket
+      console.log(`✅ REST fallback session completed for ${session.stakeholder.name}`);
+    } else {
+      // Send end message to TTS WebSocket
+      if (session.websocket) {
+        const endMessage = `X-RequestId:${session.sessionId}\r\nPath:audio.end\r\n\r\n`;
+        session.websocket.send(endMessage);
+      }
     }
 
     // Wait for audio to finish
