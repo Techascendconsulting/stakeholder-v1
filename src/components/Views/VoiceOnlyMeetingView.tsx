@@ -1296,15 +1296,95 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (isGroup && isGreeting) {
         await handleAdaptiveGreeting(messageContent, currentMessages);
       } else {
-        // Handle general questions - pick one random stakeholder
-        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
-        let workingMessages = currentMessages;
-        workingMessages = await processDynamicStakeholderResponse(randomStakeholder, messageContent, workingMessages, 'general_question');
+        // FAST PATH: Handle general questions with smart stakeholder selection
+        console.log('🚀 FAST PATH: Using optimized response for general question');
+        await handleFastResponse(messageContent, currentMessages);
       }
     } catch (error) {
       console.error('Error generating AI response:', error);
     } finally {
       setIsGeneratingResponse(false);
+    }
+  };
+
+  // FAST RESPONSE SYSTEM: Smart stakeholder selection and optimized generation
+  const getQuickStakeholder = (message: string) => {
+    const msg = message.toLowerCase();
+    
+    // Technical/IT questions → David Thompson
+    if (msg.includes('system') || msg.includes('technical') || msg.includes('security') || 
+        msg.includes('database') || msg.includes('server') || msg.includes('bug') ||
+        msg.includes('integration') || msg.includes('api') || msg.includes('performance')) {
+      console.log('🎯 FAST: Routing technical question to David Thompson');
+      return selectedStakeholders.find(s => s.name === 'David Thompson');
+    }
+    
+    // Customer/Service questions → Aisha Ahmed  
+    if (msg.includes('customer') || msg.includes('user') || msg.includes('feedback') ||
+        msg.includes('support') || msg.includes('service') || msg.includes('complaint') ||
+        msg.includes('satisfaction') || msg.includes('experience') || msg.includes('help')) {
+      console.log('🎯 FAST: Routing customer question to Aisha Ahmed');
+      return selectedStakeholders.find(s => s.name === 'Aisha Ahmed');
+    }
+    
+    // Planning/Operations questions → James Walker
+    if (msg.includes('timeline') || msg.includes('plan') || msg.includes('schedule') ||
+        msg.includes('deadline') || msg.includes('project') || msg.includes('process') ||
+        msg.includes('workflow') || msg.includes('status') || msg.includes('progress')) {
+      console.log('🎯 FAST: Routing planning question to James Walker');
+      return selectedStakeholders.find(s => s.name === 'James Walker');
+    }
+    
+    // Default: Aisha (tends to give quicker, more direct responses)
+    console.log('🎯 FAST: Using default stakeholder Aisha Ahmed');
+    return selectedStakeholders.find(s => s.name === 'Aisha Ahmed') || selectedStakeholders[0];
+  };
+
+  const handleFastResponse = async (messageContent: string, currentMessages: Message[]) => {
+    console.log('⚡ FAST: Starting optimized response generation');
+    
+    // 1. Get smart stakeholder selection (near-instant)
+    const stakeholder = getQuickStakeholder(messageContent);
+    if (!stakeholder) {
+      console.error('❌ FAST: No stakeholder found');
+      return;
+    }
+    
+    console.log(`⚡ FAST: Selected ${stakeholder.name} for response`);
+    
+    // 2. Generate AI response and audio in parallel (fastest possible)
+    try {
+      console.log(`🧠 FAST: Generating AI response for ${stakeholder.name}`);
+      
+      const response = await generateStakeholderResponse(
+        stakeholder,
+        messageContent,
+        currentMessages,
+        { conversationPhase: 'as_is' },
+        'general_question'
+      );
+      
+      console.log(`✅ FAST: AI response ready for ${stakeholder.name}, generating audio...`);
+      
+      // 3. Create and add message immediately (for instant transcript update)
+      const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+      setMessages(prev => [...prev, responseMessage]);
+      addToBackgroundTranscript(responseMessage);
+      
+      // 4. Generate and play audio immediately
+      if (globalAudioEnabled && response) {
+        console.log(`🎵 FAST: Generating and playing audio for ${stakeholder.name}`);
+        const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+        if (audioBlob) {
+          await murfTTS.playAudio(audioBlob);
+          console.log(`✅ FAST: ${stakeholder.name} finished speaking`);
+        } else {
+          console.warn('⚠️ FAST: Audio generation failed, response added to transcript only');
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ FAST: Error in fast response generation:', error);
     }
   };
 
