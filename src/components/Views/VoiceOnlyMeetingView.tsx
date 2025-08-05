@@ -779,15 +779,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       isSpeaking = false; // Release synchronous lock
       
-      console.log(`🔍 QUEUE DEBUG: ${stakeholder.name} finished speaking.`);
+      console.log(`🔍 QUEUE DEBUG: ${stakeholder.name} finished speaking. LOOP PREVENTION: Not calling processNextInQueue recursively.`);
       
-      // Use a small delay to allow React state to update, then check queue
-      setTimeout(() => {
-        if (!isSpeaking && speakingQueueState.length > 0) {
-          console.log(`🔍 QUEUE DEBUG: Triggering next item after ${stakeholder.name} finished`);
-          processNextInQueue();
-        }
-      }, 50);
+      // DISABLED: This recursive call was causing infinite loops
+      // setTimeout(() => {
+      //   if (!isSpeaking && speakingQueueState.length > 0) {
+      //     console.log(`🔍 QUEUE DEBUG: Triggering next item after ${stakeholder.name} finished`);
+      //     processNextInQueue();
+      //   }
+      // }, 50);
     };
     
     // Start parallel generation for all stakeholders
@@ -859,11 +859,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         console.log(`📝 STREAMING: Added ${stakeholder.name} to speaking queue (${completedCount}/${mentionedStakeholders.length} ready)`);
         
-        // Start processing queue if this is the first completed stakeholder
-        if (!isSpeaking) {
-          console.log(`🔍 QUEUE DEBUG: Triggering processNextInQueue after adding ${stakeholder.name}`);
-          setTimeout(() => processNextInQueue(), 100); // Small delay to allow state update
-        }
+        // Start processing queue immediately - no delays or complex logic
+        console.log(`🔍 QUEUE DEBUG: Immediately processing ${stakeholder.name} - no queue delays`);
+        processNextInQueue();
         
         return queueItem;
         
@@ -2354,20 +2352,20 @@ Please review the raw transcript for detailed conversation content.`;
     }
   }, [transcriptMessages, transcriptPanelOpen]);
 
-  // Auto-process speaking queue when items are added
-  useEffect(() => {
-    if (speakingQueueState.length > 0 && !currentSpeaking) {
-      console.log(`🔍 QUEUE DEBUG: useEffect detected queue with ${speakingQueueState.length} items, triggering processing`);
-      const timer = setTimeout(() => {
-        // Double-check conditions before processing
-        if (speakingQueueState.length > 0 && !currentSpeaking) {
-          console.log(`🔍 QUEUE DEBUG: useEffect calling processNextInQueue`);
-          // processNextInQueue(); // Need to define this in scope
-        }
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [speakingQueueState.length, currentSpeaking]);
+  // DISABLED: Auto-process speaking queue - was causing conflicts and loops
+  // useEffect(() => {
+  //   if (speakingQueueState.length > 0 && !currentSpeaking) {
+  //     console.log(`🔍 QUEUE DEBUG: useEffect detected queue with ${speakingQueueState.length} items, triggering processing`);
+  //     const timer = setTimeout(() => {
+  //       // Double-check conditions before processing
+  //       if (speakingQueueState.length > 0 && !currentSpeaking) {
+  //         console.log(`🔍 QUEUE DEBUG: useEffect calling processNextInQueue`);
+  //         // processNextInQueue(); // Need to define this in scope
+  //       }
+  //     }, 50);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [speakingQueueState.length, currentSpeaking]);
 
   // Initialize conversation WITHOUT artificial welcome message
   useEffect(() => {
