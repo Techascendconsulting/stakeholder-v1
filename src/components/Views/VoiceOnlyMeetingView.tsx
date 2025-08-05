@@ -803,6 +803,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log(`⚡ PARALLEL: Starting GPT + Voice generation for ${stakeholder.name}`);
       
       try {
+        // Promise-level guard to prevent duplicate execution
+        const promiseId = `${stakeholder.name}-${index}-${Date.now()}`;
+        console.log(`🔍 PROMISE DEBUG: Starting promise ${promiseId} for ${stakeholder.name}`);
+        
         // Create message object for transcript
         const responseMessage = createResponseMessage(stakeholder, '', currentMessages.length + index);
         
