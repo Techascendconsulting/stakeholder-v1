@@ -1210,8 +1210,41 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         });
         
         // Trigger all mentioned stakeholders to respond with parallel processing
-        console.log(`🚀 PARALLEL DEBUG: Starting parallel processing of ${userMentionResult.mentionedStakeholders.length} stakeholders`);
-        await processStakeholdersInParallel(userMentionResult.mentionedStakeholders, messageContent, currentMessages, 'direct_mention');
+        console.log(`🚀 SIMPLE: Processing ${userMentionResult.mentionedStakeholders.length} stakeholders with SIMPLE approach`);
+        
+        // SIMPLE APPROACH: Process stakeholders one by one without complex queuing
+        for (const mentionedStakeholder of userMentionResult.mentionedStakeholders) {
+          const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholder.name);
+          if (!stakeholder) continue;
+          
+          console.log(`🎤 SIMPLE: Generating response for ${stakeholder.name}`);
+          
+          // Generate AI response
+          const response = await generateStakeholderResponse(
+            stakeholder,
+            messageContent,
+            currentMessages,
+            {
+              conversationPhase: 'as_is'
+            },
+            'direct_mention'
+          );
+          
+          // Create message
+          const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+          setMessages(prev => [...prev, responseMessage]);
+          addToBackgroundTranscript(responseMessage);
+          
+          // Generate and play audio immediately
+          if (globalAudioEnabled && response) {
+            console.log(`🎵 SIMPLE: Playing audio for ${stakeholder.name}`);
+            const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+            if (audioBlob) {
+              await murfTTS.playAudio(audioBlob);
+              console.log(`✅ SIMPLE: ${stakeholder.name} finished speaking`);
+            }
+          }
+        }
         
         // Keep the final speaker visible for a moment, then clear
         await new Promise(resolve => setTimeout(resolve, 2000));
