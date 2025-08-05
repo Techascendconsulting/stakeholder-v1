@@ -852,7 +852,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             return prev;
           }
           
-          console.log(`🔍 QUEUE DEBUG: Adding ${stakeholder.name} to queue. Current queue length: ${prev.length}, new length will be: ${prev.length + 1}`);
+          console.log(`🔍 QUEUE DEBUG: Adding ${stakeholder.name} (${promiseId}) to queue. Current queue length: ${prev.length}, new length will be: ${prev.length + 1}`);
           return [...prev, queueItem];
         });
         completedCount++;
