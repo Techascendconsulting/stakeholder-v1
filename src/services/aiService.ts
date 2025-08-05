@@ -621,7 +621,7 @@ Generate only the greeting, nothing else.`;
 
     } catch (error) {
       console.error('AI Service Error:', error);
-      return this.generateDynamicFallback(stakeholder, userMessage, context);
+              return await this.generateDynamicFallback(stakeholder, userMessage, context);
     }
   }
 
@@ -1537,24 +1537,38 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
     return prompt
   }
 
-  // Dynamic fallback response generation
-  private generateDynamicFallback(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): string {
-    const stakeholderState = this.getStakeholderState(stakeholder.name)
-    const fallbackStyles = {
-      'collaborative': "Based on my experience in this area, I can share some insights. In my role, I've seen that we typically handle this by...",
-      'analytical': "Let me think about this from my perspective. The data I work with shows that we usually...",
-      'strategic': "From what I've observed in my position, the key factors we consider are...",
-      'practical': "In my day-to-day work, I handle this type of situation by...",
-      'innovative': "That's an interesting challenge. From my experience, I've found that we can approach this through..."
+  // Dynamic response generation - NO hardcoded templates
+  private async generateDynamicFallback(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): Promise<string> {
+    // Use OpenAI to generate completely dynamic responses based on context
+    const fallbackPrompt = `You are ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department.
+
+Your personality: ${stakeholder.personality}
+Your priorities: ${stakeholder.priorities.join(', ')}
+Your expertise: ${stakeholder.expertise.join(', ')}
+
+The user said: "${userMessage}"
+
+Project context: ${context.project.name} - ${context.project.description}
+
+Recent conversation history:
+${context.conversationHistory.slice(-3).map(msg => `${msg.speaker}: ${msg.content}`).join('\n')}
+
+Respond naturally as ${stakeholder.name} would, addressing the user's message directly. Be conversational and authentic to your role and personality. Do NOT use templates or generic phrases.`;
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4',
+        messages: [{ role: 'user', content: fallbackPrompt }],
+        max_tokens: 200,
+        temperature: 0.8
+      });
+
+      return response.choices[0]?.message?.content || `I'd like to understand more about what you're asking regarding ${context.project.name}.`;
+    } catch (error) {
+      console.error('Error generating dynamic fallback:', error);
+      // Even the final fallback should be contextual
+      return `Could you help me understand what you're looking for regarding ${context.project.name}? As the ${stakeholder.role}, I want to make sure I give you the right information.`;
     }
-    
-    const personalityKey = this.getPersonalityKey(stakeholder.personality)
-    const baseResponse = fallbackStyles[personalityKey] || fallbackStyles['collaborative']
-    
-    // Add role-specific context
-    const roleContext = ` As the ${stakeholder.role}, I have direct experience with how ${stakeholder.department} manages these types of issues.`
-    
-    return baseResponse + roleContext
   }
 
   // Check if stakeholder is directly addressed using AI
@@ -1997,7 +2011,7 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
 
     } catch (error) {
       console.error('Error generating mention response:', error);
-      return this.generateDynamicFallback(mentionedStakeholder, userMessage, context);
+      return await this.generateDynamicFallback(mentionedStakeholder, userMessage, context);
     }
   }
 
@@ -2224,8 +2238,8 @@ Return ONLY the stakeholder name or "NO_HANDOFF".`
   }
 
   // Legacy method - replaced by generateDynamicFallback but keeping for compatibility
-  private getFallbackResponse(stakeholder: StakeholderContext, userMessage: string): string {
-    return this.generateDynamicFallback(stakeholder, userMessage, { 
+  private async getFallbackResponse(stakeholder: StakeholderContext, userMessage: string): Promise<string> {
+    return await this.generateDynamicFallback(stakeholder, userMessage, { 
       project: { name: 'Current Project', description: '', type: 'General' },
       conversationHistory: [],
       stakeholders: []
