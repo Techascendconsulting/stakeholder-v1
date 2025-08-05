@@ -1212,37 +1212,62 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         // Trigger all mentioned stakeholders to respond with parallel processing
         console.log(`🚀 SIMPLE: Processing ${userMentionResult.mentionedStakeholders.length} stakeholders with SIMPLE approach`);
         
-        // SIMPLE APPROACH: Process stakeholders one by one without complex queuing
-        for (const mentionedStakeholder of userMentionResult.mentionedStakeholders) {
+        // OPTIMIZED APPROACH: Generate all responses in parallel, then play sequentially
+        console.log(`⚡ OPTIMIZED: Starting parallel AI generation for ${userMentionResult.mentionedStakeholders.length} stakeholders`);
+        
+        const stakeholderPromises = userMentionResult.mentionedStakeholders.map(async (mentionedStakeholder, index) => {
           const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholder.name);
-          if (!stakeholder) continue;
+          if (!stakeholder) return null;
           
-          console.log(`🎤 SIMPLE: Generating response for ${stakeholder.name}`);
+          console.log(`🎤 OPTIMIZED: Generating response for ${stakeholder.name}`);
           
-          // Generate AI response
-          const response = await generateStakeholderResponse(
-            stakeholder,
-            messageContent,
-            currentMessages,
-            {
-              conversationPhase: 'as_is'
-            },
-            'direct_mention'
-          );
+          // Generate AI response and audio in parallel
+          const [response, audioBlob] = await Promise.all([
+            generateStakeholderResponse(
+              stakeholder,
+              messageContent,
+              currentMessages,
+              { conversationPhase: 'as_is' },
+              'direct_mention'
+            ),
+            // Pre-generate audio while AI is thinking (if we have cached response)
+            // For now, we'll generate audio after we have the response
+            Promise.resolve(null)
+          ]);
+          
+          // Generate audio immediately after we have the response
+          const actualAudioBlob = globalAudioEnabled && response 
+            ? await murfTTS.synthesizeSpeech(response, stakeholder.name)
+            : null;
           
           // Create message
-          const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
-          setMessages(prev => [...prev, responseMessage]);
-          addToBackgroundTranscript(responseMessage);
+          const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length + index);
           
-          // Generate and play audio immediately
-          if (globalAudioEnabled && response) {
-            console.log(`🎵 SIMPLE: Playing audio for ${stakeholder.name}`);
-            const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
-            if (audioBlob) {
-              await murfTTS.playAudio(audioBlob);
-              console.log(`✅ SIMPLE: ${stakeholder.name} finished speaking`);
-            }
+          return {
+            stakeholder,
+            response,
+            responseMessage,
+            audioBlob: actualAudioBlob
+          };
+        });
+        
+        // Wait for all AI generation and audio synthesis to complete
+        const results = await Promise.all(stakeholderPromises);
+        const validResults = results.filter(r => r !== null);
+        
+        console.log(`⚡ OPTIMIZED: All ${validResults.length} stakeholders ready, playing sequentially`);
+        
+        // Add all messages to transcript first
+        const newMessages = validResults.map(r => r.responseMessage);
+        setMessages(prev => [...prev, ...newMessages]);
+        newMessages.forEach(msg => addToBackgroundTranscript(msg));
+        
+        // Play audio sequentially to avoid overlap
+        for (const result of validResults) {
+          if (result.audioBlob) {
+            console.log(`🎵 OPTIMIZED: Playing audio for ${result.stakeholder.name}`);
+            await murfTTS.playAudio(result.audioBlob);
+            console.log(`✅ OPTIMIZED: ${result.stakeholder.name} finished speaking`);
           }
         }
         
