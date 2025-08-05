@@ -304,6 +304,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Speaking queue management - EXACT REPLICA of transcript meeting
   const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
+  
+  // Speaking queue for parallel processing
+  const [speakingQueueState, setSpeakingQueueState] = useState<Array<{
+    stakeholder: any;
+    response: string;
+    responseMessage: any;
+    audioBlob: Blob | null;
+    index: number;
+  }>>([]);
 
   // Transcription toggle and panel state
   const [transcriptionEnabled, setTranscriptionEnabled] = useState(false);
@@ -648,14 +657,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const processStakeholdersInParallel = async (mentionedStakeholders: any[], messageContent: string, currentMessages: Message[], responseContext: string) => {
     console.log(`🚀 STREAMING: Processing ${mentionedStakeholders.length} stakeholders with streaming responses`);
     
-    // Create a queue to manage speaking order while allowing parallel generation
-    const speakingQueue: Array<{
-      stakeholder: any;
-      response: string;
-      responseMessage: any;
-      audioBlob: Blob | null;
-      index: number;
-    }> = [];
+    // Use the state-managed speaking queue for proper stop button control
+    setSpeakingQueueState([]); // Clear any existing queue
     
     let completedCount = 0;
     let workingMessages = currentMessages;
@@ -663,11 +666,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     // Function to process the next item in the speaking queue
     const processNextInQueue = async () => {
-      if (isSpeaking || speakingQueue.length === 0) return;
+      if (isSpeaking || speakingQueueState.length === 0) return;
       
       isSpeaking = true; // Set synchronous lock immediately
       setCurrentSpeaking('speaking');
-      const nextItem = speakingQueue.shift()!;
+      
+      // Get and remove the first item from the queue
+      const nextItem = speakingQueueState[0];
+      setSpeakingQueueState(prev => prev.slice(1));
       const { stakeholder, response, responseMessage, audioBlob, index } = nextItem;
       
       console.log(`🎵 STREAMING: ${stakeholder.name} starting to speak (${index + 1}/${mentionedStakeholders.length})`);
@@ -810,7 +816,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           index
         };
         
-        speakingQueue.push(queueItem);
+        setSpeakingQueueState(prev => [...prev, queueItem]);
         completedCount++;
         
         console.log(`📝 STREAMING: Added ${stakeholder.name} to speaking queue (${completedCount}/${mentionedStakeholders.length} ready)`);
@@ -2416,9 +2422,9 @@ Please review the raw transcript for detailed conversation content.`;
     }
   };
 
-  // FIXED Stop button - stops current speaker and moves to next
+  // FIXED Stop button - stops current speaker and clears all queues
   const handleStopCurrent = () => {
-    console.log('🛑 Stop button clicked - stopping current speaker');
+    console.log('🛑 Stop button clicked - stopping current speaker and clearing all queues');
     
     // Stop current audio
     if (currentAudio) {
@@ -2431,12 +2437,18 @@ Please review the raw transcript for detailed conversation content.`;
     setCurrentSpeaker(null);
     setIsAudioPlaying(false);
     setPlayingMessageId(null);
+    setCurrentSpeaking(null);
     
-    // Move to next in queue by removing current speaker
-    if (currentSpeaking) {
-      setConversationQueue(prev => prev.filter(id => id !== currentSpeaking));
-      setCurrentSpeaking(null);
-    }
+    // Clear all queues to stop any pending speakers
+    setConversationQueue([]);
+    setSpeakingQueueState([]);
+    setResponseQueue({ current: null, upcoming: [] });
+    setDynamicFeedback(null);
+    
+    // Reset audio states for all messages
+    setAudioStates({});
+    
+    console.log('🛑 All audio and queues cleared');
   };
 
   // Stop all audio and clear all states
