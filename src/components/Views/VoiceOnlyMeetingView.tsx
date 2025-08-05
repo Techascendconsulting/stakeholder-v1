@@ -1212,64 +1212,70 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         // Trigger all mentioned stakeholders to respond with parallel processing
         console.log(`🚀 SIMPLE: Processing ${userMentionResult.mentionedStakeholders.length} stakeholders with SIMPLE approach`);
         
-        // OPTIMIZED APPROACH: Generate all responses in parallel, then play sequentially
-        console.log(`⚡ OPTIMIZED: Starting parallel AI generation for ${userMentionResult.mentionedStakeholders.length} stakeholders`);
+        // FASTEST APPROACH: Each stakeholder speaks immediately when ready (true streaming)
+        console.log(`🚀 FASTEST: Starting true streaming for ${userMentionResult.mentionedStakeholders.length} stakeholders`);
         
+        let speakingQueue: any[] = [];
+        let currentlySpeaking = false;
+        
+        // Function to process the speaking queue
+        const processQueue = async () => {
+          if (currentlySpeaking || speakingQueue.length === 0) return;
+          
+          currentlySpeaking = true;
+          const next = speakingQueue.shift();
+          
+          console.log(`🎵 FASTEST: ${next.stakeholder.name} starting to speak`);
+          if (next.audioBlob) {
+            await murfTTS.playAudio(next.audioBlob);
+          }
+          console.log(`✅ FASTEST: ${next.stakeholder.name} finished speaking`);
+          
+          currentlySpeaking = false;
+          processQueue(); // Process next in queue
+        };
+        
+        // Start all stakeholders generating in parallel
         const stakeholderPromises = userMentionResult.mentionedStakeholders.map(async (mentionedStakeholder, index) => {
           const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholder.name);
-          if (!stakeholder) return null;
+          if (!stakeholder) return;
           
-          console.log(`🎤 OPTIMIZED: Generating response for ${stakeholder.name}`);
+          console.log(`🎤 FASTEST: Starting ${stakeholder.name} generation`);
           
-          // Generate AI response and audio in parallel
-          const [response, audioBlob] = await Promise.all([
-            generateStakeholderResponse(
-              stakeholder,
-              messageContent,
-              currentMessages,
-              { conversationPhase: 'as_is' },
-              'direct_mention'
-            ),
-            // Pre-generate audio while AI is thinking (if we have cached response)
-            // For now, we'll generate audio after we have the response
-            Promise.resolve(null)
-          ]);
+          // Generate AI response
+          const response = await generateStakeholderResponse(
+            stakeholder,
+            messageContent,
+            currentMessages,
+            { conversationPhase: 'as_is' },
+            'direct_mention'
+          );
           
-          // Generate audio immediately after we have the response
-          const actualAudioBlob = globalAudioEnabled && response 
+          console.log(`🧠 FASTEST: ${stakeholder.name} AI response ready, generating audio...`);
+          
+          // Generate audio
+          const audioBlob = globalAudioEnabled && response 
             ? await murfTTS.synthesizeSpeech(response, stakeholder.name)
             : null;
           
-          // Create message
-          const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length + index);
+          console.log(`🎵 FASTEST: ${stakeholder.name} audio ready, adding to transcript and queue`);
           
-          return {
-            stakeholder,
-            response,
-            responseMessage,
-            audioBlob: actualAudioBlob
-          };
+          // Create and add message immediately
+          const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length + index);
+          setMessages(prev => [...prev, responseMessage]);
+          addToBackgroundTranscript(responseMessage);
+          
+          // Add to speaking queue and trigger processing
+          speakingQueue.push({ stakeholder, audioBlob });
+          processQueue(); // Try to start speaking immediately
+          
+          console.log(`✅ FASTEST: ${stakeholder.name} ready and queued for speaking`);
         });
         
-        // Wait for all AI generation and audio synthesis to complete
-        const results = await Promise.all(stakeholderPromises);
-        const validResults = results.filter(r => r !== null);
-        
-        console.log(`⚡ OPTIMIZED: All ${validResults.length} stakeholders ready, playing sequentially`);
-        
-        // Add all messages to transcript first
-        const newMessages = validResults.map(r => r.responseMessage);
-        setMessages(prev => [...prev, ...newMessages]);
-        newMessages.forEach(msg => addToBackgroundTranscript(msg));
-        
-        // Play audio sequentially to avoid overlap
-        for (const result of validResults) {
-          if (result.audioBlob) {
-            console.log(`🎵 OPTIMIZED: Playing audio for ${result.stakeholder.name}`);
-            await murfTTS.playAudio(result.audioBlob);
-            console.log(`✅ OPTIMIZED: ${result.stakeholder.name} finished speaking`);
-          }
-        }
+        // Don't wait for all to complete - they'll speak as soon as ready!
+        Promise.all(stakeholderPromises).then(() => {
+          console.log(`🏁 FASTEST: All stakeholder generation complete`);
+        });
         
         // Keep the final speaker visible for a moment, then clear
         await new Promise(resolve => setTimeout(resolve, 2000));
