@@ -9,7 +9,7 @@ import { murfTTS } from '../../services/murfTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
-import StreamingTTSService from '../../services/streamingTTS';
+// import StreamingTTSService from '../../services/streamingTTS'; // Disabled for Murf TTS
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
@@ -520,25 +520,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     console.log(`🎤 STREAMING: Starting real-time response for ${stakeholder.name}`);
     
     try {
-      const streamingTTS = StreamingTTSService.getInstance();
-      const sessionId = `${stakeholder.id}-${Date.now()}`;
-      let chunkOrder = 0;
+      // Disabled streaming TTS for Murf - use complete response instead
       let fullResponse = '';
-      
-      // Start streaming TTS session
-      streamingTTS.startStreamingSession(
-        sessionId,
-        stakeholder.name,
-        stakeholder.voice,
-        () => {
-          console.log(`🎉 Streaming session completed for ${stakeholder.name}`);
-          setCurrentSpeaker(null);
-          setCurrentSpeaking(null);
-        },
-        (error) => {
-          console.error(`❌ Streaming session error for ${stakeholder.name}:`, error);
-        }
-      );
       
       // Set current speaker immediately
       setCurrentSpeaker(stakeholder);
@@ -579,12 +562,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         responseContext as any,
         (chunk: string) => {
           // This callback fires for each text chunk from GPT
-          console.log(`📝 Received chunk ${chunkOrder}: "${chunk}"`);
+          console.log(`📝 Received chunk: "${chunk}"`);
           fullResponse += chunk + ' ';
-          
-          // Immediately send to TTS for audio conversion
-          streamingTTS.addTextChunk(sessionId, chunk, chunkOrder);
-          chunkOrder++;
+          // Note: Streaming TTS disabled - will use complete response
         }
       );
       

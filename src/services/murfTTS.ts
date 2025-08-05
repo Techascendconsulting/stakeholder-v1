@@ -46,7 +46,7 @@ export class MurfTTSService {
     useCache: boolean = true
   ): Promise<Blob | null> {
     try {
-      console.log('🔍 MURF DEBUG: synthesizeSpeech called with:', { text: text.substring(0, 50) + '...', stakeholderName, type: typeof stakeholderName });
+      // console.log('🔍 MURF DEBUG: synthesizeSpeech called with:', { text: text.substring(0, 50) + '...', stakeholderName, type: typeof stakeholderName });
       
       if (!this.API_KEY) {
         console.warn('Murf API key not configured. Please add VITE_MURF_API_KEY to your environment variables.');
@@ -118,7 +118,7 @@ export class MurfTTSService {
 
   // Get voice configuration for stakeholder
   getVoiceForStakeholder(stakeholderName: string): VoiceConfig {
-    console.log('🔍 MURF DEBUG: getVoiceForStakeholder called with:', stakeholderName, 'Type:', typeof stakeholderName);
+    // console.log('🔍 MURF DEBUG: getVoiceForStakeholder called with:', stakeholderName, 'Type:', typeof stakeholderName);
     
     if (!stakeholderName || typeof stakeholderName !== 'string') {
       console.error('❌ MURF ERROR: Invalid stakeholderName:', stakeholderName);
