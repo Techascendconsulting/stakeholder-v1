@@ -31,8 +31,8 @@ export class MurfTTSService {
     return MurfTTSService.instance;
   }
 
-  private generateCacheKey(text: string, voiceId: string, style: string): string {
-    const content = `${text}-${voiceId}-${style}`;
+  private generateCacheKey(text: string, voiceId: string, style: string, pitch?: number, rate?: number): string {
+    const content = `${text}-${voiceId}-${style}-${pitch || 0}-${rate || 0}`;
     let hash = 0;
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i);
@@ -59,13 +59,18 @@ export class MurfTTSService {
       const voiceConfig = this.getVoiceForStakeholder(stakeholderName);
       
       // Check cache first
-      const cacheKey = this.generateCacheKey(text, voiceConfig.voice_id, voiceConfig.style);
+      const cacheKey = this.generateCacheKey(text, voiceConfig.voice_id, voiceConfig.style, voiceConfig.pitch, voiceConfig.rate);
       if (useCache && this.audioCache.has(cacheKey)) {
         console.log(`🎤 MURF: Using cached audio for ${stakeholderName}`);
         return this.audioCache.get(cacheKey)!;
       }
 
-      console.log(`🎤 MURF: Generating speech for ${stakeholderName} with voice ${voiceConfig.voice_id}`);
+      console.log(`🎤 MURF: Generating speech for ${stakeholderName} with voice ${voiceConfig.voice_id}`, {
+        voice_id: voiceConfig.voice_id,
+        style: voiceConfig.style,
+        pitch: voiceConfig.pitch,
+        rate: voiceConfig.rate
+      });
 
       const response = await fetch(this.API_URL, {
         method: 'POST',
@@ -181,6 +186,22 @@ export class MurfTTSService {
   // Clear cache
   clearCache(): void {
     this.audioCache.clear();
+    console.log('🧹 MURF: Cache cleared');
+  }
+
+  // Clear cache for specific stakeholder
+  clearStakeholderCache(stakeholderName: string): void {
+    const voiceConfig = this.getVoiceForStakeholder(stakeholderName);
+    const keysToDelete: string[] = [];
+    
+    for (const [key] of this.audioCache) {
+      if (key.includes(voiceConfig.voice_id)) {
+        keysToDelete.push(key);
+      }
+    }
+    
+    keysToDelete.forEach(key => this.audioCache.delete(key));
+    console.log(`🧹 MURF: Cleared ${keysToDelete.length} cached items for ${stakeholderName}`);
   }
 
   // Get cache size
@@ -191,3 +212,6 @@ export class MurfTTSService {
 
 // Export singleton instance
 export const murfTTS = MurfTTSService.getInstance();
+
+// Clear cache on startup to ensure fresh voice configurations
+murfTTS.clearCache();

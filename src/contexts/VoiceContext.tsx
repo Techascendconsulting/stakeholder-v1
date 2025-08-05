@@ -26,13 +26,13 @@ export const MURF_VOICES: Record<string, MurfVoiceConfig> = {
     displayName: 'Hazel (Female, UK)',
     description: 'Professional British female voice, ideal for customer service and HR roles'
   },
-  'en-UK-freddie': {
-    id: 'en-UK-freddie',
-    name: 'en-UK-freddie',
+  'en-AU-leyton': {
+    id: 'en-AU-leyton',
+    name: 'en-AU-leyton',
     gender: 'Male',
-    locale: 'en-UK',
-    displayName: 'Freddie (Male, UK)',
-    description: 'Professional British male voice, ideal for technical and IT roles'
+    locale: 'en-AU',
+    displayName: 'Leyton (Male, AU)',
+    description: 'Professional Australian male voice, ideal for technical and IT roles'
   },
   'en-US-maverick': {
     id: 'en-US-maverick',
