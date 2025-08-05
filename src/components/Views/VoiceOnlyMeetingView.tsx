@@ -1406,62 +1406,26 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return 'medium';
   };
 
-  // SMART CACHING: Pre-generated responses for common questions
-  const getQuickResponse = (message: string, stakeholder: any): string | null => {
-    const msg = message.toLowerCase();
-    const responseStyle = getResponseStyle(message);
+  // DYNAMIC RESPONSE CACHING: Cache AI-generated responses for performance (no hardcoding)
+  const responseCache = new Map<string, { response: string, timestamp: number }>();
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  
+  const getCachedResponse = (message: string, stakeholder: any): string | null => {
+    const cacheKey = `${stakeholder.name}-${message.toLowerCase().trim()}`;
+    const cached = responseCache.get(cacheKey);
     
-    // Brief greetings and casual questions
-    if (responseStyle === 'brief') {
-      if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) {
-        const greetings = {
-          'David Thompson': "Hey! What's up?",
-          'Aisha Ahmed': "Hi there! How can I help?",
-          'James Walker': "Hello! What do you need?"
-        };
-        return greetings[stakeholder.name] || greetings['Aisha Ahmed'];
-      }
-      
-      if (msg.includes("what's up") || msg.includes('whats up')) {
-        const casualResponses = {
-          'David Thompson': "Just working on some system stuff. You?",
-          'Aisha Ahmed': "Not much, just helping customers. What about you?",
-          'James Walker': "Just reviewing project updates. What's going on?"
-        };
-        return casualResponses[stakeholder.name] || casualResponses['Aisha Ahmed'];
-      }
-      
-      if (msg.includes('how are you') || msg.includes('how you doing')) {
-        const statusResponses = {
-          'David Thompson': "Doing well, thanks! Busy with tech work.",
-          'Aisha Ahmed': "Great, thanks for asking! How are you?",
-          'James Walker': "Good, staying on top of projects. You?"
-        };
-        return statusResponses[stakeholder.name] || statusResponses['Aisha Ahmed'];
-      }
+    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+      console.log(`🚀 CACHE HIT: Using cached dynamic response for ${stakeholder.name}`);
+      return cached.response;
     }
     
-    // Status questions
-    if (msg.includes('status') || msg.includes('how are things') || msg.includes('update')) {
-      const statusResponses = {
-        'David Thompson': "Things are going well on the technical side. We've resolved most of the integration issues and the system performance is looking much better.",
-        'Aisha Ahmed': "Customer feedback has been really positive lately! We've seen a 15% improvement in satisfaction scores this month.",
-        'James Walker': "We're tracking well against our milestones. The team is delivering consistently and we're on schedule for our next major release."
-      };
-      return statusResponses[stakeholder.name] || statusResponses['Aisha Ahmed'];
-    }
-    
-    // Project questions
-    if (msg.includes('project') && (msg.includes('how') || msg.includes('going') || msg.includes('progress'))) {
-      const projectResponses = {
-        'David Thompson': "From a technical perspective, we've made solid progress. The new architecture is performing well and we've reduced our deployment time by 40%.",
-        'Aisha Ahmed': "The project's been great for our customer experience. We've streamlined several processes and users are finding things much easier to navigate.",
-        'James Walker': "Project's moving along nicely. We're in week 8 of our 12-week sprint and hitting all our key deliverables. The team coordination has been excellent."
-      };
-      return projectResponses[stakeholder.name] || projectResponses['James Walker'];
-    }
-    
-    return null; // No cached response, generate fresh
+    return null; // No valid cache, generate fresh
+  };
+  
+  const setCachedResponse = (message: string, stakeholder: any, response: string) => {
+    const cacheKey = `${stakeholder.name}-${message.toLowerCase().trim()}`;
+    responseCache.set(cacheKey, { response, timestamp: Date.now() });
+    console.log(`💾 CACHED: Stored dynamic response for ${stakeholder.name}`);
   };
 
   const handleFastResponse = async (messageContent: string, currentMessages: Message[]) => {
@@ -1477,10 +1441,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     console.log(`⚡ FAST: Selected ${stakeholder.name} for response`);
     
     // 2. Check for cached response first (instant!)
-    const cachedResponse = getQuickResponse(messageContent, stakeholder);
+    const cachedResponse = getCachedResponse(messageContent, stakeholder);
     
     if (cachedResponse) {
-      console.log(`🚀 CACHE HIT: Using pre-generated response for ${stakeholder.name}`);
+      console.log(`🚀 CACHE HIT: Using cached dynamic response for ${stakeholder.name}`);
       
       // 3. Show response immediately in transcript (instant feedback!)
       const responseMessage = createResponseMessage(stakeholder, cachedResponse, currentMessages.length);
@@ -1507,15 +1471,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setMessages(prev => [...prev, thinkingMessage]);
     
     try {
-      const response = await generateStakeholderResponse(
+      // Generate response with intelligent length control
+      const response = await generateIntelligentStakeholderResponse(
         stakeholder,
         messageContent,
         currentMessages,
-        { conversationPhase: 'as_is' },
-        'general_question'
+        getResponseStyle(messageContent)
       );
       
-      console.log(`✅ GENERATED: AI response ready for ${stakeholder.name}, updating transcript...`);
+      console.log(`✅ GENERATED: AI response ready for ${stakeholder.name}, caching and updating transcript...`);
+      
+      // Cache the generated response for future use
+      setCachedResponse(messageContent, stakeholder, response);
       
       // Replace thinking message with actual response
       const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
@@ -1551,10 +1518,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       try {
         // Check cache first (even for mentions)
-        const cachedResponse = getQuickResponse(messageContent, stakeholder);
+        const cachedResponse = getCachedResponse(messageContent, stakeholder);
         
         if (cachedResponse) {
-          console.log(`🚀 CACHE HIT: Using cached response for mentioned ${stakeholder.name}`);
+          console.log(`🚀 CACHE HIT: Using cached dynamic response for mentioned ${stakeholder.name}`);
           
           // Show response immediately
           const responseMessage = createResponseMessage(stakeholder, cachedResponse, currentMessages.length);
@@ -1577,14 +1544,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           const thinkingMessage = createResponseMessage(stakeholder, `${stakeholder.name} is responding...`, currentMessages.length);
           setMessages(prev => [...prev, thinkingMessage]);
           
-          // Use streamlined generation (faster than complex prompts)
-          const response = await generateStreamlinedStakeholderResponse(
+          // Use intelligent generation with length control
+          const response = await generateIntelligentStakeholderResponse(
             stakeholder,
             messageContent,
-            currentMessages
+            currentMessages,
+            getResponseStyle(messageContent)
           );
           
-          console.log(`✅ STREAMLINED: Response ready for ${stakeholder.name}`);
+          console.log(`✅ INTELLIGENT: Response ready for ${stakeholder.name}, caching...`);
+          
+          // Cache the generated response
+          setCachedResponse(messageContent, stakeholder, response);
           
           // Replace thinking message with actual response
           const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
@@ -1609,44 +1580,54 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // INTELLIGENT AI GENERATION: Matches response length to question complexity
-  const generateStreamlinedStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[]): Promise<string> => {
-    const responseStyle = getResponseStyle(messageContent);
-    console.log(`🧠 INTELLIGENT: Using ${responseStyle} response style for ${stakeholder.name}`);
+  // INTELLIGENT AI GENERATION: Dynamic responses with appropriate length control
+  const generateIntelligentStakeholderResponse = async (
+    stakeholder: any, 
+    messageContent: string, 
+    currentMessages: Message[], 
+    responseStyle: string
+  ): Promise<string> => {
+    console.log(`🧠 INTELLIGENT: Generating ${responseStyle} response for ${stakeholder.name}`);
     
     try {
-      // Build context based on response complexity needed
-      const streamlinedContext = {
-        conversationPhase: 'direct_response' as const,
-        conversationHistory: responseStyle === 'brief' ? [] : currentMessages.slice(-2),
+      // Build length-appropriate context
+      const intelligentContext = {
+        conversationPhase: 'intelligent_response' as const,
+        conversationHistory: responseStyle === 'brief' ? [] : currentMessages.slice(-3),
         projectContext: {
           name: selectedProject?.name || 'Current Project',
           phase: 'active'
-        },
-        responseStyle: responseStyle // Pass the style to AI
+        }
       };
       
-      // Use intelligent response generation with length guidance
-      const response = await generateIntelligentStakeholderResponse(
+      // Create length-specific instructions for AI
+      const lengthInstructions = {
+        brief: "Respond naturally in 1-2 sentences maximum. Be casual, friendly, and conversational. Don't over-explain.",
+        medium: "Respond in 2-3 sentences. Be informative but concise. Give helpful details without being verbose.",
+        detailed: "Provide a comprehensive response with specific details, examples, and step-by-step explanations where appropriate."
+      };
+      
+      // Generate response with intelligent length control
+      const response = await generateStakeholderResponse(
         stakeholder,
-        messageContent,
-        streamlinedContext,
-        responseStyle
+        `${messageContent}\n\nIMPORTANT: ${lengthInstructions[responseStyle]}`,
+        intelligentContext,
+        'direct_mention'
       );
       
       return response;
       
     } catch (error) {
-      console.error('❌ STREAMLINED: AI generation failed, using fallback');
+      console.error('❌ INTELLIGENT: AI generation failed, trying basic fallback');
       
-      // Fast fallback responses that sound natural
-      const fallbacks = {
-        'David Thompson': "Hey! Just working on some system optimizations. What do you need help with?",
-        'Aisha Ahmed': "Hi there! I'm here to help. What's on your mind?",
-        'James Walker': "Hello! I was just reviewing our project status. How can I assist you?"
-      };
+      // Generate a simple fallback response based on role
+      const roleBasedResponse = `Hi! I'm ${stakeholder.name.split(' ')[0]} from ${stakeholder.department || stakeholder.role}. ${
+        responseStyle === 'brief' ? 'How can I help?' : 
+        responseStyle === 'medium' ? 'I\'m here to help with any questions you might have. What do you need?' :
+        'I\'d be happy to help you with any questions or concerns. Please let me know what specific information you\'re looking for and I\'ll provide you with detailed assistance.'
+      }`;
       
-      return fallbacks[stakeholder.name] || "Hi! How can I help you today?";
+      return roleBasedResponse;
     }
   };
 
