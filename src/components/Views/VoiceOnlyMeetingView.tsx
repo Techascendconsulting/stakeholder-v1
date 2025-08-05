@@ -803,9 +803,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`🚀 MURF: Starting AI generation for ${stakeholder.name}`);
         
         // Generate AI response first, then add to speaking queue
+        const stakeholderContext = {
+          name: stakeholder.name,
+          role: stakeholder.role,
+          department: stakeholder.department,
+          priorities: stakeholder.priorities,
+          personality: stakeholder.personality,
+          expertise: stakeholder.expertise || []
+        };
+        
         const response = await aiService.generateStakeholderResponse(
-          stakeholder,
           messageContent,
+          stakeholderContext,
           { 
             project: selectedProject!,
             conversationHistory: workingMessages,

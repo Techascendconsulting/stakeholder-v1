@@ -520,6 +520,9 @@ Generate only the greeting, nothing else.`;
   }
 
   private getPersonalityKey(personality: string): string {
+    if (!personality || typeof personality !== 'string') {
+      return 'collaborative';
+    }
     const personalityLower = personality.toLowerCase();
     if (personalityLower.includes('collaborative')) return 'collaborative';
     if (personalityLower.includes('analytical')) return 'analytical';
@@ -537,6 +540,9 @@ Generate only the greeting, nothing else.`;
       /^(welcome|thanks for joining)/i
     ];
     
+    if (!userMessage || typeof userMessage !== 'string') {
+      return false;
+    }
     return greetingPatterns.some(pattern => pattern.test(userMessage.trim()));
   }
 
