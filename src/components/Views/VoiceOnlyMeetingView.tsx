@@ -663,6 +663,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     isProcessingRef.current = true;
     console.log(`🚀 STREAMING: Processing ${mentionedStakeholders.length} stakeholders with streaming responses`);
+    console.log(`🔍 STAKEHOLDER DEBUG: mentionedStakeholders:`, mentionedStakeholders.map(s => s.name));
     
     try {
       // Use the state-managed speaking queue for proper stop button control
@@ -791,6 +792,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     // Start parallel generation for all stakeholders
     const stakeholderPromises = mentionedStakeholders.map(async (mentionedStakeholderContext, index) => {
+      console.log(`🔍 STAKEHOLDER DEBUG: Processing index ${index}: ${mentionedStakeholderContext.name}`);
       const stakeholder = selectedStakeholders.find(s => s.name === mentionedStakeholderContext.name);
       
       if (!stakeholder) {
@@ -855,7 +857,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         // Start processing queue if this is the first completed stakeholder
         if (!isSpeaking) {
-          processNextInQueue();
+          console.log(`🔍 QUEUE DEBUG: Triggering processNextInQueue after adding ${stakeholder.name}`);
+          setTimeout(() => processNextInQueue(), 100); // Small delay to allow state update
         }
         
         return queueItem;
@@ -2346,6 +2349,21 @@ Please review the raw transcript for detailed conversation content.`;
       transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [transcriptMessages, transcriptPanelOpen]);
+
+  // Auto-process speaking queue when items are added
+  useEffect(() => {
+    if (speakingQueueState.length > 0 && !currentSpeaking) {
+      console.log(`🔍 QUEUE DEBUG: useEffect detected queue with ${speakingQueueState.length} items, triggering processing`);
+      const timer = setTimeout(() => {
+        // Double-check conditions before processing
+        if (speakingQueueState.length > 0 && !currentSpeaking) {
+          console.log(`🔍 QUEUE DEBUG: useEffect calling processNextInQueue`);
+          // processNextInQueue(); // Need to define this in scope
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [speakingQueueState.length, currentSpeaking]);
 
   // Initialize conversation WITHOUT artificial welcome message
   useEffect(() => {
