@@ -708,13 +708,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           console.log(`🎤 MURF: Generating audio for ${stakeholder.name}`);
           
           const murfTTS = MurfTTSService.getInstance();
-          const voiceId = murfTTS.getVoiceForStakeholder(stakeholder.name);
           
           setPlayingMessageId(responseMessage.id);
           setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
           
           // Generate audio with Murf TTS
-          const audioBlob = await murfTTS.synthesizeSpeech(response, voiceId);
+          const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
           
           if (audioBlob) {
             console.log(`🎵 MURF: Playing audio for ${stakeholder.name}`);
