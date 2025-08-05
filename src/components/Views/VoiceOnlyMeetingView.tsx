@@ -853,15 +853,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           }
           
           console.log(`🔍 QUEUE DEBUG: Adding ${stakeholder.name} (${promiseId}) to queue. Current queue length: ${prev.length}, new length will be: ${prev.length + 1}`);
-          return [...prev, queueItem];
+          const newQueue = [...prev, queueItem];
+          
+          // Process queue after state update with minimal delay
+          setTimeout(() => {
+            console.log(`🔍 QUEUE DEBUG: Processing queue after state update for ${stakeholder.name}`);
+            processNextInQueue();
+          }, 10);
+          
+          return newQueue;
         });
         completedCount++;
         
         console.log(`📝 STREAMING: Added ${stakeholder.name} to speaking queue (${completedCount}/${mentionedStakeholders.length} ready)`);
-        
-        // Start processing queue immediately - no delays or complex logic
-        console.log(`🔍 QUEUE DEBUG: Immediately processing ${stakeholder.name} - no queue delays`);
-        processNextInQueue();
         
         return queueItem;
         
