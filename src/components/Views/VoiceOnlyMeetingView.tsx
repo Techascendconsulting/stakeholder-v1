@@ -839,6 +839,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         };
         
         setSpeakingQueueState(prev => {
+          // Check if this stakeholder is already in the queue
+          const alreadyInQueue = prev.some(item => item.stakeholder.name === stakeholder.name);
+          if (alreadyInQueue) {
+            console.log(`🚫 QUEUE DEBUG: ${stakeholder.name} already in queue, skipping duplicate`);
+            return prev;
+          }
+          
           console.log(`🔍 QUEUE DEBUG: Adding ${stakeholder.name} to queue. Current queue length: ${prev.length}, new length will be: ${prev.length + 1}`);
           return [...prev, queueItem];
         });
@@ -869,6 +876,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     // Note: Speaking happens automatically via the streaming queue as each stakeholder completes
     // No need to wait - the first ready stakeholder starts speaking immediately
     // while others continue generating in the background
+    
+    } finally {
+      isProcessingRef.current = false;
+      console.log(`🔓 PARALLEL: Processing lock released`);
+    }
   };
 
   // Enhanced stakeholder response processing - EXACT COPY from transcript meeting
@@ -2318,6 +2330,7 @@ Please review the raw transcript for detailed conversation content.`;
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const isProcessingRef = useRef<boolean>(false);
 
   // Timer effect
   useEffect(() => {
