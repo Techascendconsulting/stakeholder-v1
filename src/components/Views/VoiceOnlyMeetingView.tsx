@@ -1382,18 +1382,63 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     };
   };
 
+  // INTELLIGENT RESPONSE LENGTH: Match response length to question complexity
+  const getResponseStyle = (message: string) => {
+    const msg = message.toLowerCase();
+    
+    // BRIEF responses (1-2 sentences)
+    if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey') ||
+        msg.includes("what's up") || msg.includes('whats up') ||
+        msg.includes('how are you') || msg.includes('how you doing') ||
+        msg.includes('good morning') || msg.includes('good afternoon')) {
+      return 'brief';
+    }
+    
+    // DETAILED responses (multiple sentences, explanations)
+    if (msg.includes('explain') || msg.includes('walk me through') || 
+        msg.includes('tell me about') || msg.includes('how does') ||
+        msg.includes('what is the process') || msg.includes('step by step') ||
+        msg.includes('current process') || msg.includes('workflow')) {
+      return 'detailed';
+    }
+    
+    // MEDIUM responses (2-3 sentences)
+    return 'medium';
+  };
+
   // SMART CACHING: Pre-generated responses for common questions
   const getQuickResponse = (message: string, stakeholder: any): string | null => {
     const msg = message.toLowerCase();
+    const responseStyle = getResponseStyle(message);
     
-    // Common greetings
-    if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) {
-      const greetings = {
-        'David Thompson': "Hey there! Just been working on some system optimizations. What's up?",
-        'Aisha Ahmed': "Hi! Hope you're having a good day. How can I help?",
-        'James Walker': "Hello! Just reviewing our project timelines. What can I do for you?"
-      };
-      return greetings[stakeholder.name] || greetings['Aisha Ahmed'];
+    // Brief greetings and casual questions
+    if (responseStyle === 'brief') {
+      if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) {
+        const greetings = {
+          'David Thompson': "Hey! What's up?",
+          'Aisha Ahmed': "Hi there! How can I help?",
+          'James Walker': "Hello! What do you need?"
+        };
+        return greetings[stakeholder.name] || greetings['Aisha Ahmed'];
+      }
+      
+      if (msg.includes("what's up") || msg.includes('whats up')) {
+        const casualResponses = {
+          'David Thompson': "Just working on some system stuff. You?",
+          'Aisha Ahmed': "Not much, just helping customers. What about you?",
+          'James Walker': "Just reviewing project updates. What's going on?"
+        };
+        return casualResponses[stakeholder.name] || casualResponses['Aisha Ahmed'];
+      }
+      
+      if (msg.includes('how are you') || msg.includes('how you doing')) {
+        const statusResponses = {
+          'David Thompson': "Doing well, thanks! Busy with tech work.",
+          'Aisha Ahmed': "Great, thanks for asking! How are you?",
+          'James Walker': "Good, staying on top of projects. You?"
+        };
+        return statusResponses[stakeholder.name] || statusResponses['Aisha Ahmed'];
+      }
     }
     
     // Status questions
@@ -1564,27 +1609,29 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // STREAMLINED AI GENERATION: Faster prompts for mentioned stakeholders
+  // INTELLIGENT AI GENERATION: Matches response length to question complexity
   const generateStreamlinedStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[]): Promise<string> => {
-    console.log(`🚀 STREAMLINED: Using fast prompt for ${stakeholder.name}`);
+    const responseStyle = getResponseStyle(messageContent);
+    console.log(`🧠 INTELLIGENT: Using ${responseStyle} response style for ${stakeholder.name}`);
     
     try {
-      // Use existing AI service but with streamlined context for speed
+      // Build context based on response complexity needed
       const streamlinedContext = {
         conversationPhase: 'direct_response' as const,
-        conversationHistory: currentMessages.slice(-2), // Only last 2 messages for speed
+        conversationHistory: responseStyle === 'brief' ? [] : currentMessages.slice(-2),
         projectContext: {
           name: selectedProject?.name || 'Current Project',
           phase: 'active'
-        }
+        },
+        responseStyle: responseStyle // Pass the style to AI
       };
       
-      // Use the existing generateStakeholderResponse but with minimal context
-      const response = await generateStakeholderResponse(
+      // Use intelligent response generation with length guidance
+      const response = await generateIntelligentStakeholderResponse(
         stakeholder,
         messageContent,
         streamlinedContext,
-        'direct_mention'
+        responseStyle
       );
       
       return response;
