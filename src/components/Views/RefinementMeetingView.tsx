@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
-import { azureTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
+import { murfTTS } from '../../services/murfTTS';
+import { playBrowserTTS } from '../../lib/azureTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
@@ -229,13 +230,15 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
       const voiceName = teamMember.voiceId;
       console.log('🎵 Using voice:', voiceName, 'for team member:', teamMember.name);
-      console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
+      console.log('🔧 Murf TTS Available:', murfTTS.isConfigured());
       
-      if (isAzureTTSAvailable() && voiceName) {
-        console.log('✅ Using Azure TTS for audio synthesis');
-        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
+      if (murfTTS.isConfigured()) {
+        console.log('✅ Using Murf TTS for audio synthesis');
+        const audioBlob = await murfTTS.synthesizeSpeech(text, teamMember.name);
+        
+        if (audioBlob) {
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
         
         setCurrentAudio(audio);
         setPlayingMessageId(messageId);
@@ -277,8 +280,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             resolve();
           });
         });
+        } else {
+          console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+          await playBrowserTTS(text);
+        }
       } else {
-        console.log('⚠️ Azure TTS not available, skipping audio playback');
+        console.log('⚠️ Murf TTS not available, skipping audio playback');
         setCurrentSpeaker(teamMember);
         setIsAudioPlaying(false);
         // Still show visual feedback that someone is "speaking"
@@ -642,7 +649,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             )}
           </div>
           
-          {!isAzureTTSAvailable() && (
+          {!murfTTS.isConfigured() && (
             <div className="flex items-center space-x-2 text-yellow-400">
               <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
               <span className="text-sm">Text Only</span>

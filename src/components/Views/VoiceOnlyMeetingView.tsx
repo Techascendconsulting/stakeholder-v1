@@ -5,7 +5,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
-import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
+import { murfTTS } from '../../services/murfTTS';
+import { playBrowserTTS } from '../../lib/azureTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
 import StreamingTTSService from '../../services/streamingTTS';
@@ -605,9 +606,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // Generate and play audio immediately
       if (globalAudioEnabled) {
         const voiceName = stakeholder.voice;
-        if (isAzureTTSAvailable() && voiceName) {
-          console.log(`🎵 FAST: Generating voice for ${stakeholder.name}`);
-          const audioBlob = await azureTTS.synthesizeSpeech(response, voiceName);
+        if (murfTTS.isConfigured()) {
+          console.log(`🎵 FAST: Generating voice for ${stakeholder.name} with Murf TTS`);
+          const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
           
           if (audioBlob) {
             setCurrentSpeaker(stakeholder);
@@ -644,7 +645,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               
               audio.play().catch(() => resolve(void 0));
             });
+          } else {
+            console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+            await playBrowserTTS(response);
           }
+        } else {
+          console.log('⚠️ Murf TTS not configured, using browser TTS');
+          await playBrowserTTS(response);
         }
       }
       
@@ -733,10 +740,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       else if (globalAudioEnabled && response) {
         try {
           const voiceName = stakeholder.voice;
-          if (isAzureTTSAvailable() && voiceName) {
-            console.log(`🎤 Using fallback TTS for ${stakeholder.name}`);
+          if (murfTTS.isConfigured()) {
+            console.log(`🎤 Using Murf TTS for ${stakeholder.name}`);
             
-            const audioBlob = await azureTTS.synthesizeSpeech(response, voiceName);
+            const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
             if (audioBlob) {
               const audioUrl = URL.createObjectURL(audioBlob);
               const audio = new Audio(audioUrl);
@@ -755,7 +762,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                 };
                 audio.play().catch(() => resolve());
               });
+            } else {
+              console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+              await playBrowserTTS(response);
             }
+          } else {
+            console.log('⚠️ Murf TTS not configured, using browser TTS');
+            await playBrowserTTS(response);
           }
         } catch (error) {
           console.error(`❌ Fallback TTS error for ${stakeholder.name}:`, error);
@@ -979,13 +992,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       const voiceName = stakeholder.voice;
       console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name);
-      console.log('🔧 Azure TTS Available:', isAzureTTSAvailable());
+      console.log('🔧 Murf TTS Available:', murfTTS.isConfigured());
       
-      if (isAzureTTSAvailable() && voiceName) {
-        console.log('✅ Using Azure TTS for audio synthesis');
-        const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
+      if (murfTTS.isConfigured()) {
+        console.log('✅ Using Murf TTS for audio synthesis');
+        const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholder.name);
+        
+        if (audioBlob) {
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
         
         setCurrentAudio(audio);
         setPlayingMessageId(messageId);
@@ -1027,8 +1042,26 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             resolve();
           });
         });
+        } else {
+          console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+          setPlayingMessageId(messageId);
+          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
+          
+          await playBrowserTTS(text);
+          
+          return new Promise((resolve) => {
+            const estimatedDuration = Math.max(2000, text.length * 50);
+            setTimeout(() => {
+              setPlayingMessageId(null);
+              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+              setCurrentSpeaker(null);
+              setIsAudioPlaying(false);
+              resolve();
+            }, estimatedDuration);
+          });
+        }
       } else {
-        console.log('⚠️ Azure TTS not available or no voice, using browser TTS');
+        console.log('⚠️ Murf TTS not available or no voice, using browser TTS');
         setPlayingMessageId(messageId);
         setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
         
@@ -2329,11 +2362,11 @@ Please review the raw transcript for detailed conversation content.`;
 
     const stakeholder = selectedStakeholders.find(s => s.name === message.speaker || s.id === message.speaker);
     
-    // Only stakeholder messages should use Azure TTS
+    // Only stakeholder messages should use Murf TTS
     const voiceId = stakeholder?.voice || null;
     
     console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${message.speaker}`);
-    console.log(`🔧 Azure TTS Available: ${isAzureTTSAvailable()}`);
+    console.log(`🔧 Murf TTS Available: ${murfTTS.isConfigured()}`);
     
     try {
       setCurrentSpeaker(stakeholder || { name: message.speaker });
@@ -2343,22 +2376,26 @@ Please review the raw transcript for detailed conversation content.`;
 
       let audioElement: HTMLAudioElement | null = null;
 
-      // Use Azure TTS for stakeholders when available
-      if (voiceId && isAzureTTSAvailable()) {
+      // Use Murf TTS for stakeholders when available
+      if (stakeholder && murfTTS.isConfigured()) {
         try {
-          console.log(`✅ Using Azure TTS with voice: ${voiceId}`);
-          const audioBlob = await azureTTS.synthesizeSpeech(message.content, voiceId);
-          const audioUrl = URL.createObjectURL(audioBlob);
-          audioElement = new Audio(audioUrl);
-        } catch (azureError) {
-          console.warn('❌ Azure TTS failed, falling back to browser TTS:', azureError);
+          console.log(`✅ Using Murf TTS for stakeholder: ${stakeholder.name}`);
+          const audioBlob = await murfTTS.synthesizeSpeech(message.content, stakeholder.name);
+          if (audioBlob) {
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioElement = new Audio(audioUrl);
+          } else {
+            console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+          }
+        } catch (murfError) {
+          console.warn('❌ Murf TTS failed, falling back to browser TTS:', murfError);
           audioElement = await playBrowserTTS(message.content);
         }
       } else {
-        if (!voiceId) {
-          console.log(`⚠️ No voice ID found for stakeholder, using browser TTS`);
+        if (!stakeholder) {
+          console.log(`⚠️ No stakeholder found, using browser TTS`);
         } else {
-          console.log(`⚠️ Azure TTS not available, using browser TTS`);
+          console.log(`⚠️ Murf TTS not available, using browser TTS`);
         }
         audioElement = await playBrowserTTS(message.content);
       }

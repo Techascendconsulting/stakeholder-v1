@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
-import { AZURE_VOICES, getDefaultVoiceForStakeholder } from '../lib/azureTTS'
+import { murfTTS } from '../services/murfTTS'
 
 interface StakeholderVoiceConfig {
   stakeholderId: string
@@ -7,15 +7,58 @@ interface StakeholderVoiceConfig {
   enabled: boolean
 }
 
+interface MurfVoiceConfig {
+  id: string
+  name: string
+  gender: 'Male' | 'Female'
+  locale: string
+  displayName: string
+  description: string
+}
+
+// Murf voice configurations based on the voice mapping
+export const MURF_VOICES: Record<string, MurfVoiceConfig> = {
+  'en-UK-hazel': {
+    id: 'en-UK-hazel',
+    name: 'en-UK-hazel',
+    gender: 'Female',
+    locale: 'en-UK',
+    displayName: 'Hazel (Female, UK)',
+    description: 'Professional British female voice, ideal for customer service and HR roles'
+  },
+  'en-UK-freddie': {
+    id: 'en-UK-freddie',
+    name: 'en-UK-freddie',
+    gender: 'Male',
+    locale: 'en-UK',
+    displayName: 'Freddie (Male, UK)',
+    description: 'Professional British male voice, ideal for technical and IT roles'
+  },
+  'en-US-maverick': {
+    id: 'en-US-maverick',
+    name: 'en-US-maverick',
+    gender: 'Male',
+    locale: 'en-US',
+    displayName: 'Maverick (Male, US)',
+    description: 'Professional American male voice, ideal for operations and leadership roles'
+  }
+}
+
+// Default voice assignments based on stakeholder names
+export const getDefaultVoiceForStakeholder = (stakeholderName: string): string => {
+  const voiceConfig = murfTTS.getVoiceForStakeholder(stakeholderName);
+  return voiceConfig.voice_id;
+}
+
 interface VoiceContextType {
   stakeholderVoices: StakeholderVoiceConfig[]
   setStakeholderVoice: (stakeholderId: string, voiceName: string) => void
-  getStakeholderVoice: (stakeholderId: string, stakeholderRole?: string) => string
+  getStakeholderVoice: (stakeholderId: string, stakeholderName?: string) => string
   toggleStakeholderVoice: (stakeholderId: string) => void
   isStakeholderVoiceEnabled: (stakeholderId: string) => boolean
   globalAudioEnabled: boolean
   setGlobalAudioEnabled: (enabled: boolean) => void
-  availableVoices: typeof AZURE_VOICES
+  availableVoices: typeof MURF_VOICES
 }
 
 const VoiceContext = createContext<VoiceContextType | undefined>(undefined)
@@ -47,14 +90,14 @@ export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     })
   }
 
-  const getStakeholderVoice = (stakeholderId: string, stakeholderRole?: string): string => {
+  const getStakeholderVoice = (stakeholderId: string, stakeholderName?: string): string => {
     const config = stakeholderVoices.find(sv => sv.stakeholderId === stakeholderId)
     if (config) {
       return config.voiceName
     }
     
-    // Return default voice based on role
-    return getDefaultVoiceForStakeholder(stakeholderRole || '')
+    // Return default voice based on stakeholder name
+    return getDefaultVoiceForStakeholder(stakeholderName || '')
   }
 
   const toggleStakeholderVoice = (stakeholderId: string) => {
@@ -67,7 +110,7 @@ export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             : sv
         )
       } else {
-        // Create new config with default voice, disabled
+        // Create new config with default voice, enabled
         const defaultVoice = getDefaultVoiceForStakeholder('')
         return [...prev, { stakeholderId, voiceName: defaultVoice, enabled: true }]
       }
@@ -87,7 +130,7 @@ export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isStakeholderVoiceEnabled,
     globalAudioEnabled,
     setGlobalAudioEnabled,
-    availableVoices: AZURE_VOICES
+    availableVoices: MURF_VOICES
   }
 
   return <VoiceContext.Provider value={value}>{children}</VoiceContext.Provider>

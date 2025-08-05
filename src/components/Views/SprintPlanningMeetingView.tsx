@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, PhoneOff, FileText, Square, Mic, Send, Volume2, MicOff, Play, GripVertical, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
-import { azureTTS, isAzureTTSAvailable } from '../../lib/azureTTS';
+import { murfTTS } from '../../services/murfTTS';
+import { playBrowserTTS } from '../../lib/azureTTS';
 import AIService from '../../services/aiService';
 
 // Types - Same as refinement meeting but focused on sprint planning
@@ -404,14 +405,14 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
         return;
       }
 
-      if (isAzureTTSAvailable()) {
+      if (murfTTS.isConfigured()) {
         try {
           console.log(`🎵 Playing audio for ${speaker.name}: "${text.substring(0, 50)}..."`);
-          // Use a default voice (we can map speakers to specific voices later)
-          const voiceName = 'en-GB-RyanNeural'; // Default voice for sprint planning
-          const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName);
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
+          const audioBlob = await murfTTS.synthesizeSpeech(text, speaker.name);
+          
+          if (audioBlob) {
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
           
           audio.onended = () => {
             URL.revokeObjectURL(audioUrl);
@@ -425,12 +426,17 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
           };
           
           await audio.play();
+          } else {
+            console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+            await playBrowserTTS(text);
+            resolve();
+          }
         } catch (error) {
           console.error('Error synthesizing audio:', error);
           resolve();
         }
       } else {
-        console.warn('Azure TTS not configured. Please add VITE_AZURE_TTS_KEY to your environment variables.');
+        console.warn('Murf TTS not configured. Please add VITE_MURF_API_KEY to your environment variables.');
         // Visual feedback when audio is not available
         setTimeout(() => resolve(), 2000);
       }
@@ -758,7 +764,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
             )}
           </div>
           
-          {!isAzureTTSAvailable() && (
+          {!murfTTS.isConfigured() && (
             <div className="flex items-center space-x-2 text-yellow-400">
               <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
               <span className="text-sm">Text Only</span>

@@ -2,10 +2,25 @@ interface MurfTTSResponse {
   audioFile: string;
 }
 
+interface VoiceConfig {
+  voice_id: string;
+  style: string;
+}
+
 export class MurfTTSService {
   private static instance: MurfTTSService;
   private readonly API_URL = 'https://api.murf.ai/v1/speech/generate';
   private readonly API_KEY = import.meta.env.VITE_MURF_API_KEY;
+  private audioCache: Map<string, Blob> = new Map();
+
+  // Voice mapping as specified
+  private readonly voiceMap: Record<string, VoiceConfig> = {
+    aisha: { voice_id: "en-UK-hazel", style: "Conversational" },
+    david: { voice_id: "en-UK-freddie", style: "Conversational" },
+    james: { voice_id: "en-US-maverick", style: "Narration" },
+    sarah: { voice_id: "en-UK-hazel", style: "Conversational" }, // Fallback to hazel
+    emily: { voice_id: "en-UK-hazel", style: "Conversational" }  // Fallback to hazel
+  };
 
   static getInstance(): MurfTTSService {
     if (!MurfTTSService.instance) {
@@ -14,9 +29,39 @@ export class MurfTTSService {
     return MurfTTSService.instance;
   }
 
-  async synthesizeSpeech(text: string, voiceId: string = 'en-US-natalie'): Promise<Blob | null> {
+  private generateCacheKey(text: string, voiceId: string, style: string): string {
+    const content = `${text}-${voiceId}-${style}`;
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  async synthesizeSpeech(
+    text: string, 
+    stakeholderName: string, 
+    useCache: boolean = true
+  ): Promise<Blob | null> {
     try {
-      console.log(`🎤 MURF: Generating speech for voice ${voiceId}`);
+      if (!this.API_KEY) {
+        console.warn('Murf API key not configured. Please add VITE_MURF_API_KEY to your environment variables.');
+        return null;
+      }
+
+      // Get voice config for stakeholder
+      const voiceConfig = this.getVoiceForStakeholder(stakeholderName);
+      
+      // Check cache first
+      const cacheKey = this.generateCacheKey(text, voiceConfig.voice_id, voiceConfig.style);
+      if (useCache && this.audioCache.has(cacheKey)) {
+        console.log(`🎤 MURF: Using cached audio for ${stakeholderName}`);
+        return this.audioCache.get(cacheKey)!;
+      }
+
+      console.log(`🎤 MURF: Generating speech for ${stakeholderName} with voice ${voiceConfig.voice_id}`);
 
       const response = await fetch(this.API_URL, {
         method: 'POST',
@@ -26,7 +71,8 @@ export class MurfTTSService {
         },
         body: JSON.stringify({
           text: text.trim(),
-          voiceId: voiceId,
+          voiceId: voiceConfig.voice_id,
+          style: voiceConfig.style,
           format: 'MP3',
           sampleRate: 24000,
           modelVersion: 'GEN2'
@@ -53,8 +99,13 @@ export class MurfTTSService {
       }
 
       const audioBlob = await audioResponse.blob();
-      console.log(`✅ MURF: Generated ${audioBlob.size} bytes of audio`);
+      console.log(`✅ MURF: Generated ${audioBlob.size} bytes of audio for ${stakeholderName}`);
       
+      // Cache the result
+      if (useCache) {
+        this.audioCache.set(cacheKey, audioBlob);
+      }
+
       return audioBlob;
 
     } catch (error) {
@@ -63,34 +114,67 @@ export class MurfTTSService {
     }
   }
 
-  // Voice mapping for stakeholders
-  getVoiceForStakeholder(stakeholderName: string): string {
-    const voiceMap: Record<string, string> = {
-      'James Walker': 'en-US-terrell',     // Male, business-like
-      'Aisha Ahmed': 'en-US-natalie',      // Female, professional
-      'David Thompson': 'en-US-alex'       // Male, technical
+  // Get voice configuration for stakeholder
+  getVoiceForStakeholder(stakeholderName: string): VoiceConfig {
+    // Normalize stakeholder name to match voice map keys
+    const normalizedName = stakeholderName.toLowerCase().split(' ')[0]; // Get first name
+    
+    // Map stakeholder names to voice map keys
+    const nameMapping: Record<string, string> = {
+      'aisha': 'aisha',
+      'david': 'david', 
+      'james': 'james',
+      'sarah': 'sarah',
+      'emily': 'emily'
     };
 
-    return voiceMap[stakeholderName] || 'en-US-natalie';
+    const voiceKey = nameMapping[normalizedName] || 'aisha'; // Default to aisha
+    return this.voiceMap[voiceKey];
   }
 
-  // Simple audio playback
+  // Audio playback with immediate start
   async playAudio(audioBlob: Blob): Promise<void> {
     return new Promise((resolve, reject) => {
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      try {
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
 
-      audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
-        resolve();
-      };
+        // Start playing as soon as possible
+        audio.preload = 'auto';
 
-      audio.onerror = (error) => {
-        URL.revokeObjectURL(audioUrl);
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+
+        audio.onerror = (error) => {
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error('Audio playback failed'));
+        };
+
+        // Play immediately
+        audio.play().catch(reject);
+      } catch (error) {
         reject(error);
-      };
-
-      audio.play().catch(reject);
+      }
     });
   }
+
+  // Check if Murf is configured
+  isConfigured(): boolean {
+    return !!this.API_KEY;
+  }
+
+  // Clear cache
+  clearCache(): void {
+    this.audioCache.clear();
+  }
+
+  // Get cache size
+  getCacheSize(): number {
+    return this.audioCache.size;
+  }
 }
+
+// Export singleton instance
+export const murfTTS = MurfTTSService.getInstance();

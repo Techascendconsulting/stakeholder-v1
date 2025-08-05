@@ -5,7 +5,8 @@ import { useVoice } from '../../contexts/VoiceContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
-import { azureTTS, playBrowserTTS, isAzureTTSAvailable } from '../../lib/azureTTS'
+import { murfTTS } from '../../services/murfTTS';
+import { playBrowserTTS } from '../../lib/azureTTS'
 import VoiceInputModal from '../VoiceInputModal'
 
 const MeetingView: React.FC = () => {
@@ -1045,13 +1046,15 @@ These notes were generated using a fallback system due to extended AI processing
 
         const voiceName = stakeholder.voice
         console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
-        console.log('🔧 Azure TTS Available:', isAzureTTSAvailable())
+        console.log('🔧 Murf TTS Available:', murfTTS.isConfigured())
         
-        if (isAzureTTSAvailable()) {
-          console.log('✅ Using Azure TTS for audio synthesis')
-          const audioBlob = await azureTTS.synthesizeSpeech(text, voiceName)
-          const audioUrl = URL.createObjectURL(audioBlob)
-          const audio = new Audio(audioUrl)
+        if (murfTTS.isConfigured()) {
+          console.log('✅ Using Murf TTS for audio synthesis')
+          const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholder.name)
+          
+          if (audioBlob) {
+            const audioUrl = URL.createObjectURL(audioBlob)
+            const audio = new Audio(audioUrl)
           
           setCurrentAudio(audio)
           setPlayingMessageId(messageId)
@@ -1103,8 +1106,25 @@ These notes were generated using a fallback system due to extended AI processing
               resolve()
             })
           })
+          } else {
+            console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+            setPlayingMessageId(messageId)
+            setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
+            
+            await playBrowserTTS(text)
+            
+            setPlayingMessageId(null)
+            setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }))
+            setCurrentSpeaker(null)
+            setIsAudioPlaying(false)
+            setCurrentlyProcessingAudio(null)
+            
+            if (inputRef.current) {
+              inputRef.current.focus()
+            }
+          }
         } else {
-          console.log('⚠️ Azure TTS not available (check environment variables), using browser TTS')
+          console.log('⚠️ Murf TTS not available (check environment variables), using browser TTS')
           setPlayingMessageId(messageId)
           setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
           
