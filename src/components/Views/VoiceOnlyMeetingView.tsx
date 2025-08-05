@@ -1165,6 +1165,19 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const lastSpeaker = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].stakeholderName : null;
       const conversationContext = currentMessages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
       
+      // FAST KEYWORD DETECTION: Skip expensive AI analysis for obvious mentions
+      const fastMentionResult = detectStakeholderKeywords(messageContent, availableStakeholders);
+      
+      if (fastMentionResult.detected) {
+        console.log(`🚀 FAST DETECTION: Found ${fastMentionResult.stakeholders.map(s => s.name).join(', ')} via keywords`);
+        
+        // Use fast path for keyword-detected mentions
+        await handleFastMentionResponse(fastMentionResult.stakeholders, messageContent, currentMessages);
+        return;
+      }
+      
+      // FALLBACK: Use AI detection for complex cases
+      console.log('🧠 COMPLEX DETECTION: Using AI analysis for complex mention detection');
       const userMentionResult = await aiService.detectStakeholderMentions(
         messageContent, 
         availableStakeholders, 
@@ -1340,7 +1353,36 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return selectedStakeholders.find(s => s.name === 'Aisha Ahmed') || selectedStakeholders[0];
   };
 
-    // SMART CACHING: Pre-generated responses for common questions
+    // FAST KEYWORD DETECTION: Skip expensive AI analysis for obvious mentions
+  const detectStakeholderKeywords = (message: string, availableStakeholders: any[]) => {
+    const msg = message.toLowerCase();
+    const detected: any[] = [];
+    
+    // Check for each stakeholder's name variations
+    for (const stakeholder of availableStakeholders) {
+      const name = stakeholder.name.toLowerCase();
+      const firstName = name.split(' ')[0]; // "david" from "David Thompson"
+      const lastName = name.split(' ')[1]; // "thompson" from "David Thompson"
+      
+      // Check various mention patterns
+      if (msg.includes(firstName) || 
+          msg.includes(lastName) || 
+          msg.includes(name) ||
+          msg.includes(`@${firstName}`) ||
+          msg.includes(`hey ${firstName}`) ||
+          msg.includes(`hi ${firstName}`)) {
+        detected.push(stakeholder);
+        console.log(`🎯 KEYWORD: Found ${stakeholder.name} via "${firstName}" or "${lastName}"`);
+      }
+    }
+    
+    return {
+      detected: detected.length > 0,
+      stakeholders: detected
+    };
+  };
+
+  // SMART CACHING: Pre-generated responses for common questions
   const getQuickResponse = (message: string, stakeholder: any): string | null => {
     const msg = message.toLowerCase();
     
@@ -1451,6 +1493,113 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
     } catch (error) {
       console.error('❌ FAST: Error in fast response generation:', error);
+    }
+  };
+
+  // FAST MENTION RESPONSE: Optimized for when stakeholders are directly mentioned
+  const handleFastMentionResponse = async (mentionedStakeholders: any[], messageContent: string, currentMessages: Message[]) => {
+    console.log(`🚀 FAST MENTION: Processing ${mentionedStakeholders.length} mentioned stakeholders`);
+    
+    // Process each mentioned stakeholder with optimized approach
+    for (const stakeholder of mentionedStakeholders) {
+      console.log(`⚡ FAST MENTION: Generating response for ${stakeholder.name}`);
+      
+      try {
+        // Check cache first (even for mentions)
+        const cachedResponse = getQuickResponse(messageContent, stakeholder);
+        
+        if (cachedResponse) {
+          console.log(`🚀 CACHE HIT: Using cached response for mentioned ${stakeholder.name}`);
+          
+          // Show response immediately
+          const responseMessage = createResponseMessage(stakeholder, cachedResponse, currentMessages.length);
+          setMessages(prev => [...prev, responseMessage]);
+          addToBackgroundTranscript(responseMessage);
+          
+          // Generate and play audio
+          if (globalAudioEnabled) {
+            const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
+            if (audioBlob) {
+              await murfTTS.playAudio(audioBlob);
+              console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking (cached)`);
+            }
+          }
+        } else {
+          // Generate with STREAMLINED prompt for faster AI response
+          console.log(`🧠 STREAMLINED: Generating fast response for ${stakeholder.name}`);
+          
+          // Show thinking indicator
+          const thinkingMessage = createResponseMessage(stakeholder, `${stakeholder.name} is responding...`, currentMessages.length);
+          setMessages(prev => [...prev, thinkingMessage]);
+          
+          // Use streamlined generation (faster than complex prompts)
+          const response = await generateStreamlinedStakeholderResponse(
+            stakeholder,
+            messageContent,
+            currentMessages
+          );
+          
+          console.log(`✅ STREAMLINED: Response ready for ${stakeholder.name}`);
+          
+          // Replace thinking message with actual response
+          const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+          setMessages(prev => prev.map(msg => 
+            msg.id === thinkingMessage.id ? responseMessage : msg
+          ));
+          addToBackgroundTranscript(responseMessage);
+          
+          // Generate and play audio
+          if (globalAudioEnabled) {
+            const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+            if (audioBlob) {
+              await murfTTS.playAudio(audioBlob);
+              console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
+            }
+          }
+        }
+        
+      } catch (error) {
+        console.error(`❌ FAST MENTION: Error processing ${stakeholder.name}:`, error);
+      }
+    }
+  };
+
+  // STREAMLINED AI GENERATION: Faster prompts for mentioned stakeholders
+  const generateStreamlinedStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[]): Promise<string> => {
+    console.log(`🚀 STREAMLINED: Using fast prompt for ${stakeholder.name}`);
+    
+    try {
+      // Use existing AI service but with streamlined context for speed
+      const streamlinedContext = {
+        conversationPhase: 'direct_response' as const,
+        conversationHistory: currentMessages.slice(-2), // Only last 2 messages for speed
+        projectContext: {
+          name: selectedProject?.name || 'Current Project',
+          phase: 'active'
+        }
+      };
+      
+      // Use the existing generateStakeholderResponse but with minimal context
+      const response = await generateStakeholderResponse(
+        stakeholder,
+        messageContent,
+        streamlinedContext,
+        'direct_mention'
+      );
+      
+      return response;
+      
+    } catch (error) {
+      console.error('❌ STREAMLINED: AI generation failed, using fallback');
+      
+      // Fast fallback responses that sound natural
+      const fallbacks = {
+        'David Thompson': "Hey! Just working on some system optimizations. What do you need help with?",
+        'Aisha Ahmed': "Hi there! I'm here to help. What's on your mind?",
+        'James Walker': "Hello! I was just reviewing our project status. How can I assist you?"
+      };
+      
+      return fallbacks[stakeholder.name] || "Hi! How can I help you today?";
     }
   };
 
