@@ -655,10 +655,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   // NEW: Streaming parallel processing - stakeholders start speaking as soon as ready
   const processStakeholdersInParallel = async (mentionedStakeholders: any[], messageContent: string, currentMessages: Message[], responseContext: string) => {
+    // Prevent multiple simultaneous processing
+    if (isProcessingRef.current) {
+      console.log('🚫 PARALLEL: Already processing stakeholders, skipping duplicate call');
+      return;
+    }
+    
+    isProcessingRef.current = true;
     console.log(`🚀 STREAMING: Processing ${mentionedStakeholders.length} stakeholders with streaming responses`);
     
-    // Use the state-managed speaking queue for proper stop button control
-    setSpeakingQueueState([]); // Clear any existing queue
+    try {
+      // Use the state-managed speaking queue for proper stop button control
+      setSpeakingQueueState([]); // Clear any existing queue
     
     let completedCount = 0;
     let workingMessages = currentMessages;
