@@ -220,13 +220,16 @@ Examples:
   }
 
   private getFallbackResponse(role: string): string {
-    const fallbacks = {
-      'Scrum Master': "Let's make sure this story is ready for the sprint. Any concerns about the scope?",
-      'Senior Developer': "I have some technical questions about the implementation approach.",
-      'Developer': "Can you clarify how this integrates with our existing systems?",
-      'QA Tester': "What about the testing scenarios for this story?"
+    // Generate contextual response based on role without hardcoded templates
+    const roleContext = {
+      'Scrum Master': 'process and sprint planning',
+      'Senior Developer': 'technical architecture and implementation',
+      'Developer': 'development and integration',
+      'QA Tester': 'testing and quality assurance'
     };
-    return fallbacks[role] || "Could you provide more details about this story?";
+    
+    const context = roleContext[role] || 'this story';
+    return `I'd like to understand more about the ${context} aspects of this. Can you help me with more details?`;
   }
 
   private updateMemberState(memberName: string, response: string): void {

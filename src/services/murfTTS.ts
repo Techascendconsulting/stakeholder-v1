@@ -5,6 +5,8 @@ interface MurfTTSResponse {
 interface VoiceConfig {
   voice_id: string;
   style: string;
+  pitch?: number;
+  rate?: number;
 }
 
 export class MurfTTSService {
@@ -16,7 +18,7 @@ export class MurfTTSService {
   // Voice mapping as specified
   private readonly voiceMap: Record<string, VoiceConfig> = {
     aisha: { voice_id: "en-UK-hazel", style: "Conversational" },
-    david: { voice_id: "en-UK-freddie", style: "Conversational" },
+    david: { voice_id: "en-AU-leyton", style: "Conversational", pitch: 3, rate: 7 },
     james: { voice_id: "en-US-maverick", style: "Narration" },
     sarah: { voice_id: "en-UK-hazel", style: "Conversational" }, // Fallback to hazel
     emily: { voice_id: "en-UK-hazel", style: "Conversational" }  // Fallback to hazel
@@ -75,6 +77,8 @@ export class MurfTTSService {
           text: text.trim(),
           voiceId: voiceConfig.voice_id,
           style: voiceConfig.style,
+          pitch: voiceConfig.pitch || 0,
+          rate: voiceConfig.rate || 0,
           format: 'MP3',
           sampleRate: 24000,
           modelVersion: 'GEN2'

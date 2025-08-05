@@ -532,18 +532,18 @@ Generate only the greeting, nothing else.`;
     return 'collaborative';
   }
 
-  // Intelligent greeting detection and handling
-  private isGreetingMessage(userMessage: string): boolean {
-    const greetingPatterns = [
-      /^(hi|hello|hey|good morning|good afternoon|good evening)/i,
-      /^(greetings|salutations)/i,
-      /^(welcome|thanks for joining)/i
-    ];
-    
+  // Context-aware message analysis - no hardcoded patterns
+  private isGreetingMessage(userMessage: string, conversationHistory: any[] = []): boolean {
     if (!userMessage || typeof userMessage !== 'string') {
       return false;
     }
-    return greetingPatterns.some(pattern => pattern.test(userMessage.trim()));
+    
+    // Only consider it a greeting if it's early in the conversation
+    // and contains greeting-like words, but don't use hardcoded responses
+    const isEarlyInConversation = conversationHistory.length < 3;
+    const containsGreetingWords = /\b(hi|hello|hey|good morning|good afternoon|good evening|greetings)\b/i.test(userMessage);
+    
+    return isEarlyInConversation && containsGreetingWords;
   }
 
   // Main response generation with full conversational intelligence
@@ -555,7 +555,7 @@ Generate only the greeting, nothing else.`;
   ): Promise<string> {
     try {
       // Handle greetings intelligently
-      if (this.isGreetingMessage(userMessage)) {
+      if (this.isGreetingMessage(userMessage, context.conversationHistory)) {
         const greetingResponse = await this.getGreetingResponse(stakeholder, context);
         await this.updateConversationState(stakeholder, userMessage, greetingResponse, context);
         return greetingResponse;

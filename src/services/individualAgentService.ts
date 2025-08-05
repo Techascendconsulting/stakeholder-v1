@@ -619,45 +619,29 @@ Be genuinely human - show interest, ask questions, seek clarification, and engag
     const message = userMessage.toLowerCase();
     const prompts: string[] = [];
 
-    // Role-specific question patterns
-    switch (agent.role.toLowerCase()) {
-      case 'customer success manager':
-        if (message.includes('customer') || message.includes('client')) {
-          prompts.push("- Ask about customer impact: 'How will this affect our customers?'");
-          prompts.push("- Seek specifics: 'Which customer segments are we talking about?'");
-          prompts.push("- Inquire about metrics: 'What does success look like from a customer perspective?'");
-        }
-        break;
-        
-      case 'customer service manager':
-        if (message.includes('service') || message.includes('support')) {
-          prompts.push("- Ask about implementation: 'How would we roll this out to the support team?'");
-          prompts.push("- Seek timeline: 'What's the timeline for implementing this?'");
-          prompts.push("- Inquire about training: 'Would this require additional training for our team?'");
-        }
-        break;
-        
-      case 'technical lead':
-        if (message.includes('system') || message.includes('technical')) {
-          prompts.push("- Ask about technical details: 'What are the technical requirements for this?'");
-          prompts.push("- Seek architecture info: 'How does this fit with our current architecture?'");
-          prompts.push("- Inquire about scalability: 'Can this scale with our growth projections?'");
-        }
-        break;
-    }
+    // Dynamic role-based curiosity - no hardcoded templates
+    const roleContext = {
+      'customer success manager': 'customer impact and satisfaction',
+      'customer service manager': 'service delivery and team implementation',
+      'technical lead': 'technical architecture and scalability',
+      'it systems lead': 'system integration and security',
+      'head of operations': 'operational efficiency and process',
+      'hr business partner': 'people impact and change management',
+      'compliance manager': 'regulatory compliance and risk'
+    };
+    
+    const context = roleContext[agent.role.toLowerCase()] || 'this topic';
+    prompts.push(`- Be naturally curious about ${context} aspects of what's being discussed`);
+    prompts.push(`- Ask follow-up questions that ${agent.role} would naturally ask`);
+    prompts.push(`- Show genuine interest in understanding the implications for ${agent.department}`);
+    
 
-    // General human curiosity prompts
-    if (message.includes('problem') || message.includes('issue')) {
-      prompts.push("- Show curiosity: 'Can you tell me more about what's causing this?'");
-      prompts.push("- Seek context: 'How long has this been an issue?'");
-    }
+    // Dynamic curiosity based on message content - no hardcoded questions
+    prompts.push("- Respond naturally and authentically as a real person would");
+    prompts.push("- Ask questions that arise from genuine professional curiosity");
+    prompts.push("- Build on the conversation organically without using template phrases");
 
-    if (message.includes('solution') || message.includes('idea')) {
-      prompts.push("- Ask for details: 'What would that look like in practice?'");
-      prompts.push("- Inquire about alternatives: 'Have we considered other approaches?'");
-    }
-
-    return prompts.length > 0 ? prompts.join('\n') : "- Ask natural follow-up questions based on your professional curiosity and expertise.";
+    return prompts.join('\n');
   }
 
   /**

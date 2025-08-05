@@ -229,7 +229,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Technical, analytical, security-conscious',
     priorities: ['System security', 'Technical feasibility', 'Integration capabilities'],
     expertise: ['IT systems architecture', 'Enterprise technology solutions', 'System integration', 'Security implementation', 'Technical feasibility assessment'],
-    voice: 'en-UK-freddie',
+    voice: 'en-AU-leyton',
     agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
   },
   {

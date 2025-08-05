@@ -237,23 +237,8 @@ class PersonalityEngine {
     emotionalSettings: any, 
     context: ConversationContext
   ): string {
-    // Check for James Walker specific templates
-    let template = this.ssmlTemplates[context.type] || this.ssmlTemplates.explanation;
-    
-    if (personality.id === 'james_walker') {
-      try {
-        const jamesTemplate = this.getJamesWalkerTemplate(text, context);
-        if (jamesTemplate && jamesTemplate.pattern) {
-          // James Walker templates are complete SSML, just replace content and return
-          const jamesSSML = jamesTemplate.pattern.replace('{{content}}', text);
-          console.log('✅ Using James Walker human-like template:', jamesTemplate.voice_style);
-          return jamesSSML;
-        }
-      } catch (error) {
-        console.error('❌ Error getting James Walker template, using fallback:', error);
-        // Continue with default template building
-      }
-    }
+    // NO hardcoded templates - generate dynamic SSML based on personality
+    console.log('🎯 Generating dynamic SSML for:', personality.id, 'Type:', context.type);
     
     // Build SSML with voice and style
     let ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">`;
