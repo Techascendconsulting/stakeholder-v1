@@ -1340,6 +1340,43 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     return selectedStakeholders.find(s => s.name === 'Aisha Ahmed') || selectedStakeholders[0];
   };
 
+    // SMART CACHING: Pre-generated responses for common questions
+  const getQuickResponse = (message: string, stakeholder: any): string | null => {
+    const msg = message.toLowerCase();
+    
+    // Common greetings
+    if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) {
+      const greetings = {
+        'David Thompson': "Hey there! Just been working on some system optimizations. What's up?",
+        'Aisha Ahmed': "Hi! Hope you're having a good day. How can I help?",
+        'James Walker': "Hello! Just reviewing our project timelines. What can I do for you?"
+      };
+      return greetings[stakeholder.name] || greetings['Aisha Ahmed'];
+    }
+    
+    // Status questions
+    if (msg.includes('status') || msg.includes('how are things') || msg.includes('update')) {
+      const statusResponses = {
+        'David Thompson': "Things are going well on the technical side. We've resolved most of the integration issues and the system performance is looking much better.",
+        'Aisha Ahmed': "Customer feedback has been really positive lately! We've seen a 15% improvement in satisfaction scores this month.",
+        'James Walker': "We're tracking well against our milestones. The team is delivering consistently and we're on schedule for our next major release."
+      };
+      return statusResponses[stakeholder.name] || statusResponses['Aisha Ahmed'];
+    }
+    
+    // Project questions
+    if (msg.includes('project') && (msg.includes('how') || msg.includes('going') || msg.includes('progress'))) {
+      const projectResponses = {
+        'David Thompson': "From a technical perspective, we've made solid progress. The new architecture is performing well and we've reduced our deployment time by 40%.",
+        'Aisha Ahmed': "The project's been great for our customer experience. We've streamlined several processes and users are finding things much easier to navigate.",
+        'James Walker': "Project's moving along nicely. We're in week 8 of our 12-week sprint and hitting all our key deliverables. The team coordination has been excellent."
+      };
+      return projectResponses[stakeholder.name] || projectResponses['James Walker'];
+    }
+    
+    return null; // No cached response, generate fresh
+  };
+
   const handleFastResponse = async (messageContent: string, currentMessages: Message[]) => {
     console.log('⚡ FAST: Starting optimized response generation');
     
@@ -1352,22 +1389,52 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     console.log(`⚡ FAST: Selected ${stakeholder.name} for response`);
     
-    // 2. Generate AI response and audio in parallel (fastest possible)
-    try {
-      console.log(`🧠 FAST: Generating AI response for ${stakeholder.name}`);
+    // 2. Check for cached response first (instant!)
+    const cachedResponse = getQuickResponse(messageContent, stakeholder);
+    
+    if (cachedResponse) {
+      console.log(`🚀 CACHE HIT: Using pre-generated response for ${stakeholder.name}`);
       
-             // SPEED OPTIMIZATION: Use faster, simpler AI generation
-       const response = await generateFastStakeholderResponse(
-         stakeholder,
-         messageContent,
-         currentMessages
-       );
-      
-      console.log(`✅ FAST: AI response ready for ${stakeholder.name}, generating audio...`);
-      
-      // 3. Create and add message immediately (for instant transcript update)
-      const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+      // 3. Show response immediately in transcript (instant feedback!)
+      const responseMessage = createResponseMessage(stakeholder, cachedResponse, currentMessages.length);
       setMessages(prev => [...prev, responseMessage]);
+      addToBackgroundTranscript(responseMessage);
+      
+      // 4. Generate and play audio in parallel (user already sees text)
+      if (globalAudioEnabled) {
+        console.log(`🎵 CACHE: Generating audio for ${stakeholder.name} (background)`);
+        const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
+        if (audioBlob) {
+          await murfTTS.playAudio(audioBlob);
+          console.log(`✅ CACHE: ${stakeholder.name} finished speaking`);
+        }
+      }
+      return;
+    }
+    
+    // 3. No cache hit - generate fresh response (but show progress)
+    console.log(`🧠 GENERATING: Creating fresh response for ${stakeholder.name}`);
+    
+    // Show "thinking" placeholder immediately
+    const thinkingMessage = createResponseMessage(stakeholder, `${stakeholder.name} is thinking...`, currentMessages.length);
+    setMessages(prev => [...prev, thinkingMessage]);
+    
+    try {
+      const response = await generateStakeholderResponse(
+        stakeholder,
+        messageContent,
+        currentMessages,
+        { conversationPhase: 'as_is' },
+        'general_question'
+      );
+      
+      console.log(`✅ GENERATED: AI response ready for ${stakeholder.name}, updating transcript...`);
+      
+      // Replace thinking message with actual response
+      const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+      setMessages(prev => prev.map(msg => 
+        msg.id === thinkingMessage.id ? responseMessage : msg
+      ));
       addToBackgroundTranscript(responseMessage);
       
       // 4. Generate and play audio immediately
