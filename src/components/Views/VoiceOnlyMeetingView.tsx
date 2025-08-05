@@ -1356,13 +1356,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     try {
       console.log(`🧠 FAST: Generating AI response for ${stakeholder.name}`);
       
-      const response = await generateStakeholderResponse(
-        stakeholder,
-        messageContent,
-        currentMessages,
-        { conversationPhase: 'as_is' },
-        'general_question'
-      );
+             // SPEED OPTIMIZATION: Use faster, simpler AI generation
+       const response = await generateFastStakeholderResponse(
+         stakeholder,
+         messageContent,
+         currentMessages
+       );
       
       console.log(`✅ FAST: AI response ready for ${stakeholder.name}, generating audio...`);
       
