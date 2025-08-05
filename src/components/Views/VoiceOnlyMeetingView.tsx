@@ -10,7 +10,6 @@ import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
 import StreamingTTSService from '../../services/streamingTTS';
-import { MurfTTSService } from '../../services/murfTTS';
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
@@ -706,8 +705,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (globalAudioEnabled && response) {
         try {
           console.log(`🎤 MURF: Generating audio for ${stakeholder.name}`);
-          
-          const murfTTS = MurfTTSService.getInstance();
           
           setPlayingMessageId(responseMessage.id);
           setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
