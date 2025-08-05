@@ -666,14 +666,21 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     // Function to process the next item in the speaking queue
     const processNextInQueue = async () => {
-      if (isSpeaking || speakingQueueState.length === 0) return;
+      if (isSpeaking || speakingQueueState.length === 0) {
+        console.log(`🔍 QUEUE DEBUG: Skipping processNextInQueue - isSpeaking: ${isSpeaking}, queueLength: ${speakingQueueState.length}`);
+        return;
+      }
       
       isSpeaking = true; // Set synchronous lock immediately
       setCurrentSpeaking('speaking');
       
       // Get and remove the first item from the queue
       const nextItem = speakingQueueState[0];
-      setSpeakingQueueState(prev => prev.slice(1));
+      console.log(`🔍 QUEUE DEBUG: Processing ${nextItem.stakeholder.name}, current queue length: ${speakingQueueState.length}`);
+      setSpeakingQueueState(prev => {
+        console.log(`🔍 QUEUE DEBUG: Removing ${nextItem.stakeholder.name} from queue. Length: ${prev.length} -> ${prev.length - 1}`);
+        return prev.slice(1);
+      });
       const { stakeholder, response, responseMessage, audioBlob, index } = nextItem;
       
       console.log(`🎵 STREAMING: ${stakeholder.name} starting to speak (${index + 1}/${mentionedStakeholders.length})`);
@@ -763,8 +770,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       isSpeaking = false; // Release synchronous lock
       
-      // Process next in queue
-      processNextInQueue();
+      console.log(`🔍 QUEUE DEBUG: ${stakeholder.name} finished speaking.`);
+      
+      // Use a small delay to allow React state to update, then check queue
+      setTimeout(() => {
+        if (!isSpeaking && speakingQueueState.length > 0) {
+          console.log(`🔍 QUEUE DEBUG: Triggering next item after ${stakeholder.name} finished`);
+          processNextInQueue();
+        }
+      }, 50);
     };
     
     // Start parallel generation for all stakeholders
@@ -816,7 +830,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           index
         };
         
-        setSpeakingQueueState(prev => [...prev, queueItem]);
+        setSpeakingQueueState(prev => {
+          console.log(`🔍 QUEUE DEBUG: Adding ${stakeholder.name} to queue. Current queue length: ${prev.length}, new length will be: ${prev.length + 1}`);
+          return [...prev, queueItem];
+        });
         completedCount++;
         
         console.log(`📝 STREAMING: Added ${stakeholder.name} to speaking queue (${completedCount}/${mentionedStakeholders.length} ready)`);
