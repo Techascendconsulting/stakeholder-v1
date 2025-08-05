@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
 import { murfTTS } from '../../services/murfTTS';
-import { playBrowserTTS } from '../../lib/azureTTS'
+import { playBrowserTTS } from '../../lib/browserTTS'
 import VoiceInputModal from '../VoiceInputModal'
 
 const MeetingView: React.FC = () => {

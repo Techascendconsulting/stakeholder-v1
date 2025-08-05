@@ -1,5 +1,6 @@
-// AudioOrchestrator.ts - Manages Azure TTS integration and audio playback
+// AudioOrchestrator.ts - Manages Murf TTS integration and audio playback
 import { Stakeholder } from '../../types'
+import { murfTTS } from '../services/murfTTS'
 
 export interface AudioMessage {
   id: string
@@ -31,12 +32,10 @@ class AudioOrchestrator {
     duration: 0
   }
   private stateChangeCallbacks: ((state: AudioPlaybackState) => void)[] = []
-  private azureTtsEndpoint: string
-  private azureTtsKey: string
+  private murfApiKey: string
 
   constructor() {
-    this.azureTtsEndpoint = import.meta.env.VITE_AZURE_TTS_ENDPOINT || ''
-    this.azureTtsKey = import.meta.env.VITE_AZURE_TTS_KEY || ''
+    this.murfApiKey = import.meta.env.VITE_MURF_API_KEY || ''
   }
 
   // Subscribe to playback state changes
@@ -64,8 +63,8 @@ class AudioOrchestrator {
     autoPlay: boolean = true
   ): Promise<void> {
     try {
-      // Generate audio using Azure TTS
-      const audioUrl = await this.generateAudio(message.content, stakeholder.azure_voice_id || 'en-US-JennyNeural')
+              // Generate audio using Murf TTS
+        const audioUrl = await this.generateAudio(message.content, stakeholder.name)
       
       const audioMessage: AudioMessage = {
         ...message,
@@ -84,37 +83,19 @@ class AudioOrchestrator {
     }
   }
 
-  // Generate audio using Azure TTS
-  private async generateAudio(text: string, voiceId: string): Promise<string> {
-    if (!this.azureTtsEndpoint || !this.azureTtsKey) {
-      throw new Error('Azure TTS configuration missing')
+  // Generate audio using Murf TTS
+  private async generateAudio(text: string, stakeholderName: string): Promise<string> {
+    if (!this.murfApiKey) {
+      throw new Error('Murf TTS configuration missing')
     }
 
-    const ssml = `
-      <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
-        <voice name="${voiceId}">
-          <prosody rate="0.9" pitch="0%">
-            ${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
-          </prosody>
-        </voice>
-      </speak>
-    `
-
-    const response = await fetch(this.azureTtsEndpoint, {
-      method: 'POST',
-      headers: {
-        'Ocp-Apim-Subscription-Key': this.azureTtsKey,
-        'Content-Type': 'application/ssml+xml',
-        'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3'
-      },
-      body: ssml
-    })
-
-    if (!response.ok) {
-      throw new Error(`Azure TTS request failed: ${response.status}`)
+    // Use Murf TTS to generate audio
+    const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholderName)
+    
+    if (!audioBlob) {
+      throw new Error('Murf TTS request failed')
     }
 
-    const audioBlob = await response.blob()
     return URL.createObjectURL(audioBlob)
   }
 

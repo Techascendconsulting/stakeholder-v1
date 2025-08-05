@@ -5,7 +5,7 @@ import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import { murfTTS } from '../../services/murfTTS';
-import { playBrowserTTS } from '../../lib/azureTTS';
+import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';

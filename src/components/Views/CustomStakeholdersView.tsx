@@ -278,7 +278,7 @@ const CustomStakeholdersView: React.FC = () => {
   }
 
   const getVoiceId = (index: number): string => {
-    const voices = ['en-GB-RyanNeural', 'en-GB-LibbyNeural', 'en-GB-ThomasNeural', 'en-GB-SoniaNeural', 'en-GB-AbbiNeural']
+    const voices = ['en-US-maverick', 'en-UK-hazel', 'en-UK-freddie']
     return voices[index % voices.length]
   }
 

@@ -70,7 +70,7 @@ class AgileRefinementService {
     return AgileRefinementService.instance;
   }
 
-  // Get predefined team members (same as azureTTSService)
+      // Get predefined team members
   getTeamMembers(): AgileTeamMemberContext[] {
     return [
       {

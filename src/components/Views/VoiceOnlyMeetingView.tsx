@@ -6,7 +6,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { murfTTS } from '../../services/murfTTS';
-import { playBrowserTTS } from '../../lib/azureTTS';
+import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
 import StreamingTTSService from '../../services/streamingTTS';

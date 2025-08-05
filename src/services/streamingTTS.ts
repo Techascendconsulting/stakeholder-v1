@@ -3,7 +3,7 @@
  * Converts text chunks to audio in real-time and plays them immediately
  */
 
-import { azureTTS } from '../lib/azureTTS';
+import { murfTTS } from './murfTTS';
 
 interface StreamingChunk {
   text: string;
@@ -14,7 +14,6 @@ interface StreamingChunk {
 
 interface StreamingSession {
   stakeholderName: string;
-  voiceName: string;
   chunks: StreamingChunk[];
   currentAudio: HTMLAudioElement | null;
   audioQueue: HTMLAudioElement[];
@@ -42,7 +41,6 @@ class StreamingTTSService {
   public startStreamingSession(
     sessionId: string,
     stakeholderName: string,
-    voiceName: string,
     onComplete?: () => void,
     onError?: (error: Error) => void
   ): void {
@@ -53,7 +51,6 @@ class StreamingTTSService {
     
     const session: StreamingSession = {
       stakeholderName,
-      voiceName,
       chunks: [],
       currentAudio: null,
       audioQueue: [],
@@ -99,8 +96,8 @@ class StreamingTTSService {
     try {
       console.log(`🔊 Converting to audio: "${chunk.text}"`);
       
-      // Use Azure TTS to convert chunk to audio
-      const audioBlob = await azureTTS.synthesizeSpeech(chunk.text, session.voiceName, false);
+      // Use Murf TTS to convert chunk to audio
+      const audioBlob = await murfTTS.synthesizeSpeech(chunk.text, session.stakeholderName, false);
       
       if (audioBlob) {
         chunk.audio = audioBlob;

@@ -203,7 +203,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Strategic, process-focused, results-driven leadership style',
     priorities: ['Operational efficiency', 'Process standardization', 'Resource optimization'],
     expertise: ['Process optimization', 'Operational strategy', 'Cross-functional coordination', 'Efficiency improvements', 'Resource management'],
-    voice: 'en-GB-RyanNeural',
+    voice: 'en-US-maverick',
     agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
   },
   {
@@ -216,7 +216,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Customer-focused, empathetic, performance-oriented',
     priorities: ['Customer satisfaction', 'Service quality', 'Team efficiency'],
     expertise: ['Customer experience management', 'Service delivery optimization', 'Customer satisfaction improvement', 'Team performance management', 'Service quality assurance'],
-    voice: 'en-GB-SoniaNeural',
+    voice: 'en-UK-hazel',
     agentId: 'agent_3601k16fe93ject9vy38wev45tym' // ElevenLabs agent ID
   },
   {
@@ -229,7 +229,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Technical, analytical, security-conscious',
     priorities: ['System security', 'Technical feasibility', 'Integration capabilities'],
     expertise: ['IT systems architecture', 'Enterprise technology solutions', 'System integration', 'Security implementation', 'Technical feasibility assessment'],
-    voice: 'en-US-AndrewNeural',
+    voice: 'en-UK-freddie',
     agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
   },
   {
@@ -242,7 +242,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'People-focused, collaborative, change management expert',
     priorities: ['Employee engagement', 'Change management', 'Training effectiveness'],
     expertise: ['HR business partnering', 'HR strategy alignment', 'Change management', 'Employee engagement', 'Organizational development'],
-    voice: 'en-GB-LibbyNeural',
+    voice: 'en-UK-hazel',
     agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
   },
   {
@@ -255,7 +255,7 @@ export const mockStakeholders: Stakeholder[] = [
     personality: 'Detail-oriented, risk-aware, compliance-focused',
     priorities: ['Regulatory compliance', 'Risk mitigation', 'Policy adherence'],
     expertise: ['Regulatory compliance', 'Risk assessment', 'Policy development', 'Compliance management', 'Risk mitigation strategies'],
-    voice: 'en-GB-AbbiNeural',
+    voice: 'en-UK-hazel',
     agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
   }
 ]

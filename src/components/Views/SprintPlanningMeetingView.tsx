@@ -3,7 +3,7 @@ import { ArrowLeft, PhoneOff, FileText, Square, Mic, Send, Volume2, MicOff, Play
 import { useAuth } from '../../contexts/AuthContext';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { murfTTS } from '../../services/murfTTS';
-import { playBrowserTTS } from '../../lib/azureTTS';
+import { playBrowserTTS } from '../../lib/browserTTS';
 import AIService from '../../services/aiService';
 
 // Types - Same as refinement meeting but focused on sprint planning
