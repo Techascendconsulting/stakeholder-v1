@@ -672,24 +672,21 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     let completedCount = 0;
     let workingMessages = currentMessages;
     let isSpeaking = false; // Synchronous lock to prevent simultaneous speaking
+    let localQueue: any[] = []; // Synchronous local queue to avoid React state timing issues
     
-    // Function to process the next item in the speaking queue
-    const processNextInQueue = async () => {
-      if (isSpeaking || speakingQueueState.length === 0) {
-        console.log(`🔍 QUEUE DEBUG: Skipping processNextInQueue - isSpeaking: ${isSpeaking}, queueLength: ${speakingQueueState.length}`);
-        return;
-      }
-      
-      isSpeaking = true; // Set synchronous lock immediately
-      setCurrentSpeaking('speaking');
-      
-      // Get and remove the first item from the queue
-      const nextItem = speakingQueueState[0];
-      console.log(`🔍 QUEUE DEBUG: Processing ${nextItem.stakeholder.name}, current queue length: ${speakingQueueState.length}`);
-      setSpeakingQueueState(prev => {
-        console.log(`🔍 QUEUE DEBUG: Removing ${nextItem.stakeholder.name} from queue. Length: ${prev.length} -> ${prev.length - 1}`);
-        return prev.slice(1);
-      });
+          // Function to process the next item in the speaking queue
+      const processNextInQueue = async () => {
+        if (isSpeaking || localQueue.length === 0) {
+          console.log(`🔍 QUEUE DEBUG: Skipping processNextInQueue - isSpeaking: ${isSpeaking}, localQueueLength: ${localQueue.length}`);
+          return;
+        }
+        
+        isSpeaking = true; // Set synchronous lock immediately
+        setCurrentSpeaking('speaking');
+        
+        // Get and remove the first item from the LOCAL queue
+        const nextItem = localQueue.shift(); // Remove first item synchronously
+        console.log(`🔍 QUEUE DEBUG: Processing ${nextItem.stakeholder.name}, remaining local queue length: ${localQueue.length}`);
       const { stakeholder, response, responseMessage, audioBlob, index } = nextItem;
       
       console.log(`🎵 STREAMING: ${stakeholder.name} starting to speak (${index + 1}/${mentionedStakeholders.length})`);
