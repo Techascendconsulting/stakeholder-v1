@@ -1412,6 +1412,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const responseCache = new Map<string, { response: string, timestamp: number }>();
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   
+  // Clear greeting cache on component mount to remove repetitive cached responses
+  useEffect(() => {
+    console.log('🧹 CACHE: Clearing greeting cache to prevent repetition');
+    const greetingPatterns = ['hi', 'hey', 'hello', 'hi guys', 'hey guys', 'hey team', 'hello team'];
+    
+    for (const [key] of responseCache.entries()) {
+      const lowercaseKey = key.toLowerCase();
+      if (greetingPatterns.some(pattern => lowercaseKey.includes(pattern))) {
+        responseCache.delete(key);
+        console.log(`🗑️ CACHE: Removed greeting cache for: ${key}`);
+      }
+    }
+  }, []); // Only run on mount
+  
   const getCachedResponse = (message: string, stakeholder: any): string | null => {
     const msg = message.toLowerCase().trim();
     
