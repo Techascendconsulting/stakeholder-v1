@@ -156,32 +156,79 @@ export class MurfTTSService {
     return this.voiceMap[voiceKey];
   }
 
-  // Audio playback with immediate start
+  // Audio playback with stop capability
+  private currentAudio: HTMLAudioElement | null = null;
+  private isPlaying: boolean = false;
+
   async playAudio(audioBlob: Blob): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        // Stop any currently playing audio first
+        this.stopCurrentAudio();
+
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
+        
+        // Track the current audio for stop functionality
+        this.currentAudio = audio;
+        this.isPlaying = true;
 
         // Start playing as soon as possible
         audio.preload = 'auto';
 
         audio.onended = () => {
           URL.revokeObjectURL(audioUrl);
+          this.currentAudio = null;
+          this.isPlaying = false;
           resolve();
         };
 
         audio.onerror = (error) => {
           URL.revokeObjectURL(audioUrl);
+          this.currentAudio = null;
+          this.isPlaying = false;
           reject(new Error('Audio playback failed'));
         };
 
+        // Handle manual stop
+        audio.onpause = () => {
+          if (this.currentAudio === audio) {
+            URL.revokeObjectURL(audioUrl);
+            this.currentAudio = null;
+            this.isPlaying = false;
+            resolve(); // Resolve when manually stopped
+          }
+        };
+
         // Play immediately
-        audio.play().catch(reject);
+        audio.play().catch((error) => {
+          URL.revokeObjectURL(audioUrl);
+          this.currentAudio = null;
+          this.isPlaying = false;
+          reject(error);
+        });
       } catch (error) {
+        this.currentAudio = null;
+        this.isPlaying = false;
         reject(error);
       }
     });
+  }
+
+  // Stop current audio playback
+  stopCurrentAudio(): void {
+    if (this.currentAudio && this.isPlaying) {
+      console.log('🛑 MURF: Stopping current audio');
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio = null;
+      this.isPlaying = false;
+    }
+  }
+
+  // Check if audio is currently playing
+  isCurrentlyPlaying(): boolean {
+    return this.isPlaying;
   }
 
   // Check if Murf is configured

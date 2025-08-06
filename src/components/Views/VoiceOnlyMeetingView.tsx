@@ -281,7 +281,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
-  const [audioStates, setAudioStates] = useState<{[key: string]: 'playing' | 'paused' | 'stopped'}>({});
+  const [audioStates, setAudioStates] = useState<{ [key: string]: 'loading' | 'playing' | 'stopped' }>({});
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState<any>(null);
@@ -3088,16 +3088,19 @@ Please review the raw transcript for detailed conversation content.`;
     }
   };
 
-  // FIXED Stop button - stops current speaker and clears all queues
+  // ENHANCED Stop button - stops current speaker and clears all queues
   const handleStopCurrent = () => {
     console.log('🛑 Stop button clicked - stopping current speaker and clearing all queues');
     
-    // Stop current audio
+    // Stop current audio (legacy audio element)
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
     }
+    
+    // Stop Murf TTS audio
+    murfTTS.stopCurrentAudio();
     
     // Reset current speaker states
     setCurrentSpeaker(null);
@@ -3114,7 +3117,10 @@ Please review the raw transcript for detailed conversation content.`;
     // Reset audio states for all messages
     setAudioStates({});
     
-    console.log('🛑 All audio and queues cleared');
+    // Reset generation state to allow new questions
+    setIsGeneratingResponse(false);
+    
+    console.log('🛑 All audio, queues, and generation states cleared - ready for new questions');
   };
 
   // Stop all audio and clear all states
