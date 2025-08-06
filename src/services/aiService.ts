@@ -78,11 +78,11 @@ export class AIService {
       frequencyPenalty: 0.5
     },
     tokens: {
-      base: 150, // Reduced from 200 (25% reduction)
+      base: 200, // Increased for complete responses
       teamFactor: 1.0,
       experienceFactors: { spoken: 1.1, newSpeaker: 1.2 },
-      phaseFactors: { deepDive: 1.3, normal: 1.1 },
-      maxTokens: 300 // Reduced from 400 (25% reduction)
+      phaseFactors: { deepDive: 1.5, normal: 1.2 }, // Increased for detailed discussions
+      maxTokens: 500 // Increased to prevent truncation
     },
     penalties: {
       presenceBase: 0.1,
@@ -687,6 +687,29 @@ Generate only the greeting, nothing else.`;
     // Only handle truly broken responses - let intelligent, comprehensive responses through
     if (cleanResponse.length < 10) {
       return "I'd be happy to provide more detailed information on this topic.";
+    }
+    
+    // DETECT AND FIX TRUNCATED RESPONSES
+    // Check for incomplete sentences (common truncation patterns)
+    const truncationPatterns = [
+      /\s(I|It|This|That|We|They|The|A|An)\.$/, // Single word + period (like "It.")
+      /\s(I'm|It's|We're|They're|That's)\.$/, // Contractions + period
+      /\s(and|or|but|so|because|when|while|if|although|since|until)\.$/, // Conjunctions + period
+      /\s(in|on|at|by|for|with|from|to|of|about)\.$/, // Prepositions + period
+      /\s[a-z]{1,3}\.$/, // Very short words + period (likely incomplete)
+    ];
+    
+    const hasTruncation = truncationPatterns.some(pattern => pattern.test(cleanResponse));
+    
+    if (hasTruncation) {
+      console.warn('🚨 TRUNCATION: Detected incomplete response, removing incomplete sentence');
+      // Remove the last sentence if it appears truncated
+      const sentences = cleanResponse.split(/(?<=[.!?])\s+/);
+      if (sentences.length > 1) {
+        // Remove the last (likely incomplete) sentence
+        cleanResponse = sentences.slice(0, -1).join(' ');
+        console.log('🔧 TRUNCATION: Removed incomplete sentence, kept:', cleanResponse.substring(cleanResponse.length - 50));
+      }
     }
     
     // Only add punctuation if the response doesn't end with any punctuation
