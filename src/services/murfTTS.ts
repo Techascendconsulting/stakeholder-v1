@@ -286,6 +286,29 @@ export class MurfTTSService {
     console.log(`🧹 MURF: Cleared ${keysToDelete.length} cached items for ${stakeholderName}`);
   }
 
+  // Clear greeting cache to remove any hardcoded responses
+  clearGreetingCache(): void {
+    console.log('🧹 CACHE: Clearing greeting cache to remove hardcoded responses');
+    const greetingKeys = Array.from(this.audioCache.keys()).filter(key => 
+      key.includes('hello') || 
+      key.includes('hi') || 
+      key.includes('hey') || 
+      key.includes('morning') || 
+      key.includes('good') ||
+      key.includes('ready') ||
+      key.includes('excel') ||
+      key.includes('team') ||
+      key.includes('everyone')
+    );
+    
+    greetingKeys.forEach(key => {
+      this.audioCache.delete(key);
+      console.log(`🧹 CACHE: Removed greeting cache key: ${key.substring(0, 50)}...`);
+    });
+    
+    console.log(`🧹 CACHE: Cleared ${greetingKeys.length} greeting cache entries`);
+  }
+
   // Get cache size
   getCacheSize(): number {
     return this.audioCache.size;
@@ -297,6 +320,7 @@ export const murfTTS = MurfTTSService.getInstance();
 
 // Clear cache on startup to ensure fresh voice configurations
 murfTTS.clearCache();
+murfTTS.clearGreetingCache(); // Clear greeting cache on startup
 
 // Note: Pre-generation disabled to avoid API costs
 // To enable: murfTTS.preGenerateCommonResponses();
