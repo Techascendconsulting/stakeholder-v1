@@ -1600,17 +1600,28 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         }
       };
       
-      // Create length-specific instructions for AI
+      // Create length-specific instructions for AI with proper token limits
       const lengthInstructions = {
         brief: "Respond naturally in 1-2 sentences maximum. Be casual, friendly, and conversational. Don't over-explain.",
         medium: "Respond in 2-3 sentences. Be informative but concise. Give helpful details without being verbose.",
-        detailed: "Provide a comprehensive response with specific details, examples, and step-by-step explanations where appropriate."
+        detailed: "Provide a comprehensive response with specific details, examples, and step-by-step explanations. IMPORTANT: Complete all sentences fully - do not cut off mid-sentence."
       };
       
-      // Generate response with intelligent length control
+      // Detect if this is asking about CURRENT process specifically
+      const isCurrentProcessQuestion = messageContent.toLowerCase().includes('current process') || 
+                                      messageContent.toLowerCase().includes('how do we currently') ||
+                                      messageContent.toLowerCase().includes('what is the current') ||
+                                      messageContent.toLowerCase().includes('walk me through');
+      
+      // Add specific guidance for current process questions
+      const processGuidance = isCurrentProcessQuestion ? 
+        "\n\nIMPORTANT: Focus ONLY on describing the current/existing process as it works today. Do NOT suggest improvements or mention what 'we should do' or 'we need to focus on'. Just describe what actually happens now." : 
+        "";
+      
+      // Generate response with intelligent length control and process guidance
       const response = await generateStakeholderResponse(
         stakeholder,
-        `${messageContent}\n\nIMPORTANT: ${lengthInstructions[responseStyle]}`,
+        `${messageContent}\n\nIMPORTANT: ${lengthInstructions[responseStyle]}${processGuidance}`,
         intelligentContext,
         'direct_mention'
       );
