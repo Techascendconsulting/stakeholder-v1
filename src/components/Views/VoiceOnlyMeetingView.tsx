@@ -1386,13 +1386,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const getResponseStyle = (message: string) => {
     const msg = message.toLowerCase();
     
-    // BRIEF responses (1-2 sentences)
-    if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey') ||
-        msg.includes("what's up") || msg.includes('whats up') ||
-        msg.includes('how are you') || msg.includes('how you doing') ||
-        msg.includes('good morning') || msg.includes('good afternoon')) {
-      return 'brief';
-    }
+          // BRIEF responses (1-2 sentences) - Simple pleasantries only
+      if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey') ||
+          msg.includes("what's up") || msg.includes('whats up') ||
+          msg.includes('how are you') || msg.includes('how you doing') ||
+          msg.includes('good morning') || msg.includes('good afternoon') ||
+          (msg.includes('hi') && msg.includes('guys')) || 
+          (msg.includes('hello') && msg.includes('everyone'))) {
+        return 'greeting';
+      }
     
     // DETAILED responses (multiple sentences, explanations)
     if (msg.includes('explain') || msg.includes('walk me through') || 
@@ -1411,7 +1413,28 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   
   const getCachedResponse = (message: string, stakeholder: any): string | null => {
-    const cacheKey = `${stakeholder.name}-${message.toLowerCase().trim()}`;
+    const msg = message.toLowerCase().trim();
+    
+    // INSTANT GREETINGS: No AI needed for simple hellos
+    if (getResponseStyle(message) === 'greeting') {
+      const simpleGreetings = [
+        "Hi!",
+        "Hey there!",
+        "Hello!",
+        "Hi, how's it going?",
+        "Hey! What's up?",
+        "Good morning!",
+        "Hi there!"
+      ];
+      
+      // Return a random simple greeting instantly
+      const greeting = simpleGreetings[Math.floor(Math.random() * simpleGreetings.length)];
+      console.log(`⚡ INSTANT GREETING: ${stakeholder.name} says "${greeting}"`);
+      return greeting;
+    }
+    
+    // Regular caching for other responses
+    const cacheKey = `${stakeholder.name}-${msg}`;
     const cached = responseCache.get(cacheKey);
     
     if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
@@ -1602,6 +1625,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // Create realistic stakeholder behavior - make them less forthcoming
       const lengthInstructions = {
+        greeting: "SIMPLE GREETING ONLY: Just say 'hi', 'hello', or 'hey' back. Maybe add 'how's it going?' or 'good morning'. DO NOT mention projects, work, or anything professional. Keep it to basic pleasantries only.",
         brief: "Respond naturally in 1-2 sentences maximum. Be casual, friendly, and conversational. Don't over-explain.",
         medium: "Respond in 2-3 sentences. Be helpful but not overly detailed. Make the user ask follow-up questions for more specifics.",
         detailed: "Only provide comprehensive details when explicitly asked to 'explain', 'walk through', or 'tell me about the process'. Otherwise, give a brief overview and ask what specific aspect they want to know more about. IMPORTANT: Complete all sentences fully."
