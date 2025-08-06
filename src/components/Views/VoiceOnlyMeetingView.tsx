@@ -3451,6 +3451,53 @@ Respond with only "YES" or "NO".`
     }
   };
 
+  // SINGLE STAKEHOLDER RESPONSE: Handle response from one most relevant stakeholder
+  const handleSingleStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[]) => {
+    console.log(`⚡ SINGLE RESPONSE: Generating response from ${stakeholder.name} only`);
+    setIsGeneratingResponse(true);
+    setDynamicFeedback(`🎯 ${stakeholder.name} is responding...`);
+    
+    try {
+      const startTime = performance.now();
+      
+      // Generate AI response
+      const response = await generateIntelligentStakeholderResponse(
+        stakeholder,
+        messageContent,
+        currentMessages,
+        getResponseStyle(messageContent)
+      );
+      
+      const aiTime = performance.now() - startTime;
+      console.log(`🧠 SINGLE: ${stakeholder.name} AI complete in ${aiTime.toFixed(0)}ms`);
+      
+      // Show text immediately
+      const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+      setMessages(prev => [...prev, responseMessage]);
+      addToBackgroundTranscript(responseMessage);
+      
+      console.log(`⚡ SINGLE: ${stakeholder.name} text shown in ${aiTime.toFixed(0)}ms`);
+      
+      // Generate and play audio
+      if (globalAudioEnabled && response) {
+        setDynamicFeedback(`🎵 ${stakeholder.name} speaking...`);
+        const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+        if (audioBlob) {
+          setCurrentSpeaker(stakeholder);
+          await murfTTS.playAudio(audioBlob);
+          setCurrentSpeaker(null);
+          console.log(`✅ SINGLE: ${stakeholder.name} finished speaking`);
+        }
+      }
+      
+    } catch (error) {
+      console.error(`❌ SINGLE: Error generating response for ${stakeholder.name}:`, error);
+    } finally {
+      setIsGeneratingResponse(false);
+      setDynamicFeedback(null);
+    }
+  };
+
   return (
     <div className="h-screen bg-black flex flex-col overflow-hidden">
       {/* Top Bar */}
