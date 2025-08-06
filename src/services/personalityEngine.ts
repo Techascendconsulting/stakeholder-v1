@@ -186,20 +186,11 @@ class PersonalityEngine {
   }
 
   /**
-   * Enhance greeting specifically
+   * Enhance greeting messages with personality-specific warmth
    */
   private enhanceGreeting(text: string, personality: PersonalityConfig): string {
-    const { greetings } = personality.characteristics;
-    
-    // If text is a simple greeting, enhance it
-    const simpleGreetings = ['hi', 'hello', 'hey', 'good morning', 'morning'];
-    const lowerText = text.toLowerCase().trim();
-    
-    if (simpleGreetings.some(greeting => lowerText.includes(greeting))) {
-      const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-      return `${randomGreeting}! ${text}`;
-    }
-    
+    // No hardcoded greeting enhancements - return text as-is
+    // All greetings should be generated dynamically by AI
     return text;
   }
 

@@ -8,7 +8,6 @@
       "baseStyle": "cheerful",
       "characteristics": {
         "fillers": ["you know", "well", "so", "actually", "I mean", "right", "exactly", "hmm", "let's see", "interesting", "ah yes", "that's fascinating", "oh absolutely", "quite right"],
-        "greetings": ["Hey there!", "Good to see you!", "Brilliant to connect!", "Morning everyone!", "Great to have you here!", "Lovely to meet you!", "Thanks for joining us!", "What a pleasure!", "Fantastic to see you!"],
         "transitions": ["So here's what's interesting", "You know what I find fascinating", "Here's something curious", "What I'm wondering is", "This is quite intriguing", "Let me share something", "Here's what caught my attention", "I'm curious about this", "That's a brilliant point"],
         "acknowledgments": ["absolutely brilliant", "that's spot on", "I love that perspective", "that's really insightful", "fantastic point", "you're absolutely right", "that's exactly it", "brilliant observation", "that's fascinating", "I'm really interested in that"],
         "curiosity_phrases": ["I'm curious", "That's interesting", "Tell me more about", "I'd love to understand", "What's your take on", "How do you see", "I'm wondering", "That raises a great question", "Help me understand"],
@@ -108,7 +107,6 @@
       "baseStyle": "empathetic",
       "characteristics": {
         "fillers": ["uhm", "got it", "you know", "I mean", "well", "actually", "so", "like", "basically", "honestly", "obviously", "definitely", "totally", "exactly", "let me see", "hmm", "let me think about that"],
-        "greetings": ["Hi there", "Hey", "Good morning everyone", "Hello", "Hi folks", "Good morning", "Hey everyone"],
         "transitions": ["So", "Actually", "Oh, and", "Plus", "What I'm finding is", "Here's what I think", "So here's what I'm thinking", "Let me break that down for you", "What I'm seeing is", "From my experience"],
         "acknowledgments": ["totally", "absolutely", "for sure", "no sweat", "I got you", "That's a great observation", "You're absolutely right to flag that", "I hear what you're saying", "That makes perfect sense", "I completely understand", "got it", "sure thing", "alright", "yes", "right"],
         "clarifications": ["Hmm, I want to make sure I got that right. Could you clarify a bit?", "Would you like me to explain that another way?", "Just so we're aligned, are you asking about...?", "Let me make sure I understand this correctly", "Can you help me understand what you mean by...?", "I'm hearing you say... is that right?", "Help me understand what you're thinking here", "Can you walk me through that one more time?", "Let me pause here - what specifically are you looking for?"],
@@ -166,7 +164,6 @@
       "baseStyle": "chat",
       "characteristics": {
         "fillers": ["technically", "basically", "actually", "so", "well", "let me think"],
-        "greetings": ["Morning", "Hey folks", "Alright", "Good to see everyone", "Hello team"],
         "transitions": ["From a tech standpoint", "What we need to consider", "The way I see it", "Technically speaking", "Here's the thing"],
         "acknowledgments": ["right", "exactly", "that's correct", "makes sense", "I see"],
         "pausePatterns": {
@@ -207,7 +204,6 @@
       "baseStyle": "chat",
       "characteristics": {
         "fillers": ["you know", "I think", "actually", "so", "well", "hmm"],
-        "greetings": ["Hi everyone", "Hey there", "Good morning", "Hello", "Hi folks"],
         "transitions": ["From a UX perspective", "What I'm seeing is", "In terms of user experience", "Design-wise", "When we think about users"],
         "acknowledgments": ["definitely", "I see", "that's interesting", "good point", "absolutely"],
         "pausePatterns": {
@@ -248,7 +244,6 @@
       "baseStyle": "cheerful",
       "characteristics": {
         "fillers": ["you know", "I mean", "honestly", "so", "well", "actually"],
-        "greetings": ["Hi everyone", "Hey team", "Good morning", "Hello there", "Hi folks"],
         "transitions": ["From a marketing angle", "What we're seeing", "Brand-wise", "In terms of messaging", "Our data shows"],
         "acknowledgments": ["exactly", "love it", "that's brilliant", "perfect", "spot on"],
         "pausePatterns": {

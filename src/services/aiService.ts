@@ -1287,10 +1287,26 @@ REMEMBER: You're not giving a presentation or formal response. You're just ${sta
   // Dynamic system prompt building - NATURAL CONVERSATION FOCUS
   private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext, responseType: string = 'discussion'): string {
     if (responseType === 'direct_mention') {
-      return `Hey ${stakeholder.name}! Someone just asked you something and you're responding like a normal person would.
+      // Build conversation context awareness
+      const recentHistory = context.conversationHistory.slice(-3);
+      const hasGreetingHistory = recentHistory.some(msg => 
+        msg.content && (
+          /^(hi|hey|hello)\s+(guys|everyone|team|all)/i.test(msg.content.trim()) ||
+          /^(hi|hey|hello)$/i.test(msg.content.trim())
+        )
+      );
+      
+      const contextualPrompt = hasGreetingHistory 
+        ? `You're ${stakeholder.name} responding naturally to a follow-up question. The conversation has already started with greetings.`
+        : `You're ${stakeholder.name} responding naturally to a question or mention.`;
 
-BE SUPER NATURAL AND HUMAN:
-- Start with a natural reaction: "Oh!", "Hmm", "Well", "You know what", "That's interesting"
+      return `${contextualPrompt}
+
+BE CONTEXTUALLY AWARE AND NATURAL:
+- You're in an ongoing conversation - don't reintroduce yourself unless it's the very first interaction
+- Respond directly to what was asked, building on the conversation flow
+- Use conversation history to inform your response - reference what's been discussed
+- Start with natural reactions: "Oh!", "Hmm", "Well", "You know what", "That's interesting", "Right", "Absolutely"
 - Sound like you're thinking out loud: "So... from what I've seen..." or "In my experience..."
 - Give detailed, realistic answers using the CURRENT PROCESS DETAILS provided in your context
 - Explain actual step-by-step workflows as if you do this work every day
@@ -1300,19 +1316,22 @@ BE SUPER NATURAL AND HUMAN:
 - React emotionally if appropriate - excitement, concern, curiosity
 - Use filler words naturally: "um", "well", "you know"
 
-EXAMPLES OF NATURAL RESPONSES:
-❌ "Based on my analysis of our current processes..."
+CONVERSATION CONTEXT:
+${recentHistory.length > 0 ? 'Recent conversation:\n' + recentHistory.map(msg => `${msg.stakeholderName || 'User'}: ${msg.content}`).join('\n') : 'This is a new conversation.'}
+
+EXAMPLES OF CONTEXTUAL RESPONSES:
+❌ "Hi! I'm [Name] from [Department]. I'm here to help with any questions you might have. What do you need?"
 ✅ "Oh, well from what I've been dealing with lately, when a new customer signs up, I get a notification in our CRM, then I have to manually create their profile in three different systems..."
 
-❌ "I would recommend implementing..."  
-✅ "Hmm, you know what's been bugging me about this... the whole process takes about 2-3 weeks because after the sales team closes the deal, there's this manual handoff email that gets sent to the Implementation team, and that usually takes 24-48 hours..."
+❌ "Based on my analysis of our current processes..."
+✅ "Hmm, you know what's been bugging me about this... the whole process takes about 2-3 weeks because after the sales team closes the deal, there's this manual handoff email that gets sent to the Implementation team..."
 
-❌ "Please let me know if you need any additional information."
-✅ "Does that make sense?" or just end naturally
+CRITICAL: 
+- Use the specific steps, systems, and timeframes from your CURRENT PROCESS DETAILS - don't give generic answers!
+- Don't reintroduce yourself if greetings have already happened
+- Build on the conversation naturally
 
-CRITICAL: Use the specific steps, systems, and timeframes from your CURRENT PROCESS DETAILS - don't give generic answers!
-
-You're just ${stakeholder.name} being yourself - not giving a presentation!`;
+You're just ${stakeholder.name} being yourself in this conversation - not giving a presentation!`;
     }
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     const conversationPhase = this.conversationState.conversationPhase
