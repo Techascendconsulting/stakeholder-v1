@@ -20,9 +20,11 @@ export class MurfTTSService {
     aisha: { voice_id: "en-UK-hazel", style: "Conversational" },
     david: { voice_id: "en-AU-leyton", style: "Conversational", pitch: 3, rate: 7 },
     james: { voice_id: "en-US-maverick", style: "Narration" },
-    sarah: { voice_id: "en-UK-hazel", style: "Conversational" }, // Fallback to hazel
-    emily: { voice_id: "en-UK-hazel", style: "Conversational" }, // Fallback to hazel
-    michael: { voice_id: "en-US-maverick", style: "Professional" } // Finance Manager - professional tone
+    sarah: { voice_id: "en-UK-hazel", style: "Conversational" },
+    emily: { voice_id: "en-UK-hazel", style: "Conversational" },
+    michael: { voice_id: "en-US-maverick", style: "Professional" }, // Finance Manager
+    lisa: { voice_id: "en-UK-hazel", style: "Professional" }, // Supply Chain Manager
+    robert: { voice_id: "en-AU-leyton", style: "Conversational" } // Customer Experience Manager
   };
 
   static getInstance(): MurfTTSService {
@@ -145,7 +147,9 @@ export class MurfTTSService {
       'james': 'james',
       'sarah': 'sarah',
       'emily': 'emily',
-      'michael': 'michael'
+      'michael': 'michael',
+      'lisa': 'lisa',
+      'robert': 'robert'
     };
 
     const voiceKey = nameMapping[normalizedName] || 'aisha'; // Default to aisha
