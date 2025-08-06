@@ -1525,26 +1525,48 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log(`⚡ FAST MENTION: Generating response for ${stakeholder.name}`);
       
       try {
-        // Check cache first (even for mentions)
-        const cachedResponse = getCachedResponse(messageContent, stakeholder);
+              // Check cache first (even for mentions)
+      const cachedResponse = getCachedResponse(messageContent, stakeholder);
+      
+      if (cachedResponse) {
+        console.log(`🚀 CACHE HIT: Using cached dynamic response for mentioned ${stakeholder.name}`);
         
-        if (cachedResponse) {
-          console.log(`🚀 CACHE HIT: Using cached dynamic response for mentioned ${stakeholder.name}`);
-          
-          // Show response immediately
-          const responseMessage = createResponseMessage(stakeholder, cachedResponse, currentMessages.length);
-          setMessages(prev => [...prev, responseMessage]);
-          addToBackgroundTranscript(responseMessage);
-          
-          // Generate and play audio
-          if (globalAudioEnabled) {
-            const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
-            if (audioBlob) {
-              await murfTTS.playAudio(audioBlob);
-              console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking (cached)`);
-            }
+        // Show response immediately
+        const responseMessage = createResponseMessage(stakeholder, cachedResponse, currentMessages.length);
+        setMessages(prev => [...prev, responseMessage]);
+        addToBackgroundTranscript(responseMessage);
+        
+        // Generate and play audio
+        if (globalAudioEnabled) {
+          const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
+          if (audioBlob) {
+            await murfTTS.playAudio(audioBlob);
+            console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking (cached)`);
           }
-        } else {
+        }
+      } else if (getResponseStyle(messageContent) === 'greeting') {
+        // SPECIAL FAST PATH FOR GREETINGS: Use minimal prompt
+        console.log(`👋 SIMPLE GREETING: Generating basic greeting for ${stakeholder.name}`);
+        
+        const response = await generateSimpleGreeting(stakeholder, messageContent);
+        
+        // Cache the simple greeting
+        setCachedResponse(messageContent, stakeholder, response);
+        
+        // Show response immediately
+        const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+        setMessages(prev => [...prev, responseMessage]);
+        addToBackgroundTranscript(responseMessage);
+        
+        // Generate and play audio
+        if (globalAudioEnabled) {
+          const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+          if (audioBlob) {
+            await murfTTS.playAudio(audioBlob);
+            console.log(`✅ SIMPLE GREETING: ${stakeholder.name} finished speaking`);
+          }
+        }
+      } else {
           // Generate with STREAMLINED prompt for faster AI response
           console.log(`🧠 STREAMLINED: Generating fast response for ${stakeholder.name}`);
           
@@ -1656,6 +1678,60 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       }`;
       
       return roleBasedResponse;
+    }
+  };
+
+  // SIMPLE GREETING GENERATION: Minimal prompt for natural greetings
+  const generateSimpleGreeting = async (stakeholder: any, messageContent: string): Promise<string> => {
+    console.log(`👋 SIMPLE: Generating basic greeting for ${stakeholder.name}`);
+    
+    try {
+      // Super simple context for greetings only
+      const greetingContext = {
+        conversationPhase: 'greeting' as const,
+        conversationHistory: [], // No history needed for greetings
+        projectContext: {
+          name: 'Meeting',
+          phase: 'greeting'
+        }
+      };
+      
+      // Minimal prompt - just respond to the greeting naturally
+      const simplePrompt = `Someone just said: "${messageContent}"
+      
+You're ${stakeholder.name.split(' ')[0]}. Just respond with a simple, natural greeting back. 
+Keep it to 1-2 words maximum like "Hi!" or "Hey there!" or "Hello!"
+DO NOT mention work, projects, meetings, or anything professional. Just a basic human greeting.`;
+
+      const response = await generateStakeholderResponse(
+        stakeholder,
+        simplePrompt,
+        greetingContext,
+        'greeting'
+      );
+      
+      // Clean up response in case AI still adds extra stuff
+      let cleanGreeting = response.trim();
+      
+      // Remove common AI over-additions
+      cleanGreeting = cleanGreeting.replace(/looking forward to.*$/i, '').trim();
+      cleanGreeting = cleanGreeting.replace(/excited to.*$/i, '').trim();
+      cleanGreeting = cleanGreeting.replace(/glad to be here.*$/i, '').trim();
+      cleanGreeting = cleanGreeting.replace(/let's.*$/i, '').trim();
+      
+      // If it's still too long, just use the first sentence
+      if (cleanGreeting.length > 30) {
+        cleanGreeting = cleanGreeting.split('.')[0].trim();
+        if (!cleanGreeting.endsWith('!') && !cleanGreeting.endsWith('?')) {
+          cleanGreeting += '!';
+        }
+      }
+      
+      return cleanGreeting || "Hi!";
+      
+    } catch (error) {
+      console.error('❌ SIMPLE GREETING: Generation failed, using basic fallback');
+      return "Hi!";
     }
   };
 
