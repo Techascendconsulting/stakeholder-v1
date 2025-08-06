@@ -1165,6 +1165,36 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const lastSpeaker = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].stakeholderName : null;
       const conversationContext = currentMessages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
       
+      // CHECK FOR GENERAL GREETINGS FIRST: "hey guys", "hi everyone", etc.
+      const isGeneralGreeting = /^(hi|hey|hello)\s+(guys|everyone|team|all)$/i.test(messageContent.trim());
+      
+      if (isGeneralGreeting) {
+        console.log(`👋 GENERAL GREETING: "${messageContent}" detected - all stakeholders respond with simple greetings`);
+        
+        // All stakeholders respond with simple greetings
+        for (const stakeholder of availableStakeholders) {
+          const simpleGreeting = await generateSimpleGreeting(stakeholder, messageContent);
+          
+          // Show response immediately
+          const responseMessage = createResponseMessage(stakeholder, simpleGreeting, currentMessages.length);
+          setMessages(prev => [...prev, responseMessage]);
+          addToBackgroundTranscript(responseMessage);
+          currentMessages = [...currentMessages, responseMessage];
+          
+          // Generate and play audio
+          if (globalAudioEnabled) {
+            const audioBlob = await murfTTS.synthesizeSpeech(simpleGreeting, stakeholder.name);
+            if (audioBlob) {
+              await murfTTS.playAudio(audioBlob);
+              console.log(`✅ GENERAL GREETING: ${stakeholder.name} finished speaking`);
+            }
+          }
+        }
+        
+        setIsGeneratingResponse(false);
+        return;
+      }
+
       // FAST KEYWORD DETECTION: Skip expensive AI analysis for obvious mentions
       const fastMentionResult = detectStakeholderKeywords(messageContent, availableStakeholders);
       
