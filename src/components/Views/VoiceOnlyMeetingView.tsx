@@ -1415,23 +1415,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const getCachedResponse = (message: string, stakeholder: any): string | null => {
     const msg = message.toLowerCase().trim();
     
-    // INSTANT GREETINGS: No AI needed for simple hellos
-    if (getResponseStyle(message) === 'greeting') {
-      const simpleGreetings = [
-        "Hi!",
-        "Hey there!",
-        "Hello!",
-        "Hi, how's it going?",
-        "Hey! What's up?",
-        "Good morning!",
-        "Hi there!"
-      ];
-      
-      // Return a random simple greeting instantly
-      const greeting = simpleGreetings[Math.floor(Math.random() * simpleGreetings.length)];
-      console.log(`⚡ INSTANT GREETING: ${stakeholder.name} says "${greeting}"`);
-      return greeting;
-    }
+    // Check regular dynamic cache (including greetings)
+    // No hardcoded responses - everything should be AI generated and cached
     
     // Regular caching for other responses
     const cacheKey = `${stakeholder.name}-${msg}`;
