@@ -1165,11 +1165,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const lastSpeaker = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].stakeholderName : null;
       const conversationContext = currentMessages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
       
-      // CHECK FOR GENERAL GREETINGS FIRST: "hey guys", "hi everyone", "hey people", etc.
-      const isGeneralGreeting = /^(hi|hey|hello)\s+(guys|everyone|team|all|people|folks)$/i.test(messageContent.trim());
+      // DYNAMIC AI-POWERED GREETING DETECTION (no hardcoded patterns)
+      const isGeneralGreeting = await detectGeneralGreeting(messageContent);
       
       if (isGeneralGreeting) {
-        console.log(`👋 GENERAL GREETING: "${messageContent}" detected - all stakeholders respond with simple greetings`);
+        console.log(`👋 GENERAL GREETING: "${messageContent}" detected by AI - all stakeholders respond with simple greetings`);
         
         // Show upcoming speakers in queue first
         const upcomingQueue = availableStakeholders.map(s => ({ name: s.name, id: s.id }));
@@ -3269,20 +3269,8 @@ Please review the raw transcript for detailed conversation content.`;
     return null;
   };
 
-  // Adaptive greeting system - updated patterns
-  const isSimpleGreeting = (message: string): boolean => {
-    const greetingPatterns = [
-      /^(hi|hello|hey|good morning|good afternoon|good evening)(\s+(all|everyone|team|people|folks))?$/i,
-      /^(hi|hello|hey)\s+(there|folks|people)$/i
-    ];
-    return greetingPatterns.some(pattern => pattern.test(message.trim()));
-  };
-
-  const isGroupMessage = (message: string): boolean => {
-    const groupIndicators = ['all', 'everyone', 'team', 'group', 'folks', 'colleagues', 'people'];
-    return groupIndicators.some(indicator => message.toLowerCase().includes(indicator));
-  };
-
+  // Note: Hardcoded greeting patterns removed - now using dynamic AI detection above
+  
   const handleAdaptiveGreeting = async (messageContent: string, currentMessages: Message[]) => {
     const aiService = AIService.getInstance();
     const greetingIteration = conversationDynamics.greetingIterations + 1;
@@ -3375,6 +3363,70 @@ Please review the raw transcript for detailed conversation content.`;
     if (count <= 4) return 'grid-cols-2';
     if (count <= 6) return 'grid-cols-2 md:grid-cols-3';
     return 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4';
+  };
+
+  // DYNAMIC AI-POWERED GREETING DETECTION - No hardcoded patterns
+  const detectGeneralGreeting = async (message: string): Promise<boolean> => {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a greeting detector. Analyze if this message is a general greeting to a group of people (not a specific person). 
+
+GENERAL GREETINGS (respond "YES"):
+- "hi everyone"
+- "hey team" 
+- "hello folks"
+- "good morning all"
+- "hey people"
+- "hello my friends"
+- "hi there everyone"
+- "hey stakeholders"
+- "good afternoon team members"
+- "hello wonderful people"
+- Any greeting addressed to multiple people or a group
+
+NOT GENERAL GREETINGS (respond "NO"):
+- "hi david" (specific person)
+- "hello sarah, can you help" (specific person)
+- "what's up with the project" (not a greeting)
+- "hey, what issues do we have" (question, not greeting)
+
+Respond with only "YES" or "NO".`
+            },
+            {
+              role: 'user',
+              content: message.trim()
+            }
+          ],
+          max_tokens: 5,
+          temperature: 0.1
+        })
+      });
+
+      if (!response.ok) {
+        console.warn('❌ Greeting detection API failed, using fallback');
+        return false;
+      }
+
+      const data = await response.json();
+      const result = data.choices?.[0]?.message?.content?.trim().toLowerCase();
+      
+      console.log(`🤖 AI Greeting Detection: "${message}" → ${result}`);
+      return result === 'yes';
+      
+    } catch (error) {
+      console.warn('❌ Greeting detection failed:', error);
+      return false; // Default to not a greeting if AI fails
+    }
   };
 
   return (
