@@ -1233,6 +1233,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         return;
       }
 
+      // SMART SINGLE-STAKEHOLDER ROUTING: General questions get ONE relevant response
+      const singleStakeholderResponse = await routeToSingleStakeholder(messageContent, availableStakeholders);
+      
+      if (singleStakeholderResponse) {
+        console.log(`🎯 SMART ROUTING: ${singleStakeholderResponse.name} selected for general question`);
+        
+        // Single stakeholder responds to general question
+        await handleFastMentionResponse([singleStakeholderResponse], messageContent, currentMessages);
+        return;
+      }
+      
       // FAST KEYWORD DETECTION: Skip expensive AI analysis for obvious mentions
       const fastMentionResult = detectStakeholderKeywords(messageContent, availableStakeholders);
       
@@ -1244,7 +1255,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         return;
       }
       
-      // FALLBACK: Use AI detection for complex cases
+      // SMART SINGLE-STAKEHOLDER ROUTING: General questions go to most relevant person
+      const primaryStakeholder = await routeQuestionToMostRelevantStakeholder(messageContent, availableStakeholders);
+      
+      if (primaryStakeholder) {
+        console.log(`🎯 SMART ROUTING: "${messageContent}" → ${primaryStakeholder.name} (most relevant)`);
+        
+        // Single stakeholder response
+        await handleSingleStakeholderResponse(primaryStakeholder, messageContent, currentMessages);
+        return;
+      }
+      
+      // FALLBACK: Use AI detection only if smart routing fails
       console.log('🧠 COMPLEX DETECTION: Using AI analysis for complex mention detection');
       const userMentionResult = await aiService.detectStakeholderMentions(
         messageContent, 
