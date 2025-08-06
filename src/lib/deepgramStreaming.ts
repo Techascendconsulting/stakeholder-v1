@@ -50,39 +50,59 @@ export class DeepgramStreaming {
    * Start real-time streaming transcription
    */
   async startStreaming(): Promise<void> {
-    if (this.isRecording) {
-      console.warn('🎙️ Already recording, stopping current session first');
-      await this.stopStreaming();
-    }
-
+    console.log('🎤 DEEPGRAM: Starting streaming transcription...');
+    
     try {
-      console.log('🚀 Starting Deepgram real-time streaming...');
+      // Test API key first
+      if (!DEEPGRAM_API_KEY || DEEPGRAM_API_KEY === 'your-deepgram-api-key-here') {
+        throw new Error('Deepgram API key not configured');
+      }
       
       // Get microphone access
-      this.audioStream = await navigator.mediaDevices.getUserMedia({
+      console.log('🎤 DEEPGRAM: Requesting microphone access...');
+      this.audioStream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
+          sampleRate: 16000,
+          channelCount: 1,
           echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 16000, // Optimal for Deepgram
-        }
+          noiseSuppression: true
+        } 
       });
+      console.log('✅ DEEPGRAM: Microphone access granted');
 
-      // Setup WebSocket connection to Deepgram
+      // Setup WebSocket connection
+      console.log('🔌 DEEPGRAM: Connecting to WebSocket...');
       await this.connectWebSocket();
+      console.log('✅ DEEPGRAM: WebSocket connected');
 
-      // Setup MediaRecorder for audio streaming
+      // Setup audio recording
+      console.log('🎙️ DEEPGRAM: Setting up audio recording...');
       this.setupMediaRecorder();
+      console.log('✅ DEEPGRAM: Audio recording started');
 
       this.isRecording = true;
-      this.lastTranscriptTime = Date.now();
-      
-      console.log('✅ Deepgram streaming started successfully');
       this.options.onOpen?.();
-
+      
     } catch (error) {
-      console.error('❌ Failed to start streaming:', error);
-      this.options.onError?.(error as Error);
+      console.error('❌ DEEPGRAM: Failed to start streaming:', error);
+      
+      // Provide specific error messages
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          this.options.onError?.(new Error('Microphone permission denied. Please allow microphone access and try again.'));
+        } else if (error.name === 'NotFoundError') {
+          this.options.onError?.(new Error('No microphone found. Please check your audio devices.'));
+        } else if (error.message.includes('API key')) {
+          this.options.onError?.(new Error('Voice recognition service not configured. Please contact support.'));
+        } else {
+          this.options.onError?.(error);
+        }
+      } else {
+        this.options.onError?.(new Error('Failed to start voice input. Please try again.'));
+      }
+      
+      // Cleanup on error
+      await this.cleanup();
       throw error;
     }
   }

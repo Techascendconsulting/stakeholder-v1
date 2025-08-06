@@ -1862,7 +1862,7 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
     setIsTranscribing(transcribing);
   };
 
-  // NEW: Streaming voice input functions
+  // ENHANCED: Streaming voice input functions with better user feedback
   const startStreamingVoiceInput = async () => {
     if (isListening) {
       // Stop current session
@@ -1875,10 +1875,16 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
       setIsListening(true);
       setLiveTranscript('');
       setFinalTranscript('');
+      setDynamicFeedback('🎤 Starting voice input... Please allow microphone access if prompted');
       
       const streaming = createDeepgramStreaming({
         onTranscript: (transcript: string, isFinal: boolean) => {
           console.log(`📝 Live transcript (${isFinal ? 'FINAL' : 'INTERIM'}): "${transcript}"`);
+          
+          // Clear the starting feedback once we get transcripts
+          if (dynamicFeedback?.includes('Starting voice input')) {
+            setDynamicFeedback('🎤 Listening... Speak now');
+          }
           
           if (isFinal) {
             // Accumulate final transcripts
@@ -1888,14 +1894,22 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
               return newFinal;
             });
             setLiveTranscript(''); // Clear interim
+            setDynamicFeedback('🎤 Processing... Click microphone to finish');
           } else {
             // Show interim transcript
             setLiveTranscript(transcript);
+            setDynamicFeedback('🎤 Listening... Click microphone when done');
           }
+        },
+        
+        onOpen: () => {
+          console.log('🔌 DEEPGRAM: Connection established');
+          setDynamicFeedback('🎤 Ready! Start speaking...');
         },
         
         onSilenceDetected: () => {
           console.log('🔇 Silence detected, auto-stopping...');
+          setDynamicFeedback('🔄 Processing your message...');
           // Process any accumulated transcript before stopping
           setTimeout(() => {
             stopStreamingVoiceInput();
@@ -1906,6 +1920,10 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
           console.error('❌ Streaming error:', error);
           setIsListening(false);
           setLiveTranscript('');
+          
+          // Show user-friendly error message
+          setDynamicFeedback(`❌ Voice input failed: ${error.message}`);
+          setTimeout(() => setDynamicFeedback(null), 5000);
         },
         
         onClose: () => {
@@ -1923,6 +1941,25 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
       console.error('❌ Failed to start streaming voice input:', error);
       setIsListening(false);
       setLiveTranscript('');
+      
+      // Show specific error messages
+      let errorMessage = '❌ Voice input failed: ';
+      if (error instanceof Error) {
+        if (error.message.includes('permission')) {
+          errorMessage += 'Microphone permission denied. Please allow microphone access.';
+        } else if (error.message.includes('not found')) {
+          errorMessage += 'No microphone found. Please check your audio devices.';
+        } else if (error.message.includes('not configured')) {
+          errorMessage += 'Voice service not available. Please try typing your message.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Please try again or type your message.';
+      }
+      
+      setDynamicFeedback(errorMessage);
+      setTimeout(() => setDynamicFeedback(null), 8000);
     }
   };
 
@@ -2276,12 +2313,14 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
     }
   };
 
-  // Handle microphone button click - start/stop recording
+  // Handle microphone button click - use FAST streaming instead of slow direct recording
   const handleMicClick = () => {
-    if (isRecording) {
-      stopDirectRecording();
+    if (isListening) {
+      // Stop streaming (fast method)
+      stopStreamingVoiceInput();
     } else {
-      startDirectRecording();
+      // Start streaming (fast method)
+      startStreamingVoiceInput();
     }
   };
 
@@ -3386,20 +3425,20 @@ Please review the raw transcript for detailed conversation content.`;
 
           {/* Meeting Controls */}
           <div className="flex items-center space-x-2">
-            {/* Mic Button */}
+            {/* Mic Button - Fast Streaming */}
             <button
               onClick={handleMicClick}
               className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                isRecording 
+                isListening 
                   ? 'bg-red-500 hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/50' 
                   : isGeneratingResponse
                   ? 'bg-blue-500 hover:bg-blue-600 animate-pulse'
                   : 'bg-green-600 hover:bg-green-700'
               }`}
-              title={isRecording ? 'Stop Recording' : isGeneratingResponse ? 'AI Responding...' : 'Start Recording'}
+              title={isListening ? 'Stop Listening' : isGeneratingResponse ? 'AI Responding...' : 'Start Voice Input'}
               disabled={isGeneratingResponse}
             >
-              {isRecording ? <Square className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
+              {isListening ? <Square className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
             </button>
 
             {/* Stop Button */}
