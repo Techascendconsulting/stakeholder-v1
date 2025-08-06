@@ -183,6 +183,8 @@ const StakeholdersView: React.FC = () => {
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   These stakeholders have been carefully selected based on their expertise and relevance to this specific project type.
+                  <br />
+                  <strong className="text-red-600">DEBUG: Total stakeholders in system: {stakeholders.length}, Relevant for this project: {selectedProject.relevantStakeholders.length}</strong>
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {selectedProject.relevantStakeholders.map(stakeholderId => {
@@ -210,6 +212,13 @@ const StakeholdersView: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+        
+        {/* DEBUG INFO */}
+        {!selectedProject.relevantStakeholders && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+            <p className="text-red-800 font-semibold">⚠️ DEBUG: No relevantStakeholders found for this project - showing all stakeholders</p>
           </div>
         )}
 
@@ -252,11 +261,29 @@ const StakeholdersView: React.FC = () => {
         )}
 
         {/* Stakeholders Grid */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <p className="text-yellow-800 font-semibold">
+            🔍 DEBUG: Showing {stakeholders.filter(stakeholder => {
+              if (!selectedProject?.relevantStakeholders) return true;
+              return selectedProject.relevantStakeholders.includes(stakeholder.id);
+            }).length} of {stakeholders.length} total stakeholders for project: {selectedProject?.name}
+          </p>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
           {stakeholders
             .filter(stakeholder => {
               // Show only relevant stakeholders for the selected project
+              console.log('🔍 FILTER DEBUG:', {
+                projectName: selectedProject?.name,
+                hasRelevantStakeholders: !!selectedProject?.relevantStakeholders,
+                relevantStakeholders: selectedProject?.relevantStakeholders,
+                stakeholderId: stakeholder.id,
+                stakeholderName: stakeholder.name,
+                isRelevant: selectedProject?.relevantStakeholders?.includes(stakeholder.id)
+              });
+              
               if (!selectedProject?.relevantStakeholders) {
+                console.log('⚠️ No relevantStakeholders found, showing all stakeholders');
                 return true; // If no relevantStakeholders defined, show all (backward compatibility)
               }
               return selectedProject.relevantStakeholders.includes(stakeholder.id);
