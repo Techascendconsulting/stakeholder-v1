@@ -3506,6 +3506,121 @@ Respond with only "YES" or "NO".`
     }
   };
 
+  // SMART ROUTING: Detect if user explicitly wants everyone to respond
+  const detectExplicitEveryoneRequest = async (message: string): Promise<boolean> => {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: `Detect if the user explicitly wants ALL stakeholders to respond.
+
+EXPLICIT EVERYONE REQUESTS (respond "YES"):
+- "everyone share your thoughts"
+- "what does everyone think"
+- "all stakeholders please respond"
+- "I want to hear from all of you"
+- "everyone's opinion please"
+- "all team members respond"
+- "each person tell me"
+
+NOT EVERYONE REQUESTS (respond "NO"):
+- "what are the issues" (general question = one person)
+- "any concerns?" (general question = one person)
+- "what's the current process" (general question = one person)
+- "tell me about the problems" (general question = one person)
+
+Respond with only "YES" or "NO".`
+            },
+            {
+              role: 'user',
+              content: message.trim()
+            }
+          ],
+          max_tokens: 5,
+          temperature: 0.1
+        })
+      });
+
+      if (!response.ok) return false;
+      const data = await response.json();
+      const result = data.choices?.[0]?.message?.content?.trim().toLowerCase();
+      
+      console.log(`🤖 Everyone Detection: "${message}" → ${result}`);
+      return result === 'yes';
+      
+    } catch (error) {
+      console.warn('❌ Everyone detection failed:', error);
+      return false;
+    }
+  };
+
+  // SMART ROUTING: Pick the most relevant stakeholder for general questions
+  const routeToSingleStakeholder = async (message: string, stakeholders: any[]): Promise<any | null> => {
+    try {
+      const stakeholderOptions = stakeholders.map(s => `${s.name} (${s.role})`).join(', ');
+      
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: `Pick the most relevant stakeholder to answer this general question.
+
+Available stakeholders: ${stakeholderOptions}
+
+ROUTING GUIDELINES:
+- "issues/problems/concerns" → Operations (James Walker)
+- "current process/workflow" → Operations (James Walker)  
+- "technical/system/IT" → IT (David Thompson)
+- "costs/budget/financial" → Finance (Michael Chen)
+- "customer/service" → Customer Service (Aisha Ahmed)
+- "compliance/risk" → Compliance (Emily Robinson)
+- "general/overview" → Operations (James Walker)
+
+Respond with only the stakeholder's FIRST NAME (e.g., "James", "David", "Michael", "Aisha", "Emily").`
+            },
+            {
+              role: 'user',
+              content: message.trim()
+            }
+          ],
+          max_tokens: 10,
+          temperature: 0.1
+        })
+      });
+
+      if (!response.ok) return null;
+      const data = await response.json();
+      const selectedName = data.choices?.[0]?.message?.content?.trim().toLowerCase();
+      
+      // Find stakeholder by first name
+      const selectedStakeholder = stakeholders.find(s => 
+        s.name.toLowerCase().split(' ')[0] === selectedName
+      );
+      
+      console.log(`🎯 Smart Routing: "${message}" → ${selectedStakeholder?.name || 'none'}`);
+      return selectedStakeholder || null;
+      
+    } catch (error) {
+      console.warn('❌ Smart routing failed:', error);
+      return null;
+    }
+  };
+
   return (
     <div className="h-screen bg-black flex flex-col overflow-hidden">
       {/* Top Bar */}
