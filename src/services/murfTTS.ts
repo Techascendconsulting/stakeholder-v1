@@ -298,7 +298,5 @@ export const murfTTS = MurfTTSService.getInstance();
 // Clear cache on startup to ensure fresh voice configurations
 murfTTS.clearCache();
 
-// Pre-generate common responses for faster interactions (background)
-murfTTS.preGenerateCommonResponses().catch(error => {
-  console.warn('⚠️ MURF: Failed to pre-generate common responses:', error);
-});
+// Note: Pre-generation disabled to avoid API costs
+// To enable: murfTTS.preGenerateCommonResponses();
