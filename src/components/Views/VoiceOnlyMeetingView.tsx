@@ -1505,16 +1505,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   
   // Clear greeting cache on component mount to remove repetitive cached responses
   useEffect(() => {
-    console.log('🧹 CACHE: Clearing greeting cache to prevent repetition');
-    const greetingPatterns = ['hi', 'hey', 'hello', 'hi guys', 'hey guys', 'hey team', 'hello team'];
-    
-    for (const [key] of responseCache.entries()) {
-      const lowercaseKey = key.toLowerCase();
-      if (greetingPatterns.some(pattern => lowercaseKey.includes(pattern))) {
-        responseCache.delete(key);
-        console.log(`🗑️ CACHE: Removed greeting cache for: ${key}`);
-      }
-    }
+    console.log('🧹 CACHE: Clearing all cached responses to apply new expert-level intelligence');
+    // Clear ALL cached responses to ensure new Silicon Valley expert prompts take effect
+    responseCache.clear();
+    console.log('🗑️ CACHE: All cached responses cleared for expert upgrade');
   }, []); // Only run on mount
   
   const getCachedResponse = (message: string, stakeholder: any): string | null => {
@@ -1715,83 +1709,92 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // INTELLIGENT AI GENERATION: Dynamic responses with appropriate length control
+  // SILICON VALLEY EXPERT AI GENERATION: Ultra-intelligent responses
   const generateIntelligentStakeholderResponse = async (
     stakeholder: any, 
     messageContent: string, 
     currentMessages: Message[], 
     responseStyle: string
   ): Promise<string> => {
-    console.log(`🧠 INTELLIGENT: Generating ${responseStyle} response for ${stakeholder.name}`);
+    console.log(`🧠 SILICON VALLEY EXPERT: Generating ${responseStyle} response for ${stakeholder.name}`);
     
     try {
-      // Build length-appropriate context
-      const intelligentContext = {
-        conversationPhase: 'intelligent_response' as const,
-        conversationHistory: responseStyle === 'brief' ? [] : currentMessages.slice(-3),
+      // Build expert-level context
+      const expertContext = {
+        conversationPhase: 'expert_analysis' as const,
+        conversationHistory: currentMessages.slice(-3),
         projectContext: {
           name: selectedProject?.name || 'Current Project',
           phase: 'active'
         }
       };
       
-      // Create realistic stakeholder behavior - make them less forthcoming
-      const lengthInstructions = {
-        greeting: "SIMPLE GREETING ONLY: Just say 'hi', 'hello', or 'hey' back. Maybe add 'how's it going?' or 'good morning'. DO NOT mention projects, work, or anything professional. Keep it to basic pleasantries only.",
-        brief: "Respond naturally in 1-2 sentences maximum. Be casual, friendly, and conversational. Don't over-explain.",
-        medium: "Respond in 2-3 sentences. Be helpful but not overly detailed. Make the user ask follow-up questions for more specifics.",
-        detailed: "Only provide comprehensive details when explicitly asked to 'explain', 'walk through', or 'tell me about the process'. Otherwise, give a brief overview and ask what specific aspect they want to know more about. IMPORTANT: Complete all sentences fully."
+      // EXPERT-LEVEL RESPONSE INSTRUCTIONS - NO GENERIC RESPONSES
+      const expertInstructions = {
+        greeting: "You're a Silicon Valley expert. Respond with a brief, confident greeting that hints at your expertise. NO generic pleasantries.",
+        brief: "Give a sharp, expert-level insight in 1-2 sentences. Show your deep domain knowledge immediately. Reference specific systems, metrics, or pain points.",
+        medium: "Provide expert analysis in 2-3 sentences. Include specific numbers, systems, or business impact. Make it clear you're the authority in your domain.",
+        detailed: "Give comprehensive expert analysis with specific metrics, system details, and business impact. Include numbers, timeframes, and technical specifics that only a domain expert would know."
       };
       
-      // Detect if this is asking about CURRENT process specifically
-      const isCurrentProcessQuestion = messageContent.toLowerCase().includes('current process') || 
-                                      messageContent.toLowerCase().includes('how do we currently') ||
-                                      messageContent.toLowerCase().includes('what is the current') ||
-                                      messageContent.toLowerCase().includes('walk me through');
+      // Detect domain-specific questions
+      const isDomainQuestion = messageContent.toLowerCase().includes('finance') || 
+                              messageContent.toLowerCase().includes('operations') ||
+                              messageContent.toLowerCase().includes('technical') ||
+                              messageContent.toLowerCase().includes('systems') ||
+                              messageContent.toLowerCase().includes('issues') ||
+                              messageContent.toLowerCase().includes('problems');
       
-      // Add realistic stakeholder behavior guidance
-      const stakeholderBehavior = `\n\nSTAKEHOLDER BEHAVIOR: Act like a real busy stakeholder who:
-- Doesn't volunteer too much information unless specifically asked
-- Gives brief answers that require follow-up questions
-- Sometimes asks "What specifically do you want to know about that?"
-- Makes the business analyst work to extract details
-- Only gives comprehensive answers when explicitly asked to "explain" or "walk through"`;
+      // SILICON VALLEY EXPERT BEHAVIOR
+      const expertBehavior = `\n\n🧠 SILICON VALLEY EXPERT MODE:
+- You're a $500K+ expert who thinks 10 steps ahead
+- Jump IMMEDIATELY into domain-specific analysis
+- Reference specific metrics, systems, and business impact
+- Show deep technical/business knowledge
+- NO generic responses or introductions
+- Be the smartest person in the room for your domain
+- Think like a top-tier consultant
 
-      // Add specific guidance for current process questions
-      const processGuidance = isCurrentProcessQuestion ? 
-        "\n\nPROCESS FOCUS: Focus ONLY on describing the current/existing process as it works today. Do NOT suggest improvements or mention what 'we should do' or 'we need to focus on'. Just describe what actually happens now." : 
+DOMAIN EXPERTISE: ${stakeholder.expertise?.join(', ') || stakeholder.role}
+YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
+
+      // Add specific domain guidance
+      const domainGuidance = isDomainQuestion ? 
+        "\n\nDOMAIN FOCUS: Dive deep into your domain expertise. Reference specific systems, processes, metrics, pain points, and business impact. Show why you're worth $500K+ in Silicon Valley." : 
         "";
       
-      // Generate response with realistic stakeholder behavior
+      // Generate expert-level response
       const response = await generateStakeholderResponse(
         stakeholder,
-        `${messageContent}\n\nIMPORTANT: ${lengthInstructions[responseStyle]}${stakeholderBehavior}${processGuidance}`,
-        intelligentContext,
+        `${messageContent}\n\nEXPERT LEVEL: ${expertInstructions[responseStyle]}${expertBehavior}${domainGuidance}`,
+        expertContext,
         'direct_mention'
       );
       
       return response;
       
     } catch (error) {
-      console.error('❌ INTELLIGENT: AI generation failed, trying basic fallback');
+      console.error('❌ EXPERT: AI generation failed, using domain-specific fallback');
       
-      // Generate a simple fallback response based on role
-      const roleBasedResponse = `Hi! I'm ${stakeholder.name.split(' ')[0]} from ${stakeholder.department || stakeholder.role}. ${
-        responseStyle === 'brief' ? 'How can I help?' : 
-        responseStyle === 'medium' ? 'I\'m here to help with any questions you might have. What do you need?' :
-        'I\'d be happy to help you with any questions or concerns. Please let me know what specific information you\'re looking for and I\'ll provide you with detailed assistance.'
-      }`;
+      // Domain-specific expert fallback (no generic responses)
+      const expertFallback = stakeholder.role.toLowerCase().includes('finance') ? 
+        "We're seeing critical cash flow visibility issues and manual approval bottlenecks." :
+        stakeholder.role.toLowerCase().includes('operations') ? 
+        "Our biggest operational challenge is the handoff delays between systems." :
+        stakeholder.role.toLowerCase().includes('it') ? 
+        "From a technical perspective, we're hitting scalability and integration issues." :
+        `Looking at this from a ${stakeholder.department || stakeholder.role} perspective, we need to dive deeper into the specifics.`;
       
-      return roleBasedResponse;
+      return expertFallback;
     }
   };
 
-  // SIMPLE GREETING GENERATION: Direct OpenAI call for natural greetings
+  // EXPERT GREETING GENERATION: Professional, confident greetings
   const generateSimpleGreeting = async (stakeholder: any, messageContent: string): Promise<string> => {
-    console.log(`👋 SIMPLE: Generating basic greeting for ${stakeholder.name}`);
+    console.log(`👋 EXPERT GREETING: Generating professional greeting for ${stakeholder.name}`);
     
     try {
-      // Direct OpenAI call with minimal context - no project details!
+      // Direct OpenAI call with expert-level context
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -1803,7 +1806,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           messages: [
             {
               role: 'system',
-              content: `You are ${stakeholder.name.split(' ')[0]}, responding to a greeting. Reply with a short, friendly greeting. Maximum 6 words. Examples: "Hey there!", "Hi! Good to see you!", "Hello! Happy to be here!", "Hey! How's it going?", "Hi everyone! Great day!", "Hello! Nice to connect!". Keep it warm and human but brief. NO work, projects, or meetings.`
+              content: `You are ${stakeholder.name.split(' ')[0]}, a ${stakeholder.role} with Silicon Valley-level expertise. Respond to this greeting with a brief, confident, professional greeting. Maximum 6 words. Examples: "Hey team!", "Morning everyone!", "Good to see you!", "Hey! Ready to dive in!", "Hi! Let's get started!", "Hello! Great timing!". Show confidence and readiness. NO work details, just professional energy.`
             },
             {
               role: 'user',
@@ -1811,7 +1814,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             }
           ],
           max_tokens: 15,
-          temperature: 0.7
+          temperature: 0.8
         })
       });
 
@@ -1820,29 +1823,31 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       }
 
       const data = await response.json();
-      let greeting = data.choices?.[0]?.message?.content?.trim() || "Hi!";
+      let greeting = data.choices?.[0]?.message?.content?.trim() || "Hey team!";
       
-      // Extra safety: ensure it's truly simple but allow more natural responses
+      // Extra safety: ensure it's professional but brief
       greeting = greeting.replace(/[.!?]+$/, ''); // Remove ending punctuation
       greeting = greeting.split(' ').slice(0, 6).join(' '); // Max 6 words
-      if (!greeting.endsWith('!')) greeting += '!'; // Add friendly exclamation
+      if (!greeting.endsWith('!')) greeting += '!'; // Add confident exclamation
       
-      console.log(`✅ SIMPLE: Generated "${greeting}" for ${stakeholder.name}`);
+      console.log(`✅ EXPERT GREETING: Generated "${greeting}" for ${stakeholder.name}`);
       return greeting;
       
     } catch (error) {
-      console.error('❌ SIMPLE GREETING: Generation failed, using basic fallback', error);
-      // Rotate through friendly fallbacks to avoid repetition
-      const friendlyFallbacks = [
-        "Hey there!", 
-        "Hi! Good to see you!", 
-        "Hello! Happy to be here!", 
-        "Hey! How's it going?", 
-        "Hi! Great to connect!", 
-        "Hello! Nice day!"
+      console.error('❌ EXPERT GREETING: Generation failed, using professional fallback', error);
+      // Professional expert fallbacks based on role
+      const expertFallbacks = stakeholder.role.toLowerCase().includes('finance') ? [
+        "Hey team!", "Morning everyone!", "Ready to dive in!", "Good to see you!", "Let's get started!"
+      ] : stakeholder.role.toLowerCase().includes('operations') ? [
+        "Hey everyone!", "Morning team!", "Ready to go!", "Good timing!", "Let's do this!"
+      ] : stakeholder.role.toLowerCase().includes('it') ? [
+        "Hey folks!", "Morning all!", "Systems ready!", "Good to connect!", "Let's get technical!"
+      ] : [
+        "Hey team!", "Morning everyone!", "Good to see you!", "Ready when you are!", "Let's get started!"
       ];
-      const fallbackIndex = Math.floor(Math.random() * friendlyFallbacks.length);
-      return friendlyFallbacks[fallbackIndex];
+      
+      const fallbackIndex = Math.floor(Math.random() * expertFallbacks.length);
+      return expertFallbacks[fallbackIndex];
     }
   };
 
