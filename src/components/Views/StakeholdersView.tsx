@@ -127,7 +127,14 @@ const StakeholdersView: React.FC = () => {
       setCurrentView('voice-only-meeting')
     } else {
       // Start new meeting
-      const selectedStakeholderObjects = stakeholders.filter(s => 
+      const relevantStakeholders = stakeholders.filter(stakeholder => {
+        if (!selectedProject?.relevantStakeholders) {
+          return true;
+        }
+        return selectedProject.relevantStakeholders.includes(stakeholder.id);
+      });
+      
+      const selectedStakeholderObjects = relevantStakeholders.filter(s => 
         localSelectedStakeholders.includes(s.id)
       )
       console.log('🎯 DEBUG: Starting new meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
@@ -162,6 +169,49 @@ const StakeholdersView: React.FC = () => {
             You can choose to meet with individual stakeholders or conduct group meetings oe sessions with multiple participants.
           </p>
         </div>
+
+        {/* Project-Stakeholder Alignment */}
+        {selectedProject.relevantStakeholders && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl border border-blue-200 dark:border-blue-800 p-6 mb-8">
+            <div className="flex items-start space-x-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Building className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Key Stakeholders for {selectedProject.name}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  These stakeholders have been carefully selected based on their expertise and relevance to this specific project type.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {selectedProject.relevantStakeholders.map(stakeholderId => {
+                    const stakeholder = stakeholders.find(s => s.id === stakeholderId);
+                    return stakeholder ? (
+                      <div key={stakeholder.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={stakeholder.photo}
+                            alt={stakeholder.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {stakeholder.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {stakeholder.role}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Selection Summary */}
         {(localSelectedStakeholders.length > 0 || hasActiveMeeting) && (
@@ -203,7 +253,15 @@ const StakeholdersView: React.FC = () => {
 
         {/* Stakeholders Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
-          {stakeholders.map((stakeholder) => {
+          {stakeholders
+            .filter(stakeholder => {
+              // Show only relevant stakeholders for the selected project
+              if (!selectedProject?.relevantStakeholders) {
+                return true; // If no relevantStakeholders defined, show all (backward compatibility)
+              }
+              return selectedProject.relevantStakeholders.includes(stakeholder.id);
+            })
+            .map((stakeholder) => {
             const isSelected = isStakeholderSelected(stakeholder.id)
             
             return (

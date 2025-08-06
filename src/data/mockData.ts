@@ -36,7 +36,8 @@ Pain Points: No centralized tracking, manual status updates, customers often una
       'Achieve 95% on-time delivery rate for committed go-live dates'
     ],
     duration: '4-5 weeks',
-    complexity: 'Intermediate'
+    complexity: 'Intermediate',
+    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-4', 'stake-8'] // Operations, Customer Service, IT, HR, Customer Experience
   },
   {
     id: 'proj-2',
@@ -74,7 +75,8 @@ Pain Points: High error rates, no real-time visibility, delayed reimbursements, 
       'Enable mobile expense submission and approval capabilities'
     ],
     duration: '5-6 weeks',
-    complexity: 'Advanced'
+    complexity: 'Advanced',
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-5', 'stake-6'] // Operations, IT, Compliance, Finance
   },
   {
     id: 'proj-3',
@@ -112,7 +114,8 @@ Pain Points: Week-old data for decision making, no demand forecasting, manual pr
       'Establish centralized purchasing optimization'
     ],
     duration: '3-4 weeks',
-    complexity: 'Beginner'
+    complexity: 'Beginner',
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-6', 'stake-7'] // Operations, IT, Finance, Supply Chain
   },
   {
     id: 'proj-4',
@@ -150,7 +153,8 @@ Pain Points: No intelligent routing, knowledge silos, manual status updates, inc
       'Implement real-time performance dashboards and analytics'
     ],
     duration: '4-5 weeks',
-    complexity: 'Intermediate'
+    complexity: 'Intermediate',
+    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-8'] // Operations, Customer Service, IT, Customer Experience
   },
   {
     id: 'proj-5',
@@ -188,7 +192,8 @@ Pain Points: Annual-only feedback, subjective evaluations, no goal tracking, lim
       'Enable real-time performance analytics and reporting for leadership'
     ],
     duration: '5-7 weeks',
-    complexity: 'Advanced'
+    complexity: 'Advanced',
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-4', 'stake-6'] // Operations, IT, HR, Finance
   }
 ]
 

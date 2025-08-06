@@ -10,6 +10,7 @@ export interface Project {
   complexity: 'Beginner' | 'Intermediate' | 'Advanced'
   isCustom?: boolean
   stakeholderRoles?: string[]
+  relevantStakeholders?: string[] // IDs of stakeholders relevant to this project
   industry?: string
   projectType?: string
 }
