@@ -1233,15 +1233,23 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         return;
       }
 
-      // SMART SINGLE-STAKEHOLDER ROUTING: General questions get ONE relevant response
-      const singleStakeholderResponse = await routeToSingleStakeholder(messageContent, availableStakeholders);
+      // CHECK FOR EXPLICIT "EVERYONE" REQUESTS
+      const explicitEveryoneRequest = await detectExplicitEveryoneRequest(messageContent);
       
-      if (singleStakeholderResponse) {
-        console.log(`🎯 SMART ROUTING: ${singleStakeholderResponse.name} selected for general question`);
+      if (explicitEveryoneRequest) {
+        console.log(`👥 EXPLICIT EVERYONE: User requested all stakeholders respond`);
+        // Proceed to normal AI detection for multiple responses
+      } else {
+        // SMART SINGLE-STAKEHOLDER ROUTING: General questions get ONE relevant response
+        const singleStakeholderResponse = await routeToSingleStakeholder(messageContent, availableStakeholders);
         
-        // Single stakeholder responds to general question
-        await handleFastMentionResponse([singleStakeholderResponse], messageContent, currentMessages);
-        return;
+        if (singleStakeholderResponse) {
+          console.log(`🎯 SMART ROUTING: ${singleStakeholderResponse.name} selected for general question`);
+          
+          // Single stakeholder responds to general question
+          await handleFastMentionResponse([singleStakeholderResponse], messageContent, currentMessages);
+          return;
+        }
       }
       
       // FAST KEYWORD DETECTION: Skip expensive AI analysis for obvious mentions
