@@ -1742,15 +1742,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           messages: [
             {
               role: 'system',
-              content: `You are ${stakeholder.name.split(' ')[0]}, responding to a greeting. Reply with ONLY a simple greeting back. Maximum 3 words. Examples: "Hi!", "Hey there!", "Hello!", "Hi everyone!". DO NOT mention work, projects, meetings, or anything professional.`
+              content: `You are ${stakeholder.name.split(' ')[0]}, responding to a greeting. Reply with a short, friendly greeting. Maximum 6 words. Examples: "Hey there!", "Hi! Good to see you!", "Hello! Happy to be here!", "Hey! How's it going?", "Hi everyone! Great day!", "Hello! Nice to connect!". Keep it warm and human but brief. NO work, projects, or meetings.`
             },
             {
               role: 'user',
               content: messageContent
             }
           ],
-          max_tokens: 10,
-          temperature: 0.3
+          max_tokens: 15,
+          temperature: 0.7
         })
       });
 
@@ -1761,9 +1761,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const data = await response.json();
       let greeting = data.choices?.[0]?.message?.content?.trim() || "Hi!";
       
-      // Extra safety: ensure it's truly simple
+      // Extra safety: ensure it's truly simple but allow more natural responses
       greeting = greeting.replace(/[.!?]+$/, ''); // Remove ending punctuation
-      greeting = greeting.split(' ').slice(0, 3).join(' '); // Max 3 words
+      greeting = greeting.split(' ').slice(0, 6).join(' '); // Max 6 words
       if (!greeting.endsWith('!')) greeting += '!'; // Add friendly exclamation
       
       console.log(`✅ SIMPLE: Generated "${greeting}" for ${stakeholder.name}`);
@@ -1771,10 +1771,17 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
     } catch (error) {
       console.error('❌ SIMPLE GREETING: Generation failed, using basic fallback', error);
-      // Rotate through simple fallbacks to avoid repetition
-      const simpleFallbacks = ["Hi!", "Hey!", "Hello!", "Hi there!"];
-      const fallbackIndex = Math.floor(Math.random() * simpleFallbacks.length);
-      return simpleFallbacks[fallbackIndex];
+      // Rotate through friendly fallbacks to avoid repetition
+      const friendlyFallbacks = [
+        "Hey there!", 
+        "Hi! Good to see you!", 
+        "Hello! Happy to be here!", 
+        "Hey! How's it going?", 
+        "Hi! Great to connect!", 
+        "Hello! Nice day!"
+      ];
+      const fallbackIndex = Math.floor(Math.random() * friendlyFallbacks.length);
+      return friendlyFallbacks[fallbackIndex];
     }
   };
 
