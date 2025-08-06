@@ -1600,11 +1600,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         }
       };
       
-      // Create length-specific instructions for AI with proper token limits
+      // Create realistic stakeholder behavior - make them less forthcoming
       const lengthInstructions = {
         brief: "Respond naturally in 1-2 sentences maximum. Be casual, friendly, and conversational. Don't over-explain.",
-        medium: "Respond in 2-3 sentences. Be informative but concise. Give helpful details without being verbose.",
-        detailed: "Provide a comprehensive response with specific details, examples, and step-by-step explanations. IMPORTANT: Complete all sentences fully - do not cut off mid-sentence."
+        medium: "Respond in 2-3 sentences. Be helpful but not overly detailed. Make the user ask follow-up questions for more specifics.",
+        detailed: "Only provide comprehensive details when explicitly asked to 'explain', 'walk through', or 'tell me about the process'. Otherwise, give a brief overview and ask what specific aspect they want to know more about. IMPORTANT: Complete all sentences fully."
       };
       
       // Detect if this is asking about CURRENT process specifically
@@ -1613,15 +1613,23 @@ export const VoiceOnlyMeetingView: React.FC = () => {
                                       messageContent.toLowerCase().includes('what is the current') ||
                                       messageContent.toLowerCase().includes('walk me through');
       
+      // Add realistic stakeholder behavior guidance
+      const stakeholderBehavior = `\n\nSTAKEHOLDER BEHAVIOR: Act like a real busy stakeholder who:
+- Doesn't volunteer too much information unless specifically asked
+- Gives brief answers that require follow-up questions
+- Sometimes asks "What specifically do you want to know about that?"
+- Makes the business analyst work to extract details
+- Only gives comprehensive answers when explicitly asked to "explain" or "walk through"`;
+
       // Add specific guidance for current process questions
       const processGuidance = isCurrentProcessQuestion ? 
-        "\n\nIMPORTANT: Focus ONLY on describing the current/existing process as it works today. Do NOT suggest improvements or mention what 'we should do' or 'we need to focus on'. Just describe what actually happens now." : 
+        "\n\nPROCESS FOCUS: Focus ONLY on describing the current/existing process as it works today. Do NOT suggest improvements or mention what 'we should do' or 'we need to focus on'. Just describe what actually happens now." : 
         "";
       
-      // Generate response with intelligent length control and process guidance
+      // Generate response with realistic stakeholder behavior
       const response = await generateStakeholderResponse(
         stakeholder,
-        `${messageContent}\n\nIMPORTANT: ${lengthInstructions[responseStyle]}${processGuidance}`,
+        `${messageContent}\n\nIMPORTANT: ${lengthInstructions[responseStyle]}${stakeholderBehavior}${processGuidance}`,
         intelligentContext,
         'direct_mention'
       );
