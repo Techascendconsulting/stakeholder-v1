@@ -273,17 +273,7 @@ const StakeholdersView: React.FC = () => {
           {stakeholders
             .filter(stakeholder => {
               // Show only relevant stakeholders for the selected project
-              console.log('🔍 FILTER DEBUG:', {
-                projectName: selectedProject?.name,
-                hasRelevantStakeholders: !!selectedProject?.relevantStakeholders,
-                relevantStakeholders: selectedProject?.relevantStakeholders,
-                stakeholderId: stakeholder.id,
-                stakeholderName: stakeholder.name,
-                isRelevant: selectedProject?.relevantStakeholders?.includes(stakeholder.id)
-              });
-              
               if (!selectedProject?.relevantStakeholders) {
-                console.log('⚠️ No relevantStakeholders found, showing all stakeholders');
                 return true; // If no relevantStakeholders defined, show all (backward compatibility)
               }
               return selectedProject.relevantStakeholders.includes(stakeholder.id);
