@@ -40,7 +40,8 @@ export class DeepgramStreaming {
   private silenceTimer: NodeJS.Timeout | null = null;
   private options: DeepgramStreamingOptions;
   private lastTranscriptTime = 0;
-  private silenceThreshold = 2000; // 2 seconds of silence
+  private silenceThreshold = 4000; // 4 seconds of silence (increased for better UX)
+  private hasReceivedTranscript = false; // Track if we've received any transcripts
 
   constructor(options: DeepgramStreamingOptions = {}) {
     this.options = options;
@@ -81,6 +82,8 @@ export class DeepgramStreaming {
       console.log('✅ DEEPGRAM: Audio recording started');
 
       this.isRecording = true;
+      this.hasReceivedTranscript = false; // Reset for new session
+      this.lastTranscriptTime = Date.now(); // Initialize timestamp
       this.options.onOpen?.();
       
     } catch (error) {
@@ -239,7 +242,9 @@ export class DeepgramStreaming {
           
           // Update last transcript time for silence detection
           this.lastTranscriptTime = Date.now();
+          this.hasReceivedTranscript = true; // Mark that we've received a transcript
           this.resetSilenceTimer();
+          this.startSilenceTimer(); // Start timer after receiving transcript
           
           // Notify callback
           this.options.onTranscript?.(transcript, isFinal);
@@ -251,7 +256,10 @@ export class DeepgramStreaming {
       // Handle voice activity detection
       if (message.type === 'SpeechStarted') {
         console.log('🎤 Speech detected');
-        this.resetSilenceTimer();
+        // Only reset timer if we haven't received transcripts yet
+        if (!this.hasReceivedTranscript) {
+          this.resetSilenceTimer();
+        }
       }
       
       if (message.type === 'UtteranceEnd') {
@@ -275,16 +283,22 @@ export class DeepgramStreaming {
   }
 
   /**
-   * Start silence detection timer
+   * Start silence detection timer - only after receiving transcripts
    */
   private startSilenceTimer(): void {
+    // Don't start timer if we haven't received any transcripts yet
+    if (!this.hasReceivedTranscript) {
+      return;
+    }
+    
     this.resetSilenceTimer();
     
     this.silenceTimer = setTimeout(() => {
       const timeSinceLastTranscript = Date.now() - this.lastTranscriptTime;
       
-      if (timeSinceLastTranscript >= this.silenceThreshold && this.isRecording) {
-        console.log('🔇 Silence detected, auto-stopping recording');
+      // Only trigger silence detection if we've received transcripts and enough time has passed
+      if (timeSinceLastTranscript >= this.silenceThreshold && this.isRecording && this.hasReceivedTranscript) {
+        console.log(`🔇 Silence detected after ${timeSinceLastTranscript}ms - auto-stopping recording`);
         this.options.onSilenceDetected?.();
       }
     }, this.silenceThreshold);

@@ -1883,7 +1883,7 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
           
           // Clear the starting feedback once we get transcripts
           if (dynamicFeedback?.includes('Starting voice input')) {
-            setDynamicFeedback('🎤 Listening... Speak now');
+            setDynamicFeedback('🎤 Listening... Keep speaking');
           }
           
           if (isFinal) {
@@ -1894,11 +1894,11 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
               return newFinal;
             });
             setLiveTranscript(''); // Clear interim
-            setDynamicFeedback('🎤 Processing... Click microphone to finish');
+            setDynamicFeedback('🎤 Got it! Continue speaking or click to finish');
           } else {
             // Show interim transcript
             setLiveTranscript(transcript);
-            setDynamicFeedback('🎤 Listening... Click microphone when done');
+            setDynamicFeedback('🎤 Listening... (auto-stops after 4 seconds of silence)');
           }
         },
         
