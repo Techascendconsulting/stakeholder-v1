@@ -1681,57 +1681,56 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // SIMPLE GREETING GENERATION: Minimal prompt for natural greetings
+  // SIMPLE GREETING GENERATION: Direct OpenAI call for natural greetings
   const generateSimpleGreeting = async (stakeholder: any, messageContent: string): Promise<string> => {
     console.log(`👋 SIMPLE: Generating basic greeting for ${stakeholder.name}`);
     
     try {
-      // Super simple context for greetings only
-      const greetingContext = {
-        conversationPhase: 'greeting' as const,
-        conversationHistory: [], // No history needed for greetings
-        projectContext: {
-          name: 'Meeting',
-          phase: 'greeting'
-        }
-      };
-      
-      // Minimal prompt - just respond to the greeting naturally
-      const simplePrompt = `Someone just said: "${messageContent}"
-      
-You're ${stakeholder.name.split(' ')[0]}. Just respond with a simple, natural greeting back. 
-Keep it to 1-2 words maximum like "Hi!" or "Hey there!" or "Hello!"
-DO NOT mention work, projects, meetings, or anything professional. Just a basic human greeting.`;
+      // Direct OpenAI call with minimal context - no project details!
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: `You are ${stakeholder.name.split(' ')[0]}, responding to a greeting. Reply with ONLY a simple greeting back. Maximum 3 words. Examples: "Hi!", "Hey there!", "Hello!", "Hi everyone!". DO NOT mention work, projects, meetings, or anything professional.`
+            },
+            {
+              role: 'user',
+              content: messageContent
+            }
+          ],
+          max_tokens: 10,
+          temperature: 0.3
+        })
+      });
 
-      const response = await generateStakeholderResponse(
-        stakeholder,
-        simplePrompt,
-        greetingContext,
-        'greeting'
-      );
-      
-      // Clean up response in case AI still adds extra stuff
-      let cleanGreeting = response.trim();
-      
-      // Remove common AI over-additions
-      cleanGreeting = cleanGreeting.replace(/looking forward to.*$/i, '').trim();
-      cleanGreeting = cleanGreeting.replace(/excited to.*$/i, '').trim();
-      cleanGreeting = cleanGreeting.replace(/glad to be here.*$/i, '').trim();
-      cleanGreeting = cleanGreeting.replace(/let's.*$/i, '').trim();
-      
-      // If it's still too long, just use the first sentence
-      if (cleanGreeting.length > 30) {
-        cleanGreeting = cleanGreeting.split('.')[0].trim();
-        if (!cleanGreeting.endsWith('!') && !cleanGreeting.endsWith('?')) {
-          cleanGreeting += '!';
-        }
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
       }
+
+      const data = await response.json();
+      let greeting = data.choices?.[0]?.message?.content?.trim() || "Hi!";
       
-      return cleanGreeting || "Hi!";
+      // Extra safety: ensure it's truly simple
+      greeting = greeting.replace(/[.!?]+$/, ''); // Remove ending punctuation
+      greeting = greeting.split(' ').slice(0, 3).join(' '); // Max 3 words
+      if (!greeting.endsWith('!')) greeting += '!'; // Add friendly exclamation
+      
+      console.log(`✅ SIMPLE: Generated "${greeting}" for ${stakeholder.name}`);
+      return greeting;
       
     } catch (error) {
-      console.error('❌ SIMPLE GREETING: Generation failed, using basic fallback');
-      return "Hi!";
+      console.error('❌ SIMPLE GREETING: Generation failed, using basic fallback', error);
+      // Rotate through simple fallbacks to avoid repetition
+      const simpleFallbacks = ["Hi!", "Hey!", "Hello!", "Hi there!"];
+      const fallbackIndex = Math.floor(Math.random() * simpleFallbacks.length);
+      return simpleFallbacks[fallbackIndex];
     }
   };
 
