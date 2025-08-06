@@ -1495,30 +1495,134 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
       prompt += `YOUR BACKGROUND: ${stakeholder.bio}\n`
     }
     
+    // Add project-specific and role-specific guidance
+    const projectName = context.project.name.toLowerCase();
+    
+    // Project-specific context for all stakeholders
+    if (projectName.includes('expense') || projectName.includes('financial')) {
+      prompt += `\nPROJECT CONTEXT: This is a financial system project involving expense management, compliance, and financial data processing.`
+    } else if (projectName.includes('inventory') || projectName.includes('supply')) {
+      prompt += `\nPROJECT CONTEXT: This is an inventory/supply chain project involving warehouse operations, demand forecasting, and procurement processes.`
+    } else if (projectName.includes('onboarding') || projectName.includes('customer')) {
+      prompt += `\nPROJECT CONTEXT: This is a customer experience project involving onboarding processes, customer satisfaction, and cross-departmental coordination.`
+    } else if (projectName.includes('support') || projectName.includes('ticket')) {
+      prompt += `\nPROJECT CONTEXT: This is a customer support project involving help desk operations, ticket management, and service delivery.`
+    } else if (projectName.includes('performance') || projectName.includes('hr')) {
+      prompt += `\nPROJECT CONTEXT: This is an HR/performance management project involving employee development, talent management, and organizational processes.`
+    }
+
     // Add role-specific guidance for awareness questions
     if (userMessage.toLowerCase().includes('aware') || userMessage.toLowerCase().includes('should we know') || userMessage.toLowerCase().includes('concerns')) {
       if (stakeholder.role.toLowerCase().includes('it') || stakeholder.role.toLowerCase().includes('systems')) {
-        prompt += `\nSPECIAL CONTEXT: You're being asked about IT/technical awareness. Focus on:
+        let itFocus = `\nSPECIAL CONTEXT: You're being asked about IT/technical awareness. Focus on:
 - Security implications (data protection, access controls, compliance)
 - System integration challenges with existing systems
 - Technical feasibility and infrastructure requirements
 - Implementation risks and mitigation strategies
-- Performance and scalability considerations
-Draw from your IT systems expertise to highlight technical concerns specific to this project.`
+- Performance and scalability considerations`
+        
+        // Add project-specific IT concerns
+        if (projectName.includes('expense') || projectName.includes('financial')) {
+          itFocus += `\n- Financial data security and PCI compliance
+- Integration with existing ERP/accounting systems
+- Audit trail and data integrity requirements
+- Mobile access security for expense submissions`
+        } else if (projectName.includes('inventory')) {
+          itFocus += `\n- Real-time data synchronization across 15+ locations
+- Integration with existing warehouse management systems
+- Scalability for handling high transaction volumes
+- Data accuracy and inventory tracking systems`
+        } else if (projectName.includes('support') || projectName.includes('ticket')) {
+          itFocus += `\n- Integration with existing CRM and support tools
+- Knowledge base system architecture
+- SLA monitoring and reporting capabilities
+- Customer data privacy and access controls`
+        }
+        
+        prompt += itFocus + `\nDraw from your IT systems expertise to highlight technical concerns specific to this project.`
+        
       } else if (stakeholder.role.toLowerCase().includes('finance')) {
-        prompt += `\nSPECIAL CONTEXT: You're being asked about financial awareness. Focus on:
+        let financeFocus = `\nSPECIAL CONTEXT: You're being asked about financial awareness. Focus on:
 - Budget implications and cost considerations
 - ROI analysis and financial benefits
 - Compliance with financial regulations
 - Impact on financial processes and reporting
 - Resource allocation and cost optimization opportunities`
+        
+        // Add project-specific financial concerns
+        if (projectName.includes('expense')) {
+          financeFocus += `\n- Policy compliance and expense controls
+- Audit trail requirements for SOX compliance
+- Cost savings from automation vs implementation costs
+- Impact on financial reporting and month-end close processes`
+        } else if (projectName.includes('inventory')) {
+          financeFocus += `\n- Inventory carrying cost optimization
+- Working capital impact and cash flow improvements
+- Cost of stockouts vs excess inventory
+- ROI from reduced manual processing costs`
+        }
+        
+        prompt += financeFocus
+        
       } else if (stakeholder.role.toLowerCase().includes('compliance') || stakeholder.role.toLowerCase().includes('risk')) {
-        prompt += `\nSPECIAL CONTEXT: You're being asked about compliance/risk awareness. Focus on:
+        let complianceFocus = `\nSPECIAL CONTEXT: You're being asked about compliance/risk awareness. Focus on:
 - Regulatory compliance requirements
 - Risk assessment and mitigation strategies
 - Policy adherence and governance
 - Audit trail and documentation needs
 - Legal and regulatory implications`
+        
+        // Add project-specific compliance concerns
+        if (projectName.includes('expense') || projectName.includes('financial')) {
+          complianceFocus += `\n- SOX compliance for financial controls
+- Expense policy enforcement and violations
+- Audit trail requirements for financial transactions
+- Data retention and regulatory reporting needs`
+        }
+        
+        prompt += complianceFocus
+        
+      } else if (stakeholder.role.toLowerCase().includes('operations')) {
+        prompt += `\nSPECIAL CONTEXT: You're being asked about operational awareness. Focus on:
+- Process efficiency and workflow optimization
+- Resource allocation and capacity planning
+- Cross-departmental coordination challenges
+- Implementation timeline and change management
+- Operational risk and business continuity considerations`
+        
+      } else if (stakeholder.role.toLowerCase().includes('customer service')) {
+        let customerFocus = `\nSPECIAL CONTEXT: You're being asked about customer service awareness. Focus on:
+- Customer experience and satisfaction impact
+- Service delivery and support process changes
+- Customer communication and training needs
+- Service level agreements and performance metrics`
+        
+        if (projectName.includes('onboarding')) {
+          customerFocus += `\n- Customer journey mapping and touchpoints
+- Onboarding experience and first impressions
+- Customer feedback and satisfaction tracking`
+        } else if (projectName.includes('support') || projectName.includes('ticket')) {
+          customerFocus += `\n- Ticket resolution times and SLA management
+- First-contact resolution improvements
+- Customer self-service capabilities`
+        }
+        
+        prompt += customerFocus
+        
+      } else if (stakeholder.role.toLowerCase().includes('hr')) {
+        let hrFocus = `\nSPECIAL CONTEXT: You're being asked about HR/people awareness. Focus on:
+- Change management and employee adoption
+- Training and skill development needs
+- Employee experience and satisfaction
+- Organizational impact and workforce planning`
+        
+        if (projectName.includes('performance')) {
+          hrFocus += `\n- Performance evaluation fairness and consistency
+- Manager training on new performance processes
+- Employee development and career planning integration`
+        }
+        
+        prompt += hrFocus
       }
     }
     

@@ -270,5 +270,31 @@ export const mockStakeholders: Stakeholder[] = [
     expertise: ['Financial analysis', 'Budget management', 'Cost-benefit analysis', 'Financial reporting', 'ROI assessment', 'Financial planning'],
     voice: 'en-US-maverick',
     agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
+  },
+  {
+    id: 'stake-7',
+    name: 'Lisa Rodriguez',
+    role: 'Supply Chain Manager',
+    department: 'Supply Chain',
+    bio: 'Lisa oversees supply chain operations and procurement with 14 years of experience in inventory management, vendor relations, and demand planning. She specializes in supply chain optimization, procurement strategies, and warehouse operations.',
+    photo: 'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=400',
+    personality: 'Detail-oriented, strategic, efficiency-focused',
+    priorities: ['Supply chain efficiency', 'Inventory optimization', 'Vendor management'],
+    expertise: ['Inventory management', 'Demand forecasting', 'Procurement strategies', 'Warehouse operations', 'Supply chain optimization', 'Vendor relations'],
+    voice: 'en-UK-hazel',
+    agentId: 'agent_3601k16fe93ject9vy38wev45tym' // ElevenLabs agent ID
+  },
+  {
+    id: 'stake-8',
+    name: 'Robert Kim',
+    role: 'Customer Experience Manager',
+    department: 'Customer Experience',
+    bio: 'Robert leads customer experience initiatives with 11 years of experience in customer journey optimization, support operations, and service delivery. He specializes in customer satisfaction improvement, support process design, and customer success metrics.',
+    photo: 'https://images.pexels.com/photos/2566581/pexels-photo-2566581.jpeg?auto=compress&cs=tinysrgb&w=400',
+    personality: 'Customer-centric, empathetic, results-driven',
+    priorities: ['Customer satisfaction', 'Service excellence', 'Customer journey optimization'],
+    expertise: ['Customer experience design', 'Support operations', 'Customer journey optimization', 'Service delivery', 'Customer satisfaction metrics', 'Support process improvement'],
+    voice: 'en-AU-leyton',
+    agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
   }
 ]
