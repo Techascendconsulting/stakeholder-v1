@@ -1898,7 +1898,7 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
           } else {
             // Show interim transcript
             setLiveTranscript(transcript);
-            setDynamicFeedback('🎤 Listening... (auto-stops after 4 seconds of silence)');
+            setDynamicFeedback('🎤 Listening... (auto-stops after 2.5 seconds of silence)');
           }
         },
         

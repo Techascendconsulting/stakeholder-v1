@@ -40,7 +40,7 @@ export class DeepgramStreaming {
   private silenceTimer: NodeJS.Timeout | null = null;
   private options: DeepgramStreamingOptions;
   private lastTranscriptTime = 0;
-  private silenceThreshold = 4000; // 4 seconds of silence (increased for better UX)
+  private silenceThreshold = 2500; // 2.5 seconds of silence (balanced speed vs reliability)
   private hasReceivedTranscript = false; // Track if we've received any transcripts
 
   constructor(options: DeepgramStreamingOptions = {}) {
