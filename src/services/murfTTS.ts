@@ -88,9 +88,10 @@ export class MurfTTSService {
           pitch: voiceConfig.pitch || 0,
           rate: voiceConfig.rate || 0,
           format: 'MP3',
-          sampleRate: 24000,
-          modelVersion: 'GEN2'
-        })
+          sampleRate: 16000, // Reduced from 24000 for faster processing
+          modelVersion: 'GEN1' // Faster model for speed over quality
+        }),
+        signal: AbortSignal.timeout(10000) // 10 second timeout for faster failure detection
       });
 
       if (!response.ok) {
@@ -105,8 +106,10 @@ export class MurfTTSService {
         return null;
       }
 
-      // Download the audio file
-      const audioResponse = await fetch(data.audioFile);
+      // Download the audio file with timeout
+      const audioResponse = await fetch(data.audioFile, {
+        signal: AbortSignal.timeout(8000) // 8 second timeout for audio download
+      });
       if (!audioResponse.ok) {
         console.error(`❌ MURF: Failed to download audio file: ${audioResponse.status}`);
         return null;
@@ -126,6 +129,32 @@ export class MurfTTSService {
       console.error('❌ MURF TTS Error:', error);
       return null;
     }
+  }
+
+  // Pre-generate common responses for faster interactions
+  async preGenerateCommonResponses(): Promise<void> {
+    console.log('🚀 MURF: Pre-generating common responses...');
+    
+    const commonPhrases = [
+      "Hi!", "Hello!", "Hey there!", "Good morning!",
+      "Let me think about that.", "That's a great question.",
+      "From my perspective,", "In my experience,",
+      "I understand your concern.", "Let me explain."
+    ];
+    
+    const stakeholders = ['aisha', 'david', 'james', 'michael'];
+    
+    // Pre-generate in parallel for speed
+    const preGenPromises = stakeholders.flatMap(stakeholder =>
+      commonPhrases.map(phrase =>
+        this.synthesizeSpeech(phrase, stakeholder, true).catch(error => {
+          console.warn(`⚠️ MURF: Failed to pre-generate "${phrase}" for ${stakeholder}:`, error);
+        })
+      )
+    );
+    
+    await Promise.all(preGenPromises);
+    console.log(`✅ MURF: Pre-generated ${commonPhrases.length * stakeholders.length} common responses`);
   }
 
   // Get voice configuration for stakeholder
@@ -268,3 +297,8 @@ export const murfTTS = MurfTTSService.getInstance();
 
 // Clear cache on startup to ensure fresh voice configurations
 murfTTS.clearCache();
+
+// Pre-generate common responses for faster interactions (background)
+murfTTS.preGenerateCommonResponses().catch(error => {
+  console.warn('⚠️ MURF: Failed to pre-generate common responses:', error);
+});
