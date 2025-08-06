@@ -257,5 +257,18 @@ export const mockStakeholders: Stakeholder[] = [
     expertise: ['Regulatory compliance', 'Risk assessment', 'Policy development', 'Compliance management', 'Risk mitigation strategies'],
     voice: 'en-UK-hazel',
     agentId: 'agent_5601k16eqj3sfznbe2eqnmf21nry' // ElevenLabs agent ID
+  },
+  {
+    id: 'stake-6',
+    name: 'Michael Chen',
+    role: 'Finance Manager',
+    department: 'Finance',
+    bio: 'Michael manages financial operations and analysis with 13 years of experience in corporate finance, budgeting, and financial reporting. He specializes in cost analysis, financial planning, and ROI assessment for business initiatives.',
+    photo: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400',
+    personality: 'Analytical, cost-conscious, data-driven',
+    priorities: ['Cost optimization', 'Financial accuracy', 'ROI analysis'],
+    expertise: ['Financial analysis', 'Budget management', 'Cost-benefit analysis', 'Financial reporting', 'ROI assessment', 'Financial planning'],
+    voice: 'en-US-maverick',
+    agentId: 'agent_9601k1768hj9ehraajtbxg0h32sj' // ElevenLabs agent ID
   }
 ]
