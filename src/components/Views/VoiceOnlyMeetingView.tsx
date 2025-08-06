@@ -1165,8 +1165,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       const lastSpeaker = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1].stakeholderName : null;
       const conversationContext = currentMessages.slice(-3).map(m => `${m.stakeholderName || 'User'}: ${m.content.substring(0, 50)}`).join(' | ');
       
-      // CHECK FOR GENERAL GREETINGS FIRST: "hey guys", "hi everyone", etc.
-      const isGeneralGreeting = /^(hi|hey|hello)\s+(guys|everyone|team|all)$/i.test(messageContent.trim());
+      // CHECK FOR GENERAL GREETINGS FIRST: "hey guys", "hi everyone", "hey people", etc.
+      const isGeneralGreeting = /^(hi|hey|hello)\s+(guys|everyone|team|all|people|folks)$/i.test(messageContent.trim());
       
       if (isGeneralGreeting) {
         console.log(`👋 GENERAL GREETING: "${messageContent}" detected - all stakeholders respond with simple greetings`);
@@ -3269,17 +3269,17 @@ Please review the raw transcript for detailed conversation content.`;
     return null;
   };
 
-  // Adaptive greeting system - EXACT copy from transcript meeting
+  // Adaptive greeting system - updated patterns
   const isSimpleGreeting = (message: string): boolean => {
     const greetingPatterns = [
-      /^(hi|hello|hey|good morning|good afternoon|good evening)(\s+(all|everyone|team))?$/i,
-      /^(hi|hello|hey)\s+(there|folks)$/i
+      /^(hi|hello|hey|good morning|good afternoon|good evening)(\s+(all|everyone|team|people|folks))?$/i,
+      /^(hi|hello|hey)\s+(there|folks|people)$/i
     ];
     return greetingPatterns.some(pattern => pattern.test(message.trim()));
   };
 
   const isGroupMessage = (message: string): boolean => {
-    const groupIndicators = ['all', 'everyone', 'team', 'group', 'folks', 'colleagues'];
+    const groupIndicators = ['all', 'everyone', 'team', 'group', 'folks', 'colleagues', 'people'];
     return groupIndicators.some(indicator => message.toLowerCase().includes(indicator));
   };
 
