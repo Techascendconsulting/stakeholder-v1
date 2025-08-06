@@ -1495,6 +1495,33 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
       prompt += `YOUR BACKGROUND: ${stakeholder.bio}\n`
     }
     
+    // Add role-specific guidance for awareness questions
+    if (userMessage.toLowerCase().includes('aware') || userMessage.toLowerCase().includes('should we know') || userMessage.toLowerCase().includes('concerns')) {
+      if (stakeholder.role.toLowerCase().includes('it') || stakeholder.role.toLowerCase().includes('systems')) {
+        prompt += `\nSPECIAL CONTEXT: You're being asked about IT/technical awareness. Focus on:
+- Security implications (data protection, access controls, compliance)
+- System integration challenges with existing systems
+- Technical feasibility and infrastructure requirements
+- Implementation risks and mitigation strategies
+- Performance and scalability considerations
+Draw from your IT systems expertise to highlight technical concerns specific to this project.`
+      } else if (stakeholder.role.toLowerCase().includes('finance')) {
+        prompt += `\nSPECIAL CONTEXT: You're being asked about financial awareness. Focus on:
+- Budget implications and cost considerations
+- ROI analysis and financial benefits
+- Compliance with financial regulations
+- Impact on financial processes and reporting
+- Resource allocation and cost optimization opportunities`
+      } else if (stakeholder.role.toLowerCase().includes('compliance') || stakeholder.role.toLowerCase().includes('risk')) {
+        prompt += `\nSPECIAL CONTEXT: You're being asked about compliance/risk awareness. Focus on:
+- Regulatory compliance requirements
+- Risk assessment and mitigation strategies
+- Policy adherence and governance
+- Audit trail and documentation needs
+- Legal and regulatory implications`
+      }
+    }
+    
     prompt += `\nRespond naturally as a ${stakeholder.role} would in a meeting. Give a helpful but detailed answer about actual business processes and current state. Use your specific expertise and knowledge of the current challenges.`
     
     return prompt
