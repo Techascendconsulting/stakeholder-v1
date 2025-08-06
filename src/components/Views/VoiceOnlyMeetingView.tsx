@@ -1171,8 +1171,21 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       if (isGeneralGreeting) {
         console.log(`👋 GENERAL GREETING: "${messageContent}" detected - all stakeholders respond with simple greetings`);
         
-        // All stakeholders respond with simple greetings
-        for (const stakeholder of availableStakeholders) {
+        // Show upcoming speakers in queue first
+        const upcomingQueue = availableStakeholders.map(s => ({ name: s.name, id: s.id }));
+        setResponseQueue(prev => ({ ...prev, upcoming: upcomingQueue }));
+        console.log(`📋 QUEUE: Set upcoming speakers: ${upcomingQueue.map(s => s.name).join(', ')}`);
+        
+        // All stakeholders respond with simple greetings (sequentially to avoid talking over each other)
+        for (let i = 0; i < availableStakeholders.length; i++) {
+          const stakeholder = availableStakeholders[i];
+          
+          // Update queue to show who's speaking next
+          const remainingQueue = availableStakeholders.slice(i + 1).map(s => ({ name: s.name, id: s.id }));
+          setResponseQueue(prev => ({ ...prev, upcoming: remainingQueue }));
+          
+          console.log(`🎭 VISUAL: ${stakeholder.name} is preparing to speak (${remainingQueue.length} more after)`);
+          
           const simpleGreeting = await generateSimpleGreeting(stakeholder, messageContent);
           
           // Show response immediately
@@ -1181,15 +1194,27 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           addToBackgroundTranscript(responseMessage);
           currentMessages = [...currentMessages, responseMessage];
           
-          // Generate and play audio
+          // Generate and play audio with visual feedback
           if (globalAudioEnabled) {
+            // Set current speaker for visual indicator
+            setCurrentSpeaker(stakeholder);
+            console.log(`🎭 VISUAL: ${stakeholder.name} is now speaking`);
+            
             const audioBlob = await murfTTS.synthesizeSpeech(simpleGreeting, stakeholder.name);
             if (audioBlob) {
               await murfTTS.playAudio(audioBlob);
               console.log(`✅ GENERAL GREETING: ${stakeholder.name} finished speaking`);
             }
+            
+            // Clear current speaker when done
+            setCurrentSpeaker(null);
+            console.log(`🎭 VISUAL: ${stakeholder.name} finished speaking`);
           }
         }
+        
+        // Clear the queue when all done
+        setResponseQueue(prev => ({ ...prev, upcoming: [] }));
+        console.log(`📋 QUEUE: All greetings completed, queue cleared`);
         
         setIsGeneratingResponse(false);
         return;
