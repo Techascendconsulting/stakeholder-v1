@@ -15,16 +15,16 @@ export class MurfTTSService {
   private readonly API_KEY = import.meta.env.VITE_MURF_API_KEY;
   private audioCache: Map<string, Blob> = new Map();
 
-  // Voice mapping as specified
+  // Voice mapping with faster speech rates for all stakeholders
   private readonly voiceMap: Record<string, VoiceConfig> = {
-    aisha: { voice_id: "en-UK-hazel", style: "Conversational" },
-    david: { voice_id: "en-AU-leyton", style: "Conversational", pitch: 3, rate: 7 },
-    james: { voice_id: "en-US-maverick", style: "Narration" },
-    sarah: { voice_id: "en-UK-hazel", style: "Conversational" },
-    emily: { voice_id: "en-UK-hazel", style: "Conversational" },
-    michael: { voice_id: "en-US-maverick", style: "Professional" }, // Finance Manager
-    lisa: { voice_id: "en-UK-hazel", style: "Professional" }, // Supply Chain Manager
-    robert: { voice_id: "en-AU-leyton", style: "Conversational" } // Customer Experience Manager
+    aisha: { voice_id: "en-UK-hazel", style: "Conversational", rate: 8 }, // Faster speech
+    david: { voice_id: "en-AU-leyton", style: "Conversational", pitch: 3, rate: 8 }, // Increased from 7 to 8
+    james: { voice_id: "en-US-maverick", style: "Narration", rate: 8 }, // Faster speech
+    sarah: { voice_id: "en-UK-hazel", style: "Conversational", rate: 8 }, // Faster speech
+    emily: { voice_id: "en-UK-hazel", style: "Conversational", rate: 8 }, // Faster speech
+    michael: { voice_id: "en-US-maverick", style: "Professional", rate: 8 }, // Faster speech
+    lisa: { voice_id: "en-UK-hazel", style: "Professional", rate: 8 }, // Faster speech
+    robert: { voice_id: "en-AU-leyton", style: "Conversational", rate: 8 } // Faster speech
   };
 
   static getInstance(): MurfTTSService {
