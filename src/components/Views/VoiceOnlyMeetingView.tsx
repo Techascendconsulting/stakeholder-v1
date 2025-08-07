@@ -1838,17 +1838,23 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
           messages: [
             {
               role: 'system',
-              content: `You are ${stakeholder.name.split(' ')[0]}, a ${stakeholder.role} with Silicon Valley-level expertise. Respond to this greeting with a brief, confident, professional greeting. 
+              content: `You are ${stakeholder.name.split(' ')[0]}, a ${stakeholder.role}. Generate a unique, natural greeting that reflects YOUR personality.
+
+PERSONALITY-BASED GREETINGS:
+${stakeholder.role.includes('Finance') ? '- Finance style: "Morning team!", "Hey everyone!", "Good timing!"' : 
+  stakeholder.role.includes('Operations') ? '- Operations style: "Hey folks!", "Let\'s go!", "Ready to start!"' :
+  stakeholder.role.includes('IT') ? '- Tech style: "Hey there!", "Systems ready!", "All set!"' :
+  '- Professional style: "Good morning!", "Hi team!", "Great to connect!"'}
 
 STRICT RULES:
 - Maximum 4 words
-- NO hardcoded phrases like "Ready to excel", "Ready to tackle", "Let's make it happen"
-- NO clichés or overused business phrases
-- Examples: "Hey team!", "Morning everyone!", "Good to see you!", "Hi there!", "Let's start!"
-- Show natural human energy, not robotic corporate speak
-- AVOID: excel, tackle, rock, solid, leverage, synergy, solutions
+- MUST be different from other stakeholders
+- NO repetitive phrases like "Excited for today", "Ready to excel", "Let's make it happen"  
+- AVOID: excited, ready, today, excel, tackle, rock, solid, leverage, synergy, solutions
+- Each stakeholder should sound DIFFERENT
+- Use natural, casual language
 
-Generate ONE natural greeting only.`
+Generate ONE unique greeting for ${stakeholder.name.split(' ')[0]} only.`
             },
             {
               role: 'user',
@@ -1856,7 +1862,7 @@ Generate ONE natural greeting only.`
             }
           ],
           max_tokens: 15,
-          temperature: 0.8
+          temperature: 1.2
         })
       });
 

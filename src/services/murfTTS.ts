@@ -297,6 +297,8 @@ export class MurfTTSService {
       key.includes('good') ||
       key.includes('ready') ||
       key.includes('excel') ||
+      key.includes('excited') ||
+      key.includes('today') ||
       key.includes('team') ||
       key.includes('everyone')
     );
@@ -321,6 +323,10 @@ export const murfTTS = MurfTTSService.getInstance();
 // Clear cache on startup to ensure fresh voice configurations
 murfTTS.clearCache();
 murfTTS.clearGreetingCache(); // Clear greeting cache on startup
+
+// FORCE: Clear ALL cache to remove "Excited for today" responses
+console.log('🧹 FORCE CLEAR: Removing all cached responses to fix hardcoded greetings');
+murfTTS.clearCache(); // Clear everything again
 
 // Note: Pre-generation disabled to avoid API costs
 // To enable: murfTTS.preGenerateCommonResponses();
