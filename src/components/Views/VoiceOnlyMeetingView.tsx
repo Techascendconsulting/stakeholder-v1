@@ -1242,13 +1242,23 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`👥 EXPLICIT EVERYONE: User requested all stakeholders respond`);
         // Proceed to normal AI detection for multiple responses
       } else {
+        // DIRECT NAME MENTION: route to the explicitly named stakeholder if present
+        const lowerMsg = messageContent.toLowerCase();
+        const directStakeholder = availableStakeholders.find((s: any) => {
+          const full = (s.name || '').toLowerCase();
+          const first = full.split(' ')[0];
+          return (first && new RegExp(`\\b${first}\\b`, 'i').test(lowerMsg)) ||
+                 (full && new RegExp(`\\b${full}\\b`, 'i').test(lowerMsg));
+        });
+        if (directStakeholder) {
+          console.log(`🎯 DIRECT MENTION: ${directStakeholder.name} explicitly addressed`);
+          await handleFastMentionResponse([directStakeholder], messageContent, currentMessages);
+          return;
+        }
         // SMART SINGLE-STAKEHOLDER ROUTING: General questions get ONE relevant response
         const singleStakeholderResponse = await routeToSingleStakeholder(messageContent, availableStakeholders);
-        
         if (singleStakeholderResponse) {
           console.log(`🎯 SMART ROUTING: ${singleStakeholderResponse.name} selected for general question`);
-          
-          // Single stakeholder responds to general question
           await handleFastMentionResponse([singleStakeholderResponse], messageContent, currentMessages);
           return;
         }
