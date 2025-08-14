@@ -5,7 +5,7 @@ import { useVoice } from '../../contexts/VoiceContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
-import { murfTTS } from '../../services/murfTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS'
 import VoiceInputModal from '../VoiceInputModal'
 
@@ -1046,13 +1046,13 @@ These notes were generated using a fallback system due to extended AI processing
 
         const voiceName = stakeholder.voice
         console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
-        console.log('🔧 ElevenLabs TTS Available:', murfTTS.isConfigured())
+        console.log('🔧 ElevenLabs TTS Available:', elevenConfigured())
         
-        if (murfTTS.isConfigured()) {
-          console.log('✅ Using ElevenLabs TTS for audio synthesis')
-          const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholder.name)
-          
-          if (audioBlob) {
+        if (elevenConfigured()) {
+            console.log('✅ Using ElevenLabs TTS for audio synthesis')
+            const audioBlob = await synthesizeToBlob(text)
+            
+            if (audioBlob) {
             const audioUrl = URL.createObjectURL(audioBlob)
             const audio = new Audio(audioUrl)
           
@@ -1107,7 +1107,7 @@ These notes were generated using a fallback system due to extended AI processing
             })
           })
           } else {
-            console.warn('❌ ElevenLabs TTS returned null, falling back to browser TTS');
+            console.warn('❌ ElevenLabs TTS returned null');
             setPlayingMessageId(messageId)
             setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
             

@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
-import { murfTTS } from '../../services/murfTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
@@ -598,7 +598,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         const voiceName = stakeholder.voice;
         if (murfTTS.isConfigured()) {
           console.log(`🎵 FAST: Generating voice for ${stakeholder.name} with ElevenLabs TTS`);
-          const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+          const audioBlob = await synthesizeToBlob(response);
           
           if (audioBlob) {
             setCurrentSpeaker(stakeholder);
@@ -710,14 +710,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setPlayingMessageId(responseMessage.id);
           setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
           
-          // Generate audio with Murf TTS
-          const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+          // Generate audio with ElevenLabs
+          const audioBlob = await synthesizeToBlob(response);
           
           if (audioBlob) {
             console.log(`🎵 ElevenLabs: Playing audio for ${stakeholder.name}`);
             
             // Play the audio
-            await murfTTS.playAudio(audioBlob);
+            await playBlob(audioBlob);
             
             console.log(`✅ ElevenLabs: ${stakeholder.name} finished speaking`);
           } else {
@@ -737,10 +737,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       else if (globalAudioEnabled && response) {
         try {
           const voiceName = stakeholder.voice;
-          if (murfTTS.isConfigured()) {
+          if (elevenConfigured()) {
             console.log(`🎤 Using ElevenLabs TTS for ${stakeholder.name}`);
             
-            const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+            const audioBlob = await synthesizeToBlob(response);
             if (audioBlob) {
               const audioUrl = URL.createObjectURL(audioBlob);
               const audio = new Audio(audioUrl);
@@ -1198,7 +1198,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           // Generate audio in background
           const audioPromise = globalAudioEnabled 
-            ? murfTTS.synthesizeSpeech(simpleGreeting, stakeholder.name)
+            ? synthesizeToBlob(simpleGreeting)
             : Promise.resolve(null);
           
           const totalTime = performance.now() - startTime;
@@ -1221,7 +1221,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           if (audioBlob) {
             console.log(`🎵 GREETING: Playing audio for ${result.stakeholder.name}`);
             setCurrentSpeaker(result.stakeholder);
-            await murfTTS.playAudio(audioBlob);
+            await playBlob(audioBlob);
             setCurrentSpeaker(null);
             console.log(`✅ GREETING: ${result.stakeholder.name} finished speaking`);
           }
@@ -1236,7 +1236,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       }
 
       // CHECK FOR EXPLICIT "EVERYONE" REQUESTS
-      const explicitEveryoneRequest = await detectExplicitEveryoneRequest(messageContent);
+      const explicitEveryoneRequest = /\b(everyone|team|all|folks|guys)\b/i.test(messageContent);
       
       if (explicitEveryoneRequest) {
         console.log(`👥 EXPLICIT EVERYONE: User requested all stakeholders respond`);
@@ -1340,7 +1340,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           console.log(`🎵 FASTEST: ${next.stakeholder.name} starting to speak`);
           if (next.audioBlob) {
-            await murfTTS.playAudio(next.audioBlob);
+            await playBlob(next.audioBlob);
           }
           console.log(`✅ FASTEST: ${next.stakeholder.name} finished speaking`);
           
@@ -1382,7 +1382,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           // Generate audio in background while user sees text
           const audioPromise = globalAudioEnabled && response 
-            ? murfTTS.synthesizeSpeech(response, stakeholder.name)
+            ? synthesizeToBlob(response)
             : Promise.resolve(null);
           
           const totalTime = performance.now() - startTime;
@@ -1408,7 +1408,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           if (audioBlob) {
             console.log(`🎵 ULTRA-FAST: Playing audio for ${result.stakeholder.name}`);
             setCurrentSpeaker(result.stakeholder);
-            await murfTTS.playAudio(audioBlob);
+            await playBlob(audioBlob);
             setCurrentSpeaker(null);
             console.log(`✅ ULTRA-FAST: ${result.stakeholder.name} finished speaking`);
           }
@@ -1595,7 +1595,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`🎵 CACHE: Generating audio for ${stakeholder.name} (background)`);
         const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
         if (audioBlob) {
-          await murfTTS.playAudio(audioBlob);
+          await playBlob(audioBlob);
           console.log(`✅ CACHE: ${stakeholder.name} finished speaking`);
         }
       }
@@ -1635,7 +1635,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`🎵 FAST: Generating and playing audio for ${stakeholder.name}`);
         const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
         if (audioBlob) {
-          await murfTTS.playAudio(audioBlob);
+          await playBlob(audioBlob);
           console.log(`✅ FAST: ${stakeholder.name} finished speaking`);
         } else {
           console.warn('⚠️ FAST: Audio generation failed, response added to transcript only');
@@ -1671,7 +1671,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         if (globalAudioEnabled) {
           const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
           if (audioBlob) {
-            await murfTTS.playAudio(audioBlob);
+            await playBlob(audioBlob);
             console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking (cached)`);
           }
         }
@@ -1693,7 +1693,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         if (globalAudioEnabled) {
           const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
           if (audioBlob) {
-            await murfTTS.playAudio(audioBlob);
+            await playBlob(audioBlob);
             console.log(`✅ SIMPLE GREETING: ${stakeholder.name} finished speaking`);
           }
         }
@@ -1729,7 +1729,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           if (globalAudioEnabled) {
             const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
             if (audioBlob) {
-              await murfTTS.playAudio(audioBlob);
+              await playBlob(audioBlob);
               console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
             }
           }
@@ -3110,7 +3110,7 @@ Please review the raw transcript for detailed conversation content.`;
     const voiceId = stakeholder?.voice || null;
     
     console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${message.speaker}`);
-    console.log(`🔧 ElevenLabs TTS Available: ${murfTTS.isConfigured()}`);
+    console.log(`🔧 ElevenLabs TTS Available: ${elevenConfigured()}`);
     
     try {
       setCurrentSpeaker(stakeholder || { name: message.speaker });
@@ -3510,7 +3510,7 @@ Respond with only "YES" or "NO".`
         const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
         if (audioBlob) {
           setCurrentSpeaker(stakeholder);
-          await murfTTS.playAudio(audioBlob);
+          await playBlob(audioBlob);
           setCurrentSpeaker(null);
           console.log(`✅ SINGLE: ${stakeholder.name} finished speaking`);
         }

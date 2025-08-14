@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, PhoneOff, FileText, Square, Mic, Send, Volume2, MicOff, Play, GripVertical, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
-import { murfTTS } from '../../services/murfTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import AIService from '../../services/aiService';
 
@@ -405,10 +405,10 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
         return;
       }
 
-      if (murfTTS.isConfigured()) {
+      if (elevenConfigured()) {
         try {
           console.log(`🎵 Playing audio for ${speaker.name}: "${text.substring(0, 50)}..."`);
-          const audioBlob = await murfTTS.synthesizeSpeech(text, speaker.name);
+          const audioBlob = await synthesizeToBlob(text);
           
           if (audioBlob) {
             const audioUrl = URL.createObjectURL(audioBlob);

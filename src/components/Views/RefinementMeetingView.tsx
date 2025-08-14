@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
-import { murfTTS } from '../../services/murfTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
@@ -230,13 +230,13 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
       const voiceName = teamMember.voiceId;
       console.log('🎵 Using voice:', voiceName, 'for team member:', teamMember.name);
-      console.log('🔧 ElevenLabs TTS Available:', murfTTS.isConfigured());
+      console.log('🔧 ElevenLabs TTS Available:', elevenConfigured());
       
-      if (murfTTS.isConfigured()) {
-        console.log('✅ Using ElevenLabs TTS for audio synthesis');
-        const audioBlob = await murfTTS.synthesizeSpeech(text, teamMember.name);
-        
-        if (audioBlob) {
+      if (elevenConfigured()) {
+          console.log('✅ Using ElevenLabs TTS for audio synthesis');
+          const audioBlob = await synthesizeToBlob(text);
+          
+          if (audioBlob) {
           const audioUrl = URL.createObjectURL(audioBlob);
           const audio = new Audio(audioUrl);
         

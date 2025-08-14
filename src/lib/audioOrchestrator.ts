@@ -1,6 +1,6 @@
 // AudioOrchestrator.ts - Manages ElevenLabs TTS integration and audio playback
 import { Stakeholder } from '../../types'
-import { murfTTS } from '../services/murfTTS'
+import { synthesizeToBlob, playBlob } from '../services/elevenLabsTTS'
 
 export interface AudioMessage {
   id: string
@@ -89,13 +89,10 @@ class AudioOrchestrator {
       throw new Error('ElevenLabs TTS configuration missing')
     }
 
-    // Use wrapper (murfTTS now delegates to ElevenLabs) to generate audio
-    const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholderName)
-    
+    const audioBlob = await synthesizeToBlob(text)
     if (!audioBlob) {
       throw new Error('TTS request failed')
     }
-
     return URL.createObjectURL(audioBlob)
   }
 
