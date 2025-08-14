@@ -17,6 +17,7 @@
     "jspdf": "^3.0.1",
     "lucide-react": "^0.344.0",
     "openai": "^5.9.2",
+    "@elevenlabs/elevenlabs-js": "^2.7.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",

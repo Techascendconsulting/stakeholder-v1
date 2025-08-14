@@ -1046,10 +1046,10 @@ These notes were generated using a fallback system due to extended AI processing
 
         const voiceName = stakeholder.voice
         console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name)
-        console.log('🔧 Murf TTS Available:', murfTTS.isConfigured())
+        console.log('🔧 ElevenLabs TTS Available:', murfTTS.isConfigured())
         
         if (murfTTS.isConfigured()) {
-          console.log('✅ Using Murf TTS for audio synthesis')
+          console.log('✅ Using ElevenLabs TTS for audio synthesis')
           const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholder.name)
           
           if (audioBlob) {
@@ -1107,7 +1107,7 @@ These notes were generated using a fallback system due to extended AI processing
             })
           })
           } else {
-            console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+            console.warn('❌ ElevenLabs TTS returned null, falling back to browser TTS');
             setPlayingMessageId(messageId)
             setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
             
@@ -1124,7 +1124,7 @@ These notes were generated using a fallback system due to extended AI processing
             }
           }
         } else {
-          console.log('⚠️ Murf TTS not available (check environment variables), using browser TTS')
+          console.log('⚠️ ElevenLabs TTS not available (check environment variables), using browser TTS')
           setPlayingMessageId(messageId)
           setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }))
           

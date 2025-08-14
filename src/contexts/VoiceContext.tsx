@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
-import { murfTTS } from '../services/murfTTS'
+import { resolveVoiceId } from '../services/elevenLabsTTS'
 
 interface StakeholderVoiceConfig {
   stakeholderId: string
@@ -7,47 +7,9 @@ interface StakeholderVoiceConfig {
   enabled: boolean
 }
 
-interface MurfVoiceConfig {
-  id: string
-  name: string
-  gender: 'Male' | 'Female'
-  locale: string
-  displayName: string
-  description: string
-}
-
-// Murf voice configurations based on the voice mapping
-export const MURF_VOICES: Record<string, MurfVoiceConfig> = {
-  'en-UK-hazel': {
-    id: 'en-UK-hazel',
-    name: 'en-UK-hazel',
-    gender: 'Female',
-    locale: 'en-UK',
-    displayName: 'Hazel (Female, UK)',
-    description: 'Professional British female voice, ideal for customer service and HR roles'
-  },
-  'en-AU-leyton': {
-    id: 'en-AU-leyton',
-    name: 'en-AU-leyton',
-    gender: 'Male',
-    locale: 'en-AU',
-    displayName: 'Leyton (Male, AU)',
-    description: 'Professional Australian male voice, ideal for technical and IT roles'
-  },
-  'en-US-maverick': {
-    id: 'en-US-maverick',
-    name: 'en-US-maverick',
-    gender: 'Male',
-    locale: 'en-US',
-    displayName: 'Maverick (Male, US)',
-    description: 'Professional American male voice, ideal for operations and leadership roles'
-  }
-}
-
-// Default voice assignments based on stakeholder names
+// Default voice assignments based on stakeholder names using ElevenLabs mapping
 export const getDefaultVoiceForStakeholder = (stakeholderName: string): string => {
-  const voiceConfig = murfTTS.getVoiceForStakeholder(stakeholderName);
-  return voiceConfig.voice_id;
+  return resolveVoiceId(stakeholderName) || ''
 }
 
 interface VoiceContextType {
@@ -58,7 +20,7 @@ interface VoiceContextType {
   isStakeholderVoiceEnabled: (stakeholderId: string) => boolean
   globalAudioEnabled: boolean
   setGlobalAudioEnabled: (enabled: boolean) => void
-  availableVoices: typeof MURF_VOICES
+  availableVoices: Record<string, { id: string }>
 }
 
 const VoiceContext = createContext<VoiceContextType | undefined>(undefined)
@@ -130,7 +92,7 @@ export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isStakeholderVoiceEnabled,
     globalAudioEnabled,
     setGlobalAudioEnabled,
-    availableVoices: MURF_VOICES
+    availableVoices: {}
   }
 
   return <VoiceContext.Provider value={value}>{children}</VoiceContext.Provider>

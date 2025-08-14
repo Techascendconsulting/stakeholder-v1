@@ -230,10 +230,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
       const voiceName = teamMember.voiceId;
       console.log('🎵 Using voice:', voiceName, 'for team member:', teamMember.name);
-      console.log('🔧 Murf TTS Available:', murfTTS.isConfigured());
+      console.log('🔧 ElevenLabs TTS Available:', murfTTS.isConfigured());
       
       if (murfTTS.isConfigured()) {
-        console.log('✅ Using Murf TTS for audio synthesis');
+        console.log('✅ Using ElevenLabs TTS for audio synthesis');
         const audioBlob = await murfTTS.synthesizeSpeech(text, teamMember.name);
         
         if (audioBlob) {
@@ -281,11 +281,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           });
         });
         } else {
-          console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+          console.warn('❌ ElevenLabs TTS returned null, falling back to browser TTS');
           await playBrowserTTS(text);
         }
       } else {
-        console.log('⚠️ Murf TTS not available, skipping audio playback');
+        console.log('⚠️ ElevenLabs TTS not available, skipping audio playback');
         setCurrentSpeaker(teamMember);
         setIsAudioPlaying(false);
         // Still show visual feedback that someone is "speaking"

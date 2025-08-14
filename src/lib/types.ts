@@ -14,7 +14,6 @@ export interface Stakeholder {
   role: string
   department?: string
   expertise_area?: string
-  murf_voice_id?: string
   created_at: string
   updated_at: string
 }
@@ -119,7 +118,8 @@ export interface EnvironmentConfig {
   VITE_OPENAI_API_KEY: string
   VITE_SUPABASE_URL: string
   VITE_SUPABASE_ANON_KEY: string
-  VITE_MURF_API_KEY: string
+  VITE_ELEVENLABS_API_KEY: string
+  VITE_ELEVENLABS_VOICE_ID?: string
 }
 
 // Component prop types
@@ -187,7 +187,7 @@ export interface AIResponse {
   stakeholderRole: string
 }
 
-// TTS types (now using Murf)
+// TTS types (provider-agnostic)
 export interface TTSRequest {
   text: string
   voiceId: string
@@ -222,12 +222,12 @@ export type StateChangeHandler = (state: AudioPlaybackState) => void
 
 export type ErrorHandler = (error: AppError) => void
 
-// Refinement Meeting Types with Murf TTS
+// Refinement Meeting Types (provider-agnostic)
 interface RefinementTeamMember {
   id: string;
   name: string;
   role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester';
-  voiceId: string; // Murf TTS voice ID
+  voiceId: string;
   nationality: string;
   personality: string;
   focusAreas: string[];
@@ -242,7 +242,7 @@ interface RefinementMessage {
   message: string;
   timestamp: string;
   isUser: boolean;
-  audioUrl?: string; // Murf TTS generated audio
+  audioUrl?: string;
   isPlaying?: boolean;
 }
 
@@ -273,16 +273,5 @@ interface RefinementMeetingState {
       stories: string[]; // story IDs
     };
   };
-}
-
-interface MurfTTSConfig {
-  apiKey: string;
-}
-
-interface TTSRequest {
-  text: string;
-  voiceId: string;
-  rate?: string;
-  pitch?: string;
 }
 

@@ -1,4 +1,4 @@
-// AudioOrchestrator.ts - Manages Murf TTS integration and audio playback
+// AudioOrchestrator.ts - Manages ElevenLabs TTS integration and audio playback
 import { Stakeholder } from '../../types'
 import { murfTTS } from '../services/murfTTS'
 
@@ -32,10 +32,10 @@ class AudioOrchestrator {
     duration: 0
   }
   private stateChangeCallbacks: ((state: AudioPlaybackState) => void)[] = []
-  private murfApiKey: string
+  private elevenApiConfigured: boolean
 
   constructor() {
-    this.murfApiKey = import.meta.env.VITE_MURF_API_KEY || ''
+    this.elevenApiConfigured = Boolean(import.meta.env.VITE_ELEVENLABS_API_KEY)
   }
 
   // Subscribe to playback state changes
@@ -63,7 +63,7 @@ class AudioOrchestrator {
     autoPlay: boolean = true
   ): Promise<void> {
     try {
-              // Generate audio using Murf TTS
+              // Generate audio using ElevenLabs TTS
         const audioUrl = await this.generateAudio(message.content, stakeholder.name)
       
       const audioMessage: AudioMessage = {
@@ -83,17 +83,17 @@ class AudioOrchestrator {
     }
   }
 
-  // Generate audio using Murf TTS
+  // Generate audio using ElevenLabs TTS through compatibility wrapper
   private async generateAudio(text: string, stakeholderName: string): Promise<string> {
-    if (!this.murfApiKey) {
-      throw new Error('Murf TTS configuration missing')
+    if (!this.elevenApiConfigured) {
+      throw new Error('ElevenLabs TTS configuration missing')
     }
 
-    // Use Murf TTS to generate audio
+    // Use wrapper (murfTTS now delegates to ElevenLabs) to generate audio
     const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholderName)
     
     if (!audioBlob) {
-      throw new Error('Murf TTS request failed')
+      throw new Error('TTS request failed')
     }
 
     return URL.createObjectURL(audioBlob)
