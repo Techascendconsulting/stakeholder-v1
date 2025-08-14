@@ -1848,31 +1848,31 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
           messages: [
             {
               role: 'system',
-              content: `You are ${stakeholder.name.split(' ')[0]}, a ${stakeholder.role}. Generate a unique, natural greeting that reflects YOUR personality.
+              content: `You are ${stakeholder.name.split(' ')[0]}, a ${stakeholder.role}. Generate a calm, professional, natural greeting suitable for a business meeting.
 
-PERSONALITY-BASED GREETINGS:
-${stakeholder.role.includes('Finance') ? '- Finance style: "Morning team!", "Hey everyone!", "Good timing!"' : 
-  stakeholder.role.includes('Operations') ? '- Operations style: "Hey folks!", "Let\'s go!", "Ready to start!"' :
-  stakeholder.role.includes('IT') ? '- Tech style: "Hey there!", "Systems ready!", "All set!"' :
-  '- Professional style: "Good morning!", "Hi team!", "Great to connect!"'}
+Tone: friendly, concise, neutral (no hype). Avoid exclamations.
+Length: maximum 5 words.
+Style examples by role (optional hints):
+${stakeholder.role.includes('Finance') ? '- Finance: "Morning team" / "Good morning"' : 
+  stakeholder.role.includes('Operations') ? '- Operations: "Morning" / "Hi team"' :
+  stakeholder.role.includes('IT') ? '- IT: "Hello" / "Good morning"' :
+  '- Professional: "Good morning" / "Hello team"'}
 
-STRICT RULES:
-- Maximum 4 words
-- MUST be different from other stakeholders
-- NO repetitive phrases like "Excited for today", "Ready to excel", "Let's make it happen"  
-- AVOID: excited, ready, today, excel, tackle, rock, solid, leverage, synergy, solutions
-- Each stakeholder should sound DIFFERENT
-- Use natural, casual language
+Rules:
+- No superlatives or hype (no "excited", "charged", "ready to rock").
+- No exclamation marks.
+- Use normal punctuation.
+- Keep it natural and understated.
 
-Generate ONE unique greeting for ${stakeholder.name.split(' ')[0]} only.`
+Generate ONE short greeting for ${stakeholder.name.split(' ')[0]} only.`
             },
             {
               role: 'user',
               content: messageContent
             }
           ],
-          max_tokens: 15,
-          temperature: 1.2
+          max_tokens: 10,
+          temperature: 0.5
         })
       });
 
@@ -1883,10 +1883,11 @@ Generate ONE unique greeting for ${stakeholder.name.split(' ')[0]} only.`
       const data = await response.json();
       let greeting = data.choices?.[0]?.message?.content?.trim() || "Hey team!";
       
-      // Extra safety: ensure it's professional but brief
-      greeting = greeting.replace(/[.!?]+$/, ''); // Remove ending punctuation
-      greeting = greeting.split(' ').slice(0, 4).join(' '); // Max 4 words
-      if (!greeting.endsWith('!')) greeting += '!'; // Add confident exclamation
+      // Normalize: ensure calm tone, no exclamation, limit length
+greeting = greeting.replace(/[!]+/g, '').trim();
+greeting = greeting.replace(/[?]+/g, '').trim();
+greeting = greeting.split(' ').slice(0, 5).join(' ');
+if (!/[.!?]$/.test(greeting)) greeting += '.';
       
       console.log(`✅ EXPERT GREETING: Generated "${greeting}" for ${stakeholder.name}`);
       return greeting;
