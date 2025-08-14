@@ -436,7 +436,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
           resolve();
         }
       } else {
-        console.warn('Murf TTS not configured. Please add VITE_MURF_API_KEY to your environment variables.');
+        console.warn('ElevenLabs TTS not configured. Please add VITE_ELEVENLABS_API_KEY to your environment variables.');
         // Visual feedback when audio is not available
         setTimeout(() => resolve(), 2000);
       }
