@@ -596,7 +596,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // Generate and play audio immediately
       if (globalAudioEnabled) {
         const voiceName = stakeholder.voice;
-        if (murfTTS.isConfigured()) {
+        if (elevenConfigured()) {
           console.log(`🎵 FAST: Generating voice for ${stakeholder.name} with ElevenLabs TTS`);
           const audioBlob = await synthesizeToBlob(response);
           
@@ -1028,7 +1028,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       const voiceName = stakeholder.voice;
       console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name);
-      console.log('🔧 Murf TTS Available:', murfTTS.isConfigured());
+      console.log('🔧 ElevenLabs TTS Available:', elevenConfigured());
       
       if (murfTTS.isConfigured()) {
         console.log('✅ Using Murf TTS for audio synthesis');
@@ -3106,7 +3106,7 @@ Please review the raw transcript for detailed conversation content.`;
 
     const stakeholder = selectedStakeholders.find(s => s.name === message.speaker || s.id === message.speaker);
     
-    // Only stakeholder messages should use Murf TTS
+    // Only stakeholder messages should use ElevenLabs TTS
     const voiceId = stakeholder?.voice || null;
     
     console.log(`🎵 Using voice: ${voiceId} for stakeholder: ${message.speaker}`);
@@ -3120,26 +3120,26 @@ Please review the raw transcript for detailed conversation content.`;
 
       let audioElement: HTMLAudioElement | null = null;
 
-      // Use Murf TTS for stakeholders when available
-      if (stakeholder && murfTTS.isConfigured()) {
+      // Use ElevenLabs for stakeholders when available
+      if (stakeholder && elevenConfigured()) {
         try {
-          console.log(`✅ Using Murf TTS for stakeholder: ${stakeholder.name}`);
-          const audioBlob = await murfTTS.synthesizeSpeech(message.content, stakeholder.name);
+          console.log(`✅ Using ElevenLabs for stakeholder: ${stakeholder.name}`);
+          const audioBlob = await synthesizeToBlob(message.content);
           if (audioBlob) {
             const audioUrl = URL.createObjectURL(audioBlob);
             audioElement = new Audio(audioUrl);
           } else {
-            console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+            console.warn('❌ ElevenLabs returned null, falling back to browser TTS');
           }
-        } catch (murfError) {
-          console.warn('❌ Murf TTS failed, falling back to browser TTS:', murfError);
+        } catch (err) {
+          console.warn('❌ ElevenLabs failed, falling back to browser TTS:', err);
           audioElement = await playBrowserTTS(message.content);
         }
       } else {
         if (!stakeholder) {
           console.log(`⚠️ No stakeholder found, using browser TTS`);
         } else {
-          console.log(`⚠️ Murf TTS not available, using browser TTS`);
+          console.log(`⚠️ ElevenLabs not available, using browser TTS`);
         }
         audioElement = await playBrowserTTS(message.content);
       }
@@ -3186,8 +3186,8 @@ Please review the raw transcript for detailed conversation content.`;
       setCurrentAudio(null);
     }
     
-    // Stop Murf TTS audio
-    murfTTS.stopCurrentAudio();
+    // Stop any manual audio element only (no Murf)
+    // ElevenLabs helper uses one-shot playback; nothing to stop globally
     
     // Reset current speaker states
     setCurrentSpeaker(null);

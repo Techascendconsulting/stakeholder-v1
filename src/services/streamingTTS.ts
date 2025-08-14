@@ -3,7 +3,7 @@
  * Converts text chunks to audio in real-time and plays them immediately
  */
 
-import { murfTTS } from './murfTTS';
+import { synthesizeToBlob } from './elevenLabsTTS';
 
 interface StreamingChunk {
   text: string;
@@ -96,8 +96,8 @@ class StreamingTTSService {
     try {
       console.log(`🔊 Converting to audio: "${chunk.text}"`);
       
-      // Use Murf TTS to convert chunk to audio
-      const audioBlob = await murfTTS.synthesizeSpeech(chunk.text, session.stakeholderName, false);
+      // Use ElevenLabs to convert chunk to audio
+      const audioBlob = await synthesizeToBlob(chunk.text);
       
       if (audioBlob) {
         chunk.audio = audioBlob;
