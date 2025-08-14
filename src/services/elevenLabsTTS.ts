@@ -3,6 +3,9 @@ import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 // Environment variables (Vite-style)
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined
 const DEFAULT_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined
+const VOICE_ID_AISHA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA as string | undefined
+const VOICE_ID_DAVID = import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID as string | undefined
+const VOICE_ID_JAMES = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES as string | undefined
 
 // ElevenLabs client (lazy)
 let client: ElevenLabsClient | null = null
@@ -18,9 +21,14 @@ export function isConfigured(): boolean {
   return Boolean(ELEVENLABS_API_KEY)
 }
 
-// Force fallback to env voice unless explicit voiceId is provided
-export function resolveVoiceId(_: string = '', explicitVoiceId?: string): string | undefined {
-  return (explicitVoiceId && explicitVoiceId.trim()) || DEFAULT_VOICE_ID
+// Resolve voice id by explicit option, stakeholderName mapping, then fallback
+export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: string): string | undefined {
+  if (explicitVoiceId && explicitVoiceId.trim()) return explicitVoiceId
+  const key = stakeholderName.toLowerCase().split(' ')[0]
+  if (key === 'aisha' && VOICE_ID_AISHA) return VOICE_ID_AISHA
+  if (key === 'david' && VOICE_ID_DAVID) return VOICE_ID_DAVID
+  if (key === 'james' && VOICE_ID_JAMES) return VOICE_ID_JAMES
+  return DEFAULT_VOICE_ID
 }
 
 // Expose a single function speak(text) that returns MP3 bytes
@@ -28,7 +36,7 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
   if (!ELEVENLABS_API_KEY) {
     throw new Error('ElevenLabs API key not configured. Please set VITE_ELEVENLABS_API_KEY.')
   }
-  const voiceId = resolveVoiceId('', options?.voiceId)
+  const voiceId = resolveVoiceId(options?.stakeholderName || '', options?.voiceId)
   if (!voiceId) {
     throw new Error('No ElevenLabs voice ID configured. Set VITE_ELEVENLABS_VOICE_ID or provide a voiceId.')
   }
@@ -89,8 +97,8 @@ export function createAudioUrlFromBuffer(buffer: ArrayBuffer | Uint8Array): stri
   return URL.createObjectURL(blob)
 }
 
-export async function synthesizeToBlob(text: string, options?: { voiceId?: string }): Promise<Blob> {
-  const buffer = await speak(text, { voiceId: options?.voiceId })
+export async function synthesizeToBlob(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<Blob> {
+  const buffer = await speak(text, { voiceId: options?.voiceId, stakeholderName: options?.stakeholderName })
   const blob = bufferToMp3Blob(buffer)
   return blob
 }
@@ -122,7 +130,7 @@ export async function playBlob(audioBlob: Blob): Promise<void> {
   })
 }
 
-export async function speakAndPlay(text: string, options?: { voiceId?: string }): Promise<void> {
+export async function speakAndPlay(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {
   const blob = await synthesizeToBlob(text, options)
   await playBlob(blob)
 }

@@ -598,7 +598,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         const voiceName = stakeholder.voice;
         if (elevenConfigured()) {
           console.log(`🎵 FAST: Generating voice for ${stakeholder.name} with ElevenLabs TTS`);
-          const audioBlob = await synthesizeToBlob(response);
+          const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
           
           if (audioBlob) {
             setCurrentSpeaker(stakeholder);
@@ -711,7 +711,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'playing' }));
           
           // Generate audio with ElevenLabs
-          const audioBlob = await synthesizeToBlob(response);
+          const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
           
           if (audioBlob) {
             console.log(`🎵 ElevenLabs: Playing audio for ${stakeholder.name}`);
@@ -740,7 +740,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           if (elevenConfigured()) {
             console.log(`🎤 Using ElevenLabs TTS for ${stakeholder.name}`);
             
-            const audioBlob = await synthesizeToBlob(response);
+            const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
             if (audioBlob) {
               const audioUrl = URL.createObjectURL(audioBlob);
               const audio = new Audio(audioUrl);
@@ -1643,7 +1643,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // 4. Generate and play audio immediately
       if (globalAudioEnabled && response) {
         console.log(`🎵 FAST: Generating and playing audio for ${stakeholder.name}`);
-        const audioBlob = await synthesizeToBlob(response);
+        const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
         if (audioBlob) {
           await playBlob(audioBlob);
           console.log(`✅ FAST: ${stakeholder.name} finished speaking`);
@@ -3426,66 +3426,14 @@ Please review the raw transcript for detailed conversation content.`;
 
   // DYNAMIC AI-POWERED GREETING DETECTION - No hardcoded patterns
   const detectGeneralGreeting = async (message: string): Promise<boolean> => {
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a greeting detector. Analyze if this message is a general greeting to a group of people (not a specific person). 
-
-GENERAL GREETINGS (respond "YES"):
-- "hi everyone"
-- "hey team" 
-- "hello folks"
-- "good morning all"
-- "hey people"
-- "hello my friends"
-- "hi there everyone"
-- "hey stakeholders"
-- "good afternoon team members"
-- "hello wonderful people"
-- Any greeting addressed to multiple people or a group
-
-NOT GENERAL GREETINGS (respond "NO"):
-- "hi david" (specific person)
-- "hello sarah, can you help" (specific person)
-- "what's up with the project" (not a greeting)
-- "hey, what issues do we have" (question, not greeting)
-
-Respond with only "YES" or "NO".`
-            },
-            {
-              role: 'user',
-              content: message.trim()
-            }
-          ],
-          max_tokens: 5,
-          temperature: 0.1
-        })
-      });
-
-      if (!response.ok) {
-        console.warn('❌ Greeting detection API failed, using fallback');
-        return false;
-      }
-
-      const data = await response.json();
-      const result = data.choices?.[0]?.message?.content?.trim().toLowerCase();
-      
-      console.log(`🤖 AI Greeting Detection: "${message}" → ${result}`);
-      return result === 'yes';
-      
-    } catch (error) {
-      console.warn('❌ Greeting detection failed:', error);
-      return false; // Default to not a greeting if AI fails
-    }
+    const msg = message.trim().toLowerCase();
+    const generalPatterns = [
+      /\b(hi|hello|hey|good\s+(morning|afternoon|evening))\b.*\b(everyone|team|all|folks|people|stakeholders|guys)\b/,
+      /\b(hi|hello|hey)\b\s*(there)?\s*(everyone|team|all|folks|people)?$/
+    ];
+    const isGreeting = generalPatterns.some((re) => re.test(msg));
+    console.log(`🤖 AI Greeting Detection (local): "${message}" → ${isGreeting ? 'yes' : 'no'}`);
+    return isGreeting;
   };
 
   // SINGLE STAKEHOLDER RESPONSE: Handle response from one most relevant stakeholder
@@ -3518,8 +3466,8 @@ Respond with only "YES" or "NO".`
       // Generate and play audio
       if (globalAudioEnabled && response) {
         setDynamicFeedback(`🎵 ${stakeholder.name} speaking...`);
-        const audioBlob = await synthesizeToBlob(response);
-              if (audioBlob) {
+        const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
+        if (audioBlob) {
           setCurrentSpeaker(stakeholder);
           await playBlob(audioBlob);
           setCurrentSpeaker(null);

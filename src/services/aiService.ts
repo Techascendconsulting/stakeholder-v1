@@ -2457,7 +2457,7 @@ ${context.project.asIsProcess ? `CURRENT PROCESS DETAILS: ${context.project.asIs
 ${stakeholder.bio ? `YOUR BACKGROUND: ${stakeholder.bio}` : ''}
 
 CONVERSATION HISTORY FOR CONTEXT:
-${context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMessagesCount).map((msg, i) => {
+${(Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-AIService.CONFIG.conversation_flow.recentMessagesCount).map((msg, i) => {
   if (msg.speaker === 'user') {
     return `[${i + 1}] Business Analyst: ${msg.content}`;
   } else if (msg.stakeholderName) {
