@@ -64,18 +64,28 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
 }
 
 export async function playBlob(audioBlob: Blob): Promise<void> {
-  // Quick validation: small blobs are likely error bodies
-  if (audioBlob.size < 1000 || (audioBlob as any).type && (audioBlob as any).type !== 'audio/mpeg') {
-    try {
-      const txt = await (audioBlob as any).text?.()
+  // Validate content quickly: MP3 should start with 'ID3' or 0xFF (frame sync)
+  try {
+    const head = await audioBlob.slice(0, 3).arrayBuffer()
+    const bytes = new Uint8Array(head)
+    const isLikelyMp3 = (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) || bytes[0] === 0xff
+    if (!isLikelyMp3) {
+      const txt = await audioBlob.text().catch(() => '')
       if (txt) throw new Error(`ElevenLabs non-audio response: ${txt}`)
-    } catch {}
+    }
+  } catch (e) {
+    // If validation fails, continue to try playback which will error with a clear message
   }
+
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(audioBlob)
     const audio = new Audio(url)
     audio.onended = () => { URL.revokeObjectURL(url); resolve() }
-    audio.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Audio playback failed')) }
+    audio.onerror = () => {
+      console.error('Audio decode error', (audio as any).error)
+      URL.revokeObjectURL(url)
+      reject(new Error('Audio playback failed'))
+    }
     audio.play().catch(err => { URL.revokeObjectURL(url); reject(err) })
   })
 }
