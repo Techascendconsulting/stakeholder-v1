@@ -1030,9 +1030,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       console.log('🎵 Using voice:', voiceName, 'for stakeholder:', stakeholder.name);
       console.log('🔧 ElevenLabs TTS Available:', elevenConfigured());
       
-      if (murfTTS.isConfigured()) {
-        console.log('✅ Using Murf TTS for audio synthesis');
-        const audioBlob = await murfTTS.synthesizeSpeech(text, stakeholder.name);
+      if (elevenConfigured()) {
+        console.log('✅ Using ElevenLabs TTS for audio synthesis');
+        const audioBlob = await synthesizeToBlob(text);
         
         if (audioBlob) {
           const audioUrl = URL.createObjectURL(audioBlob);
@@ -1593,7 +1593,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // 4. Generate and play audio in parallel (user already sees text)
       if (globalAudioEnabled) {
         console.log(`🎵 CACHE: Generating audio for ${stakeholder.name} (background)`);
-        const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
+        const audioBlob = await synthesizeToBlob(cachedResponse);
         if (audioBlob) {
           await playBlob(audioBlob);
           console.log(`✅ CACHE: ${stakeholder.name} finished speaking`);
@@ -1633,7 +1633,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // 4. Generate and play audio immediately
       if (globalAudioEnabled && response) {
         console.log(`🎵 FAST: Generating and playing audio for ${stakeholder.name}`);
-        const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+        const audioBlob = await synthesizeToBlob(response);
         if (audioBlob) {
           await playBlob(audioBlob);
           console.log(`✅ FAST: ${stakeholder.name} finished speaking`);
@@ -1669,7 +1669,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         // Generate and play audio
         if (globalAudioEnabled) {
-          const audioBlob = await murfTTS.synthesizeSpeech(cachedResponse, stakeholder.name);
+          const audioBlob = await synthesizeToBlob(cachedResponse);
           if (audioBlob) {
             await playBlob(audioBlob);
             console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking (cached)`);
@@ -1690,9 +1690,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         addToBackgroundTranscript(responseMessage);
         
         // Generate and play audio
-        if (globalAudioEnabled) {
-          const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
-          if (audioBlob) {
+                  if (globalAudioEnabled) {
+            const audioBlob = await synthesizeToBlob(response);
+            if (audioBlob) {
             await playBlob(audioBlob);
             console.log(`✅ SIMPLE GREETING: ${stakeholder.name} finished speaking`);
           }
@@ -1727,7 +1727,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           // Generate and play audio
           if (globalAudioEnabled) {
-            const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
+            const audioBlob = await synthesizeToBlob(response);
             if (audioBlob) {
               await playBlob(audioBlob);
               console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
@@ -3507,8 +3507,8 @@ Respond with only "YES" or "NO".`
       // Generate and play audio
       if (globalAudioEnabled && response) {
         setDynamicFeedback(`🎵 ${stakeholder.name} speaking...`);
-        const audioBlob = await murfTTS.synthesizeSpeech(response, stakeholder.name);
-        if (audioBlob) {
+        const audioBlob = await synthesizeToBlob(response);
+              if (audioBlob) {
           setCurrentSpeaker(stakeholder);
           await playBlob(audioBlob);
           setCurrentSpeaker(null);
@@ -3526,7 +3526,7 @@ Respond with only "YES" or "NO".`
 
   // Clear greeting cache on mount to prevent hardcoded responses
   useEffect(() => {
-    murfTTS.clearGreetingCache();
+    // no Murf cache; ElevenLabs uses live synthesis
   }, []);
 
   return (
