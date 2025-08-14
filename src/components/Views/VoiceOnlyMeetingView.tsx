@@ -3529,6 +3529,29 @@ Respond with only "YES" or "NO".`
     // no Murf cache; ElevenLabs uses live synthesis
   }, []);
 
+  // Fallback: pick one stakeholder when no explicit mentions
+  const routeToSingleStakeholder = async (message: string, availableStakeholders: any[]) => {
+    // Prefer the first available to unblock flow
+    return availableStakeholders && availableStakeholders.length > 0 ? availableStakeholders[0] : null;
+  }
+
+  // Fallback: basic relevance routing using simple keyword heuristics
+  const routeQuestionToMostRelevantStakeholder = async (message: string, availableStakeholders: any[]) => {
+    const msg = message.toLowerCase();
+    const byRoleScore = (s: any) => {
+      const role = (s.role || '').toLowerCase();
+      let score = 0;
+      if (/tech|it|engineer|developer/.test(role) || /api|system|integration|code|deploy|bug|error/.test(msg)) score += 2;
+      if (/operations|ops|process/.test(role) || /process|workflow|bottleneck|handoff/.test(msg)) score += 2;
+      if (/product|manager|pm/.test(role) || /feature|roadmap|priority/.test(msg)) score += 1;
+      if (/data|analytics|report/.test(role) || /data|report|metrics/.test(msg)) score += 1;
+      return score;
+    };
+    if (!availableStakeholders || availableStakeholders.length === 0) return null;
+    const sorted = [...availableStakeholders].sort((a, b) => byRoleScore(b) - byRoleScore(a));
+    return sorted[0] || null;
+  }
+
   return (
     <div className="h-screen bg-black flex flex-col overflow-hidden">
       {/* Top Bar */}
