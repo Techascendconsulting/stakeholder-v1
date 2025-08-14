@@ -23,8 +23,8 @@ export function resolveVoiceId(_: string = '', explicitVoiceId?: string): string
   return (explicitVoiceId && explicitVoiceId.trim()) || DEFAULT_VOICE_ID
 }
 
-// Expose a single function speak(text) that returns an MP3 buffer
-export async function speak(text: string, options?: { stakeholderName?: string; voiceId?: string }): Promise<Buffer> {
+// Expose a single function speak(text) that returns MP3 bytes
+export async function speak(text: string, options?: { stakeholderName?: string; voiceId?: string }): Promise<any> {
   if (!ELEVENLABS_API_KEY) {
     throw new Error('ElevenLabs API key not configured. Please set VITE_ELEVENLABS_API_KEY.')
   }
@@ -33,6 +33,38 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
     throw new Error('No ElevenLabs voice ID configured. Set VITE_ELEVENLABS_VOICE_ID or provide a voiceId.')
   }
 
+  // Browser-safe: use REST API directly for correct audio bytes
+  if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVENLABS_API_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_flash_v2_5',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.8,
+          style: 0.3,
+          use_speaker_boost: true
+        },
+        output_format: 'mp3_44100_128'
+      })
+    })
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '')
+      throw new Error(`ElevenLabs API error ${res.status}: ${errText}`)
+    }
+
+    const arrayBuffer = await res.arrayBuffer()
+    return arrayBuffer
+  }
+
+  // Fallback (non-browser): use SDK
   const c = getClient()
   const audio = await c.textToSpeech.convert(voiceId, {
     text,
@@ -48,11 +80,11 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
   return audio
 }
 
-export function bufferToMp3Blob(buffer: Buffer): Blob {
+export function bufferToMp3Blob(buffer: ArrayBuffer | Uint8Array): Blob {
   return new Blob([buffer], { type: 'audio/mpeg' })
 }
 
-export function createAudioUrlFromBuffer(buffer: Buffer): string {
+export function createAudioUrlFromBuffer(buffer: ArrayBuffer | Uint8Array): string {
   const blob = bufferToMp3Blob(buffer)
   return URL.createObjectURL(blob)
 }
