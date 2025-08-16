@@ -31,6 +31,11 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
   return DEFAULT_VOICE_ID
 }
 
+// Helper for external debug
+export function getResolvedVoiceIdFor(stakeholderName?: string, explicitVoiceId?: string): string | undefined {
+  return resolveVoiceId(stakeholderName || '', explicitVoiceId)
+}
+
 // Expose a single function speak(text) that returns MP3 bytes
 export async function speak(text: string, options?: { stakeholderName?: string; voiceId?: string }): Promise<any> {
   if (!ELEVENLABS_API_KEY) {
@@ -40,6 +45,19 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
   if (!voiceId) {
     throw new Error('No ElevenLabs voice ID configured. Set VITE_ELEVENLABS_VOICE_ID or provide a voiceId.')
   }
+
+  // Debug: Log chosen voice mapping
+  console.log('🎙️ TTS VOICE', {
+    stakeholderName: options?.stakeholderName || null,
+    resolvedVoiceId: voiceId,
+    explicitVoiceId: options?.voiceId || null,
+    env: {
+      aisha: VOICE_ID_AISHA || null,
+      david: VOICE_ID_DAVID || null,
+      james: VOICE_ID_JAMES || null,
+      fallback: DEFAULT_VOICE_ID || null
+    }
+  })
 
   // Browser-safe: use REST API directly for correct audio bytes
   if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
