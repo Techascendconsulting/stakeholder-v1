@@ -380,10 +380,10 @@ const ElevenLabsMultiAgentMeeting: React.FC = () => {
              (window as any).elevenLabsStakeholders[conversationId] = {
                name: stakeholder.name,
                role: stakeholder.role,
-               expertise: stakeholder.name === 'Aisha Ahmed' ? 'Customer service operations and support processes' : 
+               expertise: stakeholder.name === 'Jess Morgan' ? 'Customer service operations and support processes' : 
                          stakeholder.name === 'James Walker' ? 'Customer success strategy and client relationships' : 
                          'Technical systems and implementation',
-               isAisha: stakeholder.name === 'Aisha Ahmed'
+               isAisha: stakeholder.name === 'Jess Morgan'
              };
 
                          // No connection test - keep completely silent

@@ -28,8 +28,8 @@ Go to [ElevenLabs Conversational AI Agents](https://elevenlabs.io/app/conversati
 - **Knowledge Base**: Customer onboarding, retention strategies, success metrics
 - **Voice**: Choose a professional male voice
 
-### Agent 2: Aisha Ahmed (UX/UI Designer)
-- **Name**: Aisha Ahmed
+### Agent 2: Jess Morgan (Customer Service Manager)
+- **Name**: Jess Morgan
 - **Role**: UX/UI Designer
 - **Personality**: Creative, user-empathetic, detail-oriented, innovative  
 - **Knowledge Base**: User experience design, onboarding flows, design systems
@@ -49,7 +49,7 @@ After creating your agents, copy their Agent IDs and update the configuration:
 1. Open `src/data/elevenLabsProjects.ts`
 2. Replace the placeholder agent IDs:
    - `REPLACE_WITH_JAMES_WALKER_AGENT_ID` → Your James Walker agent ID
-   - `REPLACE_WITH_AISHA_AHMED_AGENT_ID` → Your Aisha Ahmed agent ID  
+   - `REPLACE_WITH_JESS_MORGAN_AGENT_ID` → Your Jess Morgan agent ID  
    - `REPLACE_WITH_DAVID_THOMPSON_AGENT_ID` → Your David Thompson agent ID
 
 Example:

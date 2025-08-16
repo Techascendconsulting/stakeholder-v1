@@ -66,7 +66,7 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
       },
       {
         id: 'aisha-ahmed',
-        name: 'Aisha Ahmed',
+        name: 'Jess Morgan',
         role: 'Customer Service Manager',
         department: 'Customer Service',
         expertise: [
@@ -83,7 +83,7 @@ export const ELEVENLABS_PROJECTS: ElevenLabsProject[] = [
           'Enhancing team efficiency',
           'Maintaining service quality standards'
         ],
-        agentId: 'agent_3601k16fe93ject9vy38wev45tym', // Aisha Ahmed agent ID
+        agentId: 'agent_3601k16fe93ject9vy38wev45tym', // Jess Morgan agent ID
         bio: 'Aisha manages the Customer Service team with 7 years of experience in customer support operations. She has successfully improved customer satisfaction scores by 45% and specializes in creating efficient support processes during customer onboarding.',
         gender: 'female'
       },

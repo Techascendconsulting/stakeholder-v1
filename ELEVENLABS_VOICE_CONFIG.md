@@ -19,7 +19,7 @@ ElevenLabs Conversational AI agents have their voices configured **at the agent 
    - Add appropriate male voices for James and David's agents
 
 2. **Suggested Voice Assignments:**
-   - **Aisha Ahmed (Female)**: Use voices like "Alexandra", "Jessica Anne Bogart", or "Hope" (from ElevenLabs voice library)
+   - **Jess Morgan (Female)**: Use voices like "Alexandra", "Jessica Anne Bogart", or "Hope" (from ElevenLabs voice library)
    - **James Walker (Male)**: Use voices like "Archer", "Stuart", or "Mark"
    - **David Thompson (Male)**: Use voices like "Finn", "Stuart", or a professional male voice
 
@@ -35,7 +35,7 @@ Instead of using multi-voice, create separate agents for each gender:
 
 Use ElevenLabs Voice Design to create custom voices:
 
-1. **For Aisha (Female Customer Service Manager)**:
+1. **For Jess (Female Customer Service Manager)**:
    ```
    Prompt: "A professional female customer service manager in her early 30s with a warm, empathetic voice. She speaks clearly and confidently, with a slight American accent. Perfect audio quality."
    ```
@@ -56,7 +56,7 @@ Use ElevenLabs Voice Design to create custom voices:
 
 1. Log into your ElevenLabs dashboard
 2. Go to Conversational AI → Agents
-3. For each agent (Aisha, James, David):
+3. For each agent (Jess, James, David):
    - Click on the agent
    - Go to Voice tab
    - Configure appropriate gender voice
@@ -78,7 +78,7 @@ const multiPersonalityPrompt = `You are facilitating a professional business mee
 ${stakeholderDetails}
 
 VOICE SWITCHING:
-- When speaking as Aisha Ahmed, use your female voice setting
+- When speaking as Jess Morgan, use your female voice setting
 - When speaking as James Walker or David Thompson, use your male voice setting
 - Switch voices to match the gender of the speaking stakeholder
 

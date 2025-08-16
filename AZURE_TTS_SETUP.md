@@ -9,7 +9,7 @@ The stakeholder AI app is designed to use professional Azure Cognitive Services 
 | Stakeholder | Role | Intended Azure Voice |
 |-------------|------|---------------------|
 | **James Walker** | Head of Operations | `en-GB-RyanNeural` (Professional British Male) |
-| **Aisha Ahmed** | Customer Service Manager | `en-GB-SoniaNeural` (Professional British Female) |
+| **Jess Morgan** | Customer Service Manager | `en-GB-SoniaNeural` (Professional British Female) |
 | **David Thompson** | IT Systems Lead | `en-GB-ThomasNeural` (Authoritative British Male) |
 | **Sarah Patel** | HR Business Partner | `en-GB-LibbyNeural` (Professional British Female) |
 | **Emily Robinson** | Compliance Manager | `en-GB-AbbiNeural` (Professional British Female) |

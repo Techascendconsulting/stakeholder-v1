@@ -213,7 +213,7 @@ export const mockStakeholders: Stakeholder[] = [
   },
   {
     id: 'stake-2',
-    name: 'Aisha Ahmed',
+    name: 'Jess Morgan',
     role: 'Customer Service Manager',
     department: 'Customer Service',
     bio: 'Aisha manages customer service operations with 10 years of experience in customer experience management and service delivery optimization. She specializes in customer satisfaction improvement and team performance.',

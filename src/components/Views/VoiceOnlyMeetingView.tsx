@@ -1465,12 +1465,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       return selectedStakeholders.find(s => s.name === 'David Thompson');
     }
     
-    // Customer/Service questions → Aisha Ahmed  
+    // Customer/Service questions → Jess Morgan  
     if (msg.includes('customer') || msg.includes('user') || msg.includes('feedback') ||
         msg.includes('support') || msg.includes('service') || msg.includes('complaint') ||
         msg.includes('satisfaction') || msg.includes('experience') || msg.includes('help')) {
-      console.log('🎯 FAST: Routing customer question to Aisha Ahmed');
-      return selectedStakeholders.find(s => s.name === 'Aisha Ahmed');
+      console.log('🎯 FAST: Routing customer question to Jess Morgan');
+      return selectedStakeholders.find(s => s.name === 'Jess Morgan');
     }
     
     // Planning/Operations questions → James Walker
@@ -1481,9 +1481,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       return selectedStakeholders.find(s => s.name === 'James Walker');
     }
     
-    // Default: Aisha (tends to give quicker, more direct responses)
-    console.log('🎯 FAST: Using default stakeholder Aisha Ahmed');
-    return selectedStakeholders.find(s => s.name === 'Aisha Ahmed') || selectedStakeholders[0];
+    // Default: Jess (tends to give quicker, more direct responses)
+    console.log('🎯 FAST: Using default stakeholder Jess Morgan');
+    return selectedStakeholders.find(s => s.name === 'Jess Morgan') || selectedStakeholders[0];
   };
 
     // FAST KEYWORD DETECTION: Skip expensive AI analysis for obvious mentions

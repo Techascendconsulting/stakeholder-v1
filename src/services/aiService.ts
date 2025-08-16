@@ -1903,7 +1903,7 @@ EXAMPLES OF WHAT TO DETECT:
 - "aisha, david, what do you think?"
 - "can aisha and david help with this?"
 - "I'd like to hear from sarah and emily"
-- "Thank you David for the info. Aisha can you tell me about your team?" (should detect: Aisha)
+- "Thank you David for the info. Jess can you tell me about your team?" (should detect: Jess)
 - "Thanks Sarah. Now David, what's your view?" (should detect: David)
 - "Got it James. Emily, can you elaborate?" (should detect: Emily)
 
@@ -1946,7 +1946,7 @@ IMPORTANT: Return ONLY the pipe-separated format below, no quotes, no equals, no
 
 Examples:
 - Direct mention: Sarah Patel|direct_question|0.9|
-- Role-based routing: Aisha Ahmed|topic_routing|0.8|verification question
+- Role-based routing: Jess Morgan|topic_routing|0.8|verification question
 - Multiple specific: Sarah Patel,David Thompson|multiple_mention|0.9|
 - Group greeting: ${stakeholderNames}|group_greeting|0.9|
 - Unclear input: James Walker|topic_routing|0.7|general business question
