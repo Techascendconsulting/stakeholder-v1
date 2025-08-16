@@ -1198,7 +1198,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           // Generate audio in background
           const audioPromise = globalAudioEnabled 
-            ? synthesizeToBlob(simpleGreeting)
+            ? synthesizeToBlob(simpleGreeting, { stakeholderName: stakeholder.name })
             : Promise.resolve(null);
           
           const totalTime = performance.now() - startTime;
