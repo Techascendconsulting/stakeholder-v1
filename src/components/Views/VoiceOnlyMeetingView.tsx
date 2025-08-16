@@ -717,7 +717,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             console.log(`🎵 ElevenLabs: Playing audio for ${stakeholder.name}`);
             
             // Play the audio
-            await playBlob(audioBlob);
+            await playForStakeholder(stakeholder, audioBlob);
             
             console.log(`✅ ElevenLabs: ${stakeholder.name} finished speaking`);
           } else {
@@ -1837,6 +1837,8 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
     
     try {
       // Direct OpenAI call with expert-level context
+      const daypart = getLocalDaypart();
+      const daypartSalutation = daypart === 'morning' ? 'Good morning' : daypart === 'afternoon' ? 'Good afternoon' : 'Good evening';
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -1852,6 +1854,7 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
 
 Tone: friendly, concise, neutral (no hype). Avoid exclamations.
 Length: maximum 5 words.
+Begin with a time-appropriate salutation: "${daypartSalutation}".
 Style examples by role (optional hints):
 ${stakeholder.role.includes('Finance') ? '- Finance: "Morning team" / "Good morning"' : 
   stakeholder.role.includes('Operations') ? '- Operations: "Morning" / "Hi team"' :
@@ -1881,32 +1884,21 @@ Generate ONE short greeting for ${stakeholder.name.split(' ')[0]} only.`
       }
 
       const data = await response.json();
-      let greeting = data.choices?.[0]?.message?.content?.trim() || "Hey team!";
+      let greeting = data.choices?.[0]?.message?.content?.trim() || `${daypartSalutation}.`;
       
       // Normalize: ensure calm tone, no exclamation, limit length
-greeting = greeting.replace(/[!]+/g, '').trim();
-greeting = greeting.replace(/[?]+/g, '').trim();
-greeting = greeting.split(' ').slice(0, 5).join(' ');
-if (!/[.!?]$/.test(greeting)) greeting += '.';
+      greeting = greeting.replace(/[!]+/g, '').trim();
+      greeting = greeting.replace(/[?]+/g, '').trim();
+      greeting = greeting.split(' ').slice(0, 5).join(' ');
+      if (!/[.!?]$/.test(greeting)) greeting += '.';
       
       console.log(`✅ EXPERT GREETING: Generated "${greeting}" for ${stakeholder.name}`);
       return greeting;
       
     } catch (error) {
       console.error('❌ EXPERT GREETING: Generation failed, using professional fallback', error);
-      // Professional expert fallbacks based on role
-      const expertFallbacks = stakeholder.role.toLowerCase().includes('finance') ? [
-        "Hey team!", "Morning everyone!", "Ready to dive in!", "Good to see you!", "Let's get started!"
-      ] : stakeholder.role.toLowerCase().includes('operations') ? [
-        "Hey everyone!", "Morning team!", "Ready to go!", "Good timing!", "Let's do this!"
-      ] : stakeholder.role.toLowerCase().includes('it') ? [
-        "Hey folks!", "Morning all!", "Systems ready!", "Good to connect!", "Let's get technical!"
-      ] : [
-        "Hey team!", "Morning everyone!", "Good to see you!", "Ready when you are!", "Let's get started!"
-      ];
-      
-      const fallbackIndex = Math.floor(Math.random() * expertFallbacks.length);
-      return expertFallbacks[fallbackIndex];
+      const fallback = `${getLocalDaypart() === 'morning' ? 'Good morning' : getLocalDaypart() === 'afternoon' ? 'Good afternoon' : 'Good evening'}.`;
+      return fallback;
     }
   };
 
@@ -3510,6 +3502,26 @@ Please review the raw transcript for detailed conversation content.`;
     const sorted = [...availableStakeholders].sort((a, b) => byRoleScore(b) - byRoleScore(a));
     return sorted[0] || null;
   }
+
+  // Helper: play audio with speaking indicator
+  const playForStakeholder = async (s: any, audioBlob: Blob) => {
+    try {
+      setCurrentSpeaker(s);
+      setCurrentSpeaking(s.id);
+      await playBlob(audioBlob);
+    } finally {
+      setCurrentSpeaker(null);
+      setCurrentSpeaking(null);
+    }
+  };
+
+  // Local daypart from browser time (fallback to neutral if unavailable)
+  const getLocalDaypart = (): 'morning' | 'afternoon' | 'evening' => {
+    const h = new Date().getHours();
+    if (h < 12) return 'morning';
+    if (h < 17) return 'afternoon';
+    return 'evening';
+  };
 
   return (
     <div className="h-screen bg-black flex flex-col overflow-hidden">
