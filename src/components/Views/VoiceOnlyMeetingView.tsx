@@ -1701,7 +1701,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         // Generate and play audio
                   if (globalAudioEnabled) {
-            const audioBlob = await synthesizeToBlob(response);
+            const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
             if (audioBlob) {
             await playBlob(audioBlob);
             console.log(`✅ SIMPLE GREETING: ${stakeholder.name} finished speaking`);
@@ -1737,7 +1737,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           // Generate and play audio
           if (globalAudioEnabled) {
-            const audioBlob = await synthesizeToBlob(response);
+            const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
             if (audioBlob) {
               await playBlob(audioBlob);
               console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);

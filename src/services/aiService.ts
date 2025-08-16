@@ -1288,7 +1288,7 @@ REMEMBER: You're not giving a presentation or formal response. You're just ${sta
   private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext, responseType: string = 'discussion'): string {
     if (responseType === 'direct_mention') {
       // Build conversation context awareness
-      const recentHistory = context.conversationHistory.slice(-3);
+      const recentHistory = (Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-3);
       const hasGreetingHistory = recentHistory.some(msg => 
         msg.content && (
           /^(hi|hey|hello)\s+(guys|everyone|team|all)/i.test(msg.content.trim()) ||
