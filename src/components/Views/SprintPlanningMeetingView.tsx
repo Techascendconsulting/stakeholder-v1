@@ -408,7 +408,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       if (elevenConfigured()) {
         try {
           console.log(`🎵 Playing audio for ${speaker.name}: "${text.substring(0, 50)}..."`);
-          const audioBlob = await synthesizeToBlob(text);
+          const audioBlob = await synthesizeToBlob(text, { stakeholderName: speaker.name });
           
           if (audioBlob) {
             const audioUrl = URL.createObjectURL(audioBlob);

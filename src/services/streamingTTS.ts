@@ -97,7 +97,7 @@ class StreamingTTSService {
       console.log(`🔊 Converting to audio: "${chunk.text}"`);
       
       // Use ElevenLabs to convert chunk to audio
-      const audioBlob = await synthesizeToBlob(chunk.text);
+      const audioBlob = await synthesizeToBlob(chunk.text, { stakeholderName: session.stakeholderName });
       
       if (audioBlob) {
         chunk.audio = audioBlob;

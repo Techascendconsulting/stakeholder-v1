@@ -1032,7 +1032,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       if (elevenConfigured()) {
         console.log('✅ Using ElevenLabs TTS for audio synthesis');
-        const audioBlob = await synthesizeToBlob(text);
+        const audioBlob = await synthesizeToBlob(text, { stakeholderName: stakeholder.name });
         
         if (audioBlob) {
           const audioUrl = URL.createObjectURL(audioBlob);

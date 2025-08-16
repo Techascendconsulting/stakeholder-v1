@@ -89,7 +89,7 @@ class AudioOrchestrator {
       throw new Error('ElevenLabs TTS configuration missing')
     }
 
-    const audioBlob = await synthesizeToBlob(text)
+    const audioBlob = await synthesizeToBlob(text, { stakeholderName })
     if (!audioBlob) {
       throw new Error('TTS request failed')
     }

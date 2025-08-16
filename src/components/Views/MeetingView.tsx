@@ -1050,7 +1050,7 @@ These notes were generated using a fallback system due to extended AI processing
         
         if (elevenConfigured()) {
             console.log('✅ Using ElevenLabs TTS for audio synthesis')
-            const audioBlob = await synthesizeToBlob(text)
+            const audioBlob = await synthesizeToBlob(text, { stakeholderName: stakeholder.name })
             
             if (audioBlob) {
             const audioUrl = URL.createObjectURL(audioBlob)
