@@ -29,7 +29,7 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
   if ((key === 'jess' || key === 'jessica') && (VOICE_ID_JESS || VOICE_ID_AISHA)) return VOICE_ID_JESS || VOICE_ID_AISHA
   if (key === 'aisha' && (VOICE_ID_AISHA || VOICE_ID_JESS)) return VOICE_ID_AISHA || VOICE_ID_JESS
   if (key === 'david' && VOICE_ID_DAVID) return VOICE_ID_DAVID
-  if (key === 'james' && VOICE_ID_JAMES) return VOICE_ID_JAMES
+  if (key === 'james' && (VOICE_ID_JAMES || 'tviRhmjyL6tfcfzX7J6t')) return VOICE_ID_JAMES || 'tviRhmjyL6tfcfzX7J6t'
   return DEFAULT_VOICE_ID
 }
 
