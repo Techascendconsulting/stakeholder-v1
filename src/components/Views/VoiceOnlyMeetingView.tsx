@@ -1907,7 +1907,7 @@ Provide one short variant only.`
       const commonSet = ['hello team', 'hi team', 'hello everyone', 'hello'];
       if (usedGreetingSetRef.current.has(normalized) || commonSet.slice(0, 2).includes(normalized)) {
         // Pick a neutral short alternative not used yet
-        const variants = ['Hi team.', 'Hello.', 'Good to be here.', 'Thanks for joining.', 'Let's begin.'];
+        const variants = ['Hi team.', 'Hello.', 'Good to be here.', 'Thanks for joining.', "Let's begin."];
         const alt = variants.find(v => !usedGreetingSetRef.current.has(v.toLowerCase().replace(/\.$/, ''))) || 'Hello.';
         greeting = alt;
       }
