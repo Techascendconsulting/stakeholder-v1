@@ -7,6 +7,7 @@ const VOICE_ID_AISHA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA as string 
 const VOICE_ID_JESS = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS as string | undefined
 const VOICE_ID_DAVID = import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID as string | undefined
 const VOICE_ID_JAMES = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES as string | undefined
+const VOICE_ID_EMILY = import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY as string | undefined
 
 // ElevenLabs client (lazy)
 let client: ElevenLabsClient | null = null
@@ -30,6 +31,7 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
   if (key === 'aisha' && (VOICE_ID_AISHA || VOICE_ID_JESS)) return VOICE_ID_AISHA || VOICE_ID_JESS
   if (key === 'david' && VOICE_ID_DAVID) return VOICE_ID_DAVID
   if (key === 'james' && (VOICE_ID_JAMES || 'tviRhmjyL6tfcfzX7J6t')) return VOICE_ID_JAMES || 'tviRhmjyL6tfcfzX7J6t'
+  if (key === 'emily' && (VOICE_ID_EMILY || 'rfkTsdZrVWEVhDycUYn9')) return VOICE_ID_EMILY || 'rfkTsdZrVWEVhDycUYn9'
   return DEFAULT_VOICE_ID
 }
 
@@ -64,6 +66,7 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
       aisha: VOICE_ID_AISHA || null,
       david: VOICE_ID_DAVID || null,
       james: VOICE_ID_JAMES || null,
+      emily: VOICE_ID_EMILY || null,
       fallback: DEFAULT_VOICE_ID || null
     }
   })
