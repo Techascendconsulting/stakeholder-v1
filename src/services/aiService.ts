@@ -1665,6 +1665,7 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
   // Dynamic response generation - NO hardcoded templates
   private async generateDynamicFallback(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): Promise<string> {
     // Use OpenAI to generate completely dynamic responses based on context
+    const recent = (Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-3).map(msg => `${msg.speaker}: ${msg.content}`).join('\n')
     const fallbackPrompt = `You are ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department.
 
 Your personality: ${stakeholder.personality}
@@ -1676,23 +1677,31 @@ The user said: "${userMessage}"
 Project context: ${context.project.name} - ${context.project.description}
 
 Recent conversation history:
-${context.conversationHistory.slice(-3).map(msg => `${msg.speaker}: ${msg.content}`).join('\n')}
+${recent}
 
-Respond naturally as ${stakeholder.name} would, addressing the user's message directly. Be conversational and authentic to your role and personality. Do NOT use templates or generic phrases.`;
+Respond directly to the user's request with substance. Be specific and contextual. Do NOT use any of the following patterns:
+- "Could you help me understand what you're looking for"
+- "As the [role], I want to make sure I give you the right information"
+- "I'm here to help"
+- "What do you need"
+- Self-introductions or title statements
+- Generic pleasantries beyond the first greeting
+
+Instead, immediately provide the relevant insight or answer based on your role and the project. Keep it concise (2-4 sentences), factual, and human.`;
 
     try {
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: fallbackPrompt }],
-        max_tokens: 200,
-        temperature: 0.8
+        max_tokens: 220,
+        temperature: 0.7
       });
 
-      return response.choices[0]?.message?.content || `I'd like to understand more about what you're asking regarding ${context.project.name}.`;
+      return response.choices[0]?.message?.content || `For ${context.project.name}, here are the key points: [provide concise specifics].`;
     } catch (error) {
       console.error('Error generating dynamic fallback:', error);
-      // Even the final fallback should be contextual
-      return `Could you help me understand what you're looking for regarding ${context.project.name}? As the ${stakeholder.role}, I want to make sure I give you the right information.`;
+      // Even the final fallback should be contextual and non-generic
+      return `For ${context.project.name}, a quick overview: [brief, concrete details relevant to the question].`;
     }
   }
 
