@@ -187,6 +187,14 @@ export function stopAllAudio(): void {
   }
 }
 
+// Allow other modules to register externally created audio elements
+export function registerExternalAudio(audio: HTMLAudioElement, url?: string): void {
+  try {
+    activeAudios.add(audio)
+    if (url) audioUrlMap.set(audio, url)
+  } catch {}
+}
+
 export async function speakAndPlay(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {
   const blob = await synthesizeToBlob(text, options)
   await playBlob(blob)

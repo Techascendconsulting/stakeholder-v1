@@ -5,7 +5,7 @@ import { useVoice } from '../../contexts/VoiceContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
-import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS'
 import VoiceInputModal from '../VoiceInputModal'
 
@@ -602,6 +602,8 @@ const MeetingView: React.FC = () => {
 
   // Enhanced end meeting with progressive feedback
   const handleEndMeeting = async () => {
+    // Halt any active speech immediately
+    try { stopAllAudio() } catch {}
     if (messages.length <= 1) {
       alert('No meaningful conversation to end. Have a discussion with the stakeholders first to generate comprehensive notes.');
       return;

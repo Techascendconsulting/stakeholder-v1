@@ -615,6 +615,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
+            registerExternalAudio(audio, audioUrl);
             
             setCurrentAudio(audio);
             setPlayingMessageId(responseMessage.id);
@@ -749,6 +750,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             if (audioBlob) {
               const audioUrl = URL.createObjectURL(audioBlob);
               const audio = new Audio(audioUrl);
+              registerExternalAudio(audio, audioUrl);
               
               setCurrentAudio(audio);
               setPlayingMessageId(responseMessage.id);
@@ -1042,6 +1044,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         if (audioBlob) {
           const audioUrl = URL.createObjectURL(audioBlob);
           const audio = new Audio(audioUrl);
+        registerExternalAudio(audio, audioUrl);
         
         setCurrentAudio(audio);
         setPlayingMessageId(messageId);
