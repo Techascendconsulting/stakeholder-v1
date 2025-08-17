@@ -523,6 +523,7 @@ Generate only the greeting, nothing else.`;
 
         directResponse = this.ensureCompleteResponse(directResponse);
         directResponse = this.filterSelfReferences(directResponse, stakeholder);
+        directResponse = this.sanitizeConversationalTics(directResponse, userMessage);
         
         await this.updateConversationState(stakeholder, userMessage, directResponse, context);
         return directResponse;
@@ -556,6 +557,9 @@ Generate only the greeting, nothing else.`;
 
       // Filter out solutions during as_is phase (safety net)
       aiResponse = this.filterSolutionsInAsIsPhase(aiResponse, this.conversationState.conversationPhase);
+
+      // Remove greetings/template closings unless appropriate
+      aiResponse = this.sanitizeConversationalTics(aiResponse, userMessage);
 
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
       return aiResponse;
@@ -2124,6 +2128,7 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
       // Ensure response is complete and properly formatted
       response = this.ensureCompleteResponse(response);
       response = this.filterSelfReferences(response, mentionedStakeholder);
+      response = this.sanitizeConversationalTics(response, userMessage);
 
       // Update conversation state
       await this.updateConversationState(mentionedStakeholder, userMessage, response, context);
@@ -2454,6 +2459,33 @@ CRITICAL - PHASE-SPECIFIC GUIDANCE:`;
 Respond naturally as ${stakeholder.name} addressing the specific question or request you were asked about:`;
 
     return prompt;
+  }
+
+  // Remove greetings and templatey closings for non-greeting replies
+  private sanitizeConversationalTics(response: string, userMessage: string): string {
+    if (!response) return response;
+    const msg = (userMessage || '').toLowerCase();
+
+    // If the user did NOT greet, strip greeting prefixes
+    const userGreeted = /\b(hi|hello|hey|good\s+(morning|afternoon|evening|night))\b/.test(msg);
+    if (!userGreeted) {
+      response = response
+        .replace(/^\s*(hi|hello|hey|good\s+(morning|afternoon|evening|night))[,!\.]?\s*/i, '')
+        .replace(/^\s*(team|everyone|all)[,!\.]?\s*/i, '');
+    }
+
+    // Remove generic collaboration/closing templates
+    response = response
+      .replace(/\b(let'?s|let us)\s+(collaborate|work together|partner)\b[\s\S]*$/i, '')
+      .replace(/\b(together|as a team),?\s+we can\b[\s\S]*$/i, '')
+      .replace(/\bto streamline the process\b[\s\S]*$/i, '')
+      .replace(/\b(in summary|to summarize|overall),?\s*/i, '')
+      .trim();
+
+    // Clean trailing connectors if stripping created fragments
+    response = response.replace(/[,;:\-\s]+$/, '.');
+    if (!/[\.!?]$/.test(response)) response += '.';
+    return response;
   }
 }
 
