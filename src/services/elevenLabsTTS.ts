@@ -133,6 +133,10 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
   return blob
 }
 
+// Track active audio elements to allow global interruption
+const activeAudios = new Set<HTMLAudioElement>()
+const audioUrlMap = new WeakMap<HTMLAudioElement, string>()
+
 export async function playBlob(audioBlob: Blob): Promise<void> {
   // Validate content quickly: MP3 should start with 'ID3' or 0xFF (frame sync)
   try {
@@ -150,14 +154,37 @@ export async function playBlob(audioBlob: Blob): Promise<void> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(audioBlob)
     const audio = new Audio(url)
-    audio.onended = () => { URL.revokeObjectURL(url); resolve() }
+    activeAudios.add(audio)
+    audioUrlMap.set(audio, url)
+    audio.onended = () => { 
+      URL.revokeObjectURL(url)
+      activeAudios.delete(audio)
+      resolve() 
+    }
     audio.onerror = () => {
       console.error('Audio decode error', (audio as any).error)
       URL.revokeObjectURL(url)
+      activeAudios.delete(audio)
       reject(new Error('Audio playback failed'))
     }
-    audio.play().catch(err => { URL.revokeObjectURL(url); reject(err) })
+    audio.play().catch(err => { 
+      URL.revokeObjectURL(url)
+      activeAudios.delete(audio)
+      reject(err) 
+    })
   })
+}
+
+export function stopAllAudio(): void {
+  for (const audio of Array.from(activeAudios)) {
+    try {
+      audio.pause()
+      audio.currentTime = 0
+      const url = audioUrlMap.get(audio)
+      if (url) URL.revokeObjectURL(url)
+    } catch {}
+    activeAudios.delete(audio)
+  }
 }
 
 export async function speakAndPlay(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {

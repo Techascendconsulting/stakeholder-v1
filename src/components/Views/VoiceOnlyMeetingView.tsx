@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
-import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
@@ -3536,6 +3536,8 @@ Please review the raw transcript for detailed conversation content.`;
   // Helper: play audio with speaking indicator
   const playForStakeholder = async (s: any, audioBlob: Blob) => {
     try {
+      // Prevent overlapping voices across any stakeholders
+      stopAllAudio()
       setCurrentSpeaker(s);
       setCurrentSpeaking(s.id);
       await playBlob(audioBlob);
