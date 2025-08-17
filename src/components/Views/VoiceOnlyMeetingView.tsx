@@ -3503,7 +3503,10 @@ Please review the raw transcript for detailed conversation content.`;
 
   // Fallback: pick one stakeholder when no explicit mentions
   const routeToSingleStakeholder = async (message: string, availableStakeholders: any[]) => {
-    // Prefer the first available to unblock flow
+    // Use quick heuristics (implicit follow-up + topic weighting)
+    const candidate = getQuickStakeholder(message)
+    if (candidate) return candidate
+    // Fallback: first available to unblock flow
     return availableStakeholders && availableStakeholders.length > 0 ? availableStakeholders[0] : null;
   }
 
