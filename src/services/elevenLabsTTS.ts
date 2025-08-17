@@ -4,6 +4,7 @@ import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined
 const DEFAULT_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined
 const VOICE_ID_AISHA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_AISHA as string | undefined
+const VOICE_ID_JESS = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS as string | undefined
 const VOICE_ID_DAVID = import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID as string | undefined
 const VOICE_ID_JAMES = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES as string | undefined
 
@@ -25,7 +26,8 @@ export function isConfigured(): boolean {
 export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: string): string | undefined {
   if (explicitVoiceId && explicitVoiceId.trim()) return explicitVoiceId
   const key = stakeholderName.toLowerCase().split(' ')[0]
-  if (key === 'aisha' && VOICE_ID_AISHA) return VOICE_ID_AISHA
+  if ((key === 'jess' || key === 'jessica') && (VOICE_ID_JESS || VOICE_ID_AISHA)) return VOICE_ID_JESS || VOICE_ID_AISHA
+  if (key === 'aisha' && (VOICE_ID_AISHA || VOICE_ID_JESS)) return VOICE_ID_AISHA || VOICE_ID_JESS
   if (key === 'david' && VOICE_ID_DAVID) return VOICE_ID_DAVID
   if (key === 'james' && VOICE_ID_JAMES) return VOICE_ID_JAMES
   return DEFAULT_VOICE_ID
@@ -43,6 +45,12 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
   }
   const voiceId = resolveVoiceId(options?.stakeholderName || '', options?.voiceId)
   if (!voiceId) {
+    console.warn('⚠️ No specific ElevenLabs voice ID resolved; trying default or Jess/Aisha fallbacks')
+    if (DEFAULT_VOICE_ID || VOICE_ID_JESS || VOICE_ID_AISHA) {
+      const fallbackId = DEFAULT_VOICE_ID || VOICE_ID_JESS || VOICE_ID_AISHA
+      console.log('🎙️ TTS VOICE (fallback)', { stakeholderName: options?.stakeholderName || null, fallbackId })
+      return await speak(text, { stakeholderName: options?.stakeholderName, voiceId: fallbackId })
+    }
     throw new Error('No ElevenLabs voice ID configured. Set VITE_ELEVENLABS_VOICE_ID or provide a voiceId.')
   }
 
@@ -52,6 +60,7 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
     resolvedVoiceId: voiceId,
     explicitVoiceId: options?.voiceId || null,
     env: {
+      jess: VOICE_ID_JESS || null,
       aisha: VOICE_ID_AISHA || null,
       david: VOICE_ID_DAVID || null,
       james: VOICE_ID_JAMES || null,

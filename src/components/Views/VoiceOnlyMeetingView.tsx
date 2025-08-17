@@ -1198,7 +1198,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           // Generate audio in background
           const audioPromise = globalAudioEnabled 
-            ? synthesizeToBlob(simpleGreeting, { stakeholderName: stakeholder.name })
+            ? synthesizeToBlob(simpleGreeting, { stakeholderName: stakeholder.name }).catch(err => { console.warn(`⚠️ Greeting TTS failed for ${stakeholder.name}:`, err?.message || err); return null as any; })
             : Promise.resolve(null);
           
           const totalTime = performance.now() - startTime;
@@ -1392,7 +1392,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           // Generate audio in background while user sees text
           const audioPromise = globalAudioEnabled && response 
-            ? synthesizeToBlob(response)
+            ? synthesizeToBlob(response, { stakeholderName: stakeholder.name })
             : Promise.resolve(null);
           
           const totalTime = performance.now() - startTime;
@@ -1603,7 +1603,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // 4. Generate and play audio in parallel (user already sees text)
       if (globalAudioEnabled) {
         console.log(`🎵 CACHE: Generating audio for ${stakeholder.name} (background)`);
-        const audioBlob = await synthesizeToBlob(cachedResponse);
+        const audioBlob = await synthesizeToBlob(cachedResponse, { stakeholderName: stakeholder.name });
         if (audioBlob) {
           await playBlob(audioBlob);
           console.log(`✅ CACHE: ${stakeholder.name} finished speaking`);
@@ -1679,7 +1679,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
         // Generate and play audio
         if (globalAudioEnabled) {
-          const audioBlob = await synthesizeToBlob(cachedResponse);
+          const audioBlob = await synthesizeToBlob(cachedResponse, { stakeholderName: stakeholder.name });
           if (audioBlob) {
             await playBlob(audioBlob);
             console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking (cached)`);
@@ -3127,7 +3127,7 @@ Please review the raw transcript for detailed conversation content.`;
       if (stakeholder && elevenConfigured()) {
         try {
           console.log(`✅ Using ElevenLabs for stakeholder: ${stakeholder.name}`);
-          const audioBlob = await synthesizeToBlob(message.content);
+          const audioBlob = await synthesizeToBlob(message.content, { stakeholderName: stakeholder?.name }).catch(() => null as any);
           if (audioBlob) {
             const audioUrl = URL.createObjectURL(audioBlob);
             audioElement = new Audio(audioUrl);
