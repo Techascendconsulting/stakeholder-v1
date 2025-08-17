@@ -901,8 +901,13 @@ Generating detailed analysis...`;
   // Combine basic structure with AI analysis for clean output
   private combineNotesWithAnalysis(basicNotes: string, aiAnalysis: string): string {
     if (!aiAnalysis) {
-      return basicNotes.replace('*Generating detailed analysis...*', 
+      let output = basicNotes.replace('*Generating detailed analysis...*', 
         '## Analysis Status\nDetailed analysis could not be generated at this time. The meeting details and participant information above provide a basic summary of the session.');
+      if (output === basicNotes) {
+        output = basicNotes.replace('Generating detailed analysis...', 
+          '## Analysis Status\nDetailed analysis could not be generated at this time. The meeting details and participant information above provide a basic summary of the session.');
+      }
+      return output;
     }
 
     // Clean the AI analysis content
