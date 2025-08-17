@@ -540,8 +540,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       let fullResponse = '';
       
       // Set current speaker immediately
-      setCurrentSpeaker(stakeholder);
-      setCurrentSpeaking(stakeholder.id);
+      // Current speaker is set during playback
       
       // Generate GPT response with streaming
       const aiService = AIService.getInstance();
@@ -702,10 +701,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       workingMessages = [...workingMessages, responseMessage];
       setMessages(workingMessages);
       addToBackgroundTranscript(responseMessage);
-      
-      // Set current speaker for UI
-      setCurrentSpeaker(stakeholder);
-      setCurrentSpeaking(stakeholder.id);
       
       // Generate and play audio using ElevenLabs TTS (simple and reliable)
       if (globalAudioEnabled && response) {
@@ -1618,7 +1613,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`🎵 CACHE: Generating audio for ${stakeholder.name} (background)`);
         const audioBlob = await synthesizeToBlob(cachedResponse, { stakeholderName: stakeholder.name });
         if (audioBlob) {
-          await playBlob(audioBlob);
+          await playForStakeholder(stakeholder, audioBlob);
           console.log(`✅ CACHE: ${stakeholder.name} finished speaking`);
         }
       }
@@ -1658,7 +1653,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`🎵 FAST: Generating and playing audio for ${stakeholder.name}`);
         const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
         if (audioBlob) {
-          await playBlob(audioBlob);
+          await playForStakeholder(stakeholder, audioBlob);
           console.log(`✅ FAST: ${stakeholder.name} finished speaking`);
         } else {
           console.warn('⚠️ FAST: Audio generation failed, response added to transcript only');
