@@ -1537,12 +1537,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     const msg = message.toLowerCase();
     
           // BRIEF responses (1-2 sentences) - Simple pleasantries only
-      if (msg.includes('hi') || msg.includes('hello') || msg.includes('hey') ||
-          msg.includes("what's up") || msg.includes('whats up') ||
-          msg.includes('how are you') || msg.includes('how you doing') ||
-          msg.includes('good morning') || msg.includes('good afternoon') ||
-          (msg.includes('hi') && msg.includes('guys')) || 
-          (msg.includes('hello') && msg.includes('everyone'))) {
+      if ((msg.includes('hi') || msg.includes('hello') || msg.includes('hey')) &&
+          !(msg.includes('project') || msg.includes('status') || msg.includes('update') || msg.includes('progress'))) {
         return 'greeting';
       }
     
@@ -1853,9 +1849,10 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
     console.log(`👋 EXPERT GREETING: Generating professional greeting for ${stakeholder.name}`);
     
     try {
-      // Direct OpenAI call with expert-level context
-      const daypart = getLocalDaypart();
-      const daypartSalutation = daypart === 'morning' ? 'Good morning' : daypart === 'afternoon' ? 'Good afternoon' : 'Good evening';
+      // Detect if the user used a time-of-day salutation; only mirror if present
+      const timeSalutationMatch = messageContent.match(/\b(good\s+(morning|afternoon|evening|night))\b/i);
+      const userTimeSalutation = timeSalutationMatch ? timeSalutationMatch[0] : '';
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -1871,18 +1868,23 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
 
 Tone: friendly, concise, neutral (no hype). Avoid exclamations.
 Length: maximum 5 words.
-Begin with a time-appropriate salutation: "${daypartSalutation}".
+When to use time-of-day:
+- Do NOT use time-of-day greetings (Good morning/afternoon/evening/night) unless the user's message contains one.
+- If the user's message contains a time-of-day greeting, you MAY mirror it exactly once.
+Otherwise, prefer neutral salutations like "Hello" or "Hi team".
+
 Style examples by role (optional hints):
-${stakeholder.role.includes('Finance') ? '- Finance: "Morning team" / "Good morning"' : 
-  stakeholder.role.includes('Operations') ? '- Operations: "Morning" / "Hi team"' :
-  stakeholder.role.includes('IT') ? '- IT: "Hello" / "Good morning"' :
-  '- Professional: "Good morning" / "Hello team"'}
+${stakeholder.role.includes('Finance') ? '- Finance: "Hello team" / "Hi team"' : 
+  stakeholder.role.includes('Operations') ? '- Operations: "Hello" / "Hi team"' :
+  stakeholder.role.includes('IT') ? '- IT: "Hello" / "Hi team"' :
+  '- Professional: "Hello" / "Hi team"'}
 
 Rules:
 - No superlatives or hype (no "excited", "charged", "ready to rock").
 - No exclamation marks.
 - Use normal punctuation.
 - Keep it natural and understated.
+- Maximum 5 words.
 
 Generate ONE short greeting for ${stakeholder.name.split(' ')[0]} only.`
             },
@@ -1901,20 +1903,30 @@ Generate ONE short greeting for ${stakeholder.name.split(' ')[0]} only.`
       }
 
       const data = await response.json();
-      let greeting = data.choices?.[0]?.message?.content?.trim() || `${daypartSalutation}.`;
-      
-      // Normalize: ensure calm tone, no exclamation, limit length
-      greeting = greeting.replace(/[!]+/g, '').trim();
-      greeting = greeting.replace(/[?]+/g, '').trim();
-      greeting = greeting.split(' ').slice(0, 5).join(' ');
-      if (!/[.!?]$/.test(greeting)) greeting += '.';
-      
+      let greeting = (data.choices?.[0]?.message?.content?.trim() || '').replace(/[!]+/g, '').replace(/[?]+/g, '').trim();
+
+      // Enforce: No time-of-day unless user used it
+      const startsWithTimeOfDay = /^good\s+(morning|afternoon|evening|night)\b/i.test(greeting);
+      if (!userTimeSalutation && startsWithTimeOfDay) {
+        greeting = 'Hello team.';
+      }
+
+      // If mirroring, normalize to exactly the user's phrase capitalization
+      if (userTimeSalutation && startsWithTimeOfDay) {
+        const lower = greeting.toLowerCase();
+        greeting = lower.replace(/^good\s+(morning|afternoon|evening|night)\b/i, userTimeSalutation);
+      }
+
+      // Limit to 5 words, ensure terminal punctuation
+      greeting = greeting.split(' ').slice(0, 5).join(' ').trim();
+      if (!/[\.!?]$/.test(greeting)) greeting += '.';
+
       console.log(`✅ EXPERT GREETING: Generated "${greeting}" for ${stakeholder.name}`);
       return greeting;
       
     } catch (error) {
       console.error('❌ EXPERT GREETING: Generation failed, using professional fallback', error);
-      const fallback = `${getLocalDaypart() === 'morning' ? 'Good morning' : getLocalDaypart() === 'afternoon' ? 'Good afternoon' : 'Good evening'}.`;
+      const fallback = 'Hello team.';
       return fallback;
     }
   };
@@ -3440,7 +3452,9 @@ Please review the raw transcript for detailed conversation content.`;
       /\b(hi|hello|hey|good\s+(morning|afternoon|evening))\b.*\b(everyone|team|all|folks|people|stakeholders|guys)\b/,
       /\b(hi|hello|hey)\b\s*(there)?\s*(everyone|team|all|folks|people)?$/
     ];
-    const isGreeting = generalPatterns.some((re) => re.test(msg));
+    // If the message contains project/status keywords, do NOT treat as greeting
+    const projectStatusKeywords = /(project|status|update|progress|what\'?s up|whats up|how\'?s it going|how is it going|where are we|are we on track)/
+    const isGreeting = !projectStatusKeywords.test(msg) && generalPatterns.some((re) => re.test(msg));
     console.log(`🤖 AI Greeting Detection (local): "${message}" → ${isGreeting ? 'yes' : 'no'}`);
     return isGreeting;
   };
