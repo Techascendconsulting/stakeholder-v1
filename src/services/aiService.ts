@@ -33,7 +33,7 @@ interface ConversationState {
   topicsDiscussed: Set<string>;
   lastSpeakers: string[];
   greetingStatus: Map<string, 'not_greeted' | 'greeted' | 're_greeted'>;
-  conversationPhase: 'opening' | 'as_is' | 'pain_points' | 'solutioning' | 'deep_dive' | 'closing';
+  conversationPhase: 'opening' | 'as_is' | 'pain_points' | 'solutioning' | 'deep_dive' | 'closing' | 'exploration';
   stakeholderStates: Map<string, StakeholderState>;
 }
 
@@ -96,7 +96,8 @@ export class AIService {
       maxTopicsPerStakeholder: 5,
       openingPhaseMessages: 3,
       closingPhaseMessages: 25,
-      recentMessagesCount: 5
+      recentMessagesCount: 5,
+      openingThreshold: 5
     },
     ai_models: {
       // Cost optimization: Force all models to use gpt-3.5-turbo for 97% cost savings
@@ -262,21 +263,15 @@ export class AIService {
   private async updateConversationState(stakeholder: StakeholderContext, userMessage: string, aiResponse: string, context: ConversationContext) {
     this.conversationState.messageCount++;
     
+    // Ensure conversationHistory is always an array
+    const history = Array.isArray(context.conversationHistory) ? context.conversationHistory : [];
+    (context as any).conversationHistory = history;
+    
     // Update participant interactions
-    const currentInteractions = this.conversationState.participantInteractions.get(stakeholder.name) || 0;
-    this.conversationState.participantInteractions.set(stakeholder.name, currentInteractions + 1);
+    this.updateParticipantInteractions(stakeholder.name, userMessage, aiResponse);
     
-    // Update last speakers
-    this.conversationState.lastSpeakers.push(stakeholder.name);
-    if (this.conversationState.lastSpeakers.length > AIService.CONFIG.conversation_flow.maxLastSpeakers) {
-      this.conversationState.lastSpeakers.shift();
-    }
-    
-    // Update stakeholder state
+    // Update topic trends
     const stakeholderState = this.getStakeholderState(stakeholder.name);
-    stakeholderState.hasSpoken = true;
-    
-    // Extract and update topics from AI response
     this.extractAndUpdateTopics(aiResponse, stakeholderState);
     
     // Update conversation phase dynamically
@@ -313,78 +308,24 @@ export class AIService {
     const messageCount = this.conversationState.messageCount;
     
     // Handle basic opening phase
-    if (messageCount <= AIService.CONFIG.conversation_flow.openingPhaseMessages) {
+    if (messageCount <= AIService.CONFIG.conversation_flow.openingThreshold) {
       this.conversationState.conversationPhase = 'opening';
       return;
     }
     
-    // Handle closing phase
-    if (messageCount > AIService.CONFIG.conversation_flow.closingPhaseMessages) {
-      this.conversationState.conversationPhase = 'closing';
-      return;
-    }
-    
     // Analyze conversation content to determine business analysis phase
-    const recentMessages = context.conversationHistory.slice(-AIService.CONFIG.conversation_flow.recentMessagesCount);
+    const recentMessages = (Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-AIService.CONFIG.conversation_flow.recentMessagesCount);
     const conversationContent = recentMessages.map(msg => msg.content).join(' ');
     
     // Force as_is phase if explicit current process request
-    if (conversationContent.toLowerCase().includes('current process') || 
-        conversationContent.toLowerCase().includes('dont give solutions') ||
-        conversationContent.toLowerCase().includes("don't give solutions") ||
-        conversationContent.toLowerCase().includes('focus on current') ||
-        conversationContent.toLowerCase().includes('understand current')) {
+    if (/current\s+process|as-?is|"as is"|walk\s+me\s+through|how\s+it\s+works/i.test(conversationContent)) {
       this.conversationState.conversationPhase = 'as_is';
-      console.log('Forced as_is phase due to current process request');
       return;
     }
     
-    try {
-      const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.ai_models.phaseDetection,
-        messages: [
-          {
-            role: "system",
-            content: `You are analyzing a business stakeholder meeting to determine the current meeting phase. Based on the conversation content, determine which phase the meeting is in:
-
-PHASES:
-- "as_is": Understanding current state, processes, how things work now
-- "pain_points": Identifying problems, challenges, issues with current state
-- "solutioning": Discussing solutions, proposals, implementation plans
-- "deep_dive": Detailed analysis of any of the above phases
-
-ANALYSIS CRITERIA:
-- as_is: Questions about current processes, "how do you currently...", "what's the current state", "walk me through the process", "focus on current process", "understand current process", "don't give solutions", "current workflow", "existing process"
-- pain_points: Discussing problems, challenges, frustrations, "what doesn't work", "what are the issues", "problems with current", "challenges we face"
-- solutioning: Proposing solutions, "what if we...", "how about...", "we could implement", discussing implementation, "recommend", "suggest", "propose"
-
-IMPORTANT: If you see phrases like "don't give solutions", "focus on current process", "understand current process first" - this is DEFINITELY "as_is" phase.
-
-Return ONLY the phase name: "as_is", "pain_points", "solutioning", or "deep_dive"`
-          },
-          {
-            role: "user",
-            content: `Recent conversation content: "${conversationContent}"`
-          }
-        ],
-        temperature: AIService.CONFIG.ai_params.phaseDetection.temperature,
-        max_tokens: AIService.CONFIG.ai_params.phaseDetection.maxTokens
-      });
-
-      const detectedPhase = completion.choices[0]?.message?.content?.trim();
-      
-      if (detectedPhase && ['as_is', 'pain_points', 'solutioning', 'deep_dive'].includes(detectedPhase)) {
-        this.conversationState.conversationPhase = detectedPhase as any;
-        console.log(`Phase detected: ${detectedPhase}`);
-      } else {
-        // Default to as_is if detection fails
-        this.conversationState.conversationPhase = 'as_is';
-        console.log('Phase detection failed, defaulting to as_is');
-      }
-    } catch (error) {
-      console.error('Error detecting conversation phase:', error);
-      // Default to as_is if AI detection fails
-      this.conversationState.conversationPhase = 'as_is';
+    // Default progression
+    if (messageCount > AIService.CONFIG.conversation_flow.openingThreshold + 2) {
+      this.conversationState.conversationPhase = 'exploration';
     }
   }
 
@@ -1096,19 +1037,15 @@ Note: This is a basic summary. For detailed insights, please review the complete
 
   private getRecentInteractions(currentStakeholder: StakeholderContext, conversationHistory: any[]): string[] {
     const interactions: string[] = [];
-    const recentMessages = conversationHistory.slice(-10);
+    const recentMessages = (Array.isArray(conversationHistory) ? conversationHistory : []).slice(-10);
     
     recentMessages.forEach((msg, index) => {
       if (msg.stakeholderName && msg.stakeholderName !== currentStakeholder.name) {
-        // Check if the next message is from current stakeholder (indicating an interaction)
-        const nextMsg = recentMessages[index + 1];
-        if (nextMsg && nextMsg.stakeholderName === currentStakeholder.name) {
-          interactions.push(`${msg.stakeholderName} mentioned ${this.extractKeyPhrase(msg.content)}`);
-        }
+        interactions.push(`${msg.stakeholderName}: ${msg.content}`);
       }
     });
     
-    return interactions.slice(0, 3); // Limit to 3 recent interactions
+    return interactions;
   }
 
   private getDepartmentalRelationships(currentStakeholder: StakeholderContext, otherStakeholders: StakeholderContext[]): string[] {
@@ -1474,17 +1411,13 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
     let prompt = `CURRENT QUESTION: "${userMessage}"\n\n`
     
     // Only include recent relevant conversation context (last 3-4 messages)
-    const recentMessages = context.conversationHistory.slice(-4)
+    const recentMessages = (Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-4)
     if (recentMessages.length > 0) {
       prompt += `RECENT CONVERSATION:\n`
       recentMessages.forEach((msg) => {
-        if (msg.speaker === 'user') {
-          prompt += `Business Analyst: ${msg.content}\n`
-        } else if (msg.stakeholderName) {
-          prompt += `${msg.stakeholderName}: ${msg.content}\n`
-        }
+        const speaker = msg.speaker === 'user' ? 'Business Analyst' : (msg.stakeholderName || 'Stakeholder')
+        prompt += `- ${speaker}: ${msg.content}\n`
       })
-      prompt += `\n`
     }
     
     prompt += `YOUR ROLE: ${stakeholder.role} in ${stakeholder.department}\n`
@@ -2251,14 +2184,15 @@ YOUR RESPONSE APPROACH:
 - Show you were listening to the conversation
 
 CONVERSATION HISTORY FOR CONTEXT:
-${context.conversationHistory.slice(-5).map((msg, i) => {
+${(Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-5).map((msg, i) => {
   if (msg.speaker === 'user') {
     return `[${i + 1}] Business Analyst: ${msg.content}`;
   } else if (msg.stakeholderName) {
     return `[${i + 1}] ${msg.stakeholderName}: ${msg.content}`;
+  } else {
+    return `[${i + 1}] Stakeholder: ${msg.content}`;
   }
-  return '';
-}).filter(Boolean).join('\n')}
+}).join('\n')}
 
 CRITICAL: 
 - This is a natural continuation of the conversation
