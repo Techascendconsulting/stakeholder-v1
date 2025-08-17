@@ -35,6 +35,7 @@ interface ConversationState {
   greetingStatus: Map<string, 'not_greeted' | 'greeted' | 're_greeted'>;
   conversationPhase: 'opening' | 'as_is' | 'pain_points' | 'solutioning' | 'deep_dive' | 'closing' | 'exploration';
   stakeholderStates: Map<string, StakeholderState>;
+  clarificationNeededFor?: string | null;
 }
 
 interface StakeholderState {
@@ -189,7 +190,8 @@ export class AIService {
       lastSpeakers: [],
       greetingStatus: new Map(),
       conversationPhase: 'opening',
-      stakeholderStates: new Map()
+      stakeholderStates: new Map(),
+      clarificationNeededFor: null
     };
   }
 
@@ -500,6 +502,21 @@ Generate only the greeting, nothing else.`;
         const greetingResponse = await this.getGreetingResponse(stakeholder, context);
         await this.updateConversationState(stakeholder, userMessage, greetingResponse, context);
         return greetingResponse;
+      }
+
+      // Single-turn clarification: if unclear, ask 1 concise clarifying question, then expect next turn to be substantive
+      if (!this.conversationState.clarificationNeededFor && this.looksUnclearQuestion(userMessage)) {
+        this.conversationState.clarificationNeededFor = stakeholder.name;
+        const clarifier = this.ensureCompleteResponse(
+          `Quick clarification: do you mean policies like SOX/PCI, or general expense policy enforcement?`
+        );
+        await this.updateConversationState(stakeholder, userMessage, clarifier, context);
+        return this.sanitizeConversationalTics(this.filterSelfReferences(clarifier, stakeholder), userMessage);
+      }
+      
+      // If a clarification was requested previously, clear the flag and proceed with a substantive answer now
+      if (this.conversationState.clarificationNeededFor) {
+        this.conversationState.clarificationNeededFor = null;
       }
 
       // Handle direct mentions specially
@@ -2495,6 +2512,15 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
     response = response.replace(/[,;:\-\s]+$/, '.');
     if (!/[\.!?]$/.test(response)) response += '.';
     return response;
+  }
+
+  private looksUnclearQuestion(userMessage: string): boolean {
+    const msg = (userMessage || '').toLowerCase();
+    if (!msg) return false;
+    const hasQuestion = /\?$/.test(msg) || /\bwhat\b|\bhow\b|\bwhich\b|\bwhen\b|\bwho\b|\bwhere\b/.test(msg);
+    const tooShort = msg.split(/\s+/).length < 4;
+    const vague = /(stuff|things|this|that|it|issue|issues|regulations|legal|update|situation)\??$/.test(msg);
+    return hasQuestion && (tooShort || vague);
   }
 }
 
