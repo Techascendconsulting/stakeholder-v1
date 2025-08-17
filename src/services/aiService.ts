@@ -24,6 +24,7 @@ export interface ConversationContext {
   };
   conversationHistory: any[];
   stakeholders?: StakeholderContext[];
+  isOneOnOne?: boolean;
 }
 
 // Conversational State Management
@@ -476,17 +477,10 @@ Generate only the greeting, nothing else.`;
   }
 
   // Context-aware message analysis - no hardcoded patterns
-  private isGreetingMessage(userMessage: string, conversationHistory: any[] = []): boolean {
-    if (!userMessage || typeof userMessage !== 'string') {
-      return false;
-    }
-    
-    // Only consider it a greeting if it's early in the conversation
-    // and contains greeting-like words, but don't use hardcoded responses
-    const isEarlyInConversation = conversationHistory.length < 3;
-    const containsGreetingWords = /\b(hi|hello|hey|good morning|good afternoon|good evening|greetings)\b/i.test(userMessage);
-    
-    return isEarlyInConversation && containsGreetingWords;
+  private isGreetingMessage(userMessage: string, conversationHistory: any[]): boolean {
+    const history = Array.isArray(conversationHistory) ? conversationHistory : []
+    if (history.length > 2) return false
+    return /\b(hi|hello|hey|good morning|good afternoon|good evening|greetings)\b/i.test(userMessage)
   }
 
   // Main response generation with full conversational intelligence
@@ -1694,6 +1688,7 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
   private async generateDynamicFallback(stakeholder: StakeholderContext, userMessage: string, context: ConversationContext): Promise<string> {
     // Use OpenAI to generate completely dynamic responses based on context
     const recent = (Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-3).map(msg => `${msg.speaker}: ${msg.content}`).join('\n')
+    const oneOnOneHint = context.isOneOnOne ? '\nThis is a 1-on-1 conversation. Do not use group framing (no "everyone", "team"). Address the user directly.' : ''
     const fallbackPrompt = `You are ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department.
 
 Your personality: ${stakeholder.personality}
@@ -1702,7 +1697,7 @@ Your expertise: ${stakeholder.expertise.join(', ')}
 
 The user said: "${userMessage}"
 
-Project context: ${context.project.name} - ${context.project.description}
+Project context: ${context.project.name} - ${context.project.description}${oneOnOneHint}
 
 Recent conversation history:
 ${recent}
@@ -1715,21 +1710,22 @@ Respond directly to the user's request with substance. Be specific and contextua
 - Self-introductions or title statements
 - Generic pleasantries beyond the first greeting
 
-Instead, immediately provide the relevant insight or answer based on your role and the project. Keep it concise (2-4 sentences), factual, and human.`;
+Instead, immediately provide the relevant insight or answer based on your role and the project. Keep it concise (2-4 sentences), factual, and human.
+NO placeholders like [provide details] or [list steps]. Output the actual details.`;
 
     try {
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: fallbackPrompt }],
-        max_tokens: 220,
-        temperature: 0.7
+        max_tokens: 260,
+        temperature: 0.65
       });
 
-      return response.choices[0]?.message?.content || `For ${context.project.name}, here are the key points: [provide concise specifics].`;
+      return response.choices[0]?.message?.content || `Here are the concrete points for ${context.project.name}: ${stakeholder.expertise.slice(0,2).join(', ')}.`;
     } catch (error) {
       console.error('Error generating dynamic fallback:', error);
       // Even the final fallback should be contextual and non-generic
-      return `For ${context.project.name}, a quick overview: [brief, concrete details relevant to the question].`;
+      return `For ${context.project.name}, a quick overview specific to your question: ${stakeholder.priorities.slice(0,2).join(', ')}.`;
     }
   }
 
