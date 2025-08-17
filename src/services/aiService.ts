@@ -508,7 +508,7 @@ Generate only the greeting, nothing else.`;
       if (!this.conversationState.clarificationNeededFor && this.looksUnclearQuestion(userMessage)) {
         this.conversationState.clarificationNeededFor = stakeholder.name;
         const clarifier = this.ensureCompleteResponse(
-          `Quick clarification: do you mean policies like SOX/PCI, or general expense policy enforcement?`
+          `Quick clarification: do you mean UK frameworks like UK GDPR/ICO guidance, Bribery Act, FCA rules, HMRC expense policy, or general expense policy enforcement?`
         );
         await this.updateConversationState(stakeholder, userMessage, clarifier, context);
         return this.sanitizeConversationalTics(this.filterSelfReferences(clarifier, stakeholder), userMessage);
@@ -1511,10 +1511,10 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
         
         // Add project-specific IT concerns
         if (projectName.includes('expense') || projectName.includes('financial')) {
-          itFocus += `\n- Financial data security and PCI compliance
-- Integration with existing ERP/accounting systems
-- Audit trail and data integrity requirements
-- Mobile access security for expense submissions`
+          itFocus += `\n- Financial data security and UK GDPR compliance (ICO guidance)
+- - Integration with existing ERP/accounting systems
+- - Audit trail and data integrity requirements
+- - Mobile access security for expense submissions`
         } else if (projectName.includes('inventory')) {
           itFocus += `\n- Real-time data synchronization across 15+ locations
 - Integration with existing warehouse management systems
@@ -1562,10 +1562,21 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
         
         // Add project-specific compliance concerns
         if (projectName.includes('expense') || projectName.includes('financial')) {
-          complianceFocus += `\n- SOX compliance for financial controls
-- Expense policy enforcement and violations
-- Audit trail requirements for financial transactions
-- Data retention and regulatory reporting needs`
+          complianceFocus += `\n- UK GDPR and UK Data Protection Act 2018 compliance
+- - FCA rules for financial controls and reporting
+- - Bribery Act and Anti-Money Laundering considerations (where applicable)
+- - HMRC expense policy guidance and record-keeping
+- - Audit trail requirements for financial transactions and retention`
+        } else if (projectName.includes('inventory')) {
+          complianceFocus += `\n- Real-time data synchronization across 15+ locations
+- Integration with existing warehouse management systems
+- Scalability for handling high transaction volumes
+- Data accuracy and inventory tracking systems`
+        } else if (projectName.includes('support') || projectName.includes('ticket')) {
+          complianceFocus += `\n- Integration with existing CRM and support tools
+- Knowledge base system architecture
+- SLA monitoring and reporting capabilities
+- Customer data privacy and access controls`
         }
         
         prompt += complianceFocus
