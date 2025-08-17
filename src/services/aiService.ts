@@ -1714,7 +1714,7 @@ Instead, immediately provide the relevant insight or answer based on your role a
 NO placeholders like [provide details] or [list steps]. Output the actual details.`;
 
     try {
-      const response = await this.openai.chat.completions.create({
+      const response = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: fallbackPrompt }],
         max_tokens: 260,
@@ -2528,6 +2528,16 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
     const tooShort = msg.split(/\s+/).length < 4;
     const vague = /(stuff|things|this|that|it|issue|issues|regulations|legal|update|situation)\??$/.test(msg);
     return hasQuestion && (tooShort || vague);
+  }
+
+  // Track how often stakeholders interact/respond
+  private updateParticipantInteractions(stakeholderName: string, userMessage: string, aiResponse: string) {
+    const current = this.conversationState.participantInteractions.get(stakeholderName) || 0
+    this.conversationState.participantInteractions.set(stakeholderName, current + 1)
+    this.conversationState.lastSpeakers.push(stakeholderName)
+    if (this.conversationState.lastSpeakers.length > AIService.CONFIG.conversation_flow.maxLastSpeakers) {
+      this.conversationState.lastSpeakers.shift()
+    }
   }
 }
 
