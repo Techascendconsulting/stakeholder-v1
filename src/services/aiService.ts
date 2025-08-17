@@ -535,7 +535,7 @@ Generate only the greeting, nothing else.`;
         directResponse = this.ensureCompleteResponse(directResponse);
         directResponse = this.filterSelfReferences(directResponse, stakeholder);
         directResponse = this.sanitizeConversationalTics(directResponse, userMessage);
-+       directResponse = this.applyHumanTouches(directResponse, userMessage, context)
+        directResponse = this.applyHumanTouches(directResponse, userMessage, context)
         
         await this.updateConversationState(stakeholder, userMessage, directResponse, context);
         return directResponse;
@@ -572,9 +572,8 @@ Generate only the greeting, nothing else.`;
 
       // Remove greetings/template closings unless appropriate
       aiResponse = this.sanitizeConversationalTics(aiResponse, userMessage);
-
-+     // Add subtle human touches (light backchannel + optional check-in)
-+     aiResponse = this.applyHumanTouches(aiResponse, userMessage, context)
+      // Add subtle human touches (light backchannel + optional check-in)
+      aiResponse = this.applyHumanTouches(aiResponse, userMessage, context)
 
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
       return aiResponse;
@@ -2174,7 +2173,7 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
       response = this.ensureCompleteResponse(response);
       response = this.filterSelfReferences(response, mentionedStakeholder);
       response = this.sanitizeConversationalTics(response, userMessage);
-+     response = this.applyHumanTouches(response, userMessage, context)
+      response = this.applyHumanTouches(response, userMessage, context)
 
       // Update conversation state
       await this.updateConversationState(mentionedStakeholder, userMessage, response, context);
