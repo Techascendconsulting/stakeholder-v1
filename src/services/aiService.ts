@@ -817,8 +817,11 @@ Generate clean, professional notes using this EXACT format (no asterisks, no mar
 ## Executive Summary
 [Write 2-3 sentences summarizing the meeting's key outcomes and purpose]
 
-## Key Discussion Topics
-[List the main topics discussed, using clear paragraph format without bullet points]
+## Conversation Summary
+[Write a concise narrative of what was actually discussed in this meeting, in chronological or thematic order. Refer to the main points raised, questions asked, and responses provided. This should be different from Key Insights: focus on describing the discussion content, not takeaways.]
+
+## Key Insights
+[Write the 3-6 most important takeaways, decisions, risks, or metrics. Do not repeat the Conversation Summary sentences; instead, extract the implications and conclusions. Keep as a paragraph with clearly separated sentences (no bullet symbols).]
 
 ## Stakeholder Insights
 [For each participant, provide their key contributions and perspectives in paragraph format]
