@@ -490,7 +490,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         priorities: s.priorities,
         personality: s.personality,
         expertise: s.expertise || []
-      }))
+      })),
+      isOneOnOne: selectedStakeholders.length === 1
     };
 
     const aiService = AIService.getInstance();
@@ -570,7 +571,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           priorities: s.priorities,
           personality: s.personality,
           expertise: s.expertise || []
-        }))
+        })),
+        isOneOnOne: selectedStakeholders.length === 1
       };
       
       const response = await aiService.generateStakeholderResponseStreaming(
