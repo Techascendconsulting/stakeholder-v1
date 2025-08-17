@@ -535,6 +535,7 @@ Generate only the greeting, nothing else.`;
         directResponse = this.ensureCompleteResponse(directResponse);
         directResponse = this.filterSelfReferences(directResponse, stakeholder);
         directResponse = this.sanitizeConversationalTics(directResponse, userMessage);
++       directResponse = this.applyHumanTouches(directResponse, userMessage, context)
         
         await this.updateConversationState(stakeholder, userMessage, directResponse, context);
         return directResponse;
@@ -571,6 +572,9 @@ Generate only the greeting, nothing else.`;
 
       // Remove greetings/template closings unless appropriate
       aiResponse = this.sanitizeConversationalTics(aiResponse, userMessage);
+
++     // Add subtle human touches (light backchannel + optional check-in)
++     aiResponse = this.applyHumanTouches(aiResponse, userMessage, context)
 
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
       return aiResponse;
@@ -2170,6 +2174,7 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
       response = this.ensureCompleteResponse(response);
       response = this.filterSelfReferences(response, mentionedStakeholder);
       response = this.sanitizeConversationalTics(response, userMessage);
++     response = this.applyHumanTouches(response, userMessage, context)
 
       // Update conversation state
       await this.updateConversationState(mentionedStakeholder, userMessage, response, context);
@@ -2527,6 +2532,49 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
     response = response.replace(/[,;:\-\s]+$/, '.');
     if (!/[\.!?]$/.test(response)) response += '.';
     return response;
+  }
+
+  // Subtle human touches: brief backchannels, transitions, and soft check-ins
+  private applyHumanTouches(response: string, userMessage: string, context: ConversationContext): string {
+    if (!response) return response
+    const msg = (userMessage || '').toLowerCase()
+
+    // Don't add touches to greetings or very short answers
+    const looksGreeting = /\b(hi|hello|hey|good\s+(morning|afternoon|evening|night))\b/.test(msg)
+    if (looksGreeting || response.length < 60) return response
+
+    // Light gating so it doesn't appear on every turn
+    const gate = Math.random() < 0.45
+    if (!gate) return response
+
+    // Transition and backchannel candidates (no exclamations)
+    const transitions = [
+      'Right. ', 'Okay. ', 'I see. ', 'Understood. ', 'Makes sense. ',
+      'Given that, ', 'That said, ', 'From our side, '
+    ]
+
+    // Soft check-in (only in 1-on-1 or if few participants)
+    const isOneOnOne = !!context.isOneOnOne || (Array.isArray(context.stakeholders) && context.stakeholders.length <= 1)
+    const checkIns = isOneOnOne
+      ? [' Does that align with what you're seeing?', ' Would that work for you?']
+      : [' Does that align with the team's view?']
+
+    let updated = response.trim()
+
+    // Prepend one brief transition if not already starting with one
+    if (!/^(right|okay|i see|understood|makes sense)/i.test(updated)) {
+      const t = transitions[Math.floor(Math.random() * transitions.length)]
+      updated = t + updated.charAt(0).toLowerCase() + updated.slice(1)
+    }
+
+    // Append a soft check-in if answer is long enough
+    if (updated.length > 140) {
+      const c = checkIns[Math.floor(Math.random() * checkIns.length)]
+      if (!/[\.!?]$/.test(updated)) updated += '.'
+      updated += c
+    }
+
+    return updated
   }
 
   private looksUnclearQuestion(userMessage: string): boolean {

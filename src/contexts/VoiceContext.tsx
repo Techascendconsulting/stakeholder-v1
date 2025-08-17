@@ -28,7 +28,17 @@ const VoiceContext = createContext<VoiceContextType | undefined>(undefined)
 export const useVoice = () => {
   const context = useContext(VoiceContext)
   if (!context) {
-    throw new Error('useVoice must be used within a VoiceProvider')
+    // Provide safe no-op defaults to avoid crashes if provider isn't mounted yet
+    return {
+      stakeholderVoices: [],
+      setStakeholderVoice: () => {},
+      getStakeholderVoice: (_id: string, stakeholderName?: string) => getDefaultVoiceForStakeholder(stakeholderName || ''),
+      toggleStakeholderVoice: () => {},
+      isStakeholderVoiceEnabled: () => true,
+      globalAudioEnabled: true,
+      setGlobalAudioEnabled: () => {},
+      availableVoices: {}
+    } as VoiceContextType
   }
   return context
 }
