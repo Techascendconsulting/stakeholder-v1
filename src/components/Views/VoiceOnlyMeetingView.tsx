@@ -501,6 +501,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   // Create response message object - EXACT COPY from transcript meeting
   const createResponseMessage = (stakeholder: any, response: string, index: number): Message => {
+    // Track last responder globally for lightweight follow-up routing
+    try {
+      (window as any).__lastResponderName = stakeholder?.name || null
+      ;(window as any).__lastResponderAt = Date.now()
+    } catch {}
     return {
       id: `ai-${Date.now()}-${index}`,
       speaker: stakeholder.id || 'stakeholder',
@@ -1456,16 +1461,32 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // FAST RESPONSE SYSTEM: Smart stakeholder selection and optimized generation
   const getQuickStakeholder = (message: string) => {
     const msg = message.toLowerCase();
-    
-    // Technical/IT questions → David Thompson
+
+    // 0) Implicit follow-up: if within 90s of last response and the question is generic, route back to last responder
+    try {
+      const lastName = (window as any).__lastResponderName as string | undefined
+      const lastAt = (window as any).__lastResponderAt as number | undefined
+      const withinWindow = lastAt && Date.now() - lastAt < 90_000
+      const isGenericFollowUp = /(what about|how about|and|also|ok|okay|right|so|then|next|what else|can you|could you|do we|are we|is it|does it)/.test(msg) && msg.length < 80
+      if (lastName && withinWindow && isGenericFollowUp) {
+        const candidate = selectedStakeholders.find(s => s.name === lastName)
+        if (candidate) {
+          console.log(`🎯 FAST: Implicit follow-up routed to last responder ${lastName}`)
+          return candidate
+        }
+      }
+    } catch {}
+
+    // 1) Technical/IT questions → David Thompson (expanded keywords)
     if (msg.includes('system') || msg.includes('technical') || msg.includes('security') || 
         msg.includes('database') || msg.includes('server') || msg.includes('bug') ||
-        msg.includes('integration') || msg.includes('api') || msg.includes('performance')) {
+        msg.includes('integration') || msg.includes('api') || msg.includes('performance') ||
+        msg.includes('crm') || msg.includes('salesforce') || msg.includes('architecture') || msg.includes('latency')) {
       console.log('🎯 FAST: Routing technical question to David Thompson');
       return selectedStakeholders.find(s => s.name === 'David Thompson');
     }
     
-    // Customer/Service questions → Jess Morgan  
+    // 2) Customer/Service questions → Jess Morgan  
     if (msg.includes('customer') || msg.includes('user') || msg.includes('feedback') ||
         msg.includes('support') || msg.includes('service') || msg.includes('complaint') ||
         msg.includes('satisfaction') || msg.includes('experience') || msg.includes('help')) {
@@ -1473,7 +1494,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       return selectedStakeholders.find(s => s.name === 'Jess Morgan');
     }
     
-    // Planning/Operations questions → James Walker
+    // 3) Planning/Operations questions → James Walker
     if (msg.includes('timeline') || msg.includes('plan') || msg.includes('schedule') ||
         msg.includes('deadline') || msg.includes('project') || msg.includes('process') ||
         msg.includes('workflow') || msg.includes('status') || msg.includes('progress')) {
