@@ -2556,8 +2556,8 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
     // Soft check-in (only in 1-on-1 or if few participants)
     const isOneOnOne = !!context.isOneOnOne || (Array.isArray(context.stakeholders) && context.stakeholders.length <= 1)
     const checkIns = isOneOnOne
-      ? [' Does that align with what you're seeing?', ' Would that work for you?']
-      : [' Does that align with the team's view?']
+      ? [" Does that align with what you're seeing?", " Would that work for you?"]
+      : [" Does that align with the team's view?"]
 
     let updated = response.trim()
 

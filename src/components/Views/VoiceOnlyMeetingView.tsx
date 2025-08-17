@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
-import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio } from '../../services/elevenLabsTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio, registerExternalAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
 import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramStreaming';
