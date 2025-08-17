@@ -316,6 +316,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     index: number;
   }>>([]);
 
+  // Track greeting variants used in this session to avoid repetition
+  const usedGreetingSetRef = useRef<Set<string>>(new Set());
+
   // Transcription toggle and panel state
   const [transcriptionEnabled, setTranscriptionEnabled] = useState(false);
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
@@ -1868,20 +1871,7 @@ When to use time-of-day:
 - If the user's message contains a time-of-day greeting, you MAY mirror it exactly once.
 Otherwise, prefer neutral salutations like "Hello" or "Hi team".
 
-Style examples by role (optional hints):
-${stakeholder.role.includes('Finance') ? '- Finance: "Hello team" / "Hi team"' : 
-  stakeholder.role.includes('Operations') ? '- Operations: "Hello" / "Hi team"' :
-  stakeholder.role.includes('IT') ? '- IT: "Hello" / "Hi team"' :
-  '- Professional: "Hello" / "Hi team"'}
-
-Rules:
-- No superlatives or hype (no "excited", "charged", "ready to rock").
-- No exclamation marks.
-- Use normal punctuation.
-- Keep it natural and understated.
-- Maximum 5 words.
-
-Generate ONE short greeting for ${stakeholder.name.split(' ')[0]} only.`
+Provide one short variant only.`
             },
             {
               role: 'user',
@@ -1911,6 +1901,17 @@ Generate ONE short greeting for ${stakeholder.name.split(' ')[0]} only.`
         const lower = greeting.toLowerCase();
         greeting = lower.replace(/^good\s+(morning|afternoon|evening|night)\b/i, userTimeSalutation);
       }
+
+      // Normalize and avoid repetition across session
+      const normalized = greeting.toLowerCase().replace(/\.$/, '');
+      const commonSet = ['hello team', 'hi team', 'hello everyone', 'hello'];
+      if (usedGreetingSetRef.current.has(normalized) || commonSet.slice(0, 2).includes(normalized)) {
+        // Pick a neutral short alternative not used yet
+        const variants = ['Hi team.', 'Hello.', 'Good to be here.', 'Thanks for joining.', 'Let's begin.'];
+        const alt = variants.find(v => !usedGreetingSetRef.current.has(v.toLowerCase().replace(/\.$/, ''))) || 'Hello.';
+        greeting = alt;
+      }
+      usedGreetingSetRef.current.add(greeting.toLowerCase().replace(/\.$/, ''));
 
       // Limit to 5 words, ensure terminal punctuation
       greeting = greeting.split(' ').slice(0, 5).join(' ').trim();
