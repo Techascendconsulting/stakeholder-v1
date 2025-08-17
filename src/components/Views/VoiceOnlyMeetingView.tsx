@@ -1225,9 +1225,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           const audioBlob = await result.audioPromise;
           if (audioBlob) {
             console.log(`🎵 GREETING: Playing audio for ${result.stakeholder.name}`);
-            setCurrentSpeaker(result.stakeholder);
-            await playBlob(audioBlob);
-            setCurrentSpeaker(null);
+            await playForStakeholder(result.stakeholder, audioBlob);
             console.log(`✅ GREETING: ${result.stakeholder.name} finished speaking`);
           }
         }
@@ -1355,7 +1353,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           
           console.log(`🎵 FASTEST: ${next.stakeholder.name} starting to speak`);
           if (next.audioBlob) {
-            await playBlob(next.audioBlob);
+            await playForStakeholder(next.stakeholder, next.audioBlob);
           }
           console.log(`✅ FASTEST: ${next.stakeholder.name} finished speaking`);
           
@@ -1422,9 +1420,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           const audioBlob = await result.audioPromise;
           if (audioBlob) {
             console.log(`🎵 ULTRA-FAST: Playing audio for ${result.stakeholder.name}`);
-            setCurrentSpeaker(result.stakeholder);
-            await playBlob(audioBlob);
-            setCurrentSpeaker(null);
+            await playForStakeholder(result.stakeholder, audioBlob);
             console.log(`✅ ULTRA-FAST: ${result.stakeholder.name} finished speaking`);
           }
         }
@@ -3481,9 +3477,7 @@ Please review the raw transcript for detailed conversation content.`;
         setDynamicFeedback(`🎵 ${stakeholder.name} speaking...`);
         const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
         if (audioBlob) {
-          setCurrentSpeaker(stakeholder);
-          await playBlob(audioBlob);
-          setCurrentSpeaker(null);
+          await playForStakeholder(stakeholder, audioBlob);
           console.log(`✅ SINGLE: ${stakeholder.name} finished speaking`);
         }
       }
