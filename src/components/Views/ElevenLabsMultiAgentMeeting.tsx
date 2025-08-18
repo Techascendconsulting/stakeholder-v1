@@ -1803,7 +1803,7 @@ Now listen to what the user is saying and participate naturally in this business
               <div className="flex items-center space-x-4">
                 <button
                   onClick={interruptAgents}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+                  className="flex items-center px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
                 >
                   <Square className="w-4 h-4 mr-2" />
                   Interrupt
