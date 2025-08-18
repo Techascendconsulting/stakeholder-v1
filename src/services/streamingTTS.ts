@@ -44,7 +44,7 @@ class StreamingTTSService {
     onComplete?: () => void,
     onError?: (error: Error) => void
   ): void {
-    console.log(`🎤 Starting streaming TTS session for ${stakeholderName}`);
+    console.log(`🎤 Streaming TTS disabled (transcript-only mode) for ${stakeholderName}`);
     
     // Stop any existing session
     this.stopStreamingSession(sessionId);
@@ -82,116 +82,24 @@ class StreamingTTSService {
 
     session.chunks.push(chunk);
 
-    // Convert to audio immediately (don't wait)
-    this.convertChunkToAudio(sessionId, chunk);
+    // Audio generation disabled
+    return;
   }
 
   /**
    * Convert text chunk to audio and add to play queue
    */
-  private async convertChunkToAudio(sessionId: string, chunk: StreamingChunk): Promise<void> {
-    const session = this.sessions.get(sessionId);
-    if (!session) return;
-
-    try {
-      console.log(`🔊 Converting to audio: "${chunk.text}"`);
-      
-      // Use ElevenLabs to convert chunk to audio
-      const audioBlob = await synthesizeToBlob(chunk.text, { stakeholderName: session.stakeholderName });
-      
-      if (audioBlob) {
-        chunk.audio = audioBlob;
-        console.log(`✅ Audio ready for chunk ${chunk.order}: ${audioBlob.size} bytes`);
-        
-        // Create audio element and add to queue
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        
-        // Set up audio event handlers
-        audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
-          this.playNextInQueue(sessionId);
-        };
-        
-        audio.onerror = (error) => {
-          console.error(`❌ Audio playback error for chunk ${chunk.order}:`, error);
-          URL.revokeObjectURL(audioUrl);
-          this.playNextInQueue(sessionId);
-        };
-        
-        // Add to queue in correct order
-        this.addToAudioQueue(sessionId, audio, chunk.order);
-        
-        // Start playing if not already playing
-        if (!session.isPlaying) {
-          this.playNextInQueue(sessionId);
-        }
-      }
-      
-    } catch (error) {
-      console.error(`❌ Error converting chunk to audio:`, error);
-      session.onError?.(error as Error);
-    }
-  }
+  private async convertChunkToAudio(_sessionId: string, _chunk: StreamingChunk): Promise<void> { return; }
 
   /**
    * Add audio to queue in correct order
    */
-  private addToAudioQueue(sessionId: string, audio: HTMLAudioElement, order: number): void {
-    const session = this.sessions.get(sessionId);
-    if (!session) return;
-
-    // Insert audio in correct order
-    let inserted = false;
-    for (let i = 0; i < session.audioQueue.length; i++) {
-      const existingOrder = (session.audioQueue[i] as any).order || 0;
-      if (order < existingOrder) {
-        session.audioQueue.splice(i, 0, audio);
-        inserted = true;
-        break;
-      }
-    }
-    
-    if (!inserted) {
-      session.audioQueue.push(audio);
-    }
-    
-    // Store order on audio element for reference
-    (audio as any).order = order;
-    
-    console.log(`📋 Added audio to queue at position ${order}. Queue length: ${session.audioQueue.length}`);
-  }
+  private addToAudioQueue(_sessionId: string, _audio: HTMLAudioElement, _order: number): void { return; }
 
   /**
    * Play next audio in queue
    */
-  private playNextInQueue(sessionId: string): void {
-    const session = this.sessions.get(sessionId);
-    if (!session) return;
-
-    // Clear current audio
-    session.currentAudio = null;
-    session.isPlaying = false;
-
-    // Get next audio from queue
-    const nextAudio = session.audioQueue.shift();
-    if (!nextAudio) {
-      console.log(`🏁 Audio queue empty for ${session.stakeholderName}`);
-      return;
-    }
-
-    console.log(`▶️ Playing audio chunk ${(nextAudio as any).order} for ${session.stakeholderName}`);
-    
-    session.currentAudio = nextAudio;
-    session.isPlaying = true;
-
-    // Play the audio
-    nextAudio.play().catch(error => {
-      console.error(`❌ Failed to play audio chunk:`, error);
-      session.onError?.(error);
-      this.playNextInQueue(sessionId); // Try next chunk
-    });
-  }
+  private playNextInQueue(_sessionId: string): void { return; }
 
   /**
    * Mark streaming session as complete (no more chunks coming)

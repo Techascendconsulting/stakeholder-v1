@@ -1,15 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
-import { resolveVoiceId } from '../services/elevenLabsTTS'
 
 interface StakeholderVoiceConfig {
   stakeholderId: string
   voiceName: string
   enabled: boolean
-}
-
-// Default voice assignments based on stakeholder names using ElevenLabs mapping
-export const getDefaultVoiceForStakeholder = (stakeholderName: string): string => {
-  return resolveVoiceId(stakeholderName) || ''
 }
 
 interface VoiceContextType {
@@ -28,14 +22,13 @@ const VoiceContext = createContext<VoiceContextType | undefined>(undefined)
 export const useVoice = () => {
   const context = useContext(VoiceContext)
   if (!context) {
-    // Provide safe no-op defaults to avoid crashes if provider isn't mounted yet
     return {
       stakeholderVoices: [],
       setStakeholderVoice: () => {},
-      getStakeholderVoice: (_id: string, stakeholderName?: string) => getDefaultVoiceForStakeholder(stakeholderName || ''),
+      getStakeholderVoice: () => '',
       toggleStakeholderVoice: () => {},
-      isStakeholderVoiceEnabled: () => true,
-      globalAudioEnabled: true,
+      isStakeholderVoiceEnabled: () => false,
+      globalAudioEnabled: false,
       setGlobalAudioEnabled: () => {},
       availableVoices: {}
     } as VoiceContextType
@@ -45,7 +38,7 @@ export const useVoice = () => {
 
 export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [stakeholderVoices, setStakeholderVoices] = useState<StakeholderVoiceConfig[]>([])
-  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(true)
+  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false)
 
   const setStakeholderVoice = (stakeholderId: string, voiceName: string) => {
     setStakeholderVoices(prev => {
@@ -62,14 +55,8 @@ export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     })
   }
 
-  const getStakeholderVoice = (stakeholderId: string, stakeholderName?: string): string => {
-    const config = stakeholderVoices.find(sv => sv.stakeholderId === stakeholderId)
-    if (config) {
-      return config.voiceName
-    }
-    
-    // Return default voice based on stakeholder name
-    return getDefaultVoiceForStakeholder(stakeholderName || '')
+  const getStakeholderVoice = (_stakeholderId: string, _stakeholderName?: string): string => {
+    return ''
   }
 
   const toggleStakeholderVoice = (stakeholderId: string) => {
@@ -82,19 +69,17 @@ export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             : sv
         )
       } else {
-        // Create new config with default voice, enabled
-        const defaultVoice = getDefaultVoiceForStakeholder('')
-        return [...prev, { stakeholderId, voiceName: defaultVoice, enabled: true }]
+        return [...prev, { stakeholderId, voiceName: '', enabled: false }]
       }
     })
   }
 
   const isStakeholderVoiceEnabled = (stakeholderId: string): boolean => {
     const config = stakeholderVoices.find(sv => sv.stakeholderId === stakeholderId)
-    return config ? config.enabled : true // Default to enabled
+    return config ? config.enabled : false
   }
 
-  const value = {
+  const value: VoiceContextType = {
     stakeholderVoices,
     setStakeholderVoice,
     getStakeholderVoice,

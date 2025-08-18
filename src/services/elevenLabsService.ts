@@ -34,145 +34,40 @@ class ElevenLabsService {
   private client: ElevenLabsClient;
   private defaultSettings: StreamingOptions;
 
-  constructor(config: ElevenLabsConfig) {
-    this.client = new ElevenLabsClient({
-      apiKey: config.apiKey
-    });
-
-    this.defaultSettings = {
-      modelId: 'eleven_flash_v2_5', // Ultra-low latency for real-time conversations
-      voiceSettings: {
-        stability: 0.5,
-        similarityBoost: 0.8,
-        style: 0.3,
-        useSpeakerBoost: true
-      },
-      outputFormat: 'mp3_44100_128'
-    };
+  constructor(_config: ElevenLabsConfig) {
+    this.client = new ElevenLabsClient({ apiKey: '' });
+    this.defaultSettings = { modelId: '', voiceSettings: { stability: 0, similarityBoost: 0 }, outputFormat: '' };
   }
 
   /**
    * Get available voices from ElevenLabs
    */
-  async getAvailableVoices() {
-    try {
-      const voices = await this.client.voices.search();
-      return voices.voices || [];
-    } catch (error) {
-      console.error('Error fetching ElevenLabs voices:', error);
-      return [];
-    }
-  }
+  async getAvailableVoices() { return []; }
 
   /**
    * Stream audio for a specific voice agent
    */
-  async streamVoiceResponse(
-    text: string, 
-    voiceId: string, 
-    options: Partial<StreamingOptions> = {}
-  ): Promise<AsyncIterable<Buffer>> {
-    const settings = { ...this.defaultSettings, ...options };
-    
-    try {
-      const audioStream = await this.client.textToSpeech.stream(voiceId, {
-        text,
-        modelId: settings.modelId,
-        voiceSettings: settings.voiceSettings,
-        outputFormat: settings.outputFormat
-      });
-
-      return audioStream;
-    } catch (error) {
-      console.error('Error streaming audio from ElevenLabs:', error);
-      throw error;
-    }
-  }
+  async streamVoiceResponse(_text: string, _voiceId: string, _options: Partial<StreamingOptions> = {}): Promise<AsyncIterable<Buffer>> { throw new Error('ElevenLabs streaming disabled') }
 
   /**
    * Generate audio for a voice agent (non-streaming)
    */
-  async generateVoiceResponse(
-    text: string, 
-    voiceId: string, 
-    options: Partial<StreamingOptions> = {}
-  ): Promise<Buffer> {
-    const settings = { ...this.defaultSettings, ...options };
-    
-    try {
-      const audio = await this.client.textToSpeech.convert(voiceId, {
-        text,
-        modelId: settings.modelId,
-        voiceSettings: settings.voiceSettings,
-        outputFormat: settings.outputFormat
-      });
-
-      return audio;
-    } catch (error) {
-      console.error('Error generating audio from ElevenLabs:', error);
-      throw error;
-    }
-  }
+  async generateVoiceResponse(_text: string, _voiceId: string, _options: Partial<StreamingOptions> = {}): Promise<Buffer> { throw new Error('ElevenLabs generation disabled') }
 
   /**
    * Create audio blob URL for playing in browser
    */
-  createAudioBlobUrl(audioBuffer: Buffer): string {
-    const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-    return URL.createObjectURL(blob);
-  }
+  createAudioBlobUrl(_audioBuffer: Buffer): string { return '' }
 
   /**
    * Stream and play audio directly
    */
-  async streamAndPlayAudio(
-    text: string,
-    voiceId: string,
-    onAudioStart?: () => void,
-    onAudioEnd?: () => void,
-    options: Partial<StreamingOptions> = {}
-  ): Promise<void> {
-    try {
-      const audioStream = await this.streamVoiceResponse(text, voiceId, options);
-      
-      // Convert stream to blob and play
-      const chunks: Buffer[] = [];
-      
-      for await (const chunk of audioStream) {
-        chunks.push(chunk);
-      }
-
-      const audioBuffer = Buffer.concat(chunks);
-      const audioUrl = this.createAudioBlobUrl(audioBuffer);
-      
-      const audio = new Audio(audioUrl);
-      
-      audio.onloadstart = () => onAudioStart?.();
-      audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
-        onAudioEnd?.();
-      };
-      
-      await audio.play();
-      
-    } catch (error) {
-      console.error('Error streaming and playing audio:', error);
-      throw error;
-    }
-  }
+  async streamAndPlayAudio(_text: string, _voiceId: string, _onAudioStart?: () => void, _onAudioEnd?: () => void, _options: Partial<StreamingOptions> = {}): Promise<void> { return }
 
   /**
    * Validate voice ID
    */
-  async validateVoiceId(voiceId: string): Promise<boolean> {
-    try {
-      const voices = await this.getAvailableVoices();
-      return voices.some(voice => voice.voice_id === voiceId);
-    } catch (error) {
-      console.error('Error validating voice ID:', error);
-      return false;
-    }
-  }
+  async validateVoiceId(_voiceId: string): Promise<boolean> { return false }
 }
 
 // Default voice agents configuration for stakeholder meetings

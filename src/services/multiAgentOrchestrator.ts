@@ -64,9 +64,7 @@ class MultiAgentOrchestrator {
       dangerouslyAllowBrowser: true
     });
     
-    this.elevenLabs = new ElevenLabsService({
-      apiKey: elevenLabsApiKey
-    });
+    this.elevenLabs = new ElevenLabsService({ apiKey: '' });
 
     this.meetingContext = meetingContext;
     this.conversationState = {
@@ -134,16 +132,10 @@ class MultiAgentOrchestrator {
         if (agentResponse.trim()) {
           onAgentSpeaking?.(agentId, agentResponse);
           
-          // Stream voice response using ElevenLabs
-          await this.elevenLabs.streamAndPlayAudio(
-            agentResponse,
-            agent.voiceId,
-            () => this.setCurrentSpeaker(agentId),
-            () => {
-              this.setCurrentSpeaker(null);
-              onAgentFinished?.(agentId);
-            }
-          );
+          // Audio disabled in transcript-only mode; directly mark finished
+          this.setCurrentSpeaker(agentId);
+          this.setCurrentSpeaker(null);
+          onAgentFinished?.(agentId);
 
           // Add agent message to history
           const agentMessage: ConversationMessage = {

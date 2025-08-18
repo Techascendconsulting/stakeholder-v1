@@ -35,7 +35,7 @@ class AudioOrchestrator {
   private elevenApiConfigured: boolean
 
   constructor() {
-    this.elevenApiConfigured = Boolean(import.meta.env.VITE_ELEVENLABS_API_KEY)
+    this.elevenApiConfigured = false
   }
 
   // Subscribe to playback state changes
@@ -63,37 +63,21 @@ class AudioOrchestrator {
     autoPlay: boolean = true
   ): Promise<void> {
     try {
-              // Generate audio using ElevenLabs TTS
-        const audioUrl = await this.generateAudio(message.content, stakeholder.name)
-      
-      const audioMessage: AudioMessage = {
-        ...message,
-        audioUrl
-      }
-
+      const audioMessage: AudioMessage = { ...message, audioUrl: undefined }
       this.audioQueue.push(audioMessage)
       this.playbackState.queueLength = this.audioQueue.length
       this.notifyStateChange()
-
       if (autoPlay && !this.isProcessingQueue) {
         this.processQueue()
       }
     } catch (error) {
-      console.error('Error queueing message for audio:', error)
+      console.error('Error queueing message (transcript-only mode):', error)
     }
   }
 
   // Generate audio using ElevenLabs TTS through compatibility wrapper
-  private async generateAudio(text: string, stakeholderName: string): Promise<string> {
-    if (!this.elevenApiConfigured) {
-      throw new Error('ElevenLabs TTS configuration missing')
-    }
-
-    const audioBlob = await synthesizeToBlob(text, { stakeholderName })
-    if (!audioBlob) {
-      throw new Error('TTS request failed')
-    }
-    return URL.createObjectURL(audioBlob)
+  private async generateAudio(_text: string, _stakeholderName: string): Promise<string> {
+    throw new Error('Audio generation disabled')
   }
 
   // Process the audio queue
@@ -107,9 +91,7 @@ class AudioOrchestrator {
     while (this.audioQueue.length > 0) {
       const message = this.audioQueue.shift()!
       
-      if (message.audioUrl) {
-        await this.playAudio(message)
-      }
+      // Skip audio playback in transcript-only mode
 
       this.playbackState.queueLength = this.audioQueue.length
       this.notifyStateChange()
@@ -122,56 +104,7 @@ class AudioOrchestrator {
   }
 
   // Play a single audio message
-  private async playAudio(message: AudioMessage): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!message.audioUrl) {
-        reject(new Error('No audio URL provided'))
-        return
-      }
-
-      this.currentAudio = new Audio(message.audioUrl)
-      this.playbackState.currentMessageId = message.id
-      this.playbackState.isPlaying = true
-      this.playbackState.isPaused = false
-      this.notifyStateChange()
-
-      this.currentAudio.addEventListener('loadedmetadata', () => {
-        if (this.currentAudio) {
-          this.playbackState.duration = this.currentAudio.duration
-          this.notifyStateChange()
-        }
-      })
-
-      this.currentAudio.addEventListener('timeupdate', () => {
-        if (this.currentAudio) {
-          this.playbackState.currentPosition = this.currentAudio.currentTime
-          this.notifyStateChange()
-        }
-      })
-
-      this.currentAudio.addEventListener('ended', () => {
-        this.playbackState.isPlaying = false
-        this.playbackState.currentPosition = 0
-        this.playbackState.duration = 0
-        this.notifyStateChange()
-        resolve()
-      })
-
-      this.currentAudio.addEventListener('error', (error) => {
-        console.error('Audio playback error:', error)
-        this.playbackState.isPlaying = false
-        this.notifyStateChange()
-        reject(error)
-      })
-
-      this.currentAudio.play().catch(error => {
-        console.error('Failed to play audio:', error)
-        this.playbackState.isPlaying = false
-        this.notifyStateChange()
-        reject(error)
-      })
-    })
-  }
+  private async playAudio(_message: AudioMessage): Promise<void> { return Promise.resolve() }
 
   // Pause current audio playback
   public pause(): void {
