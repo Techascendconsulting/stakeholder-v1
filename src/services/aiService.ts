@@ -576,6 +576,13 @@ Generate only the greeting, nothing else.`;
       aiResponse = this.applyHumanTouches(aiResponse, userMessage, context)
 
       await this.updateConversationState(stakeholder, userMessage, aiResponse, context);
+      
+      // Update last speaker
+      this.conversationState.lastSpeakers.push(stakeholder.name);
+      if (this.conversationState.lastSpeakers.length > 3) {
+        this.conversationState.lastSpeakers.shift(); // Keep only last 3 speakers
+      }
+      
       return aiResponse;
 
     } catch (error) {
@@ -2051,6 +2058,23 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
 
       if (mentionedStakeholders.length === 0) {
         return { mentionedStakeholders: [], mentionType: 'none', confidence };
+      }
+
+      // Track last speaking stakeholder and conversation context
+      const lastSpeaker = this.conversationState.lastSpeakers[this.conversationState.lastSpeakers.length - 1];
+      
+      // If no specific stakeholder is mentioned but we have a last speaker
+      if (mentionedStakeholders.length === 0 && lastSpeaker && 
+          !userMessage.toLowerCase().includes('everyone') && 
+          !userMessage.toLowerCase().includes('all') &&
+          !userMessage.toLowerCase().includes('team')) {
+        // Assume the question is for the last speaker
+        const lastSpeakerContext = availableStakeholders.find(s => s.name === lastSpeaker);
+        if (lastSpeakerContext) {
+          mentionedStakeholders.push(lastSpeakerContext);
+          mentionType = 'direct_question';
+          confidence = 0.9;
+        }
       }
 
       // Update session cache with successful detection
