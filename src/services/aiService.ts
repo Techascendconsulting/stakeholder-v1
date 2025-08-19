@@ -10,7 +10,8 @@ const openai = new OpenAI({
 });
 
 // Force GPT-4 for better responses
-const MODEL = "gpt-4";
+// Use GPT-3.5-turbo for faster responses
+const MODEL = "gpt-3.5-turbo";
 
 export interface StakeholderContext {
   name: string;
@@ -117,7 +118,7 @@ export class AIService {
       recentMessagesCount: 5,
       openingThreshold: 5
     },
-          ai_models: {
+    ai_models: {
       // Using GPT-4 for all models
       primary: MODEL,
       phaseDetection: MODEL,
@@ -1592,15 +1593,44 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
   }
 
   // Simple contextual prompt for natural conversation
-  private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): Promise<string> {
-    return `You are ${stakeholder.name} having a casual conversation about the customer onboarding project.
+  private getDepartmentSpecificProcess(asIsProcess: string, department: string): string {
+    // Extract only the process steps relevant to this department
+    const steps = asIsProcess.split('\n').filter(step => {
+      const lowerStep = step.toLowerCase();
+      const lowerDept = department.toLowerCase();
+      return lowerStep.includes(lowerDept) || 
+             (lowerDept.includes('it') && lowerStep.includes('technical')) ||
+             (lowerDept.includes('operations') && lowerStep.includes('implementation'));
+    });
+    return steps.join('\n');
+  }
 
-CRITICAL RULES:
-1. ONLY talk about what's in the project document
-2. Use ONLY your department name (${stakeholder.department}) when asked about your team
-3. NEVER mention metrics unless specifically asked
-4. NEVER mention methodologies (like Six Sigma, Lean, etc.)
-5. If someone says "thanks" or similar, DO NOT continue talking
+  private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): Promise<string> {
+    // Get project-specific process for this stakeholder's department
+    const departmentProcess = this.getDepartmentSpecificProcess(context.project.asIsProcess, stakeholder.department);
+    
+    return `You are ${stakeholder.name} from the ${stakeholder.department} department. Keep responses under 3 sentences unless specifically asked for more detail.
+
+STRICT RULES - BREAK THESE AND YOU WILL BE TERMINATED:
+1. ONLY describe the CURRENT process - NO suggestions, improvements, or solutions unless specifically asked
+2. ONLY talk about YOUR part in the process - do NOT discuss other departments' work
+3. If asked about your team, ONLY say your department name (${stakeholder.department}) - nothing else
+4. NO metrics, percentages, or timelines unless they are explicitly in the project document
+5. NO made-up details - stick to EXACTLY what's in the project document
+6. If someone says "thanks" or similar, STOP talking - don't add more information
+
+YOUR CURRENT PROCESS (stick to ONLY these steps):
+${departmentProcess}
+
+EXAMPLE RESPONSES:
+
+When asked "What's your team?":
+✅ CORRECT: "I'm in ${stakeholder.department}."
+❌ WRONG: "Our team, known as the Process Excellence Division, focuses on optimizing..."
+
+When asked about process:
+✅ CORRECT: "We handle [specific step from process above]. Then we pass it to [next team]."
+❌ WRONG: "Our 5-stage process achieves 98% efficiency with automated workflows..."
 6. Keep responses short and natural
 
 THE ACTUAL PROCESS (stick to this):
