@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 import { Message } from '../types';
 import SessionCacheService from './sessionCache';
-import { MODEL, API_CONFIG, CLIENT_CONFIG } from '../config/openai.config';
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -12,17 +11,7 @@ const openai = new OpenAI({
 
 // Force GPT-4 for better responses
 // Use GPT-3.5-turbo for faster responses
-import { MODEL, API_CONFIG, CLIENT_CONFIG } from '../config/openai.config';
-
-// Helper to create OpenAI API parameters
-const createCompletionParams = (messages: any[], dynamicConfig?: any) => ({
-  ...API_CONFIG,
-  messages,
-  ...(dynamicConfig && {
-    temperature: dynamicConfig.temperature,
-    max_tokens: dynamicConfig.maxTokens || API_CONFIG.max_tokens
-  })
-});
+const MODEL = "gpt-3.5-turbo";
 
 // Default API parameters for faster responses
 const DEFAULT_API_PARAMS = {
