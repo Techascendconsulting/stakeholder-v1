@@ -2013,7 +2013,7 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
       mentionType = mentionType.replace(/^mention_type\s*=\s*["']?/, '').replace(/["']$/, '');
       confidenceStr = confidenceStr.replace(/^confidence\s*=\s*/, '');
       
-      const confidence = parseFloat(confidenceStr) || 0;
+      let confidence = parseFloat(confidenceStr) || 0;
 
       console.log('🔍 Parsed AI Response:')
       console.log('  Original parts:', parts)
@@ -2056,8 +2056,32 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
         }
       }
 
+      // Check for last speaker before returning empty result
       if (mentionedStakeholders.length === 0) {
-        return { mentionedStakeholders: [], mentionType: 'none', confidence };
+        // Get the last speaker
+        const lastSpeaker = this.conversationState.lastSpeakers[this.conversationState.lastSpeakers.length - 1];
+        
+        // If we have a last speaker and this isn't a group message
+        if (lastSpeaker && 
+            !userMessage.toLowerCase().includes('everyone') && 
+            !userMessage.toLowerCase().includes('all') &&
+            !userMessage.toLowerCase().includes('team') &&
+            !userMessage.toLowerCase().includes('guys')) {
+          
+          // Find the last speaker's context
+          const lastSpeakerContext = availableStakeholders.find(s => s.name === lastSpeaker);
+          if (lastSpeakerContext) {
+            console.log(`✅ No explicit mention found, routing to last speaker: ${lastSpeaker}`);
+            mentionedStakeholders.push(lastSpeakerContext);
+            mentionType = 'direct_question';
+            confidence = 0.9;
+          }
+        }
+        
+        // If we still have no stakeholders, return empty result
+        if (mentionedStakeholders.length === 0) {
+          return { mentionedStakeholders: [], mentionType: 'none', confidence };
+        }
       }
 
       // Track last speaking stakeholder and conversation context
@@ -2118,18 +2142,23 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
     const foundStakeholders: StakeholderContext[] = [];
     const responseLower = response.toLowerCase();
     
-    // Check for group greetings first
-    const groupGreetingPatterns = [
+    // Check for group greetings and team validation questions
+    const groupPatterns = [
+      // Greetings
       /\b(hey|hi|hello)\s+(guys|everyone|all|team|folks|there|y'all)\b/i,
       /\b(good\s+(morning|afternoon|evening))\s*(everyone|team|all)?\b/i,
-      /\b(hey|hi|hello)\s*$/i  // Just "hey", "hi", "hello" alone
+      /\b(hey|hi|hello)\s*$/i,  // Just "hey", "hi", "hello" alone
+      // Team validation questions
+      /\balign.*with.*team'?s?\s+view\b/i,
+      /\bwhat.*team.*think\b/i,
+      /\bagree.*team\b/i
     ];
     
-    if (groupGreetingPatterns.some(pattern => pattern.test(response))) {
+    if (groupPatterns.some(pattern => pattern.test(response))) {
       console.log('✅ Simple detection found: Group greeting detected, including all stakeholders');
       return {
         mentionedStakeholders: availableStakeholders,
-        mentionType: 'group_greeting',
+        mentionType: response.match(/\b(align|agree|think)\b/i) ? 'team_validation' : 'group_greeting',
         confidence: 0.9
       };
     }
@@ -2490,16 +2519,19 @@ ${(Array.isArray(context.conversationHistory) ? context.conversationHistory : []
 
 RESPONSE REQUIREMENTS:
 - CRITICAL: If the message is JUST A GREETING like "how are you", "how's it going", "how are you doing" - respond with ONLY 1-2 sentences like "I'm good, thanks!" or "Doing well, how about you?" - ABSOLUTELY NO business process explanations or project details
+- TEAM VALIDATION: If someone asks "Does this align with the team's view?" or similar, AND you have relevant knowledge, briefly share your perspective: "From the IT side, yes - especially about [specific point]. We see those same issues."
 - BUSINESS QUESTIONS: For actual business/process questions, use the CURRENT PROCESS DETAILS to give specific explanations
 - You were specifically mentioned/addressed, so respond directly and helpfully
 - Acknowledge that you're responding to their question/request naturally
 - Reference actual systems, timeframes, and workflows from the process details when relevant
 - Provide your expert perspective based on your role as ${stakeholder.role}
-- Be conversational and collaborative
+- Be conversational but focused on your own knowledge and experience
 - Focus on your domain expertise: ${stakeholder.expertise.join(', ')} for business topics
 - Keep your response relevant to your department (${stakeholder.department}) perspective
 - Use natural language without any markdown formatting
 - NEVER use numbered lists (1. 2. 3.) - talk like a real person
+- NEVER ask if your response "aligns with the team's view" or similar validation questions
+- NEVER ask others to validate or confirm your statements
 
 CRITICAL - PHASE-SPECIFIC GUIDANCE:`;
 
@@ -2590,11 +2622,8 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
       'Given that, ', 'That said, ', 'From our side, '
     ]
 
-    // Soft check-in (only in 1-on-1 or if few participants)
-    const isOneOnOne = !!context.isOneOnOne || (Array.isArray(context.stakeholders) && context.stakeholders.length <= 1)
-    const checkIns = isOneOnOne
-      ? [" Does that align with what you're seeing?", " Would that work for you?"]
-      : [" Does that align with the team's view?"]
+    // Removed automatic check-ins as they were causing confusion
+    const checkIns: string[] = []
 
     let updated = response.trim()
 
@@ -2625,11 +2654,22 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
 
   // Track how often stakeholders interact/respond
   private updateParticipantInteractions(stakeholderName: string, userMessage: string, aiResponse: string) {
-    const current = this.conversationState.participantInteractions.get(stakeholderName) || 0
-    this.conversationState.participantInteractions.set(stakeholderName, current + 1)
-    this.conversationState.lastSpeakers.push(stakeholderName)
-    if (this.conversationState.lastSpeakers.length > AIService.CONFIG.conversation_flow.maxLastSpeakers) {
-      this.conversationState.lastSpeakers.shift()
+    // Update interaction count
+    const current = this.conversationState.participantInteractions.get(stakeholderName) || 0;
+    this.conversationState.participantInteractions.set(stakeholderName, current + 1);
+    
+    // Update last speaker tracking - only if it's a substantive response (not just a greeting)
+    const isGreeting = /^(hi|hello|hey|good\s+(morning|afternoon|evening))/i.test(aiResponse.trim());
+    if (!isGreeting) {
+      // Remove any old instances of this speaker
+      this.conversationState.lastSpeakers = this.conversationState.lastSpeakers.filter(s => s !== stakeholderName);
+      // Add as most recent speaker
+      this.conversationState.lastSpeakers.push(stakeholderName);
+      // Keep only last 3 speakers
+      if (this.conversationState.lastSpeakers.length > AIService.CONFIG.conversation_flow.maxLastSpeakers) {
+        this.conversationState.lastSpeakers.shift();
+      }
+      console.log('🗣️ Updated last speakers:', this.conversationState.lastSpeakers);
     }
   }
 }
