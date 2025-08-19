@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { API_CONFIG } from '../config/openai';
 import { Message } from '../types';
 import SessionCacheService from './sessionCache';
 
@@ -13,14 +14,31 @@ const openai = new OpenAI({
 // Use GPT-3.5-turbo for faster responses
 const MODEL = "gpt-3.5-turbo";
 
+// OpenAI API configuration
+const API_CONFIG = {
+  model: MODEL,
+  temperature: 0.3,
+  max_tokens: 100,
+  presence_penalty: 0,
+  frequency_penalty: 0
+};
+
 // Default API parameters for faster responses
-const DEFAULT_API_PARAMS = {
+// Base configuration for all OpenAI API calls
+const BASE_CONFIG = {
   model: MODEL,
   temperature: 0.3,
   max_tokens: 100,    // Balance between concise and meaningful responses
   presence_penalty: 0,
   frequency_penalty: 0
 };
+
+// Helper to create OpenAI API parameters
+const createApiParams = (messages: any[], overrides = {}) => ({
+  ...BASE_CONFIG,
+  messages,
+  ...overrides  // Allow overriding specific parameters if needed
+});
 
 export interface StakeholderContext {
   name: string;
@@ -78,10 +96,26 @@ interface StakeholderState {
 }
 
 export class AIService {
+  // Helper to create OpenAI API parameters with the right configuration
+  private createCompletionParams(messages: any[], type: 'greeting' | 'conversation' | 'phaseDetection' | 'noteGeneration' = 'conversation') {
+    const config = { ...AIService.CONFIG.api.base, ...AIService.CONFIG.api[type] };
+    return {
+      ...config,
+      messages
+    };
+  }
   private static instance: AIService;
   private conversationState: ConversationState;
   private sessionCache = SessionCacheService.getInstance();
   private static readonly CONFIG = {
+    // OpenAI API configuration for different types of responses
+    api: {
+      base: BASE_CONFIG,
+      greeting: { temperature: 0.7, max_tokens: 50 },
+      conversation: { temperature: 0.3, max_tokens: 100 },
+      phaseDetection: { temperature: 0.1, max_tokens: 10 },
+      noteGeneration: { temperature: 0.2, max_tokens: 200 }
+    },
     // OpenAI API parameters
     api_params: DEFAULT_API_PARAMS,
     // Model configuration is now at the root level
@@ -488,10 +522,10 @@ CRITICAL: DO NOT have the stakeholder address themselves by name (NO "Hi ${stake
 
 Generate only the greeting, nothing else.`;
 
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: MODEL,
         temperature: 0.3,  // Lower temperature for faster, more focused responses
-        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        max_tokens: 100,   // Keep responses concise
         presence_penalty: 0,  // Removed penalties for speed
         frequency_penalty: 0,greeting,
         messages: [
@@ -615,8 +649,8 @@ Generate only the greeting, nothing else.`;
       if (responseType === 'direct_mention') {
         const directMentionPrompt = this.buildDirectMentionPrompt(userMessage, stakeholder, context);
         
-        const completion = await openai.chat.completions.create({
-          model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
+              const completion = await openai.chat.completions.create(
+        createApiParams([{ role: "system", content: prompt }], AIService.CONFIG.api.conversation)primary,
           messages: [
             { role: "system", content: this.buildDynamicSystemPrompt(stakeholder, context, responseType) },
             { role: "user", content: directMentionPrompt }
@@ -644,10 +678,10 @@ Generate only the greeting, nothing else.`;
       const systemPrompt = this.buildDynamicSystemPrompt(stakeholder, context, responseType);
       const conversationPrompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
 
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: MODEL,
         temperature: 0.3,  // Lower temperature for faster, more focused responses
-        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        max_tokens: 100,   // Keep responses concise
         presence_penalty: 0,  // Removed penalties for speed
         frequency_penalty: 0,primary,
         messages: [
@@ -828,10 +862,10 @@ Generate only the greeting, nothing else.`;
       // Build contextual prompt (simplified for streaming)
       const prompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
       
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: MODEL,
         temperature: 0.3,  // Lower temperature for faster, more focused responses
-        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        max_tokens: 100,   // Keep responses concise
         presence_penalty: 0,  // Removed penalties for speed
         frequency_penalty: 0,primary,
         messages: [
@@ -973,10 +1007,10 @@ FORMATTING REQUIREMENTS:
         progressCallback('Generating AI analysis...');
       }
 
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: MODEL,
         temperature: 0.3,  // Lower temperature for faster, more focused responses
-        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        max_tokens: 100,   // Keep responses concise
         presence_penalty: 0,  // Removed penalties for speed
         frequency_penalty: 0,noteGeneration,
         messages: [
@@ -1980,10 +2014,10 @@ NO placeholders like [provide details] or [list steps]. Output the actual detail
   // Check if stakeholder is directly addressed using AI
   private async isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): Promise<boolean> {
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: MODEL,
         temperature: 0.3,  // Lower temperature for faster, more focused responses
-        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        max_tokens: 100,   // Keep responses concise
         presence_penalty: 0,  // Removed penalties for speed
         frequency_penalty: 0,phaseDetection,
         messages: [
@@ -2068,7 +2102,7 @@ Return "YES" if directly addressed, "NO" if not.`
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       const stakeholderRoles = availableStakeholders.map(s => `${s.name} (${s.role}, ${s.department})`).join('; ');
       
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: "gpt-4",
         messages: [
           {
@@ -2469,10 +2503,10 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
 
       const dynamicConfig = this.getDynamicConfig(context, mentionedStakeholder);
 
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: MODEL,
         temperature: 0.3,  // Lower temperature for faster, more focused responses
-        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        max_tokens: 100,   // Keep responses concise
         presence_penalty: 0,  // Removed penalties for speed
         frequency_penalty: 0,primary,
         messages: [
@@ -2605,7 +2639,7 @@ Respond naturally as ${mentionedStakeholder.name} addressing the point you were 
     try {
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: "gpt-4",
         messages: [
           {
@@ -2667,7 +2701,7 @@ Return ONLY the stakeholder name or "NO_REDIRECT".`
     try {
       const stakeholderNames = availableStakeholders.map(s => s.name).join(', ');
       
-      const completion = await openai.chat.completions.create({
+      const completion = await openai.chat.completions.create(createApiParams(
         model: "gpt-4",
         messages: [
           {
