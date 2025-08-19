@@ -282,77 +282,44 @@ const StakeholdersView: React.FC = () => {
             const isSelected = isStakeholderSelected(stakeholder.id)
             
             return (
-              <div 
-                key={stakeholder.id} 
-                className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-300 cursor-pointer ${
-                  isSelected 
-                    ? 'border-blue-500 shadow-lg ring-2 ring-blue-100' 
-                    : 'border-gray-200 hover:shadow-lg hover:border-gray-300'
-                }`}
+              <div
+                key={stakeholder.id}
                 onClick={() => handleStakeholderToggle(stakeholder.id)}
+                className={`relative bg-white dark:bg-gray-800 rounded-lg border-2 p-6 cursor-pointer transition-all duration-200 ${
+                  isSelected
+                    ? 'border-indigo-600 dark:border-indigo-500 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
+                }`}
               >
-                {/* Selection Indicator */}
-                <div className={`h-2 ${isSelected ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-gray-100'}`}></div>
-                
-                <div className="p-8">
-                  {/* Selection Checkbox */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                      isSelected 
-                        ? 'bg-blue-600 border-blue-600' 
-                        : 'border-gray-300 hover:border-blue-400'
-                    }`}>
-                      {isSelected && <Check className="w-4 h-4 text-white" />}
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      isSelected 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {isSelected ? 'Selected' : 'Available'}
-                    </div>
-                  </div>
-
-                  {/* Photo and Basic Info */}
-                  <div className="flex items-start space-x-4 mb-6">
+                <div className="flex items-start space-x-4">
+                  {/* Profile Image with Checkmark */}
+                  <div className="relative flex-shrink-0">
                     <img
                       src={stakeholder.photo}
                       alt={stakeholder.name}
-                      className="w-20 h-20 rounded-full object-cover border-4 border-gray-100"
+                      className="w-12 h-12 rounded-full object-cover"
                     />
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{stakeholder.name}</h3>
-                      <p className="text-base font-semibold text-blue-600 mb-1">{stakeholder.role}</p>
-                      <div className="flex items-center space-x-1 text-sm text-gray-600">
-                        <Building className="w-4 h-4" />
-                        <span>{stakeholder.department}</span>
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
                       </div>
+                    )}
+                  </div>
+
+                  {/* Stakeholder Info */}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {stakeholder.name}
+                    </h3>
+                    <div className="mt-1 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                      {stakeholder.role}
                     </div>
-                  </div>
-
-                  {/* Professional Background */}
-                  <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-2">Professional Background</h4>
-                    <p className="text-sm text-gray-700 leading-relaxed">{stakeholder.bio}</p>
-                  </div>
-
-                  {/* Key Priorities */}
-                  <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">Key Priorities</h4>
-                    <div className="space-y-2">
-                      {stakeholder.priorities.slice(0, 2).map((priority, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
-                          <span className="text-sm text-gray-700 font-medium">{priority}</span>
-                        </div>
-                      ))}
+                    <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      {stakeholder.department}
                     </div>
-                  </div>
-
-                  {/* Communication Style */}
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-2">Communication Style</h4>
-                    <p className="text-sm text-gray-700 italic">{stakeholder.personality}</p>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                      {stakeholder.bio}
+                    </p>
                   </div>
                 </div>
               </div>
