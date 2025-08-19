@@ -70,12 +70,8 @@ export class AIService {
   private conversationState: ConversationState;
   private sessionCache = SessionCacheService.getInstance();
   private static readonly CONFIG = {
-    ai_models: {
-      primary: MODEL,
-      greeting: MODEL,
-      phaseDetection: MODEL,
-      noteGeneration: MODEL
-    },
+    // Model configuration is now at the root level
+    model: MODEL,
     mention: {
       confidenceThreshold: 0.6,
       pauseBase: 1200,
@@ -119,13 +115,7 @@ export class AIService {
       recentMessagesCount: 5,
       openingThreshold: 5
     },
-    ai_models: {
-      // Cost optimization: Force all models to use gpt-3.5-turbo for 97% cost savings
-      primary: "gpt-3.5-turbo",
-      phaseDetection: "gpt-3.5-turbo", 
-      noteGeneration: "gpt-3.5-turbo",
-      greeting: "gpt-3.5-turbo"
-    },
+          // Model configuration removed (now at root level)
     ai_params: {
       phaseDetection: { temperature: 0.1, maxTokens: 15 }, // Reduced from 20 (25% reduction)
       greeting: { temperature: 0.8, maxTokens: 150, presencePenalty: 0.6, frequencyPenalty: 0.6 }, // Reduced from 200 (25% reduction)
@@ -491,7 +481,7 @@ CRITICAL: DO NOT have the stakeholder address themselves by name (NO "Hi ${stake
 Generate only the greeting, nothing else.`;
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.ai_models.greeting,
+        model: AIService.CONFIG.model, // Using GPT-4 for better responsesgreeting,
         messages: [
           { role: "user", content: greetingPrompt }
         ],
@@ -612,7 +602,7 @@ Generate only the greeting, nothing else.`;
         const directMentionPrompt = this.buildDirectMentionPrompt(userMessage, stakeholder, context);
         
         const completion = await openai.chat.completions.create({
-          model: AIService.CONFIG.ai_models.primary,
+          model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
           messages: [
             { role: "system", content: this.buildDynamicSystemPrompt(stakeholder, context, responseType) },
             { role: "user", content: directMentionPrompt }
@@ -641,7 +631,7 @@ Generate only the greeting, nothing else.`;
       const conversationPrompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.ai_models.primary,
+        model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: conversationPrompt }
@@ -821,7 +811,7 @@ Generate only the greeting, nothing else.`;
       const prompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
       
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.ai_models.primary,
+        model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
         messages: [
           {
             role: "system",
@@ -962,7 +952,7 @@ FORMATTING REQUIREMENTS:
       }
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.ai_models.noteGeneration,
+        model: AIService.CONFIG.model, // Using GPT-4 for better responsesnoteGeneration,
         messages: [
           { role: "user", content: prompt }
         ],
@@ -1921,7 +1911,7 @@ NO placeholders like [provide details] or [list steps]. Output the actual detail
   private async isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): Promise<boolean> {
     try {
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.ai_models.phaseDetection,
+        model: AIService.CONFIG.model, // Using GPT-4 for better responsesphaseDetection,
         messages: [
           {
             role: "system",
@@ -2406,7 +2396,7 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
       const dynamicConfig = this.getDynamicConfig(context, mentionedStakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.ai_models.primary,
+        model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
         messages: [
           { role: "system", content: this.buildDynamicSystemPrompt(mentionedStakeholder, context, 'discussion') },
           { role: "user", content: mentionPrompt }
