@@ -2155,10 +2155,35 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
     ];
     
     if (groupPatterns.some(pattern => pattern.test(response))) {
-      console.log('✅ Simple detection found: Group greeting detected, including all stakeholders');
+      // For team validation questions, pick one relevant stakeholder to respond
+      if (response.match(/\b(align|agree|think)\b/i)) {
+        console.log('✅ Team validation question detected - selecting one relevant stakeholder');
+        // Get the last speaker's department
+        const lastSpeaker = this.conversationState.lastSpeakers[this.conversationState.lastSpeakers.length - 1];
+        const lastSpeakerContext = availableStakeholders.find(s => s.name === lastSpeaker);
+        if (lastSpeakerContext) {
+          // Find someone from a different but related department
+          const relevantStakeholder = availableStakeholders.find(s => 
+            s.name !== lastSpeaker && 
+            (s.department.toLowerCase().includes(lastSpeakerContext.department.toLowerCase()) ||
+             lastSpeakerContext.department.toLowerCase().includes(s.department.toLowerCase()) ||
+             s.expertise.some(e => lastSpeakerContext.expertise.includes(e)))
+          );
+          if (relevantStakeholder) {
+            return {
+              mentionedStakeholders: [relevantStakeholder],
+              mentionType: 'team_validation',
+              confidence: 0.9
+            };
+          }
+        }
+      }
+      
+      // For greetings, include everyone
+      console.log('✅ Group greeting detected - including all stakeholders');
       return {
         mentionedStakeholders: availableStakeholders,
-        mentionType: response.match(/\b(align|agree|think)\b/i) ? 'team_validation' : 'group_greeting',
+        mentionType: 'group_greeting',
         confidence: 0.9
       };
     }
@@ -2519,7 +2544,7 @@ ${(Array.isArray(context.conversationHistory) ? context.conversationHistory : []
 
 RESPONSE REQUIREMENTS:
 - CRITICAL: If the message is JUST A GREETING like "how are you", "how's it going", "how are you doing" - respond with ONLY 1-2 sentences like "I'm good, thanks!" or "Doing well, how about you?" - ABSOLUTELY NO business process explanations or project details
-- TEAM VALIDATION: If someone asks "Does this align with the team's view?" or similar, AND you have relevant knowledge, briefly share your perspective: "From the IT side, yes - especially about [specific point]. We see those same issues."
+- TEAM VALIDATION: If you're chosen to respond to a team validation question, share your perspective naturally: "Yeah, that matches what we see in IT too. Especially the part about [specific point]." Keep it brief and focused on your department's view.
 - BUSINESS QUESTIONS: For actual business/process questions, use the CURRENT PROCESS DETAILS to give specific explanations
 - You were specifically mentioned/addressed, so respond directly and helpfully
 - Acknowledge that you're responding to their question/request naturally
