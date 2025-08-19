@@ -28,6 +28,14 @@ export interface ConversationContext {
 }
 
 // Conversational State Management
+interface ConversationThread {
+  activeStakeholder: string;     // Current stakeholder being talked to
+  lastQuestion: string;          // Last question asked
+  timestamp: number;             // When this thread started
+  topicContext: string;          // What they're discussing
+  lastUpdateTime: number;        // Last time this thread was active
+}
+
 interface ConversationState {
   messageCount: number;
   participantInteractions: Map<string, number>;
@@ -37,6 +45,7 @@ interface ConversationState {
   conversationPhase: 'opening' | 'as_is' | 'pain_points' | 'solutioning' | 'deep_dive' | 'closing' | 'exploration';
   stakeholderStates: Map<string, StakeholderState>;
   clarificationNeededFor?: string | null;
+  activeThread?: ConversationThread;  // Current active conversation thread
 }
 
 interface StakeholderState {
@@ -192,8 +201,84 @@ export class AIService {
       greetingStatus: new Map(),
       conversationPhase: 'opening',
       stakeholderStates: new Map(),
+      activeThread: undefined,
       clarificationNeededFor: null
     };
+  }
+
+  private startNewThread(stakeholder: string, question: string, topic: string): ConversationThread {
+    const thread: ConversationThread = {
+      activeStakeholder: stakeholder,
+      lastQuestion: question,
+      timestamp: Date.now(),
+      topicContext: topic,
+      lastUpdateTime: Date.now()
+    };
+    console.log('🧵 Starting new conversation thread:', {
+      stakeholder,
+      question,
+      topic
+    });
+    return thread;
+  }
+
+  private updateThread(thread: ConversationThread, question: string): void {
+    thread.lastQuestion = question;
+    thread.lastUpdateTime = Date.now();
+    console.log('🔄 Updating conversation thread:', {
+      stakeholder: thread.activeStakeholder,
+      newQuestion: question,
+      threadAge: Math.round((Date.now() - thread.timestamp) / 1000) + 's'
+    });
+  }
+
+  private shouldContinueThread(thread: ConversationThread, newQuestion: string): boolean {
+    // Thread expires after 2 minutes of inactivity
+    const isExpired = (Date.now() - thread.lastUpdateTime) > 2 * 60 * 1000;
+    
+    // Check if the new question is related to the current topic
+    const isRelated = this.areQuestionsRelated(thread.lastQuestion, newQuestion);
+    
+    console.log('🤔 Thread continuation check:', {
+      isExpired,
+      isRelated,
+      threadAge: Math.round((Date.now() - thread.timestamp) / 1000) + 's',
+      lastQuestion: thread.lastQuestion,
+      newQuestion
+    });
+    
+    return !isExpired && isRelated;
+  }
+
+  private areQuestionsRelated(lastQuestion: string, newQuestion: string): boolean {
+    // Questions using possessives are usually follow-ups
+    if (newQuestion.toLowerCase().includes('your')) return true;
+    
+    // Get topics from both questions
+    const lastTopic = this.detectTopic(lastQuestion);
+    const newTopic = this.detectTopic(newQuestion);
+    
+    // Questions about the same topic are related
+    return lastTopic === newTopic && lastTopic !== 'unknown';
+  }
+
+  private detectTopic(question: string): string {
+    const q = question.toLowerCase();
+    
+    // Topic patterns
+    const patterns = [
+      { topic: 'team', patterns: [/team/, /group/, /department/, /division/] },
+      { topic: 'process', patterns: [/process/, /workflow/, /procedure/, /steps/, /how .* works?/] },
+      { topic: 'role', patterns: [/role/, /job/, /responsibility/, /what .* do/] },
+      { topic: 'metrics', patterns: [/metrics?/, /kpis?/, /performance/, /numbers/] },
+      { topic: 'tools', patterns: [/tools?/, /systems?/, /software/, /applications?/] }
+    ];
+    
+    for (const { topic, patterns } of patterns) {
+      if (patterns.some(p => p.test(q))) return topic;
+    }
+    
+    return 'unknown';
   }
 
   // Advanced configuration for super intelligent responses
@@ -2063,43 +2148,35 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
         }
       }
 
-      // Follow-up detection for possessive questions
-      const possessivePatterns = [
-        /\byour\b/i,
-        /what'?s\s+your/i,
-        /tell\s+me\s+about\s+your/i,
-        /how'?s\s+your/i,
-        /where'?s\s+your/i,
-        /who'?s\s+your/i,
-        /when'?s\s+your/i
-      ];
-      
-      const isFollowUp = possessivePatterns.some(pattern => pattern.test(userMessage));
-      console.log('🔍 Follow-up Detection:', {
-        message: userMessage,
-        isFollowUp,
-        pattern: isFollowUp ? possessivePatterns.find(p => p.test(userMessage))?.toString() : 'none'
-      });
-
-      if (mentionedStakeholders.length === 0 && isFollowUp) {
-        const lastSpeaker = this.conversationState.lastSpeakers[this.conversationState.lastSpeakers.length - 1];
-        console.log('👤 Last Speaker:', lastSpeaker);
-        if (lastSpeaker) {
-          
-          // Find the last speaker's context
-          const lastSpeakerContext = availableStakeholders.find(s => s.name === lastSpeaker);
-          if (lastSpeakerContext) {
-            console.log(`✅ No explicit mention found, routing to last speaker: ${lastSpeaker}`);
-            mentionedStakeholders.push(lastSpeakerContext);
-            mentionType = 'direct_question';
-            confidence = 0.9;
-          }
-        }
+      // Check active conversation thread first
+      if (mentionedStakeholders.length === 0 && this.conversationState.activeThread) {
+        const thread = this.conversationState.activeThread;
         
-        // If we still have no stakeholders, return empty result
-        if (mentionedStakeholders.length === 0) {
-          return { mentionedStakeholders: [], mentionType: 'none', confidence };
+        if (this.shouldContinueThread(thread, userMessage)) {
+          // Continue existing thread
+          const threadStakeholder = availableStakeholders.find(s => s.name === thread.activeStakeholder);
+          if (threadStakeholder) {
+            console.log('🧵 Continuing conversation thread with:', thread.activeStakeholder);
+            this.updateThread(thread, userMessage);
+            mentionedStakeholders.push(threadStakeholder);
+            mentionType = 'thread_continuation';
+            confidence = 0.95;
+          }
+        } else {
+          // Thread is expired or unrelated - clear it
+          console.log('🧵 Ending conversation thread - expired or unrelated');
+          this.conversationState.activeThread = undefined;
         }
+      }
+
+      // If no active thread and no explicit mention, check for new thread start
+      if (mentionedStakeholders.length === 1) {
+        // Start new thread with explicitly mentioned stakeholder
+        this.conversationState.activeThread = this.startNewThread(
+          mentionedStakeholders[0].name,
+          userMessage,
+          this.detectTopic(userMessage)
+        );
       }
 
       // Track last speaking stakeholder and conversation context
