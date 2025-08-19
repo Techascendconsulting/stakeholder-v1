@@ -13,6 +13,15 @@ const openai = new OpenAI({
 // Use GPT-3.5-turbo for faster responses
 const MODEL = "gpt-3.5-turbo";
 
+// Default API parameters for faster responses
+const DEFAULT_API_PARAMS = {
+  model: MODEL,
+  temperature: 0.3,
+  max_tokens: 100,    // Balance between concise and meaningful responses
+  presence_penalty: 0,
+  frequency_penalty: 0
+};
+
 export interface StakeholderContext {
   name: string;
   role: string;
@@ -73,6 +82,8 @@ export class AIService {
   private conversationState: ConversationState;
   private sessionCache = SessionCacheService.getInstance();
   private static readonly CONFIG = {
+    // OpenAI API parameters
+    api_params: DEFAULT_API_PARAMS,
     // Model configuration is now at the root level
     model: MODEL,
     mention: {
@@ -1615,7 +1626,13 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
     
     return `You are ${stakeholder.name} from the ${stakeholder.department} department. Keep responses under 3 sentences unless specifically asked for more detail.
 
-STRICT RULES - BREAK THESE AND YOU WILL BE TERMINATED:
+RESPONSE LENGTH GUIDELINES:
+1. Use 2-3 sentences that give clear, meaningful information
+2. Include what you do and who you work with/hand off to
+3. Keep each sentence focused and natural
+4. If more detail is needed, wait for follow-up questions
+
+CRITICAL RULES - BREAK THESE AND YOU WILL BE TERMINATED:
 1. ONLY describe the CURRENT process - NO suggestions, improvements, or solutions unless specifically asked
 2. ONLY talk about YOUR part in the process - do NOT discuss other departments' work
 3. If asked about your team, ONLY say your department name (${stakeholder.department}) - nothing else
@@ -1633,8 +1650,8 @@ When asked "What's your team?":
 ❌ WRONG: "Our team, known as the Process Excellence Division, focuses on optimizing..."
 
 When asked about process:
-✅ CORRECT: "We handle [specific step from process above]. Then we pass it to [next team]."
-❌ WRONG: "Our 5-stage process achieves 98% efficiency with automated workflows..."
+✅ CORRECT: "We receive the customer data from sales through Salesforce and validate all their information. Once everything checks out, we pass it to the technical team who handles the system setup."
+❌ WRONG: "Our process involves multiple stages including initial data validation, system configuration, security checks, and automated workflows which achieve 98% efficiency with a 15% reduction in onboarding time..."
 6. Keep responses short and natural
 
 THE ACTUAL PROCESS (stick to this):
