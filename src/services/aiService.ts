@@ -4,7 +4,9 @@ import SessionCacheService from './sessionCache';
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
+  dangerouslyAllowBrowser: true,
+  timeout: 30000, // 30 second timeout
+  maxRetries: 2
 });
 
 // Force GPT-4 for better responses
@@ -580,6 +582,8 @@ Generate only the greeting, nothing else.`;
     context: ConversationContext,
     responseType: 'greeting' | 'discussion' | 'baton_pass' | 'direct_mention' = 'discussion'
   ): Promise<string> {
+    console.log('Generating response for:', stakeholder.name, 'using model:', MODEL);
+    
     try {
       // Handle greetings intelligently
       if (this.isGreetingMessage(userMessage, context.conversationHistory)) {
@@ -2426,10 +2430,9 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
       await this.updateConversationState(mentionedStakeholder, userMessage, response, context);
 
       return response;
-
     } catch (error) {
-      console.error('Error generating mention response:', error);
-      return await this.generateDynamicFallback(mentionedStakeholder, userMessage, context);
+      console.error('Error generating response:', error);
+      return "I apologize, but I'm having trouble responding right now. Could you please try asking your question again?";
     }
   }
 
