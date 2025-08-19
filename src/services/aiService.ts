@@ -7,6 +7,9 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
+// Force GPT-4 for better responses
+const MODEL = "gpt-4";
+
 export interface StakeholderContext {
   name: string;
   role: string;
@@ -67,6 +70,12 @@ export class AIService {
   private conversationState: ConversationState;
   private sessionCache = SessionCacheService.getInstance();
   private static readonly CONFIG = {
+    ai_models: {
+      primary: MODEL,
+      greeting: MODEL,
+      phaseDetection: MODEL,
+      noteGeneration: MODEL
+    },
     mention: {
       confidenceThreshold: 0.6,
       pauseBase: 1200,
@@ -1584,16 +1593,24 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
 
   // Simple contextual prompt for natural conversation
   private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): Promise<string> {
-    // Extract project details
-    const projectContext = context.project || {};
-    const currentProcess = projectContext.asIsProcess || '';
-    const problemStatement = projectContext.problemStatement || '';
-    
-    // Build context-aware prompt
-    let prompt = `You are discussing this specific project:\n\n`;
-    prompt += `CURRENT PROCESS:\n${currentProcess}\n\n`;
-    prompt += `CURRENT PROBLEMS:\n${problemStatement}\n\n`;
-    prompt += `YOUR ROLE: ${stakeholder.role} in ${stakeholder.department}\n`;
+    return `You are ${stakeholder.name} having a casual conversation about the customer onboarding project.
+
+CRITICAL RULES:
+1. ONLY talk about what's in the project document
+2. Use ONLY your department name (${stakeholder.department}) when asked about your team
+3. NEVER mention metrics unless specifically asked
+4. NEVER mention methodologies (like Six Sigma, Lean, etc.)
+5. If someone says "thanks" or similar, DO NOT continue talking
+6. Keep responses short and natural
+
+THE ACTUAL PROCESS (stick to this):
+${context.project.asIsProcess}
+
+YOUR ROLE: ${stakeholder.role} in ${stakeholder.department}
+
+CURRENT QUESTION: "${userMessage}"
+
+Remember: Just be yourself and talk naturally about your part in this specific process.`;
     prompt += `CURRENT QUESTION: "${userMessage}"\n\n`
     
     // Only include recent relevant conversation context (last 3-4 messages)
