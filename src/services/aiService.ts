@@ -2063,9 +2063,27 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
         }
       }
 
-      // Simple follow-up detection: if the question uses "your" and there's a last speaker, it's for them
-      if (mentionedStakeholders.length === 0 && userMessage.toLowerCase().includes('your')) {
+      // Follow-up detection for possessive questions
+      const possessivePatterns = [
+        /\byour\b/i,
+        /what'?s\s+your/i,
+        /tell\s+me\s+about\s+your/i,
+        /how'?s\s+your/i,
+        /where'?s\s+your/i,
+        /who'?s\s+your/i,
+        /when'?s\s+your/i
+      ];
+      
+      const isFollowUp = possessivePatterns.some(pattern => pattern.test(userMessage));
+      console.log('🔍 Follow-up Detection:', {
+        message: userMessage,
+        isFollowUp,
+        pattern: isFollowUp ? possessivePatterns.find(p => p.test(userMessage))?.toString() : 'none'
+      });
+
+      if (mentionedStakeholders.length === 0 && isFollowUp) {
         const lastSpeaker = this.conversationState.lastSpeakers[this.conversationState.lastSpeakers.length - 1];
+        console.log('👤 Last Speaker:', lastSpeaker);
         if (lastSpeaker) {
           
           // Find the last speaker's context
