@@ -5,8 +5,8 @@ import SessionCacheService from './sessionCache';
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
-  timeout: 30000, // 30 second timeout
-  maxRetries: 2
+  timeout: 10000,  // 10 second timeout
+  maxRetries: 1,   // Only retry once
 });
 
 // Force GPT-4 for better responses
@@ -82,26 +82,14 @@ export class AIService {
       noMentionToken: "NONE"
     },
     conversation: {
-      baseTemperature: 0.5, // Lower temperature for faster, more focused responses
-      phaseModifiers: {
-        deepDive: 0.1,
-        normal: 0
-      },
-      emotionalModifiers: {
-        excited: 0.1,
-        concerned: 0.05,
-        neutral: 0
-      },
-      temperatureBounds: { min: 0.3, max: 1.0 },
-      presencePenalty: 0.4,
-      frequencyPenalty: 0.5
+      baseTemperature: 0.3,  // Keep it focused and fast
+      presencePenalty: 0,    // Remove penalties for speed
+      frequencyPenalty: 0
     },
     tokens: {
-      base: 200, // Increased for complete responses
-      teamFactor: 1.0,
-      experienceFactors: { spoken: 1.1, newSpeaker: 1.2 },
-      phaseFactors: { deepDive: 1.5, normal: 1.2 }, // Increased for detailed discussions
-      maxTokens: 200 // Keep responses short and fast
+      base: 100,  // Reduced for faster responses
+      maxTokens: 150,  // Limit response length
+      minTokens: 50    // Ensure meaningful responses
     },
     penalties: {
       presenceBase: 0.1,
@@ -490,7 +478,11 @@ CRITICAL: DO NOT have the stakeholder address themselves by name (NO "Hi ${stake
 Generate only the greeting, nothing else.`;
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.model, // Using GPT-4 for better responsesgreeting,
+        model: MODEL,
+        temperature: 0.3,  // Lower temperature for faster, more focused responses
+        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        presence_penalty: 0,  // Removed penalties for speed
+        frequency_penalty: 0,greeting,
         messages: [
           { role: "user", content: greetingPrompt }
         ],
@@ -642,7 +634,11 @@ Generate only the greeting, nothing else.`;
       const conversationPrompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
+        model: MODEL,
+        temperature: 0.3,  // Lower temperature for faster, more focused responses
+        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        presence_penalty: 0,  // Removed penalties for speed
+        frequency_penalty: 0,primary,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: conversationPrompt }
@@ -822,7 +818,11 @@ Generate only the greeting, nothing else.`;
       const prompt = await this.buildContextualPrompt(userMessage, context, stakeholder);
       
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
+        model: MODEL,
+        temperature: 0.3,  // Lower temperature for faster, more focused responses
+        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        presence_penalty: 0,  // Removed penalties for speed
+        frequency_penalty: 0,primary,
         messages: [
           {
             role: "system",
@@ -963,7 +963,11 @@ FORMATTING REQUIREMENTS:
       }
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.model, // Using GPT-4 for better responsesnoteGeneration,
+        model: MODEL,
+        temperature: 0.3,  // Lower temperature for faster, more focused responses
+        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        presence_penalty: 0,  // Removed penalties for speed
+        frequency_penalty: 0,noteGeneration,
         messages: [
           { role: "user", content: prompt }
         ],
@@ -1951,7 +1955,11 @@ NO placeholders like [provide details] or [list steps]. Output the actual detail
   private async isDirectlyAddressed(userMessage: string, stakeholder: StakeholderContext): Promise<boolean> {
     try {
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.model, // Using GPT-4 for better responsesphaseDetection,
+        model: MODEL,
+        temperature: 0.3,  // Lower temperature for faster, more focused responses
+        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        presence_penalty: 0,  // Removed penalties for speed
+        frequency_penalty: 0,phaseDetection,
         messages: [
           {
             role: "system",
@@ -2436,7 +2444,11 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
       const dynamicConfig = this.getDynamicConfig(context, mentionedStakeholder);
 
       const completion = await openai.chat.completions.create({
-        model: AIService.CONFIG.model, // Using GPT-4 for better responsesprimary,
+        model: MODEL,
+        temperature: 0.3,  // Lower temperature for faster, more focused responses
+        max_tokens: AIService.CONFIG.tokens.maxTokens,
+        presence_penalty: 0,  // Removed penalties for speed
+        frequency_penalty: 0,primary,
         messages: [
           { role: "system", content: this.buildDynamicSystemPrompt(mentionedStakeholder, context, 'discussion') },
           { role: "user", content: mentionPrompt }
