@@ -115,7 +115,13 @@ export class AIService {
       recentMessagesCount: 5,
       openingThreshold: 5
     },
-          // Model configuration removed (now at root level)
+          ai_models: {
+      // Using GPT-4 for all models
+      primary: MODEL,
+      phaseDetection: MODEL,
+      noteGeneration: MODEL,
+      greeting: MODEL
+    },
     ai_params: {
       phaseDetection: { temperature: 0.1, maxTokens: 15 }, // Reduced from 20 (25% reduction)
       greeting: { temperature: 0.8, maxTokens: 150, presencePenalty: 0.6, frequencyPenalty: 0.6 }, // Reduced from 200 (25% reduction)
