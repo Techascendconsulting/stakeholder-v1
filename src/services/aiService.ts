@@ -74,7 +74,7 @@ export class AIService {
       noMentionToken: "NONE"
     },
     conversation: {
-      baseTemperature: 0.7,
+      baseTemperature: 0.5, // Lower temperature for faster, more focused responses
       phaseModifiers: {
         deepDive: 0.1,
         normal: 0
@@ -93,7 +93,7 @@ export class AIService {
       teamFactor: 1.0,
       experienceFactors: { spoken: 1.1, newSpeaker: 1.2 },
       phaseFactors: { deepDive: 1.5, normal: 1.2 }, // Increased for detailed discussions
-      maxTokens: 500 // Increased to prevent truncation
+      maxTokens: 200 // Keep responses short and fast
     },
     penalties: {
       presenceBase: 0.1,
@@ -2674,6 +2674,13 @@ ${(Array.isArray(context.conversationHistory) ? context.conversationHistory : []
   return '';
 }).filter(Boolean).join('\n')}
 
+IMPORTANT RULES:
+1. ONLY answer questions directed to you by name
+2. If someone asks "what's your team" - just say your team name, nothing else
+3. NO metrics or percentages unless specifically asked
+4. NO corporate speak - talk like you're chatting with a friend
+5. Keep it short and simple
+
 TALK LIKE A REAL PERSON:
 
 GREETINGS - Keep it casual:
@@ -2841,7 +2848,7 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
       // Add as most recent speaker
       this.conversationState.lastSpeakers.push(stakeholderName);
       // Keep only last 3 speakers
-      if (this.conversationState.lastSpeakers.length > AIService.CONFIG.conversation_flow.maxLastSpeakers) {
+    if (this.conversationState.lastSpeakers.length > AIService.CONFIG.conversation_flow.maxLastSpeakers) {
         this.conversationState.lastSpeakers.shift();
       }
       console.log('🗣️ Updated last speakers:', this.conversationState.lastSpeakers);
