@@ -1584,7 +1584,17 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
 
   // Simple contextual prompt for natural conversation
   private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): Promise<string> {
-    let prompt = `CURRENT QUESTION: "${userMessage}"\n\n`
+    // Extract project details
+    const projectContext = context.project || {};
+    const currentProcess = projectContext.asIsProcess || '';
+    const problemStatement = projectContext.problemStatement || '';
+    
+    // Build context-aware prompt
+    let prompt = `You are discussing this specific project:\n\n`;
+    prompt += `CURRENT PROCESS:\n${currentProcess}\n\n`;
+    prompt += `CURRENT PROBLEMS:\n${problemStatement}\n\n`;
+    prompt += `YOUR ROLE: ${stakeholder.role} in ${stakeholder.department}\n`;
+    prompt += `CURRENT QUESTION: "${userMessage}"\n\n`
     
     // Only include recent relevant conversation context (last 3-4 messages)
     const recentMessages = (Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-4)
@@ -2674,12 +2684,25 @@ ${(Array.isArray(context.conversationHistory) ? context.conversationHistory : []
   return '';
 }).filter(Boolean).join('\n')}
 
-IMPORTANT RULES:
+CRITICAL PROJECT RULES:
+1. ONLY talk about the specific project being discussed
+2. STICK TO THE FACTS from the project document
+3. NEVER invent processes or details that aren't in the project
+4. If adding details, they MUST relate to your specific role in THIS project
+5. NO generic business speak or methodologies unless they're actually in the project
+
+IMPORTANT CONVERSATION RULES:
 1. ONLY answer questions directed to you by name
 2. If someone asks "what's your team" - just say your team name, nothing else
 3. NO metrics or percentages unless specifically asked
 4. NO corporate speak - talk like you're chatting with a friend
 5. Keep it short and simple
+
+IMPORTANT: Your responses must:
+1. Only discuss facts from the current project's context
+2. Focus on your specific role in the actual process
+3. Use real examples from the project's current state
+4. Never add processes or details that aren't in the project document
 
 TALK LIKE A REAL PERSON:
 
