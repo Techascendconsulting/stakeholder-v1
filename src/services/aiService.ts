@@ -1620,7 +1620,16 @@ Remember: You're not giving a formal response or presentation. You're just ${sta
     return steps.join('\n');
   }
 
-  private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext): Promise<string> {
+  private async buildContextualPrompt(userMessage: string, context: ConversationContext, stakeholder: StakeholderContext, stagePrompt?: string): Promise<string> {
+    // If stage prompt is provided, use it as the base
+    if (stagePrompt) {
+      return `${stagePrompt}
+
+YOUR SPECIFIC CONTEXT:
+${context.project.asIsProcess}
+
+CURRENT QUESTION: "${userMessage}"`;
+    }
     // Get project-specific process for this stakeholder's department
     const departmentProcess = this.getDepartmentSpecificProcess(context.project.asIsProcess, stakeholder.department);
     
