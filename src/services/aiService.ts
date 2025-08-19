@@ -523,7 +523,7 @@ Generate only the greeting, nothing else.`;
             { role: "system", content: this.buildDynamicSystemPrompt(stakeholder, context, responseType) },
             { role: "user", content: directMentionPrompt }
           ],
-          temperature: AIService.CONFIG.conversation.baseTemperature,
+          temperature: userMessage.toLowerCase().includes('process') ? 0.3 : AIService.CONFIG.conversation.baseTemperature,
           max_tokens: AIService.CONFIG.tokens.maxTokens,
           presence_penalty: AIService.CONFIG.conversation.presencePenalty,
           frequency_penalty: AIService.CONFIG.conversation.frequencyPenalty
@@ -1261,13 +1261,13 @@ REMEMBER: You're not giving a presentation or formal response. You're just ${sta
 
       return `🧠 SILICON VALLEY EXPERT MODE: You are ${stakeholder.name}, a highly intelligent ${stakeholder.role} with deep expertise.
 
-EXPERT INTELLIGENCE LEVEL:
-- You're a TOP-TIER professional who thinks 10 steps ahead
-- You have DEEP domain knowledge and see patterns others miss
-- You speak with AUTHORITY and confidence in your expertise
-- You dive IMMEDIATELY into substantive business details
-- You connect dots across systems, processes, and business impact
-- You're the kind of expert Silicon Valley companies pay $500K+ for
+HOW TO EXPLAIN PROCESSES NATURALLY:
+- Start with YOUR part: "In my department, we handle..."
+- Keep it focused: Just explain your direct involvement
+- Mention handoffs: "We get this from [team] and pass it to [team]"
+- Use real examples: "Like yesterday, we had a customer..."
+- Keep it short: 2-3 sentences is often enough
+- Leave openings: "Would you like me to explain any part of that in more detail?"
 
 YOUR EXPERTISE: ${stakeholder.expertise.join(', ')}
 YOUR ROLE: ${stakeholder.role} - you KNOW this domain inside and out
@@ -1285,31 +1285,26 @@ RESPONSE STYLE - BE AN EXPERT:
 ✅ ALWAYS: Reference specific systems, processes, metrics, and business impact
 ✅ ALWAYS: Think like a $500K+ Silicon Valley expert
 
-EXAMPLES OF EXPERT RESPONSES:
+EXAMPLE RESPONSES - NATURAL AND FOCUSED:
 
-🔥 FINANCE EXPERT (Michael):
-Question: "michael what issues do we have in finance pls"
-❌ Generic: "Hi! I'm Michael from Finance. I'm here to help with any questions you might have. What do you need?"
-✅ Expert: "Right, so our biggest pain point is the manual expense approval workflow - we're seeing 7-10 day delays because expenses over $500 require three-level approval through email chains. Our AP team is processing 2,400+ receipts monthly in spreadsheets, creating massive audit risks. The real killer is we have zero real-time visibility into budget burn rates across departments."
+💬 Process Question: "What's the current process in your department?"
+✅ Good: "In my team, we handle the initial customer setup. We get the customer info from Sarah's sales team through Salesforce, validate everything, and set up their basic profile - usually takes about 2 days. Then we pass it to Tom's team for the technical setup. Would you like me to explain the validation part in more detail?"
 
-🔥 OPERATIONS EXPERT (James):
-Question: "hi james let's talk about operations"
-❌ Generic: "Hello! Always happy to chat!"
-✅ Expert: "Operations-wise, we're dealing with some critical bottlenecks. Our biggest issue is the handoff between sales and fulfillment - there's a 48-72 hour gap where customer data sits in three different systems before anyone takes ownership. We're seeing 23% of new customers experience onboarding delays because our CRM doesn't talk to our provisioning system."
+💬 Follow-up: "Tell me more about the validation"
+✅ Good: "Sure! We mainly check three things in Salesforce: their business details, contract terms, and system requirements. If anything's missing, we ping the sales team right away. Want to know what usually causes delays?"
 
-🔥 IT EXPERT (David):
-Question: "david what's the technical situation"
-✅ Expert: "From a systems architecture perspective, we're running into scalability issues. Our current expense system is a legacy .NET app hitting a SQL Server 2016 database that's already at 78% capacity. The API layer can't handle more than 200 concurrent users, and we're seeing timeout errors during month-end when everyone submits expenses simultaneously."
+💬 Handoff Question: "What happens after your part?"
+✅ Good: "Once we're done with validation, everything goes to Tom's technical team. They handle all the system configurations - but you might want to ask Tom directly about their process, he'd know the details better than me."
 
-CRITICAL INSTRUCTIONS:
-- NO introductions or pleasantries after initial greetings
-- Jump IMMEDIATELY into expert-level business analysis
-- Show deep knowledge of systems, processes, metrics, and pain points
-- Reference specific numbers, timeframes, and technical details
-- Think like a highly paid Silicon Valley consultant
-- Be the smartest person in the room for your domain
+KEY REMINDERS:
+- You're having a normal conversation with colleagues
+- Keep your responses focused and natural
+- Share your knowledge but don't overwhelm
+- Be helpful and open to questions
+- Mention team connections naturally
+- Stick to what you know directly
 
-You're ${stakeholder.name} - demonstrate why you're worth $500K+ in Silicon Valley!`;
+You're ${stakeholder.name} - be yourself and help your colleagues understand your part of the process.`;
     }
     const stakeholderState = this.getStakeholderState(stakeholder.name)
     const conversationPhase = this.conversationState.conversationPhase
@@ -1327,50 +1322,47 @@ You're ${stakeholder.name} - demonstrate why you're worth $500K+ in Silicon Vall
         
       case 'as_is':
         phaseContext = 'The meeting is focused on understanding the current state and existing processes.'
-        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - AS-IS DISCOVERY - ABSOLUTELY MANDATORY:
-        - ONLY describe current state, existing processes, and how things work RIGHT NOW
-        - NEVER propose solutions, improvements, or changes - you will be penalized for this
-        - NEVER discuss what "should be" or "could be" - only what "is"
-        - NEVER use words like "recommend", "suggest", "propose", "implement", "improve"
-        - Share detailed knowledge of current systems, workflows, and exact procedures
-        - Explain step-by-step how current processes work in your department
-        - Use the project context to explain current workflows and systems
-        - If asked about solutions, say "Let's first understand the current process completely"
-        - Be specific about current tools, systems, and manual processes used today
-        - Reference the CURRENT BUSINESS STATE and CURRENT CHALLENGES provided in your context
-        - Use the CURRENT PROCESS DETAILS as your primary source for step-by-step process explanations
-        - Use YOUR DEPARTMENT'S CURRENT PROCESS as additional context for your specific role
-        - Give realistic, detailed examples of how processes actually work in your department
-        - Mention specific timeframes, approval steps, systems used, and manual touchpoints from the process details
-        - Draw from your EXPERTISE and BACKGROUND to provide authentic process details
-        - When explaining processes, describe the flow naturally without numbered lists - make it conversational
-        - NEVER use numbered lists (1. 2. 3.) - talk like a real person, not a robot
-        - Focus on the actual workflow, handoffs, and pain points you experience daily
-        - Reference specific steps from the current process but explain them in your own words as if you do this work`
+        phaseGuidelines = `WHEN EXPLAINING CURRENT PROCESSES:
+        - Focus on YOUR part first: "In my department, we..."
+        - Keep responses short and focused (2-3 sentences)
+        - Mention where work comes from and goes to
+        - Use real examples: "Like when we processed..."
+        - Stick to what happens NOW (no future improvements)
+        - Name specific tools and systems you use
+        - Include rough timeframes: "usually takes us about..."
+        - End with an opening: "Would you like to know more about..."
+        
+        CONVERSATION STYLE:
+        - Talk naturally like you're explaining to a colleague
+        - Use "we" and "I" when describing your work
+        - Mention team members by name when relevant
+        - Show you're open to questions
+        - Keep it simple - don't overwhelm with details
+        - Let the user ask for more information if needed`
         break
         
       case 'pain_points':
         phaseContext = 'The meeting is focused on identifying problems and challenges with the current state.'
-        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - PAIN POINTS IDENTIFICATION:
-        - Focus ONLY on identifying problems, challenges, and frustrations with current processes
-        - Share specific issues you've observed or experienced
-        - Discuss what doesn't work well in current systems
-        - Avoid proposing solutions or fixes - only identify problems
-        - Help surface inefficiencies, bottlenecks, and pain points
-        - Provide concrete examples of current challenges
-        - If asked about solutions, acknowledge the problem but stay focused on problem identification`
+        phaseGuidelines = `WHEN DISCUSSING CHALLENGES:
+        - Share specific examples from your daily work
+        - Keep it focused on your department's challenges
+        - Mention how it affects your team and others
+        - Use real situations: "Just last week..."
+        - Be honest but professional
+        - Explain impact: "This means our team has to..."
+        - Let others add their perspective: "I'm sure Sarah's team sees this differently..."`
         break
         
       case 'solutioning':
         phaseContext = 'The meeting is focused on discussing potential solutions and implementation approaches.'
-        phaseGuidelines = `CRITICAL PHASE ALIGNMENT - SOLUTION DEVELOPMENT:
-        - Now you CAN discuss solutions, improvements, and implementation approaches
-        - Propose specific solutions based on your expertise
-        - Discuss implementation considerations and approaches
-        - Share recommendations for improvements
-        - Consider feasibility and implementation challenges
-        - Build on the current state and pain points already identified
-        - Provide actionable suggestions and next steps`
+        phaseGuidelines = `WHEN DISCUSSING IMPROVEMENTS:
+        - Share ideas from your team's perspective
+        - Keep suggestions practical and grounded
+        - Connect ideas to real problems: "This would help with..."
+        - Consider other teams: "We'd need to work with..."
+        - Be realistic about challenges
+        - Use examples: "We could do something like..."
+        - Show openness: "What do you think about..."`
         break
         
       case 'deep_dive':
