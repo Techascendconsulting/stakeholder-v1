@@ -26,7 +26,7 @@ const ProjectsView: React.FC = () => {
   const handleViewBrief = async (project: any) => {
     try {
       await selectProject(project)
-      setCurrentView('project-brief')
+      setCurrentView('project-setup')
     } catch (error) {
       alert(error instanceof Error ? error.message : 'An error occurred')
     }

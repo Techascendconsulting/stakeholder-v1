@@ -135,7 +135,9 @@ function App() {
           <AuthProvider>
             <VoiceProvider>
               <AppProvider>
-                <AppContent />
+                <MeetingSetupProvider>
+                  <AppContent />
+                </MeetingSetupProvider>
               </AppProvider>
             </VoiceProvider>
           </AuthProvider>

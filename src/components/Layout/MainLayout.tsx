@@ -1,33 +1,31 @@
-import React from 'react'
-import { Sidebar } from './Sidebar'
-import { useApp } from '../../contexts/AppContext'
-import Dashboard from '../Views/Dashboard'
-import CoreConceptsView from '../Views/CoreConceptsView'
-import GuidedPracticeHub from '../Views/GuidedPracticeHub'
-import ProjectsView from '../Views/ProjectsView'
-import ProjectBrief from '../Views/ProjectBrief'
-import StakeholdersView from '../Views/StakeholdersView'
-import MeetingModeSelection from '../Views/MeetingModeSelection'
-import MeetingView from '../Views/MeetingView'
-import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView'
-import { MyMeetingsView } from '../Views/MyMeetingsView'
-import { MeetingHistoryView } from '../Views/MeetingHistoryView'
-import { MeetingSummaryView } from '../Views/MeetingSummaryView'
-import { MeetingDetailsView } from '../Views/MeetingDetailsView'
-import { RawTranscriptView } from '../Views/RawTranscriptView'
-import { InterviewNotesView } from '../Views/InterviewNotesView'
-import DeliverablesView from '../Views/DeliverablesView'
-import { ProfileView } from '../Views/ProfileView'
-import AnalysisView from '../Views/AnalysisView'
-import CustomProjectView from '../Views/CustomProjectView'
-import CustomStakeholdersView from '../Views/CustomStakeholdersView'
-import { AgileHubView } from '../Views/AgileHubView'
-import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting'
-import IndividualAgentMeeting from '../Views/IndividualAgentMeeting'
-import DebugConsole from '../Debug/DebugConsole'
+import React from 'react';
+import { Sidebar } from './Sidebar';
+import { useApp } from '../../contexts/AppContext';
+import Dashboard from '../Views/Dashboard';
+import CoreConceptsView from '../Views/CoreConceptsView';
+import GuidedPracticeHub from '../Views/GuidedPracticeHub';
+import ProjectsView from '../Views/ProjectsView';
+import MeetingView from '../Views/MeetingView';
+import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView';
+import { MyMeetingsView } from '../Views/MyMeetingsView';
+import { MeetingHistoryView } from '../Views/MeetingHistoryView';
+import { MeetingSummaryView } from '../Views/MeetingSummaryView';
+import { MeetingDetailsView } from '../Views/MeetingDetailsView';
+import { RawTranscriptView } from '../Views/RawTranscriptView';
+import { InterviewNotesView } from '../Views/InterviewNotesView';
+import DeliverablesView from '../Views/DeliverablesView';
+import { ProfileView } from '../Views/ProfileView';
+import AnalysisView from '../Views/AnalysisView';
+import CustomProjectView from '../Views/CustomProjectView';
+import CustomStakeholdersView from '../Views/CustomStakeholdersView';
+import { AgileHubView } from '../Views/AgileHubView';
+import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
+import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
+import ProjectView from '../Views/ProjectView';
+import DebugConsole from '../Debug/DebugConsole';
 
 const MainLayout: React.FC = () => {
-  const { currentView, isLoading, selectedProject, selectedStakeholders, user } = useApp()
+  const { currentView, isLoading, selectedProject } = useApp();
 
   if (isLoading) {
     return (
@@ -39,71 +37,57 @@ const MainLayout: React.FC = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   const renderView = () => {
-    console.log('🔍 RENDER: MainLayout renderView called with currentView:', currentView)
-    console.log('🔍 RENDER: selectedProject:', selectedProject?.name || 'null')
-    console.log('🔍 RENDER: selectedStakeholders count:', selectedStakeholders?.length || 0)
-    console.log('🔍 RENDER: About to render view for:', currentView)
-    
     switch (currentView) {
       case 'dashboard':
-        console.log('🏠 RENDER: Rendering Dashboard component')
-        return <Dashboard />
+        return <Dashboard />;
       case 'core-concepts':
-        console.log('📚 RENDER: Rendering CoreConceptsView component')
-        return <CoreConceptsView />
+        return <CoreConceptsView />;
       case 'guided-practice-hub':
-        console.log('🎯 RENDER: Rendering GuidedPracticeHub component')
-        return <GuidedPracticeHub />
+        return <GuidedPracticeHub />;
       case 'projects':
-        return <ProjectsView />
-      case 'project-brief':
-        return <ProjectBrief />
-      case 'stakeholders':
-        return <StakeholdersView />
-      case 'meeting-mode-selection':
-        return <MeetingModeSelection />
+        return <ProjectsView />;
+      case 'project-setup':
+        return selectedProject ? <ProjectView projectId={selectedProject.id} /> : <ProjectsView />;
       case 'meeting':
-        return <MeetingView />
+        return <MeetingView />;
       case 'voice-only-meeting':
-        return <VoiceOnlyMeetingView />
+        return <VoiceOnlyMeetingView />;
       case 'my-meetings':
-        return <MyMeetingsView />
+        return <MyMeetingsView />;
       case 'meeting-history':
-        return <MeetingHistoryView />
+        return <MeetingHistoryView />;
       case 'meeting-summary':
-        return <MeetingSummaryView />
+        return <MeetingSummaryView />;
       case 'meeting-details':
-        return <MeetingDetailsView />
+        return <MeetingDetailsView />;
       case 'raw-transcript':
-        return <RawTranscriptView />
+        return <RawTranscriptView />;
       case 'notes':
-        return <InterviewNotesView />
+        return <InterviewNotesView />;
       case 'deliverables':
-        return <DeliverablesView />
+        return <DeliverablesView />;
       case 'profile':
-        return <ProfileView />
+        return <ProfileView />;
       case 'analysis':
-        return <AnalysisView />
+        return <AnalysisView />;
       case 'custom-project':
-        return <CustomProjectView />
+        return <CustomProjectView />;
       case 'custom-stakeholders':
-        return <CustomStakeholdersView />
+        return <CustomStakeholdersView />;
       case 'agile-hub':
-        return <AgileHubView />
+        return <AgileHubView />;
       case 'elevenlabs-meeting':
-        console.log('🎤 RENDER: Rendering ElevenLabsMultiAgentMeeting component')
-        return <ElevenLabsMultiAgentMeeting />
+        return <ElevenLabsMultiAgentMeeting />;
       case 'individual-agent-meeting':
-        console.log('🤖 RENDER: Rendering IndividualAgentMeeting component')
-        return <IndividualAgentMeeting />
+        return <IndividualAgentMeeting />;
       default:
-        return <ProjectsView />
+        return <ProjectsView />;
     }
-  }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -113,7 +97,7 @@ const MainLayout: React.FC = () => {
       </main>
       <DebugConsole />
     </div>
-  )
-}
+  );
+};
 
-export default MainLayout
+export default MainLayout;
