@@ -1,0 +1,34 @@
+{
+  "david_thompson": {
+    "team": "IT",
+    "actual_work": "I handle all the tech setup stuff when new customers come in. You know, making sure their systems can work with ours, checking security requirements, that kind of thing.",
+    "daily_tasks": [
+      "checking system requirements for new clients",
+      "helping sales team with technical questions",
+      "setting up security access",
+      "fixing integration issues"
+    ],
+    "speaks_like": [
+      "Yeah, I was just working on that new startup's setup this morning",
+      "We basically check if their systems can work with ours",
+      "Usually takes us a couple days to get everything sorted",
+      "Had a tricky one yesterday where their API wasn't playing nice"
+    ]
+  },
+  "james_walker": {
+    "team": "Operations",
+    "actual_work": "I'm in the ops team - we handle all the customer setup process. Making sure everything's ready before they can start using our stuff.",
+    "daily_tasks": [
+      "coordinating with sales about new customers",
+      "checking customer requirements",
+      "setting up initial accounts",
+      "helping customers get started"
+    ],
+    "speaks_like": [
+      "Been pretty busy with all the new signups",
+      "Just finished setting up that tech company from yesterday",
+      "Yeah, we work with David's team a lot",
+      "Trying to make it smoother for new customers"
+    ]
+  }
+}
