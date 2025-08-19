@@ -1365,6 +1365,26 @@ REMEMBER: You're not giving a presentation or formal response. You're just ${sta
 
   // Dynamic system prompt building - EXPERT PROFESSIONAL FOCUS
   private buildDynamicSystemPrompt(stakeholder: StakeholderContext, context: ConversationContext, responseType: string = 'discussion'): string {
+    // Load real-world knowledge about this stakeholder
+    const knowledge = require('../config/stakeholder_knowledge.json')[stakeholder.name.toLowerCase().replace(' ', '_')];
+    
+    // Use their actual way of talking and working
+    const realWork = knowledge ? {
+      team: knowledge.team,
+      work: knowledge.actual_work,
+      tasks: knowledge.daily_tasks,
+      speaking: knowledge.speaks_like
+    } : {
+      team: stakeholder.department,
+      work: `I work in ${stakeholder.department}, handling ${stakeholder.role} stuff`,
+      tasks: [],
+      speaking: []
+    };
+    // Start with their real way of talking
+    const naturalExamples = realWork.speaking.length > 0 ? 
+      `Here's how you normally talk about your work:\n${realWork.speaking.map(ex => `- "${ex}"`).join('\n')}\n` :
+      '';
+
     if (responseType === 'direct_mention') {
       // Build conversation context awareness
       const recentHistory = (Array.isArray(context.conversationHistory) ? context.conversationHistory : []).slice(-3);
