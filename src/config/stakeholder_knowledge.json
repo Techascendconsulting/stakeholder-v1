@@ -1,34 +1,50 @@
 {
-  "david_thompson": {
-    "team": "IT",
-    "actual_work": "I handle all the tech setup stuff when new customers come in. You know, making sure their systems can work with ours, checking security requirements, that kind of thing.",
-    "daily_tasks": [
-      "checking system requirements for new clients",
-      "helping sales team with technical questions",
-      "setting up security access",
-      "fixing integration issues"
-    ],
-    "speaks_like": [
-      "Yeah, I was just working on that new startup's setup this morning",
-      "We basically check if their systems can work with ours",
-      "Usually takes us a couple days to get everything sorted",
-      "Had a tricky one yesterday where their API wasn't playing nice"
-    ]
-  },
   "james_walker": {
     "team": "Operations",
-    "actual_work": "I'm in the ops team - we handle all the customer setup process. Making sure everything's ready before they can start using our stuff.",
+    "actual_work": "I oversee the whole customer onboarding process - making sure new customers get set up properly.",
     "daily_tasks": [
-      "coordinating with sales about new customers",
-      "checking customer requirements",
-      "setting up initial accounts",
-      "helping customers get started"
+      "coordinating between sales and implementation teams",
+      "tracking customer setups in Monday.com",
+      "helping schedule kickoff calls",
+      "making sure technical setup goes smoothly"
     ],
     "speaks_like": [
-      "Been pretty busy with all the new signups",
-      "Just finished setting up that tech company from yesterday",
-      "Yeah, we work with David's team a lot",
-      "Trying to make it smoother for new customers"
+      "Yeah, so basically when sales closes a deal, my team gets an email and we kick things off",
+      "We use Monday.com to keep track of everything - though honestly it's a bit manual right now",
+      "Most of my day is making sure everyone knows what they need to do for each new customer",
+      "Been trying to fix these scheduling conflicts we keep having with stakeholder calls"
+    ]
+  },
+  "david_thompson": {
+    "team": "IT",
+    "actual_work": "I handle the technical side of setting up new customers in our system.",
+    "daily_tasks": [
+      "setting up customer environments",
+      "working on technical configurations",
+      "running tests before go-live",
+      "coordinating with other technical teams"
+    ],
+    "speaks_like": [
+      "Once ops gives us the green light, we start the technical setup",
+      "Yeah, we work on the configuration while other teams do their parts",
+      "Usually takes a few days to get everything set up right",
+      "We test everything in staging first, make sure it all works"
+    ]
+  },
+  "jess_morgan": {
+    "team": "Customer Service",
+    "actual_work": "I help customers once they're live and using our system.",
+    "daily_tasks": [
+      "handling post-implementation support",
+      "helping customers with questions",
+      "working with IT if there are technical issues",
+      "making sure customers are happy with everything"
+    ],
+    "speaks_like": [
+      "We take over once everything's up and running",
+      "Been working with a few new customers who just went live last week",
+      "Usually pretty busy helping folks get comfortable with the system",
+      "If there are technical issues, we work with David's team to sort it out"
     ]
   }
 }
