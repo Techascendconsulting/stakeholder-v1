@@ -639,16 +639,23 @@ Generate only the greeting, nothing else.`;
     // Trim whitespace but preserve the intelligent response
     let cleanResponse = response.trim();
     
-    // Remove any markdown formatting to ensure natural speech
+    // Clean up response formatting
     cleanResponse = cleanResponse
-      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove bold **text**
-      .replace(/\*(.*?)\*/g, '$1')      // Remove italic *text*
-      .replace(/__(.*?)__/g, '$1')      // Remove bold __text__
-      .replace(/_(.*?)_/g, '$1')        // Remove italic _text_
-      .replace(/`(.*?)`/g, '$1')        // Remove code `text`
-      .replace(/#{1,6}\s/g, '')         // Remove heading markers
-      .replace(/^\s*[-*+]\s/gm, '')     // Remove bullet points
-      .replace(/^\s*\d+\.\s/gm, '')     // Remove numbered lists
+      // Remove markdown
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/__(.*?)__/g, '$1')
+      .replace(/_(.*?)_/g, '$1')
+      .replace(/`(.*?)`/g, '$1')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/^\s*[-*+]\s/gm, '')
+      .replace(/^\s*\d+\.\s/gm, '')
+      // Remove quotes
+      .replace(/^["']|["']$/g, '')
+      // Remove undefined
+      .replace(/\.undefined$/, '')
+      // Remove formal transitions
+      .replace(/^(Given that|That said|From our side),?\s*/i, '')
     
     // Only handle truly broken responses - let intelligent, comprehensive responses through
     if (cleanResponse.length < 10) {
@@ -2056,17 +2063,10 @@ Return format: stakeholder_names|mention_type|confidence|routing_reason`
         }
       }
 
-      // Check for last speaker before returning empty result
-      if (mentionedStakeholders.length === 0) {
-        // Get the last speaker
+      // Simple follow-up detection: if the question uses "your" and there's a last speaker, it's for them
+      if (mentionedStakeholders.length === 0 && userMessage.toLowerCase().includes('your')) {
         const lastSpeaker = this.conversationState.lastSpeakers[this.conversationState.lastSpeakers.length - 1];
-        
-        // If we have a last speaker and this isn't a group message
-        if (lastSpeaker && 
-            !userMessage.toLowerCase().includes('everyone') && 
-            !userMessage.toLowerCase().includes('all') &&
-            !userMessage.toLowerCase().includes('team') &&
-            !userMessage.toLowerCase().includes('guys')) {
+        if (lastSpeaker) {
           
           // Find the last speaker's context
           const lastSpeakerContext = availableStakeholders.find(s => s.name === lastSpeaker);
@@ -2652,11 +2652,7 @@ Respond naturally as ${stakeholder.name} addressing the specific question or req
 
     let updated = response.trim()
 
-    // Prepend one brief transition if not already starting with one
-    if (!/^(right|okay|i see|understood|makes sense)/i.test(updated)) {
-      const t = transitions[Math.floor(Math.random() * transitions.length)]
-      updated = t + updated.charAt(0).toLowerCase() + updated.slice(1)
-    }
+    // Remove automatic transitions - let responses be more natural
 
     // Append a soft check-in if answer is long enough
     if (updated.length > 140) {
