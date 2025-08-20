@@ -123,9 +123,10 @@ class AIService {
     }
 
     if (this.isCurrentProcessQuestion(lowerMsg)) {
-      const asIs = this.summarizeAsIs(context?.project?.asIsProcess);
-      if (asIs) {
-        return `Sure — in our team, we start by ${asIs.replace(/\s*->\s*/g, ', then we ')}. That’s the usual flow from our side.`;
+      const steps = this.extractAsIsSteps(context?.project?.asIsProcess).map(s => this.sanitizeStepForSpeech(s));
+      if (steps.length > 0) {
+        const concise = this.connectStepsForSpeech(steps.slice(0, 8));
+        return `Sure, the flow is: ${concise}.`;
       }
     }
 
@@ -290,6 +291,17 @@ class AIService {
     if (name.includes('expense') || desc.includes('expense')) return 'our digital expense management system';
     if (name.includes('performance') || desc.includes('performance')) return 'our performance management platform';
     return '';
+  }
+
+  private sanitizeStepForSpeech(text: string): string {
+    if (!text) return '';
+    // Remove parenthetical/bracketed asides
+    let cleaned = text.replace(/\s*\([^)]*\)/g, '').replace(/\s*\[[^\]]*\]/g, '');
+    // Collapse multiple spaces
+    cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+    // Remove trailing commas
+    cleaned = cleaned.replace(/[,;]\s*$/g, '');
+    return cleaned;
   }
 
   private isProductsServicesQuestion(lower: string): boolean {
