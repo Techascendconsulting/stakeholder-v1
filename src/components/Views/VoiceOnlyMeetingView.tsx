@@ -480,10 +480,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     };
 
     const conversationContext = {
-      project: {
-        name: selectedProject?.name || 'Current Project',
-        description: selectedProject?.description || 'Project description',
-        type: selectedProject?.type || 'General'
+      project: selectedProject || {
+        name: 'Current Project',
+        description: 'Project description'
       },
       conversationHistory: currentMessages,
       stakeholders: selectedStakeholders.map(s => ({
@@ -494,7 +493,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         personality: s.personality,
         expertise: s.expertise || []
       })),
-      isOneOnOne: selectedStakeholders.length === 1
+      isOneOnOne: selectedStakeholders.length === 1,
+      conversationPhase: (() => {
+        const raw = (setupData?.selectedStage || '').toLowerCase();
+        if (raw.includes('problem')) return 'problem_exploration';
+        if (raw.includes('as-is') || raw.includes('as is') || raw === 'asis') return 'as_is';
+        if (raw.includes('to-be') || raw.includes('to be')) return 'to_be';
+        if (raw.includes('wrap')) return 'wrap_up';
+        return 'as_is';
+      })()
     };
 
     const aiService = AIService.getInstance();

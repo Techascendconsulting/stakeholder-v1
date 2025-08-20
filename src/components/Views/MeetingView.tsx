@@ -5,12 +5,14 @@ import { useVoice } from '../../contexts/VoiceContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { Message } from '../../types'
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService'
+import { useMeetingSetup } from '../../contexts/MeetingSetupContext'
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS'
 import VoiceInputModal from '../VoiceInputModal'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView } = useApp()
+  const { setupData } = useMeetingSetup()
   const { user } = useAuth()
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice()
   const [inputMessage, setInputMessage] = useState('')
@@ -70,6 +72,16 @@ const MeetingView: React.FC = () => {
         variance: 600
       }
     }
+  }
+
+  const normalizeConversationPhase = (raw: string | undefined): ConversationContext['conversationPhase'] => {
+    if (!raw) return 'as_is'
+    const v = raw.toLowerCase()
+    if (v.includes('problem')) return 'problem_exploration'
+    if (v.includes('as-is') || v.includes('as is') || v === 'asis') return 'as_is'
+    if (v.includes('to-be') || v.includes('to be')) return 'to_be'
+    if (v.includes('wrap')) return 'wrap_up'
+    return 'as_is'
   }
 
   // Mock questions for demonstration
@@ -529,11 +541,10 @@ const MeetingView: React.FC = () => {
       expertise: stakeholder.expertise || []
     }
 
-    const conversationContext = {
-      project: {
-        name: selectedProject?.name || 'Current Project',
-        description: selectedProject?.description || 'Project description',
-        type: selectedProject?.projectType || 'General'
+    const conversationContext: ConversationContext = {
+      project: selectedProject || {
+        name: 'Current Project',
+        description: 'Project description'
       },
       conversationHistory: currentMessages,
       stakeholders: selectedStakeholders.map(s => ({
@@ -543,7 +554,8 @@ const MeetingView: React.FC = () => {
         priorities: s.priorities,
         personality: s.personality,
         expertise: s.expertise || []
-      }))
+      })),
+      conversationPhase: normalizeConversationPhase(setupData?.selectedStage)
     }
 
     const aiService = AIService.getInstance()
