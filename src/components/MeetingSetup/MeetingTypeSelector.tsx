@@ -49,17 +49,17 @@ const MeetingTypeSelector: React.FC<MeetingTypeSelectorProps> = ({ data, onUpdat
     }
   ];
 
-  // Color tokens to match app accents per card
+  // Solid color backgrounds per card
   const typeStyles: Record<string, {
-    tint: string; // light bg tint
-    ring: string; // ring/border color
-    iconBg: string; // icon circle bg
+    bg: string;
+    hoverBg: string;
+    ring: string;
+    iconBg: string;
     iconColor: string;
-    hoverBorder: string;
   }> = {
-    transcript: { tint: 'bg-indigo-50', ring: 'ring-indigo-500 border-indigo-500', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600', hoverBorder: 'hover:border-indigo-200' },
-    group:      { tint: 'bg-blue-50',   ring: 'ring-blue-500 border-blue-500',     iconBg: 'bg-blue-100',   iconColor: 'text-blue-600',   hoverBorder: 'hover:border-blue-200' },
-    voice:      { tint: 'bg-purple-50', ring: 'ring-purple-500 border-purple-500', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', hoverBorder: 'hover:border-purple-200' },
+    transcript: { bg: 'bg-indigo-600', hoverBg: 'hover:bg-indigo-700', ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
+    group:      { bg: 'bg-blue-600',   hoverBg: 'hover:bg-blue-700',   ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
+    voice:      { bg: 'bg-purple-600', hoverBg: 'hover:bg-purple-700', ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
   };
 
   const handleSelect = (typeId: string) => {
@@ -79,22 +79,20 @@ const MeetingTypeSelector: React.FC<MeetingTypeSelectorProps> = ({ data, onUpdat
           <button
             key={type.id}
             onClick={() => handleSelect(type.id)}
-            className={`p-6 bg-white dark:bg-gray-800 rounded-2xl border transition-all shadow-sm hover:shadow-md ${
-              data.meetingType === type.id
-                ? `${typeStyles[type.id]?.ring || 'ring-2 ring-indigo-500 border-indigo-500'} ${typeStyles[type.id]?.tint || ''}`
-                : `border-slate-200 dark:border-gray-700 ${typeStyles[type.id]?.hoverBorder || 'hover:border-indigo-200'} dark:hover:border-indigo-800`
-            } min-h-[280px] flex flex-col items-center text-center`}
+            className={`p-6 rounded-2xl border transition-all shadow-sm ${typeStyles[type.id]?.bg || 'bg-slate-700'} ${typeStyles[type.id]?.hoverBg || ''} text-white ${
+              data.meetingType === type.id ? `ring-2 ${typeStyles[type.id]?.ring || 'ring-white'}` : ''
+            } min-h-[300px] flex flex-col items-center text-center border-transparent`}
           >
-            <div className={`w-12 h-12 rounded-full ${typeStyles[type.id]?.iconBg || 'bg-slate-100'} flex items-center justify-center mb-3`}>
-              <type.icon className={`w-6 h-6 ${data.meetingType === type.id ? (typeStyles[type.id]?.iconColor || 'text-indigo-600') : (typeStyles[type.id]?.iconColor || 'text-slate-600')}`} />
+            <div className={`w-12 h-12 rounded-full ${typeStyles[type.id]?.iconBg || 'bg-white/10'} flex items-center justify-center mb-3`}>
+              <type.icon className={`w-6 h-6 ${typeStyles[type.id]?.iconColor || 'text-white'}`} />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{type.title}</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">{type.description}</p>
-            <div className="text-sm text-indigo-600 dark:text-indigo-400 mb-3">{type.duration}</div>
+            <h3 className="text-lg font-semibold text-white mb-1">{type.title}</h3>
+            <p className="text-white/90 mb-3 leading-relaxed">{type.description}</p>
+            <div className="text-sm text-white/90 mb-3">{type.duration}</div>
             <ul className="space-y-2">
               {type.features.map((feature, index) => (
-                <li key={index} className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-400">
-                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                <li key={index} className="flex items-center justify-center text-sm text-white/90">
+                  <span className="w-1.5 h-1.5 bg-white/70 rounded-full mr-2"></span>
                   <span>{feature}</span>
                 </li>
               ))}
