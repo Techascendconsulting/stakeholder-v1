@@ -118,7 +118,8 @@ class AIService {
     const lowerMsg = (userMessage || '').toLowerCase().trim();
 
     // Ultra-fast local responses for common intents
-    if (this.isGreetingSmallTalk(lowerMsg)) {
+    const historyLen = Array.isArray(context?.conversationHistory) ? context.conversationHistory.length : 0;
+    if (historyLen <= 2 && this.isGreetingSmallTalk(lowerMsg)) {
       return this.buildSmallTalkResponse(stakeholder, context);
     }
 
@@ -176,6 +177,8 @@ class AIService {
     if (project.businessContext) bits.push(`businessContext: ${this.trimLine(project.businessContext, 160)}`);
     if (project.problemStatement) bits.push(`problem: ${this.trimLine(project.problemStatement, 160)}`);
     if (project.asIsProcess) bits.push(`asIs: ${this.summarizeAsIs(project.asIsProcess)}`);
+    const offering = this.deriveOfferingFromProject(project);
+    if (offering) bits.push(`offering: ${offering}`);
     if (project.businessGoals) bits.push(`goals: ${this.trimLine(Array.isArray(project.businessGoals) ? project.businessGoals.join('; ') : project.businessGoals, 160)}`);
     return bits.join(' | ');
   }
@@ -218,6 +221,12 @@ class AIService {
       return `Sure — in our team, we start by ${asIs.replace(/\s*->\s*/g, ', then we ')}. That’s the usual flow from our side.`;
     }
 
+    // "What do they buy from us" style fallback
+    if (/(what do .*buy from us|what.*buy from us|what.*buy)/i.test(lower)) {
+      const offering = this.deriveOfferingFromProject(context?.project) || 'our core platform and services';
+      return `Primarily ${offering}. If you’re asking about pre‑sale vs post‑sale, this relates to ${context?.conversationPhase === 'as_is' ? 'post‑sale onboarding' : 'our overall offering'}—happy to clarify.`;
+    }
+
     // Generic concise fallback grounded in role
     return `From my ${stakeholder.role}${stakeholder.department ? ' (' + stakeholder.department + ')' : ''} perspective, I’d say: ${this.trimLine(userMessage || 'Let me clarify the key points for you.', 60)} — and if helpful, we can tie this back to the current focus as we go.`;
   }
@@ -235,6 +244,18 @@ class AIService {
   private isCurrentProcessQuestion(lower: string): boolean {
     if (!lower) return false;
     return /(current\s+process|what's\s+the\s+process|whats\s+the\s+process|how do you do it|how is it done)/i.test(lower);
+  }
+
+  private deriveOfferingFromProject(project: any): string | '' {
+    if (!project) return '';
+    const name = `${project.name || ''}`.toLowerCase();
+    const desc = `${project.description || ''}`.toLowerCase();
+    if (name.includes('onboarding') || desc.includes('onboarding')) return 'our onboarding optimization solution';
+    if (name.includes('support') || desc.includes('support ticket')) return 'our customer support management solution';
+    if (name.includes('inventory') || desc.includes('inventory')) return 'our inventory management enhancements';
+    if (name.includes('expense') || desc.includes('expense')) return 'our digital expense management system';
+    if (name.includes('performance') || desc.includes('performance')) return 'our performance management platform';
+    return '';
   }
 }
 
