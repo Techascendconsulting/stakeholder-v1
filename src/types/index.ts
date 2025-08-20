@@ -13,6 +13,10 @@ export interface Project {
   relevantStakeholders?: string[] // IDs of stakeholders relevant to this project
   industry?: string
   projectType?: string
+  // Optional company context to help BAs get quick background
+  companyProducts?: string
+  companyServices?: string
+  companyOverview?: string
 }
 
 export interface Stakeholder {

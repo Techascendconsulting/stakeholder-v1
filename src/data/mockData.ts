@@ -37,7 +37,9 @@ Pain Points: No centralized tracking, manual status updates, customers often una
     ],
     duration: '4-5 weeks',
     complexity: 'Intermediate',
-    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-4', 'stake-8'] // Operations, Customer Service, IT, HR, Customer Experience
+    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-4', 'stake-8'], // Operations, Customer Service, IT, HR, Customer Experience
+    companyProducts: 'Enterprise software solutions designed for IT, Product Development, and Customer Support teams. These include workflow automation tools, customer engagement platforms, and system integration software.',
+    companyServices: 'Implementation consulting, technical onboarding support, customer success management, and long-term enterprise support programs to help clients adopt and maximize TechCorp’s solutions.'
   },
   {
     id: 'proj-2',
@@ -76,7 +78,9 @@ Pain Points: High error rates, no real-time visibility, delayed reimbursements, 
     ],
     duration: '5-6 weeks',
     complexity: 'Advanced',
-    relevantStakeholders: ['stake-1', 'stake-3', 'stake-5', 'stake-6'] // Operations, IT, Compliance, Finance
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-5', 'stake-6'], // Operations, IT, Compliance, Finance
+    companyProducts: 'Financial management software tools and reporting systems that help mid-market companies manage budgets, expenses, and compliance.',
+    companyServices: 'Corporate financial services including expense policy consulting, compliance advisory (SOX, regulatory), employee reimbursement programs, and analytics-driven financial planning support.'
   },
   {
     id: 'proj-3',
@@ -115,7 +119,10 @@ Pain Points: Week-old data for decision making, no demand forecasting, manual pr
     ],
     duration: '3-4 weeks',
     complexity: 'Beginner',
-    relevantStakeholders: ['stake-1', 'stake-3', 'stake-6', 'stake-7'] // Operations, IT, Finance, Supply Chain
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-6', 'stake-7'], // Operations, IT, Finance, Supply Chain
+    companyProducts: 'Enterprise inventory management software solutions.',
+    companyServices: 'Supply chain visibility dashboards, forecasting and demand analytics, and logistics consultancy for large-scale retail distribution.',
+    companyOverview: 'We provide wholesale distribution services to over 2,400 retail locations. That includes managing inventory across 15 distribution centers, coordinating with vendors, ensuring timely fulfillment, and offering demand forecasting and stock visibility support. In short, our services help retailers keep shelves stocked efficiently while reducing supply chain costs.'
   },
   {
     id: 'proj-4',
@@ -154,20 +161,16 @@ Pain Points: No intelligent routing, knowledge silos, manual status updates, inc
     ],
     duration: '4-5 weeks',
     complexity: 'Intermediate',
-    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-8'] // Operations, Customer Service, IT, Customer Experience
+    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-8'], // Operations, Customer Service, IT, Customer Experience
+    companyProducts: 'A SaaS platform that provides enterprise-grade business management tools, including workflow automation, reporting, and customer engagement modules.',
+    companyServices: '24/7 technical support for enterprise customers; customer onboarding and training for the SaaS platform; premium support tiers (dedicated account manager, priority SLAs); knowledge sharing through webinars, documentation, and customer success programs.'
   },
   {
     id: 'proj-5',
     name: 'Employee Performance Management Platform',
-    description: 'Modernize annual performance review processes through continuous feedback mechanisms, goal tracking integration, 360-degree review capabilities, and data-driven performance analytics.',
-    businessContext: `HRTech Corp, a growing technology company with 2,500+ employees across 8 global offices, currently conducts annual performance reviews using manual processes that have become increasingly inadequate for our dynamic business environment. Our recent employee engagement survey revealed that 73% of employees find the current review process ineffective, and 68% of managers report spending excessive time on administrative tasks rather than meaningful performance discussions.
-
-The current system provides limited visibility into employee goal achievement, lacks continuous feedback mechanisms, and offers insufficient data for talent development and succession planning decisions. With planned headcount growth of 35% in 2024 and expansion into new markets, we need a scalable, data-driven performance management system.
-
-The Chief People Officer has prioritized this initiative to improve employee engagement, enhance talent retention (currently 12% annual turnover), and support our goal of becoming an employer of choice in the technology sector. Executive leadership has committed $380K budget with expected improvements in employee satisfaction and retention metrics.`,
-    problemStatement: `The current annual performance review process relies on subjective evaluations, lacks continuous feedback mechanisms, provides limited goal visibility and tracking, and offers insufficient data for strategic talent development decisions. The system creates administrative burden for managers, provides little value to employees for professional development, and fails to align individual performance with organizational objectives.
-
-Critical issues include: annual-only review cycle, subjective evaluation criteria, no goal tracking integration, limited 360-degree feedback, poor documentation standards, no succession planning data, and lack of performance analytics. These limitations impact employee engagement, talent retention, and organizational ability to identify and develop high-potential employees.`,
+    description: 'Internal focus: Performance Management System Modernization with continuous feedback, goal tracking, 360-degree reviews, and data-driven analytics.',
+    businessContext: `HRTech Corp employs 2,500+ staff across 8 offices. They help clients stay compliant with health & safety regulations, but internally, their own employee performance reviews are outdated. 73% of employees find annual reviews ineffective, and managers spend more time on admin than meaningful discussions.`,
+    problemStatement: `The internal performance review system is manual, annual-only, subjective, and disconnected from talent development.`,
     asIsProcess: `Current Performance Management Process:
 1. Annual review cycle initiated by HR with email notifications
 2. Manual distribution of performance review forms (Word documents)
@@ -182,7 +185,7 @@ Critical issues include: annual-only review cycle, subjective evaluation criteri
 
 Pain Points: Annual-only feedback, subjective evaluations, no goal tracking, limited development planning, administrative burden, poor documentation, no performance analytics, disconnect between reviews and compensation decisions.`,
     businessGoals: [
-      'Transition from annual to continuous performance feedback model',
+      'Implement a continuous, data-driven performance management system to boost engagement, reduce turnover, and align staff performance with company objectives.',
       'Increase employee engagement scores by 25% within 12 months',
       'Improve goal achievement rates from 62% to 85% organization-wide',
       'Implement 360-degree feedback capabilities for all management levels',
@@ -193,7 +196,9 @@ Pain Points: Annual-only feedback, subjective evaluations, no goal tracking, lim
     ],
     duration: '5-7 weeks',
     complexity: 'Advanced',
-    relevantStakeholders: ['stake-1', 'stake-3', 'stake-4', 'stake-6'] // Operations, IT, HR, Finance
+    relevantStakeholders: ['stake-1', 'stake-3', 'stake-4', 'stake-6'], // Operations, IT, HR, Finance
+    companyProducts: 'Workplace safety compliance software; incident tracking and reporting tools.',
+    companyServices: 'Health and safety audits; compliance training for employees and managers; risk assessment and hazard management consulting.'
   }
 ]
 
