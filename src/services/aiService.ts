@@ -475,10 +475,10 @@ class AIService {
 
       progressCallback?.("Generating comprehensive meeting summary...");
 
-      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a clean, professional meeting summary with the following sections: Meeting Overview (date, duration, participants, project), Key Discussion Points (main topics and insights), Requirements Identified (business needs and pain points), Action Items (next steps and decisions), and Stakeholder Perspectives (key viewpoints from each participant). Use clean formatting without hashtags or excessive markdown. Keep it concise and professional. Focus on the actual conversation content.";
+      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a flowing, narrative meeting summary that reads like a natural report. Include the meeting context (date, duration, participants, project), then weave together the key points discussed, requirements identified, and stakeholder perspectives into a cohesive story. Write in clear, professional prose without bullet points or rigid sections. Make it read like a natural summary someone would write after a meeting.";
 
       const conversationText = messages.map((msg: any) => msg.speaker + ": " + msg.content).join("\n\n");
-      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a clean, professional meeting summary based on this conversation. Use simple formatting without hashtags or excessive markdown. Focus on the key points discussed and keep the language natural and professional.";
+      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a flowing, narrative meeting summary that reads naturally. Write it as a cohesive story that weaves together the key points, requirements, and stakeholder perspectives discussed. Avoid bullet points and rigid sections - make it read like a natural summary someone would write after a meeting.";
 
       const response = await openai.chat.completions.create({
         model: MODEL,
