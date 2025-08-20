@@ -129,6 +129,12 @@ class AIService {
       }
     }
 
+    // Fast path: products/services question answered from project context
+    if (this.isProductsServicesQuestion(lowerMsg)) {
+      const offering = this.buildOfferingAnswer(context?.project);
+      if (offering) return offering;
+    }
+
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
@@ -284,6 +290,25 @@ class AIService {
     if (name.includes('expense') || desc.includes('expense')) return 'our digital expense management system';
     if (name.includes('performance') || desc.includes('performance')) return 'our performance management platform';
     return '';
+  }
+
+  private isProductsServicesQuestion(lower: string): boolean {
+    if (!lower) return false;
+    return /what\s+(products|services).*\b(offer|do you offer)\b|what\s+do\s+you\s+offer|what\s+products\b|what\s+services\b/i.test(lower);
+  }
+
+  private buildOfferingAnswer(project: any): string | '' {
+    if (!project) return '';
+    const products = (project.companyProducts || '').trim();
+    const services = (project.companyServices || '').trim();
+    const overview = (project.companyOverview || '').trim();
+    if (products && services) {
+      // TTS-friendly, no bullets; concise sentences
+      return `Products: ${products} Services: ${services}${overview ? ` For context: ${overview}` : ''}`;
+    }
+    // Fallback to derived offering if explicit fields absent
+    const derived = this.deriveOfferingFromProject(project);
+    return derived ? `We primarily offer ${derived}.` : '';
   }
 }
 
