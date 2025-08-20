@@ -1,14 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-
-interface Stakeholder {
-  id: string;
-  name: string;
-  role: string;
-  department: string;
-  description: string;
-  image: string;
-}
+import { useApp } from '../../contexts/AppContext';
 
 interface StakeholderSelectorProps {
   data: {
@@ -19,6 +11,15 @@ interface StakeholderSelectorProps {
 }
 
 const StakeholderSelector: React.FC<StakeholderSelectorProps> = ({ data, onUpdate, onNext }) => {
+  const { stakeholders: allStakeholders, selectedProject } = useApp();
+
+  // Build available stakeholders from the app's data model based on the selected project's mapping
+  const availableStakeholders = React.useMemo(() => {
+    if (!selectedProject) return allStakeholders;
+    const ids = selectedProject.relevantStakeholders || [];
+    const map = new Map(allStakeholders.map(s => [s.id, s] as const));
+    return ids.map(id => map.get(id)).filter(Boolean) as typeof allStakeholders;
+  }, [allStakeholders, selectedProject]);
   const toggleStakeholder = (stakeholderId: string) => {
     const current = data.selectedStakeholders || [];
     const updated = current.includes(stakeholderId)
@@ -54,7 +55,7 @@ const StakeholderSelector: React.FC<StakeholderSelectorProps> = ({ data, onUpdat
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {stakeholders.map((stakeholder) => (
+        {availableStakeholders.map((stakeholder) => (
           <div
             key={stakeholder.id}
             className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
@@ -67,7 +68,7 @@ const StakeholderSelector: React.FC<StakeholderSelectorProps> = ({ data, onUpdat
             <div className="flex items-start space-x-4">
               <div className="relative flex-shrink-0">
                 <img
-                  src={stakeholder.image}
+                  src={stakeholder.photo || `/stakeholders/${stakeholder.id}.jpg`}
                   alt={stakeholder.name}
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -87,9 +88,11 @@ const StakeholderSelector: React.FC<StakeholderSelectorProps> = ({ data, onUpdat
                 <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   {stakeholder.department}
                 </div>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                  {stakeholder.description}
-                </p>
+                {stakeholder.description && (
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                    {stakeholder.description}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -113,40 +116,5 @@ const StakeholderSelector: React.FC<StakeholderSelectorProps> = ({ data, onUpdat
     </div>
   );
 };
-
-const stakeholders = [
-  {
-    id: 'james_walker',
-    name: 'James Walker',
-    role: 'Head of Operations',
-    department: 'Operations',
-    description: 'James leads operational excellence initiatives across the organization with 15 years of experience in process optimization and operational strategy.',
-    image: '/stakeholders/james.jpg'
-  },
-  {
-    id: 'jess_morgan',
-    name: 'Jess Morgan',
-    role: 'Customer Service Manager',
-    department: 'Customer Service',
-    description: 'Manages customer service operations with 10 years of experience in customer experience management and service delivery optimization.',
-    image: '/stakeholders/jess.jpg'
-  },
-  {
-    id: 'david_thompson',
-    name: 'David Thompson',
-    role: 'IT Systems Lead',
-    department: 'Information Technology',
-    description: 'David leads IT systems architecture and implementation with 12 years of experience in enterprise technology solutions.',
-    image: '/stakeholders/david.jpg'
-  },
-  {
-    id: 'sarah_patel',
-    name: 'Sarah Patel',
-    role: 'HR Business Partner',
-    department: 'Human Resources',
-    description: 'HR Business Partner specializing in change management and employee training needs with 8 years of experience in organizational development.',
-    image: '/stakeholders/sarah.jpg'
-  }
-];
 
 export default StakeholderSelector;

@@ -7,6 +7,7 @@ import MeetingTypeSelector from '../MeetingSetup/MeetingTypeSelector';
 import StakeholderSelector from '../MeetingSetup/StakeholderSelector';
 import StageSelector from '../MeetingSetup/StageSelector';
 import ReadyScreen from '../MeetingSetup/ReadyScreen';
+import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 
 type SetupStep = 'brief' | 'type' | 'stakeholders' | 'stage' | 'ready';
 
@@ -21,6 +22,7 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
   onComplete,
   onBack
 }) => {
+  const { updateSetupData } = useMeetingSetup();
   const [currentStep, setCurrentStep] = useState<SetupStep>('brief');
   const [meetingData, setMeetingData] = useState({
     projectId,
@@ -52,6 +54,10 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1]);
     } else {
+      try {
+        updateSetupData(meetingData as any);
+        localStorage.setItem('meetingSetupData', JSON.stringify(meetingData));
+      } catch {}
       onComplete();
     }
   };

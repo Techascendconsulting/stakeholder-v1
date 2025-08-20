@@ -32,16 +32,46 @@ const createApiParams = (messages: any[], overrides = {}) => ({
   ...overrides  // This will override any duplicate keys from DEFAULT_API_PARAMS
 });
 
+interface ConversationState {
+  messageCount: number;
+  participantInteractions: Map<string, number>;
+  topicsDiscussed: Set<string>;
+  conversationPhase: 'as_is' | 'pain_points' | 'solutioning' | 'deep_dive';
+  stakeholderStates: Map<string, {
+    hasSpoken: boolean;
+    lastTopics: string[];
+    emotionalState: string;
+    conversationStyle: string;
+  }>;
+}
+
 class AIService {
   private static instance: AIService;
+  private conversationState: ConversationState;
   
-  private constructor() {}
+  private constructor() {
+    this.conversationState = this.initializeConversationState();
+  }
+
+  private initializeConversationState(): ConversationState {
+    return {
+      messageCount: 0,
+      participantInteractions: new Map(),
+      topicsDiscussed: new Set(),
+      conversationPhase: 'as_is',
+      stakeholderStates: new Map()
+    };
+  }
 
   public static getInstance(): AIService {
     if (!AIService.instance) {
       AIService.instance = new AIService();
     }
     return AIService.instance;
+  }
+
+  public resetConversationState(): void {
+    this.conversationState = this.initializeConversationState();
   }
 
   public async generateResponse(userMessage: string, systemPrompt?: string): Promise<string> {
@@ -51,7 +81,8 @@ class AIService {
         { role: "user", content: userMessage }
       ];
 
-      const completion = await openai.chat.completions.create(createApiParams(messages));
+      const response = await openai.chat.completions.create(createApiParams(messages));
+      const completion = response as any; // Type assertion to handle OpenAI API type issues
       return completion.choices[0]?.message?.content || "I apologize, I couldn't generate a response.";
     } catch (error) {
       console.error('Error in generateResponse:', error);

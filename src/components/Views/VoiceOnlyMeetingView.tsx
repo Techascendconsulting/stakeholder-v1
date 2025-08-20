@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, MessageSquare, FileText, Target } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
@@ -14,6 +14,7 @@ import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 import { useNavigate } from 'react-router-dom';
+import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 import DebugConsole from '../DebugConsole';
 
 interface ParticipantCardProps {
@@ -263,6 +264,7 @@ const splitByPhrases = (text: string): string[] => {
 export const VoiceOnlyMeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView, user, setSelectedMeeting } = useApp();
   const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
+  const { setupData } = useMeetingSetup();
   
   // Component-level aiService instance
   const aiService = AIService.getInstance();
@@ -286,6 +288,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [audioStates, setAudioStates] = useState<{ [key: string]: 'loading' | 'playing' | 'stopped' }>({});
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [activeTab, setActiveTab] = useState<'video' | 'stage' | 'brief'>('video');
   const [currentSpeaker, setCurrentSpeaker] = useState<any>(null);
   
   // New streaming voice input state
@@ -3739,15 +3742,56 @@ Please review the raw transcript for detailed conversation content.`;
         </div>
       </div>
 
-      {/* Speaking Queue Header */}
-      <SpeakingQueueHeader 
-        currentSpeaker={currentSpeaker?.name || null}
-        upcomingQueue={responseQueue.upcoming}
-        selectedStakeholders={selectedStakeholders}
-      />
+      {/* Tab Navigation */}
+      <div className="flex border-b border-gray-700 bg-gray-900">
+        <button
+          onClick={() => setActiveTab('video')}
+          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors flex items-center space-x-2 ${
+            activeTab === 'video'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-gray-400 hover:text-gray-300'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>Video Call</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('stage')}
+          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors flex items-center space-x-2 ${
+            activeTab === 'stage'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-gray-400 hover:text-gray-300'
+          }`}
+        >
+          <Target className="w-4 h-4" />
+          <span>Meeting Stage</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('brief')}
+          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors flex items-center space-x-2 ${
+            activeTab === 'brief'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-gray-400 hover:text-gray-300'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>Project Brief</span>
+        </button>
+      </div>
 
-      {/* Main Content - Fixed height, no scrolling */}
+      {/* Speaking Queue Header - Only show in Video Call tab */}
+      {activeTab === 'video' && (
+        <SpeakingQueueHeader 
+          currentSpeaker={currentSpeaker?.name || null}
+          upcomingQueue={responseQueue.upcoming}
+          selectedStakeholders={selectedStakeholders}
+        />
+      )}
+
+      {/* Tab Content */}
       <div className="flex-1 flex flex-col min-h-0">
+        {activeTab === 'video' && (
+          <div className="flex-1 flex flex-col min-h-0">
         {/* Main Video Area */}
         <div className="flex-1 p-4 flex items-center justify-center">
           <div className="flex flex-col gap-4 max-h-[calc(100vh-280px)] items-center">
@@ -3973,7 +4017,147 @@ Please review the raw transcript for detailed conversation content.`;
             </>
           )}
         </div>
+          </div>
+        )}
 
+        {/* Meeting Stage Tab */}
+        {activeTab === 'stage' && (
+          <div className="flex-1 bg-white p-6 overflow-y-auto">
+            <div className="max-w-4xl mx-auto">
+              {/* Stage Progress */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm text-gray-600">Stage 1 of 5</span>
+                  <div className="flex space-x-1">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full ${
+                          index === 0 ? 'bg-indigo-600' : 'bg-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Current Stage Card */}
+              <div className="bg-indigo-50 rounded-lg p-6 border border-indigo-100 mb-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-semibold text-lg">1</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">{(setupData?.selectedStage || 'kickoff').replace(/\b\w/g, c => c.toUpperCase())}</h3>
+                    <p className="text-gray-600">{setupData?.selectedStage === 'discovery' ? 'Gather detailed requirements and understand current state processes' : setupData?.selectedStage === 'analysis' ? 'Analyze gathered information and identify gaps or opportunities' : setupData?.selectedStage === 'solution' ? 'Collaborate on potential solutions and validate approaches' : setupData?.selectedStage === 'closure' ? 'Summarize findings, confirm next steps, and close the session' : 'Establish rapport, set expectations, and understand the project context'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stage Objectives */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Stage Objectives</h4>
+                <p className="text-gray-600">Practice the fundamentals of stakeholder engagement and conversation flow</p>
+              </div>
+
+              {/* Guidance */}
+              <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-6">
+                <h4 className="font-semibold text-yellow-800 mb-2">Stage Guidance</h4>
+                <p className="text-yellow-700 text-sm">
+                  You are now practicing the <strong>{(setupData?.selectedStage || 'kickoff').replace(/\b\w/g, c => c.toUpperCase())}</strong> stage. 
+                  Focus on the specific objectives for this stage and use appropriate techniques for this phase of the interview.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Project Brief Tab */}
+        {activeTab === 'brief' && (
+          <div className="flex-1 bg-white p-6 overflow-y-auto">
+            <div className="max-w-4xl mx-auto">
+              {/* Auto-populated project details */}
+              {selectedProject && (
+                <>
+                  {/* Project Header */}
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedProject.name}</h2>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">High Priority</span>
+                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Premium</span>
+                    </div>
+                  </div>
+
+                  {/* Project Overview */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Project Overview</h3>
+                    <p className="text-gray-600 mb-4">{selectedProject.description}</p>
+                  </div>
+
+                  {/* Business Impact */}
+                  <div className="grid md:grid-cols-2 gap-6 mb-6">
+                    <div className="bg-green-50 rounded-lg border border-green-200 p-6">
+                      <h4 className="font-semibold text-green-800 mb-2">Business Impact</h4>
+                      <p className="text-2xl font-bold text-green-600 mb-1">{selectedProject.businessImpact || '£1.8M'}</p>
+                      <p className="text-sm text-green-700">Annual Cost Savings</p>
+                    </div>
+                    <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
+                      <h4 className="font-semibold text-blue-800 mb-2">ROI Potential</h4>
+                      <p className="text-2xl font-bold text-blue-600 mb-1">{selectedProject.roiPotential || '340%'}</p>
+                      <p className="text-sm text-blue-700">Expected Return</p>
+                    </div>
+                  </div>
+
+                  {/* Key Challenges */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Key Challenges</h3>
+                    <ul className="space-y-3 text-gray-600">
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                        <span>Current onboarding takes 14+ days on average</span>
+                      </li>
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                        <span>Multiple manual handoffs between departments</span>
+                      </li>
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                        <span>Inconsistent customer experience across regions</span>
+                      </li>
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                        <span>Limited visibility into onboarding progress</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Success Criteria */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Success Criteria</h3>
+                    <ul className="space-y-3 text-gray-600">
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <span>Reduce onboarding time to 5 days or less</span>
+                      </li>
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <span>Increase customer satisfaction score by 25%</span>
+                      </li>
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <span>Automate 80% of manual processes</span>
+                      </li>
+                      <li className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <span>Implement real-time progress tracking</span>
+                      </li>
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

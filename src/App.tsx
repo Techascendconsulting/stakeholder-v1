@@ -7,6 +7,7 @@ import LandingPage from './components/LandingPage'
 import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
 import { AlertCircle } from 'lucide-react'
+import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()

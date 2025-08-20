@@ -1,5 +1,6 @@
 import React from 'react';
 import { MessageSquare, Users, Mic } from 'lucide-react';
+import { useApp } from '../../contexts/AppContext';
 
 interface ReadyScreenProps {
   data: {
@@ -12,6 +13,7 @@ interface ReadyScreenProps {
 }
 
 const ReadyScreen: React.FC<ReadyScreenProps> = ({ data, onNext }) => {
+  const { stakeholders } = useApp();
   const meetingTypeIcons = {
     transcript: MessageSquare,
     group: Users,
@@ -74,23 +76,24 @@ const ReadyScreen: React.FC<ReadyScreenProps> = ({ data, onNext }) => {
             Selected Stakeholders
           </div>
           <div className="flex flex-wrap gap-2">
-            {data.selectedStakeholders.map((stakeholderId) => (
-              <div
-                key={stakeholderId}
-                className="inline-flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1"
-              >
-                <img
-                  src={`/stakeholders/${stakeholderId}.jpg`}
-                  alt=""
-                  className="w-6 h-6 rounded-full mr-2"
-                />
-                <span className="text-sm text-gray-900 dark:text-white">
-                  {stakeholderId.split('_').map(word => 
-                    word.charAt(0).toUpperCase() + word.slice(1)
-                  ).join(' ')}
-                </span>
-              </div>
-            ))}
+            {data.selectedStakeholders.map((stakeholderId) => {
+              const s = stakeholders.find(st => st.id === stakeholderId);
+              return (
+                <div
+                  key={stakeholderId}
+                  className="inline-flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1"
+                >
+                  <img
+                    src={s?.photo || `/stakeholders/${stakeholderId}.jpg`}
+                    alt=""
+                    className="w-6 h-6 rounded-full mr-2"
+                  />
+                  <span className="text-sm text-gray-900 dark:text-white">
+                    {s?.name || stakeholderId}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

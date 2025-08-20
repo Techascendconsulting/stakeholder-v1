@@ -22,6 +22,7 @@ import { AgileHubView } from '../Views/AgileHubView';
 import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
 import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
 import ProjectView from '../Views/ProjectView';
+import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import DebugConsole from '../Debug/DebugConsole';
 
 const MainLayout: React.FC = () => {
@@ -84,6 +85,8 @@ const MainLayout: React.FC = () => {
         return <ElevenLabsMultiAgentMeeting />;
       case 'individual-agent-meeting':
         return <IndividualAgentMeeting />;
+      case 'enhanced-training-flow':
+        return <EnhancedTrainingFlow />;
       default:
         return <ProjectsView />;
     }
