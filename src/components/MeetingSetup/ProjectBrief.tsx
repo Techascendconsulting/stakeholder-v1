@@ -58,8 +58,8 @@ const ProjectBrief: React.FC<ProjectBriefProps> = ({ data, onUpdate, onNext }) =
         </div>
       </div>
 
-      {/* Two-column primary sections */}
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
+      {/* Primary sections (single column) */}
+      <div className="space-y-6 mb-6">
         {/* Business Context */}
         <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-3">
