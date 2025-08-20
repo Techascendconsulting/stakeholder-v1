@@ -124,7 +124,7 @@ const ProjectsView: React.FC = () => {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-white">
       
       <div className="max-w-7xl mx-auto px-6 py-16">
         {/* Filter Section */}
@@ -307,7 +307,6 @@ const ProjectsView: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
     </div>
   )
 }
