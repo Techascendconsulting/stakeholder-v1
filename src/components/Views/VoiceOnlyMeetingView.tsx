@@ -589,13 +589,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         messageContent,
         stakeholderContext,
         conversationContext,
-        responseContext as any,
-        (chunk: string) => {
-          // This callback fires for each text chunk from GPT
-          console.log(`📝 Received chunk: "${chunk}"`);
-          fullResponse += chunk + ' ';
-          // Note: Streaming TTS disabled - will use complete response
-        }
+        responseContext as any
       );
       
       // Create message object
