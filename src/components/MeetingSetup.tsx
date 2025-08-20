@@ -99,7 +99,7 @@ export default function MeetingSetup({
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Projects</span>
+              <span>Back</span>
             </button>
             <div className="h-6 w-px bg-gray-300"></div>
             <h1 className="text-xl font-semibold text-gray-900">{project.name}</h1>

@@ -11,7 +11,9 @@ const StakeholdersView: React.FC = () => {
 
   // Scroll to top when component mounts
   useEffect(() => {
+    // The main content area is the scrolling container, not the window
     const scrollToTop = () => {
+      // Find the main scrolling container
       const mainContainer = document.querySelector('main')
       if (mainContainer) {
         mainContainer.scrollTo({
@@ -19,16 +21,22 @@ const StakeholdersView: React.FC = () => {
           left: 0,
           behavior: 'instant'
         })
+        // Fallback
         mainContainer.scrollTop = 0
+        console.log('🔝 Scrolled main container to top - scrollTop:', mainContainer.scrollTop)
       }
       
+      // Also scroll window just in case
       window.scrollTo({
         top: 0,
         left: 0,
         behavior: 'instant'
       })
+      
+      console.log('🔝 Scroll attempt completed')
     }
     
+    // Execute immediately and after short delays to ensure it works
     scrollToTop()
     setTimeout(scrollToTop, 0)
     setTimeout(scrollToTop, 50)
@@ -95,7 +103,7 @@ const StakeholdersView: React.FC = () => {
             onClick={() => setCurrentView('projects')}
             className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
           >
-            Back to Projects
+            Back
           </button>
         </div>
       </div>
@@ -158,7 +166,7 @@ const StakeholdersView: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Stakeholder Selection</h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-4xl">
             Select one or multiple stakeholders to include in your requirements gathering session for the <span className="font-semibold text-gray-900 dark:text-white">{selectedProject.name}</span> project. 
-            You can choose to meet with individual stakeholders or conduct group meetings or sessions with multiple participants.
+            You can choose to meet with individual stakeholders or conduct group meetings oe sessions with multiple participants.
           </p>
         </div>
 
@@ -175,9 +183,42 @@ const StakeholdersView: React.FC = () => {
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   These stakeholders have been carefully selected based on their expertise and relevance to this specific project type.
+                  <br />
+                  <strong className="text-red-600">DEBUG: Total stakeholders in system: {stakeholders.length}, Relevant for this project: {selectedProject.relevantStakeholders.length}</strong>
                 </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {selectedProject.relevantStakeholders.map(stakeholderId => {
+                    const stakeholder = stakeholders.find(s => s.id === stakeholderId);
+                    return stakeholder ? (
+                      <div key={stakeholder.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={stakeholder.photo}
+                            alt={stakeholder.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {stakeholder.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {stakeholder.role}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
               </div>
             </div>
+          </div>
+        )}
+        
+        {/* DEBUG INFO */}
+        {!selectedProject.relevantStakeholders && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+            <p className="text-red-800 font-semibold">⚠️ DEBUG: No relevantStakeholders found for this project - showing all stakeholders</p>
           </div>
         )}
 
@@ -220,59 +261,70 @@ const StakeholdersView: React.FC = () => {
         )}
 
         {/* Stakeholders Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <p className="text-yellow-800 font-semibold">
+            🔍 DEBUG: Showing {stakeholders.filter(stakeholder => {
+              if (!selectedProject?.relevantStakeholders) return true;
+              return selectedProject.relevantStakeholders.includes(stakeholder.id);
+            }).length} of {stakeholders.length} total stakeholders for project: {selectedProject?.name}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
           {stakeholders
             .filter(stakeholder => {
-              if (!selectedProject?.relevantStakeholders) return true;
+              // Show only relevant stakeholders for the selected project
+              if (!selectedProject?.relevantStakeholders) {
+                return true; // If no relevantStakeholders defined, show all (backward compatibility)
+              }
               return selectedProject.relevantStakeholders.includes(stakeholder.id);
             })
             .map((stakeholder) => {
-              const isSelected = isStakeholderSelected(stakeholder.id);
-              
-              return (
-                <div
-                  key={stakeholder.id}
-                  onClick={() => handleStakeholderToggle(stakeholder.id)}
-                  className={`bg-white dark:bg-gray-800 rounded-lg border-2 p-6 cursor-pointer transition-all ${
-                    isSelected 
-                      ? 'border-indigo-600 dark:border-indigo-500 shadow-lg' 
-                      : 'border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
-                  }`}
-                >
-                  <div className="flex items-start space-x-4">
-                    {/* Profile Image with Checkmark */}
-                    <div className="relative flex-shrink-0">
-                      <img
-                        src={stakeholder.photo}
-                        alt={stakeholder.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      )}
-                    </div>
+            const isSelected = isStakeholderSelected(stakeholder.id)
+            
+            return (
+              <div
+                key={stakeholder.id}
+                onClick={() => handleStakeholderToggle(stakeholder.id)}
+                className={`relative bg-white dark:bg-gray-800 rounded-lg border-2 p-6 cursor-pointer transition-all duration-200 ${
+                  isSelected
+                    ? 'border-indigo-600 dark:border-indigo-500 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
+                }`}
+              >
+                <div className="flex items-start space-x-4">
+                  {/* Profile Image with Checkmark */}
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={stakeholder.photo}
+                      alt={stakeholder.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
 
-                    {/* Stakeholder Info */}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {stakeholder.name}
-                      </h3>
-                      <div className="mt-1 text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                        {stakeholder.role}
-                      </div>
-                      <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {stakeholder.department}
-                      </div>
-                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        {stakeholder.bio}
-                      </p>
+                  {/* Stakeholder Info */}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {stakeholder.name}
+                    </h3>
+                    <div className="mt-1 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                      {stakeholder.role}
                     </div>
+                    <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      {stakeholder.department}
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                      {stakeholder.bio}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            )
+          })}
         </div>
 
         {/* Meeting Format Information */}
