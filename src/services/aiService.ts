@@ -194,17 +194,35 @@ class AIService {
   }
 
   private summarizeAsIs(asIs: any): string {
-    if (!asIs) return '';
+    const steps = this.extractAsIsSteps(asIs);
+    return steps.join(' -> ');
+  }
+
+  private extractAsIsSteps(asIs: any): string[] {
+    if (!asIs) return [];
+    let lines: string[] = [];
     if (Array.isArray(asIs)) {
-      const parts = asIs.map((s: any) => (typeof s === 'string' ? s : (s?.step || s?.text || ''))).filter(Boolean);
-      return this.trimLine(parts.join(' -> '), 200);
+      lines = asIs.map((s: any) => (typeof s === 'string' ? s : (s?.step || s?.text || '')));
+    } else if (typeof asIs === 'string') {
+      lines = asIs.split(/\n+/);
+    } else {
+      return [];
     }
-    if (typeof asIs === 'string') {
-      // Collapse numbered lines to a brief flow
-      const steps = asIs.split(/\n+/).map(s => s.replace(/^\d+[).\-\s]*/, '').trim()).filter(Boolean);
-      return this.trimLine(steps.join(' -> '), 200);
+
+    const steps: string[] = [];
+    for (const raw of lines) {
+      const line = (raw || '').trim();
+      if (!line) continue;
+      // Stop at Pain Points or other non-step sections
+      if (/^pain\s*points\s*:/i.test(line)) break;
+      // Skip section headings
+      if (/^.*:\s*$/.test(line)) continue;
+      // Extract numbered/bulleted steps
+      const step = line.replace(/^\s*(\d+[).\-]?\s*|[-•]\s*)/, '').trim();
+      if (step) steps.push(step);
     }
-    return '';
+    // Limit to reasonable number of steps without ellipsis mid-word
+    return steps.slice(0, 12);
   }
 
   private trimLine(s: string, max: number): string {
@@ -217,8 +235,12 @@ class AIService {
     const asIs = this.summarizeAsIs(context?.project?.asIsProcess);
 
     // Quick, human-like current-process fallback
-    if (/(current\s+process|how\s+do\s+you\s+do\s+it|what's\s+the\s+process|whats\s+the\s+process)/i.test(lower) && asIs) {
-      return `Sure — in our team, we start by ${asIs.replace(/\s*->\s*/g, ', then we ')}. That’s the usual flow from our side.`;
+    if (/(current\s+process|how\s+do\s+you\s+do\s+it|what's\s+the\s+process|whats\s+the\s+process)/i.test(lower)) {
+      const steps = this.extractAsIsSteps(context?.project?.asIsProcess);
+      if (steps.length > 0) {
+        const concise = steps.slice(0, 8).join('; ');
+        return `Sure, the flow is: ${concise}. That’s the usual sequence on our side.`;
+      }
     }
 
     // "What do they buy from us" style fallback
