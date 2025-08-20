@@ -1641,11 +1641,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     
     try {
       // Generate response with intelligent length control
-      const response = await generateIntelligentStakeholderResponse(
+      const response = await generateStakeholderResponse(
         stakeholder,
         messageContent,
         currentMessages,
-        getResponseStyle(messageContent)
+        'discussion'
       );
       
       console.log(`✅ GENERATED: AI response ready for ${stakeholder.name}, caching and updating transcript...`);
@@ -1736,11 +1736,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setMessages(prev => [...prev, thinkingMessage]);
           
           // Use intelligent generation with length control
-          const response = await generateIntelligentStakeholderResponse(
+          const response = await generateStakeholderResponse(
             stakeholder,
             messageContent,
             currentMessages,
-            getResponseStyle(messageContent)
+            'discussion'
           );
           
           console.log(`✅ INTELLIGENT: Response ready for ${stakeholder.name}, caching...`);
@@ -1771,75 +1771,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     }
   };
 
-  // SILICON VALLEY EXPERT AI GENERATION: Ultra-intelligent responses
-  const generateIntelligentStakeholderResponse = async (
-    stakeholder: any, 
-    messageContent: string, 
-    currentMessages: Message[], 
-    responseStyle: string
-  ): Promise<string> => {
-    console.log(`🧠 SILICON VALLEY EXPERT: Generating ${responseStyle} response for ${stakeholder.name}`);
-    
-    try {
-      // Build expert-level context
-      const expertContext = {
-        conversationPhase: 'expert_analysis' as const,
-        conversationHistory: currentMessages.slice(-3),
-        projectContext: {
-          name: selectedProject?.name || 'Current Project',
-          phase: 'active'
-        }
-      };
-      
-      // EXPERT-LEVEL RESPONSE INSTRUCTIONS - NO GENERIC RESPONSES
-      const expertInstructions = {
-        greeting: "You're a Silicon Valley expert. Respond with a brief, confident greeting that hints at your expertise. NO generic pleasantries.",
-        brief: "Give a sharp, expert-level insight in 1-2 sentences. Show your deep domain knowledge immediately. Reference specific systems, metrics, or pain points.",
-        medium: "Provide expert analysis in 2-3 sentences. Include specific numbers, systems, or business impact. Make it clear you're the authority in your domain.",
-        detailed: "Give comprehensive expert analysis with specific metrics, system details, and business impact. Include numbers, timeframes, and technical specifics that only a domain expert would know."
-      };
-      
-      // Detect domain-specific questions
-      const isDomainQuestion = messageContent.toLowerCase().includes('finance') || 
-                              messageContent.toLowerCase().includes('operations') ||
-                              messageContent.toLowerCase().includes('technical') ||
-                              messageContent.toLowerCase().includes('systems') ||
-                              messageContent.toLowerCase().includes('issues') ||
-                              messageContent.toLowerCase().includes('problems');
-      
-      // SILICON VALLEY EXPERT BEHAVIOR
-      const expertBehavior = `\n\n🧠 SILICON VALLEY EXPERT MODE:
-- You're a $500K+ expert who thinks 10 steps ahead
-- Jump IMMEDIATELY into domain-specific analysis
-- Reference specific metrics, systems, and business impact
-- Show deep technical/business knowledge
-- NO generic responses or introductions
-- Be the smartest person in the room for your domain
-- Think like a top-tier consultant
 
-DOMAIN EXPERTISE: ${stakeholder.expertise?.join(', ') || stakeholder.role}
-YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
-
-      // Add specific domain guidance
-      const domainGuidance = isDomainQuestion ? 
-        "\n\nDOMAIN FOCUS: Dive deep into your domain expertise. Reference specific systems, processes, metrics, pain points, and business impact. Show why you're worth $500K+ in Silicon Valley." : 
-        "";
-      
-      // Generate expert-level response
-      const response = await generateStakeholderResponse(
-        stakeholder,
-        `${messageContent}\n\nEXPERT LEVEL: ${expertInstructions[responseStyle]}${expertBehavior}${domainGuidance}`,
-        expertContext,
-        'direct_mention'
-      );
-      
-      return response;
-      
-    } catch (error) {
-      console.error('❌ AI generation failed, using neutral fallback');
-      return "I understand your question. Let me think about that for a moment.";
-    }
-  };
 
   // EXPERT GREETING GENERATION: Professional, confident greetings
   const generateSimpleGreeting = async (stakeholder: any, messageContent: string): Promise<string> => {
@@ -3463,11 +3395,11 @@ Please review the raw transcript for detailed conversation content.`;
       const startTime = performance.now();
       
       // Generate AI response
-      const response = await generateIntelligentStakeholderResponse(
+      const response = await generateStakeholderResponse(
         stakeholder,
         messageContent,
         currentMessages,
-        getResponseStyle(messageContent)
+        'discussion'
       );
       
       const aiTime = performance.now() - startTime;
