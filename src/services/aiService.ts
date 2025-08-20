@@ -123,6 +123,7 @@ class AIService {
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
+      `You work for this company - speak as if you're part of it. Use "we", "our", "us" instead of constantly referring to the company by name.`,
       `Always answer the question asked with specific, realistic details. Keep responses concise - 2-3 sentences maximum.`,
       `If the question requires a longer explanation, provide a brief summary and offer to elaborate on specific aspects.`,
       `If the question is outside the current focus (${stage}), still answer with specific details, then (optionally) nudge back to ${stage}.`,
