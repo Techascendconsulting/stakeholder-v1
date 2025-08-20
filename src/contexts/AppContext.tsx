@@ -301,6 +301,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const selectProject = async (project: Project) => {
     setSelectedProject(project)
+    setSelectedStakeholders([]) // Clear previously selected stakeholders
     setCurrentView('project-brief')
   }
 
