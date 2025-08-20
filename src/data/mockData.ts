@@ -37,7 +37,7 @@ Pain Points: No centralized tracking, manual status updates, customers often una
     ],
     duration: '4-5 weeks',
     complexity: 'Intermediate',
-    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-4', 'stake-8'], // Operations, Customer Service, IT, HR, Customer Experience
+    relevantStakeholders: ['stake-1', 'stake-2', 'stake-3', 'stake-8'], // Operations, Customer Service, IT, Customer Experience
     companyProducts: 'Enterprise software solutions designed for IT, Product Development, and Customer Support teams. These include workflow automation tools, customer engagement platforms, and system integration software.',
     companyServices: 'Implementation consulting, technical onboarding support, customer success management, and long-term enterprise support programs to help clients adopt and maximize TechCorp’s solutions.'
   },
