@@ -4,22 +4,22 @@ import OpenAI from 'openai';
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
-  timeout: 5000,     // tighter timeout for snappier UX
-  maxRetries: 1,     // Only retry once
+  timeout: 12000,     // allow deeper reasoning
+  maxRetries: 2,      // retry once on transient errors
   defaultHeaders: {  // Optimize headers
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   }
 });
 
-// Use GPT-3.5-turbo for faster responses
-const MODEL = "gpt-3.5-turbo";
+// Use GPT-4 Turbo for higher-quality responses
+const MODEL = "gpt-4-turbo";
 
 // Default API parameters for faster responses
 const DEFAULT_API_PARAMS = {
   model: MODEL,
-  temperature: 0.3,
-  max_tokens: 130,    // Keep responses concise but meaningful
+  temperature: 0.4,
+  max_tokens: 400,    // Allow more detailed, natural responses
   presence_penalty: 0,
   frequency_penalty: 0,
   stream: false       // Disable streaming for faster responses
@@ -136,10 +136,16 @@ class AIService {
       if (offering) return offering;
     }
 
+    // Fast path: specific channel/medium questions (e.g., submission via email)
+    if (this.isSubmissionChannelQuestion(lowerMsg)) {
+      const channelAnswer = this.answerSubmissionChannel(context?.project);
+      if (channelAnswer) return channelAnswer;
+    }
+
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
-      `Always answer the question asked. Keep it natural, concise (2-4 sentences), and human-like.`,
+      `Always answer the question asked. Keep it natural, 2-4 sentences per reply so the BA can explore step by step.`,
       `If the question is outside the current focus (${stage}), still answer briefly, then (optionally) nudge back to ${stage}.`,
       `Prefer concrete details from the project context when relevant. Avoid generic filler or meta commentary.`,
       `Do NOT invent metrics, percentages, timelines, or implementation statuses. Only mention numbers or outcomes if explicitly present in the provided context or recent messages. If unknown, omit metrics.`,
@@ -168,7 +174,11 @@ class AIService {
       }));
 
       const completion = response as any;
-      const text = completion.choices?.[0]?.message?.content?.trim();
+      let text = completion.choices?.[0]?.message?.content?.trim() || '';
+      // Strip solution language when in As-Is phase
+      if ((context?.conversationPhase || '').toString().startsWith('as')) {
+        text = this.filterSolutionsInAsIs(text);
+      }
       if (text) return text;
       return this.fastFallback(userMessage, stakeholder, context);
     } catch (err) {
