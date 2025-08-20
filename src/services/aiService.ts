@@ -118,8 +118,7 @@ class AIService {
     const lowerMsg = (userMessage || '').toLowerCase().trim();
 
     // Ultra-fast local responses for common intents
-    const historyLen = Array.isArray(context?.conversationHistory) ? context.conversationHistory.length : 0;
-    if (historyLen <= 2 && this.isGreetingSmallTalk(lowerMsg)) {
+    if (this.isGreetingSmallTalk(lowerMsg)) {
       return this.buildSmallTalkResponse(stakeholder, context);
     }
 
@@ -255,12 +254,19 @@ class AIService {
 
   private isGreetingSmallTalk(lower: string): boolean {
     if (!lower) return false;
-    return /^(hi|hello|hey)\b/.test(lower) || /how (are|is) (you|everyone)/.test(lower);
+    return (
+      /^(hi|hello|hey)\b/.test(lower) ||
+      /\b(what's up|whats up|sup)\b/.test(lower) ||
+      /how('s| is) (it going|it|things)/.test(lower) ||
+      /how (are|is) (you|everyone)/.test(lower)
+    );
   }
 
   private buildSmallTalkResponse(stakeholder: StakeholderContext, context: ConversationContext): string {
-    // Keep it neutral, human, no fabricated outcomes
-    return `Doing well, thanks. Ready to dive in—how would you like to start?`;
+    // Keep it neutral, human, and do not answer unasked questions
+    const phase = (context.conversationPhase || '').toString().replace(/_/g, ' ');
+    const nudge = phase ? ` If helpful, we can continue with the ${phase} focus.` : '';
+    return `Doing well, thanks. How can I help today?${nudge}`;
   }
 
   private isCurrentProcessQuestion(lower: string): boolean {
