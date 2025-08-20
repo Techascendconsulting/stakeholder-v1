@@ -177,6 +177,10 @@ class AIService {
       if (text.toLowerCase().includes('the text should have read') || text.toLowerCase().includes('apologies for the cutoff') || text.toLowerCase().includes('the response should have')) {
         text = 'Let me continue with that thought. ' + text.replace(/.*?(the text should have read|apologies for the cutoff|the response should have).*?\./gi, '').trim();
       }
+      // Prevent generic greeting responses
+      if (text === 'Hello.' || text === 'Let\'s begin.' || text === 'Hi.' || text === 'Hello' || text === 'Hi') {
+        text = `Hi there, ${stakeholder.name} here. Ready to help with the ${context?.conversationPhase || 'discussion'} today.`;
+      }
       // Prevent repetition from same stakeholder
       const last = this.conversationState.stakeholderStates.get(stakeholder.name)?.lastResponseText || '';
       if (last && this.isTooSimilar(text, last)) {
