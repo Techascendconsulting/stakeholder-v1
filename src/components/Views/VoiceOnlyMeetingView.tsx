@@ -585,7 +585,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         isOneOnOne: selectedStakeholders.length === 1
       };
       
-      const response = await aiService.generateStakeholderResponseStreaming(
+      const response = await aiService.generateStakeholderResponse(
         messageContent,
         stakeholderContext,
         conversationContext,
