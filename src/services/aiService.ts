@@ -475,10 +475,10 @@ class AIService {
 
       progressCallback?.("Generating comprehensive meeting summary...");
 
-      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a flowing, narrative meeting summary that reads like a natural report. Include the meeting context (date, duration, participants, project), then weave together the key points discussed, requirements identified, and stakeholder perspectives into a cohesive story. Write in clear, professional prose without bullet points or rigid sections. Make it read like a natural summary someone would write after a meeting.";
+      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a factual, concise summary based ONLY on what was actually discussed. Include meeting context (date, duration, participants, project), then summarize the specific topics and points that were actually mentioned. Do NOT add information that was not discussed. Keep it brief and factual. If the conversation was short, acknowledge this and focus only on what was said.";
 
       const conversationText = messages.map((msg: any) => msg.speaker + ": " + msg.content).join("\n\n");
-      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a flowing, narrative meeting summary that reads naturally. Write it as a cohesive story that weaves together the key points, requirements, and stakeholder perspectives discussed. Avoid bullet points and rigid sections - make it read like a natural summary someone would write after a meeting.";
+      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a factual summary based ONLY on what was actually discussed. Be concise and accurate. Do NOT add information that was not mentioned in the conversation. If the discussion was brief, keep the summary brief.";
 
       const response = await openai.chat.completions.create({
         model: MODEL,
@@ -487,7 +487,7 @@ class AIService {
           { role: "user", content: userPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 800,
+        max_tokens: 400,
         presence_penalty: 0,
         frequency_penalty: 0
       });
