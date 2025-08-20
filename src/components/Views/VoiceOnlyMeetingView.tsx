@@ -1842,18 +1842,8 @@ YOUR AUTHORITY: ${stakeholder.role} - you KNOW this inside and out`;
       return response;
       
     } catch (error) {
-      console.error('❌ EXPERT: AI generation failed, using domain-specific fallback');
-      
-      // Domain-specific expert fallback (no generic responses)
-      const expertFallback = stakeholder.role.toLowerCase().includes('finance') ? 
-        "We're seeing critical cash flow visibility issues and manual approval bottlenecks." :
-        stakeholder.role.toLowerCase().includes('operations') ? 
-        "Our biggest operational challenge is the handoff delays between systems." :
-        stakeholder.role.toLowerCase().includes('it') ? 
-        "From a technical perspective, we're hitting scalability and integration issues." :
-        `Looking at this from a ${stakeholder.department || stakeholder.role} perspective, we need to dive deeper into the specifics.`;
-      
-      return expertFallback;
+      console.error('❌ AI generation failed, using neutral fallback');
+      return "I understand your question. Let me think about that for a moment.";
     }
   };
 
@@ -1936,9 +1926,8 @@ Provide one short variant only.`
       return greeting;
       
     } catch (error) {
-      console.error('❌ EXPERT GREETING: Generation failed, using professional fallback', error);
-      const fallback = 'Hello team.';
-      return fallback;
+      console.error('❌ Greeting generation failed, using neutral fallback', error);
+      return 'Hello.';
     }
   };
 
