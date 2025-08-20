@@ -153,20 +153,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   })
 
-  // Initialize selectedStakeholders from localStorage  
+  // Initialize selectedStakeholders as empty - don't restore from localStorage to avoid auto-selection
   const [selectedStakeholders, setSelectedStakeholdersState] = useState<Stakeholder[]>(() => {
-    try {
-      const savedStakeholders = localStorage.getItem('selectedStakeholders')
-      if (savedStakeholders) {
-        const stakeholders = JSON.parse(savedStakeholders)
-        console.log('✅ INIT: Restoring selectedStakeholders from localStorage:', stakeholders.length, 'stakeholders')
-        return stakeholders
-      }
-      return []
-    } catch (error) {
-      console.log('❌ INIT: Error loading selectedStakeholders from localStorage:', error)
-      return []
-    }
+    console.log('✅ INIT: Starting with empty selectedStakeholders to avoid auto-selection')
+    return []
   })
 
   // Initialize customProject from localStorage
