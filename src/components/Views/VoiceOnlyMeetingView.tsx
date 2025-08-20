@@ -2909,14 +2909,14 @@ Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeStri
       });
       
       // Create a fallback summary
-      const fallbackSummary = `# Meeting Summary - ${selectedProject?.name || 'Project Meeting'}
+      const fallbackSummary = `Meeting Summary - ${selectedProject?.name || 'Project Meeting'}
 
 **Date:** ${new Date().toLocaleDateString()}  
 **Duration:** ${Math.floor((Date.now() - meetingStartTime) / 1000 / 60)} minutes  
 **Messages:** ${transcript.length} total  
 **Participants:** ${selectedStakeholders?.map(s => s.name).join(', ') || 'Unknown'}  
 
-## Overview
+Overview
 This meeting involved discussions with stakeholders regarding project requirements and objectives. 
 
 **Note:** Your meeting data has been successfully captured. The complete conversation transcript is available in the Raw Transcript section for detailed review.
