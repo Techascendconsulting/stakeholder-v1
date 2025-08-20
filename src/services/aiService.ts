@@ -192,6 +192,10 @@ class AIService {
       }
       // Avoid generic/looping phrases and make it concrete
       text = this.avoidGenericResponses(text, context?.project, lowerMsg);
+      // Prevent generic responses like "Hello." or "Hello, let's discuss this"
+      if (text === 'Hello.' || text === 'Hello' || text.toLowerCase().includes('hello, let\'s discuss')) {
+        text = this.generateSpecificsFollowUp(context?.project) || 'I understand your question. Let me provide some context based on what I know.';
+      }
       // Prevent repetition from same stakeholder
       const last = this.conversationState.stakeholderStates.get(stakeholder.name)?.lastResponseText || '';
       if (last && this.isTooSimilar(text, last)) {
