@@ -49,6 +49,19 @@ const MeetingTypeSelector: React.FC<MeetingTypeSelectorProps> = ({ data, onUpdat
     }
   ];
 
+  // Color tokens to match app accents per card
+  const typeStyles: Record<string, {
+    tint: string; // light bg tint
+    ring: string; // ring/border color
+    iconBg: string; // icon circle bg
+    iconColor: string;
+    hoverBorder: string;
+  }> = {
+    transcript: { tint: 'bg-indigo-50', ring: 'ring-indigo-500 border-indigo-500', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600', hoverBorder: 'hover:border-indigo-200' },
+    group:      { tint: 'bg-blue-50',   ring: 'ring-blue-500 border-blue-500',     iconBg: 'bg-blue-100',   iconColor: 'text-blue-600',   hoverBorder: 'hover:border-blue-200' },
+    voice:      { tint: 'bg-purple-50', ring: 'ring-purple-500 border-purple-500', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', hoverBorder: 'hover:border-purple-200' },
+  };
+
   const handleSelect = (typeId: string) => {
     onUpdate({ meetingType: typeId });
     onNext();
@@ -66,25 +79,23 @@ const MeetingTypeSelector: React.FC<MeetingTypeSelectorProps> = ({ data, onUpdat
           <button
             key={type.id}
             onClick={() => handleSelect(type.id)}
-            className={`text-left p-6 bg-white dark:bg-gray-800 rounded-2xl border transition-all shadow-sm hover:shadow-md ${
+            className={`p-6 bg-white dark:bg-gray-800 rounded-2xl border transition-all shadow-sm hover:shadow-md ${
               data.meetingType === type.id
-                ? 'border-indigo-500 ring-2 ring-indigo-500'
-                : 'border-slate-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
-            }`}
+                ? `${typeStyles[type.id]?.ring || 'ring-2 ring-indigo-500 border-indigo-500'} ${typeStyles[type.id]?.tint || ''}`
+                : `border-slate-200 dark:border-gray-700 ${typeStyles[type.id]?.hoverBorder || 'hover:border-indigo-200'} dark:hover:border-indigo-800`
+            } min-h-[280px] flex flex-col items-center text-center`}
           >
-            <div className="flex items-center gap-3 mb-2">
-              <type.icon className={`w-6 h-6 ${
-                data.meetingType === type.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'
-              }`} />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{type.title}</h3>
+            <div className={`w-12 h-12 rounded-full ${typeStyles[type.id]?.iconBg || 'bg-slate-100'} flex items-center justify-center mb-3`}>
+              <type.icon className={`w-6 h-6 ${data.meetingType === type.id ? (typeStyles[type.id]?.iconColor || 'text-indigo-600') : (typeStyles[type.id]?.iconColor || 'text-slate-600')}`} />
             </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{type.title}</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">{type.description}</p>
             <div className="text-sm text-indigo-600 dark:text-indigo-400 mb-3">{type.duration}</div>
             <ul className="space-y-2">
               {type.features.map((feature, index) => (
-                <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <li key={index} className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-400">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
-                  {feature}
+                  <span>{feature}</span>
                 </li>
               ))}
             </ul>
