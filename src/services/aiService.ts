@@ -115,12 +115,29 @@ class AIService {
   ): Promise<string> {
     const stage = (context.conversationPhase || 'as_is').toString().replace(/_/g, ' ');
 
+    const lowerMsg = (userMessage || '').toLowerCase().trim();
+
+    // Ultra-fast local responses for common intents
+    if (this.isGreetingSmallTalk(lowerMsg)) {
+      return this.buildSmallTalkResponse(stakeholder, context);
+    }
+
+    if (this.isCurrentProcessQuestion(lowerMsg)) {
+      const asIs = this.summarizeAsIs(context?.project?.asIsProcess);
+      if (asIs) {
+        return `Sure — in our team, we start by ${asIs.replace(/\s*->\s*/g, ', then we ')}. That’s the usual flow from our side.`;
+      }
+    }
+
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
       `Always answer the question asked. Keep it natural, concise (2-4 sentences), and human-like.`,
       `If the question is outside the current focus (${stage}), still answer briefly, then (optionally) nudge back to ${stage}.`,
-      `Prefer concrete details from the project context when relevant. Avoid generic filler or meta commentary.`
+      `Prefer concrete details from the project context when relevant. Avoid generic filler or meta commentary.`,
+      `Do NOT invent metrics, percentages, timelines, or implementation statuses. Only mention numbers or outcomes if explicitly present in the provided context or recent messages. If unknown, omit metrics.`,
+      `For greetings/small talk, keep it to one short sentence and do not claim outcomes or status updates.`,
+      `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`
     ].join(' ');
 
     const projectBits = this.buildProjectBits(context?.project);
@@ -203,6 +220,21 @@ class AIService {
 
     // Generic concise fallback grounded in role
     return `From my ${stakeholder.role}${stakeholder.department ? ' (' + stakeholder.department + ')' : ''} perspective, I’d say: ${this.trimLine(userMessage || 'Let me clarify the key points for you.', 60)} — and if helpful, we can tie this back to the current focus as we go.`;
+  }
+
+  private isGreetingSmallTalk(lower: string): boolean {
+    if (!lower) return false;
+    return /^(hi|hello|hey)\b/.test(lower) || /how (are|is) (you|everyone)/.test(lower);
+  }
+
+  private buildSmallTalkResponse(stakeholder: StakeholderContext, context: ConversationContext): string {
+    // Keep it neutral, human, no fabricated outcomes
+    return `Doing well, thanks. Ready to dive in—how would you like to start?`;
+  }
+
+  private isCurrentProcessQuestion(lower: string): boolean {
+    if (!lower) return false;
+    return /(current\s+process|what's\s+the\s+process|whats\s+the\s+process|how do you do it|how is it done)/i.test(lower);
   }
 }
 
