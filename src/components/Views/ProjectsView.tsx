@@ -137,43 +137,6 @@ const ProjectsView: React.FC = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-300/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8 shadow-2xl">
-              <Sparkles className="w-10 h-10 text-white animate-pulse" />
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              Choose Your
-              <span className="block bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">
-                Adventure
-              </span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-indigo-100 max-w-4xl mx-auto mb-12 leading-relaxed">
-              Embark on real-world business analysis challenges designed by industry experts. 
-              Each project is a gateway to mastering critical BA skills through immersive, hands-on experience.
-            </p>
-            
-            {/* Stats Cards */}
-            <div className="flex flex-wrap justify-center gap-6 mb-8">
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20">
-                <div className="text-3xl font-bold text-white mb-2">10,000+</div>
-                <div className="text-indigo-200 text-sm">Global Practitioners</div>
-              </div>
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20">
-                <div className="text-3xl font-bold text-white mb-2">95%</div>
-                <div className="text-indigo-200 text-sm">Success Rate</div>
-              </div>
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20">
-                <div className="text-3xl font-bold text-white mb-2">5+</div>
-                <div className="text-indigo-200 text-sm">Industry Scenarios</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-6 py-16">
         {/* Filter Section */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-12">
