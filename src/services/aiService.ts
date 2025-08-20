@@ -42,6 +42,7 @@ interface ConversationState {
     lastTopics: string[];
     emotionalState: string;
     conversationStyle: string;
+    lastResponseText?: string;
   }>;
 }
 
@@ -142,6 +143,12 @@ class AIService {
       if (channelAnswer) return channelAnswer;
     }
 
+    // Fast path: user asks for specifics
+    if (/what\s+specifics|which\s+specific|be\s+specific|details\s+please/i.test(lowerMsg)) {
+      const specific = this.generateSpecificsFollowUp(context?.project);
+      if (specific) return specific;
+    }
+
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
@@ -179,6 +186,18 @@ class AIService {
       if ((context?.conversationPhase || '').toString().startsWith('as')) {
         text = this.filterSolutionsInAsIs(text);
       }
+      // Avoid generic/looping phrases and make it concrete
+      text = this.avoidGenericResponses(text, context?.project, lowerMsg);
+      // Prevent repetition from same stakeholder
+      const last = this.conversationState.stakeholderStates.get(stakeholder.name)?.lastResponseText || '';
+      if (last && this.isTooSimilar(text, last)) {
+        const alt = this.generateSpecificsFollowUp(context?.project);
+        if (alt) text = alt;
+      }
+      // Save last response
+      const st = this.conversationState.stakeholderStates.get(stakeholder.name) || { hasSpoken: true, lastTopics: [], emotionalState: 'neutral', conversationStyle: 'concise' } as any;
+      st.lastResponseText = text;
+      this.conversationState.stakeholderStates.set(stakeholder.name, st);
       if (text) return text;
       return this.fastFallback(userMessage, stakeholder, context);
     } catch (err) {
@@ -339,6 +358,49 @@ class AIService {
     // Fallback to derived offering if explicit fields absent
     const derived = this.deriveOfferingFromProject(project);
     return derived ? `We primarily offer ${derived}.` : '';
+  }
+
+  private avoidGenericResponses(text: string, project: any, lowerMsg: string): string {
+    if (!text) return text;
+    const genericPatterns = [
+      /let's discuss/i,
+      /we need to dive deeper into the specifics/i,
+      /let's dive deeper/i,
+      /that's interesting/i
+    ];
+    if (genericPatterns.some(p => p.test(text))) {
+      const specific = this.generateSpecificsFollowUp(project);
+      if (specific) return specific;
+    }
+    return text;
+  }
+
+  private generateSpecificsFollowUp(project: any): string | '' {
+    if (!project) return '';
+    const sources = [project.problemStatement || '', project.asIsProcess || '', project.businessContext || '']
+      .join('\n').toLowerCase();
+    const picks: string[] = [];
+    const pushIf = (cond: boolean, phrase: string) => { if (cond && !picks.includes(phrase) && picks.length < 3) picks.push(phrase); };
+    pushIf(/manual/.test(sources), 'manual data entry causing errors');
+    pushIf(/email/.test(sources), 'email-based handoffs creating delays');
+    pushIf(/approval|manager/.test(sources), 'slow manager approvals');
+    pushIf(/excel/.test(sources), 'Excel-based tracking with poor visibility');
+    pushIf(/compliance|sox|policy/.test(sources), 'policy/compliance checks that are hard to enforce');
+    pushIf(/visibility/.test(sources), 'limited real-time visibility for stakeholders');
+    pushIf(/handoff|handoffs/.test(sources), 'multiple handoffs that drop context');
+    if (picks.length === 0) return '';
+    if (picks.length === 1) return `A concrete example is ${picks[0]}. Where would you like to start?`;
+    if (picks.length === 2) return `Specific issues include ${picks[0]} and ${picks[1]}. Which should we explore first?`;
+    return `Specific issues include ${picks[0]}, ${picks[1]}, and ${picks[2]}. Which should we explore first?`;
+  }
+
+  private isTooSimilar(a: string, b: string): boolean {
+    const na = a.toLowerCase().replace(/[^a-z0-9 ]/g, '');
+    const nb = b.toLowerCase().replace(/[^a-z0-9 ]/g, '');
+    if (na === nb) return true;
+    // very short replies repeating
+    if (na.length < 40 && nb.includes(na)) return true;
+    return false;
   }
 
   public getConversationAnalytics() {
