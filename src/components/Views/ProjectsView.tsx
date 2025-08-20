@@ -275,7 +275,7 @@ const ProjectsView: React.FC = () => {
                     }`}
                   >
                     <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>{hasMeetings ? 'Continue Journey' : 'Start Project'}</span>
+                    <span>{hasMeetings ? 'Continue Project' : 'Start Project'}</span>
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
