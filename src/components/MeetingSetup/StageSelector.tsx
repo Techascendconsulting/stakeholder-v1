@@ -96,12 +96,14 @@ const StageSelector: React.FC<StageSelectorProps> = ({ data, onUpdate, onNext })
         {stages.map((stage) => {
           const isActive = data.selectedStage === stage.id;
           const styles = STAGE_STYLES[stage.id] || STAGE_STYLES.kickoff;
+          const isDisabled = stage.id === 'kickoff';
           return (
             <StageCard
               key={stage.id}
               stage={stage}
               styles={styles}
               isActive={isActive}
+              disabled={isDisabled}
               onSelect={() => handleSelect(stage.id)}
             />
           );
@@ -116,24 +118,37 @@ const StageCard: React.FC<{
   stage: any;
   styles: any;
   isActive: boolean;
+  disabled?: boolean;
   onSelect: () => void;
-}> = ({ stage, styles, isActive, onSelect }) => {
+}> = ({ stage, styles, isActive, onSelect, disabled = false }) => {
   const [hovered, setHovered] = React.useState(false);
   const showPreview = hovered;
 
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={() => { if (!disabled) onSelect(); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative w-full text-left p-6 rounded-lg border-2 transition-all bg-gradient-to-br ${styles.gradientFrom} to-white dark:bg-gray-800 shadow-sm hover:shadow-md ${
-        isActive
+      disabled={disabled}
+      className={`relative w-full text-left p-6 rounded-lg border-2 transition-all bg-gradient-to-br ${styles.gradientFrom} to-white dark:bg-gray-800 shadow-sm ${
+        disabled
+          ? 'opacity-60 cursor-not-allowed border-gray-200'
+          : 'hover:shadow-md'
+      } ${
+        isActive && !disabled
           ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-500'
-          : 'border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
+          : !disabled
+          ? 'border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
+          : ''
       }`}
       aria-pressed={isActive}
     >
+      {disabled && (
+        <div className="absolute top-3 right-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+          Coming soon
+        </div>
+      )}
       {isActive && (
         <div className="absolute top-3 right-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-600 text-white shadow">
           Selected
