@@ -4,22 +4,22 @@ import OpenAI from 'openai';
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
-  timeout: 8000,      // faster timeout for snappier UX
-  maxRetries: 1,      // single retry for speed
+  timeout: 12000,     // allow deeper reasoning
+  maxRetries: 2,      // retry once on transient errors
   defaultHeaders: {  // Optimize headers
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   }
 });
 
-// Use GPT-3.5 Turbo for faster, more reliable responses
-const MODEL = "gpt-3.5-turbo";
+// Use GPT-4 Turbo for higher-quality responses
+const MODEL = "gpt-4-turbo";
 
 // Default API parameters for faster responses
 const DEFAULT_API_PARAMS = {
   model: MODEL,
   temperature: 0.4,
-  max_tokens: 150,    // Shorter responses for speed
+  max_tokens: 350,    // Allow more detailed, natural responses
   presence_penalty: 0,
   frequency_penalty: 0,
   stream: false       // Disable streaming for faster responses
