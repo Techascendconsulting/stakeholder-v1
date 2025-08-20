@@ -55,41 +55,39 @@ const MeetingTypeSelector: React.FC<MeetingTypeSelectorProps> = ({ data, onUpdat
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Choose Your Meeting Type</h2>
-      <p className="text-gray-600 dark:text-gray-300 mb-8">Select how you'd like to conduct your stakeholder interview</p>
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Choose Your Meeting Type</h2>
+        <p className="text-gray-600 dark:text-gray-300">Select how you'd like to conduct your stakeholder interview</p>
+      </div>
 
-      <div className="grid gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {meetingTypes.map((type) => (
           <button
             key={type.id}
             onClick={() => handleSelect(type.id)}
-            className={`flex items-start p-6 bg-white dark:bg-gray-800 rounded-xl border-2 transition-all ${
+            className={`text-left p-6 bg-white dark:bg-gray-800 rounded-2xl border transition-all shadow-sm hover:shadow-md ${
               data.meetingType === type.id
-                ? 'border-indigo-600 dark:border-indigo-500 shadow-lg'
-                : 'border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
+                ? 'border-indigo-500 ring-2 ring-indigo-500'
+                : 'border-slate-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800'
             }`}
           >
-            <div className="flex-1 text-left">
-              <div className="flex items-center space-x-3">
-                <type.icon className={`w-6 h-6 ${
-                  data.meetingType === type.id
-                    ? 'text-indigo-600 dark:text-indigo-400'
-                    : 'text-gray-400 dark:text-gray-500'
-                }`} />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{type.title}</h3>
-              </div>
-              <p className="mt-2 text-gray-600 dark:text-gray-300">{type.description}</p>
-              <div className="mt-4 text-sm text-indigo-600 dark:text-indigo-400">{type.duration}</div>
-              <ul className="mt-4 space-y-2">
-                {type.features.map((feature, index) => (
-                  <li key={index} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <span className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+            <div className="flex items-center gap-3 mb-2">
+              <type.icon className={`w-6 h-6 ${
+                data.meetingType === type.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'
+              }`} />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{type.title}</h3>
             </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">{type.description}</p>
+            <div className="text-sm text-indigo-600 dark:text-indigo-400 mb-3">{type.duration}</div>
+            <ul className="space-y-2">
+              {type.features.map((feature, index) => (
+                <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mr-2"></span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
           </button>
         ))}
       </div>
