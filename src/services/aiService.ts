@@ -129,9 +129,9 @@ class AIService {
       `If the question is outside the current focus (${stage}), still answer with specific details, then (optionally) nudge back to ${stage}.`,
       `When asked about specific details not in the project context, provide reasonable, realistic estimates based on your role and typical business scenarios.`,
       `Prefer concrete details from the project context when relevant, but feel free to add realistic business details when needed.`,
-      `For greetings/small talk, keep it to one short sentence and do not claim outcomes or status updates.`,
+      `For greetings/small talk, be polite and human-like. Respond naturally as a colleague would - friendly but professional. Avoid colons, bullet points, or robotic language. Keep it conversational.`,
       `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`,
-      `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information.`,
+      `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information. Avoid using colons (:) in responses - write naturally as if speaking to a colleague. Be polite and conversational, not robotic.`,
       `If you need to provide more detail, say "I can elaborate on [specific aspect] if that would be helpful."`,
       `IMPORTANT: You may occasionally realize you forgot details or made assumptions. This is realistic - acknowledge it naturally like "Actually, let me think about that... I might have missed something" or "Wait, that reminds me of another issue we've been seeing."`,
       `As the conversation progresses and requirements are discussed, become more specific and firm in your answers. Early in the conversation you might be vague, but later you should provide concrete, actionable requirements.`
