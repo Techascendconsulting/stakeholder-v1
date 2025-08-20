@@ -463,7 +463,7 @@ class AIService {
   public async generateInterviewNotes(meetingData: any, progressCallback?: (progress: string) => void): Promise<string> {
     try {
       progressCallback?.("Analyzing conversation content...");
-      const { messages, project, participants, duration } = meetingData;
+      const { messages, project, participants, duration, startTime, endTime } = meetingData;
       
       if (!messages || messages.length === 0) {
         return "Meeting discussion not sufficient to create a summary.";
@@ -475,10 +475,11 @@ class AIService {
 
       progressCallback?.("Generating comprehensive meeting summary...");
 
-      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a factual, concise summary based ONLY on what was actually discussed. Include meeting context (date, duration, participants, project). If the conversation was substantial, list the specific topics discussed. If the conversation was brief or only greetings, simply state that the meeting lasted X minutes but no substantive topics were discussed. Do NOT add generic sections like \"Topics Discussed\" or \"Key Insights\" if there is no actual content. Be honest about the meeting content - if nothing meaningful was discussed, say so clearly. Use plain text formatting - NO asterisks, markdown, or special formatting.";
+      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a well-structured meeting summary with these sections: Meeting Context (date, duration, participants, project), Summary (main discussion points in 2-3 sentences), Topics Discussed (bullet points of specific topics), and Key Insights (2-3 key takeaways). If the conversation was brief or only greetings, simply state that no substantive topics were discussed. Use clear section headers and bullet points for readability.";
 
       const conversationText = messages.map((msg: any) => msg.speaker + ": " + msg.content).join("\n\n");
-      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a factual summary based ONLY on what was actually discussed. Be concise and accurate. Do NOT add information that was not mentioned in the conversation. If the discussion was brief or only greetings, simply state that no substantive topics were discussed. Do NOT create generic sections if there is no actual content. Be honest about the meeting content. Use plain text formatting - NO asterisks, markdown, or special formatting.";
+      const meetingDate = startTime ? new Date(startTime).toLocaleDateString() : new Date().toLocaleDateString();
+      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Date: " + meetingDate + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a structured summary with: Meeting Context, Summary (main points), Topics Discussed (bullet points), and Key Insights (2-3 takeaways). Be factual and concise. If the discussion was brief, simply state that no substantive topics were discussed.";
 
       const response = await openai.chat.completions.create({
         model: MODEL,
