@@ -330,6 +330,26 @@ class AIService {
     const derived = this.deriveOfferingFromProject(project);
     return derived ? `We primarily offer ${derived}.` : '';
   }
+
+  public getConversationAnalytics() {
+    return {
+      messageCount: this.conversationState.messageCount,
+      participantInteractions: Object.fromEntries(this.conversationState.participantInteractions),
+      topicsDiscussed: Array.from(this.conversationState.topicsDiscussed),
+      conversationPhase: this.conversationState.conversationPhase,
+      stakeholderStates: Object.fromEntries(
+        Array.from(this.conversationState.stakeholderStates.entries()).map(([name, state]) => [
+          name,
+          {
+            hasSpoken: state.hasSpoken,
+            lastTopics: state.lastTopics,
+            emotionalState: state.emotionalState,
+            conversationStyle: state.conversationStyle
+          }
+        ])
+      )
+    };
+  }
 }
 
 export { AIService };
