@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
   const stats = [
     {
       title: 'Projects Started',
-      value: selectedProject ? 1 : 0, // More accurate: shows if user has an active project
+      value: meetingStats.uniqueProjects, // Shows total unique projects worked on
       icon: Target,
       color: 'bg-blue-500',
       change: selectedProject ? 'Active' : 'None',
@@ -355,7 +355,7 @@ const Dashboard: React.FC = () => {
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center space-x-2"
               >
                 <Play className="w-4 h-4" />
-                <span>Continue Meeting</span>
+                <span>{recentMeetings.some(m => m.project_id === selectedProject?.id) ? "Continue Meeting" : "Start Meeting"}</span>
               </button>
               <button
                 onClick={() => setCurrentView('project-brief')}
