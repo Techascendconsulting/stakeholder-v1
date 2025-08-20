@@ -4076,81 +4076,42 @@ Please review the raw transcript for detailed conversation content.`;
         {activeTab === 'brief' && (
           <div className="flex-1 bg-white p-6 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
-              {/* Auto-populated project details */}
+              {/* Real project brief */}
               {selectedProject && (
                 <>
-                  {/* Project Header */}
                   <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedProject.name}</h2>
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
-                      <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">High Priority</span>
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Premium</span>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">{selectedProject.name}</h2>
+                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        {selectedProject.complexity} Complexity
+                      </span>
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                        Duration: {selectedProject.duration}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Project Overview */}
                   <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Project Overview</h3>
-                    <p className="text-gray-600 mb-4">{selectedProject.description}</p>
+                    <h3 className="font-semibold text-gray-900 mb-4">Business Context</h3>
+                    <p className="text-gray-700 whitespace-pre-line">{(selectedProject as any).businessContext}</p>
                   </div>
 
-                  {/* Business Impact */}
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    <div className="bg-green-50 rounded-lg border border-green-200 p-6">
-                      <h4 className="font-semibold text-green-800 mb-2">Business Impact</h4>
-                      <p className="text-2xl font-bold text-green-600 mb-1">{selectedProject.businessImpact || '£1.8M'}</p>
-                      <p className="text-sm text-green-700">Annual Cost Savings</p>
-                    </div>
-                    <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
-                      <h4 className="font-semibold text-blue-800 mb-2">ROI Potential</h4>
-                      <p className="text-2xl font-bold text-blue-600 mb-1">{selectedProject.roiPotential || '340%'}</p>
-                      <p className="text-sm text-blue-700">Expected Return</p>
-                    </div>
-                  </div>
-
-                  {/* Key Challenges */}
                   <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Key Challenges</h3>
-                    <ul className="space-y-3 text-gray-600">
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                        <span>Current onboarding takes 14+ days on average</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                        <span>Multiple manual handoffs between departments</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                        <span>Inconsistent customer experience across regions</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                        <span>Limited visibility into onboarding progress</span>
-                      </li>
-                    </ul>
+                    <h3 className="font-semibold text-gray-900 mb-4">Problem Statement</h3>
+                    <p className="text-gray-700 whitespace-pre-line">{(selectedProject as any).problemStatement}</p>
                   </div>
 
-                  {/* Success Criteria */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Current As-Is Process</h3>
+                    <p className="text-gray-700 whitespace-pre-line">{(selectedProject as any).asIsProcess}</p>
+                  </div>
+
                   <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Success Criteria</h3>
-                    <ul className="space-y-3 text-gray-600">
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                        <span>Reduce onboarding time to 5 days or less</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                        <span>Increase customer satisfaction score by 25%</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                        <span>Automate 80% of manual processes</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                        <span>Implement real-time progress tracking</span>
-                      </li>
+                    <h3 className="font-semibold text-gray-900 mb-4">Business Goals</h3>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                      {((selectedProject as any).businessGoals || []).map((goal: string, idx: number) => (
+                        <li key={idx}>{goal}</li>
+                      ))}
                     </ul>
                   </div>
                 </>
