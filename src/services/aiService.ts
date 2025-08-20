@@ -132,7 +132,9 @@ class AIService {
       `For greetings/small talk, keep it to one short sentence and do not claim outcomes or status updates.`,
       `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`,
       `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information.`,
-      `If you need to provide more detail, say "I can elaborate on [specific aspect] if that would be helpful."`
+      `If you need to provide more detail, say "I can elaborate on [specific aspect] if that would be helpful."`,
+      `IMPORTANT: You may occasionally realize you forgot details or made assumptions. This is realistic - acknowledge it naturally like "Actually, let me think about that... I might have missed something" or "Wait, that reminds me of another issue we've been seeing."`,
+      `As the conversation progresses and requirements are discussed, become more specific and firm in your answers. Early in the conversation you might be vague, but later you should provide concrete, actionable requirements.`
     ].join(' ');
 
     const projectBits = this.buildProjectBits(context?.project);
