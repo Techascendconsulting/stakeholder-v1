@@ -294,7 +294,15 @@ class AIService {
 
   private isProductsServicesQuestion(lower: string): boolean {
     if (!lower) return false;
-    return /what\s+(products|services).*\b(offer|do you offer)\b|what\s+do\s+you\s+offer|what\s+products\b|what\s+services\b/i.test(lower);
+    return (
+      /what\s+(products|services).*\b(offer|offers)\b/i.test(lower) ||
+      /what\s+do\s+(you|we)\s+offer\b/i.test(lower) ||
+      /what\s+does\s+(your\s+company|the\s+company)\s+offer\b/i.test(lower) ||
+      /what\s+(are|is)\s+(your|the)\s+(products|services|offerings)\b/i.test(lower) ||
+      /what\s+do\s+(you|we)\s+provide\b/i.test(lower) ||
+      /what\s+do\s+(you|we)\s+sell\b/i.test(lower) ||
+      /offerings\b/i.test(lower)
+    );
   }
 
   private buildOfferingAnswer(project: any): string | '' {
