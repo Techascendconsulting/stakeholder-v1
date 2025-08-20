@@ -1799,7 +1799,7 @@ These notes were generated using a fallback system due to extended AI processing
  // Enhanced fallback response
  const handleFallbackResponse = async (currentMessages: Message[]) => {
    const fallbackStakeholder = selectedStakeholders[0] || { name: 'Stakeholder', role: 'Team Member' }
-   const fallbackResponse = `I apologize, but I'm having some technical difficulties. Could you please rephrase your question?`
+   const fallbackResponse = `Could you put that another way or add a bit more detail? Happy to help.`
    
    const fallbackMessage = createResponseMessage(fallbackStakeholder, fallbackResponse, 0)
    setMessages(prev => [...prev, fallbackMessage])
