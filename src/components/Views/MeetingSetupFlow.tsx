@@ -22,12 +22,36 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
   onBack
 }) => {
   const { updateSetupData } = useMeetingSetup();
-  const [currentStep, setCurrentStep] = useState<SetupStep>('brief');
-  const [meetingData, setMeetingData] = useState({
-    projectId,
-    meetingType: '',
-    selectedStage: '',
-    selectedStakeholders: [],
+  const [currentStep, setCurrentStep] = useState<SetupStep>(() => {
+    try {
+      const raw = localStorage.getItem('meetingSetupProgress');
+      if (raw) {
+        const saved = JSON.parse(raw);
+        const allowed = ['brief', 'type', 'stage', 'stakeholders'];
+        if (saved?.projectId === projectId && allowed.includes(saved.currentStep)) {
+          return saved.currentStep as SetupStep;
+        }
+      }
+    } catch {}
+    return 'brief';
+  });
+  const [meetingData, setMeetingData] = useState(() => {
+    const base = {
+      projectId,
+      meetingType: '',
+      selectedStage: '',
+      selectedStakeholders: [] as string[],
+    };
+    try {
+      const raw = localStorage.getItem('meetingSetupProgress');
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved?.projectId === projectId && saved.meetingData) {
+          return { ...base, ...saved.meetingData };
+        }
+      }
+    } catch {}
+    return base;
   });
 
   const steps: SetupStep[] = ['brief', 'type', 'stage', 'stakeholders'];
@@ -46,30 +70,8 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
     stakeholders: 'Stakeholders'
   };
 
-  // Restore progress on mount (so refresh stays on the same step)
-  const restoredRef = React.useRef(false);
+  // Persist progress on change (synchronous state is already initialized from storage)
   React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem('meetingSetupProgress');
-      if (!raw) return;
-      const saved = JSON.parse(raw);
-      if (saved?.projectId === projectId) {
-        if (saved.meetingData) {
-          setMeetingData((prev) => ({ ...prev, ...saved.meetingData }));
-        }
-        if (saved.currentStep && steps.includes(saved.currentStep)) {
-          setCurrentStep(saved.currentStep as SetupStep);
-        }
-      }
-    } catch {}
-    restoredRef.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
-
-  // Persist progress on change
-  React.useEffect(() => {
-    // Avoid overwriting a saved step with the initial 'brief' on first mount
-    if (!restoredRef.current) return;
     try {
       localStorage.setItem(
         'meetingSetupProgress',
