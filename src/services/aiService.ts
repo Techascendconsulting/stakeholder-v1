@@ -123,13 +123,15 @@ class AIService {
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
-      `Always answer the question asked with specific, realistic details. Keep it natural, 2-4 sentences per reply so the BA can explore step by step.`,
+      `Always answer the question asked with specific, realistic details. Keep responses concise - 2-3 sentences maximum.`,
+      `If the question requires a longer explanation, provide a brief summary and offer to elaborate on specific aspects.`,
       `If the question is outside the current focus (${stage}), still answer with specific details, then (optionally) nudge back to ${stage}.`,
       `When asked about specific details not in the project context, provide reasonable, realistic estimates based on your role and typical business scenarios.`,
       `Prefer concrete details from the project context when relevant, but feel free to add realistic business details when needed.`,
       `For greetings/small talk, keep it to one short sentence and do not claim outcomes or status updates.`,
       `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`,
-      `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information.`
+      `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information.`,
+      `If you need to provide more detail, say "I can elaborate on [specific aspect] if that would be helpful."`
     ].join(' ');
 
     const projectBits = this.buildProjectBits(context?.project);
@@ -153,7 +155,7 @@ class AIService {
       ], {
         // Favor speed and determinism
         temperature: 0.3,
-        max_tokens: Math.min(DEFAULT_API_PARAMS.max_tokens, 120),
+        max_tokens: Math.min(DEFAULT_API_PARAMS.max_tokens, 200),
         presence_penalty: 0,
         frequency_penalty: 0
       }));
@@ -169,6 +171,10 @@ class AIService {
       // Prevent generic responses like "Hello." or "Hello, let's discuss this"
       if (text === 'Hello.' || text === 'Hello' || text.toLowerCase().includes('hello, let\'s discuss')) {
         text = this.generateSpecificsFollowUp(context?.project) || 'I understand your question. Let me provide some context based on what I know.';
+      }
+      // Prevent meta-commentary about text or responses
+      if (text.toLowerCase().includes('the text should have read') || text.toLowerCase().includes('apologies for the cutoff') || text.toLowerCase().includes('the response should have')) {
+        text = 'Let me continue with that thought. ' + text.replace(/.*?(the text should have read|apologies for the cutoff|the response should have).*?\./gi, '').trim();
       }
       // Prevent repetition from same stakeholder
       const last = this.conversationState.stakeholderStates.get(stakeholder.name)?.lastResponseText || '';
