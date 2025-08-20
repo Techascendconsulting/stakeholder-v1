@@ -152,12 +152,13 @@ class AIService {
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
-      `Always answer the question asked. Keep it natural, 2-4 sentences per reply so the BA can explore step by step.`,
-      `If the question is outside the current focus (${stage}), still answer briefly, then (optionally) nudge back to ${stage}.`,
-      `Prefer concrete details from the project context when relevant. Avoid generic filler or meta commentary.`,
-      `Do NOT invent metrics, percentages, timelines, or implementation statuses. Only mention numbers or outcomes if explicitly present in the provided context or recent messages. If unknown, omit metrics.`,
+      `Always answer the question asked with specific, realistic details. Keep it natural, 2-4 sentences per reply so the BA can explore step by step.`,
+      `If the question is outside the current focus (${stage}), still answer with specific details, then (optionally) nudge back to ${stage}.`,
+      `When asked about specific details not in the project context, provide reasonable, realistic estimates based on your role and typical business scenarios.`,
+      `Prefer concrete details from the project context when relevant, but feel free to add realistic business details when needed.`,
       `For greetings/small talk, keep it to one short sentence and do not claim outcomes or status updates.`,
-      `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`
+      `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`,
+      `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information.`
     ].join(' ');
 
     const projectBits = this.buildProjectBits(context?.project);
