@@ -475,11 +475,11 @@ class AIService {
 
       progressCallback?.("Generating comprehensive meeting summary...");
 
-      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a well-structured meeting summary with these sections: Meeting Context (date, duration, participants, project), Summary (main discussion points in 2-3 sentences), Topics Discussed (bullet points of specific topics), and Key Insights (2-3 key takeaways). If the conversation was brief or only greetings, simply state that no substantive topics were discussed. Use clear section headers and bullet points for readability.";
+      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a well-structured meeting summary with these sections: Meeting Context (date, duration, participants, project), Summary (main discussion points in 2-3 sentences), Topics Discussed (clean bullet points of specific topics discussed), and Key Insights (analyze impacts: Process Breakdown Insight, Customer Impact Insight, Team Impact Insight, Business Impact Insight). If the conversation was brief or only greetings, simply state that no substantive topics were discussed. Focus on actual discussion content and real impacts.";
 
       const conversationText = messages.map((msg: any) => msg.speaker + ": " + msg.content).join("\n\n");
       const meetingDate = startTime ? new Date(startTime).toLocaleDateString() : new Date().toLocaleDateString();
-      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Date: " + meetingDate + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a structured summary with: Meeting Context, Summary (main points), Topics Discussed (bullet points), and Key Insights (2-3 takeaways). Be factual and concise. If the discussion was brief, simply state that no substantive topics were discussed.";
+      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Date: " + meetingDate + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a structured summary with: Meeting Context, Summary (main points), Topics Discussed (clean bullet points of specific topics), and Key Insights (Process Breakdown, Customer Impact, Team Impact, Business Impact insights). Be factual and focus on actual impacts discussed.";
 
       const response = await openai.chat.completions.create({
         model: MODEL,
