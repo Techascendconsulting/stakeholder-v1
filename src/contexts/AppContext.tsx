@@ -84,14 +84,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const validViews: AppView[] = [
         'dashboard',
         'guided-practice-hub',
-        'core-concepts',
-        'agile-hub',
-        'my-meetings',
-        'voice-meeting',
-        'elevenlabs-meeting',
-        'individual-agent-meeting',
-        'settings',
-        'profile',
+        'project-setup',
+        // Training flow
         'projects',
         'project-brief',
         'stakeholders',
@@ -105,7 +99,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'deliverables',
         'analysis',
         'custom-project',
-        'custom-stakeholders'
+        'custom-stakeholders',
+        // Enhanced flow view so refresh doesn't drop to dashboard
+        'enhanced-training-flow',
+        // Other areas
+        'core-concepts',
+        'agile-hub',
+        'my-meetings',
+        'voice-meeting',
+        'elevenlabs-meeting',
+        'individual-agent-meeting',
+        'settings',
+        'profile'
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)

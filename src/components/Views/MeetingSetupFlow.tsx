@@ -4,12 +4,11 @@ import { ArrowLeft } from 'lucide-react';
 // Step components (to be created)
 import ProjectBrief from '../MeetingSetup/ProjectBrief';
 import MeetingTypeSelector from '../MeetingSetup/MeetingTypeSelector';
-import StakeholderSelector from '../MeetingSetup/StakeholderSelector';
 import StageSelector from '../MeetingSetup/StageSelector';
-import ReadyScreen from '../MeetingSetup/ReadyScreen';
+import StakeholderSelector from '../MeetingSetup/StakeholderSelector';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 
-type SetupStep = 'brief' | 'type' | 'stakeholders' | 'stage' | 'ready';
+type SetupStep = 'brief' | 'type' | 'stage' | 'stakeholders';
 
 interface MeetingSetupFlowProps {
   projectId: string;
@@ -27,27 +26,57 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
   const [meetingData, setMeetingData] = useState({
     projectId,
     meetingType: '',
-    selectedStakeholders: [],
     selectedStage: '',
+    selectedStakeholders: [],
   });
 
-  const steps: SetupStep[] = ['brief', 'type', 'stakeholders', 'stage', 'ready'];
+  const steps: SetupStep[] = ['brief', 'type', 'stage', 'stakeholders'];
   
   const stepComponents = {
     brief: ProjectBrief,
     type: MeetingTypeSelector,
-    stakeholders: StakeholderSelector,
     stage: StageSelector,
-    ready: ReadyScreen
+    stakeholders: StakeholderSelector
   };
 
   const stepTitles = {
     brief: 'Project Brief',
     type: 'Meeting Type',
-    stakeholders: 'Stakeholders',
     stage: 'Select Stage',
-    ready: 'Ready'
+    stakeholders: 'Stakeholders'
   };
+
+  // Restore progress on mount (so refresh stays on the same step)
+  const restoredRef = React.useRef(false);
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('meetingSetupProgress');
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved?.projectId === projectId) {
+        if (saved.meetingData) {
+          setMeetingData((prev) => ({ ...prev, ...saved.meetingData }));
+        }
+        if (saved.currentStep && steps.includes(saved.currentStep)) {
+          setCurrentStep(saved.currentStep as SetupStep);
+        }
+      }
+    } catch {}
+    restoredRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
+
+  // Persist progress on change
+  React.useEffect(() => {
+    // Avoid overwriting a saved step with the initial 'brief' on first mount
+    if (!restoredRef.current) return;
+    try {
+      localStorage.setItem(
+        'meetingSetupProgress',
+        JSON.stringify({ projectId, currentStep, meetingData })
+      );
+    } catch {}
+  }, [projectId, currentStep, meetingData]);
 
   const handleNext = () => {
     const currentIndex = steps.indexOf(currentStep);
@@ -92,36 +121,53 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
         </div>
       </div>
 
-      {/* Progress Steps */}
+      {/* Progress Steps (refined styling) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between mb-8">
-          {steps.map((step, index) => (
-            <div key={step} className="flex items-center">
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  step === currentStep
-                    ? 'bg-indigo-600 text-white'
-                    : index < steps.indexOf(currentStep)
-                    ? 'bg-indigo-100 text-indigo-600'
-                    : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                {index + 1}
-              </div>
-              <span
-                className={`ml-2 ${
-                  step === currentStep
-                    ? 'text-gray-900 dark:text-white font-medium'
-                    : 'text-gray-500 dark:text-gray-400'
-                }`}
-              >
-                {stepTitles[step]}
-              </span>
-              {index < steps.length - 1 && (
-                <div className="w-full h-0.5 bg-gray-200 dark:bg-gray-700 mx-4" />
-              )}
-            </div>
-          ))}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 sm:px-6 py-4 shadow-sm mb-8">
+          <div className="flex items-center">
+            {steps.map((step, index) => {
+              const currentIndex = steps.indexOf(currentStep)
+              const state = index < currentIndex ? 'completed' : index === currentIndex ? 'active' : 'upcoming'
+              const canNavigate = index < currentIndex // only steps already completed are clickable
+              return (
+                <div key={step} className="flex items-center min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => { if (canNavigate) setCurrentStep(step) }}
+                    disabled={!canNavigate}
+                    className={`flex items-center px-2 sm:px-3 py-1.5 rounded-full border text-sm transition-colors select-none ${
+                    state === 'active'
+                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/20 dark:border-indigo-700 dark:text-indigo-300'
+                      : state === 'completed'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-300'
+                      : 'bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'
+                  } ${
+                    canNavigate ? 'cursor-pointer hover:shadow-sm' : 'cursor-not-allowed opacity-80'
+                  }`}>
+                    <span className={`inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full text-xs font-semibold ${
+                      state === 'active'
+                        ? 'bg-indigo-600 text-white'
+                        : state === 'completed'
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                    }`}>
+                      {index + 1}
+                    </span>
+                    <span className={`truncate ${state === 'active' ? 'font-medium' : ''}`}>{stepTitles[step]}</span>
+                  </button>
+                  {index < steps.length - 1 && (
+                    <div className="flex-1 mx-2 sm:mx-3">
+                      <div className={`h-0.5 rounded ${
+                        index < currentIndex
+                          ? 'bg-emerald-300 dark:bg-emerald-700'
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
