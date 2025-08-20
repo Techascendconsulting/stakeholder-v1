@@ -169,6 +169,12 @@ class AIService {
     ].filter(Boolean).join('\n');
 
     try {
+      console.log('🚀 Making AI API call with:', {
+        model: MODEL,
+        messageLength: userContent.length,
+        hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY
+      });
+      
       const response = await openai.chat.completions.create(createApiParams([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
@@ -201,7 +207,13 @@ class AIService {
       if (text) return text;
       return this.fastFallback(userMessage, stakeholder, context);
     } catch (err) {
-      console.warn('generateStakeholderResponse fast-path error:', err);
+      console.error('❌ AI API call failed:', err);
+      console.error('❌ Error details:', {
+        message: userMessage,
+        stakeholder: stakeholder.name,
+        context: context?.conversationPhase,
+        project: context?.project?.name
+      });
       return this.fastFallback(userMessage, stakeholder, context);
     }
   }
