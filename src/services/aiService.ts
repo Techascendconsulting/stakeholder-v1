@@ -169,18 +169,9 @@ class AIService {
       }
       // Avoid generic/looping phrases and make it concrete
       text = this.avoidGenericResponses(text, context?.project, lowerMsg);
-      // Prevent generic responses like "Hello." or "Hello, let's discuss this"
-      if (text === 'Hello.' || text === 'Hello' || text.toLowerCase().includes('hello, let\'s discuss')) {
-        text = this.generateSpecificsFollowUp(context?.project) || 'I understand your question. Let me provide some context based on what I know.';
-      }
-      // Prevent meta-commentary about text or responses
-      if (text.toLowerCase().includes('the text should have read') || text.toLowerCase().includes('apologies for the cutoff') || text.toLowerCase().includes('the response should have')) {
-        text = 'Let me continue with that thought. ' + text.replace(/.*?(the text should have read|apologies for the cutoff|the response should have).*?\./gi, '').trim();
-      }
-      // Prevent generic greeting responses
-      if (text === 'Hello.' || text === 'Let\'s begin.' || text === 'Hi.' || text === 'Hello' || text === 'Hi') {
-        text = `Hi there, ${stakeholder.name} here. Ready to help with the ${context?.conversationPhase || 'discussion'} today.`;
-      }
+
+
+
       // Prevent repetition from same stakeholder
       const last = this.conversationState.stakeholderStates.get(stakeholder.name)?.lastResponseText || '';
       if (last && this.isTooSimilar(text, last)) {
@@ -201,8 +192,8 @@ class AIService {
         context: context?.conversationPhase,
         project: context?.project?.name
       });
-      // Only use fallback when API actually fails
-      return `I understand your question about ${userMessage.toLowerCase().includes('how many') ? 'the numbers' : 'this topic'}. Based on typical business scenarios, I'd estimate we're dealing with standard industry patterns.`;
+      // Only use fallback when API actually fails - let AI retry
+      throw new Error('AI generation failed, retrying...');
     }
   }
 
