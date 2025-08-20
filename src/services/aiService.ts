@@ -345,6 +345,53 @@ class AIService {
     return cleaned;
   }
 
+  private isSubmissionChannelQuestion(lower: string): boolean {
+    if (!lower) return false;
+    return (
+      /submission.*email/i.test(lower) ||
+      /email.*submission/i.test(lower) ||
+      /via.*email/i.test(lower) ||
+      /submitted.*email/i.test(lower) ||
+      /email.*submitted/i.test(lower)
+    );
+  }
+
+  private answerSubmissionChannel(project: any): string | '' {
+    if (!project?.asIsProcess) return '';
+    const asIs = project.asIsProcess.toLowerCase();
+    if (/email/.test(asIs)) return 'Yes, submissions are done via email.';
+    if (/form|portal|system/.test(asIs)) return 'No, we use a digital form/portal for submissions.';
+    return '';
+  }
+
+  private connectStepsForSpeech(steps: string[]): string {
+    if (steps.length === 0) return '';
+    if (steps.length === 1) return steps[0];
+    let connected = steps[0];
+    for (let i = 1; i < steps.length; i++) {
+      connected += (i === steps.length - 1 ? ', and then we ' : ', then we ') + steps[i];
+    }
+    return connected;
+  }
+
+  private filterSolutionsInAsIs(text: string): string {
+    if (!text) return text;
+    // Remove solution-oriented language when in As-Is phase
+    const solutionPatterns = [
+      /by implementing/i,
+      /we aim to/i,
+      /we will/i,
+      /we can/i,
+      /this will/i,
+      /this should/i
+    ];
+    let filtered = text;
+    solutionPatterns.forEach(pattern => {
+      filtered = filtered.replace(pattern, '');
+    });
+    return filtered.trim();
+  }
+
   private isProductsServicesQuestion(lower: string): boolean {
     if (!lower) return false;
     return (
