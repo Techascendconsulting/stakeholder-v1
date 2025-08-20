@@ -57,9 +57,10 @@ const MeetingTypeSelector: React.FC<MeetingTypeSelectorProps> = ({ data, onUpdat
     iconBg: string;
     iconColor: string;
   }> = {
-    transcript: { bg: 'bg-indigo-600', hoverBg: 'hover:bg-indigo-700', ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
-    group:      { bg: 'bg-blue-600',   hoverBg: 'hover:bg-blue-700',   ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
-    voice:      { bg: 'bg-purple-600', hoverBg: 'hover:bg-purple-700', ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
+    // Lighter full-color backgrounds to match app accents
+    transcript: { bg: 'bg-purple-500', hoverBg: 'hover:bg-purple-600', ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
+    group:      { bg: 'bg-blue-500',   hoverBg: 'hover:bg-blue-600',   ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
+    voice:      { bg: 'bg-emerald-500', hoverBg: 'hover:bg-emerald-600', ring: 'ring-white', iconBg: 'bg-white/10', iconColor: 'text-white' },
   };
 
   const handleSelect = (typeId: string) => {
