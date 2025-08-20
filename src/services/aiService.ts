@@ -118,10 +118,7 @@ class AIService {
 
     const lowerMsg = (userMessage || '').toLowerCase().trim();
 
-    // Ultra-fast local responses for common intents
-    if (this.isGreetingSmallTalk(lowerMsg)) {
-      return this.buildSmallTalkResponse(stakeholder, context);
-    }
+    // Let all responses go through the main AI generation for natural conversation
 
     if (this.isCurrentProcessQuestion(lowerMsg)) {
       const steps = this.extractAsIsSteps(context?.project?.asIsProcess).map(s => this.sanitizeStepForSpeech(s));
@@ -312,10 +309,8 @@ class AIService {
   }
 
   private buildSmallTalkResponse(stakeholder: StakeholderContext, context: ConversationContext): string {
-    // Keep it neutral, human, and do not answer unasked questions
-    const phase = (context.conversationPhase || '').toString().replace(/_/g, ' ');
-    const nudge = phase ? ` If helpful, we can continue with the ${phase} focus.` : '';
-    return `Doing well, thanks. How can I help today?${nudge}`;
+    // Let the AI generate natural greetings instead of hardcoded responses
+    return '';
   }
 
   private isCurrentProcessQuestion(lower: string): boolean {
