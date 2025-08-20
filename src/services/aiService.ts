@@ -469,39 +469,16 @@ class AIService {
         return "Meeting discussion not sufficient to create a summary.";
       }
 
-      // More lenient check - just need some messages
       if (messages.length < 2) {
         return "Meeting discussion not sufficient to create a summary.";
       }
 
       progressCallback?.("Generating comprehensive meeting summary...");
 
-      const systemPrompt = `You are a professional Business Analyst creating meeting notes from a stakeholder interview. 
+      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a comprehensive, well-structured summary that includes: 1. Meeting Overview: Date, duration, participants, project context 2. Key Discussion Points: Main topics covered and insights shared 3. Requirements Identified: Any business requirements, pain points, or needs mentioned 4. Action Items: Any next steps, decisions, or follow-up items 5. Stakeholder Perspectives: Key viewpoints and concerns from each participant Format the response in clear, professional language. If the conversation was brief or lacked depth, acknowledge this and focus on what was discussed. Keep the summary concise but comprehensive. Use bullet points and clear sections for readability.";
 
-Create a comprehensive, well-structured summary that includes:
-
-1. **Meeting Overview**: Date, duration, participants, project context
-2. **Key Discussion Points**: Main topics covered and insights shared
-3. **Requirements Identified**: Any business requirements, pain points, or needs mentioned
-4. **Action Items**: Any next steps, decisions, or follow-up items
-5. **Stakeholder Perspectives**: Key viewpoints and concerns from each participant
-
-Format the response in clear, professional language. If the conversation was brief or lacked depth, acknowledge this and focus on what was discussed.
-
-Keep the summary concise but comprehensive. Use bullet points and clear sections for readability.`;
-
-      const conversationText = messages.map((msg: any) => `${msg.speaker}: ${msg.content}`).join("
-
-");
-
-      const userPrompt = `Project: ${project?.name || "Unknown Project"}
-Duration: ${duration || 0} minutes
-Participants: ${participants?.map((p: any) => `${p.name} (${p.role})`).join(", ") || "Unknown"}
-
-Conversation:
-${conversationText}
-
-Please create a professional meeting summary based on this conversation.`;
+      const conversationText = messages.map((msg: any) => msg.speaker + ": " + msg.content).join("\n\n");
+      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a professional meeting summary based on this conversation.";
 
       const response = await openai.chat.completions.create({
         model: MODEL,
