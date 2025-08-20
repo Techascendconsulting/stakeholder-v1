@@ -23,7 +23,7 @@ const GuidedPracticeHub: React.FC = () => {
   }, [])
 
   const handleStartPracticing = () => {
-    setCurrentView('enhanced-training-flow')
+    setCurrentView('projects')
   }
 
   const tabs = [
