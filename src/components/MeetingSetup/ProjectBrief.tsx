@@ -61,7 +61,7 @@ const ProjectBrief: React.FC<ProjectBriefProps> = ({ data, onUpdate, onNext }) =
       {/* Primary sections (single column) */}
       <div className="space-y-6 mb-6">
         {/* Business Context */}
-        <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl border border-indigo-200 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <Target className="w-5 h-5 text-indigo-600" />
             <h4 className="font-semibold text-gray-900">Business Context</h4>
@@ -72,7 +72,7 @@ const ProjectBrief: React.FC<ProjectBriefProps> = ({ data, onUpdate, onNext }) =
         </div>
 
         {/* Problem Statement */}
-        <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl border border-amber-200 p-6">
+        <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl border border-amber-200 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-5 h-5 text-amber-600" />
             <h4 className="font-semibold text-gray-900">Problem Statement</h4>
@@ -84,15 +84,38 @@ const ProjectBrief: React.FC<ProjectBriefProps> = ({ data, onUpdate, onNext }) =
       </div>
 
       {/* As-Is Process */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
+      <div className="bg-gradient-to-br from-violet-50 to-white rounded-2xl border border-violet-200 p-6 mb-6 shadow-sm">
         <h4 className="font-semibold text-gray-900 mb-3">Current As-Is Process</h4>
-        <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-          {project.asIsProcess}
-        </div>
+        {(() => {
+          const lines = project.asIsProcess.split('\n').map(l => l.trim()).filter(Boolean)
+          const isNumbered = lines.some(l => /^\d+[\).\s]/.test(l))
+          if (!isNumbered) {
+            return (
+              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{project.asIsProcess}</p>
+            )
+          }
+          return (
+            <ol className="space-y-3">
+              {lines.map((l, idx) => {
+                const match = l.match(/^(\d+)[\).\s]+(.*)$/)
+                const stepNum = match ? match[1] : String(idx + 1)
+                const text = match ? match[2] : l
+                return (
+                  <li key={idx} className="flex items-start gap-3 text-gray-700">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-600 text-white text-sm font-semibold mt-0.5">
+                      {stepNum}
+                    </span>
+                    <span className="leading-relaxed">{text}</span>
+                  </li>
+                )
+              })}
+            </ol>
+          )
+        })()}
       </div>
 
       {/* Business Goals */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8">
+      <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl border border-emerald-200 p-6 mb-8 shadow-sm">
         <h4 className="font-semibold text-gray-900 mb-4">Business Goals</h4>
         <ul className="space-y-2">
           {project.businessGoals?.map((goal, idx) => (
