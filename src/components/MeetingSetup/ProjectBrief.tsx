@@ -86,32 +86,7 @@ const ProjectBrief: React.FC<ProjectBriefProps> = ({ data, onUpdate, onNext }) =
       {/* As-Is Process */}
       <div className="bg-gradient-to-br from-violet-50 to-white rounded-2xl border border-violet-200 p-6 mb-6 shadow-sm">
         <h4 className="font-semibold text-gray-900 mb-3">Current As-Is Process</h4>
-        {(() => {
-          const lines = project.asIsProcess.split('\n').map(l => l.trim()).filter(Boolean)
-          const isNumbered = lines.some(l => /^\d+[\).\s]/.test(l))
-          if (!isNumbered) {
-            return (
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{project.asIsProcess}</p>
-            )
-          }
-          return (
-            <ol className="space-y-3">
-              {lines.map((l, idx) => {
-                const match = l.match(/^(\d+)[\).\s]+(.*)$/)
-                const stepNum = match ? match[1] : String(idx + 1)
-                const text = match ? match[2] : l
-                return (
-                  <li key={idx} className="flex items-start gap-3 text-gray-700">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-600 text-white text-sm font-semibold mt-0.5">
-                      {stepNum}
-                    </span>
-                    <span className="leading-relaxed">{text}</span>
-                  </li>
-                )
-              })}
-            </ol>
-          )
-        })()}
+        <p className="text-gray-700 whitespace-pre-line leading-relaxed">{project.asIsProcess}</p>
       </div>
 
       {/* Business Goals */}
