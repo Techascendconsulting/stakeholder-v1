@@ -126,9 +126,9 @@ const ProjectsView: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       
-      <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Filter Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-12">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8">
           <div className="mb-6 lg:mb-0">
             <h2 className="text-3xl font-bold text-slate-900 mb-3">Select Your Challenge Level</h2>
             <p className="text-lg text-slate-600">Choose the complexity that matches your experience and goals</p>
