@@ -3,7 +3,7 @@ import { useApp } from '../../contexts/AppContext'
 import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
-  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user } = useApp()
+  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user, meetings } = useApp()
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
 
@@ -169,6 +169,7 @@ const ProjectsView: React.FC = () => {
             const requiredTier = getProjectRequirement(project.id)
             const isAccessible = true
             const isSelected = studentSubscription?.selected_project_id === project.id
+            const hasMeetings = meetings.some(m => m.project_id === project.id)
             const ProjectIcon = getProjectIcon(project.id)
             const ComplexityIcon = complexityConfig.icon
             const isHovered = hoveredProject === project.id
@@ -274,7 +275,7 @@ const ProjectsView: React.FC = () => {
                     }`}
                   >
                     <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>{isSelected ? 'Continue Journey' : 'Start Project'}</span>
+                    <span>{hasMeetings ? 'Continue Journey' : 'Start Project'}</span>
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
