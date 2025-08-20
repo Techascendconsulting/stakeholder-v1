@@ -120,32 +120,6 @@ class AIService {
 
     // Let all responses go through the main AI generation for natural conversation
 
-    if (this.isCurrentProcessQuestion(lowerMsg)) {
-      const steps = this.extractAsIsSteps(context?.project?.asIsProcess).map(s => this.sanitizeStepForSpeech(s));
-      if (steps.length > 0) {
-        const concise = this.connectStepsForSpeech(steps.slice(0, 8));
-        return `Sure, the flow is: ${concise}.`;
-      }
-    }
-
-    // Fast path: products/services question answered from project context
-    if (this.isProductsServicesQuestion(lowerMsg)) {
-      const offering = this.buildOfferingAnswer(context?.project);
-      if (offering) return offering;
-    }
-
-    // Fast path: specific channel/medium questions (e.g., submission via email)
-    if (this.isSubmissionChannelQuestion(lowerMsg)) {
-      const channelAnswer = this.answerSubmissionChannel(context?.project);
-      if (channelAnswer) return channelAnswer;
-    }
-
-    // Fast path: user asks for specifics
-    if (/what\s+specifics|which\s+specific|be\s+specific|details\s+please/i.test(lowerMsg)) {
-      const specific = this.generateSpecificsFollowUp(context?.project);
-      if (specific) return specific;
-    }
-
     // Build a compact, reusable system prompt
     const systemPrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
@@ -216,7 +190,8 @@ class AIService {
         context: context?.conversationPhase,
         project: context?.project?.name
       });
-      return this.fastFallback(userMessage, stakeholder, context);
+      // Only use fallback when API actually fails
+      return `I understand your question about ${userMessage.toLowerCase().includes('how many') ? 'the numbers' : 'this topic'}. Based on typical business scenarios, I'd estimate we're dealing with standard industry patterns.`;
     }
   }
 
