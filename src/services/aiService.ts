@@ -12,8 +12,8 @@ const openai = new OpenAI({
   }
 });
 
-// Use GPT-4 Turbo for higher-quality responses
-const MODEL = "gpt-4-turbo";
+// Use GPT-3.5 Turbo for cost-effective, natural responses
+const MODEL = "gpt-3.5-turbo";
 
 // Default API parameters for faster responses
 const DEFAULT_API_PARAMS = {
@@ -145,9 +145,9 @@ class AIService {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
       ], {
-        // Allow for more intelligent, ChatGPT-like responses
-        temperature: 0.3, // Slightly higher for more natural responses
-        max_tokens: 200, // Allow longer, more detailed responses
+        // Cost-effective settings for GPT-3.5
+        temperature: 0.3, // Natural conversation
+        max_tokens: 150, // Reasonable length for cost control
         presence_penalty: 0,
         frequency_penalty: 0
       }));
