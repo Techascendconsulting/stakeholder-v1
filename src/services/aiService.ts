@@ -190,9 +190,9 @@ class AIService {
       this.conversationState.stakeholderStates.set(stakeholder.name, st);
       if (text && text.length > 10) return text;
       
-      // Only use fallback if OpenAI API completely fails, not for empty responses
+      // If response is too short, retry instead of using fallback
       console.warn(`⚠️ AI: Generated response too short for ${stakeholder.name}: "${text}"`);
-      return this.fastFallback(userMessage, stakeholder, context);
+      throw new Error('Response too short, retrying...');
     } catch (err) {
       console.error('❌ AI API call failed:', err);
       console.error('❌ Error details:', {
@@ -201,7 +201,14 @@ class AIService {
         context: context?.conversationPhase,
         project: context?.project?.name
       });
-      // Only use fallback when API actually fails - let AI retry
+      
+      // Only fallback for genuine connection/API issues
+      // Make user think it's their connection, not the app
+      if (err.message?.includes('network') || err.message?.includes('timeout') || err.message?.includes('fetch')) {
+        return `I'm having trouble connecting to our systems right now. Could you check your internet connection and try again?`;
+      }
+      
+      // For any other error, retry instead of using fallback
       throw new Error('AI generation failed, retrying...');
     }
   }
