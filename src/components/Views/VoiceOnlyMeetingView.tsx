@@ -12,6 +12,7 @@ import { createDeepgramStreaming, DeepgramStreaming } from '../../lib/deepgramSt
 // import StreamingTTSService from '../../services/streamingTTS'; // ElevenLabs handles low-latency TTS
 import { DatabaseService } from '../../lib/database';
 import { UserAvatar } from '../Common/UserAvatar';
+import { MeetingAvatar } from '../Common/MeetingAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 import { useNavigate } from 'react-router-dom';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
@@ -348,6 +349,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   // Meeting ending states to prevent multiple clicks and show progress
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
   const [endingProgress, setEndingProgress] = useState('');
+  
+  // Avatar system toggle (for testing new MeetingAvatar component)
+  const [useEnhancedAvatars, setUseEnhancedAvatars] = useState(false);
   
   // Reset meeting state when component mounts to ensure fresh meeting
   useEffect(() => {
@@ -3972,6 +3976,20 @@ Guidelines:
         selectedStakeholders={selectedStakeholders}
       />
 
+      {/* Avatar System Toggle (for testing) */}
+      <div className="flex justify-center mb-4">
+        <button
+          onClick={() => setUseEnhancedAvatars(!useEnhancedAvatars)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            useEnhancedAvatars
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : 'bg-gray-600 text-white hover:bg-gray-700'
+          }`}
+        >
+          {useEnhancedAvatars ? 'Enhanced Avatars ON' : 'Enhanced Avatars OFF'}
+        </button>
+      </div>
+
       {/* Tab Content */}
       <div className="flex-1 flex flex-col min-h-0">
         {activeTab === 'video' && (
@@ -3982,19 +4000,44 @@ Guidelines:
             {(() => {
               const totalParticipants = allParticipants.length;
               
+              // Helper function to render participant (old or new system)
+              const renderParticipant = (participant: any, index: number, isUser: boolean) => {
+                if (useEnhancedAvatars) {
+                  // Use new MeetingAvatar component
+                  return (
+                    <MeetingAvatar
+                      key={participant.name}
+                      name={participant.name}
+                      role={isUser ? 'Business Analyst' : participant.role || 'Participant'}
+                      avatarUrl={isUser ? getUserProfilePhoto(user?.id || '') || '' : participant.photo || ''}
+                      isSpeaking={currentSpeaker?.name === participant.name}
+                      isMuted={false} // TODO: Add mute functionality
+                      isThinking={false} // TODO: Add thinking state
+                      size="lg"
+                      className="w-64"
+                    />
+                  );
+                } else {
+                  // Use existing ParticipantCard
+                  return (
+                    <ParticipantCard
+                      key={participant.name}
+                      participant={participant}
+                      isCurrentSpeaker={currentSpeaker?.name === participant.name}
+                      isUser={isUser}
+                    />
+                  );
+                }
+              };
+              
               // Layout logic based on number of participants
               if (totalParticipants <= 4) {
                 // 1-4 people: single row
                 return (
                   <div className="flex gap-4 justify-center">
-                    {allParticipants.map((participant, index) => (
-                      <ParticipantCard
-                        key={participant.name}
-                        participant={participant}
-                        isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                        isUser={index === 0}
-                      />
-                    ))}
+                    {allParticipants.map((participant, index) => 
+                      renderParticipant(participant, index, index === 0)
+                    )}
                   </div>
                 );
               } else if (totalParticipants === 5) {
@@ -4002,24 +4045,14 @@ Guidelines:
                 return (
                   <>
                     <div className="flex gap-4">
-                      {allParticipants.slice(0, 3).map((participant, index) => (
-                        <ParticipantCard
-                          key={participant.name}
-                          participant={participant}
-                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isUser={index === 0}
-                        />
-                      ))}
+                      {allParticipants.slice(0, 3).map((participant, index) => 
+                        renderParticipant(participant, index, index === 0)
+                      )}
                     </div>
                     <div className="flex gap-4 justify-center">
-                      {allParticipants.slice(3, 5).map((participant, index) => (
-                        <ParticipantCard
-                          key={participant.name}
-                          participant={participant}
-                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isUser={index + 3 === 0}
-                        />
-                      ))}
+                      {allParticipants.slice(3, 5).map((participant, index) => 
+                        renderParticipant(participant, index + 3, index + 3 === 0)
+                      )}
                     </div>
                   </>
                 );
@@ -4028,24 +4061,14 @@ Guidelines:
                 return (
                   <>
                     <div className="flex gap-4">
-                      {allParticipants.slice(0, 3).map((participant, index) => (
-                        <ParticipantCard
-                          key={participant.name}
-                          participant={participant}
-                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isUser={index === 0}
-                        />
-                      ))}
+                      {allParticipants.slice(0, 3).map((participant, index) => 
+                        renderParticipant(participant, index, index === 0)
+                      )}
                     </div>
                     <div className="flex gap-4">
-                      {allParticipants.slice(3, 6).map((participant, index) => (
-                        <ParticipantCard
-                          key={participant.name}
-                          participant={participant}
-                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isUser={index + 3 === 0}
-                        />
-                      ))}
+                      {allParticipants.slice(3, 6).map((participant, index) => 
+                        renderParticipant(participant, index + 3, index + 3 === 0)
+                      )}
                     </div>
                   </>
                 );
@@ -4054,24 +4077,14 @@ Guidelines:
                 return (
                   <>
                     <div className="flex gap-4">
-                      {allParticipants.slice(0, 3).map((participant, index) => (
-                        <ParticipantCard
-                          key={participant.name}
-                          participant={participant}
-                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isUser={index === 0}
-                        />
-                      ))}
+                      {allParticipants.slice(0, 3).map((participant, index) => 
+                        renderParticipant(participant, index, index === 0)
+                      )}
                     </div>
                     <div className="flex gap-4 justify-center">
-                      {allParticipants.slice(3).map((participant, index) => (
-                        <ParticipantCard
-                          key={participant.name}
-                          participant={participant}
-                          isCurrentSpeaker={currentSpeaker?.name === participant.name}
-                          isUser={index + 3 === 0}
-                        />
-                      ))}
+                      {allParticipants.slice(3).map((participant, index) => 
+                        renderParticipant(participant, index + 3, index + 3 === 0)
+                      )}
                     </div>
                   </>
                 );
