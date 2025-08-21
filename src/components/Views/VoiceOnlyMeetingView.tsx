@@ -1763,9 +1763,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           const thinkingMessage = createResponseMessage(stakeholder, `${stakeholder.name} is responding...`, currentMessages.length);
           setMessages(prev => [...prev, thinkingMessage]);
           
+          let response: string;
           try {
             // Use intelligent generation with length control
-            const response = await generateStakeholderResponse(
+            response = await generateStakeholderResponse(
               stakeholder,
               messageContent,
               currentMessages,
@@ -1783,6 +1784,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
               msg.id === thinkingMessage.id ? responseMessage : msg
             ));
             addToBackgroundTranscript(responseMessage);
+            
+            // Generate and play audio
+            if (globalAudioEnabled) {
+              const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
+              if (audioBlob) {
+                await playBlob(audioBlob);
+                console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
+              }
+            }
           } catch (error) {
             console.error(`❌ INTELLIGENT: Error generating response for ${stakeholder.name}:`, error);
             
@@ -1793,15 +1803,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             const errorMessage = createResponseMessage(stakeholder, `I apologize, but I'm having trouble responding right now.`, currentMessages.length);
             setMessages(prev => [...prev, errorMessage]);
             addToBackgroundTranscript(errorMessage);
-          }
-          
-          // Generate and play audio
-          if (globalAudioEnabled) {
-            const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
-            if (audioBlob) {
-              await playBlob(audioBlob);
-              console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
-            }
           }
         }
         
