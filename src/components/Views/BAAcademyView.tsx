@@ -7,7 +7,6 @@ interface LearningModule {
   id: string;
   title: string;
   description: string;
-  duration: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   status: 'not-started' | 'in-progress' | 'completed';
   progress: number;
@@ -26,16 +25,48 @@ const BAAcademyView: React.FC = () => {
   const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'ai'; content: string }>>([]);
 
   const learningModules: LearningModule[] = [
+    // Phase 1: Foundation (Months 1-3)
     {
-      id: 'ba-fundamentals',
-      title: 'Software BA Fundamentals',
-      description: 'Learn the core concepts and role of a Software Business Analyst in modern development teams.',
-      duration: '4 weeks',
+      id: 'organizational-context',
+      title: 'Organizational Context & Business Operations',
+      description: 'Understand how organizations operate, how departments work together, and the business context where BAs work.',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
-        'What is a Software BA?',
+        'Understanding Organizational Structure',
+        'Department Functions and Interactions',
+        'Customer Journey Across Departments',
+        'IT Team Roles and Responsibilities',
+        'Products/Services Impact on Structure',
+        'Common Departmental Inefficiencies'
+      ]
+    },
+    {
+      id: 'project-lifecycle',
+      title: 'Project Lifecycle & IT Team Structure',
+      description: 'Learn how projects emerge from business needs, IT team structure, and the problem vs delivery phases.',
+      difficulty: 'Beginner',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Project Emergence from Business Needs',
+        'IT Team Structure and Roles',
+        'Hardware and Software Implementation',
+        'Problem Phase: Stakeholder Engagement',
+        'Delivery Phase: Development Team Collaboration',
+        'Cross-functional Team Dynamics'
+      ]
+    },
+    {
+      id: 'ba-fundamentals',
+      title: 'Software BA Fundamentals',
+      description: 'Learn the core concepts and role of a Software Business Analyst in modern development teams.',
+      difficulty: 'Beginner',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Software BA Role and Responsibilities',
         'BA vs Product Manager vs Product Owner',
         'Software Development Lifecycle',
         'Agile vs Waterfall Overview',
@@ -46,32 +77,227 @@ const BAAcademyView: React.FC = () => {
       id: 'requirements-gathering',
       title: 'Requirements Gathering',
       description: 'Master the art of gathering, documenting, and managing software requirements effectively.',
-      duration: '6 weeks',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
-        'User Story Mastery',
-        'Stakeholder Interviews',
-        'Agile Ceremonies',
-        'Requirements Documentation',
-        'Acceptance Criteria'
+        'User Story Writing and Development',
+        'Stakeholder Interview Techniques',
+        'Workshop Facilitation Skills',
+        'Requirements Documentation Standards',
+        'Acceptance Criteria Development'
       ]
     },
+    {
+      id: 'agile-techniques',
+      title: 'Agile BA Techniques',
+      description: 'Master agile methodologies and ceremonies for effective software development collaboration.',
+      difficulty: 'Beginner',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Sprint Planning and Backlog Management',
+        'Agile Ceremonies for BAs',
+        'User Acceptance Testing (UAT)',
+        'Story Point Estimation',
+        'Velocity Tracking and Forecasting'
+      ]
+    },
+
+    // Phase 2: Technical Skills (Months 4-6)
     {
       id: 'technical-analysis',
       title: 'Technical Analysis',
       description: 'Develop technical analysis skills for software projects and system integration.',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'System Analysis Techniques',
+        'API and Integration Requirements',
+        'Database Requirements Analysis',
+        'Technical Documentation Standards',
+        'Technical Feasibility Assessment'
+      ]
+    },
+    {
+      id: 'process-modeling',
+      title: 'Process Modeling',
+      description: 'Learn to model and optimize business processes for software implementation.',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'BPMN Notation',
+        'Swimlane Diagrams',
+        'Current vs Future State Mapping',
+        'Gap Analysis',
+        'Process Optimization'
+      ]
+    },
+    {
+      id: 'stakeholder-management',
+      title: 'Stakeholder Management',
+      description: 'Master stakeholder analysis, communication, and relationship management.',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Stakeholder Analysis (RACI Matrix)',
+        'Power/Interest Grid',
+        'Communication Planning',
+        'Requirements Prioritization',
+        'Change Management'
+      ]
+    },
+
+    // Phase 3: Advanced Techniques (Months 7-9)
+    {
+      id: 'documentation-communication',
+      title: 'Documentation & Communication',
+      description: 'Master BA documentation standards and effective communication techniques.',
       duration: '6 weeks',
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
       topics: [
-        'System Analysis',
-        'API and Integration Requirements',
-        'Database Requirements',
-        'Technical Documentation',
-        'Technical Feasibility'
+        'Requirements Documentation',
+        'Presentation Skills',
+        'Report Writing',
+        'Executive Communication',
+        'Visual Aids and Diagrams'
+      ]
+    },
+    {
+      id: 'quality-assurance',
+      title: 'Quality Assurance',
+      description: 'Learn to coordinate testing, ensure quality, and manage software delivery.',
+      duration: '5 weeks',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Test Strategy Development',
+        'UAT Planning and Coordination',
+        'Defect Management',
+        'Quality Metrics and KPIs',
+        'Release Management'
+      ]
+    },
+    {
+      id: 'software-tools',
+      title: 'Software BA Tools',
+      description: 'Master essential tools and technologies for modern software BA work.',
+      duration: '4 weeks',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Jira and Confluence',
+        'Requirements Management Tools',
+        'Process Modeling Tools',
+        'Data Analysis Tools',
+        'Collaboration Platforms'
+      ]
+    },
+
+    // Phase 4: Specialization (Months 10-12)
+    {
+      id: 'cloud-saas',
+      title: 'Cloud & SaaS',
+      description: 'Specialize in cloud migration and SaaS implementation requirements.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Cloud Migration Requirements',
+        'SaaS Implementation',
+        'Multi-tenant Architecture',
+        'Cloud Security Requirements',
+        'Cost Optimization'
+      ]
+    },
+    {
+      id: 'mobile-web',
+      title: 'Mobile & Web Applications',
+      description: 'Master requirements gathering for mobile and web application development.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Mobile App Requirements',
+        'Responsive Web Design',
+        'Progressive Web Apps',
+        'App Store Requirements',
+        'Cross-platform Considerations'
+      ]
+    },
+    {
+      id: 'ai-ml',
+      title: 'AI & Machine Learning',
+      description: 'Learn to gather requirements for AI and machine learning projects.',
+      duration: '6 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'AI/ML Requirements Gathering',
+        'Data Requirements for ML',
+        'Model Validation Requirements',
+        'Ethical AI Considerations',
+        'AI Integration Requirements'
+      ]
+    },
+
+    // Phase 5: Mastery (Months 13-15)
+    {
+      id: 'devops-cicd',
+      title: 'DevOps & CI/CD',
+      description: 'Master requirements for DevOps and continuous integration/continuous deployment.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'CI/CD Requirements',
+        'Release Automation',
+        'Environment Management',
+        'Monitoring and Observability',
+        'Deployment Strategies'
+      ]
+    },
+    {
+      id: 'strategic-planning',
+      title: 'Strategic Planning',
+      description: 'Develop strategic BA skills for product planning and business alignment.',
+      duration: '6 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Product Strategy Alignment',
+        'Roadmap Planning',
+        'Business Case Development',
+        'ROI Analysis',
+        'Strategic Requirements'
+      ]
+    },
+    {
+      id: 'team-leadership',
+      title: 'Team Leadership',
+      description: 'Master BA team leadership and process improvement skills.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Leading BA Teams',
+        'Mentoring Junior BAs',
+        'Process Improvement',
+        'Best Practices Establishment',
+        'BA Team Management'
       ]
     }
   ];
@@ -130,10 +356,7 @@ const BAAcademyView: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const module = learningModules.find(m => m.id === selectedModule);
-      const topic = module?.topics[currentTopic] || 'Introduction';
-      
-      const response = await lectureService.continueLecture(selectedModule, topic, userMessage);
+      const response = await lectureService.continueLecture(selectedModule, userMessage);
       setCurrentLecture(response);
       setConversationHistory(prev => [...prev, { role: 'ai', content: response.content }]);
     } catch (error) {
@@ -196,11 +419,10 @@ const BAAcademyView: React.FC = () => {
         </ul>
       </div>
 
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600 dark:text-gray-400">{module.duration}</span>
+      <div className="flex items-center justify-end">
         <button
           onClick={() => startModule(module.id)}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
         >
           <Play className="w-4 h-4" />
           <span>Start Learning</span>
@@ -222,7 +444,7 @@ const BAAcademyView: React.FC = () => {
           </div>
           <button
             onClick={() => setIsLectureActive(false)}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
           >
             ← Back to Modules
           </button>
@@ -388,8 +610,71 @@ const BAAcademyView: React.FC = () => {
         {isLectureActive ? (
           renderLectureView()
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {learningModules.map(renderModuleCard)}
+          <div className="space-y-8">
+            {/* Phase 1: Foundation */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-green-600 dark:text-green-400 font-bold">1</span>
+                </div>
+                Foundation
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(0, 5).map(renderModuleCard)}
+              </div>
+            </div>
+
+            {/* Phase 2: Technical Skills */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-blue-600 dark:text-blue-400 font-bold">2</span>
+                </div>
+                Technical Skills
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(5, 8).map(renderModuleCard)}
+              </div>
+            </div>
+
+            {/* Phase 3: Advanced Techniques */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-yellow-600 dark:text-yellow-400 font-bold">3</span>
+                </div>
+                Advanced Techniques
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(8, 11).map(renderModuleCard)}
+              </div>
+            </div>
+
+            {/* Phase 4: Specialization */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-purple-600 dark:text-purple-400 font-bold">4</span>
+                </div>
+                Specialization
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(11, 14).map(renderModuleCard)}
+              </div>
+            </div>
+
+            {/* Phase 5: Mastery */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-red-600 dark:text-red-400 font-bold">5</span>
+                </div>
+                Mastery
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(14, 17).map(renderModuleCard)}
+              </div>
+            </div>
           </div>
         )}
       </div>

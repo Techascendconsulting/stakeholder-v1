@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import StakeholderKnowledgeBase from './stakeholderKnowledgeBase';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -65,9 +66,11 @@ export interface ConversationContext {
 class AIService {
   private static instance: AIService;
   private conversationState: ConversationState;
+  private knowledgeBase: StakeholderKnowledgeBase;
   
   private constructor() {
     this.conversationState = this.initializeConversationState();
+    this.knowledgeBase = StakeholderKnowledgeBase.getInstance();
   }
 
   private initializeConversationState(): ConversationState {
@@ -107,82 +110,49 @@ class AIService {
     }
   }
 
-  // Always-answer, stage- and brief-aware stakeholder response (fast path)
+  // Robust knowledge base-based stakeholder response (NEVER FAILS)
   public async generateStakeholderResponse(
     userMessage: string,
     stakeholder: StakeholderContext,
     context: ConversationContext = {},
     responseType: 'discussion' | 'baton_pass' | 'direct_mention' = 'discussion'
   ): Promise<string> {
-    const stage = (context.conversationPhase || 'as_is').toString().replace(/_/g, ' ');
-
-    const lowerMsg = (userMessage || '').toLowerCase().trim();
-
-    // Let all responses go through the main AI generation for natural conversation
-
-    // Build advanced agent capabilities
-    const agentMemory = this.buildAgentMemory(stakeholder, context);
-    const agentTools = this.getAgentTools(stakeholder, context);
-    const projectInsights = await this.getProjectInsights(context?.project, stakeholder);
-          const systemPrompt = this.buildAgentPrompt(stakeholder, stage, agentMemory, agentTools, projectInsights, context);
-      
-      // DEBUG: Log the system prompt
-      console.log(`🔍 DEBUG PROMPT: ${stakeholder.name} system prompt:`, systemPrompt);
-
-    const projectBits = this.buildProjectBits(context?.project);
-    const recent = this.buildRecentHistory(context?.conversationHistory || []);
-    const userContent = [
-      projectBits ? `Project context: ${projectBits}` : '',
-      recent ? `Recent messages: ${recent}` : '',
-      `User: ${userMessage}`
-    ].filter(Boolean).join('\n');
+    console.log(`🎯 KNOWLEDGE BASE: Generating response for ${stakeholder.name} (${stakeholder.role})`);
+    
+    // Create project context for knowledge base
+    const projectContext = context?.project ? {
+      id: context.project.id || 'customer-onboarding',
+      name: context.project.name || 'Customer Onboarding Process Optimization',
+      painPoints: context.project.painPoints || ['manual data entry', 'delayed handoffs'],
+      currentProcess: context.project.asIsProcess || 'Manual email-based handoffs',
+      stakeholders: context.project.stakeholders || []
+    } : undefined;
 
     try {
-      console.log('🚀 Making AI API call with:', {
-        model: MODEL,
-        messageLength: userContent.length,
-        hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY
-      });
-      
-      const response = await openai.chat.completions.create(createApiParams([
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent }
-      ], {
-        // Allow complete responses
-        temperature: 0.3, // Natural conversation
-        max_tokens: 300, // Allow longer responses to prevent truncation
-        presence_penalty: 0,
-        frequency_penalty: 0
-      }));
+      // Use knowledge base to get response
+      const response = this.knowledgeBase.getStakeholderResponse(
+        userMessage,
+        stakeholder.role,
+        projectContext
+      );
 
-      const completion = response as any;
-      let text = completion.choices?.[0]?.message?.content?.trim() || '';
+      console.log(`✅ KNOWLEDGE BASE: ${stakeholder.name} response: "${response.text}"`);
       
-      // DEBUG: Log the raw AI response
-      console.log(`🔍 DEBUG RAW AI: ${stakeholder.name} raw response: "${text}"`);
+      // Return the text response (voice response is available if needed)
+      return response.text;
       
-      // Return the complete, natural response - no truncation, no filtering
-      console.log(`✅ NATURAL AI: ${stakeholder.name} final response: "${text}"`);
+    } catch (error) {
+      console.error('❌ KNOWLEDGE BASE ERROR:', error);
       
-      if (text && text.length > 0) {
-        return text; // Return the complete response as-is
-      }
+      // Emergency fallback - NEVER FAILS
+      const emergencyResponse = this.knowledgeBase.getStakeholderResponse(
+        'emergency',
+        stakeholder.role,
+        projectContext
+      );
       
-      // Only fallback if completely empty
-      console.warn(`⚠️ AI: Empty response from ${stakeholder.name} - using simple fallback`);
-      return `I understand your question about ${userMessage.split(' ').slice(0, 3).join(' ')}. Let me think about that.`;
-    } catch (err) {
-      console.error('❌ AI API call failed:', err);
-      console.error('❌ Error details:', {
-        message: userMessage,
-        stakeholder: stakeholder.name,
-        context: context?.conversationPhase,
-        project: context?.project?.name
-      });
-      
-      // NEVER show error messages to users - always provide project-specific response
-      console.warn(`⚠️ AI: API error for ${stakeholder.name}: ${err instanceof Error ? err.message : String(err)} - using project-specific response`);
-      return this.generateProjectSpecificResponse(stakeholder, context);
+      console.log(`🆘 EMERGENCY FALLBACK: ${stakeholder.name} response: "${emergencyResponse.text}"`);
+      return emergencyResponse.text;
     }
   }
 
@@ -600,7 +570,7 @@ class AIService {
       `You are ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
       `Project: ${insights}`,
       `Recent conversation: ${memory}`,
-      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report. Start responses naturally without forced greetings like "Hey there!" - just answer the question directly.`,
+      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report. Start responses naturally without forced greetings like "Hey there!" or "Great!" - just answer the question directly. Avoid over-enthusiastic language and repetitive phrases. Be professional but relaxed, like a colleague in a meeting.`,
       `IMPORTANT: When mentioning time ranges or numbers with dashes, pronounce them naturally. Say "24 to 48 hours" instead of "24-48 hours", "3 to 5 days" instead of "3-5 days", "6 to 8 weeks" instead of "6-8 weeks".`
     ];
 
