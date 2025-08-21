@@ -2080,22 +2080,20 @@ Provide one short variant only.`
       });
       
       if (userMentionResult.mentionedStakeholders.length > 0 && userMentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-        // Process mentioned stakeholders in parallel
-        await processStakeholdersInParallel(
+        // Process mentioned stakeholders sequentially
+        await handleFastMentionResponse(
           userMentionResult.mentionedStakeholders, 
           transcript, 
-          updatedMessages, 
-          'direct_mention'
+          updatedMessages
         );
       } else {
         // General conversation - pick random stakeholder
         const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
         console.log(`🎯 Auto-processing: ${randomStakeholder.name} responding to general message`);
-        await processStakeholdersInParallel(
-          [{ name: randomStakeholder.name }], 
+        await handleFastMentionResponse(
+          [randomStakeholder], 
           transcript, 
-          updatedMessages, 
-          'general_question'
+          updatedMessages
         );
       }
     } catch (error) {
@@ -2317,8 +2315,8 @@ Provide one short variant only.`
             await processSingleStakeholderStreaming(stakeholder, messageContent, currentMessages, 'direct_mention');
           }
         } else {
-          // Use parallel processing only for multiple stakeholders
-          await processStakeholdersInParallel(userMentionResult.mentionedStakeholders, messageContent, currentMessages, 'direct_mention');
+          // Use sequential processing for multiple stakeholders
+          await handleFastMentionResponse(userMentionResult.mentionedStakeholders, messageContent, currentMessages);
         }
         
         setIsGeneratingResponse(false);
@@ -3507,9 +3505,30 @@ Please review the raw transcript for detailed conversation content.`;
     try {
       // Prevent overlapping voices across any stakeholders
       stopAllAudio()
+      
+      // Wait a moment for audio to stop
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       setCurrentSpeaker(s);
       setCurrentSpeaking(s.id);
-      await playBlob(audioBlob);
+      
+      // Play audio and wait for completion
+      const url = URL.createObjectURL(audioBlob);
+      const audio = new Audio(url);
+      registerExternalAudio(audio, url);
+      
+      await new Promise<void>((resolve) => {
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        audio.play().catch(() => resolve());
+      });
+      
     } finally {
       setCurrentSpeaker(null);
       setCurrentSpeaking(null);
