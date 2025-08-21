@@ -44,12 +44,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'core-concepts', label: 'Core BA Concepts', icon: BookOpen },
-    { id: 'guided-practice-hub', label: 'Training Projects', icon: FolderOpen },
-    { id: 'elevenlabs-meeting', label: 'Stakeholders', icon: Zap },
+    { 
+      id: 'learn', 
+      label: 'Learn', 
+      icon: BookOpen,
+      subItems: [
+        { id: 'ba-fundamentals', label: 'BA Fundamentals', icon: GraduationCap },
+        { id: 'core-concepts', label: 'Core Concepts', icon: BookOpen },
+        { id: 'advanced-topics', label: 'Advanced Topics', icon: Zap }
+      ]
+    },
+    { 
+      id: 'practice', 
+      label: 'Practice', 
+      icon: FolderOpen,
+      subItems: [
+        { id: 'guided-practice-hub', label: 'Training Projects', icon: FolderOpen },
+        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
+        { id: 'my-meetings', label: 'My Meetings', icon: Calendar }
+      ]
+    },
     { id: 'custom-project', label: 'Create Your Project', icon: Plus },
-    { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
-    { id: 'my-meetings', label: 'My Meetings', icon: Calendar },
   ];
 
   const handleSignOut = async () => {
@@ -158,12 +173,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentView === item.id;
+            const isActive = currentView === item.id || (item.subItems && item.subItems.some(subItem => currentView === subItem.id));
 
             return (
               <li key={item.id} className="relative group">
                 <button
-                  onClick={() => setCurrentView(item.id as any)}
+                  onClick={() => {
+                    if (item.subItems) {
+                      // For main sections, navigate to first sub-item
+                      setCurrentView(item.subItems[0].id as any);
+                    } else {
+                      setCurrentView(item.id as any);
+                    }
+                  }}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-4' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
@@ -183,6 +205,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                     </div>
                   )}
                 </button>
+
+                {/* Sub-items for expanded mode */}
+                {!isCollapsed && item.subItems && (
+                  <ul className="ml-8 mt-1 space-y-1">
+                    {item.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      const isSubActive = currentView === subItem.id;
+                      
+                      return (
+                        <li key={subItem.id}>
+                          <button
+                            onClick={() => setCurrentView(subItem.id as any)}
+                            className={`w-full flex items-center space-x-2 px-3 py-2 rounded-md text-left transition-all duration-200 text-xs font-medium ${
+                              isSubActive
+                                ? 'bg-white/15 text-white'
+                                : 'text-purple-200 hover:bg-white/5 hover:text-white'
+                            }`}
+                          >
+                            <SubIcon size={16} className={isSubActive ? 'text-white' : 'text-purple-300'} />
+                            <span>{subItem.label}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
 
                 {/* Tooltip for collapsed mode */}
                 {isCollapsed && (

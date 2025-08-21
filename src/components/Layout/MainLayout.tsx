@@ -23,6 +23,7 @@ import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
 import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
 import ProjectView from '../Views/ProjectView';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
+import BAAcademyView from '../Views/BAAcademyView';
 import DebugConsole from '../Debug/DebugConsole';
 
 const MainLayout: React.FC = () => {
@@ -45,8 +46,12 @@ const MainLayout: React.FC = () => {
     switch (currentView) {
       case 'dashboard':
         return <Dashboard />;
+      case 'ba-fundamentals':
+        return <BAAcademyView />;
       case 'core-concepts':
         return <CoreConceptsView />;
+      case 'advanced-topics':
+        return <BAAcademyView />; // Will be enhanced later
       case 'guided-practice-hub':
         return <GuidedPracticeHub />;
       case 'projects':
