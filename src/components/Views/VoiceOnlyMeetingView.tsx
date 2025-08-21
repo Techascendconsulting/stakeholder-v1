@@ -4190,7 +4190,15 @@ Guidelines:
                               {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-gray-200 text-xs leading-relaxed">{message.content}</p>
+                          <p className="text-gray-200 text-xs leading-relaxed">
+                            {message.content
+                              .replace(/^\d+\.\s*/gm, '') // Remove numbered lists (1. 2. 3.)
+                              .replace(/^[-*•]\s*/gm, '') // Remove bullet points (- * •)
+                              .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold formatting
+                              .replace(/\*(.*?)\*/g, '$1') // Remove italic formatting
+                              .replace(/`(.*?)`/g, '$1') // Remove code formatting
+                              .trim()}
+                          </p>
                         </div>
                       </div>
                     ))

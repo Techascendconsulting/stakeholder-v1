@@ -146,8 +146,8 @@ class AIService {
         { role: 'user', content: userContent }
       ], {
         // Favor speed and determinism
-        temperature: 0.3,
-        max_tokens: 150, // Reduced for concise, summarized responses
+        temperature: 0.1, // Reduced for faster, more consistent responses
+        max_tokens: 100, // Further reduced for faster responses
         presence_penalty: 0,
         frequency_penalty: 0
       }));
@@ -163,6 +163,9 @@ class AIService {
       
       // Remove repetitive ending phrases
       text = this.removeRepetitivePhrases(text);
+      
+      // Remove markdown formatting - CRITICAL for deployment
+      text = this.removeMarkdownFormatting(text);
       
       // Log response length for cost monitoring
       console.log(`📊 AI: ${stakeholder.name} response length: ${text.length} characters`);
@@ -198,10 +201,14 @@ class AIService {
       const st = this.conversationState.stakeholderStates.get(stakeholder.name) || { hasSpoken: true, lastTopics: [], emotionalState: 'neutral', conversationStyle: 'concise' } as any;
       st.lastResponseText = text;
       this.conversationState.stakeholderStates.set(stakeholder.name, st);
-      if (text && text.length > 2) return text;
       
-      // If response is extremely short, generate project-specific response
-      console.warn(`⚠️ AI: Generated response too short for ${stakeholder.name}: "${text}"`);
+      // CRITICAL: Always ensure we have a meaningful response
+      if (text && text.length > 2 && !text.includes('I apologize') && !text.includes('having trouble')) {
+        return text;
+      }
+      
+      // If response is too short or contains fallback language, generate project-specific response
+      console.warn(`⚠️ AI: Generated response inadequate for ${stakeholder.name}: "${text}" - using project-specific response`);
       return this.generateProjectSpecificResponse(stakeholder, context);
     } catch (err) {
       console.error('❌ AI API call failed:', err);
@@ -212,15 +219,8 @@ class AIService {
         project: context?.project?.name
       });
       
-      // Only fallback for genuine connection/API issues
-      // Make user think it's their connection, not the app
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      if (errorMessage.includes('network') || errorMessage.includes('timeout') || errorMessage.includes('fetch')) {
-        return `I'm having trouble connecting to our systems right now. Could you check your internet connection and try again?`;
-      }
-      
-      // For any other error, provide project-specific response
-      console.warn(`⚠️ AI: Using project-specific response for ${stakeholder.name} due to: ${errorMessage}`);
+      // NEVER show error messages to users - always provide project-specific response
+      console.warn(`⚠️ AI: API error for ${stakeholder.name}: ${err instanceof Error ? err.message : String(err)} - using project-specific response`);
       return this.generateProjectSpecificResponse(stakeholder, context);
     }
   }
@@ -475,6 +475,45 @@ class AIService {
     return cleaned;
   }
 
+  // CRITICAL: Remove all markdown formatting for clean chat display
+  private removeMarkdownFormatting(text: string): string {
+    if (!text) return text;
+    
+    let cleaned = text;
+    
+    // Remove bold formatting
+    cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '$1');
+    
+    // Remove italic formatting
+    cleaned = cleaned.replace(/\*(.*?)\*/g, '$1');
+    
+    // Remove code formatting
+    cleaned = cleaned.replace(/`(.*?)`/g, '$1');
+    
+    // Remove numbered lists (1. 2. 3. etc.)
+    cleaned = cleaned.replace(/^\d+\.\s*/gm, '');
+    
+    // Remove bullet points (- * •)
+    cleaned = cleaned.replace(/^[-*•]\s*/gm, '');
+    
+    // Remove headers
+    cleaned = cleaned.replace(/^#{1,6}\s*/gm, '');
+    
+    // Remove horizontal rules
+    cleaned = cleaned.replace(/^---$/gm, '');
+    
+    // Remove blockquotes
+    cleaned = cleaned.replace(/^>\s*/gm, '');
+    
+    // Remove any remaining numbered patterns
+    cleaned = cleaned.replace(/\d+\.\s*/g, '');
+    
+    // Clean up extra whitespace and newlines
+    cleaned = cleaned.replace(/\n\s*\n/g, '\n').trim();
+    
+    return cleaned;
+  }
+
   private isProcessExplanation(userMessage: string, response: string): boolean {
     const lowerMessage = userMessage.toLowerCase();
     const lowerResponse = response.toLowerCase();
@@ -607,6 +646,7 @@ class AIService {
       `PROACTIVE INSIGHTS: Provide brief, focused insights. Keep suggestions concise and actionable.`,
       `RESPONSE LENGTH: Keep responses natural and conversational. Short acknowledgments like "I agree" or "That's right" are fine. For detailed questions, provide 1-2 sentences.`,
       `BA INTRODUCTION HANDLING: If the user introduces themselves as a Business Analyst, warmly welcome them, briefly introduce yourself with your name and role, and express readiness to collaborate on the project. Keep it professional but friendly.`,
+      `CRITICAL: NEVER use markdown formatting, bullet points, numbered lists, or bold/italic text. Respond in plain text only.`,
       `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`
     ].join(' ');
   }
