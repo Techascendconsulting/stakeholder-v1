@@ -263,7 +263,7 @@ const splitByPhrases = (text: string): string[] => {
 
 export const VoiceOnlyMeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView, user, setSelectedMeeting } = useApp();
-  const { globalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
+  const { globalAudioEnabled, setGlobalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
   const { setupData } = useMeetingSetup();
   
   // Component-level aiService instance
@@ -467,6 +467,14 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     const timeoutId = setTimeout(initializeMeeting, 500);
     return () => clearTimeout(timeoutId);
   }, [selectedProject, selectedStakeholders, user?.id, meetingId]);
+
+  // Enable audio by default for voice meetings
+  useEffect(() => {
+    if (selectedProject && selectedStakeholders.length > 0 && !globalAudioEnabled) {
+      setGlobalAudioEnabled(true);
+      console.log('🔊 AUDIO: Auto-enabled audio for voice meeting');
+    }
+  }, [selectedProject, selectedStakeholders, globalAudioEnabled, setGlobalAudioEnabled]);
 
   // Generate stakeholder response with context - EXACT COPY from transcript meeting
   const generateStakeholderResponse = async (stakeholder: any, userMessage: string, currentMessages: Message[], responseType: string) => {
@@ -1210,6 +1218,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           addToBackgroundTranscript(responseMessage);
           
           // Generate audio in background
+          console.log(`🎤 GREETING AUDIO: globalAudioEnabled = ${globalAudioEnabled}, elevenConfigured = ${elevenConfigured()}`);
           const audioPromise = globalAudioEnabled 
             ? synthesizeToBlob(simpleGreeting, { stakeholderName: stakeholder.name }).catch(err => { console.warn(`⚠️ Greeting TTS failed for ${stakeholder.name}:`, err?.message || err); return null as any; })
             : Promise.resolve(null);
@@ -1231,10 +1240,13 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         // Play audio sequentially to avoid overlap
         for (const result of greetingResults) {
           const audioBlob = await result.audioPromise;
+          console.log(`🎵 GREETING AUDIO RESULT: ${result.stakeholder.name} - audioBlob: ${audioBlob ? '✅ Present' : '❌ Null'}`);
           if (audioBlob) {
             console.log(`🎵 GREETING: Playing audio for ${result.stakeholder.name}`);
             await playForStakeholder(result.stakeholder, audioBlob);
             console.log(`✅ GREETING: ${result.stakeholder.name} finished speaking`);
+          } else {
+            console.warn(`⚠️ GREETING: No audio blob for ${result.stakeholder.name}`);
           }
         }
         

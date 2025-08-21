@@ -38,7 +38,7 @@ export const useVoice = () => {
 
 export const VoiceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [stakeholderVoices, setStakeholderVoices] = useState<StakeholderVoiceConfig[]>([])
-  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false)
+  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(true)
 
   const setStakeholderVoice = (stakeholderId: string, voiceName: string) => {
     setStakeholderVoices(prev => {
