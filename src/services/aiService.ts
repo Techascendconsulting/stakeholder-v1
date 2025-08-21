@@ -145,9 +145,9 @@ class AIService {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
       ], {
-        // Cost-effective settings for GPT-3.5
+        // Allow complete responses
         temperature: 0.3, // Natural conversation
-        max_tokens: 150, // Reasonable length for cost control
+        max_tokens: 300, // Allow longer responses to prevent truncation
         presence_penalty: 0,
         frequency_penalty: 0
       }));
@@ -155,14 +155,11 @@ class AIService {
       const completion = response as any;
       let text = completion.choices?.[0]?.message?.content?.trim() || '';
       
-      // Keep the response natural - no filtering
-      
-      // Log the natural AI response
+      // Return the complete, natural response - no truncation, no filtering
       console.log(`✅ NATURAL AI: ${stakeholder.name} generated: "${text}"`);
       
-      // Return the natural response - no complex validation or filtering
       if (text && text.length > 0) {
-        return text;
+        return text; // Return the complete response as-is
       }
       
       // Only fallback if completely empty
@@ -593,56 +590,19 @@ class AIService {
   }
 
   private buildAgentPrompt(stakeholder: StakeholderContext, stage: string, memory: string, tools: string, insights: string, context?: ConversationContext): string {
-    // Build persona memory based on stakeholder role and data
-    const personaMemory = this.buildPersonaMemory(stakeholder);
-    
     const basePrompt = [
       `You are ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
-      `Your persona: ${personaMemory}`,
-      `Project context: ${insights}`,
+      `Project: ${insights}`,
       `Recent conversation: ${memory}`,
-      `Available tools: ${tools}`,
-      `Guidelines: Stay in character as ${stakeholder.name}. Provide practical, grounded responses based on your role and expertise. Be professional but conversational. If asked about areas outside your expertise, acknowledge the question and suggest who might be better suited to address it.`
+      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report.`
     ];
 
     // Add stakeholder-to-stakeholder context if applicable
     if (context?.isStakeholderToStakeholder && context?.askingStakeholder) {
-      basePrompt.push(`${context.askingStakeholder} just asked you a question. Respond naturally to their question.`);
+      basePrompt.push(`${context.askingStakeholder} just asked you a question.`);
     }
 
     return basePrompt.join(' ');
-  }
-
-  private buildPersonaMemory(stakeholder: StakeholderContext): string {
-    const role = stakeholder.role.toLowerCase();
-    const name = stakeholder.name;
-    
-    if (name === 'Jess Morgan' || role.includes('customer service')) {
-      return `You care deeply about customer satisfaction and reducing onboarding delays. You worry about customers calling repeatedly due to poor processes. You focus on service quality, team efficiency, and ensuring customers have a smooth experience. You often think about how process improvements will affect customer interactions and team workload.`;
-    }
-    
-    if (name === 'James Walker' || role.includes('operations')) {
-      return `You focus on operational efficiency and process standardization. You care about resource optimization and cross-functional coordination. You think strategically about how processes affect the entire organization. You're results-driven and want to see measurable improvements in efficiency and standardization.`;
-    }
-    
-    if (name === 'David Thompson' || role.includes('it') || role.includes('technical')) {
-      return `You're technical and analytical, focusing on system security and integration capabilities. You care about technical feasibility and ensuring systems work together properly. You think about implementation challenges, security implications, and how technical decisions affect the broader organization.`;
-    }
-    
-    if (name === 'Sarah Patel' || role.includes('hr')) {
-      return `You focus on change management, employee engagement, and organizational development. You care about how process changes affect people and teams. You think about training needs, communication strategies, and ensuring smooth transitions for employees.`;
-    }
-    
-    if (name === 'Emily Chen' || role.includes('finance')) {
-      return `You focus on cost analysis, ROI, and financial implications of changes. You care about budget constraints, resource allocation, and ensuring changes provide measurable financial benefits. You think about how process improvements affect the bottom line.`;
-    }
-    
-    if (name === 'Robert Kim' || role.includes('product')) {
-      return `You focus on product requirements, user experience, and feature priorities. You care about how process changes affect product development and customer needs. You think about user workflows, feature roadmaps, and ensuring products meet customer expectations.`;
-    }
-    
-    // Default persona for other roles
-    return `You focus on your specific role and expertise. You care about how changes affect your area of responsibility and think about practical implementation from your perspective.`;
   }
 
   private avoidGenericResponses(text: string, project: any, lowerMsg: string): string {
