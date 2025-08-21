@@ -291,6 +291,17 @@ class AIService {
       return `As ${stakeholder.role}, I'm ready to discuss our current project. What would you like to know?`;
     }
 
+    // Check if this is a BA introduction context
+    const recentMessages = context?.conversationHistory || [];
+    const lastUserMessage = recentMessages.slice(-1)[0]?.content || '';
+    const isBAIntroduction = lastUserMessage.toLowerCase().includes('business analyst') && 
+                            (lastUserMessage.toLowerCase().includes('name') || lastUserMessage.toLowerCase().includes('i am') || lastUserMessage.toLowerCase().includes('i\'m'));
+
+    if (isBAIntroduction) {
+      const projectName = project.name || 'this project';
+      return `Hello! I'm ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}. Great to meet you and I'm looking forward to collaborating on ${projectName}. I'm ready to share insights from my area of expertise.`;
+    }
+
     // Generate role-specific responses based on project data
     const role = stakeholder.role.toLowerCase();
     const projectName = project.name || 'this project';
@@ -595,6 +606,7 @@ class AIService {
       `NATURAL CONVERSATION: Speak naturally as a colleague would. Be specific, helpful, and conversational. Avoid generic responses.`,
       `PROACTIVE INSIGHTS: Provide brief, focused insights. Keep suggestions concise and actionable.`,
       `RESPONSE LENGTH: Keep responses natural and conversational. Short acknowledgments like "I agree" or "That's right" are fine. For detailed questions, provide 1-2 sentences.`,
+      `BA INTRODUCTION HANDLING: If the user introduces themselves as a Business Analyst, warmly welcome them, briefly introduce yourself with your name and role, and express readiness to collaborate on the project. Keep it professional but friendly.`,
       `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`
     ].join(' ');
   }
