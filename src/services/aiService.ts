@@ -124,7 +124,10 @@ class AIService {
     const agentMemory = this.buildAgentMemory(stakeholder, context);
     const agentTools = this.getAgentTools(stakeholder, context);
     const projectInsights = await this.getProjectInsights(context?.project, stakeholder);
-    const systemPrompt = this.buildAgentPrompt(stakeholder, stage, agentMemory, agentTools, projectInsights, context);
+          const systemPrompt = this.buildAgentPrompt(stakeholder, stage, agentMemory, agentTools, projectInsights, context);
+      
+      // DEBUG: Log the system prompt
+      console.log(`🔍 DEBUG PROMPT: ${stakeholder.name} system prompt:`, systemPrompt);
 
     const projectBits = this.buildProjectBits(context?.project);
     const recent = this.buildRecentHistory(context?.conversationHistory || []);
@@ -155,8 +158,11 @@ class AIService {
       const completion = response as any;
       let text = completion.choices?.[0]?.message?.content?.trim() || '';
       
+      // DEBUG: Log the raw AI response
+      console.log(`🔍 DEBUG RAW AI: ${stakeholder.name} raw response: "${text}"`);
+      
       // Return the complete, natural response - no truncation, no filtering
-      console.log(`✅ NATURAL AI: ${stakeholder.name} generated: "${text}"`);
+      console.log(`✅ NATURAL AI: ${stakeholder.name} final response: "${text}"`);
       
       if (text && text.length > 0) {
         return text; // Return the complete response as-is
@@ -594,7 +600,7 @@ class AIService {
       `You are ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
       `Project: ${insights}`,
       `Recent conversation: ${memory}`,
-      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report. Use natural greetings (hi, hello, hey) only at the start of responses, not mid-sentence.`
+      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report. Start responses naturally without forced greetings like "Hey there!" - just answer the question directly.`
     ];
 
     // Add stakeholder-to-stakeholder context if applicable
