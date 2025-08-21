@@ -169,10 +169,14 @@ const DebugConsole: React.FC = () => {
       await refreshMeetingData()
       await loadDbStats()
       
-      // Force refresh the page to ensure clean state
-      setTimeout(() => {
-        window.location.reload()
-      }, 2000)
+      // Force refresh the page to ensure clean state (but not during voice meetings)
+      if (currentView !== 'voice-only') {
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      } else {
+        console.log('🔄 Skipping page reload during voice meeting to prevent conversation loss')
+      }
     } catch (error) {
       setDbOperationStatus(`❌ Reset failed: ${error}`)
     }

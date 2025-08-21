@@ -268,16 +268,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   
   // Component-level aiService instance
   const aiService = AIService.getInstance();
-
-  // Debug component mount
-  useEffect(() => {
-    console.log('🚀 VoiceOnlyMeetingView MOUNTED - Initial state:', {
-      selectedProject: selectedProject?.name || 'NONE',
-      selectedStakeholdersCount: selectedStakeholders?.length || 0,
-      user: user?.email || 'NONE',
-      userId: user?.id || 'NONE'
-    });
-  }, []);
   
   // State management (same as before)
   const [messages, setMessages] = useState<Message[]>([]);
@@ -296,6 +286,29 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [liveTranscript, setLiveTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');
   const [streamingService, setStreamingService] = useState<DeepgramStreaming | null>(null);
+
+  // Debug component mount and unmount
+  useEffect(() => {
+    console.log('🚀 VoiceOnlyMeetingView MOUNTED - Initial state:', {
+      selectedProject: selectedProject?.name || 'NONE',
+      selectedStakeholdersCount: selectedStakeholders?.length || 0,
+      user: user?.email || 'NONE',
+      userId: user?.id || 'NONE',
+      messagesCount: messages.length,
+      timestamp: new Date().toISOString()
+    });
+    
+    return () => {
+      console.log('🔄 VoiceOnlyMeetingView UNMOUNTING - Final state:', {
+        selectedProject: selectedProject?.name || 'NONE',
+        selectedStakeholdersCount: selectedStakeholders?.length || 0,
+        user: user?.email || 'NONE',
+        userId: user?.id || 'NONE',
+        messagesCount: messages.length,
+        timestamp: new Date().toISOString()
+      });
+    };
+  }, [selectedProject, selectedStakeholders, user, messages.length]);
   
   // Dynamic UX state management
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);

@@ -6,7 +6,7 @@ import { DatabaseService, DatabaseProgress, DatabaseMeeting } from '../../lib/da
 import { MeetingDataService, MeetingStats } from '../../lib/meetingDataService';
 
 const Dashboard: React.FC = () => {
-  const { setCurrentView, setSelectedMeeting, refreshMeetingData, selectedProject, selectedStakeholders } = useApp();
+  const { currentView, setCurrentView, setSelectedMeeting, refreshMeetingData, selectedProject, selectedStakeholders } = useApp();
   const { user } = useAuth();
   const [progress, setProgress] = useState<DatabaseProgress | null>(null);
   const [recentMeetings, setRecentMeetings] = useState<DatabaseMeeting[]>([]);
@@ -43,7 +43,8 @@ const Dashboard: React.FC = () => {
   // Refresh data when coming back to dashboard (e.g., after completing a meeting)
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (!document.hidden && user?.id) {
+      // Don't refresh during voice meetings to prevent losing conversation
+      if (!document.hidden && user?.id && currentView !== 'voice-only') {
         console.log('🔄 Dashboard - Page became visible, refreshing data');
         await refreshMeetingData();
         loadDashboardData();

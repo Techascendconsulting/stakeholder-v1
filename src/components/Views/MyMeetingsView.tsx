@@ -192,7 +192,7 @@ const MeetingRow: React.FC<MeetingCardProps> = ({ meeting, onViewDetails, onView
 };
 
 export const MyMeetingsView: React.FC = () => {
-  const { setCurrentView, setSelectedMeeting, refreshMeetingData } = useApp();
+  const { currentView, setCurrentView, setSelectedMeeting, refreshMeetingData } = useApp();
   const { user } = useAuth();
   const [meetings, setMeetings] = useState<DatabaseMeeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -223,7 +223,8 @@ export const MyMeetingsView: React.FC = () => {
   // Refresh data when component becomes visible
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (!document.hidden && user?.id) {
+      // Don't refresh during voice meetings to prevent losing conversation
+      if (!document.hidden && user?.id && currentView !== 'voice-only') {
         console.log('🔄 MyMeetings - Page became visible, refreshing data');
         await refreshMeetingData();
         loadMeetings();
