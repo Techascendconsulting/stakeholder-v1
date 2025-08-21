@@ -604,6 +604,11 @@ class AIService {
       `BE YOURSELF: Share your thoughts and experiences naturally, like you're talking to a colleague.`
     ];
 
+    // Add stakeholder-to-stakeholder context if applicable
+    if (context?.isStakeholderToStakeholder && context?.askingStakeholder) {
+      basePrompt.push(`STAKEHOLDER QUESTION: ${context.askingStakeholder} just asked you a question. Respond naturally to their question as if you're in a real meeting.`);
+    }
+
     return basePrompt.join(' ');
   }
 

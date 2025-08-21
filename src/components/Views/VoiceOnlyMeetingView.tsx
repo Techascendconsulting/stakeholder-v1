@@ -500,6 +500,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       expertise: stakeholder.expertise || []
     };
 
+    // Check if this is stakeholder-to-stakeholder communication
+    const lastMessage = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1] : null;
+    const isStakeholderToStakeholder = lastMessage && lastMessage.speaker !== 'user' && lastMessage.stakeholderName;
+    const askingStakeholder = isStakeholderToStakeholder ? lastMessage.stakeholderName : null;
+
     const conversationContext = {
       project: selectedProject || {
         name: 'Current Project',
@@ -515,6 +520,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         expertise: s.expertise || []
       })),
       isOneOnOne: selectedStakeholders.length === 1,
+      isStakeholderToStakeholder: isStakeholderToStakeholder,
+      askingStakeholder: askingStakeholder,
       conversationPhase: (() => {
         const raw = (setupData?.selectedStage || '').toLowerCase();
         if (raw.includes('problem')) return 'problem_exploration';
@@ -1283,6 +1290,34 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         return;
       }
 
+      // STAKEHOLDER-TO-STAKEHOLDER COMMUNICATION: Check if a stakeholder is asking another stakeholder
+      const lastMessage = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1] : null;
+      const isStakeholderToStakeholder = lastMessage && lastMessage.speaker !== 'user' && lastMessage.stakeholderName;
+      
+      if (isStakeholderToStakeholder) {
+        console.log(`🤝 STAKEHOLDER-TO-STAKEHOLDER: ${lastMessage.stakeholderName} just spoke, checking if they're asking another stakeholder`);
+        
+        // Check if the last speaker mentioned another stakeholder
+        const mentionedStakeholder = availableStakeholders.find((s: any) => {
+          if (s.name === lastMessage.stakeholderName) return false; // Don't match the speaker themselves
+          
+          const full = (s.name || '').toLowerCase();
+          const first = full.split(' ')[0];
+          const lowerMsg = lastMessage.content.toLowerCase();
+          
+          return (first && new RegExp(`\\b${first}\\b`, 'i').test(lowerMsg)) ||
+                 (full && new RegExp(`\\b${full}\\b`, 'i').test(lowerMsg));
+        });
+        
+        if (mentionedStakeholder) {
+          console.log(`🎯 STAKEHOLDER QUESTION: ${lastMessage.stakeholderName} asked ${mentionedStakeholder.name} a question`);
+          
+          // Route the question to the mentioned stakeholder
+          await handleFastMentionResponse([mentionedStakeholder], lastMessage.content, currentMessages);
+          return;
+        }
+      }
+      
       // CHECK FOR EXPLICIT "EVERYONE" REQUESTS
       const explicitEveryoneRequest = /\b(everyone|team|all|folks|guys)\b/i.test(messageContent);
       
