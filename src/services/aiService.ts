@@ -184,7 +184,10 @@ class AIService {
       const st = this.conversationState.stakeholderStates.get(stakeholder.name) || { hasSpoken: true, lastTopics: [], emotionalState: 'neutral', conversationStyle: 'concise' } as any;
       st.lastResponseText = text;
       this.conversationState.stakeholderStates.set(stakeholder.name, st);
-      if (text) return text;
+      if (text && text.length > 10) return text;
+      
+      // Only use fallback if OpenAI API completely fails, not for empty responses
+      console.warn(`⚠️ AI: Generated response too short for ${stakeholder.name}: "${text}"`);
       return this.fastFallback(userMessage, stakeholder, context);
     } catch (err) {
       console.error('❌ AI API call failed:', err);

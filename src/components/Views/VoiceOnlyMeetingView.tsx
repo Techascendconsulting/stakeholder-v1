@@ -1763,25 +1763,37 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           const thinkingMessage = createResponseMessage(stakeholder, `${stakeholder.name} is responding...`, currentMessages.length);
           setMessages(prev => [...prev, thinkingMessage]);
           
-          // Use intelligent generation with length control
-          const response = await generateStakeholderResponse(
-            stakeholder,
-            messageContent,
-            currentMessages,
-            'discussion'
-          );
-          
-          console.log(`✅ INTELLIGENT: Response ready for ${stakeholder.name}, caching...`);
-          
-          // Cache the generated response
-          setCachedResponse(messageContent, stakeholder, response);
-          
-          // Replace thinking message with actual response
-          const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
-          setMessages(prev => prev.map(msg => 
-            msg.id === thinkingMessage.id ? responseMessage : msg
-          ));
-          addToBackgroundTranscript(responseMessage);
+          try {
+            // Use intelligent generation with length control
+            const response = await generateStakeholderResponse(
+              stakeholder,
+              messageContent,
+              currentMessages,
+              'discussion' as const
+            );
+            
+            console.log(`✅ INTELLIGENT: Response ready for ${stakeholder.name}: "${response.substring(0, 50)}..."`);
+            
+            // Cache the generated response
+            setCachedResponse(messageContent, stakeholder, response);
+            
+            // Replace thinking message with actual response
+            const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
+            setMessages(prev => prev.map(msg => 
+              msg.id === thinkingMessage.id ? responseMessage : msg
+            ));
+            addToBackgroundTranscript(responseMessage);
+          } catch (error) {
+            console.error(`❌ INTELLIGENT: Error generating response for ${stakeholder.name}:`, error);
+            
+            // Remove thinking message if AI generation fails
+            setMessages(prev => prev.filter(msg => msg.id !== thinkingMessage.id));
+            
+            // Show error message to user
+            const errorMessage = createResponseMessage(stakeholder, `I apologize, but I'm having trouble responding right now.`, currentMessages.length);
+            setMessages(prev => [...prev, errorMessage]);
+            addToBackgroundTranscript(errorMessage);
+          }
           
           // Generate and play audio
           if (globalAudioEnabled) {
@@ -3541,6 +3553,169 @@ Please review the raw transcript for detailed conversation content.`;
     if (h < 12) return 'morning';
     if (h < 17) return 'afternoon';
     return 'evening';
+  };
+
+  // STREAMING RESPONSE: Start speaking as soon as we have a complete sentence
+  const generateStreamingResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[]) => {
+    console.log(`🚀 STREAMING: Starting streaming response for ${stakeholder.name}`);
+    
+    try {
+      // Show thinking indicator immediately
+      const thinkingMessage = createResponseMessage(stakeholder, `${stakeholder.name} is thinking...`, currentMessages.length);
+      setMessages(prev => [...prev, thinkingMessage]);
+      
+      // Start streaming response generation
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: `You are ${stakeholder.name}, a ${stakeholder.role}. Respond naturally to the user's message.
+
+Guidelines:
+- Keep responses concise (1-2 sentences max)
+- Be professional but conversational
+- Respond based on your role and expertise
+- Don't repeat what others have said
+- Be direct and to the point`
+            },
+            {
+              role: 'user',
+              content: messageContent
+            }
+          ],
+          max_tokens: 100,
+          temperature: 0.7,
+          stream: true
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body reader available');
+      }
+
+      let accumulatedText = '';
+      let currentSentence = '';
+      let hasStartedSpeaking = false;
+      let sentenceCount = 0;
+
+      // Process the stream
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') break;
+
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices?.[0]?.delta?.content || '';
+              
+              if (content) {
+                accumulatedText += content;
+                currentSentence += content;
+
+                // Check if we have a complete sentence
+                const sentenceEnd = /[.!?]\s/.test(currentSentence);
+                const isFirstSentence = sentenceCount === 0;
+                
+                if (sentenceEnd || (isFirstSentence && currentSentence.length > 20)) {
+                  // We have a complete sentence, start speaking immediately
+                  if (!hasStartedSpeaking) {
+                    console.log(`🎤 STREAMING: Starting to speak first sentence for ${stakeholder.name}`);
+                    hasStartedSpeaking = true;
+                    
+                    // Replace thinking message with first sentence
+                    const firstSentence = currentSentence.trim();
+                    const responseMessage = createResponseMessage(stakeholder, firstSentence, currentMessages.length);
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === thinkingMessage.id ? responseMessage : msg
+                    ));
+                    addToBackgroundTranscript(responseMessage);
+                    
+                    // Generate and play audio for first sentence
+                    if (globalAudioEnabled) {
+                      const audioBlob = await synthesizeToBlob(firstSentence, { stakeholderName: stakeholder.name });
+                      if (audioBlob) {
+                        await playForStakeholder(stakeholder, audioBlob);
+                        console.log(`✅ STREAMING: ${stakeholder.name} finished first sentence`);
+                      }
+                    }
+                  }
+                  
+                  sentenceCount++;
+                  currentSentence = '';
+                }
+              }
+            } catch (e) {
+              console.warn('Error parsing streaming response:', e);
+            }
+          }
+        }
+      }
+
+      // If we haven't started speaking yet (very short response), speak the full response
+      if (!hasStartedSpeaking && accumulatedText.trim()) {
+        console.log(`🎤 STREAMING: Speaking full response for ${stakeholder.name} (short response)`);
+        
+        const responseMessage = createResponseMessage(stakeholder, accumulatedText.trim(), currentMessages.length);
+        setMessages(prev => prev.map(msg => 
+          msg.id === thinkingMessage.id ? responseMessage : msg
+        ));
+        addToBackgroundTranscript(responseMessage);
+        
+        if (globalAudioEnabled) {
+          const audioBlob = await synthesizeToBlob(accumulatedText.trim(), { stakeholderName: stakeholder.name });
+          if (audioBlob) {
+            await playForStakeholder(stakeholder, audioBlob);
+            console.log(`✅ STREAMING: ${stakeholder.name} finished speaking`);
+          }
+        }
+      } else if (hasStartedSpeaking && accumulatedText.trim() !== currentSentence.trim()) {
+        // Update with full response if it's different from what we spoke
+        const responseMessage = createResponseMessage(stakeholder, accumulatedText.trim(), currentMessages.length);
+        setMessages(prev => prev.map(msg => 
+          msg.id === thinkingMessage.id ? responseMessage : msg
+        ));
+        console.log(`✅ STREAMING: ${stakeholder.name} response completed`);
+      }
+
+      reader.releaseLock();
+      
+    } catch (error) {
+      console.error(`❌ STREAMING: Error for ${stakeholder.name}:`, error);
+      
+      // Fallback to simple response
+      const fallbackResponse = `I understand your question about ${messageContent.split(' ').slice(0, 3).join(' ')}.`;
+      const responseMessage = createResponseMessage(stakeholder, fallbackResponse, currentMessages.length);
+      setMessages(prev => prev.map(msg => 
+        msg.id === thinkingMessage.id ? responseMessage : msg
+      ));
+      addToBackgroundTranscript(responseMessage);
+      
+      if (globalAudioEnabled) {
+        const audioBlob = await synthesizeToBlob(fallbackResponse, { stakeholderName: stakeholder.name });
+        if (audioBlob) {
+          await playForStakeholder(stakeholder, audioBlob);
+        }
+      }
+    }
   };
 
   return (
