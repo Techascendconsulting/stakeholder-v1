@@ -1785,12 +1785,26 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             ));
             addToBackgroundTranscript(responseMessage);
             
-            // Generate and play audio
+            // Generate and play audio with proper sequential control
             if (globalAudioEnabled) {
-              const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
-              if (audioBlob) {
-                await playBlob(audioBlob);
-                console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
+              console.log(`🎵 AUDIO: Starting audio generation for ${stakeholder.name}`);
+              
+              // Stop any currently playing audio before starting new one
+              stopAllAudio();
+              
+              // Wait a moment for audio to stop
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+              // Generate and play audio sequentially
+              try {
+                const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
+                if (audioBlob) {
+                  console.log(`🎵 AUDIO: Audio ready for ${stakeholder.name}, starting playback`);
+                  await playBlob(audioBlob);
+                  console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
+                }
+              } catch (error) {
+                console.error(`❌ AUDIO: Error generating/playing audio for ${stakeholder.name}:`, error);
               }
             }
           } catch (error) {

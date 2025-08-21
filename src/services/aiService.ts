@@ -132,7 +132,8 @@ class AIService {
       `For greetings/small talk, be polite and human-like. Respond naturally as a colleague would - friendly but professional. Avoid colons, bullet points, or robotic language. Keep it conversational.`,
       `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`,
       `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information. Avoid using colons (:) in responses - write naturally as if speaking to a colleague. Be polite and conversational, not robotic.`,
-      `If you need to provide more detail, say "I can elaborate on [specific aspect] if that would be helpful."`,
+      `IMPORTANT: Never end responses with phrases like "If you need more details", "just let me know", "I'm here to discuss further", or similar. End responses naturally without offering to elaborate.`,
+      `Keep responses concise - 1-2 sentences maximum. Avoid repetition and verbose explanations.`,
       `IMPORTANT: You may occasionally realize you forgot details or made assumptions. This is realistic - acknowledge it naturally like "Actually, let me think about that... I might have missed something" or "Wait, that reminds me of another issue we've been seeing."`,
       `As the conversation progresses and requirements are discussed, become more specific and firm in your answers. Early in the conversation you might be vague, but later you should provide concrete, actionable requirements.`
     ].join(' ');
@@ -158,7 +159,7 @@ class AIService {
       ], {
         // Favor speed and determinism
         temperature: 0.3,
-        max_tokens: Math.min(DEFAULT_API_PARAMS.max_tokens, 200),
+        max_tokens: Math.min(DEFAULT_API_PARAMS.max_tokens, 150),
         presence_penalty: 0,
         frequency_penalty: 0
       }));
@@ -171,6 +172,9 @@ class AIService {
       }
       // Avoid generic/looping phrases and make it concrete
       text = this.avoidGenericResponses(text, context?.project, lowerMsg);
+      
+      // Remove repetitive ending phrases
+      text = this.removeRepetitivePhrases(text);
 
 
 
@@ -399,6 +403,34 @@ class AIService {
     // Fallback to derived offering if explicit fields absent
     const derived = this.deriveOfferingFromProject(project);
     return derived ? `We primarily offer ${derived}.` : '';
+  }
+
+  private removeRepetitivePhrases(text: string): string {
+    if (!text) return text;
+    
+    // Remove common repetitive ending phrases
+    const repetitivePatterns = [
+      /\s*If you need more details?.*$/i,
+      /\s*just let me know.*$/i,
+      /\s*I'm here to discuss further.*$/i,
+      /\s*feel free to ask.*$/i,
+      /\s*I'm here to help.*$/i,
+      /\s*let me know if you need.*$/i,
+      /\s*if you have any questions.*$/i,
+      /\s*if you need anything else.*$/i,
+      /\s*if you need more information.*$/i,
+      /\s*if you need clarification.*$/i
+    ];
+    
+    let cleaned = text;
+    repetitivePatterns.forEach(pattern => {
+      cleaned = cleaned.replace(pattern, '');
+    });
+    
+    // Clean up any trailing punctuation and whitespace
+    cleaned = cleaned.replace(/[,\s]+$/, '').trim();
+    
+    return cleaned;
   }
 
   private avoidGenericResponses(text: string, project: any, lowerMsg: string): string {
