@@ -120,25 +120,11 @@ class AIService {
 
     // Let all responses go through the main AI generation for natural conversation
 
-    // Build a comprehensive, context-aware system prompt
-    const systemPrompt = [
-      `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
-      `You work for this company - speak as if you're part of it. Use "we", "our", "us" instead of constantly referring to the company by name.`,
-      `Always answer the question asked with specific, realistic details. Keep responses concise - 2-3 sentences maximum.`,
-      `If the question requires a longer explanation, provide a brief summary and offer to elaborate on specific aspects.`,
-      `If the question is outside the current focus (${stage}), still answer with specific details, then (optionally) nudge back to ${stage}.`,
-      `When asked about specific details not in the project context, provide reasonable, realistic estimates based on your role and typical business scenarios.`,
-      `Prefer concrete details from the project context when relevant, but feel free to add realistic business details when needed.`,
-      `For greetings/small talk, be polite and human-like. Respond naturally as a colleague would - friendly but professional. Avoid colons, bullet points, or robotic language. Keep it conversational.`,
-      `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`,
-      `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information. Avoid using colons (:) in responses - write naturally as if speaking to a colleague. Be polite and conversational, not robotic.`,
-      `IMPORTANT: Never end responses with phrases like "If you need more details", "just let me know", "I'm here to discuss further", or similar. End responses naturally without offering to elaborate.`,
-      `For general questions and opinions: Keep responses concise - 1-2 sentences maximum (approximately 100-150 characters). Be direct and to the point.`,
-      `For process explanations and detailed workflows: Provide complete, step-by-step explanations. These can be longer but should be well-structured and clear.`,
-      `Avoid repetition and verbose explanations in all cases.`,
-      `IMPORTANT: You may occasionally realize you forgot details or made assumptions. This is realistic - acknowledge it naturally like "Actually, let me think about that... I might have missed something" or "Wait, that reminds me of another issue we've been seeing."`,
-      `As the conversation progresses and requirements are discussed, become more specific and firm in your answers. Early in the conversation you might be vague, but later you should provide concrete, actionable requirements.`
-    ].join(' ');
+    // Build advanced agent capabilities
+    const agentMemory = this.buildAgentMemory(stakeholder, context);
+    const agentTools = this.getAgentTools(stakeholder, context);
+    const projectInsights = await this.getProjectInsights(context?.project, stakeholder);
+    const systemPrompt = this.buildAgentPrompt(stakeholder, stage, agentMemory, agentTools, projectInsights);
 
     const projectBits = this.buildProjectBits(context?.project);
     const recent = this.buildRecentHistory(context?.conversationHistory || []);
@@ -161,7 +147,7 @@ class AIService {
       ], {
         // Favor speed and determinism
         temperature: 0.3,
-        max_tokens: 100, // Reduced from 150 to 100 for shorter responses
+        max_tokens: 200, // Increased for agents to allow more detailed, intelligent responses
         presence_penalty: 0,
         frequency_penalty: 0
       }));
@@ -497,6 +483,88 @@ class AIService {
     }
     
     return text;
+  }
+
+  // Agent Memory and Context Management
+  private buildAgentMemory(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const stakeholderState = this.conversationState.stakeholderStates.get(stakeholder.name);
+    const memory = [];
+    
+    if (stakeholderState?.lastTopics && stakeholderState.lastTopics.length > 0) {
+      memory.push(`Previously discussed: ${stakeholderState.lastTopics.slice(-3).join(', ')}`);
+    }
+    
+    if (stakeholderState?.lastResponseText) {
+      memory.push(`Last response context: ${stakeholderState.lastResponseText.substring(0, 100)}...`);
+    }
+    
+    return memory.length > 0 ? `MEMORY: ${memory.join(' | ')}` : '';
+  }
+
+  private getAgentTools(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const tools = [];
+    
+    // Role-based tools
+    if (stakeholder.role.toLowerCase().includes('it') || stakeholder.role.toLowerCase().includes('technical')) {
+      tools.push('Access to IT system documentation, technical specifications, and infrastructure details');
+    }
+    
+    if (stakeholder.role.toLowerCase().includes('product') || stakeholder.role.toLowerCase().includes('manager')) {
+      tools.push('Access to product requirements, customer feedback, and roadmap information');
+    }
+    
+    if (stakeholder.role.toLowerCase().includes('analyst') || stakeholder.role.toLowerCase().includes('business')) {
+      tools.push('Access to process documentation, business metrics, and stakeholder data');
+    }
+    
+    // Project-specific tools
+    if (context?.project) {
+      tools.push('Access to current project documentation and requirements');
+    }
+    
+    return tools.length > 0 ? `AVAILABLE TOOLS: ${tools.join(' | ')}` : '';
+  }
+
+  private async getProjectInsights(project: any, stakeholder: StakeholderContext): Promise<string> {
+    if (!project) return '';
+    
+    const insights = [];
+    
+    // Role-based insights
+    if (stakeholder.role.toLowerCase().includes('it')) {
+      if (project.asIsProcess) {
+        insights.push('IT systems involved in current process');
+      }
+    }
+    
+    if (stakeholder.role.toLowerCase().includes('product')) {
+      if (project.businessGoals) {
+        insights.push('Product impact on business goals');
+      }
+    }
+    
+    if (stakeholder.role.toLowerCase().includes('analyst')) {
+      if (project.problemStatement) {
+        insights.push('Business analysis of current problems');
+      }
+    }
+    
+    return insights.length > 0 ? `PROJECT INSIGHTS: ${insights.join(' | ')}` : '';
+  }
+
+  private buildAgentPrompt(stakeholder: StakeholderContext, stage: string, memory: string, tools: string, insights: string): string {
+    return [
+      `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}. You are an intelligent agent with full conversation memory and context awareness.`,
+      `CONVERSATION MEMORY: ${memory}`,
+      `AVAILABLE TOOLS: ${tools}`,
+      `PROJECT INSIGHTS: ${insights}`,
+      `ROLE-BASED EXPERTISE: As ${stakeholder.role}, you have deep knowledge in your domain. Share insights from your perspective and suggest related considerations.`,
+      `CONTEXT AWARENESS: You understand the project context and can reference specific details. Use this knowledge to provide relevant, actionable responses.`,
+      `NATURAL CONVERSATION: Speak naturally as a colleague would. Be specific, helpful, and conversational. Avoid generic responses.`,
+      `PROACTIVE INSIGHTS: Don't just answer the question - suggest related points that might be relevant based on your expertise and the conversation context.`,
+      `RESPONSE LENGTH: Keep responses concise (1-2 sentences) for general questions, but provide detailed explanations when discussing processes or complex topics.`,
+      `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`
+    ].join(' ');
   }
 
   private avoidGenericResponses(text: string, project: any, lowerMsg: string): string {
