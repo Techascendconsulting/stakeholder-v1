@@ -3965,14 +3965,12 @@ Guidelines:
         </button>
       </div>
 
-      {/* Speaking Queue Header - Only show in Video Call tab */}
-      {activeTab === 'video' && (
-        <SpeakingQueueHeader 
-          currentSpeaker={currentSpeaker?.name || null}
-          upcomingQueue={responseQueue.upcoming}
-          selectedStakeholders={selectedStakeholders}
-        />
-      )}
+      {/* Speaking Queue Header - Show in all tabs */}
+      <SpeakingQueueHeader 
+        currentSpeaker={currentSpeaker?.name || null}
+        upcomingQueue={responseQueue.upcoming}
+        selectedStakeholders={selectedStakeholders}
+      />
 
       {/* Tab Content */}
       <div className="flex-1 flex flex-col min-h-0">
@@ -4188,7 +4186,7 @@ Guidelines:
                             <span className="text-white font-medium text-xs">
                               {message.speaker === 'user' ? 'You' : (message.stakeholderName || message.speaker)}
                             </span>
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-gray-300 text-xs font-medium">
                               {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>

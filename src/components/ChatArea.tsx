@@ -84,7 +84,7 @@ export default function ChatArea({
                 <p className={`text-xs mt-1 ${
                   message.sender === 'user' 
                     ? 'text-indigo-200' 
-                    : 'text-gray-500'
+                    : 'text-gray-400 font-medium'
                 }`}>
                   {formatTime(message.timestamp)}
                 </p>
