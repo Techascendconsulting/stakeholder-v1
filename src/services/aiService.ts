@@ -145,90 +145,30 @@ class AIService {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
       ], {
-        // Favor speed and determinism
-        temperature: 0.1, // Reduced for faster, more consistent responses
-        max_tokens: 100, // Further reduced for faster responses
+        // Allow for more intelligent, ChatGPT-like responses
+        temperature: 0.3, // Slightly higher for more natural responses
+        max_tokens: 200, // Allow longer, more detailed responses
         presence_penalty: 0,
         frequency_penalty: 0
       }));
 
       const completion = response as any;
       let text = completion.choices?.[0]?.message?.content?.trim() || '';
-      console.log(`🔍 DEBUG: Raw AI response for ${stakeholder.name}:`, {
-        rawText: text,
-        hasContent: !!text,
-        responseLength: text?.length
-      });
       
-      // Strip solution language when in As-Is phase
-      if ((context?.conversationPhase || '').toString().startsWith('as')) {
-        text = this.filterSolutionsInAsIs(text);
-        console.log(`🔍 DEBUG: After filterSolutionsInAsIs: "${text}"`);
-      }
-      // Avoid generic/looping phrases and make it concrete
-      text = this.avoidGenericResponses(text, context?.project, lowerMsg);
-      console.log(`🔍 DEBUG: After avoidGenericResponses: "${text}"`);
-      
-      // Remove repetitive ending phrases
-      text = this.removeRepetitivePhrases(text);
-      console.log(`🔍 DEBUG: After removeRepetitivePhrases: "${text}"`);
-      
-      // Remove markdown formatting - CRITICAL for deployment
+      // Only remove markdown formatting for display - keep everything else natural
       text = this.removeMarkdownFormatting(text);
-      console.log(`🔍 DEBUG: After removeMarkdownFormatting: "${text}"`);
       
-      // Log response length for cost monitoring
-      console.log(`📊 AI: ${stakeholder.name} response length: ${text.length} characters`);
+      // Log the natural AI response
+      console.log(`✅ NATURAL AI: ${stakeholder.name} generated: "${text}"`);
       
-      // Intelligent response length handling - NO MORE TRUNCATION
-      const isProcessExplanation = this.isProcessExplanation(userMessage, text);
-      
-      if (isProcessExplanation) {
-        console.log(`📋 AI: ${stakeholder.name} providing process explanation (${text.length} chars)`);
-        // For process explanations, if too long, regenerate with summary instruction
-        if (text.length > 400) {
-          console.log(`🔄 AI: Regenerating ${stakeholder.name} response with summary instruction`);
-          return this.generateStakeholderResponse(userMessage, stakeholder, { ...context, requireSummary: true });
-        }
-      } else {
-        console.log(`💬 AI: ${stakeholder.name} providing general response (${text.length} chars)`);
-        // For general responses, if too long, regenerate with summary instruction
-        if (text.length > 200) {
-          console.log(`🔄 AI: Regenerating ${stakeholder.name} response with summary instruction`);
-          return this.generateStakeholderResponse(userMessage, stakeholder, { ...context, requireSummary: true });
-        }
-      }
-
-
-
-      // Prevent repetition from same stakeholder
-      const last = this.conversationState.stakeholderStates.get(stakeholder.name)?.lastResponseText || '';
-      if (last && this.isTooSimilar(text, last)) {
-        const alt = this.generateSpecificsFollowUp(context?.project);
-        if (alt) text = alt;
-      }
-      // Save last response
-      const st = this.conversationState.stakeholderStates.get(stakeholder.name) || { hasSpoken: true, lastTopics: [], emotionalState: 'neutral', conversationStyle: 'concise' } as any;
-      st.lastResponseText = text;
-      this.conversationState.stakeholderStates.set(stakeholder.name, st);
-      
-      // CRITICAL: Always ensure we have a meaningful response
-      console.log(`🔍 DEBUG: Response validation for ${stakeholder.name}:`, {
-        text: text,
-        length: text?.length,
-        hasApologize: text?.includes('I apologize'),
-        hasTrouble: text?.includes('having trouble'),
-        isValid: text && text.length > 2 && !text.includes('I apologize') && !text.includes('having trouble')
-      });
-      
-      if (text && text.length > 2 && !text.includes('I apologize') && !text.includes('having trouble')) {
-        console.log(`✅ DEBUG: ${stakeholder.name} response is valid: "${text}"`);
+      // Return the natural response - no complex validation or filtering
+      if (text && text.length > 0) {
         return text;
       }
       
-      // If response is too short or contains fallback language, generate project-specific response
-      console.warn(`⚠️ AI: Generated response inadequate for ${stakeholder.name}: "${text}" - using project-specific response`);
-      return this.generateProjectSpecificResponse(stakeholder, context);
+      // Only fallback if completely empty
+      console.warn(`⚠️ AI: Empty response from ${stakeholder.name} - using simple fallback`);
+      return `I understand your question about ${userMessage.split(' ').slice(0, 3).join(' ')}. Let me think about that.`;
     } catch (err) {
       console.error('❌ AI API call failed:', err);
       console.error('❌ Error details:', {
@@ -655,29 +595,14 @@ class AIService {
 
   private buildAgentPrompt(stakeholder: StakeholderContext, stage: string, memory: string, tools: string, insights: string, context?: ConversationContext): string {
     const basePrompt = [
-      `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}. You are an intelligent agent with full conversation memory and context awareness.`,
+      `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
+      `PROJECT CONTEXT: ${insights}`,
       `CONVERSATION MEMORY: ${memory}`,
       `AVAILABLE TOOLS: ${tools}`,
-      `PROJECT INSIGHTS: ${insights}`,
-      `ROLE-BASED EXPERTISE: As ${stakeholder.role}, you have deep knowledge in your domain. Share concise insights from your perspective.`,
-      `CONTEXT AWARENESS: You understand the project context. Reference key details briefly and provide actionable responses.`,
-      `NATURAL CONVERSATION: Talk like a real person having a casual conversation. Use everyday language, avoid business jargon, and be relaxed and friendly.`,
-      `PROACTIVE INSIGHTS: Just share your thoughts naturally, like you're talking to a colleague. Keep it casual.`,
-      `RESPONSE LENGTH: Keep it short and natural. Responses like "Yeah, that makes sense" or "I see what you mean" are perfect. Avoid long explanations.`,
-      `BA INTRODUCTION HANDLING: If someone introduces themselves as a Business Analyst, just say hi naturally and mention your role briefly. Keep it casual and friendly.`,
-      `CRITICAL: NEVER use markdown formatting, bullet points, numbered lists, or bold/italic text. Respond in plain text only.`,
-      `AVOID BUSINESS JARGON: Don't use formal business language like "absolutely", "grasp on issues", "key", "impacts", "affects". Talk like a normal person.`,
-      `COMPANY REFERENCES: Don't mention the company name formally. Use "we", "our company", "here", or just talk about the work without naming the company.`,
-      `INTELLIGENT RESPONSES: Think like a real person. Don't just list facts - share your actual thoughts and experiences. Be conversational and natural.`,
-      `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`,
-      `PROJECT DISCUSSION: Keep it casual and natural. Don't be formal or use business jargon. Just talk like a normal person about the project.`,
-      `BE INTELLIGENT: Think about what you're saying. Don't just repeat information - share your actual thoughts and experiences. Be natural and conversational.`
+      `RESPOND NATURALLY: Talk like a real person in a casual business conversation. Be intelligent, helpful, and conversational.`,
+      `NO MARKDOWN: Respond in plain text only - no formatting, lists, or special characters.`,
+      `BE YOURSELF: Share your thoughts and experiences naturally, like you're talking to a colleague.`
     ];
-
-    // Add summary instruction if needed
-    if (context?.requireSummary) {
-      basePrompt.push(`IMPORTANT: Provide a natural, conversational summary in 1-2 sentences. Don't list everything - just give the key points in a casual way.`);
-    }
 
     return basePrompt.join(' ');
   }
