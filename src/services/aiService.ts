@@ -204,7 +204,8 @@ class AIService {
       
       // Only fallback for genuine connection/API issues
       // Make user think it's their connection, not the app
-      if (err.message?.includes('network') || err.message?.includes('timeout') || err.message?.includes('fetch')) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (errorMessage.includes('network') || errorMessage.includes('timeout') || errorMessage.includes('fetch')) {
         return `I'm having trouble connecting to our systems right now. Could you check your internet connection and try again?`;
       }
       
@@ -272,28 +273,9 @@ class AIService {
     return s.length <= max ? s : s.slice(0, max - 1) + '…';
   }
 
-  private fastFallback(userMessage: string, stakeholder: StakeholderContext, context: ConversationContext): string {
-    const lower = (userMessage || '').toLowerCase();
-    const asIs = this.summarizeAsIs(context?.project?.asIsProcess);
-
-    // Quick, human-like current-process fallback
-    if (/(current\s+process|how\s+do\s+you\s+do\s+it|what's\s+the\s+process|whats\s+the\s+process)/i.test(lower)) {
-      const steps = this.extractAsIsSteps(context?.project?.asIsProcess);
-      if (steps.length > 0) {
-        const concise = steps.slice(0, 8).join('; ');
-        return `Sure, the flow is: ${concise}. That’s the usual sequence on our side.`;
-      }
-    }
-
-    // "What do they buy from us" style fallback
-    if (/(what do .*buy from us|what.*buy from us|what.*buy)/i.test(lower)) {
-      const offering = this.deriveOfferingFromProject(context?.project) || 'our core platform and services';
-      return `Primarily ${offering}. If you’re asking about pre‑sale vs post‑sale, this relates to ${context?.conversationPhase === 'as_is' ? 'post‑sale onboarding' : 'our overall offering'}—happy to clarify.`;
-    }
-
-    // Generic concise fallback grounded in role
-    return `From my ${stakeholder.role}${stakeholder.department ? ' (' + stakeholder.department + ')' : ''} perspective, I’d say: ${this.trimLine(userMessage || 'Let me clarify the key points for you.', 60)} — and if helpful, we can tie this back to the current focus as we go.`;
-  }
+  // FALLBACKS REMOVED - stakeholders must always use ChatGPT for intelligent responses
+  // No hardcoded fallbacks allowed - only connection issues should trigger fallback
+  // This method is intentionally removed to prevent any fallback usage
 
   private isGreetingSmallTalk(lower: string): boolean {
     if (!lower) return false;
