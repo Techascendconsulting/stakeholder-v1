@@ -600,7 +600,8 @@ class AIService {
       `You are ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
       `Project: ${insights}`,
       `Recent conversation: ${memory}`,
-      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report. Start responses naturally without forced greetings like "Hey there!" - just answer the question directly.`
+      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report. Start responses naturally without forced greetings like "Hey there!" - just answer the question directly.`,
+      `IMPORTANT: When mentioning time ranges or numbers with dashes, pronounce them naturally. Say "24 to 48 hours" instead of "24-48 hours", "3 to 5 days" instead of "3-5 days", "6 to 8 weeks" instead of "6-8 weeks".`
     ];
 
     // Add stakeholder-to-stakeholder context if applicable
@@ -688,11 +689,11 @@ class AIService {
 
       progressCallback?.("Generating comprehensive meeting summary...");
 
-      const systemPrompt = "You are a professional Business Analyst creating meeting notes from a stakeholder interview. Create a well-structured meeting summary with these sections: Meeting Context (date, duration, participants, project), Summary (main discussion points in 2-3 sentences), Topics Discussed (clean bullet points of specific topics discussed), and Key Insights (analyze impacts: Process Breakdown Insight, Customer Impact Insight, Team Impact Insight, Business Impact Insight). If the conversation was brief or only greetings, simply state that no substantive topics were discussed. Focus on actual discussion content and real impacts.";
+      const systemPrompt = "You are a professional Business Analyst creating concise meeting notes. Create a brief, structured summary with: Meeting Context (date, duration, participants, project), Summary (1-2 sentences max), and Key Points (3-4 bullet points of main topics discussed). Keep it short and focused. If the conversation was brief or only greetings, simply state that no substantive topics were discussed. CRITICAL: Do NOT use markdown formatting, bold text, or any special formatting. Write in plain text only.";
 
       const conversationText = messages.map((msg: any) => msg.speaker + ": " + msg.content).join("\n\n");
       const meetingDate = startTime ? new Date(startTime).toLocaleDateString() : new Date().toLocaleDateString();
-      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Date: " + meetingDate + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Please create a structured summary with: Meeting Context, Summary (main points), Topics Discussed (clean bullet points of specific topics), and Key Insights (Process Breakdown, Customer Impact, Team Impact, Business Impact insights). Be factual and focus on actual impacts discussed.";
+      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Date: " + meetingDate + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Create a concise summary with: Meeting Context, Summary (1-2 sentences), and Key Points (3-4 bullet points). Keep it brief and focused.";
 
       const response = await openai.chat.completions.create({
         model: MODEL,
@@ -701,12 +702,17 @@ class AIService {
           { role: "user", content: userPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 400,
+        max_tokens: 250,
         presence_penalty: 0,
         frequency_penalty: 0
       });
 
-      const summary = response.choices[0]?.message?.content?.trim();
+      let summary = response.choices[0]?.message?.content?.trim();
+      
+      // Remove markdown formatting from summary
+      if (summary) {
+        summary = this.removeMarkdownFormatting(summary);
+      }
       
       progressCallback?.("Summary generation completed.");
       
