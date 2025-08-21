@@ -198,11 +198,11 @@ class AIService {
       const st = this.conversationState.stakeholderStates.get(stakeholder.name) || { hasSpoken: true, lastTopics: [], emotionalState: 'neutral', conversationStyle: 'concise' } as any;
       st.lastResponseText = text;
       this.conversationState.stakeholderStates.set(stakeholder.name, st);
-      if (text && text.length > 10) return text;
+      if (text && text.length > 2) return text;
       
-      // If response is too short, retry instead of using fallback
+      // If response is extremely short, generate a simple acknowledgment
       console.warn(`⚠️ AI: Generated response too short for ${stakeholder.name}: "${text}"`);
-      throw new Error('Response too short, retrying...');
+      return `I understand.`;
     } catch (err) {
       console.error('❌ AI API call failed:', err);
       console.error('❌ Error details:', {
@@ -219,8 +219,9 @@ class AIService {
         return `I'm having trouble connecting to our systems right now. Could you check your internet connection and try again?`;
       }
       
-      // For any other error, retry instead of using fallback
-      throw new Error('AI generation failed, retrying...');
+      // For any other error, provide a natural fallback response
+      console.warn(`⚠️ AI: Using fallback response for ${stakeholder.name} due to: ${errorMessage}`);
+      return `I understand your question. Could you elaborate on that?`;
     }
   }
 
@@ -562,7 +563,7 @@ class AIService {
       `CONTEXT AWARENESS: You understand the project context. Reference key details briefly and provide actionable responses.`,
       `NATURAL CONVERSATION: Speak naturally as a colleague would. Be specific, helpful, and conversational. Avoid generic responses.`,
       `PROACTIVE INSIGHTS: Provide brief, focused insights. Keep suggestions concise and actionable.`,
-      `RESPONSE LENGTH: Keep responses concise and summarized (1 sentence for general questions, 2 sentences max for processes). Focus on key points only.`,
+      `RESPONSE LENGTH: Keep responses natural and conversational. Short acknowledgments like "I agree" or "That's right" are fine. For detailed questions, provide 1-2 sentences.`,
       `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`
     ].join(' ');
   }

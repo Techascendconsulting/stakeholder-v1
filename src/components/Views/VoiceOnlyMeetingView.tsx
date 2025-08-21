@@ -1826,10 +1826,11 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             // Remove thinking message if AI generation fails
             setMessages(prev => prev.filter(msg => msg.id !== thinkingMessage.id));
             
-            // Show error message to user
-            const errorMessage = createResponseMessage(stakeholder, `I apologize, but I'm having trouble responding right now.`, currentMessages.length);
-            setMessages(prev => [...prev, errorMessage]);
-            addToBackgroundTranscript(errorMessage);
+            // Show natural fallback response instead of error message
+            const fallbackResponse = `I understand.`;
+            const fallbackMessage = createResponseMessage(stakeholder, fallbackResponse, currentMessages.length);
+            setMessages(prev => [...prev, fallbackMessage]);
+            addToBackgroundTranscript(fallbackMessage);
           }
         }
         
