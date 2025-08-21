@@ -222,9 +222,9 @@ class LectureService {
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Start teaching me about ${topic}. Begin with an engaging introduction and ask me a question to test my understanding.` }
+        { role: 'user', content: `Start teaching me about ${topic}. Provide a comprehensive explanation with examples, then ask a question to test my understanding of what you just taught.` }
       ],
-      max_tokens: 300,
+      max_tokens: 400,
       temperature: 0.7
     });
 
@@ -370,14 +370,25 @@ class LectureService {
     Current Phase: ${context.currentPhase}
     Questions Asked: ${context.questionsAsked}/${context.maxQuestions}
     
-    Guidelines:
-    - Keep responses concise and focused on ${topic}
-    - Ask follow-up questions to test understanding
-    - Provide real-world examples when possible
-    - If the user asks about other topics, relate it back to ${topic}
+    TEACHING GUIDELINES:
+    - ALWAYS TEACH THE CONTENT FIRST before asking questions
+    - Provide comprehensive explanations with examples
+    - Break down complex concepts into simple, digestible parts
+    - Use real-world scenarios and practical examples
+    - Explain the "why" behind concepts, not just the "what"
+    
+    QUESTION GUIDELINES:
+    - Only ask questions about concepts you have already explained
+    - Ask questions to reinforce what you just taught
+    - Use questions like "Based on what we just covered..." or "Now that we've discussed..."
+    - Never ask users to explain concepts you haven't taught yet
+    - Questions should test understanding of material already presented
+    
+    RESPONSE STYLE:
     - Be professional and direct - avoid over-enthusiastic language like "Great!" or "Excellent!"
     - Use simple, clear language
     - Respond like a knowledgeable colleague, not a cheerleader
+    - Keep responses focused on ${topic}
     
     If the user asks about topics outside of ${topic}, redirect them back to the current topic or suggest how it relates to what we're learning.`;
   }
