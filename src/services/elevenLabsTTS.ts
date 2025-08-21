@@ -9,19 +9,63 @@ const VOICE_ID_EMILY = import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY as string 
 const ENABLE_ELEVENLABS = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'true'
 
 export function isConfigured(): boolean {
-  return Boolean(ENABLE_ELEVENLABS && ELEVENLABS_API_KEY)
+  const configured = Boolean(ENABLE_ELEVENLABS && ELEVENLABS_API_KEY)
+  console.log("🔊 ELEVENLABS DEBUG:", {
+    ENABLE_ELEVENLABS,
+    hasApiKey: !!ELEVENLABS_API_KEY,
+    apiKeyLength: ELEVENLABS_API_KEY?.length || 0,
+    isConfigured: configured,
+    voiceIds: {
+      AISHA: VOICE_ID_AISHA,
+      JESS: VOICE_ID_JESS,
+      DAVID: VOICE_ID_DAVID,
+      JAMES: VOICE_ID_JAMES,
+      EMILY: VOICE_ID_EMILY,
+      DEFAULT: DEFAULT_VOICE_ID
+    }
+  });
+  return configured
 }
 
 // Resolve voice id by explicit option, stakeholderName mapping, then fallback
 export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: string): string | undefined {
-  if (explicitVoiceId && explicitVoiceId.trim()) return explicitVoiceId
+  console.log(`🎤 VOICE RESOLUTION: Resolving voice for "${stakeholderName}" with explicit ID: "${explicitVoiceId}"`);
+  
+  if (explicitVoiceId && explicitVoiceId.trim()) {
+    console.log(`🎤 VOICE RESOLUTION: Using explicit voice ID: ${explicitVoiceId}`);
+    return explicitVoiceId
+  }
+  
   const key = stakeholderName.toLowerCase().split(' ')[0]
-  if ((key === 'jess' || key === 'jessica') && (VOICE_ID_JESS || VOICE_ID_AISHA)) return VOICE_ID_JESS || VOICE_ID_AISHA
-  if (key === 'aisha' && (VOICE_ID_AISHA || VOICE_ID_JESS)) return VOICE_ID_AISHA || VOICE_ID_JESS
-  if (key === 'david' && VOICE_ID_DAVID) return VOICE_ID_DAVID
-  if (key === 'james' && VOICE_ID_JAMES) return VOICE_ID_JAMES
-  if (key === 'emily' && VOICE_ID_EMILY) return VOICE_ID_EMILY
-  return DEFAULT_VOICE_ID
+  console.log(`🎤 VOICE RESOLUTION: Extracted key: "${key}" from name: "${stakeholderName}"`);
+  
+  let resolvedVoiceId: string | undefined
+  
+  if ((key === 'jess' || key === 'jessica') && (VOICE_ID_JESS || VOICE_ID_AISHA)) {
+    resolvedVoiceId = VOICE_ID_JESS || VOICE_ID_AISHA
+    console.log(`🎤 VOICE RESOLUTION: Jess/Jessica -> ${resolvedVoiceId} (${resolvedVoiceId === VOICE_ID_JESS ? 'JESS' : 'AISHA'})`)
+  } else if (key === 'aisha' && (VOICE_ID_AISHA || VOICE_ID_JESS)) {
+    resolvedVoiceId = VOICE_ID_AISHA || VOICE_ID_JESS
+    console.log(`🎤 VOICE RESOLUTION: Aisha -> ${resolvedVoiceId} (${resolvedVoiceId === VOICE_ID_AISHA ? 'AISHA' : 'JESS'})`)
+  } else if (key === 'david' && VOICE_ID_DAVID) {
+    resolvedVoiceId = VOICE_ID_DAVID
+    console.log(`🎤 VOICE RESOLUTION: David -> ${resolvedVoiceId}`)
+  } else if (key === 'james' && VOICE_ID_JAMES) {
+    resolvedVoiceId = VOICE_ID_JAMES
+    console.log(`🎤 VOICE RESOLUTION: James -> ${resolvedVoiceId}`)
+  } else if (key === 'emily' && VOICE_ID_EMILY) {
+    resolvedVoiceId = VOICE_ID_EMILY
+    console.log(`🎤 VOICE RESOLUTION: Emily -> ${resolvedVoiceId}`)
+  } else {
+    resolvedVoiceId = DEFAULT_VOICE_ID
+    console.log(`🎤 VOICE RESOLUTION: No specific match, using DEFAULT -> ${resolvedVoiceId}`)
+  }
+  
+  if (!resolvedVoiceId) {
+    console.warn(`⚠️ VOICE RESOLUTION: No voice ID found for stakeholder "${stakeholderName}"`)
+  }
+  
+  return resolvedVoiceId
 }
 
 // Helper for external debug
@@ -40,40 +84,61 @@ export function createAudioUrlFromBuffer(buffer: ArrayBuffer | Uint8Array): stri
 
 // ElevenLabs API call (non-streaming) with defensive guards
 export async function synthesizeToBlob(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<Blob> {
+  console.log(`🎤 SYNTHESIZE: Starting synthesis for text: "${text.substring(0, 50)}..."`)
+  console.log(`🎤 SYNTHESIZE: Options:`, options)
+  
   if (!isConfigured()) {
+    console.error('❌ SYNTHESIZE: ElevenLabs TTS is disabled')
     return Promise.reject(new Error('ElevenLabs TTS is disabled'))
   }
   if (!ELEVENLABS_API_KEY) {
+    console.error('❌ SYNTHESIZE: ElevenLabs API key not configured')
     return Promise.reject(new Error('ElevenLabs API key not configured'))
   }
 
   const voiceId = resolveVoiceId(options?.stakeholderName || '', options?.voiceId)
   if (!voiceId) {
+    console.error('❌ SYNTHESIZE: No ElevenLabs voice configured')
     return Promise.reject(new Error('No ElevenLabs voice configured'))
   }
 
+  console.log(`🎤 SYNTHESIZE: Using voice ID: ${voiceId} for stakeholder: ${options?.stakeholderName || 'unknown'}`)
+
   try {
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}` , {
+    const requestBody = {
+      text,
+      model_id: 'eleven_monolingual_v1',
+      voice_settings: { stability: 0.5, similarity_boost: 0.5 }
+    }
+    
+    console.log(`🎤 SYNTHESIZE: Making API request to ElevenLabs...`)
+    
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
         'xi-api-key': ELEVENLABS_API_KEY,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        text,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: { stability: 0.5, similarity_boost: 0.5 }
-      })
+      body: JSON.stringify(requestBody)
     })
 
+    console.log(`🎤 SYNTHESIZE: Response status: ${response.status}`)
+
     if (!response.ok) {
-      const errorText = await response.text().catch(() => '')
+      const errorText = await response.text().catch(() => 'Unknown error')
+      console.error(`❌ SYNTHESIZE: ElevenLabs TTS request failed (${response.status}): ${errorText}`)
       throw new Error(`ElevenLabs TTS request failed (${response.status}): ${errorText}`)
     }
 
     const arrayBuffer = await response.arrayBuffer()
-    return bufferToMp3Blob(arrayBuffer)
+    console.log(`🎤 SYNTHESIZE: Received ${arrayBuffer.byteLength} bytes from ElevenLabs`)
+    
+    const blob = bufferToMp3Blob(arrayBuffer)
+    console.log(`🎤 SYNTHESIZE: Successfully created blob of size ${blob.size} bytes`)
+    
+    return blob
   } catch (error: any) {
+    console.error(`❌ SYNTHESIZE: Error during synthesis:`, error)
     return Promise.reject(error instanceof Error ? error : new Error(String(error)))
   }
 }
@@ -83,21 +148,39 @@ const activeAudios = new Set<HTMLAudioElement>()
 const audioUrlMap = new WeakMap<HTMLAudioElement, string>()
 
 export async function playBlob(audioBlob: Blob): Promise<void> {
-  if (!audioBlob) return
+  if (!audioBlob) {
+    console.warn('⚠️ PLAYBLOB: No audio blob provided')
+    return
+  }
+  
+  console.log(`🎵 PLAYBLOB: Playing blob of size ${audioBlob.size} bytes`)
+  
   const url = URL.createObjectURL(audioBlob)
   const audio = new Audio(url)
   registerExternalAudio(audio, url)
-  await audio.play().catch(() => {})
+  
+  try {
+    await audio.play()
+    console.log(`🎵 PLAYBLOB: Audio started playing successfully`)
+  } catch (error) {
+    console.error(`❌ PLAYBLOB: Error playing audio:`, error)
+    throw error
+  }
 }
 
 export function stopAllAudio(): void {
+  console.log(`🛑 STOPAUDIO: Stopping ${activeAudios.size} active audio elements`)
+  
   for (const audio of Array.from(activeAudios)) {
     try {
       audio.pause()
       audio.currentTime = 0
       const url = audioUrlMap.get(audio)
       if (url) URL.revokeObjectURL(url)
-    } catch {}
+      console.log(`🛑 STOPAUDIO: Stopped audio element`)
+    } catch (error) {
+      console.error(`❌ STOPAUDIO: Error stopping audio:`, error)
+    }
     activeAudios.delete(audio)
   }
 }
@@ -107,7 +190,10 @@ export function registerExternalAudio(audio: HTMLAudioElement, url?: string): vo
   try {
     activeAudios.add(audio)
     if (url) audioUrlMap.set(audio, url)
-  } catch {}
+    console.log(`📝 REGISTER: Registered external audio element`)
+  } catch (error) {
+    console.error(`❌ REGISTER: Error registering audio:`, error)
+  }
 }
 
 export async function speak(text: string, options?: { stakeholderName?: string; voiceId?: string }): Promise<ArrayBuffer> {

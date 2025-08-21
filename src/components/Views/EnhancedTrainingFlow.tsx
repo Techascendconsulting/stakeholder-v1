@@ -102,6 +102,12 @@ const EnhancedTrainingFlow: React.FC = () => {
   };
 
   const handleStartMeeting = async (meetingType: MeetingType, stakeholders: Stakeholder[], selectedStage: any) => {
+    // Validate that stakeholders are selected
+    if (!stakeholders || stakeholders.length === 0) {
+      alert('Please select at least one stakeholder before starting the meeting.');
+      return;
+    }
+
     try {
       // Store the selected configuration for the meeting
       const meetingConfig = {

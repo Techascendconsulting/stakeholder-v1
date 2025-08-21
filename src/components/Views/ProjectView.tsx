@@ -4,7 +4,7 @@ import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 import MeetingSetupFlow from './MeetingSetupFlow';
 
 const ProjectView: React.FC<{ projectId: string }> = ({ projectId }) => {
-  const { setCurrentView } = useApp();
+  const { setCurrentView, setSelectedStakeholders, stakeholders } = useApp();
   const { updateSetupData } = useMeetingSetup();
 
   const handleSetupComplete = () => {
@@ -12,11 +12,19 @@ const ProjectView: React.FC<{ projectId: string }> = ({ projectId }) => {
     // Default to transcript meeting if none selected
     try {
       // Meeting type is stored in context; we optimistically route to voice-only if chosen
-      // Fallback to text meeting view otherwise
-      // We avoid importing context here to keep this component simple
-      const raw = localStorage.getItem('meetingSetupData');
+      const raw = localStorage.getItem("meetingSetupData");
       const setup = raw ? JSON.parse(raw) : {};
-      const type = setup?.meetingType || '';
+      
+      // Set selected stakeholders in global context
+      const type = setup?.meetingType || "";
+      if (setup?.selectedStakeholders && Array.isArray(setup.selectedStakeholders)) {
+        const selectedStakeholderIds = setup.selectedStakeholders;
+        const selectedStakeholders = stakeholders.filter(stakeholder => 
+          selectedStakeholderIds.includes(stakeholder.id)
+        );
+        console.log("👥 PROJECT_VIEW: Setting selected stakeholders:", selectedStakeholders.length);
+        setSelectedStakeholders(selectedStakeholders);
+      }
       if (type === 'voice') {
         setCurrentView('voice-only-meeting');
       } else {

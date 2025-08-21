@@ -612,6 +612,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         if (elevenConfigured()) {
           console.log(`🎵 FAST: Generating voice for ${stakeholder.name} with ElevenLabs TTS`);
           const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
+          console.log("🔊 TTS DEBUG: Calling synthesizeToBlob for", stakeholder.name, "with response:", response.substring(0, 50) + "...");
           
           if (audioBlob) {
             setCurrentSpeaker(stakeholder);
@@ -731,7 +732,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             
             console.log(`✅ ElevenLabs: ${stakeholder.name} finished speaking`);
           } else {
-            console.error(`❌ MURF: Failed to generate audio for ${stakeholder.name}`);
+            console.error(`❌ ElevenLabs: Failed to generate audio for ${stakeholder.name}`);
           }
           
           setCurrentAudio(null);
@@ -739,7 +740,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
           
         } catch (error) {
-          console.error(`❌ MURF: Error for ${stakeholder.name}:`, error);
+          console.error(`❌ ElevenLabs: Error for ${stakeholder.name}:`, error);
           setAudioStates(prev => ({ ...prev, [responseMessage.id]: 'stopped' }));
         }
       }
@@ -1090,26 +1091,26 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             resolve();
           });
         });
+                  } else {
+            console.warn('❌ ElevenLabs TTS returned null, falling back to browser TTS');
+            setPlayingMessageId(messageId);
+            setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
+            
+            await playBrowserTTS(text);
+            
+            return new Promise((resolve) => {
+              const estimatedDuration = Math.max(2000, text.length * 50);
+              setTimeout(() => {
+                setPlayingMessageId(null);
+                setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+                setCurrentSpeaker(null);
+                setIsAudioPlaying(false);
+                resolve();
+              }, estimatedDuration);
+            });
+          }
         } else {
-          console.warn('❌ Murf TTS returned null, falling back to browser TTS');
-          setPlayingMessageId(messageId);
-          setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
-          
-          await playBrowserTTS(text);
-          
-          return new Promise((resolve) => {
-            const estimatedDuration = Math.max(2000, text.length * 50);
-            setTimeout(() => {
-              setPlayingMessageId(null);
-              setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-              setCurrentSpeaker(null);
-              setIsAudioPlaying(false);
-              resolve();
-            }, estimatedDuration);
-          });
-        }
-      } else {
-        console.log('⚠️ Murf TTS not available or no voice, using browser TTS');
+          console.log('⚠️ ElevenLabs TTS not available or no voice, using browser TTS');
         setPlayingMessageId(messageId);
         setAudioStates(prev => ({ ...prev, [messageId]: 'playing' }));
         
@@ -1702,6 +1703,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           const audioBlob = await synthesizeToBlob(cachedResponse, { stakeholderName: stakeholder.name });
           if (audioBlob) {
             await playBlob(audioBlob);
+            console.log("�� AUDIO DEBUG: About to play audio blob for", stakeholder.name);
             console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking (cached)`);
           }
         }
@@ -3336,6 +3338,13 @@ Please review the raw transcript for detailed conversation content.`;
   };
 
   // Early return with debug info
+  // Redirect to proper flow if no stakeholders selected
+  React.useEffect(() => {
+    if (!selectedStakeholders?.length) {
+      console.log("🔄 REDIRECT: No stakeholders selected, redirecting to projects");
+      setCurrentView("projects");
+    }
+  }, [selectedStakeholders, setCurrentView]);
   if (!selectedProject || !selectedStakeholders?.length) {
     console.log('🚨 VoiceOnlyMeetingView: Missing data', {
       selectedProject: selectedProject ? 'exists' : 'null',

@@ -100,8 +100,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'analysis',
         'custom-project',
         'custom-stakeholders',
-        // Enhanced flow view so refresh doesn't drop to dashboard
-        'enhanced-training-flow',
         // Other areas
         'core-concepts',
         'agile-hub',
