@@ -1292,11 +1292,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       } else {
         // DIRECT NAME MENTION: route to the explicitly named stakeholder if present
         const lowerMsg = messageContent.toLowerCase();
+        console.log(`🔍 DEBUG: Checking for direct mentions in: "${messageContent}"`);
+        console.log(`🔍 DEBUG: Available stakeholders:`, availableStakeholders.map(s => s.name));
+        
         const directStakeholder = availableStakeholders.find((s: any) => {
           const full = (s.name || '').toLowerCase();
           const first = full.split(' ')[0];
-          return (first && new RegExp(`\\b${first}\\b`, 'i').test(lowerMsg)) ||
-                 (full && new RegExp(`\\b${full}\\b`, 'i').test(lowerMsg));
+          const hasFirst = first && new RegExp(`\\b${first}\\b`, 'i').test(lowerMsg);
+          const hasFull = full && new RegExp(`\\b${full}\\b`, 'i').test(lowerMsg);
+          
+          console.log(`🔍 DEBUG: Checking ${s.name} - first: "${first}", full: "${full}", hasFirst: ${hasFirst}, hasFull: ${hasFull}`);
+          
+          return hasFirst || hasFull;
         });
         if (directStakeholder) {
           console.log(`🎯 DIRECT MENTION: ${directStakeholder.name} explicitly addressed`);
