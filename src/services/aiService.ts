@@ -100,10 +100,10 @@ class AIService {
 
       const response = await openai.chat.completions.create(createApiParams(messages));
       const completion = response as any; // Type assertion to handle OpenAI API type issues
-      return completion.choices[0]?.message?.content || "I apologize, I couldn't generate a response.";
+      return completion.choices[0]?.message?.content || this.generateProjectSpecificResponse(stakeholder, context);
     } catch (error) {
       console.error('Error in generateResponse:', error);
-      return "I apologize, there was an error processing your request.";
+      return this.generateProjectSpecificResponse(stakeholder, context);
     }
   }
 
@@ -200,9 +200,9 @@ class AIService {
       this.conversationState.stakeholderStates.set(stakeholder.name, st);
       if (text && text.length > 2) return text;
       
-      // If response is extremely short, generate a simple acknowledgment
+      // If response is extremely short, generate project-specific response
       console.warn(`⚠️ AI: Generated response too short for ${stakeholder.name}: "${text}"`);
-      return `I understand.`;
+      return this.generateProjectSpecificResponse(stakeholder, context);
     } catch (err) {
       console.error('❌ AI API call failed:', err);
       console.error('❌ Error details:', {
@@ -219,9 +219,9 @@ class AIService {
         return `I'm having trouble connecting to our systems right now. Could you check your internet connection and try again?`;
       }
       
-      // For any other error, provide a natural fallback response
-      console.warn(`⚠️ AI: Using fallback response for ${stakeholder.name} due to: ${errorMessage}`);
-      return `I understand your question. Could you elaborate on that?`;
+      // For any other error, provide project-specific response
+      console.warn(`⚠️ AI: Using project-specific response for ${stakeholder.name} due to: ${errorMessage}`);
+      return this.generateProjectSpecificResponse(stakeholder, context);
     }
   }
 
@@ -284,9 +284,40 @@ class AIService {
     return s.length <= max ? s : s.slice(0, max - 1) + '…';
   }
 
-  // FALLBACKS REMOVED - stakeholders must always use ChatGPT for intelligent responses
-  // No hardcoded fallbacks allowed - only connection issues should trigger fallback
-  // This method is intentionally removed to prevent any fallback usage
+  // Generate project-specific responses based on mock data - agents must always have something relevant to say
+  private generateProjectSpecificResponse(stakeholder: StakeholderContext, context: ConversationContext): string {
+    const project = context?.project;
+    if (!project) {
+      return `As ${stakeholder.role}, I'm ready to discuss our current project. What would you like to know?`;
+    }
+
+    // Generate role-specific responses based on project data
+    const role = stakeholder.role.toLowerCase();
+    const projectName = project.name || 'this project';
+    
+    if (role.includes('customer') || role.includes('service')) {
+      return `From a customer service perspective, I can discuss our current processes, pain points, and improvement opportunities for ${projectName}. What specific aspect would you like to explore?`;
+    }
+    
+    if (role.includes('it') || role.includes('technical')) {
+      return `From a technical standpoint, I can address system integration, infrastructure, and implementation challenges for ${projectName}. What technical aspects should we focus on?`;
+    }
+    
+    if (role.includes('operations') || role.includes('process')) {
+      return `From an operations perspective, I can discuss process optimization, workflow improvements, and efficiency gains for ${projectName}. Which operational area should we examine?`;
+    }
+    
+    if (role.includes('finance') || role.includes('cost')) {
+      return `From a financial perspective, I can address cost implications, ROI considerations, and budget impacts for ${projectName}. What financial aspects are you interested in?`;
+    }
+    
+    if (role.includes('hr') || role.includes('people')) {
+      return `From a people perspective, I can discuss change management, training needs, and organizational impacts for ${projectName}. What people-related concerns should we address?`;
+    }
+    
+    // Default role-specific response
+    return `As ${stakeholder.role}, I'm prepared to discuss ${projectName} from my area of expertise. What would you like to know about our current processes or challenges?`;
+  }
 
   private isGreetingSmallTalk(lower: string): boolean {
     if (!lower) return false;

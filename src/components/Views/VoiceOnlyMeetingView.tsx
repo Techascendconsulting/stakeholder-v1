@@ -1826,9 +1826,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             // Remove thinking message if AI generation fails
             setMessages(prev => prev.filter(msg => msg.id !== thinkingMessage.id));
             
-            // Show natural fallback response instead of error message
-            const fallbackResponse = `I understand.`;
-            const fallbackMessage = createResponseMessage(stakeholder, fallbackResponse, currentMessages.length);
+            // Show project-specific response instead of error message
+            const projectSpecificResponse = `As ${stakeholder.role}, I'm ready to discuss our current project. What would you like to know about our processes or challenges?`;
+            const fallbackMessage = createResponseMessage(stakeholder, projectSpecificResponse, currentMessages.length);
             setMessages(prev => [...prev, fallbackMessage]);
             addToBackgroundTranscript(fallbackMessage);
           }
@@ -3730,8 +3730,8 @@ Guidelines:
     } catch (error) {
       console.error(`❌ STREAMING: Error for ${stakeholder.name}:`, error);
       
-      // Fallback to simple response
-      const fallbackResponse = `I understand your question about ${messageContent.split(' ').slice(0, 3).join(' ')}.`;
+      // Fallback to project-specific response
+      const fallbackResponse = `As ${stakeholder.role}, I can discuss ${messageContent.split(' ').slice(0, 3).join(' ')} in the context of our current project. What specific aspect would you like to explore?`;
       const responseMessage = createResponseMessage(stakeholder, fallbackResponse, currentMessages.length);
       setMessages(prev => prev.map(msg => 
         msg.id === thinkingMessage.id ? responseMessage : msg
