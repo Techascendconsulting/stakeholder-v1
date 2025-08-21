@@ -19,7 +19,7 @@ const MODEL = "gpt-4-turbo";
 const DEFAULT_API_PARAMS = {
   model: MODEL,
   temperature: 0.4,
-  max_tokens: 350,    // Allow more detailed, natural responses
+  max_tokens: 150,    // Reduced for concise, summarized responses
   presence_penalty: 0,
   frequency_penalty: 0,
   stream: false       // Disable streaming for faster responses
@@ -147,7 +147,7 @@ class AIService {
       ], {
         // Favor speed and determinism
         temperature: 0.3,
-        max_tokens: 200, // Increased for agents to allow more detailed, intelligent responses
+        max_tokens: 150, // Reduced for concise, summarized responses
         presence_penalty: 0,
         frequency_penalty: 0
       }));
@@ -172,15 +172,15 @@ class AIService {
       
       if (isProcessExplanation) {
         console.log(`📋 AI: ${stakeholder.name} providing process explanation (${text.length} chars) - allowing longer response`);
-        // For process explanations, allow up to 1200 characters
-        if (text.length > 1200) {
+        // For process explanations, allow up to 600 characters (reduced from 1200)
+        if (text.length > 600) {
           text = this.truncateProcessExplanation(text);
           console.log(`✂️ AI: Truncated process explanation for ${stakeholder.name} to ${text.length} characters`);
         }
       } else {
         console.log(`💬 AI: ${stakeholder.name} providing general response (${text.length} chars)`);
         // For general responses, enforce shorter length
-        if (text.length > 400) {
+        if (text.length > 300) {
           text = this.truncateGeneralResponse(text);
           console.log(`✂️ AI: Truncated general response for ${stakeholder.name} to ${text.length} characters`);
         }
@@ -459,12 +459,12 @@ class AIService {
     // For process explanations, try to keep complete steps
     const sentences = text.split(/[.!?]+/).filter((s: string) => s.trim().length > 0);
     
-    if (sentences.length > 3) {
-      // Keep first 3 sentences for process explanations
-      return sentences.slice(0, 3).join('. ') + '.';
-    } else if (text.length > 1200) {
-      // Fallback: truncate at word boundary
-      return text.substring(0, 1200).replace(/\s+\S*$/, '');
+    if (sentences.length > 2) {
+      // Keep first 2 sentences for process explanations (reduced from 3)
+      return sentences.slice(0, 2).join('. ') + '.';
+    } else if (text.length > 600) {
+      // Fallback: truncate at word boundary (reduced from 1200)
+      return text.substring(0, 600).replace(/\s+\S*$/, '');
     }
     
     return text;
@@ -475,11 +475,11 @@ class AIService {
     const sentences = text.split(/[.!?]+/).filter((s: string) => s.trim().length > 0);
     
     if (sentences.length > 1) {
-      // Keep first 2 sentences for general responses
-      return sentences.slice(0, 2).join('. ') + '.';
-    } else if (text.length > 400) {
-      // Fallback: truncate at word boundary
-      return text.substring(0, 400).replace(/\s+\S*$/, '');
+      // Keep first 1 sentence for general responses (reduced from 2)
+      return sentences.slice(0, 1).join('. ') + '.';
+    } else if (text.length > 300) {
+      // Fallback: truncate at word boundary (reduced from 400)
+      return text.substring(0, 300).replace(/\s+\S*$/, '');
     }
     
     return text;
@@ -558,11 +558,11 @@ class AIService {
       `CONVERSATION MEMORY: ${memory}`,
       `AVAILABLE TOOLS: ${tools}`,
       `PROJECT INSIGHTS: ${insights}`,
-      `ROLE-BASED EXPERTISE: As ${stakeholder.role}, you have deep knowledge in your domain. Share insights from your perspective and suggest related considerations.`,
-      `CONTEXT AWARENESS: You understand the project context and can reference specific details. Use this knowledge to provide relevant, actionable responses.`,
+      `ROLE-BASED EXPERTISE: As ${stakeholder.role}, you have deep knowledge in your domain. Share concise insights from your perspective.`,
+      `CONTEXT AWARENESS: You understand the project context. Reference key details briefly and provide actionable responses.`,
       `NATURAL CONVERSATION: Speak naturally as a colleague would. Be specific, helpful, and conversational. Avoid generic responses.`,
-      `PROACTIVE INSIGHTS: Don't just answer the question - suggest related points that might be relevant based on your expertise and the conversation context.`,
-      `RESPONSE LENGTH: Keep responses concise (1-2 sentences) for general questions, but provide detailed explanations when discussing processes or complex topics.`,
+      `PROACTIVE INSIGHTS: Provide brief, focused insights. Keep suggestions concise and actionable.`,
+      `RESPONSE LENGTH: Keep responses concise and summarized (1 sentence for general questions, 2 sentences max for processes). Focus on key points only.`,
       `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`
     ].join(' ');
   }
