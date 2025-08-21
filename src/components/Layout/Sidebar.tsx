@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'core-concepts', label: 'Core BA Concepts', icon: BookOpen },
     { id: 'guided-practice-hub', label: 'Training Projects', icon: FolderOpen },
-    { id: 'elevenlabs-meeting', label: 'ElevenLabs Multi-Agent', icon: Zap, isNew: true },
+    { id: 'elevenlabs-meeting', label: 'Stakeholders', icon: Zap },
     { id: 'custom-project', label: 'Create Your Project', icon: Plus },
     { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
     { id: 'my-meetings', label: 'My Meetings', icon: Calendar },
