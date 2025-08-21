@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { BookOpen, GraduationCap, Zap, CheckCircle, Play, Pause, ArrowRight } from 'lucide-react';
+import { BookOpen, GraduationCap, Zap, CheckCircle, Play, Pause, ArrowRight, Send, MessageCircle } from 'lucide-react';
+import LectureService, { type LectureResponse } from '../../services/lectureService';
 
 interface LearningModule {
   id: string;
@@ -18,6 +19,11 @@ const BAAcademyView: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [isLectureActive, setIsLectureActive] = useState(false);
   const [currentTopic, setCurrentTopic] = useState(0);
+  const [lectureService] = useState(() => LectureService.getInstance());
+  const [currentLecture, setCurrentLecture] = useState<LectureResponse | null>(null);
+  const [userInput, setUserInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'ai'; content: string }>>([]);
 
   const learningModules: LearningModule[] = [
     {
@@ -94,10 +100,55 @@ const BAAcademyView: React.FC = () => {
     }
   };
 
-  const startModule = (moduleId: string) => {
+  const startModule = async (moduleId: string) => {
     setSelectedModule(moduleId);
     setIsLectureActive(true);
     setCurrentTopic(0);
+    setConversationHistory([]);
+    
+    // Start the interactive lecture
+    setIsLoading(true);
+    try {
+      const module = learningModules.find(m => m.id === moduleId);
+      const topic = module?.topics[0] || 'Introduction';
+      const lecture = await lectureService.startLecture(moduleId, topic);
+      setCurrentLecture(lecture);
+      setConversationHistory([{ role: 'ai', content: lecture.content }]);
+    } catch (error) {
+      console.error('Error starting lecture:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUserInput = async () => {
+    if (!userInput.trim() || !selectedModule || isLoading) return;
+
+    const userMessage = userInput.trim();
+    setUserInput('');
+    setConversationHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+    setIsLoading(true);
+
+    try {
+      const module = learningModules.find(m => m.id === selectedModule);
+      const topic = module?.topics[currentTopic] || 'Introduction';
+      
+      const response = await lectureService.continueLecture(selectedModule, topic, userMessage);
+      setCurrentLecture(response);
+      setConversationHistory(prev => [...prev, { role: 'ai', content: response.content }]);
+    } catch (error) {
+      console.error('Error continuing lecture:', error);
+      setConversationHistory(prev => [...prev, { role: 'ai', content: 'I apologize, but I\'m having trouble responding right now. Let\'s continue with the lesson.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleUserInput();
+    }
   };
 
   const renderModuleCard = (module: LearningModule) => (
@@ -192,35 +243,100 @@ const BAAcademyView: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">AI Mentor</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Ready to guide you</p>
-              </div>
-            </div>
+                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+             <div className="flex items-center space-x-4 mb-4">
+               <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                 <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+               </div>
+               <div>
+                 <h4 className="font-medium text-gray-900 dark:text-white">Interactive Learning</h4>
+                 <p className="text-sm text-gray-600 dark:text-gray-400">
+                   {currentLecture?.phase === 'teach' ? 'Teaching Mode' : 
+                    currentLecture?.phase === 'practice' ? 'Practice Mode' : 'Assessment Mode'}
+                 </p>
+               </div>
+             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
-              <p className="text-gray-700 dark:text-gray-300">
-                Welcome to {module.topics[currentTopic]}! Let's start learning together. 
-                I'll guide you through this topic with interactive examples and practice exercises.
-              </p>
-            </div>
+             {/* Conversation History */}
+             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4 max-h-96 overflow-y-auto">
+               {conversationHistory.length === 0 ? (
+                 <p className="text-gray-700 dark:text-gray-300">
+                   Welcome to {module.topics[currentTopic]}! Let's start learning together. 
+                   I'll guide you through this topic with interactive examples and practice exercises.
+                 </p>
+               ) : (
+                 <div className="space-y-4">
+                   {conversationHistory.map((message, index) => (
+                     <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                       <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                         message.role === 'user' 
+                           ? 'bg-blue-600 text-white' 
+                           : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
+                       }`}>
+                         <p className="text-sm">{message.content}</p>
+                       </div>
+                     </div>
+                   ))}
+                   {isLoading && (
+                     <div className="flex justify-start">
+                       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg">
+                         <div className="flex space-x-1">
+                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                         </div>
+                       </div>
+                     </div>
+                   )}
+                 </div>
+               )}
+             </div>
 
-            <div className="flex space-x-3">
-              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                <Play className="w-4 h-4" />
-                <span>Start Lecture</span>
-              </button>
-              <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <ArrowRight className="w-4 h-4" />
-                <span>Next Topic</span>
-              </button>
-            </div>
-          </div>
+             {/* User Input */}
+             <div className="flex space-x-3">
+               <div className="flex-1">
+                 <input
+                   type="text"
+                   value={userInput}
+                   onChange={(e) => setUserInput(e.target.value)}
+                   onKeyPress={handleKeyPress}
+                   placeholder="Ask a question or respond to the lesson..."
+                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   disabled={isLoading}
+                 />
+               </div>
+               <button
+                 onClick={handleUserInput}
+                 disabled={!userInput.trim() || isLoading}
+                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center space-x-2"
+               >
+                 <Send className="w-4 h-4" />
+                 <span>Send</span>
+               </button>
+             </div>
+
+             {/* Quick Actions */}
+             <div className="flex space-x-3 mt-4">
+               <button 
+                 onClick={() => {
+                   const module = learningModules.find(m => m.id === selectedModule);
+                   const topic = module?.topics[currentTopic] || 'Introduction';
+                   lectureService.startPractice(selectedModule, topic).then(response => {
+                     setCurrentLecture(response);
+                     setConversationHistory(prev => [...prev, { role: 'ai', content: response.content }]);
+                   });
+                 }}
+                 className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+               >
+                 <Play className="w-4 h-4" />
+                 <span>Start Practice</span>
+               </button>
+               <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                 <ArrowRight className="w-4 h-4" />
+                 <span>Next Topic</span>
+               </button>
+             </div>
+           </div>
         </div>
 
         <div className="flex items-center justify-between">
