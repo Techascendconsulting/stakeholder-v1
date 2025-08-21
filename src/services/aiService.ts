@@ -155,8 +155,7 @@ class AIService {
       const completion = response as any;
       let text = completion.choices?.[0]?.message?.content?.trim() || '';
       
-      // Only remove markdown formatting for display - keep everything else natural
-      text = this.removeMarkdownFormatting(text);
+      // Keep the response natural - no filtering
       
       // Log the natural AI response
       console.log(`✅ NATURAL AI: ${stakeholder.name} generated: "${text}"`);
@@ -596,17 +595,14 @@ class AIService {
   private buildAgentPrompt(stakeholder: StakeholderContext, stage: string, memory: string, tools: string, insights: string, context?: ConversationContext): string {
     const basePrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
-      `PROJECT CONTEXT: ${insights}`,
-      `CONVERSATION MEMORY: ${memory}`,
-      `AVAILABLE TOOLS: ${tools}`,
-      `RESPOND NATURALLY: Talk like a real person in a casual business conversation. Be intelligent, helpful, and conversational.`,
-      `NO MARKDOWN: Respond in plain text only - no formatting, lists, or special characters.`,
-      `BE YOURSELF: Share your thoughts and experiences naturally, like you're talking to a colleague.`
+      `Project: ${insights}`,
+      `Recent conversation: ${memory}`,
+      `Tools available: ${tools}`
     ];
 
     // Add stakeholder-to-stakeholder context if applicable
     if (context?.isStakeholderToStakeholder && context?.askingStakeholder) {
-      basePrompt.push(`STAKEHOLDER QUESTION: ${context.askingStakeholder} just asked you a question. Respond naturally to their question as if you're in a real meeting.`);
+      basePrompt.push(`${context.askingStakeholder} just asked you a question.`);
     }
 
     return basePrompt.join(' ');
