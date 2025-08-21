@@ -594,7 +594,7 @@ class AIService {
       `You are ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}.`,
       `Project: ${insights}`,
       `Recent conversation: ${memory}`,
-      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report.`
+      `Be conversational and concise. Focus on answering the specific question without going into too much detail. Keep responses practical and actionable, not comprehensive. Talk like you're in a casual business meeting, not writing a report. Use natural greetings (hi, hello, hey) only at the start of responses, not mid-sentence.`
     ];
 
     // Add stakeholder-to-stakeholder context if applicable
