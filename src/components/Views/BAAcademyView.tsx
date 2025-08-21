@@ -335,9 +335,7 @@ const BAAcademyView: React.FC = () => {
     // Start the interactive lecture
     setIsLoading(true);
     try {
-      const module = learningModules.find(m => m.id === moduleId);
-      const topic = module?.topics[0] || 'Introduction';
-      const lecture = await lectureService.startLecture(moduleId, topic);
+      const lecture = await lectureService.startLecture(moduleId, 0); // Pass topicIndex as 0
       setCurrentLecture(lecture);
       setConversationHistory([{ role: 'ai', content: lecture.content }]);
     } catch (error) {

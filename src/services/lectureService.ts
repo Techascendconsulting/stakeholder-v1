@@ -43,104 +43,118 @@ class LectureService {
 
   // Comprehensive BA Knowledge Base
   private knowledgeBase: KnowledgeItem[] = [
-    // Phase 1: Foundation
+    // Software BA Role and Responsibilities
     {
-      id: 'org-context-1',
-      topic: 'organizational-context',
-      question: 'How do organizations operate and why do they need BAs?',
-      answer: 'Organizations operate through interconnected departments that work together to deliver products/services to customers. Each department has specific functions, systems, and processes. BAs are needed because these systems often don\'t work together efficiently, creating pain points that impact customer experience and business performance.',
-      examples: ['Sales team uses Salesforce, but customer service uses a different system', 'Marketing generates leads, but there\'s no clear handoff process'],
+      id: 'ba-role-1',
+      topic: 'Software BA Role and Responsibilities',
+      question: 'What is the role of a Software Business Analyst?',
+      answer: 'A Software Business Analyst bridges the gap between business needs and technical solutions. They analyze business processes, gather requirements, document specifications, and ensure the final software meets business objectives. BAs act as translators between stakeholders and development teams.',
+      examples: ['Gathering requirements from sales team for a new CRM feature', 'Documenting user stories for a mobile app', 'Analyzing current processes to identify automation opportunities'],
+      relatedTopics: ['requirements-gathering', 'stakeholder-analysis'],
+      difficulty: 'beginner'
+    },
+    {
+      id: 'ba-role-2',
+      topic: 'Software BA Role and Responsibilities',
+      question: 'What are the key responsibilities of a Software BA?',
+      answer: 'Key responsibilities include: Requirements elicitation and analysis, stakeholder management, process modeling, user story creation, acceptance criteria definition, testing coordination, and change management. BAs ensure software solutions align with business goals and user needs.',
+      examples: ['Conducting stakeholder interviews', 'Creating process flow diagrams', 'Writing detailed user stories with acceptance criteria'],
+      relatedTopics: ['requirements-gathering', 'agile-techniques'],
+      difficulty: 'beginner'
+    },
+    {
+      id: 'ba-role-3',
+      topic: 'Software BA Role and Responsibilities',
+      question: 'How does a BA contribute to software development?',
+      answer: 'BAs contribute by understanding business problems, translating them into technical requirements, ensuring clear communication between business and IT teams, validating solutions meet business needs, and facilitating user acceptance testing. They are the voice of the business in technical discussions.',
+      examples: ['Creating detailed requirements documents', 'Facilitating sprint planning sessions', 'Coordinating user acceptance testing'],
+      relatedTopics: ['agile-techniques', 'requirements-gathering'],
+      difficulty: 'beginner'
+    },
+    
+    // Understanding Organizational Structure
+    {
+      id: 'org-structure-1',
+      topic: 'Understanding Organizational Structure',
+      question: 'How do organizations structure their departments?',
+      answer: 'Organizations structure departments based on function (Sales, Marketing, IT), product lines, customer segments, or geographic regions. Each structure has implications for how information flows, decisions are made, and projects are managed. BAs need to understand these structures to identify stakeholders and process inefficiencies.',
+      examples: ['Functional structure: separate Sales, Marketing, IT departments', 'Product-based: teams organized around specific products', 'Matrix structure: employees report to both functional and project managers'],
       relatedTopics: ['stakeholder-analysis', 'process-modeling'],
       difficulty: 'beginner'
     },
     {
-      id: 'org-context-2',
-      topic: 'organizational-context',
-      question: 'What are the main departments in a typical organization?',
-      answer: 'Typical organizations have: Sales (customer acquisition), Marketing (brand awareness), Customer Service (support), IT (technology), Operations (day-to-day processes), Finance (budgeting), HR (people management), and Product (development). Each department has specific goals, systems, and pain points that BAs help identify and solve.',
-      examples: ['Sales focuses on closing deals', 'Customer Service focuses on retention', 'IT focuses on system stability'],
-      relatedTopics: ['stakeholder-analysis', 'project-lifecycle'],
+      id: 'org-structure-2',
+      topic: 'Understanding Organizational Structure',
+      question: 'Why is understanding organizational structure important for BAs?',
+      answer: 'Understanding organizational structure helps BAs identify all relevant stakeholders, understand reporting relationships, navigate organizational politics, identify process handoffs between departments, and ensure requirements capture needs across the entire organization, not just individual departments.',
+      examples: ['Identifying that a CRM change affects Sales, Marketing, and Customer Service', 'Understanding that approval processes involve multiple management levels'],
+      relatedTopics: ['stakeholder-analysis', 'requirements-gathering'],
       difficulty: 'beginner'
     },
+    
+    // Department Functions and Interactions
     {
-      id: 'org-context-3',
-      topic: 'organizational-context',
-      question: 'How do departments work together to serve customers?',
-      answer: 'Departments work in a customer journey flow: Marketing generates leads, Sales converts them to customers, Onboarding/Implementation teams set up the customer, Customer Service provides ongoing support, and Operations handles day-to-day delivery. Each department depends on the previous one and passes information to the next, creating handoff points where inefficiencies often occur.',
-      examples: ['Marketing passes leads to Sales via CRM', 'Sales passes customer info to Onboarding team', 'Onboarding hands off to Customer Service for ongoing support'],
+      id: 'dept-functions-1',
+      topic: 'Department Functions and Interactions',
+      question: 'How do different departments interact in an organization?',
+      answer: 'Departments interact through formal processes (handoffs, approvals) and informal communication (meetings, emails). Key interaction points include customer journey touchpoints, data sharing, and cross-functional projects. BAs map these interactions to identify inefficiencies and improvement opportunities.',
+      examples: ['Sales hands off new customers to Customer Success', 'Marketing provides leads to Sales', 'IT supports all departments with technology'],
       relatedTopics: ['process-modeling', 'stakeholder-analysis'],
       difficulty: 'beginner'
     },
+    
+    // BA vs Product Manager vs Product Owner
     {
-      id: 'org-context-4',
-      topic: 'organizational-context',
-      question: 'What is the role of IT teams in organizations?',
-      answer: 'IT teams provide technology infrastructure and support: Hardware (computers, servers, networks), Software (licenses, installations, updates), System Administration (user accounts, security, backups), and Implementation (customizing software for business needs). IT teams work with all departments to ensure technology supports business processes effectively.',
-      examples: ['IT provides laptops and software to new employees', 'IT customizes CRM system for Sales team workflows', 'IT maintains servers and ensures system uptime'],
-      relatedTopics: ['project-lifecycle', 'requirements-engineering'],
+      id: 'ba-vs-pm-1',
+      topic: 'BA vs Product Manager vs Product Owner',
+      question: 'What is the difference between a BA, Product Manager, and Product Owner?',
+      answer: 'A Business Analyst focuses on requirements analysis and process improvement. A Product Manager owns the product vision and strategy. A Product Owner (Agile role) manages the product backlog and works with development teams. BAs often work closely with both, providing detailed analysis and requirements.',
+      examples: ['BA: analyzes current processes and documents requirements', 'Product Manager: defines product roadmap and business strategy', 'Product Owner: prioritizes user stories and works with Scrum team'],
+      relatedTopics: ['agile-techniques', 'requirements-gathering'],
       difficulty: 'beginner'
     },
+    
+    // Software Development Lifecycle
     {
-      id: 'org-context-5',
-      topic: 'organizational-context',
-      question: 'How do products and services determine organizational structure?',
-      answer: 'The products/services a company offers directly shape its departments and processes. Software companies need Product Development teams, service companies need Customer Success teams, and manufacturing companies need Supply Chain teams. The customer journey and delivery model determine which departments exist and how they interact.',
-      examples: ['SaaS company: Sales → Onboarding → Customer Success → Support', 'Consulting firm: Sales → Project Delivery → Account Management', 'Manufacturing: Sales → Production → Quality Control → Shipping'],
-      relatedTopics: ['process-modeling', 'stakeholder-analysis'],
-      difficulty: 'intermediate'
-    },
-    {
-      id: 'org-context-6',
-      topic: 'organizational-context',
-      question: 'What are common inefficiencies between departments?',
-      answer: 'Common inefficiencies include: Manual data entry between systems, unclear handoff processes, duplicate work across departments, lack of shared visibility into customer status, and conflicting priorities between teams. These inefficiencies create delays, errors, and poor customer experience that BAs help identify and solve.',
-      examples: ['Sales updates CRM but Customer Service doesn\'t see the updates', 'Onboarding team recreates customer data that Sales already collected', 'Marketing campaigns don\'t align with Sales capacity'],
-      relatedTopics: ['process-modeling', 'requirements-elicitation'],
-      difficulty: 'intermediate'
-    },
-    {
-      id: 'stakeholder-1',
-      topic: 'stakeholder-analysis',
-      question: 'How do you identify stakeholders in a project?',
-      answer: 'Stakeholder identification involves finding everyone affected by or affecting the project. Start with obvious stakeholders (end users, managers), then expand to indirect stakeholders (regulators, partners). Use techniques like stakeholder mapping, organizational charts, and process flows to ensure comprehensive coverage.',
-      examples: ['For a CRM system: sales reps, sales managers, IT support, customers', 'For a payment system: finance team, customers, banks, compliance'],
-      relatedTopics: ['requirements-elicitation', 'communication-planning'],
+      id: 'sdlc-1',
+      topic: 'Software Development Lifecycle',
+      question: 'What is the Software Development Lifecycle (SDLC)?',
+      answer: 'The SDLC is a framework for developing software applications. It includes phases like Requirements Gathering, Design, Development, Testing, Deployment, and Maintenance. BAs are primarily involved in the Requirements phase but may participate throughout to ensure business needs are met.',
+      examples: ['Waterfall: sequential phases with detailed planning upfront', 'Agile: iterative development with frequent feedback', 'DevOps: continuous integration and deployment'],
+      relatedTopics: ['agile-techniques', 'requirements-gathering'],
       difficulty: 'beginner'
     },
+    
+    // Agile vs Waterfall Overview
     {
-      id: 'questions-1',
-      topic: 'asking-right-questions',
-      question: 'What\'s the difference between open and closed questions?',
-      answer: 'Open questions encourage detailed responses and exploration (What, How, Why, Tell me about). Closed questions get specific yes/no or factual answers (Do you, Is it, How many). BAs use open questions to understand problems and closed questions to confirm details and validate assumptions.',
-      examples: ['Open: "What problems do you face daily?"', 'Closed: "Do you use the current system more than 5 times per day?"'],
-      relatedTopics: ['requirements-elicitation', 'stakeholder-interviews'],
+      id: 'agile-waterfall-1',
+      topic: 'Agile vs Waterfall Overview',
+      question: 'What are the key differences between Agile and Waterfall?',
+      answer: 'Waterfall is a sequential approach where all requirements are defined upfront, while Agile is iterative with evolving requirements. Waterfall has rigid phases, while Agile has flexible sprints. BAs in Waterfall focus on comprehensive documentation, while Agile BAs focus on user stories and continuous collaboration.',
+      examples: ['Waterfall: detailed requirements document before development starts', 'Agile: user stories refined throughout development', 'Waterfall: testing at the end, Agile: continuous testing'],
+      relatedTopics: ['agile-techniques', 'requirements-gathering'],
       difficulty: 'beginner'
     },
+    
+    // User Story Writing and Development
     {
-      id: 'questions-2',
-      topic: 'asking-right-questions',
-      question: 'How do you ask probing questions effectively?',
-      answer: 'Probing questions dig deeper into initial responses. Use "Why?" to understand motivations, "How?" to understand processes, "What if?" to explore scenarios, and "Can you give me an example?" to get concrete details. Always follow up on vague or incomplete answers.',
-      examples: ['"You mentioned it\'s slow - how long does it typically take?"', '"Why is that important to your team?"'],
-      relatedTopics: ['requirements-elicitation', 'problem-discovery'],
-      difficulty: 'intermediate'
-    },
-    {
-      id: 'elicitation-1',
-      topic: 'requirements-elicitation',
-      question: 'What are the main requirements elicitation techniques?',
-      answer: 'Key techniques include: Interviews (one-on-one conversations), Workshops (group sessions), Observation (watching users work), Document Analysis (reviewing existing materials), Surveys (questionnaires), and Prototyping (creating mockups). Each technique has strengths and is used based on stakeholder availability and project needs.',
-      examples: ['Interviews for detailed understanding', 'Workshops for group consensus', 'Observation for process understanding'],
-      relatedTopics: ['asking-right-questions', 'stakeholder-analysis'],
+      id: 'user-stories-1',
+      topic: 'User Story Writing and Development',
+      question: 'How do you write effective user stories?',
+      answer: 'User stories follow the format: "As a [user], I want [feature] so that [benefit]." They should be user-focused, independent, negotiable, valuable, estimable, small, and testable (INVEST). Include acceptance criteria that define when the story is complete.',
+      examples: ['"As a sales rep, I want to see customer history so that I can provide better service"', 'Acceptance criteria: customer data displays, search functionality works, data is current'],
+      relatedTopics: ['agile-techniques', 'requirements-gathering'],
       difficulty: 'beginner'
     },
+    
+    // Sprint Planning and Backlog Management
     {
-      id: 'requirements-1',
-      topic: 'requirements-engineering',
-      question: 'What are the different types of requirements?',
-      answer: 'Requirements fall into three main categories: Functional (what the system must do), Non-Functional (how well it must perform), and Business (why it\'s needed). Functional requirements describe features, Non-Functional cover performance, security, usability, and Business requirements explain the business value and objectives.',
-      examples: ['Functional: "User must be able to login"', 'Non-Functional: "System must respond within 2 seconds"', 'Business: "Reduce customer support calls by 30%"'],
-      relatedTopics: ['requirements-documentation', 'acceptance-criteria'],
+      id: 'sprint-planning-1',
+      topic: 'Sprint Planning and Backlog Management',
+      question: 'What is the BA role in sprint planning?',
+      answer: 'BAs prepare user stories for sprint planning by ensuring they are well-defined with clear acceptance criteria. They participate in sprint planning to clarify requirements, answer questions from the development team, and help estimate story points. BAs also maintain the product backlog.',
+      examples: ['Refining user stories before sprint planning', 'Clarifying acceptance criteria during planning', 'Updating backlog based on stakeholder feedback'],
+      relatedTopics: ['agile-techniques', 'user-stories'],
       difficulty: 'beginner'
     },
     {
@@ -315,16 +329,37 @@ class LectureService {
 
   // Search knowledge base for relevant answers
   private searchKnowledgeBase(topic: string, userInput: string): string | null {
-    const relevantItems = this.knowledgeBase.filter(item => 
-      item.topic === topic || 
-      userInput.toLowerCase().includes(item.question.toLowerCase().split(' ')[0])
+    const lowerInput = userInput.toLowerCase();
+    const lowerTopic = topic.toLowerCase();
+    
+    // First, try exact topic match
+    let relevantItems = this.knowledgeBase.filter(item => 
+      item.topic.toLowerCase() === lowerTopic
     );
+    
+    // If no exact match, try partial topic matching
+    if (relevantItems.length === 0) {
+      relevantItems = this.knowledgeBase.filter(item => 
+        item.topic.toLowerCase().includes(lowerTopic) || 
+        lowerTopic.includes(item.topic.toLowerCase())
+      );
+    }
+    
+    // If still no match, try keyword matching from user input
+    if (relevantItems.length === 0) {
+      const keywords = lowerInput.split(' ').filter(word => word.length > 3);
+      relevantItems = this.knowledgeBase.filter(item => 
+        keywords.some(keyword => 
+          item.question.toLowerCase().includes(keyword) ||
+          item.answer.toLowerCase().includes(keyword)
+        )
+      );
+    }
 
     if (relevantItems.length > 0) {
       const bestMatch = relevantItems[0];
       return `${bestMatch.answer}\n\n${bestMatch.examples ? `Examples: ${bestMatch.examples.join(', ')}` : ''}`;
     }
-
     return null;
   }
 
@@ -364,11 +399,72 @@ class LectureService {
 
   // Get module by ID
   private getModuleById(moduleId: string): any {
-    // This would be replaced with actual module data
-    return {
+    // Define the actual module data that matches BAAcademyView
+    const modules = {
+      'organizational-context': {
+        id: 'organizational-context',
+        title: 'Organizational Context & Business Operations',
+        topics: [
+          'Understanding Organizational Structure',
+          'Department Functions and Interactions',
+          'Customer Journey Across Departments',
+          'IT Team Roles and Responsibilities',
+          'Products/Services Impact on Structure',
+          'Common Departmental Inefficiencies'
+        ]
+      },
+      'project-lifecycle': {
+        id: 'project-lifecycle',
+        title: 'Project Lifecycle & IT Team Structure',
+        topics: [
+          'Project Emergence from Business Needs',
+          'IT Team Structure and Roles',
+          'Hardware and Software Implementation',
+          'Problem Phase: Stakeholder Engagement',
+          'Delivery Phase: Development Team Collaboration',
+          'Cross-functional Team Dynamics'
+        ]
+      },
+      'ba-fundamentals': {
+        id: 'ba-fundamentals',
+        title: 'Software BA Fundamentals',
+        topics: [
+          'Software BA Role and Responsibilities',
+          'BA vs Product Manager vs Product Owner',
+          'Software Development Lifecycle',
+          'Agile vs Waterfall Overview',
+          'Essential BA Tools'
+        ]
+      },
+      'requirements-gathering': {
+        id: 'requirements-gathering',
+        title: 'Requirements Gathering',
+        topics: [
+          'User Story Writing and Development',
+          'Stakeholder Interview Techniques',
+          'Workshop Facilitation Skills',
+          'Requirements Documentation Standards',
+          'Acceptance Criteria Development'
+        ]
+      },
+      'agile-techniques': {
+        id: 'agile-techniques',
+        title: 'Agile BA Techniques',
+        topics: [
+          'Sprint Planning and Backlog Management',
+          'Agile Ceremonies for BAs',
+          'User Story Refinement',
+          'Sprint Review and Retrospective',
+          'Agile Metrics and Reporting',
+          'BA Team Management'
+        ]
+      }
+    };
+
+    return modules[moduleId as keyof typeof modules] || {
       id: moduleId,
-      title: 'Sample Module',
-      topics: ['Topic 1', 'Topic 2', 'Topic 3']
+      title: 'Unknown Module',
+      topics: ['Introduction']
     };
   }
 
