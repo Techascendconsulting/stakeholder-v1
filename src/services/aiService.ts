@@ -154,18 +154,28 @@ class AIService {
 
       const completion = response as any;
       let text = completion.choices?.[0]?.message?.content?.trim() || '';
+      console.log(`🔍 DEBUG: Raw AI response for ${stakeholder.name}:`, {
+        rawText: text,
+        hasContent: !!text,
+        responseLength: text?.length
+      });
+      
       // Strip solution language when in As-Is phase
       if ((context?.conversationPhase || '').toString().startsWith('as')) {
         text = this.filterSolutionsInAsIs(text);
+        console.log(`🔍 DEBUG: After filterSolutionsInAsIs: "${text}"`);
       }
       // Avoid generic/looping phrases and make it concrete
       text = this.avoidGenericResponses(text, context?.project, lowerMsg);
+      console.log(`🔍 DEBUG: After avoidGenericResponses: "${text}"`);
       
       // Remove repetitive ending phrases
       text = this.removeRepetitivePhrases(text);
+      console.log(`🔍 DEBUG: After removeRepetitivePhrases: "${text}"`);
       
       // Remove markdown formatting - CRITICAL for deployment
       text = this.removeMarkdownFormatting(text);
+      console.log(`🔍 DEBUG: After removeMarkdownFormatting: "${text}"`);
       
       // Log response length for cost monitoring
       console.log(`📊 AI: ${stakeholder.name} response length: ${text.length} characters`);
@@ -203,7 +213,16 @@ class AIService {
       this.conversationState.stakeholderStates.set(stakeholder.name, st);
       
       // CRITICAL: Always ensure we have a meaningful response
+      console.log(`🔍 DEBUG: Response validation for ${stakeholder.name}:`, {
+        text: text,
+        length: text?.length,
+        hasApologize: text?.includes('I apologize'),
+        hasTrouble: text?.includes('having trouble'),
+        isValid: text && text.length > 2 && !text.includes('I apologize') && !text.includes('having trouble')
+      });
+      
       if (text && text.length > 2 && !text.includes('I apologize') && !text.includes('having trouble')) {
+        console.log(`✅ DEBUG: ${stakeholder.name} response is valid: "${text}"`);
         return text;
       }
       
