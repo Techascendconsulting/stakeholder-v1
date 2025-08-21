@@ -506,9 +506,20 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     const askingStakeholder = isStakeholderToStakeholder ? lastMessage.stakeholderName : null;
 
     const conversationContext = {
-      project: selectedProject || {
-        name: 'Current Project',
-        description: 'Project description'
+      project: selectedProject ? {
+        id: selectedProject.id,
+        name: selectedProject.name,
+        description: selectedProject.description,
+        type: selectedProject.type || 'General',
+        painPoints: selectedProject.painPoints || ['manual data entry', 'delayed handoffs'],
+        asIsProcess: selectedProject.asIsProcess || 'Manual email-based handoffs'
+      } : {
+        id: 'customer-onboarding',
+        name: 'Customer Onboarding Process Optimization',
+        description: 'Project description',
+        type: 'General',
+        painPoints: ['manual data entry', 'delayed handoffs'],
+        asIsProcess: 'Manual email-based handoffs'
       },
       conversationHistory: currentMessages,
       stakeholders: selectedStakeholders.map(s => ({
@@ -597,9 +608,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       const conversationContext = {
         project: {
-          name: selectedProject?.name || 'Current Project',
+          id: selectedProject?.id || 'customer-onboarding',
+          name: selectedProject?.name || 'Customer Onboarding Process Optimization',
           description: selectedProject?.description || 'Project description',
-          type: selectedProject?.type || 'General'
+          type: selectedProject?.type || 'General',
+          painPoints: selectedProject?.painPoints || ['manual data entry', 'delayed handoffs'],
+          asIsProcess: selectedProject?.asIsProcess || 'Manual email-based handoffs'
         },
         conversationHistory: currentMessages,
         stakeholders: selectedStakeholders.map(s => ({

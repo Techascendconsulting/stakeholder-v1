@@ -1,5 +1,5 @@
-// Robust Project-Specific Stakeholder Knowledge Base System
-// Each project has its own dedicated knowledge base to ensure context accuracy
+// Auto-Generated Project-Specific Stakeholder Knowledge Base System
+// Generates comprehensive knowledge base from project brief data
 
 interface StakeholderResponse {
   id: string;
@@ -8,20 +8,29 @@ interface StakeholderResponse {
   voiceAnswer?: string; // Short version for ElevenLabs
   stakeholderRoles: string[];
   keywords: string[];
-  category: 'pain-points' | 'process' | 'challenges' | 'team' | 'systems' | 'general';
+  category: 'as-is' | 'to-be' | 'greeting' | 'farewell' | 'clarification' | 'general';
   priority: number; // 1 = exact match, 5 = emergency fallback
 }
 
 interface ProjectContext {
   id: string;
   name: string;
-  painPoints: string[];
-  currentProcess: string;
-  stakeholders: {
+  businessContext?: string;
+  problemStatement?: string;
+  asIsProcess?: string;
+  toBeProcess?: string;
+  painPoints?: string[];
+  businessGoals?: string[];
+  stakeholders?: {
     role: string;
     department: string;
     responsibilities: string[];
   }[];
+  teamSize?: number;
+  systemsUsed?: string[];
+  budget?: string;
+  timeline?: string;
+  successMetrics?: string[];
 }
 
 interface ProjectKnowledgeBase {
@@ -36,9 +45,7 @@ class StakeholderKnowledgeBase {
   // Project-specific knowledge bases
   private projectKnowledgeBases: Map<string, ProjectKnowledgeBase> = new Map();
   
-  private constructor() {
-    this.initializeProjectKnowledgeBases();
-  }
+  private constructor() {}
 
   public static getInstance(): StakeholderKnowledgeBase {
     if (!StakeholderKnowledgeBase.instance) {
@@ -47,88 +54,190 @@ class StakeholderKnowledgeBase {
     return StakeholderKnowledgeBase.instance;
   }
 
-  // Initialize knowledge bases for each project
-  private initializeProjectKnowledgeBases(): void {
-    // Customer Onboarding Project Knowledge Base
-    const customerOnboardingKB: ProjectKnowledgeBase = {
-      projectId: 'customer-onboarding',
-      projectName: 'Customer Onboarding Process Optimization',
-      responses: [
-        // Layer 1: Exact Project-Specific Responses (Priority 1)
-        {
-          id: 'onboarding-pain-points-1',
-          question: 'What are your main pain points?',
-          answer: 'In our customer onboarding process, the main pain points are manual data entry between Salesforce and our implementation system, and delayed handoffs that can take 24 to 48 hours. This creates inconsistencies and delays in customer setup.',
-          voiceAnswer: 'Manual data entry and delayed handoffs between systems.',
-          stakeholderRoles: ['Sales Manager', 'Implementation Manager', 'Customer Success Manager'],
-          keywords: ['pain points', 'challenges', 'problems', 'issues', 'difficulties'],
-          category: 'pain-points',
-          priority: 1
-        },
-        {
-          id: 'onboarding-process-1',
-          question: 'How does your current process work?',
-          answer: 'Our current process starts with sales closing deals in Salesforce. Then we manually email customer information to the implementation team, who recreates the data in their system. This creates delays and potential for errors.',
-          voiceAnswer: 'Sales closes in Salesforce, then manual email handoff to implementation.',
-          stakeholderRoles: ['Sales Manager', 'Implementation Manager'],
-          keywords: ['process', 'workflow', 'how', 'current', 'procedure'],
-          category: 'process',
-          priority: 1
-        },
-        {
-          id: 'onboarding-team-structure-1',
-          question: 'How is your team structured?',
-          answer: 'Our team is organized by function - sales handles customer acquisition, implementation manages onboarding, and customer success provides ongoing support. Each team has their own systems and processes.',
-          voiceAnswer: 'Organized by function - sales, implementation, and customer success.',
-          stakeholderRoles: ['Sales Manager', 'Implementation Manager', 'Customer Success Manager'],
-          keywords: ['team', 'structure', 'organization', 'roles', 'responsibilities'],
-          category: 'team',
-          priority: 1
-        },
-        {
-          id: 'onboarding-systems-1',
-          question: 'What systems do you use?',
-          answer: 'We use Salesforce for sales, Monday.com for project management, and a custom implementation system. The systems don\'t integrate well, requiring manual data entry and causing delays.',
-          voiceAnswer: 'Salesforce, Monday.com, and a custom implementation system.',
-          stakeholderRoles: ['IT Director', 'Sales Manager', 'Implementation Manager'],
-          keywords: ['systems', 'tools', 'software', 'platforms', 'applications'],
-          category: 'systems',
-          priority: 1
-        }
-      ]
-    };
+  // Generate comprehensive knowledge base from project brief
+  public generateKnowledgeBaseFromProject(project: ProjectContext): ProjectKnowledgeBase {
+    const responses: StakeholderResponse[] = [];
+    
+    // AS-IS Responses (Current State)
+    if (project.painPoints && project.painPoints.length > 0) {
+      responses.push({
+        id: `${project.id}-pain-points`,
+        question: 'What are your main pain points?',
+        answer: `In our ${project.name} project, the main pain points are ${project.painPoints.join(', ')}. These issues impact our efficiency and customer experience.`,
+        voiceAnswer: `Our main pain points are ${project.painPoints.join(', ')}.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['pain points', 'challenges', 'problems', 'issues', 'difficulties', 'struggles'],
+        category: 'as-is',
+        priority: 1
+      });
+    }
 
-    // IT Support System Project Knowledge Base
-    const itSupportKB: ProjectKnowledgeBase = {
-      projectId: 'it-support-system',
-      projectName: 'IT Support System Enhancement',
-      responses: [
-        {
-          id: 'support-challenges-1',
-          question: 'What challenges does your team face?',
-          answer: 'Our support team struggles with limited visibility into case status, lack of intelligent ticket routing, and no integrated knowledge sharing. This leads to delayed resolutions and frustrated customers.',
-          voiceAnswer: 'Limited visibility, poor ticket routing, and no knowledge sharing.',
-          stakeholderRoles: ['Customer Service Manager', 'Support Manager', 'IT Director'],
-          keywords: ['challenges', 'struggles', 'difficulties', 'problems', 'issues'],
-          category: 'challenges',
-          priority: 1
-        },
-        {
-          id: 'support-systems-1',
-          question: 'What systems do you use for support?',
-          answer: 'We use Zendesk for ticket management, but it doesn\'t integrate with our internal systems. We also have a separate knowledge base that\'s rarely updated, and no automated routing system.',
-          voiceAnswer: 'Zendesk for tickets, separate knowledge base, no automation.',
-          stakeholderRoles: ['Customer Service Manager', 'Support Manager'],
-          keywords: ['systems', 'tools', 'software', 'platforms', 'applications'],
-          category: 'systems',
-          priority: 1
-        }
-      ]
-    };
+    if (project.asIsProcess) {
+      responses.push({
+        id: `${project.id}-current-process`,
+        question: 'How does your current process work?',
+        answer: `Our current process is: ${project.asIsProcess}. This creates inefficiencies and delays in our operations.`,
+        voiceAnswer: `Our current process is ${project.asIsProcess}.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['process', 'workflow', 'how', 'current', 'procedure', 'currently'],
+        category: 'as-is',
+        priority: 1
+      });
+    }
 
-    // Add knowledge bases to the map
-    this.projectKnowledgeBases.set('customer-onboarding', customerOnboardingKB);
-    this.projectKnowledgeBases.set('it-support-system', itSupportKB);
+    if (project.problemStatement) {
+      responses.push({
+        id: `${project.id}-problem-statement`,
+        question: 'What problems are we solving?',
+        answer: `We're solving the problem of ${project.problemStatement}. This affects our ability to serve customers effectively.`,
+        voiceAnswer: `We're solving ${project.problemStatement}.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['problems', 'solving', 'issues', 'challenges', 'what problems'],
+        category: 'as-is',
+        priority: 1
+      });
+    }
+
+    // TO-BE Responses (Future State)
+    if (project.toBeProcess) {
+      responses.push({
+        id: `${project.id}-future-process`,
+        question: 'How will this be improved?',
+        answer: `The new process will be: ${project.toBeProcess}. This will significantly improve our efficiency and customer experience.`,
+        voiceAnswer: `The new process will be ${project.toBeProcess}.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['improved', 'better', 'future', 'new process', 'solution'],
+        category: 'to-be',
+        priority: 1
+      });
+    }
+
+    if (project.businessGoals && project.businessGoals.length > 0) {
+      responses.push({
+        id: `${project.id}-business-goals`,
+        question: 'What are you trying to achieve?',
+        answer: `Our business goals are: ${project.businessGoals.join(', ')}. This project will help us achieve these objectives.`,
+        voiceAnswer: `Our goals are ${project.businessGoals.join(', ')}.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['goals', 'achieve', 'objectives', 'trying to', 'aim'],
+        category: 'to-be',
+        priority: 1
+      });
+    }
+
+    // Team Information
+    if (project.teamSize) {
+      responses.push({
+        id: `${project.id}-team-size`,
+        question: 'How many people are in your team?',
+        answer: `Our team has ${project.teamSize} people working on this project. We work closely together to ensure successful delivery.`,
+        voiceAnswer: `Our team has ${project.teamSize} people.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['team', 'people', 'how many', 'size', 'members'],
+        category: 'general',
+        priority: 2
+      });
+    }
+
+    // Systems Information
+    if (project.systemsUsed && project.systemsUsed.length > 0) {
+      responses.push({
+        id: `${project.id}-systems`,
+        question: 'What systems do you use?',
+        answer: `We currently use ${project.systemsUsed.join(', ')}. These systems don't integrate well, which is part of the problem we're solving.`,
+        voiceAnswer: `We use ${project.systemsUsed.join(', ')}.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['systems', 'tools', 'software', 'platforms', 'applications'],
+        category: 'general',
+        priority: 2
+      });
+    }
+
+    // Role-Specific Responses
+    project.stakeholders?.forEach(stakeholder => {
+      responses.push({
+        id: `${project.id}-role-${stakeholder.role}`,
+        question: 'What is your role in this project?',
+        answer: `As ${stakeholder.role}, I'm responsible for ${stakeholder.responsibilities.join(', ')}. I work closely with the team to ensure project success.`,
+        voiceAnswer: `I'm ${stakeholder.role}, responsible for ${stakeholder.responsibilities.join(', ')}.`,
+        stakeholderRoles: [stakeholder.role],
+        keywords: ['role', 'responsibility', 'job', 'position', 'function'],
+        category: 'general',
+        priority: 2
+      });
+    });
+
+    // Greeting Responses
+    responses.push({
+      id: `${project.id}-greeting`,
+      question: 'hi',
+      answer: `Hello! I'm here to discuss our ${project.name} project. How can I help you understand our current situation and improvement plans?`,
+      voiceAnswer: `Hello! I'm here to discuss our ${project.name} project.`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['hi', 'hello', 'hey', 'greetings'],
+      category: 'greeting',
+      priority: 3
+    });
+
+    responses.push({
+      id: `${project.id}-how-are-you`,
+      question: 'how are you',
+      answer: `I'm doing well, thank you! I'm ready to discuss our ${project.name} project and the improvements we're working on.`,
+      voiceAnswer: `I'm doing well, ready to discuss our project.`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['how are you', 'how are things', 'how is it going'],
+      category: 'greeting',
+      priority: 3
+    });
+
+    // Farewell Responses
+    responses.push({
+      id: `${project.id}-farewell`,
+      question: 'goodbye',
+      answer: `Thank you for the discussion about our ${project.name} project. I'm looking forward to implementing these improvements.`,
+      voiceAnswer: `Thank you for the discussion.`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['goodbye', 'bye', 'see you', 'thanks', 'thank you'],
+      category: 'farewell',
+      priority: 3
+    });
+
+    // Clarification Responses
+    responses.push({
+      id: `${project.id}-clarification`,
+      question: 'clarification',
+      answer: `Let me clarify that in the context of our ${project.name} project. The key issue is ${project.problemStatement || 'improving our current processes'}.`,
+      voiceAnswer: `Let me clarify that in the context of our project.`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['clarify', 'explain', 'don\'t understand', 'what do you mean'],
+      category: 'clarification',
+      priority: 4
+    });
+
+    // Emergency Fallback Responses
+    responses.push({
+      id: `${project.id}-emergency`,
+      question: 'emergency',
+      answer: `I can help you understand our ${project.name} project. We're working on ${project.problemStatement || 'improving our processes'}. What specific aspect would you like to discuss?`,
+      voiceAnswer: `I can help you understand our ${project.name} project.`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['emergency'],
+      category: 'general',
+      priority: 5
+    });
+
+    return {
+      projectId: project.id,
+      projectName: project.name,
+      responses
+    };
+  }
+
+  // Set knowledge base for a project
+  public setProjectKnowledgeBase(project: ProjectContext): void {
+    const knowledgeBase = this.generateKnowledgeBaseFromProject(project);
+    this.projectKnowledgeBases.set(project.id, knowledgeBase);
+    console.log(`✅ KNOWLEDGE BASE: Generated ${knowledgeBase.responses.length} responses for ${project.name}`);
   }
 
   // Main method to get stakeholder response - NEVER FAILS
@@ -140,6 +249,11 @@ class StakeholderKnowledgeBase {
     
     if (!projectContext?.id) {
       throw new Error('Project context is required for project-specific knowledge base');
+    }
+
+    // Generate knowledge base if it doesn't exist
+    if (!this.projectKnowledgeBases.has(projectContext.id)) {
+      this.setProjectKnowledgeBase(projectContext);
     }
 
     const projectKB = this.projectKnowledgeBases.get(projectContext.id);
@@ -255,8 +369,8 @@ class StakeholderKnowledgeBase {
   private injectProjectContext(response: StakeholderResponse, project: ProjectContext): StakeholderResponse {
     const injectedAnswer = response.answer
       .replace('{project.name}', project.name)
-      .replace('{project.painPoints}', project.painPoints.join(', '))
-      .replace('{project.currentProcess}', project.currentProcess);
+      .replace('{project.painPoints}', project.painPoints?.join(', ') || 'current challenges')
+      .replace('{project.currentProcess}', project.asIsProcess || 'current process');
 
     const injectedVoiceAnswer = response.voiceAnswer?.replace('{project.name}', project.name) || response.voiceAnswer;
 
@@ -278,14 +392,6 @@ class StakeholderKnowledgeBase {
   // Get available project contexts
   public getAvailableProjectContexts(): string[] {
     return Array.from(this.projectKnowledgeBases.keys());
-  }
-
-  // Add new response to a specific project's knowledge base
-  public addResponse(projectId: string, response: StakeholderResponse): void {
-    const projectKB = this.projectKnowledgeBases.get(projectId);
-    if (projectKB) {
-      projectKB.responses.push(response);
-    }
   }
 
   // Get response statistics for a specific project
