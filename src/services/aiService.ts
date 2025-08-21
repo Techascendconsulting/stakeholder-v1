@@ -133,7 +133,9 @@ class AIService {
       `For "current process" questions, summarize the As-Is steps and handoffs in plain language; avoid proposing solutions unless asked.`,
       `Never say "Hello, let's discuss this" or similar generic responses. Always provide specific, helpful information. Avoid using colons (:) in responses - write naturally as if speaking to a colleague. Be polite and conversational, not robotic.`,
       `IMPORTANT: Never end responses with phrases like "If you need more details", "just let me know", "I'm here to discuss further", or similar. End responses naturally without offering to elaborate.`,
-      `Keep responses concise - 1-2 sentences maximum. Avoid repetition and verbose explanations.`,
+      `For general questions and opinions: Keep responses concise - 1-2 sentences maximum (approximately 100-150 characters). Be direct and to the point.`,
+      `For process explanations and detailed workflows: Provide complete, step-by-step explanations. These can be longer but should be well-structured and clear.`,
+      `Avoid repetition and verbose explanations in all cases.`,
       `IMPORTANT: You may occasionally realize you forgot details or made assumptions. This is realistic - acknowledge it naturally like "Actually, let me think about that... I might have missed something" or "Wait, that reminds me of another issue we've been seeing."`,
       `As the conversation progresses and requirements are discussed, become more specific and firm in your answers. Early in the conversation you might be vague, but later you should provide concrete, actionable requirements.`
     ].join(' ');
@@ -159,7 +161,7 @@ class AIService {
       ], {
         // Favor speed and determinism
         temperature: 0.3,
-        max_tokens: Math.min(DEFAULT_API_PARAMS.max_tokens, 150),
+        max_tokens: 100, // Reduced from 150 to 100 for shorter responses
         presence_penalty: 0,
         frequency_penalty: 0
       }));
@@ -175,6 +177,28 @@ class AIService {
       
       // Remove repetitive ending phrases
       text = this.removeRepetitivePhrases(text);
+      
+      // Log response length for cost monitoring
+      console.log(`📊 AI: ${stakeholder.name} response length: ${text.length} characters`);
+      
+      // Intelligent response length handling
+      const isProcessExplanation = this.isProcessExplanation(userMessage, text);
+      
+      if (isProcessExplanation) {
+        console.log(`📋 AI: ${stakeholder.name} providing process explanation (${text.length} chars) - allowing longer response`);
+        // For process explanations, allow up to 1200 characters
+        if (text.length > 1200) {
+          text = this.truncateProcessExplanation(text);
+          console.log(`✂️ AI: Truncated process explanation for ${stakeholder.name} to ${text.length} characters`);
+        }
+      } else {
+        console.log(`💬 AI: ${stakeholder.name} providing general response (${text.length} chars)`);
+        // For general responses, enforce shorter length
+        if (text.length > 400) {
+          text = this.truncateGeneralResponse(text);
+          console.log(`✂️ AI: Truncated general response for ${stakeholder.name} to ${text.length} characters`);
+        }
+      }
 
 
 
@@ -420,6 +444,59 @@ class AIService {
     cleaned = cleaned.replace(/[,\s]+$/, '').trim();
     
     return cleaned;
+  }
+
+  private isProcessExplanation(userMessage: string, response: string): boolean {
+    const lowerMessage = userMessage.toLowerCase();
+    const lowerResponse = response.toLowerCase();
+    
+    // Check if user is asking about processes
+    const processKeywords = [
+      'process', 'workflow', 'steps', 'procedure', 'how do you', 'what is the process',
+      'current process', 'as-is', 'to-be', 'handoff', 'coordination', 'timeline'
+    ];
+    
+    const isProcessQuestion = processKeywords.some(keyword => lowerMessage.includes(keyword));
+    
+    // Check if response contains process indicators
+    const processIndicators = [
+      'first', 'then', 'next', 'after', 'before', 'step', 'phase', 'stage',
+      'handoff', 'coordinate', 'timeline', 'schedule', 'approval', 'review'
+    ];
+    
+    const hasProcessContent = processIndicators.some(indicator => lowerResponse.includes(indicator));
+    
+    return isProcessQuestion || hasProcessContent;
+  }
+
+  private truncateProcessExplanation(text: string): string {
+    // For process explanations, try to keep complete steps
+    const sentences = text.split(/[.!?]+/).filter((s: string) => s.trim().length > 0);
+    
+    if (sentences.length > 3) {
+      // Keep first 3 sentences for process explanations
+      return sentences.slice(0, 3).join('. ') + '.';
+    } else if (text.length > 1200) {
+      // Fallback: truncate at word boundary
+      return text.substring(0, 1200).replace(/\s+\S*$/, '');
+    }
+    
+    return text;
+  }
+
+  private truncateGeneralResponse(text: string): string {
+    // For general responses, keep it short
+    const sentences = text.split(/[.!?]+/).filter((s: string) => s.trim().length > 0);
+    
+    if (sentences.length > 1) {
+      // Keep first 2 sentences for general responses
+      return sentences.slice(0, 2).join('. ') + '.';
+    } else if (text.length > 400) {
+      // Fallback: truncate at word boundary
+      return text.substring(0, 400).replace(/\s+\S*$/, '');
+    }
+    
+    return text;
   }
 
   private avoidGenericResponses(text: string, project: any, lowerMsg: string): string {
