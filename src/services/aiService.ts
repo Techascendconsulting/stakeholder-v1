@@ -124,7 +124,7 @@ class AIService {
     const agentMemory = this.buildAgentMemory(stakeholder, context);
     const agentTools = this.getAgentTools(stakeholder, context);
     const projectInsights = await this.getProjectInsights(context?.project, stakeholder);
-    const systemPrompt = this.buildAgentPrompt(stakeholder, stage, agentMemory, agentTools, projectInsights);
+    const systemPrompt = this.buildAgentPrompt(stakeholder, stage, agentMemory, agentTools, projectInsights, context);
 
     const projectBits = this.buildProjectBits(context?.project);
     const recent = this.buildRecentHistory(context?.conversationHistory || []);
@@ -170,22 +170,22 @@ class AIService {
       // Log response length for cost monitoring
       console.log(`📊 AI: ${stakeholder.name} response length: ${text.length} characters`);
       
-      // Intelligent response length handling
+      // Intelligent response length handling - NO MORE TRUNCATION
       const isProcessExplanation = this.isProcessExplanation(userMessage, text);
       
       if (isProcessExplanation) {
-        console.log(`📋 AI: ${stakeholder.name} providing process explanation (${text.length} chars) - allowing longer response`);
-        // For process explanations, allow up to 600 characters (reduced from 1200)
-        if (text.length > 600) {
-          text = this.truncateProcessExplanation(text);
-          console.log(`✂️ AI: Truncated process explanation for ${stakeholder.name} to ${text.length} characters`);
+        console.log(`📋 AI: ${stakeholder.name} providing process explanation (${text.length} chars)`);
+        // For process explanations, if too long, regenerate with summary instruction
+        if (text.length > 400) {
+          console.log(`🔄 AI: Regenerating ${stakeholder.name} response with summary instruction`);
+          return this.generateStakeholderResponse(userMessage, stakeholder, { ...context, requireSummary: true });
         }
       } else {
         console.log(`💬 AI: ${stakeholder.name} providing general response (${text.length} chars)`);
-        // For general responses, enforce shorter length
-        if (text.length > 300) {
-          text = this.truncateGeneralResponse(text);
-          console.log(`✂️ AI: Truncated general response for ${stakeholder.name} to ${text.length} characters`);
+        // For general responses, if too long, regenerate with summary instruction
+        if (text.length > 200) {
+          console.log(`🔄 AI: Regenerating ${stakeholder.name} response with summary instruction`);
+          return this.generateStakeholderResponse(userMessage, stakeholder, { ...context, requireSummary: true });
         }
       }
 
@@ -299,7 +299,7 @@ class AIService {
 
     if (isBAIntroduction) {
       const projectName = project.name || 'this project';
-      return `Hello! I'm ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}. Great to meet you and I'm looking forward to collaborating on ${projectName}. I'm ready to share insights from my area of expertise.`;
+      return `Hey! I'm ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}. Nice to meet you! I'm looking forward to working on ${projectName} together.`;
     }
 
     // Generate role-specific responses based on project data
@@ -307,27 +307,27 @@ class AIService {
     const projectName = project.name || 'this project';
     
     if (role.includes('customer') || role.includes('service')) {
-      return `From a customer service perspective, I can discuss our current processes, pain points, and improvement opportunities for ${projectName}. What specific aspect would you like to explore?`;
+      return `Yeah, I can definitely talk about our customer service processes and pain points for ${projectName}. What's on your mind?`;
     }
     
     if (role.includes('it') || role.includes('technical')) {
-      return `From a technical standpoint, I can address system integration, infrastructure, and implementation challenges for ${projectName}. What technical aspects should we focus on?`;
+      return `Sure, I can help with the technical side of ${projectName}. What specific areas are you thinking about?`;
     }
     
     if (role.includes('operations') || role.includes('process')) {
-      return `From an operations perspective, I can discuss process optimization, workflow improvements, and efficiency gains for ${projectName}. Which operational area should we examine?`;
+      return `Absolutely, I can walk you through our operations and processes for ${projectName}. What would you like to know?`;
     }
     
     if (role.includes('finance') || role.includes('cost')) {
-      return `From a financial perspective, I can address cost implications, ROI considerations, and budget impacts for ${projectName}. What financial aspects are you interested in?`;
+      return `Yeah, I can discuss the financial aspects of ${projectName}. What's your main concern?`;
     }
     
     if (role.includes('hr') || role.includes('people')) {
-      return `From a people perspective, I can discuss change management, training needs, and organizational impacts for ${projectName}. What people-related concerns should we address?`;
+      return `Sure, I can help with the people and change management side of ${projectName}. What are you looking at?`;
     }
     
     // Default role-specific response
-    return `As ${stakeholder.role}, I'm prepared to discuss ${projectName} from my area of expertise. What would you like to know about our current processes or challenges?`;
+    return `Yeah, I can definitely help with ${projectName}. What would you like to know about our current processes?`;
   }
 
   private isGreetingSmallTalk(lower: string): boolean {
@@ -634,21 +634,28 @@ class AIService {
     return insights.length > 0 ? `PROJECT INSIGHTS: ${insights.join(' | ')}` : '';
   }
 
-  private buildAgentPrompt(stakeholder: StakeholderContext, stage: string, memory: string, tools: string, insights: string): string {
-    return [
+  private buildAgentPrompt(stakeholder: StakeholderContext, stage: string, memory: string, tools: string, insights: string, context?: ConversationContext): string {
+    const basePrompt = [
       `You are ${stakeholder.name}, a ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}. You are an intelligent agent with full conversation memory and context awareness.`,
       `CONVERSATION MEMORY: ${memory}`,
       `AVAILABLE TOOLS: ${tools}`,
       `PROJECT INSIGHTS: ${insights}`,
       `ROLE-BASED EXPERTISE: As ${stakeholder.role}, you have deep knowledge in your domain. Share concise insights from your perspective.`,
       `CONTEXT AWARENESS: You understand the project context. Reference key details briefly and provide actionable responses.`,
-      `NATURAL CONVERSATION: Speak naturally as a colleague would. Be specific, helpful, and conversational. Avoid generic responses.`,
-      `PROACTIVE INSIGHTS: Provide brief, focused insights. Keep suggestions concise and actionable.`,
-      `RESPONSE LENGTH: Keep responses natural and conversational. Short acknowledgments like "I agree" or "That's right" are fine. For detailed questions, provide 1-2 sentences.`,
-      `BA INTRODUCTION HANDLING: If the user introduces themselves as a Business Analyst, warmly welcome them, briefly introduce yourself with your name and role, and express readiness to collaborate on the project. Keep it professional but friendly.`,
+      `NATURAL CONVERSATION: Talk like a real person, not a robot. Use casual language, contractions (I'm, we're, that's), and natural speech patterns. Be conversational and friendly.`,
+      `PROACTIVE INSIGHTS: Share your thoughts naturally. Keep it brief and conversational.`,
+      `RESPONSE LENGTH: Keep it natural. Short responses like "Yeah, that's right" or "I see what you mean" are perfect. For questions, just 1-2 sentences in plain English.`,
+      `BA INTRODUCTION HANDLING: If someone introduces themselves as a Business Analyst, just say hi naturally and mention your role briefly. Keep it casual and friendly.`,
       `CRITICAL: NEVER use markdown formatting, bullet points, numbered lists, or bold/italic text. Respond in plain text only.`,
       `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`
-    ].join(' ');
+    ];
+
+    // Add summary instruction if needed
+    if (context?.requireSummary) {
+      basePrompt.push(`IMPORTANT: Provide a natural, conversational summary in 1-2 sentences. Don't list everything - just give the key points in a casual way.`);
+    }
+
+    return basePrompt.join(' ');
   }
 
   private avoidGenericResponses(text: string, project: any, lowerMsg: string): string {
