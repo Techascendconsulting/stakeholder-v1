@@ -122,12 +122,12 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
   try {
     const requestBody = {
       text,
-      model_id: 'eleven_monolingual_v1',
+      model_id: 'eleven_turbo_v2',  // Use faster turbo model
       voice_settings: { 
-        stability: 0.75,        // Increased stability for consistent voice
-        similarity_boost: 0.75, // Increased similarity for better voice matching
+        stability: 0.5,         // Reduced for faster generation
+        similarity_boost: 0.8,  // Keep high for voice consistency
         style: 0.0,             // No style boost for natural speech
-        use_speaker_boost: true // Enable speaker boost for better voice quality
+        use_speaker_boost: false // Disable for faster generation
       }
     }
     

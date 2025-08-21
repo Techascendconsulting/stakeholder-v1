@@ -1785,27 +1785,27 @@ export const VoiceOnlyMeetingView: React.FC = () => {
             ));
             addToBackgroundTranscript(responseMessage);
             
-            // Generate and play audio with proper sequential control
+            // Generate and play audio asynchronously to reduce delay
             if (globalAudioEnabled) {
-              console.log(`🎵 AUDIO: Starting audio generation for ${stakeholder.name}`);
+              console.log(`🎵 AUDIO: Starting async audio generation for ${stakeholder.name}`);
               
               // Stop any currently playing audio before starting new one
               stopAllAudio();
               
-              // Wait a moment for audio to stop
-              await new Promise(resolve => setTimeout(resolve, 100));
-              
-              // Generate and play audio sequentially
-              try {
-                const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
-                if (audioBlob) {
-                  console.log(`🎵 AUDIO: Audio ready for ${stakeholder.name}, starting playback`);
-                  await playBlob(audioBlob);
-                  console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
+              // Generate and play audio in background without blocking
+              setTimeout(async () => {
+                try {
+                  console.log(`🎵 AUDIO: Generating audio for ${stakeholder.name}`);
+                  const audioBlob = await synthesizeToBlob(response, { stakeholderName: stakeholder.name });
+                  if (audioBlob) {
+                    console.log(`🎵 AUDIO: Audio ready for ${stakeholder.name}, starting playback`);
+                    await playBlob(audioBlob);
+                    console.log(`✅ FAST MENTION: ${stakeholder.name} finished speaking`);
+                  }
+                } catch (error) {
+                  console.error(`❌ AUDIO: Error generating/playing audio for ${stakeholder.name}:`, error);
                 }
-              } catch (error) {
-                console.error(`❌ AUDIO: Error generating/playing audio for ${stakeholder.name}:`, error);
-              }
+              }, 50); // Small delay to ensure UI updates first
             }
           } catch (error) {
             console.error(`❌ INTELLIGENT: Error generating response for ${stakeholder.name}:`, error);
