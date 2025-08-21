@@ -1238,11 +1238,23 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         console.log(`🎯 ULTRA-FAST GREETINGS: All greeting texts shown, now playing audio...`);
         
         // Play audio sequentially to avoid overlap
-        for (const result of greetingResults) {
+        console.log(`🎵 SEQUENTIAL AUDIO: Playing ${greetingResults.length} greetings one at a time`);
+        for (let i = 0; i < greetingResults.length; i++) {
+          const result = greetingResults[i];
+          console.log(`🎵 SEQUENTIAL AUDIO: [${i + 1}/${greetingResults.length}] Processing ${result.stakeholder.name}`);
+          
           const audioBlob = await result.audioPromise;
           console.log(`🎵 GREETING AUDIO RESULT: ${result.stakeholder.name} - audioBlob: ${audioBlob ? '✅ Present' : '❌ Null'}`);
+          
           if (audioBlob) {
-            console.log(`🎵 GREETING: Playing audio for ${result.stakeholder.name}`);
+            console.log(`🎵 GREETING: Playing audio for ${result.stakeholder.name} (${i + 1}/${greetingResults.length})`);
+            
+            // Stop any currently playing audio before starting new one
+            stopAllAudio();
+            
+            // Wait a moment for audio to stop
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             await playForStakeholder(result.stakeholder, audioBlob);
             console.log(`✅ GREETING: ${result.stakeholder.name} finished speaking`);
           } else {
@@ -1692,10 +1704,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
   // FAST MENTION RESPONSE: Optimized for when stakeholders are directly mentioned
   const handleFastMentionResponse = async (mentionedStakeholders: any[], messageContent: string, currentMessages: Message[]) => {
-    console.log(`🚀 FAST MENTION: Processing ${mentionedStakeholders.length} mentioned stakeholders`);
+    console.log(`🚀 FAST MENTION: Processing ${mentionedStakeholders.length} mentioned stakeholders sequentially`);
     
-    // Process each mentioned stakeholder with optimized approach
-    for (const stakeholder of mentionedStakeholders) {
+    // Process each mentioned stakeholder sequentially to avoid audio overlap
+    for (let i = 0; i < mentionedStakeholders.length; i++) {
+      const stakeholder = mentionedStakeholders[i];
+      console.log(`⚡ FAST MENTION: [${i + 1}/${mentionedStakeholders.length}] Processing ${stakeholder.name}`);
       console.log(`⚡ FAST MENTION: Generating response for ${stakeholder.name}`);
       
       try {
@@ -1781,6 +1795,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         
       } catch (error) {
         console.error(`❌ FAST MENTION: Error processing ${stakeholder.name}:`, error);
+      }
+      
+      // Add delay between stakeholders to prevent audio overlap
+      if (i < mentionedStakeholders.length - 1) {
+        console.log(`⏳ SEQUENTIAL: Waiting 500ms before next stakeholder...`);
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
   };

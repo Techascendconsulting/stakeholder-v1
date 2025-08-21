@@ -8,6 +8,9 @@ const VOICE_ID_JAMES = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES as string 
 const VOICE_ID_EMILY = import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY as string | undefined
 const ENABLE_ELEVENLABS = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'true'
 
+// Audio cache for frequently used phrases
+const audioCache = new Map<string, Blob>()
+
 export function isConfigured(): boolean {
   const configured = Boolean(ENABLE_ELEVENLABS && ELEVENLABS_API_KEY)
   console.log("🔊 ELEVENLABS DEBUG:", {
@@ -82,7 +85,12 @@ export function createAudioUrlFromBuffer(buffer: ArrayBuffer | Uint8Array): stri
   return URL.createObjectURL(blob)
 }
 
-// ElevenLabs API call (non-streaming) with defensive guards
+// Generate cache key for audio
+function generateCacheKey(text: string, voiceId: string): string {
+  return `${voiceId}:${text.toLowerCase().trim()}`
+}
+
+// ElevenLabs API call (non-streaming) with defensive guards and caching
 export async function synthesizeToBlob(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<Blob> {
   console.log(`🎤 SYNTHESIZE: Starting synthesis for text: "${text.substring(0, 50)}..."`)
   console.log(`🎤 SYNTHESIZE: Options:`, options)
@@ -104,11 +112,23 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
 
   console.log(`🎤 SYNTHESIZE: Using voice ID: ${voiceId} for stakeholder: ${options?.stakeholderName || 'unknown'}`)
 
+  // Check cache first
+  const cacheKey = generateCacheKey(text, voiceId)
+  if (audioCache.has(cacheKey)) {
+    console.log(`🎤 SYNTHESIZE: Using cached audio for "${text.substring(0, 30)}..."`)
+    return audioCache.get(cacheKey)!
+  }
+
   try {
     const requestBody = {
       text,
       model_id: 'eleven_monolingual_v1',
-      voice_settings: { stability: 0.5, similarity_boost: 0.5 }
+      voice_settings: { 
+        stability: 0.75,        // Increased stability for consistent voice
+        similarity_boost: 0.75, // Increased similarity for better voice matching
+        style: 0.0,             // No style boost for natural speech
+        use_speaker_boost: true // Enable speaker boost for better voice quality
+      }
     }
     
     console.log(`🎤 SYNTHESIZE: Making API request to ElevenLabs...`)
@@ -135,6 +155,10 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
     
     const blob = bufferToMp3Blob(arrayBuffer)
     console.log(`🎤 SYNTHESIZE: Successfully created blob of size ${blob.size} bytes`)
+    
+    // Cache the result for future use
+    audioCache.set(cacheKey, blob)
+    console.log(`🎤 SYNTHESIZE: Cached audio for future use`)
     
     return blob
   } catch (error: any) {
@@ -204,4 +228,10 @@ export async function speak(text: string, options?: { stakeholderName?: string; 
 export async function speakAndPlay(text: string, options?: { voiceId?: string; stakeholderName?: string }): Promise<void> {
   const blob = await synthesizeToBlob(text, options)
   await playBlob(blob)
+}
+
+// Clear audio cache
+export function clearAudioCache(): void {
+  audioCache.clear()
+  console.log('🧹 AUDIO CACHE: Cleared audio cache')
 }
