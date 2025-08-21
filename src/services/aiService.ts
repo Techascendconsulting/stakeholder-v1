@@ -650,21 +650,15 @@ class AIService {
       `AVOID BUSINESS JARGON: Don't use formal business language like "absolutely", "grasp on issues", "key", "impacts", "affects". Talk like a normal person.`,
       `COMPANY REFERENCES: Don't mention the company name formally. Use "we", "our company", "here", or just talk about the work without naming the company.`,
       `INTELLIGENT RESPONSES: Think like a real person. Don't just list facts - share your actual thoughts and experiences. Be conversational and natural.`,
-      `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`
+      `REMEMBER: You are an intelligent agent, not a simple chatbot. Think, reason, and provide valuable insights.`,
+      `PROJECT DISCUSSION: Keep it casual and natural. Don't be formal or use business jargon. Just talk like a normal person about the project.`,
+      `BE INTELLIGENT: Think about what you're saying. Don't just repeat information - share your actual thoughts and experiences. Be natural and conversational.`
     ];
 
     // Add summary instruction if needed
     if (context?.requireSummary) {
       basePrompt.push(`IMPORTANT: Provide a natural, conversational summary in 1-2 sentences. Don't list everything - just give the key points in a casual way.`);
     }
-
-    // Add casual conversation instruction for project discussions
-    if (userMessage?.toLowerCase().includes('project') || userMessage?.toLowerCase().includes('problem') || userMessage?.toLowerCase().includes('issue')) {
-      basePrompt.push(`PROJECT DISCUSSION: Keep it casual and natural. Don't be formal or use business jargon. Just talk like a normal person about the project.`);
-    }
-
-    // Add intelligence instruction for all responses
-    basePrompt.push(`BE INTELLIGENT: Think about what you're saying. Don't just repeat information - share your actual thoughts and experiences. Be natural and conversational.`);
 
     return basePrompt.join(' ');
   }
