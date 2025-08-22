@@ -604,9 +604,8 @@ class AIService {
     pushIf(/visibility/.test(sources), 'limited real-time visibility for stakeholders');
     pushIf(/handoff|handoffs/.test(sources), 'multiple handoffs that drop context');
     if (picks.length === 0) return '';
-    if (picks.length === 1) return `A concrete example is ${picks[0]}. Where would you like to start?`;
-    if (picks.length === 2) return `Specific issues include ${picks[0]} and ${picks[1]}. Which should we explore first?`;
-    return `Specific issues include ${picks[0]}, ${picks[1]}, and ${picks[2]}. Which should we explore first?`;
+    // Let OpenAI generate contextual questions instead of hardcoded responses
+    return '';
   }
 
   private isTooSimilar(a: string, b: string): boolean {

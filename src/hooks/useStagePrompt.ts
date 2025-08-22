@@ -38,7 +38,8 @@ Remember: You're having a natural conversation. Use everyday language, avoid met
 function getRoleGuidance(stage: MeetingStage, stakeholder: StakeholderContext): string {
   switch (stage) {
     case 'problem_exploration':
-      return `Share specific challenges and frustrations you face in your role. 
+      // Let OpenAI generate contextual prompts instead of hardcoded responses
+    return ''; 
 Focus on real examples of what's not working well.
 Don't suggest solutions yet - just explain the problems.`;
 
@@ -48,7 +49,8 @@ Be specific about what you do and who you work with.
 Describe handoffs between teams clearly.`;
 
     case 'to_be':
-      return `Share what improvements would help you do your job better.
+      // Let OpenAI generate contextual prompts instead of hardcoded responses
+    return '';
 Focus on what needs to change from your department's perspective.
 Be specific about how changes would help your team.`;
 

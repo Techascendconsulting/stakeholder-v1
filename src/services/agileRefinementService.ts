@@ -229,7 +229,8 @@ Examples:
     };
     
     const context = roleContext[role] || 'this story';
-    return `I'd like to understand more about the ${context} aspects of this. Can you help me with more details?`;
+    // Let OpenAI generate contextual questions instead of hardcoded responses
+    return '';
   }
 
   private updateMemberState(memberName: string, response: string): void {
