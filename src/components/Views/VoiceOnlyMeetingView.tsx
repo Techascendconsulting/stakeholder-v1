@@ -4354,6 +4354,7 @@ Guidelines:
             handleSendMessageWithText(question);
           }}
           stakeholderContext={selectedStakeholders?.[0]}
+          selectedStage={setupData?.selectedStage}
         />
       </div>
     </div>

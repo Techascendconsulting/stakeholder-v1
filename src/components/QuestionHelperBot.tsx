@@ -6,12 +6,14 @@ interface QuestionHelperBotProps {
   conversationHistory: Array<{ role: string; content: string }>;
   onQuestionSelect: (question: string) => void;
   stakeholderContext?: any;
+  selectedStage?: string;
 }
 
 const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
   conversationHistory,
   onQuestionSelect,
-  stakeholderContext
+  stakeholderContext,
+  selectedStage
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<QuestionSuggestion[]>([]);
@@ -22,8 +24,10 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
   const questionService = QuestionSuggestionsService.getInstance();
 
   useEffect(() => {
-    const newSuggestions = questionService.getQuestionSuggestions(conversationHistory, stakeholderContext);
-    const stage = questionService.getCurrentStage();
+    // Use selected stage if available, otherwise fall back to conversation analysis
+    const stageContext = selectedStage ? { stage: selectedStage } : stakeholderContext;
+    const newSuggestions = questionService.getQuestionSuggestions(conversationHistory, stageContext);
+    const stage = selectedStage ? { stage: selectedStage, progress: 0 } : questionService.getCurrentStage();
     
     // Track which questions have been asked by checking conversation history
     const askedQuestions = new Set<string>();
@@ -36,7 +40,7 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
     
     setSuggestions(newSuggestions);
     setCurrentStage(stage);
-  }, [conversationHistory, stakeholderContext]);
+  }, [conversationHistory, stakeholderContext, selectedStage]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -156,7 +160,7 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
 
             {/* Show More/Less Button */}

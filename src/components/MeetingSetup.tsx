@@ -345,14 +345,18 @@ export default function MeetingSetup({
             </div>
 
             <div className="space-y-4 mb-8">
-              {MEETING_STAGES.map((stage, index) => (
+              {MEETING_STAGES.map((stage, index) => {
+                const isDisabled = stage.id === 'kickoff';
+                return (
                 <div
                   key={stage.id}
-                  onClick={() => handleStageSelect(stage)}
-                  className={`bg-white rounded-lg border-2 p-6 cursor-pointer transition-all ${
-                    selectedStage?.id === stage.id
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-gray-200 hover:border-indigo-300'
+                  onClick={() => !isDisabled && handleStageSelect(stage)}
+                  className={`bg-white rounded-lg border-2 p-6 transition-all ${
+                    isDisabled 
+                      ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+                      : selectedStage?.id === stage.id
+                      ? 'border-indigo-500 bg-indigo-50 cursor-pointer'
+                      : 'border-gray-200 hover:border-indigo-300 cursor-pointer'
                   }`}
                 >
                   <div className="flex items-start space-x-4">
@@ -367,6 +371,11 @@ export default function MeetingSetup({
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{stage.name}</h3>
                       <p className="text-sm text-gray-600 mb-2">{stage.objective}</p>
                       <p className="text-xs text-gray-500">{stage.description}</p>
+                      {isDisabled && (
+                        <div className="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                          Coming soon
+                        </div>
+                      )}
                     </div>
                     {selectedStage?.id === stage.id && (
                       <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">

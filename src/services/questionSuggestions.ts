@@ -32,33 +32,53 @@ class QuestionSuggestionsService {
     conversationHistory: Array<{ role: string; content: string }>,
     stakeholderContext?: any
   ): QuestionSuggestion[] {
-    this.updateConversationStage(conversationHistory);
+    // Check if we have a specific stage from stakeholderContext
+    const selectedStage = stakeholderContext?.stage;
+    
+    if (selectedStage) {
+      // Use the selected stage directly
+      this.currentStage = { stage: selectedStage, progress: 0 };
+    } else {
+      // Fall back to conversation analysis
+      this.updateConversationStage(conversationHistory);
+    }
     
     const suggestions: QuestionSuggestion[] = [];
     
     switch (this.currentStage.stage) {
       case 'introduction':
+      case 'kickoff':
         suggestions.push(...this.getIntroductionQuestions());
         break;
       case 'problem_understanding':
+      case 'discovery':
         suggestions.push(...this.getProblemUnderstandingQuestions());
         break;
       case 'process_analysis':
+      case 'as_is':
         suggestions.push(...this.getProcessAnalysisQuestions());
         break;
       case 'stakeholder_mapping':
         suggestions.push(...this.getStakeholderMappingQuestions());
         break;
       case 'solution_brainstorming':
+      case 'solution':
         suggestions.push(...this.getSolutionBrainstormingQuestions());
         break;
       case 'implementation_planning':
+      case 'closure':
         suggestions.push(...this.getImplementationPlanningQuestions());
         break;
+      case 'to_be':
+        suggestions.push(...this.getToBeDiscussionQuestions());
+        break;
+      default:
+        // Fallback to introduction questions
+        suggestions.push(...this.getIntroductionQuestions());
     }
 
     // Add stakeholder-specific questions if available
-    if (stakeholderContext) {
+    if (stakeholderContext && !selectedStage) {
       suggestions.push(...this.getStakeholderSpecificQuestions(stakeholderContext));
     }
 
@@ -346,6 +366,53 @@ class QuestionSuggestionsService {
         category: 'solutions',
         difficulty: 'intermediate',
         context: 'Define KPIs'
+      }
+    ];
+  }
+
+  private getToBeDiscussionQuestions(): QuestionSuggestion[] {
+    return [
+      {
+        id: 'tobe-1',
+        text: "What would an ideal future state look like for this process?",
+        category: 'goals',
+        difficulty: 'intermediate',
+        context: 'Explore future vision'
+      },
+      {
+        id: 'tobe-2',
+        text: "What improvements would make the biggest impact?",
+        category: 'goals',
+        difficulty: 'intermediate',
+        context: 'Identify high-impact changes'
+      },
+      {
+        id: 'tobe-3',
+        text: "What are the key outcomes you want to achieve?",
+        category: 'goals',
+        difficulty: 'intermediate',
+        context: 'Define success criteria'
+      },
+      {
+        id: 'tobe-4',
+        text: "How would you measure success in the future state?",
+        category: 'goals',
+        difficulty: 'intermediate',
+        context: 'Define metrics'
+      },
+      {
+        id: 'tobe-5',
+        text: "What capabilities do you need that you don't have now?",
+        category: 'goals',
+        difficulty: 'advanced',
+        context: 'Identify gaps'
+      },
+      {
+        id: 'tobe-6',
+        text: "What would be different in an optimized process?",
+        category: 'goals',
+        difficulty: 'intermediate',
+        context: 'Envision improvements'
       }
     ];
   }
