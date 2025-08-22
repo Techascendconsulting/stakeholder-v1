@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import StakeholderKnowledgeBase from './stakeholderKnowledgeBase';
+import MultiAgentSystem from './multiAgentSystem'; // Multi-agent system like ChatGPT
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -66,11 +66,11 @@ export interface ConversationContext {
 class AIService {
   private static instance: AIService;
   private conversationState: ConversationState;
-  private knowledgeBase: StakeholderKnowledgeBase;
+  private multiAgentSystem: MultiAgentSystem; // Multi-agent system like ChatGPT
   
   private constructor() {
     this.conversationState = this.initializeConversationState();
-    this.knowledgeBase = StakeholderKnowledgeBase.getInstance();
+    this.multiAgentSystem = MultiAgentSystem.getInstance(); // Initialize multi-agent system
   }
 
   private initializeConversationState(): ConversationState {
@@ -110,49 +110,36 @@ class AIService {
     }
   }
 
-  // Robust knowledge base-based stakeholder response (NEVER FAILS)
+  // Multi-agent system stakeholder response (like ChatGPT)
   public async generateStakeholderResponse(
     userMessage: string,
     stakeholder: StakeholderContext,
     context: ConversationContext = {},
     responseType: 'discussion' | 'baton_pass' | 'direct_mention' = 'discussion'
   ): Promise<string> {
-    console.log(`🎯 KNOWLEDGE BASE: Generating response for ${stakeholder.name} (${stakeholder.role})`);
+    console.log(`🤖 MULTI-AGENT: Generating response for ${stakeholder.name} (${stakeholder.role})`);
     
-    // Create project context for knowledge base
-    const projectContext = context?.project ? {
-      id: context.project.id || 'customer-onboarding',
-      name: context.project.name || 'Customer Onboarding Process Optimization',
-      painPoints: context.project.painPoints || ['manual data entry', 'delayed handoffs'],
-      currentProcess: context.project.asIsProcess || 'Manual email-based handoffs',
-      stakeholders: context.project.stakeholders || []
-    } : undefined;
-
     try {
-      // Use knowledge base to get response
-      const response = this.knowledgeBase.getStakeholderResponse(
+      // Use multi-agent system to process the message
+      const response = await this.multiAgentSystem.processUserMessage(
         userMessage,
-        stakeholder.role,
-        projectContext
+        stakeholder,
+        context.project || {
+          id: 'customer-onboarding',
+          name: 'Customer Onboarding Process Optimization',
+          painPoints: ['manual data entry', 'delayed handoffs'],
+          asIsProcess: 'Manual email-based handoffs'
+        }
       );
 
-      console.log(`✅ KNOWLEDGE BASE: ${stakeholder.name} response: "${response.text}"`);
-      
-      // Return the text response (voice response is available if needed)
-      return response.text;
+      console.log(`✅ MULTI-AGENT: ${stakeholder.name} response: "${response}"`);
+      return response;
       
     } catch (error) {
-      console.error('❌ KNOWLEDGE BASE ERROR:', error);
+      console.error('❌ MULTI-AGENT ERROR:', error);
       
-      // Emergency fallback - NEVER FAILS
-      const emergencyResponse = this.knowledgeBase.getStakeholderResponse(
-        'emergency',
-        stakeholder.role,
-        projectContext
-      );
-      
-      console.log(`🆘 EMERGENCY FALLBACK: ${stakeholder.name} response: "${emergencyResponse.text}"`);
-      return emergencyResponse.text;
+      // Fallback to project-specific response
+      return this.generateProjectSpecificResponse(stakeholder, context);
     }
   }
 

@@ -8,7 +8,7 @@ interface StakeholderResponse {
   voiceAnswer?: string; // Short version for ElevenLabs
   stakeholderRoles: string[];
   keywords: string[];
-  category: 'as-is' | 'to-be' | 'greeting' | 'farewell' | 'clarification' | 'general';
+  category: 'as-is' | 'to-be' | 'greeting' | 'farewell' | 'clarification' | 'general' | 'explanation' | 'process' | 'role-specific';
   priority: number; // 1 = exact match, 5 = emergency fallback
 }
 
@@ -58,6 +58,29 @@ class StakeholderKnowledgeBase {
   public generateKnowledgeBaseFromProject(project: ProjectContext): ProjectKnowledgeBase {
     const responses: StakeholderResponse[] = [];
     
+    // GREETING Responses
+    responses.push({
+      id: `${project.id}-greeting-hi`,
+      question: 'hi',
+      answer: `Hi! I'm ready to discuss our ${project.name} project. How can I help you today?`,
+      voiceAnswer: `Hi! I'm ready to discuss our ${project.name} project.`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['hi', 'hello', 'hey', 'good morning', 'good afternoon'],
+      category: 'greeting',
+      priority: 1
+    });
+
+    responses.push({
+      id: `${project.id}-greeting-how-are-you`,
+      question: 'how are you',
+      answer: `I'm doing well, thanks for asking! Ready to dive into our ${project.name} work. What's on your mind?`,
+      voiceAnswer: `I'm doing well, thanks! Ready to work on our ${project.name} project.`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['how are you', 'how are things', 'how is it going', 'what\'s up'],
+      category: 'greeting',
+      priority: 1
+    });
+
     // AS-IS Responses (Current State)
     if (project.painPoints && project.painPoints.length > 0) {
       responses.push({
@@ -69,6 +92,44 @@ class StakeholderKnowledgeBase {
         keywords: ['pain points', 'challenges', 'problems', 'issues', 'difficulties', 'struggles'],
         category: 'as-is',
         priority: 1
+      });
+
+      // Create specific explanations for each pain point
+      project.painPoints.forEach((painPoint, index) => {
+        const explanation = this.generatePainPointExplanation(painPoint, project);
+        responses.push({
+          id: `${project.id}-pain-point-${index}`,
+          question: `what do we mean by ${painPoint}`,
+          answer: explanation,
+          voiceAnswer: explanation.substring(0, 150) + (explanation.length > 150 ? '...' : ''),
+          stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+          keywords: [painPoint.toLowerCase(), 'what do we mean', 'explain', 'clarify'],
+          category: 'explanation',
+          priority: 1
+        });
+      });
+
+      // Add impact analysis responses
+      responses.push({
+        id: `${project.id}-impact-analysis`,
+        question: 'how do they impact efficiency and experience',
+        answer: `These pain points impact us in several ways: Manual data entry slows down our operations and creates errors that require rework. Delayed handoffs mean customers wait longer for service, and our team has to chase down information. This creates a poor customer experience and reduces our overall efficiency. We're spending more time fixing problems than serving customers.`,
+        voiceAnswer: `These pain points slow down our operations and create errors. Delayed handoffs mean customers wait longer, and we spend more time fixing problems than serving customers.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['impact', 'efficiency', 'experience', 'how do they', 'affect', 'consequences'],
+        category: 'as-is',
+        priority: 1
+      });
+
+      responses.push({
+        id: `${project.id}-impact-details`,
+        question: 'what are the consequences',
+        answer: `The consequences are significant: Customer satisfaction drops because they experience delays and errors. Our team gets frustrated with repetitive manual work and constant firefighting. We lose revenue opportunities due to slow response times. And our reputation suffers when customers have poor experiences. It's a cycle that gets worse over time.`,
+        voiceAnswer: `Customer satisfaction drops due to delays and errors. Our team gets frustrated with manual work. We lose revenue opportunities and our reputation suffers.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['consequences', 'results', 'outcomes', 'what happens', 'effects'],
+        category: 'as-is',
+        priority: 2
       });
     }
 
@@ -82,6 +143,18 @@ class StakeholderKnowledgeBase {
         keywords: ['process', 'workflow', 'how', 'current', 'procedure', 'currently'],
         category: 'as-is',
         priority: 1
+      });
+
+      // Create detailed process explanation
+      responses.push({
+        id: `${project.id}-process-details`,
+        question: 'Can you explain the current process in detail?',
+        answer: `Let me break down our current process: ${project.asIsProcess}. This involves multiple steps and handoffs between departments, which is where we're seeing the delays.`,
+        voiceAnswer: `Our current process involves ${project.asIsProcess}.`,
+        stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+        keywords: ['explain process', 'process details', 'break down', 'steps'],
+        category: 'process',
+        priority: 2
       });
     }
 
@@ -102,11 +175,11 @@ class StakeholderKnowledgeBase {
     if (project.toBeProcess) {
       responses.push({
         id: `${project.id}-future-process`,
-        question: 'How will this be improved?',
-        answer: `The new process will be: ${project.toBeProcess}. This will significantly improve our efficiency and customer experience.`,
-        voiceAnswer: `The new process will be ${project.toBeProcess}.`,
+        question: 'What will the new process look like?',
+        answer: `Our improved process will be: ${project.toBeProcess}. This should eliminate the current pain points and improve efficiency.`,
+        voiceAnswer: `Our improved process will be ${project.toBeProcess}.`,
         stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-        keywords: ['improved', 'better', 'future', 'new process', 'solution'],
+        keywords: ['new process', 'future process', 'improved', 'will be', 'to-be'],
         category: 'to-be',
         priority: 1
       });
@@ -115,94 +188,60 @@ class StakeholderKnowledgeBase {
     if (project.businessGoals && project.businessGoals.length > 0) {
       responses.push({
         id: `${project.id}-business-goals`,
-        question: 'What are you trying to achieve?',
-        answer: `Our business goals are: ${project.businessGoals.join(', ')}. This project will help us achieve these objectives.`,
-        voiceAnswer: `Our goals are ${project.businessGoals.join(', ')}.`,
+        question: 'What are our business goals?',
+        answer: `Our business goals for this project are: ${project.businessGoals.join(', ')}. These align with our overall strategy.`,
+        voiceAnswer: `Our business goals are ${project.businessGoals.join(', ')}.`,
         stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-        keywords: ['goals', 'achieve', 'objectives', 'trying to', 'aim'],
+        keywords: ['goals', 'objectives', 'targets', 'aims', 'business goals'],
         category: 'to-be',
         priority: 1
       });
     }
 
-    // Team Information
+    // ROLE-SPECIFIC Responses
+    if (project.stakeholders) {
+      project.stakeholders.forEach((stakeholder, index) => {
+        responses.push({
+          id: `${project.id}-role-${index}`,
+          question: `What does the ${stakeholder.role} do?`,
+          answer: `As ${stakeholder.role} in ${stakeholder.department}, I'm responsible for ${stakeholder.responsibilities.join(', ')}. In this ${project.name} project, I focus on ensuring our processes align with our department's needs.`,
+          voiceAnswer: `As ${stakeholder.role}, I'm responsible for ${stakeholder.responsibilities.join(', ')}.`,
+          stakeholderRoles: [stakeholder.role],
+          keywords: ['what does', 'role', 'responsibilities', 'do', stakeholder.role.toLowerCase()],
+          category: 'role-specific',
+          priority: 1
+        });
+      });
+    }
+
+    // GENERAL Project Information
     if (project.teamSize) {
       responses.push({
         id: `${project.id}-team-size`,
-        question: 'How many people are in your team?',
-        answer: `Our team has ${project.teamSize} people working on this project. We work closely together to ensure successful delivery.`,
+        question: 'How big is the team?',
+        answer: `Our team for the ${project.name} project consists of ${project.teamSize} people across different departments.`,
         voiceAnswer: `Our team has ${project.teamSize} people.`,
         stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-        keywords: ['team', 'people', 'how many', 'size', 'members'],
+        keywords: ['team size', 'how many people', 'team members', 'headcount'],
         category: 'general',
         priority: 2
       });
     }
 
-    // Systems Information
     if (project.systemsUsed && project.systemsUsed.length > 0) {
       responses.push({
         id: `${project.id}-systems`,
-        question: 'What systems do you use?',
-        answer: `We currently use ${project.systemsUsed.join(', ')}. These systems don't integrate well, which is part of the problem we're solving.`,
+        question: 'What systems do we use?',
+        answer: `We currently use ${project.systemsUsed.join(', ')} in our operations. These systems are part of what we're looking to improve.`,
         voiceAnswer: `We use ${project.systemsUsed.join(', ')}.`,
         stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-        keywords: ['systems', 'tools', 'software', 'platforms', 'applications'],
+        keywords: ['systems', 'tools', 'software', 'applications', 'platforms'],
         category: 'general',
         priority: 2
       });
     }
 
-    // Role-Specific Responses
-    project.stakeholders?.forEach(stakeholder => {
-      responses.push({
-        id: `${project.id}-role-${stakeholder.role}`,
-        question: 'What is your role in this project?',
-        answer: `As ${stakeholder.role}, I'm responsible for ${stakeholder.responsibilities.join(', ')}. I work closely with the team to ensure project success.`,
-        voiceAnswer: `I'm ${stakeholder.role}, responsible for ${stakeholder.responsibilities.join(', ')}.`,
-        stakeholderRoles: [stakeholder.role],
-        keywords: ['role', 'responsibility', 'job', 'position', 'function'],
-        category: 'general',
-        priority: 2
-      });
-    });
-
-    // Greeting Responses
-    responses.push({
-      id: `${project.id}-greeting`,
-      question: 'hi',
-      answer: `Hello! I'm here to discuss our ${project.name} project. How can I help you understand our current situation and improvement plans?`,
-      voiceAnswer: `Hello! I'm here to discuss our ${project.name} project.`,
-      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-      keywords: ['hi', 'hello', 'hey', 'greetings'],
-      category: 'greeting',
-      priority: 3
-    });
-
-    responses.push({
-      id: `${project.id}-how-are-you`,
-      question: 'how are you',
-      answer: `I'm doing well, thank you! I'm ready to discuss our ${project.name} project and the improvements we're working on.`,
-      voiceAnswer: `I'm doing well, ready to discuss our project.`,
-      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-      keywords: ['how are you', 'how are things', 'how is it going'],
-      category: 'greeting',
-      priority: 3
-    });
-
-    // Farewell Responses
-    responses.push({
-      id: `${project.id}-farewell`,
-      question: 'goodbye',
-      answer: `Thank you for the discussion about our ${project.name} project. I'm looking forward to implementing these improvements.`,
-      voiceAnswer: `Thank you for the discussion.`,
-      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-      keywords: ['goodbye', 'bye', 'see you', 'thanks', 'thank you'],
-      category: 'farewell',
-      priority: 3
-    });
-
-    // Clarification Responses
+    // CLARIFICATION Responses
     responses.push({
       id: `${project.id}-clarification`,
       question: 'clarification',
@@ -212,6 +251,18 @@ class StakeholderKnowledgeBase {
       keywords: ['clarify', 'explain', 'don\'t understand', 'what do you mean'],
       category: 'clarification',
       priority: 4
+    });
+
+    // FAREWELL Responses
+    responses.push({
+      id: `${project.id}-farewell`,
+      question: 'goodbye',
+      answer: `Thanks for the discussion about our ${project.name} project. Let me know if you need anything else!`,
+      voiceAnswer: `Thanks for the discussion. Let me know if you need anything else!`,
+      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
+      keywords: ['goodbye', 'bye', 'see you', 'thanks', 'thank you'],
+      category: 'farewell',
+      priority: 3
     });
 
     // Emergency Fallback Responses
@@ -231,6 +282,30 @@ class StakeholderKnowledgeBase {
       projectName: project.name,
       responses
     };
+  }
+
+  // Generate specific explanations for pain points
+  private generatePainPointExplanation(painPoint: string, project: ProjectContext): string {
+    const lowerPainPoint = painPoint.toLowerCase();
+    
+    if (lowerPainPoint.includes('handoff') || lowerPainPoint.includes('hand off')) {
+      return `Handoffs refer to the process of transferring work or information from one person or department to another. In our current system, these handoffs are causing delays because there's no clear ownership or tracking mechanism. For example, when customer data moves from sales to operations, it often gets stuck in email chains or gets lost in the process.`;
+    }
+    
+    if (lowerPainPoint.includes('manual') || lowerPainPoint.includes('data entry')) {
+      return `Manual data entry means our team has to manually input information into our systems instead of having it automatically transferred. This is time-consuming, error-prone, and creates bottlenecks. For instance, when a new customer signs up, someone has to manually copy their information from one system to another.`;
+    }
+    
+    if (lowerPainPoint.includes('delay') || lowerPainPoint.includes('slow')) {
+      return `Delays occur because our current process has multiple steps that aren't streamlined. Each step adds time, and when there are issues or questions, the whole process gets held up. This affects our ability to serve customers quickly and efficiently.`;
+    }
+    
+    if (lowerPainPoint.includes('communication') || lowerPainPoint.includes('coordination')) {
+      return `Communication issues happen because different departments work in silos. Information doesn't flow smoothly between teams, leading to misunderstandings, duplicated work, and missed deadlines. We need better coordination mechanisms.`;
+    }
+    
+    // Default explanation
+    return `${painPoint} is a significant issue in our current process. It's causing inefficiencies and impacting our ability to deliver value to our customers. We need to address this as part of our improvement efforts.`;
   }
 
   // Set knowledge base for a project
@@ -301,118 +376,187 @@ class StakeholderKnowledgeBase {
   ): StakeholderResponse | null {
     const lowerQuestion = question.toLowerCase();
     
-    return projectKB.responses.find(item => 
-      item.priority === 1 &&
-      item.stakeholderRoles.includes(role) &&
-      (item.question.toLowerCase() === lowerQuestion || 
-       item.keywords.some(keyword => lowerQuestion.includes(keyword)))
-    ) || null;
+    // First, try to find exact question matches
+    let response = projectKB.responses.find(response => {
+      const lowerResponseQuestion = response.question.toLowerCase();
+      return lowerQuestion === lowerResponseQuestion || 
+             lowerQuestion.includes(lowerResponseQuestion) ||
+             lowerResponseQuestion.includes(lowerQuestion);
+    });
+    
+    if (response) return response;
+    
+    // If no exact match, look for explanation questions (what do we mean by X)
+    if (lowerQuestion.includes('what do we mean by') || lowerQuestion.includes('what does') || lowerQuestion.includes('explain')) {
+      // Extract the term being asked about
+      const termMatch = lowerQuestion.match(/what do we mean by (.+)/) || 
+                       lowerQuestion.match(/what does (.+) mean/) ||
+                       lowerQuestion.match(/explain (.+)/);
+      
+      if (termMatch) {
+        const term = termMatch[1].trim();
+        // Look for responses that explain this specific term
+        response = projectKB.responses.find(response => {
+          const lowerResponseQuestion = response.question.toLowerCase();
+          return lowerResponseQuestion.includes(term) || 
+                 response.keywords.some(keyword => keyword.toLowerCase().includes(term));
+        });
+        
+        if (response) return response;
+      }
+    }
+    
+    return null;
   }
 
   // Layer 2: Role-specific match within project
   private findRoleMatch(
-    question: string, 
-    role: string, 
+    question: string,
+    role: string,
     projectKB: ProjectKnowledgeBase
   ): StakeholderResponse | null {
     const lowerQuestion = question.toLowerCase();
+    const lowerRole = role.toLowerCase();
     
-    return projectKB.responses.find(item => 
-      item.priority === 2 &&
-      item.stakeholderRoles.includes(role) &&
-      item.keywords.some(keyword => lowerQuestion.includes(keyword))
-    ) || null;
+    return projectKB.responses.find(response => {
+      // Check if response is for this specific role and question matches keywords
+      const isRoleMatch = response.stakeholderRoles.some(r => r.toLowerCase().includes(lowerRole));
+      const hasKeywordMatch = response.keywords.some(keyword => 
+        lowerQuestion.includes(keyword.toLowerCase())
+      );
+      return isRoleMatch && hasKeywordMatch;
+    }) || null;
   }
 
   // Layer 3: Topic-based match within project
   private findTopicMatch(
-    question: string, 
-    role: string, 
+    question: string,
+    role: string,
     projectKB: ProjectKnowledgeBase
   ): StakeholderResponse | null {
     const lowerQuestion = question.toLowerCase();
     
-    return projectKB.responses.find(item => 
-      item.priority === 3 &&
-      item.stakeholderRoles.includes(role) &&
-      item.keywords.some(keyword => lowerQuestion.includes(keyword))
-    ) || null;
+    return projectKB.responses.find(response => {
+      // Check if any keywords match the question
+      return response.keywords.some(keyword => 
+        lowerQuestion.includes(keyword.toLowerCase())
+      );
+    }) || null;
   }
 
-  // Layer 4: Generic role match within project
+  // Layer 4: Generic role response within project
   private findGenericMatch(
-    question: string, 
-    role: string, 
+    question: string,
+    role: string,
     projectKB: ProjectKnowledgeBase
   ): StakeholderResponse | null {
-    const lowerQuestion = question.toLowerCase();
+    const lowerRole = role.toLowerCase();
     
-    return projectKB.responses.find(item => 
-      item.priority === 4 &&
-      item.stakeholderRoles.includes(role) &&
-      item.keywords.some(keyword => lowerQuestion.includes(keyword))
-    ) || null;
+    return projectKB.responses.find(response => {
+      // Find a general response that includes this role
+      return response.stakeholderRoles.some(r => r.toLowerCase().includes(lowerRole)) &&
+             response.category === 'general';
+    }) || null;
   }
 
   // Layer 5: Emergency fallback (NEVER FAILS)
   private getEmergencyResponse(
-    role: string, 
+    role: string,
     projectKB: ProjectKnowledgeBase
   ): StakeholderResponse {
-    return projectKB.responses.find(item => 
-      item.priority === 5 &&
-      item.stakeholderRoles.includes(role)
-    ) || projectKB.responses[0]; // Fallback to first response if no emergency response
-  }
-
-  // Inject project context into response
-  private injectProjectContext(response: StakeholderResponse, project: ProjectContext): StakeholderResponse {
-    const injectedAnswer = response.answer
-      .replace('{project.name}', project.name)
-      .replace('{project.painPoints}', project.painPoints?.join(', ') || 'current challenges')
-      .replace('{project.currentProcess}', project.asIsProcess || 'current process');
-
-    const injectedVoiceAnswer = response.voiceAnswer?.replace('{project.name}', project.name) || response.voiceAnswer;
-
+    const emergencyResponse = projectKB.responses.find(r => r.question === 'emergency');
+    if (emergencyResponse) {
+      return emergencyResponse;
+    }
+    
+    // Ultimate fallback
     return {
-      ...response,
-      answer: injectedAnswer,
-      voiceAnswer: injectedVoiceAnswer
+      id: 'ultimate-fallback',
+      question: 'fallback',
+      answer: `I can help you with our ${projectKB.projectName} project. What would you like to know?`,
+      voiceAnswer: `I can help you with our ${projectKB.projectName} project.`,
+      stakeholderRoles: [],
+      keywords: [],
+      category: 'general',
+      priority: 5
     };
   }
 
-  // Get available stakeholder roles for a specific project
+  // Inject project context into response
+  private injectProjectContext(
+    response: StakeholderResponse,
+    projectContext: ProjectContext
+  ): StakeholderResponse {
+    let answer = response.answer;
+    let voiceAnswer = response.voiceAnswer;
+    
+    // Replace placeholders with actual project data
+    if (projectContext.name) {
+      answer = answer.replace(/\{project\.name\}/g, projectContext.name);
+      if (voiceAnswer) {
+        voiceAnswer = voiceAnswer.replace(/\{project\.name\}/g, projectContext.name);
+      }
+    }
+    
+    if (projectContext.problemStatement) {
+      answer = answer.replace(/\{project\.problemStatement\}/g, projectContext.problemStatement);
+      if (voiceAnswer) {
+        voiceAnswer = voiceAnswer.replace(/\{project\.problemStatement\}/g, projectContext.problemStatement);
+      }
+    }
+    
+    if (projectContext.painPoints) {
+      const painPointsText = projectContext.painPoints.join(', ');
+      answer = answer.replace(/\{project\.painPoints\}/g, painPointsText);
+      if (voiceAnswer) {
+        voiceAnswer = voiceAnswer.replace(/\{project\.painPoints\}/g, painPointsText);
+      }
+    }
+    
+    if (projectContext.asIsProcess) {
+      answer = answer.replace(/\{project\.asIsProcess\}/g, projectContext.asIsProcess);
+      if (voiceAnswer) {
+        voiceAnswer = voiceAnswer.replace(/\{project\.asIsProcess\}/g, projectContext.asIsProcess);
+      }
+    }
+    
+    return {
+      ...response,
+      answer,
+      voiceAnswer
+    };
+  }
+
+  // Get available roles for a project
   public getAvailableRoles(projectId: string): string[] {
     const projectKB = this.projectKnowledgeBases.get(projectId);
     if (!projectKB) return [];
     
-    return [...new Set(projectKB.responses.flatMap(item => item.stakeholderRoles))];
-  }
-
-  // Get available project contexts
-  public getAvailableProjectContexts(): string[] {
-    return Array.from(this.projectKnowledgeBases.keys());
-  }
-
-  // Get response statistics for a specific project
-  public getStats(projectId: string): { totalResponses: number; byPriority: Record<number, number> } {
-    const projectKB = this.projectKnowledgeBases.get(projectId);
-    if (!projectKB) {
-      return { totalResponses: 0, byPriority: {} };
-    }
-
-    const byPriority: Record<number, number> = {};
-    projectKB.responses.forEach(item => {
-      byPriority[item.priority] = (byPriority[item.priority] || 0) + 1;
+    const roles = new Set<string>();
+    projectKB.responses.forEach(response => {
+      response.stakeholderRoles.forEach(role => roles.add(role));
     });
+    
+    return Array.from(roles);
+  }
 
+  // Get knowledge base stats
+  public getStats(projectId: string): { totalResponses: number; categories: Record<string, number> } {
+    const projectKB = this.projectKnowledgeBases.get(projectId);
+    if (!projectKB) return { totalResponses: 0, categories: {} };
+    
+    const categories: Record<string, number> = {};
+    projectKB.responses.forEach(response => {
+      categories[response.category] = (categories[response.category] || 0) + 1;
+    });
+    
     return {
       totalResponses: projectKB.responses.length,
-      byPriority
+      categories
     };
   }
 }
 
 export default StakeholderKnowledgeBase;
-export type { StakeholderResponse, ProjectContext };
+export type { ProjectContext, StakeholderResponse };
 

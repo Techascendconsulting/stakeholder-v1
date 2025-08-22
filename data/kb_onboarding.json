@@ -1,0 +1,366 @@
+{
+  "project": "Customer Onboarding Process Optimization",
+  "company": "TechCorp Solutions",
+  "knowledge_base": [
+    {
+      "id": "KB-001",
+      "category": "greeting",
+      "questions": ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "greetings"],
+      "short": "Hello! How can I help you today with the Customer Onboarding Process Optimization project?",
+      "expanded": "Hello! I'm here to help you with the Customer Onboarding Process Optimization project at TechCorp Solutions. We're working to reduce onboarding time from 6-8 weeks to 3-4 weeks and improve customer satisfaction. What would you like to know?",
+      "refs": ["business_context"]
+    },
+    {
+      "id": "KB-002", 
+      "category": "greeting",
+      "questions": ["how are you", "how is it going", "what's up", "how are things"],
+      "short": "I'm doing well, thanks! Ready to discuss our onboarding optimization project.",
+      "expanded": "I'm doing well, thanks for asking! I'm ready to help you with our Customer Onboarding Process Optimization project. We have some exciting goals to achieve - reducing onboarding time and improving customer satisfaction. What's on your mind?",
+      "refs": ["business_context"]
+    },
+    {
+      "id": "KB-003",
+      "category": "business_context", 
+      "questions": ["what is this project about", "tell me about the project", "project overview", "what are we working on"],
+      "short": "This project optimizes TechCorp's customer onboarding process, currently taking 6-8 weeks with 23% churn in first 90 days.",
+      "expanded": "This project focuses on optimizing TechCorp Solutions' customer onboarding process. Currently, onboarding takes 6-8 weeks for enterprise clients, leading to customer dissatisfaction and 23% churn within the first 90 days. Our NPS has dropped from 8.2 to 6.4. The goal is to reduce onboarding time to 3-4 weeks, improve customer satisfaction, and decrease churn by 40%.",
+      "refs": ["business_context", "problem_statement", "goals"]
+    },
+    {
+      "id": "KB-004",
+      "category": "business_context",
+      "questions": ["who is techcorp", "about the company", "what does techcorp do"],
+      "short": "TechCorp Solutions is an enterprise software company that added 340 enterprise customers in 18 months.",
+      "expanded": "TechCorp Solutions is an enterprise software company that has experienced significant growth, adding 340 enterprise customers in the last 18 months. However, this rapid growth has exposed inefficiencies in their customer onboarding process, leading to customer dissatisfaction and churn.",
+      "refs": ["business_context"]
+    },
+    {
+      "id": "KB-005",
+      "category": "problem_statement",
+      "questions": ["what problem are we solving", "why is this project needed", "what issues exist", "current problems"],
+      "short": "Current onboarding is fragmented across 7 departments with manual handoffs, causing $2.3M annual loss and poor customer experience.",
+      "expanded": "The current onboarding process is fragmented and inefficient, involving 7 departments with disconnected systems. There are manual handoffs, no milestone tracking, inconsistent communication, and 4 disconnected systems. This causes $2.3M in annual losses, poor customer experience, and 23% churn within 90 days.",
+      "refs": ["problem_statement", "pain_points", "financial_impact"]
+    },
+    {
+      "id": "KB-006",
+      "category": "pain_points",
+      "questions": ["what are the pain points", "main issues", "problems in process", "what's broken"],
+      "short": "Manual handoffs, no centralized tracking, siloed teams, conflicting calls, lack of milestone visibility, and unclear communication.",
+      "expanded": "Key pain points include: manual handoffs between departments causing delays, no centralized tracking system, siloed teams working independently, conflicting stakeholder calls, lack of milestone visibility for customers, inconsistent documentation, frequent delays, and unclear customer communication throughout the process.",
+      "refs": ["pain_points", "as_is_process"]
+    },
+    {
+      "id": "KB-007",
+      "category": "as_is",
+      "questions": ["what is the current process", "as-is process", "how does onboarding work now", "current workflow"],
+      "short": "Sales closes in Salesforce → email handoff → kickoff → Monday.com → parallel IT/Product/Support → conflicting calls → staging config → UAT via email → go-live → handoff to CS.",
+      "expanded": "The current process: 1) Sales closes deal in Salesforce, 2) Manual email handoff to Implementation (24-48hrs delay), 3) Kickoff call scheduled (3-5 business days), 4) Customer data manually entered into Monday.com, 5) Technical setup runs in silos, 6) Stakeholder calls scheduled independently, 7) Config done in staging, 8) UAT coordinated by email, 9) Go-live scheduled, 10) Support handed to Customer Success. This process lacks central tracking and causes delays.",
+      "refs": ["as_is_process"]
+    },
+    {
+      "id": "KB-008",
+      "category": "as_is",
+      "questions": ["step 1 current process", "what happens first", "sales process"],
+      "short": "Step 1: Sales closes the deal in Salesforce.",
+      "expanded": "Step 1 of the current process: Sales closes the deal in Salesforce. This is where the customer officially becomes a client and the onboarding process begins. However, there's no automated handoff from this step to the next.",
+      "refs": ["as_is_step_1"]
+    },
+    {
+      "id": "KB-009",
+      "category": "as_is",
+      "questions": ["step 2 current process", "handoff process", "email handoff"],
+      "short": "Step 2: Manual email handoff to Implementation with 24-48 hours delay.",
+      "expanded": "Step 2: Manual email handoff to Implementation team. This creates a 24-48 hour delay as the sales team manually composes and sends an email to the implementation team with customer details. There's no automated system for this transfer.",
+      "refs": ["as_is_step_2"]
+    },
+    {
+      "id": "KB-010",
+      "category": "as_is",
+      "questions": ["step 3 current process", "kickoff call", "initial meeting"],
+      "short": "Step 3: Kickoff call scheduled 3-5 business days after handoff.",
+      "expanded": "Step 3: Kickoff call is scheduled 3-5 business days after the email handoff. This delay is due to manual scheduling and calendar coordination between the implementation team and the customer.",
+      "refs": ["as_is_step_3"]
+    },
+    {
+      "id": "KB-011",
+      "category": "as_is",
+      "questions": ["step 4 current process", "monday.com", "data entry"],
+      "short": "Step 4: Customer data manually entered into Monday.com project tracking.",
+      "expanded": "Step 4: Customer data is manually entered into Monday.com for project tracking. This involves copying information from Salesforce and other sources into the project management system, which is time-consuming and error-prone.",
+      "refs": ["as_is_step_4"]
+    },
+    {
+      "id": "KB-012",
+      "category": "as_is",
+      "questions": ["step 5 current process", "technical setup", "silos"],
+      "short": "Step 5: Technical setup runs in parallel silos across IT/Product/Support teams.",
+      "expanded": "Step 5: Technical setup runs in parallel silos across IT, Product, and Support teams. Each team works independently without coordination, which can lead to conflicts and inefficiencies.",
+      "refs": ["as_is_step_5"]
+    },
+    {
+      "id": "KB-013",
+      "category": "as_is",
+      "questions": ["step 6 current process", "stakeholder calls", "conflicting calls"],
+      "short": "Step 6: Stakeholder calls scheduled independently, often causing conflicts.",
+      "expanded": "Step 6: Stakeholder calls are scheduled independently by different teams, often causing conflicts and scheduling issues. This creates confusion for customers who may receive multiple meeting requests for the same time slots.",
+      "refs": ["as_is_step_6"]
+    },
+    {
+      "id": "KB-014",
+      "category": "as_is",
+      "questions": ["step 7 current process", "staging config", "configuration"],
+      "short": "Step 7: Configuration done in staging environment.",
+      "expanded": "Step 7: Configuration is done in the staging environment. This involves setting up the customer's specific requirements in a test environment before going live.",
+      "refs": ["as_is_step_7"]
+    },
+    {
+      "id": "KB-015",
+      "category": "as_is",
+      "questions": ["step 8 current process", "uat", "user acceptance testing"],
+      "short": "Step 8: UAT coordinated via email communication.",
+      "expanded": "Step 8: User Acceptance Testing (UAT) is coordinated via email communication. This manual coordination can lead to delays and miscommunication between teams and customers.",
+      "refs": ["as_is_step_8"]
+    },
+    {
+      "id": "KB-016",
+      "category": "as_is",
+      "questions": ["step 9 current process", "go-live", "launch"],
+      "short": "Step 9: Go-live scheduled after UAT completion.",
+      "expanded": "Step 9: Go-live is scheduled after UAT completion. This is the final step where the customer's system goes live and becomes operational.",
+      "refs": ["as_is_step_9"]
+    },
+    {
+      "id": "KB-017",
+      "category": "as_is",
+      "questions": ["step 10 current process", "handoff to cs", "customer success"],
+      "short": "Step 10: Support handed over to Customer Success team.",
+      "expanded": "Step 10: Support is handed over to the Customer Success team for ongoing support and relationship management. However, this handoff is often inconsistent and can lead to gaps in service.",
+      "refs": ["as_is_step_10"]
+    },
+    {
+      "id": "KB-018",
+      "category": "goals",
+      "questions": ["what are the business goals", "project objectives", "targets", "what do we want to achieve"],
+      "short": "Reduce onboarding to 3-4 weeks, increase CSAT to 8.5+, reduce churn to 14%, improve efficiency by 35%, standardize handoffs, create customer dashboard, achieve 95% on-time go-live.",
+      "expanded": "Business goals: 1) Reduce onboarding time from 6-8 weeks to 3-4 weeks by Q4 2024, 2) Increase CSAT scores from 6.2 to 8.5+, 3) Reduce onboarding-related churn from 23% to 14%, 4) Improve internal efficiency by 35%, 5) Standardize handoffs between departments, 6) Implement customer-facing dashboard for progress tracking, 7) Achieve 95% on-time go-live delivery.",
+      "refs": ["goals", "success_metrics"]
+    },
+    {
+      "id": "KB-019",
+      "category": "metrics",
+      "questions": ["what is csat", "customer satisfaction score", "define csat"],
+      "short": "CSAT is Customer Satisfaction Score. TechCorp's current CSAT is 6.2, target is 8.5+.",
+      "expanded": "CSAT stands for Customer Satisfaction Score, which measures how satisfied customers are with a company's product or service. TechCorp's current CSAT has dropped to 6.2 from 8.2, and the goal is to improve it to 8.5+ through better onboarding experience.",
+      "refs": ["metric_csat"]
+    },
+    {
+      "id": "KB-020",
+      "category": "metrics",
+      "questions": ["what is churn", "define churn", "customer churn"],
+      "short": "Churn is the percentage of customers who stop doing business. TechCorp has 23% churn in first 90 days, target is 14%.",
+      "expanded": "Churn refers to the percentage of customers who stop doing business with a company within a given timeframe. TechCorp currently experiences 23% churn within the first 90 days of onboarding, and the goal is to reduce this to 14% through improved onboarding process.",
+      "refs": ["metric_churn"]
+    },
+    {
+      "id": "KB-021",
+      "category": "metrics",
+      "questions": ["what is nps", "net promoter score", "define nps"],
+      "short": "NPS is Net Promoter Score. TechCorp's NPS dropped from 8.2 to 6.4.",
+      "expanded": "NPS stands for Net Promoter Score, which measures customer loyalty and likelihood to recommend the company. TechCorp's NPS has dropped from 8.2 to 6.4, indicating declining customer satisfaction and loyalty.",
+      "refs": ["metric_nps"]
+    },
+    {
+      "id": "KB-022",
+      "category": "definitions",
+      "questions": ["what is uat", "user acceptance testing", "define uat"],
+      "short": "UAT is User Acceptance Testing - final testing phase where customers validate the system meets their requirements.",
+      "expanded": "UAT stands for User Acceptance Testing, which is the final testing phase where customers validate that the system meets their requirements and is ready for go-live. Currently, UAT is coordinated via email, which can cause delays and miscommunication.",
+      "refs": ["definition_uat"]
+    },
+    {
+      "id": "KB-023",
+      "category": "definitions",
+      "questions": ["what is a handoff", "define handoff", "process handoff"],
+      "short": "Handoff is the transfer of work or responsibility from one team/department to another. Currently manual and causing delays.",
+      "expanded": "A handoff is the transfer of work, responsibility, or information from one team or department to another. Currently, handoffs are manual (via email) and cause 24-48 hour delays. The project aims to standardize and automate these handoffs.",
+      "refs": ["definition_handoff"]
+    },
+    {
+      "id": "KB-024",
+      "category": "definitions",
+      "questions": ["what is go-live", "define go-live", "launch date"],
+      "short": "Go-live is when the customer's system becomes operational and available for use.",
+      "expanded": "Go-live is the final milestone when the customer's system becomes operational and available for use. The project aims to achieve 95% on-time go-live delivery, compared to current inconsistent delivery dates.",
+      "refs": ["definition_go_live"]
+    },
+    {
+      "id": "KB-025",
+      "category": "definitions",
+      "questions": ["what is a milestone", "define milestone", "project milestones"],
+      "short": "Milestones are key checkpoints in the onboarding process. Currently no automated tracking exists.",
+      "expanded": "Milestones are key checkpoints or deliverables in the onboarding process that mark progress. Currently, there's no automated milestone tracking system, making it difficult for customers to know their progress. The new system will implement automated milestone tracking with a customer-facing dashboard.",
+      "refs": ["definition_milestone"]
+    },
+    {
+      "id": "KB-026",
+      "category": "stakeholders",
+      "questions": ["who are the stakeholders", "key people", "who is involved", "departments involved"],
+      "short": "7 departments involved: Sales, Implementation, IT, Product, Support, Customer Success, and enterprise clients.",
+      "expanded": "The project involves 7 departments: Sales (closes deals), Implementation (manages onboarding), IT (technical setup), Product (feature configuration), Support (ongoing assistance), Customer Success (post-onboarding), and enterprise clients going through onboarding. Each department currently works in silos.",
+      "refs": ["stakeholders"]
+    },
+    {
+      "id": "KB-027",
+      "category": "stakeholders",
+      "questions": ["who owns the process", "process ownership", "who manages onboarding"],
+      "short": "Currently fragmented ownership across departments with no single point of accountability.",
+      "expanded": "Currently, ownership is fragmented across multiple departments with no single point of accountability. Sales owns the initial handoff, Implementation owns the process, but IT, Product, and Support work independently. This fragmentation contributes to delays and poor coordination.",
+      "refs": ["stakeholders", "ownership"]
+    },
+    {
+      "id": "KB-028",
+      "category": "systems",
+      "questions": ["what systems are used", "tools involved", "software used"],
+      "short": "Salesforce (CRM), Monday.com (project tracking), email communication, and 4 disconnected IT/Product/Support systems.",
+      "expanded": "The process uses Salesforce for CRM, Monday.com for project tracking, email for communication, and 4 disconnected systems for IT, Product, and Support teams. There's no centralized platform for onboarding, which contributes to inefficiencies.",
+      "refs": ["systems"]
+    },
+    {
+      "id": "KB-029",
+      "category": "timeline",
+      "questions": ["how long is onboarding now", "current timeline", "how many weeks"],
+      "short": "Currently 6-8 weeks for enterprise clients, compared to competitors' 3-4 weeks.",
+      "expanded": "Currently, onboarding takes 6-8 weeks for enterprise clients, which is significantly longer than competitors who complete onboarding in 3-4 weeks. This extended timeline contributes to customer dissatisfaction and churn.",
+      "refs": ["timeline_current"]
+    },
+    {
+      "id": "KB-030",
+      "category": "timeline",
+      "questions": ["what is the target timeline", "goal timeline", "future timeline"],
+      "short": "Target is 3-4 weeks by Q4 2024, matching competitor timelines.",
+      "expanded": "The target timeline is to reduce onboarding to 3-4 weeks by Q4 2024, which would match competitor timelines and significantly improve customer satisfaction and reduce churn.",
+      "refs": ["timeline_target"]
+    },
+    {
+      "id": "KB-031",
+      "category": "financial_impact",
+      "questions": ["how much money is lost", "financial impact", "cost of problems"],
+      "short": "Inefficiencies cost TechCorp $2.3M annually in lost revenue and operational overhead.",
+      "expanded": "The current inefficiencies in the onboarding process are costing TechCorp an estimated $2.3M annually in lost revenue and operational overhead. This includes costs from customer churn, manual processes, delays, and poor resource utilization.",
+      "refs": ["financial_impact"]
+    },
+    {
+      "id": "KB-032",
+      "category": "customer_experience",
+      "questions": ["why are customers frustrated", "customer complaints", "what do customers say"],
+      "short": "Customers complain about delays, lack of progress visibility, inconsistent communication, and unclear go-live dates.",
+      "expanded": "Customers are frustrated due to delays in the onboarding process, lack of visibility into their progress, inconsistent communication from different departments, and unclear go-live dates. This poor experience contributes to the 23% churn rate.",
+      "refs": ["customer_experience"]
+    },
+    {
+      "id": "KB-033",
+      "category": "future_state",
+      "questions": ["what will the new process look like", "future process", "improved process"],
+      "short": "Standardized handoffs, automated milestone tracking, customer dashboard, centralized communication, and 3-4 week timeline.",
+      "expanded": "The improved process will feature standardized handoffs between departments, automated milestone tracking with a customer-facing dashboard, centralized communication, and a streamlined 3-4 week timeline. This will eliminate manual processes and provide better visibility.",
+      "refs": ["future_state"]
+    },
+    {
+      "id": "KB-034",
+      "category": "automation",
+      "questions": ["what will be automated", "automation goals", "manual processes to eliminate"],
+      "short": "Automate handoffs, milestone tracking, progress updates, and customer communication to eliminate manual email coordination.",
+      "expanded": "The project will automate handoffs between departments, milestone tracking and progress updates, customer communication, and eliminate manual email coordination. This will reduce delays and improve consistency.",
+      "refs": ["automation"]
+    },
+    {
+      "id": "KB-035",
+      "category": "dashboard",
+      "questions": ["what is the customer dashboard", "progress tracking", "customer visibility"],
+      "short": "Customer-facing dashboard for real-time progress tracking, milestone visibility, and communication updates.",
+      "expanded": "The customer dashboard will provide real-time progress tracking, milestone visibility, and communication updates. This will give customers transparency into their onboarding status and reduce the need for manual status inquiries.",
+      "refs": ["dashboard"]
+    },
+    {
+      "id": "KB-036",
+      "category": "communication",
+      "questions": ["how will communication improve", "communication cadence", "customer updates"],
+      "short": "Centralized communication system with consistent cadence and automated updates instead of fragmented department communications.",
+      "expanded": "Communication will improve through a centralized system with consistent cadence and automated updates, replacing the current fragmented approach where different departments send separate communications that can conflict or confuse customers.",
+      "refs": ["communication"]
+    },
+    {
+      "id": "KB-037",
+      "category": "escalation",
+      "questions": ["what are escalation procedures", "how to escalate", "blocker resolution"],
+      "short": "Currently unclear escalation procedures. Project will define standardized escalation protocols for onboarding issues.",
+      "expanded": "Currently, escalation procedures are unclear and vary by team. The project will define standardized escalation protocols for onboarding issues, ensuring consistent handling of blockers and delays.",
+      "refs": ["escalation"]
+    },
+    {
+      "id": "KB-038",
+      "category": "risks",
+      "questions": ["what are the risks", "project risks", "potential issues"],
+      "short": "Risks include resistance to change, system integration challenges, customer expectations during transition, and resource constraints.",
+      "expanded": "Key risks include resistance to change from teams used to working in silos, system integration challenges when connecting the 4 disconnected systems, managing customer expectations during the transition period, and resource constraints during implementation.",
+      "refs": ["risks"]
+    },
+    {
+      "id": "KB-039",
+      "category": "edge_cases",
+      "questions": ["what if customer data is delayed", "missing data", "incomplete information"],
+      "short": "Edge case: Customer data delays. Will need clear protocols for handling incomplete information and alternative timelines.",
+      "expanded": "Edge case: Customer data delays. The new process will need clear protocols for handling incomplete information, alternative timelines, and communication strategies when customers cannot provide required data on schedule.",
+      "refs": ["edge_cases"]
+    },
+    {
+      "id": "KB-040",
+      "category": "edge_cases",
+      "questions": ["what if calendars conflict", "scheduling conflicts", "meeting conflicts"],
+      "short": "Edge case: Conflicting calendars. Will implement centralized scheduling system to prevent stakeholder call conflicts.",
+      "expanded": "Edge case: Conflicting calendars. The new system will implement centralized scheduling to prevent stakeholder call conflicts that currently occur when different departments schedule meetings independently.",
+      "refs": ["edge_cases"]
+    },
+    {
+      "id": "KB-041",
+      "category": "edge_cases",
+      "questions": ["what if uat fails", "uat issues", "testing problems"],
+      "short": "Edge case: UAT failures. Will need clear protocols for handling testing issues and revised timelines.",
+      "expanded": "Edge case: UAT failures. The project will need clear protocols for handling testing issues, revised timelines, and communication strategies when user acceptance testing reveals problems that require fixes.",
+      "refs": ["edge_cases"]
+    },
+    {
+      "id": "KB-042",
+      "category": "edge_cases",
+      "questions": ["what if resources are constrained", "resource limitations", "staffing issues"],
+      "short": "Edge case: Resource constraints. Will need backup plans and priority protocols for handling limited staff availability.",
+      "expanded": "Edge case: Resource constraints. The project will need backup plans and priority protocols for handling limited staff availability, ensuring critical onboarding steps are not delayed due to resource limitations.",
+      "refs": ["edge_cases"]
+    },
+    {
+      "id": "KB-043",
+      "category": "success_metrics",
+      "questions": ["how will we measure success", "success criteria", "kpis"],
+      "short": "Success measured by: 3-4 week timeline, CSAT 8.5+, churn 14%, 35% efficiency improvement, 95% on-time go-live.",
+      "expanded": "Success will be measured by: achieving 3-4 week onboarding timeline, increasing CSAT to 8.5+, reducing churn to 14%, improving efficiency by 35%, achieving 95% on-time go-live delivery, and implementing standardized handoffs with customer dashboard.",
+      "refs": ["success_metrics"]
+    },
+    {
+      "id": "KB-044",
+      "category": "timeline",
+      "questions": ["when will this be complete", "project deadline", "completion date"],
+      "short": "Target completion is Q4 2024 for achieving 3-4 week onboarding timeline.",
+      "expanded": "The project aims to achieve the 3-4 week onboarding timeline by Q4 2024. This includes implementing all process improvements, system integrations, and achieving the target metrics.",
+      "refs": ["timeline_target"]
+    },
+    {
+      "id": "KB-045",
+      "category": "farewell",
+      "questions": ["goodbye", "bye", "see you", "thanks", "thank you"],
+      "short": "Thanks for discussing the Customer Onboarding Process Optimization project! Let me know if you need anything else.",
+      "expanded": "Thanks for discussing the Customer Onboarding Process Optimization project! I'm here to help with any questions about our goals, current process, pain points, or implementation plans. Feel free to reach out anytime.",
+      "refs": ["business_context"]
+    }
+  ]
+}
