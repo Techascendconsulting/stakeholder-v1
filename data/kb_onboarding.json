@@ -110,41 +110,233 @@
       "id": "KB-051",
       "category": "analysis",
       "questions": ["what is causing the 23% customer churn rate", "why are customers leaving", "churn rate causes", "customer retention issues"],
-      "short": "The 23% churn rate is caused by poor onboarding experience: delays, lack of visibility, inconsistent communication, and extended 6-8 week timeline.",
-      "expanded": "The 23% customer churn rate within the first 90 days is primarily caused by the poor onboarding experience. Customers face delays due to manual handoffs, lack of progress visibility, inconsistent communication from multiple departments, and the extended 6-8 week timeline compared to competitors' 3-4 weeks. This leads to frustration and customers seeking alternatives.",
-      "refs": ["churn", "customer_experience", "pain_points"]
+      "short": "23% churn caused by 6-8 week onboarding delays, lack of progress visibility, inconsistent communication, and unclear go-live dates.",
+      "expanded": "The 23% customer churn rate is caused by the extended 6-8 week onboarding timeline, lack of progress visibility throughout the process, inconsistent communication from different departments, unclear go-live dates, and no centralized tracking system. Customers become frustrated and leave within 90 days.",
+      "refs": ["churn_analysis", "customer_experience"]
     },
     {
       "id": "KB-052",
       "category": "process",
       "questions": ["how do manual handoffs impact customer experience", "handoff problems", "manual process impact"],
-      "short": "Manual handoffs cause 24-48 hour delays, inconsistent information transfer, and customer confusion about next steps.",
-      "expanded": "Manual handoffs between departments cause 24-48 hour delays as teams manually compose and send emails. This leads to inconsistent information transfer, customer confusion about next steps, and a lack of accountability. Customers often don't know who to contact or what to expect, creating frustration and delays.",
-      "refs": ["handoffs", "delays", "customer_experience"]
+      "short": "Manual handoffs cause 24-48 hour delays, inconsistent information transfer, and customer confusion from multiple department contacts.",
+      "expanded": "Manual handoffs impact customer experience by causing 24-48 hour delays between steps, inconsistent information transfer between departments, and customer confusion from receiving communications from multiple different teams without coordination.",
+      "refs": ["handoffs", "customer_experience"]
     },
     {
       "id": "KB-053",
-      "category": "financial",
+      "category": "analysis",
       "questions": ["what is the financial impact", "cost of inefficiencies", "how much money is lost", "financial losses"],
       "short": "Current inefficiencies cost TechCorp $2.3M annually in lost revenue and operational overhead.",
-      "expanded": "The current inefficiencies in the onboarding process cost TechCorp an estimated $2.3M annually in lost revenue and operational overhead. This includes the cost of customer churn (23% rate), manual processes requiring additional staff time, delays in revenue recognition, and the overhead of managing disconnected systems.",
-      "refs": ["financial_impact", "costs"]
+      "expanded": "The current inefficient onboarding process costs TechCorp Solutions an estimated $2.3M annually in lost revenue and operational overhead due to delays, customer churn, and resource waste across 7 departments.",
+      "refs": ["financial_impact", "cost_analysis"]
     },
     {
       "id": "KB-054",
-      "category": "benchmarking",
+      "category": "analysis",
       "questions": ["why is our onboarding taking 6-8 weeks vs competitors 3-4 weeks", "competitor comparison", "industry benchmark", "why are we slower"],
-      "short": "We're slower due to manual handoffs, no centralized tracking, siloed teams, and 4 disconnected systems vs competitors' integrated platforms.",
-      "expanded": "Our onboarding takes 6-8 weeks vs competitors' 3-4 weeks because we rely on manual handoffs between departments, lack centralized tracking systems, have siloed teams working independently, and use 4 disconnected systems. Competitors typically have integrated platforms that automate handoffs, provide real-time tracking, and enable cross-team collaboration.",
-      "refs": ["benchmarking", "competitors", "efficiency"]
+      "short": "We're slower due to manual handoffs, disconnected systems, siloed teams, and lack of centralized tracking compared to competitors' streamlined processes.",
+      "expanded": "Our onboarding takes 6-8 weeks vs competitors' 3-4 weeks due to manual handoffs between departments, 4 disconnected systems that don't integrate, siloed teams working independently, and lack of centralized tracking and milestone visibility that competitors have.",
+      "refs": ["benchmarking", "process_analysis"]
     },
     {
       "id": "KB-055",
-      "category": "systems",
+      "category": "process",
       "questions": ["how do the 4 disconnected systems create bottlenecks", "system integration issues", "technical bottlenecks"],
-      "short": "The 4 disconnected systems require manual data entry, cause information gaps, prevent real-time updates, and create coordination delays.",
-      "expanded": "The 4 disconnected systems (Salesforce, Monday.com, IT systems, Product systems) create bottlenecks by requiring manual data entry between systems, causing information gaps and inconsistencies, preventing real-time updates across teams, and creating coordination delays. Teams can't see each other's progress or updates, leading to conflicts and inefficiencies.",
-      "refs": ["systems", "integration", "bottlenecks"]
+      "short": "4 disconnected systems (Salesforce, Monday.com, IT/Product/Support tools) require manual data entry, cause delays, and prevent real-time coordination.",
+      "expanded": "The 4 disconnected systems (Salesforce CRM, Monday.com project tracking, IT tools, Product/Support systems) create bottlenecks by requiring manual data entry between systems, causing delays in information flow, and preventing real-time coordination between teams.",
+      "refs": ["systems", "technical_issues"]
+    },
+    {
+      "id": "KB-056",
+      "category": "process",
+      "questions": ["can you walk me through the current 10-step onboarding process", "current workflow", "step by step process"],
+      "short": "10 steps: Sales close → email handoff → kickoff → Monday.com → parallel setup → conflicting calls → staging → UAT → go-live → CS handoff.",
+      "expanded": "The current 10-step process: 1) Sales closes deal in Salesforce, 2) Manual email handoff to Implementation (24-48hrs delay), 3) Kickoff call (3-5 business days), 4) Data entry into Monday.com, 5) Parallel technical setup across IT/Product/Support, 6) Independent stakeholder calls (conflicts), 7) Staging configuration, 8) UAT via email, 9) Go-live scheduling, 10) Handoff to Customer Success.",
+      "refs": ["as_is_process", "workflow"]
+    },
+    {
+      "id": "KB-057",
+      "category": "analysis",
+      "questions": ["where do the biggest delays occur in the process", "bottleneck points", "delay causes"],
+      "short": "Biggest delays: 24-48hr email handoff, 3-5 day kickoff scheduling, parallel silo work, conflicting stakeholder calls, and UAT coordination.",
+      "expanded": "The biggest delays occur at: manual email handoff (24-48 hours), kickoff call scheduling (3-5 business days), parallel work in silos without coordination, conflicting stakeholder calls scheduled independently, and UAT coordination via email.",
+      "refs": ["delays", "bottlenecks"]
+    },
+    {
+      "id": "KB-058",
+      "category": "process",
+      "questions": ["how do teams communicate during handoffs", "communication gaps", "team coordination"],
+      "short": "Teams communicate via manual email handoffs, leading to delays, inconsistent information, and customer confusion from multiple contacts.",
+      "expanded": "Teams communicate during handoffs via manual email, which causes 24-48 hour delays and inconsistent information transfer between departments, and customer confusion from receiving communications from multiple different teams without coordination.",
+      "refs": ["communication", "handoffs"]
+    },
+    {
+      "id": "KB-059",
+      "category": "process",
+      "questions": ["what happens when uat testing fails", "uat issues", "testing problems"],
+      "short": "When UAT fails, there's no clear protocol, causing delays, email coordination issues, and unclear resolution timelines.",
+      "expanded": "When UAT testing fails, there's no clear protocol for handling issues, causing delays, email coordination problems between teams, and unclear resolution timelines for customers.",
+      "refs": ["uat", "testing_issues"]
+    },
+    {
+      "id": "KB-060",
+      "category": "process",
+      "questions": ["how is progress tracked throughout the process", "tracking mechanisms", "progress monitoring"],
+      "short": "Progress tracked manually in email and spreadsheets with no centralized system, leading to poor visibility and delays.",
+      "expanded": "Progress is tracked manually in email and spreadsheets with no centralized system, leading to poor visibility for customers and teams, delays in identifying issues, and inconsistent status reporting.",
+      "refs": ["tracking", "monitoring"]
+    },
+    {
+      "id": "KB-061",
+      "category": "process",
+      "questions": ["what are the escalation procedures when issues arise", "issue resolution", "escalation protocols"],
+      "short": "Currently unclear escalation procedures that vary by team, leading to inconsistent handling of blockers and delays.",
+      "expanded": "Currently, escalation procedures are unclear and vary by team, leading to inconsistent handling of blockers and delays. The project will define standardized escalation protocols.",
+      "refs": ["escalation", "issue_management"]
+    },
+    {
+      "id": "KB-062",
+      "category": "stakeholders",
+      "questions": ["what is each department's role in the onboarding process", "department responsibilities", "team roles"],
+      "short": "Sales closes deals, Implementation manages onboarding, IT handles technical setup, Product configures features, Support provides assistance, Customer Success handles post-onboarding.",
+      "expanded": "Each department's role: Sales closes deals in Salesforce, Implementation manages the onboarding process, IT handles technical setup, Product configures features, Support provides ongoing assistance, and Customer Success handles post-onboarding support.",
+      "refs": ["departments", "roles"]
+    },
+    {
+      "id": "KB-063",
+      "category": "stakeholders",
+      "questions": ["who owns the overall customer experience", "accountability", "customer experience ownership"],
+      "short": "Currently no single owner of customer experience, leading to fragmented responsibility across 7 departments.",
+      "expanded": "Currently there's no single owner of the overall customer experience, leading to fragmented responsibility across 7 departments. The project aims to establish clear ownership and accountability.",
+      "refs": ["ownership", "accountability"]
+    },
+    {
+      "id": "KB-064",
+      "category": "stakeholders",
+      "questions": ["how do sales and implementation teams coordinate", "team collaboration", "sales implementation coordination"],
+      "short": "Sales and Implementation coordinate via manual email handoff with 24-48 hour delays and inconsistent information transfer.",
+      "expanded": "Sales and Implementation teams coordinate via manual email handoff, which causes 24-48 hour delays and inconsistent information transfer between the teams.",
+      "refs": ["coordination", "handoffs"]
+    },
+    {
+      "id": "KB-065",
+      "category": "stakeholders",
+      "questions": ["what are the it team's technical requirements", "technical constraints", "it requirements"],
+      "short": "IT team needs integration with Salesforce, Monday.com, and other systems, plus technical setup capabilities for customer environments.",
+      "expanded": "The IT team needs integration capabilities with Salesforce, Monday.com, and other systems, plus technical setup capabilities for customer environments and staging configurations.",
+      "refs": ["technical_requirements", "it_needs"]
+    },
+    {
+      "id": "KB-066",
+      "category": "stakeholders",
+      "questions": ["how does customer success get involved", "cs involvement", "customer success role"],
+      "short": "Customer Success gets involved at the end for post-onboarding support, but the handoff is inconsistent and often leads to gaps.",
+      "expanded": "Customer Success gets involved at the end of the process for post-onboarding support, but the handoff from Implementation is inconsistent and often leads to gaps in customer support.",
+      "refs": ["customer_success", "handoffs"]
+    },
+    {
+      "id": "KB-067",
+      "category": "stakeholders",
+      "questions": ["what are the customer's expectations from each team", "customer expectations", "team expectations"],
+      "short": "Customers expect clear communication, progress updates, timely responses, and coordinated support from all teams involved.",
+      "expanded": "Customers expect clear communication, progress updates, timely responses, and coordinated support from all teams involved in their onboarding process.",
+      "refs": ["customer_expectations", "service_standards"]
+    },
+    {
+      "id": "KB-068",
+      "category": "solutions",
+      "questions": ["how can we reduce onboarding time from 6-8 to 3-4 weeks", "timeline optimization", "speed improvement"],
+      "short": "Reduce time by automating handoffs, implementing centralized tracking, standardizing communication, and eliminating manual processes.",
+      "expanded": "We can reduce onboarding time from 6-8 to 3-4 weeks by automating handoffs between departments, implementing centralized tracking and milestone visibility, standardizing communication cadence, and eliminating manual data entry and coordination processes.",
+      "refs": ["timeline_optimization", "automation"]
+    },
+    {
+      "id": "KB-069",
+      "category": "solutions",
+      "questions": ["what would a centralized onboarding platform look like", "system architecture", "platform design"],
+      "short": "Centralized platform would integrate Salesforce, Monday.com, and other systems with automated workflows, progress tracking, and customer dashboard.",
+      "expanded": "A centralized onboarding platform would integrate Salesforce, Monday.com, and other systems with automated workflows, real-time progress tracking, customer dashboard, and standardized communication protocols.",
+      "refs": ["platform_design", "system_integration"]
+    },
+    {
+      "id": "KB-070",
+      "category": "solutions",
+      "questions": ["how can we automate manual handoffs", "automation opportunities", "handoff automation"],
+      "short": "Automate handoffs by creating integrated workflows between systems, eliminating email coordination, and implementing real-time data sync.",
+      "expanded": "We can automate manual handoffs by creating integrated workflows between Salesforce, Monday.com, and other systems, eliminating email coordination, and implementing real-time data synchronization between departments.",
+      "refs": ["automation", "workflow_integration"]
+    },
+    {
+      "id": "KB-071",
+      "category": "solutions",
+      "questions": ["what customer-facing dashboard features would be most valuable", "dashboard design", "customer features"],
+      "short": "Most valuable features: real-time progress tracking, milestone visibility, communication updates, and go-live countdown.",
+      "expanded": "Most valuable customer-facing dashboard features would include real-time progress tracking, milestone visibility, communication updates, go-live countdown, and status notifications.",
+      "refs": ["dashboard_features", "customer_experience"]
+    },
+    {
+      "id": "KB-072",
+      "category": "solutions",
+      "questions": ["how can we standardize communication across teams", "communication standardization", "team coordination"],
+      "short": "Standardize communication by implementing centralized system with consistent cadence, automated updates, and coordinated messaging.",
+      "expanded": "We can standardize communication across teams by implementing a centralized system with consistent cadence, automated updates, and coordinated messaging to replace the current fragmented approach.",
+      "refs": ["communication_standardization", "coordination"]
+    },
+    {
+      "id": "KB-073",
+      "category": "solutions",
+      "questions": ["what metrics should we track to measure success", "kpis", "success metrics"],
+      "short": "Track: onboarding timeline (3-4 weeks), CSAT (8.5+), churn rate (14%), efficiency (35% improvement), on-time delivery (95%).",
+      "expanded": "Key metrics to track: onboarding timeline (3-4 weeks), CSAT scores (8.5+), churn rate (14%), internal efficiency (35% improvement), and on-time go-live delivery (95%).",
+      "refs": ["kpis", "success_metrics"]
+    },
+    {
+      "id": "KB-074",
+      "category": "next_steps",
+      "questions": ["what is the implementation timeline and milestones", "project roadmap", "implementation plan"],
+      "short": "Implementation timeline targets Q4 2024 completion with milestones for system integration, process changes, and metric achievement.",
+      "expanded": "The implementation timeline targets Q4 2024 completion with milestones for system integration, process changes, team training, and achievement of target metrics including 3-4 week onboarding timeline.",
+      "refs": ["timeline", "milestones"]
+    },
+    {
+      "id": "KB-075",
+      "category": "next_steps",
+      "questions": ["what resources and budget are needed", "resource allocation", "budget requirements"],
+      "short": "Resources needed: development team for system integration, process consultants, training budget, and implementation support across 7 departments.",
+      "expanded": "Resources and budget needed include development team for system integration, process consultants for workflow optimization, training budget for 7 departments, and implementation support resources.",
+      "refs": ["resources", "budget"]
+    },
+    {
+      "id": "KB-076",
+      "category": "next_steps",
+      "questions": ["how will we manage the transition from old to new process", "change management", "transition planning"],
+      "short": "Transition management includes phased rollout, team training, parallel system testing, and clear communication about changes.",
+      "expanded": "Transition management includes phased rollout of new processes, comprehensive team training, parallel system testing, and clear communication about changes to minimize disruption.",
+      "refs": ["change_management", "transition"]
+    },
+    {
+      "id": "KB-077",
+      "category": "next_steps",
+      "questions": ["what training will teams need", "team readiness", "training requirements"],
+      "short": "Teams need training on new systems, standardized processes, communication protocols, and customer dashboard usage.",
+      "expanded": "Teams need training on new integrated systems, standardized processes, communication protocols, customer dashboard usage, and updated escalation procedures.",
+      "refs": ["training", "team_readiness"]
+    },
+    {
+      "id": "KB-078",
+      "category": "next_steps",
+      "questions": ["how will we measure and track progress", "progress monitoring", "measurement systems"],
+      "short": "Progress tracking through integrated dashboard, automated milestone monitoring, and regular KPI reporting across all departments.",
+      "expanded": "Progress tracking will be done through integrated dashboard, automated milestone monitoring, and regular KPI reporting across all departments to ensure we meet our targets.",
+      "refs": ["progress_tracking", "monitoring"]
+    },
+    {
+      "id": "KB-079",
+      "category": "next_steps",
+      "questions": ["what are the risks and mitigation strategies", "risk assessment", "mitigation planning"],
+      "short": "Risks: resistance to change, system integration challenges, customer expectations during transition. Mitigation: training, phased rollout, clear communication.",
+      "expanded": "Key risks include resistance to change from teams used to working in silos, system integration challenges, and managing customer expectations during transition. Mitigation strategies include comprehensive training, phased rollout, and clear communication.",
+      "refs": ["risks", "mitigation"]
     },
     {
       "id": "KB-005",
