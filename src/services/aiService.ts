@@ -368,7 +368,8 @@ class AIService {
     }
     // Fallback to derived offering if explicit fields absent
     const derived = this.deriveOfferingFromProject(project);
-    return derived ? `We primarily offer ${derived}.` : '';
+    // Let OpenAI generate contextual responses instead of hardcoded ones
+    return '';
   }
 
   private removeRepetitivePhrases(text: string): string {

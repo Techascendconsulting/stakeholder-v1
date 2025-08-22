@@ -288,24 +288,8 @@ class StakeholderKnowledgeBase {
   private generatePainPointExplanation(painPoint: string, project: ProjectContext): string {
     const lowerPainPoint = painPoint.toLowerCase();
     
-    if (lowerPainPoint.includes('handoff') || lowerPainPoint.includes('hand off')) {
-      return `Handoffs refer to the process of transferring work or information from one person or department to another. In our current system, these handoffs are causing delays because there's no clear ownership or tracking mechanism. For example, when customer data moves from sales to operations, it often gets stuck in email chains or gets lost in the process.`;
-    }
-    
-    if (lowerPainPoint.includes('manual') || lowerPainPoint.includes('data entry')) {
-      return `Manual data entry means our team has to manually input information into our systems instead of having it automatically transferred. This is time-consuming, error-prone, and creates bottlenecks. For instance, when a new customer signs up, someone has to manually copy their information from one system to another.`;
-    }
-    
-    if (lowerPainPoint.includes('delay') || lowerPainPoint.includes('slow')) {
-      return `Delays occur because our current process has multiple steps that aren't streamlined. Each step adds time, and when there are issues or questions, the whole process gets held up. This affects our ability to serve customers quickly and efficiently.`;
-    }
-    
-    if (lowerPainPoint.includes('communication') || lowerPainPoint.includes('coordination')) {
-      return `Communication issues happen because different departments work in silos. Information doesn't flow smoothly between teams, leading to misunderstandings, duplicated work, and missed deadlines. We need better coordination mechanisms.`;
-    }
-    
-    // Default explanation
-    return `${painPoint} is a significant issue in our current process. It's causing inefficiencies and impacting our ability to deliver value to our customers. We need to address this as part of our improvement efforts.`;
+    // Let OpenAI generate contextual explanations instead of hardcoded responses
+    return '';
   }
 
   // Set knowledge base for a project
