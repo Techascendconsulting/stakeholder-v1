@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import HybridKnowledgeBase, { SearchResult } from '../server/kb';
+import HybridKnowledgeBase, { SearchResult } from '../../server/kb';
 
 interface AgentResponse {
   content: string;
