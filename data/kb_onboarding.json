@@ -513,7 +513,7 @@
       "short": "Teams interact through manual handoffs, independent calls, and email coordination, leading to conflicts and delays.",
       "expanded": "The 7 teams interact poorly: Sales hands off to Implementation via email (24-48hr delays), Implementation schedules kickoff calls independently, IT/Product/Support work in parallel silos without coordination, teams schedule conflicting stakeholder calls, and there's no centralized communication or tracking system.",
       "refs": ["team_interactions", "handoffs", "communication"]
-    }
+    },
     {
       "id": "KB-005",
       "category": "problem_statement",
