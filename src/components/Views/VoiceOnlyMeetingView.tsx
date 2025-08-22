@@ -269,7 +269,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const { setupData } = useMeetingSetup();
   
   // Component-level single agent system instance
-  const singleAgentSystem = SingleAgentSystem.getInstance();
+  // Already imported as singleAgentSystem
   
   // State management (same as before)
   const [messages, setMessages] = useState<Message[]>([]);
