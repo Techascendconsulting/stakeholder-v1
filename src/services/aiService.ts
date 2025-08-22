@@ -643,11 +643,11 @@ class AIService {
       const { messages, project, participants, duration, startTime, endTime } = meetingData;
       
       if (!messages || messages.length === 0) {
-        return "Meeting discussion not sufficient to create a summary.";
+        return "No meeting content available to summarize.";
       }
 
       if (messages.length < 2) {
-        return "Meeting discussion not sufficient to create a summary.";
+        return "Insufficient meeting content to create a meaningful summary.";
       }
 
       progressCallback?.("Generating comprehensive meeting summary...");
@@ -679,11 +679,11 @@ class AIService {
       
       progressCallback?.("Summary generation completed.");
       
-      return summary || "Meeting discussion not sufficient to create a summary.";
+      return summary || "Unable to generate meeting summary.";
       
     } catch (error) {
       console.error("Error generating interview notes:", error);
-      return "Meeting discussion not sufficient to create a summary.";
+      return "Unable to generate meeting summary due to an error.";
     }
   }
 }
