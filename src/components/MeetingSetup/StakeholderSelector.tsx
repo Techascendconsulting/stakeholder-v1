@@ -1,5 +1,4 @@
 import React from 'react';
-import DebugConsole from '../Debug/DebugConsole';
 import { Check } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
