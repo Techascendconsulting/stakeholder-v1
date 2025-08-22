@@ -16,7 +16,7 @@ import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtil
 import { useNavigate } from 'react-router-dom';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 import DebugConsole from '../DebugConsole';
-import QuestionSuggestions from '../QuestionSuggestions';
+import QuestionHelperBot from '../QuestionHelperBot';
 
 interface ParticipantCardProps {
   participant: any;
@@ -4264,21 +4264,7 @@ Guidelines:
                 </div>
               </div>
 
-              {/* Question Suggestions */}
-              <div className="mt-4">
-                <QuestionSuggestions
-                  conversationHistory={transcriptMessages.map(msg => ({ 
-                    role: msg.speaker === 'user' ? 'user' : 'assistant', 
-                    content: msg.content 
-                  }))}
-                  onQuestionSelect={(question) => {
-                    // Auto-submit the question using the correct function
-                    handleSendMessageWithText(question);
-                  }}
-                  stakeholderContext={selectedStakeholders?.[0]}
-                  className="mb-4"
-                />
-              </div>
+
             </>
           )}
         </div>
@@ -4384,10 +4370,19 @@ Guidelines:
             </div>
           </div>
         )}
+
+        {/* Question Helper Bot - Floating Chatbot */}
+        <QuestionHelperBot
+          conversationHistory={transcriptMessages.map(msg => ({ 
+            role: msg.speaker === 'user' ? 'user' : 'assistant', 
+            content: msg.content 
+          }))}
+          onQuestionSelect={(question) => {
+            handleSendMessageWithText(question);
+          }}
+          stakeholderContext={selectedStakeholders?.[0]}
+        />
       </div>
     </div>
   );
-};// Updated audio button behavior
-// Audio button reverted to start/stop
-// Fix for persistent feedback message
-// Persistent feedback fix applied
+};

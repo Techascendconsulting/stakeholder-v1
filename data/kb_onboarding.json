@@ -43,6 +43,78 @@
       "refs": ["business_context"]
     },
     {
+      "id": "KB-047",
+      "category": "stakeholders",
+      "questions": ["who are the key stakeholders", "who is involved", "key people", "who owns this project", "who are the stakeholders"],
+      "short": "Key stakeholders include Sales, Implementation, IT, Product, Support, Customer Success teams, and enterprise clients.",
+      "expanded": "The project has executive sponsorship from the Chief Customer Officer and VP of Operations. Key stakeholders include Sales team (deal closure), Implementation team (onboarding execution), IT team (technical setup), Product team (feature configuration), Support team (ongoing assistance), Customer Success team (post-onboarding), and enterprise clients going through the onboarding process.",
+      "refs": ["stakeholders", "departments"]
+    },
+    {
+      "id": "KB-048",
+      "category": "goals",
+      "questions": ["what are our business goals", "project objectives", "what do we want to achieve", "success criteria", "targets for this project"],
+      "short": "Goals: 3-4 week onboarding by Q4 2024, CSAT 6.2→8.5+, churn 23%→14%, +35% efficiency, standardized handoffs, customer dashboard, 95% on-time go-live.",
+      "expanded": "Our business goals are: 1) Reduce onboarding time from 6-8 weeks to 3-4 weeks by Q4 2024, 2) Increase CSAT scores from 6.2 to 8.5+, 3) Reduce onboarding-related churn from 23% to 14%, 4) Improve internal efficiency by 35%, 5) Standardize handoffs between departments, 6) Implement automated progress tracking with customer-facing dashboard, 7) Achieve 95% on-time go-live delivery.",
+      "refs": ["goals", "metrics", "timeline"]
+    },
+    {
+      "id": "KB-049",
+      "category": "timeline",
+      "questions": ["how long does the current process take", "current onboarding timeline", "how many weeks", "current duration"],
+      "short": "Currently onboarding takes 6-8 weeks for enterprise clients, compared to competitors' 3-4 weeks.",
+      "expanded": "Currently, onboarding takes 6-8 weeks for enterprise clients, which is significantly longer than our competitors who complete onboarding in 3-4 weeks. This extended timeline contributes to customer dissatisfaction and the high churn rate of 23% within the first 90 days.",
+      "refs": ["timeline", "benchmarking"]
+    },
+    {
+      "id": "KB-050",
+      "category": "systems",
+      "questions": ["what systems are currently used", "current tools", "what software do we use", "systems and tools"],
+      "short": "Current systems: Salesforce (CRM), Monday.com (project tracking), email communication, and 4 disconnected IT/Product/Support systems.",
+      "expanded": "The current process uses Salesforce for CRM and deal management, Monday.com for project tracking, email for communication between teams, and 4 disconnected IT, Product, and Support systems. There is no centralized platform for onboarding, which contributes to the fragmentation and inefficiency.",
+      "refs": ["systems", "tools"]
+    },
+    {
+      "id": "KB-051",
+      "category": "analysis",
+      "questions": ["what is causing the 23% customer churn rate", "why are customers leaving", "churn rate causes", "customer retention issues"],
+      "short": "The 23% churn rate is caused by poor onboarding experience: delays, lack of visibility, inconsistent communication, and extended 6-8 week timeline.",
+      "expanded": "The 23% customer churn rate within the first 90 days is primarily caused by the poor onboarding experience. Customers face delays due to manual handoffs, lack of progress visibility, inconsistent communication from multiple departments, and the extended 6-8 week timeline compared to competitors' 3-4 weeks. This leads to frustration and customers seeking alternatives.",
+      "refs": ["churn", "customer_experience", "pain_points"]
+    },
+    {
+      "id": "KB-052",
+      "category": "process",
+      "questions": ["how do manual handoffs impact customer experience", "handoff problems", "manual process impact"],
+      "short": "Manual handoffs cause 24-48 hour delays, inconsistent information transfer, and customer confusion about next steps.",
+      "expanded": "Manual handoffs between departments cause 24-48 hour delays as teams manually compose and send emails. This leads to inconsistent information transfer, customer confusion about next steps, and a lack of accountability. Customers often don't know who to contact or what to expect, creating frustration and delays.",
+      "refs": ["handoffs", "delays", "customer_experience"]
+    },
+    {
+      "id": "KB-053",
+      "category": "financial",
+      "questions": ["what is the financial impact", "cost of inefficiencies", "how much money is lost", "financial losses"],
+      "short": "Current inefficiencies cost TechCorp $2.3M annually in lost revenue and operational overhead.",
+      "expanded": "The current inefficiencies in the onboarding process cost TechCorp an estimated $2.3M annually in lost revenue and operational overhead. This includes the cost of customer churn (23% rate), manual processes requiring additional staff time, delays in revenue recognition, and the overhead of managing disconnected systems.",
+      "refs": ["financial_impact", "costs"]
+    },
+    {
+      "id": "KB-054",
+      "category": "benchmarking",
+      "questions": ["why is our onboarding taking 6-8 weeks vs competitors 3-4 weeks", "competitor comparison", "industry benchmark", "why are we slower"],
+      "short": "We're slower due to manual handoffs, no centralized tracking, siloed teams, and 4 disconnected systems vs competitors' integrated platforms.",
+      "expanded": "Our onboarding takes 6-8 weeks vs competitors' 3-4 weeks because we rely on manual handoffs between departments, lack centralized tracking systems, have siloed teams working independently, and use 4 disconnected systems. Competitors typically have integrated platforms that automate handoffs, provide real-time tracking, and enable cross-team collaboration.",
+      "refs": ["benchmarking", "competitors", "efficiency"]
+    },
+    {
+      "id": "KB-055",
+      "category": "systems",
+      "questions": ["how do the 4 disconnected systems create bottlenecks", "system integration issues", "technical bottlenecks"],
+      "short": "The 4 disconnected systems require manual data entry, cause information gaps, prevent real-time updates, and create coordination delays.",
+      "expanded": "The 4 disconnected systems (Salesforce, Monday.com, IT systems, Product systems) create bottlenecks by requiring manual data entry between systems, causing information gaps and inconsistencies, preventing real-time updates across teams, and creating coordination delays. Teams can't see each other's progress or updates, leading to conflicts and inefficiencies.",
+      "refs": ["systems", "integration", "bottlenecks"]
+    },
+    {
       "id": "KB-005",
       "category": "problem_statement",
       "questions": ["what problem are we solving", "why is this project needed", "what issues exist", "current problems"],

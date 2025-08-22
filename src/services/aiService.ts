@@ -90,6 +90,42 @@ class AIService {
     return AIService.instance;
   }
 
+  // Add missing detectStakeholderMentions function
+  public async detectStakeholderMentions(
+    message: string,
+    availableStakeholders: any[],
+    userId: string,
+    lastSpeaker?: string | null,
+    conversationContext?: string
+  ): Promise<{
+    mentionedStakeholders: any[];
+    confidence: number;
+  }> {
+    try {
+      const messageLower = message.toLowerCase();
+      const mentionedStakeholders = availableStakeholders.filter(stakeholder => {
+        const nameLower = stakeholder.name.toLowerCase();
+        const roleLower = stakeholder.role.toLowerCase();
+        return messageLower.includes(nameLower) || messageLower.includes(roleLower);
+      });
+
+      return {
+        mentionedStakeholders,
+        confidence: mentionedStakeholders.length > 0 ? 0.8 : 0.0
+      };
+    } catch (error) {
+      console.error('Error detecting stakeholder mentions:', error);
+      return {
+        mentionedStakeholders: [],
+        confidence: 0.0
+      };
+    }
+  }
+
+  public static getMentionConfidenceThreshold(): number {
+    return 0.7;
+  }
+
   public resetConversationState(): void {
     this.conversationState = this.initializeConversationState();
   }

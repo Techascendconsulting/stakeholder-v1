@@ -51,9 +51,16 @@ class SingleAgentSystem {
         timestamp: new Date()
       });
 
+      // Fast fallback for common questions (no API call)
+      const fastResponse = this.getFastResponse(userMessage);
+      if (fastResponse) {
+        console.log('⚡ FAST RESPONSE:', fastResponse);
+        return fastResponse;
+      }
+
       // Step 1: Search KB for relevant information (cheap - just embeddings)
       const kbResults = await this.kb.searchKB(userMessage);
-      const topResults = kbResults.filter(result => result.score >= 0.3).slice(0, 3);
+      const topResults = kbResults.filter(result => result.score >= 0.2).slice(0, 2); // Faster: fewer results, lower threshold
       
       console.log('📚 KB Results:', topResults.length, 'entries found');
 
@@ -118,8 +125,9 @@ Respond naturally to: ${userMessage}`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      max_tokens: 200,
-      temperature: 0.7
+      max_tokens: 150, // Reduced for faster responses
+      temperature: 0.5, // Lower temperature for more consistent responses
+      timeout: 10000 // 10 second timeout
     });
 
     return response.choices[0]?.message?.content || this.getSimpleFallback(userMessage);
