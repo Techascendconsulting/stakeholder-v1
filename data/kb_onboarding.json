@@ -35,6 +35,14 @@
       "refs": ["business_context"]
     },
     {
+      "id": "KB-046",
+      "category": "products_services",
+      "questions": ["what products do we sell", "what services do we offer", "what does techcorp sell", "what are our products", "what do we offer customers"],
+      "short": "TechCorp Solutions offers enterprise software solutions including CRM platforms, project management tools, and business automation software.",
+      "expanded": "TechCorp Solutions offers enterprise software solutions including CRM platforms for customer relationship management, project management tools for team collaboration, and business automation software to streamline operations. Our products help businesses improve efficiency, manage customer relationships, and automate complex workflows.",
+      "refs": ["business_context"]
+    },
+    {
       "id": "KB-005",
       "category": "problem_statement",
       "questions": ["what problem are we solving", "why is this project needed", "what issues exist", "current problems"],

@@ -49,6 +49,9 @@ class MultiAgentSystem {
     projectContext: any
   ): Promise<string> {
     try {
+      console.log('🤖 MULTI-AGENT: Processing message for', stakeholderContext?.name, '(', stakeholderContext?.role, ')');
+      console.log('🤖 MULTI-AGENT: User message:', userMessage);
+      
       // Update context
       this.conversationContext.stakeholderContext = stakeholderContext;
       this.conversationContext.projectContext = projectContext;
@@ -82,6 +85,7 @@ class MultiAgentSystem {
       // Step 5: Safety/Validation Agent
       const finalResponse = await this.safetyValidationAgent(response);
       console.log('✅ Safety Check Passed');
+      console.log('🤖 MULTI-AGENT: Final response for', stakeholderContext?.name, ':', finalResponse.content.substring(0, 100) + '...');
 
       // Update conversation history
       this.conversationContext.history.push({
@@ -225,13 +229,17 @@ Expanded: ${entry.expanded}`;
 
 You are ${this.conversationContext.stakeholderContext?.name || 'a team member'} (${this.conversationContext.stakeholderContext?.role || 'stakeholder'}).
 
-IMPORTANT RULES:
+CRITICAL RESPONSE RULES:
 1. Use ONLY information from the provided KB context
-2. Be conversational and natural, like a colleague in a meeting
-3. Reference specific facts from the KB when relevant
-4. If information isn't in the KB, say you don't have that specific information
-5. Keep responses concise but informative
-6. Maintain the conversation flow naturally
+2. Be conversational and natural, like a colleague in a meeting - NOT formal or robotic
+3. NEVER use asterisks (*) in responses - write naturally
+4. NEVER use dashes in numbers - say "6 to 8 weeks" not "6-8 weeks", "3 to 4 weeks" not "3-4 weeks"
+5. AVOID repetitive phrases like "feel free to ask", "let me know", "if you have questions"
+6. Be direct and specific - don't be overly helpful or formal
+7. If information isn't in the KB, simply say "I don't have that information" without offering alternatives
+8. Keep responses concise but informative
+9. Maintain the conversation flow naturally
+10. Speak like a real person, not a customer service representative
 
 KB Context:
 ${kbContext}
@@ -241,7 +249,7 @@ ${conversationContext}
 
 Query Analysis: ${JSON.stringify(queryAnalysis)}
 
-Generate a natural, contextual response that addresses the user's question using the KB information.`;
+Generate a natural, human-like response that addresses the user's question using the KB information.`;
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
