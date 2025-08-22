@@ -143,7 +143,6 @@ class SingleAgentSystem {
         ],
         max_tokens: 300,
         temperature: 0.7,
-        timeout: 15000, // 15 second timeout for response generation
       });
 
       const generatedResponse = response.choices[0]?.message?.content;
@@ -210,7 +209,6 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
         ],
         max_tokens: 150,
         temperature: 0.5,
-        timeout: 10000,
       });
 
       return response.choices[0]?.message?.content || "I'm having trouble processing that right now.";

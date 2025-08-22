@@ -17,7 +17,7 @@ import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtil
 import { useNavigate } from 'react-router-dom';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 import QuestionHelperBot from '../QuestionHelperBot';
-import SystemHealthCheck from '../Debug/SystemHealthCheck';
+
 
 interface ParticipantCardProps {
   participant: any;
@@ -349,7 +349,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   
   // Meeting ending states to prevent multiple clicks and show progress
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
-  const [isHealthCheckOpen, setIsHealthCheckOpen] = useState(false);
+
   const [endingProgress, setEndingProgress] = useState('');
   
   // Reset meeting state when component mounts to ensure fresh meeting
