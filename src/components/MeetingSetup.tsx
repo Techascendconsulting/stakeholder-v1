@@ -384,7 +384,7 @@ export default function MeetingSetup({
                     )}
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
 
             {selectedStage && (
