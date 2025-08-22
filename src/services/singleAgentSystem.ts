@@ -1,152 +1,197 @@
 import OpenAI from 'openai';
-import HybridKnowledgeBase, { SearchResult } from '../../server/kb';
+import { kb } from '../lib/kb';
 
-interface ConversationContext {
-  history: Array<{ role: 'user' | 'assistant'; content: string; timestamp: Date }>;
-  stakeholderContext: any;
-  projectContext: any;
+interface StakeholderContext {
+  name: string;
+  role: string;
+  department: string;
+  priorities: string[];
+  personality: string;
+  expertise: string[];
+}
+
+interface ProjectContext {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  painPoints: string[];
+  asIsProcess: string;
 }
 
 class SingleAgentSystem {
-  private static instance: SingleAgentSystem;
   private openai: OpenAI;
-  private kb: HybridKnowledgeBase;
-  private conversationContext: ConversationContext;
+  private isInitialized = false;
+  private lastError: string | null = null;
+  private retryCount = 0;
+  private maxRetries = 3;
 
-  private constructor() {
+  constructor() {
     this.openai = new OpenAI({
       apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true
+      dangerouslyAllowBrowser: true,
+      timeout: 30000, // 30 second timeout
     });
-    this.kb = HybridKnowledgeBase.getInstance();
-    this.conversationContext = {
-      history: [],
-      stakeholderContext: null,
-      projectContext: null
-    };
   }
 
-  public static getInstance(): SingleAgentSystem {
-    if (!SingleAgentSystem.instance) {
-      SingleAgentSystem.instance = new SingleAgentSystem();
+  async initialize(): Promise<boolean> {
+    try {
+      // Initialize Knowledge Base
+      const kbInitialized = await kb.initialize();
+      if (!kbInitialized) {
+        console.warn('⚠️ KB initialization failed, but continuing with fallback entries');
+      }
+
+      this.isInitialized = true;
+      this.lastError = null;
+      console.log('✅ SingleAgentSystem initialized successfully');
+      return true;
+
+    } catch (error) {
+      this.lastError = error instanceof Error ? error.message : 'Unknown initialization error';
+      console.error('❌ SingleAgentSystem initialization failed:', this.lastError);
+      return false;
     }
-    return SingleAgentSystem.instance;
   }
 
-  // Single API call approach - much more cost-effective
-  public async processUserMessage(
+  async processUserMessage(
     userMessage: string,
-    stakeholderContext: any,
-    projectContext: any
+    stakeholderContext: StakeholderContext,
+    projectContext: ProjectContext
   ): Promise<string> {
     try {
-      console.log('🤖 SINGLE-AGENT: Processing for', stakeholderContext?.name);
-      
-      // Update context
-      this.conversationContext.stakeholderContext = stakeholderContext;
-      this.conversationContext.projectContext = projectContext;
-      this.conversationContext.history.push({
-        role: 'user',
-        content: userMessage,
-        timestamp: new Date()
-      });
+      // Ensure system is initialized
+      if (!this.isInitialized) {
+        await this.initialize();
+      }
 
-      // Step 1: Search KB for relevant information (cheap - just embeddings)
-      const kbResults = await this.kb.searchKB(userMessage);
-      const topResults = kbResults.filter(result => result.score >= 0.1).slice(0, 3); // Lower threshold to catch more natural questions
-      
-      console.log('📚 KB Results:', topResults.length, 'entries found');
+      // Validate inputs
+      if (!userMessage?.trim()) {
+        return this.generateErrorResponse('Empty or invalid user message');
+      }
 
-      // Step 2: Single API call with all context (even if no KB results)
-      const response = await this.generateResponse(userMessage, topResults);
-      
-      // Update conversation history
-      this.conversationContext.history.push({
-        role: 'assistant',
-        content: response,
-        timestamp: new Date()
-      });
+      if (!stakeholderContext?.name) {
+        return this.generateErrorResponse('Invalid stakeholder context');
+      }
 
+      // Reset retry count for new message
+      this.retryCount = 0;
+
+      // Search Knowledge Base
+      const kbResults = await this.searchKnowledgeBase(userMessage);
+      
+      // Generate response using KB content and project context
+      const response = await this.generateResponse(userMessage, stakeholderContext, projectContext, kbResults);
+      
+      // Reset error state on success
+      this.lastError = null;
+      
       return response;
 
     } catch (error) {
-      console.error('❌ Single-agent error:', error);
-      // Use project context to generate a helpful response even on error
+      this.lastError = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ SingleAgentSystem error:', this.lastError);
+      
+      // Attempt retry if under max retries
+      if (this.retryCount < this.maxRetries) {
+        this.retryCount++;
+        console.log(`🔄 Retrying (${this.retryCount}/${this.maxRetries})...`);
+        return this.processUserMessage(userMessage, stakeholderContext, projectContext);
+      }
+
+      // Return graceful error response
       return this.generateErrorResponse(userMessage);
     }
   }
 
-  // Single API call with all context included
-  private async generateResponse(userMessage: string, kbResults: SearchResult[]): Promise<string> {
-    // Prepare KB context
-    const kbContext = kbResults.map(result => {
-      const entry = result.entry;
-      return `KB Entry ${entry.id} (${entry.category}):
-Questions: ${entry.questions.join(', ')}
-Answer: ${entry.short}
-Expanded: ${entry.expanded}`;
-    }).join('\n\n');
-
-    // Prepare conversation context
-    const recentHistory = this.conversationContext.history.slice(-4)
-      .map(msg => `${msg.role}: ${msg.content}`)
-      .join('\n');
-
-    // Project context for when no KB results are available
-    const projectContext = `Project: Customer Onboarding Process Optimization at TechCorp Solutions
-Current Issues: 6 to 8 week onboarding timeline, 23% churn rate, fragmented processes across 7 departments
-Goals: Reduce to 3-4 weeks, improve CSAT, decrease churn by 40%
-Key Stakeholders: Sales, Implementation, IT, Product, Support, Customer Success teams
-Current Process: Manual handoffs, 4 disconnected systems, no centralized tracking`;
-
-    const systemPrompt = `You are ${this.conversationContext.stakeholderContext?.name || 'a team member'} (${this.conversationContext.stakeholderContext?.role || 'stakeholder'}) in the Customer Onboarding Process Optimization project at TechCorp Solutions.
-
-TALK LIKE A REAL HUMAN:
-- Use casual, conversational language
-- Don't be overly formal or professional
-- Use contractions (we're, it's, don't, can't)
-- Be direct and honest
-- Don't use bullet points or asterisks
-- Don't use dashes in numbers (say "6 to 8 weeks" not "6-8 weeks")
-- Don't be overly helpful or customer service-like
-- Don't say things like "feel free to ask" or "let me know if you have questions"
-- Keep it short and to the point
-- Be specific to what's being asked
-- ALWAYS use the KB content when available - don't make up answers
-- Give complete answers, not truncated ones
-- NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
-- ALWAYS provide specific, actionable information from the project context
-
-KB Context:
-${kbContext || 'No specific KB matches found'}
-
-Project Context:
-${projectContext}
-
-Recent Conversation:
-${recentHistory}
-
-Respond naturally to: ${userMessage}`;
-
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ],
-      max_tokens: 300, // Increased to ensure complete responses
-      temperature: 0.5, // Lower temperature for more consistent responses
-      timeout: 10000 // 10 second timeout
-    });
-
-    return response.choices[0]?.message?.content || this.generateErrorResponse(userMessage);
+  private async searchKnowledgeBase(query: string): Promise<any[]> {
+    try {
+      const results = await kb.search(query, 3);
+      console.log(`🔍 KB search found ${results.length} results for: "${query}"`);
+      return results;
+    } catch (error) {
+      console.error('❌ KB search failed:', error);
+      return [];
+    }
   }
 
-  // Generate helpful response even when there's an error
+  private async generateResponse(
+    userMessage: string,
+    stakeholderContext: StakeholderContext,
+    projectContext: ProjectContext,
+    kbResults: any[]
+  ): Promise<string> {
+    try {
+      // Build context from KB results
+      const kbContext = kbResults.length > 0 
+        ? kbResults.map(r => `${r.entry.short}\n${r.entry.expanded}`).join('\n\n')
+        : '';
+
+      const systemPrompt = this.buildSystemPrompt(stakeholderContext, projectContext, kbContext);
+      
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: userMessage
+          }
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
+        timeout: 15000, // 15 second timeout for response generation
+      });
+
+      const generatedResponse = response.choices[0]?.message?.content;
+      
+      if (!generatedResponse?.trim()) {
+        throw new Error('Empty response from OpenAI');
+      }
+
+      return generatedResponse;
+
+    } catch (error) {
+      console.error('❌ Response generation failed:', error);
+      throw error;
+    }
+  }
+
+  private buildSystemPrompt(
+    stakeholderContext: StakeholderContext,
+    projectContext: ProjectContext,
+    kbContext: string
+  ): string {
+    return `You are ${stakeholderContext.name}, a ${stakeholderContext.role} at ${stakeholderContext.department}.
+
+Your personality: ${stakeholderContext.personality}
+Your priorities: ${stakeholderContext.priorities.join(', ')}
+Your expertise: ${stakeholderContext.expertise.join(', ')}
+
+Project Context: ${projectContext.name}
+${projectContext.description}
+
+${kbContext ? `Knowledge Base Context:\n${kbContext}\n` : ''}
+
+Response Guidelines:
+- Be conversational and natural, like a real person
+- Use information from KB context when available, otherwise use project context
+- If you don't have specific information, make an educated guess based on project context
+- Keep responses concise (1-3 sentences)
+- Be professional but casual
+- NEVER use asterisks, dashes in numbers, or bullet points
+- NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
+- ALWAYS provide specific, actionable information from the project context
+- Respond as ${stakeholderContext.name} would naturally speak`;
+  }
+
   private async generateErrorResponse(userMessage: string): Promise<string> {
     const projectContext = `Project: Customer Onboarding Process Optimization at TechCorp Solutions
 Current Issues: 6 to 8 week onboarding timeline, 23% churn rate, fragmented processes across 7 departments
-Goals: Reduce to 3-4 weeks, improve CSAT, decrease churn by 40%
+Goals: Reduce to 3 to 4 weeks, improve CSAT, decrease churn by 40%
 Key Stakeholders: Sales, Implementation, IT, Product, Support, Customer Success teams
 Current Process: Manual handoffs, 4 disconnected systems, no centralized tracking`;
 
@@ -156,41 +201,49 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
         messages: [
           {
             role: 'system',
-            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently. Keep responses brief.`
+            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently.`
           },
           {
             role: 'user',
             content: `Project Context: ${projectContext}\n\nUser Question: ${userMessage}`
           }
         ],
-        max_tokens: 100,
-        temperature: 0.7
+        max_tokens: 150,
+        temperature: 0.5,
+        timeout: 10000,
       });
 
-      return response.choices[0]?.message?.content || "Sorry, I'm having technical difficulties right now.";
+      return response.choices[0]?.message?.content || "I'm having trouble processing that right now.";
     } catch (error) {
-      return "Sorry, I'm having technical difficulties right now.";
+      console.error('❌ Error response generation failed:', error);
+      return "I'm having trouble processing that right now.";
     }
   }
 
-  // Get conversation statistics
-  public getConversationStats() {
+  // Health check methods
+  getStatus(): { initialized: boolean; lastError: string | null; kbStatus: string } {
     return {
-      totalMessages: this.conversationContext.history.length,
-      stakeholder: this.conversationContext.stakeholderContext?.name,
-      project: this.conversationContext.projectContext?.name
+      initialized: this.isInitialized,
+      lastError: this.lastError,
+      kbStatus: kb.isInitialized() ? 'OK' : 'Failed'
     };
   }
 
-  // Reset conversation context
-  public resetConversation() {
-    this.conversationContext = {
-      history: [],
-      stakeholderContext: null,
-      projectContext: null
+  getKBStatus(): { initialized: boolean; entryCount: number; error: string | null } {
+    return {
+      initialized: kb.isInitialized(),
+      entryCount: kb.getEntryCount(),
+      error: kb.getInitializationError()
     };
+  }
+
+  // Reset method for testing
+  reset(): void {
+    this.isInitialized = false;
+    this.lastError = null;
+    this.retryCount = 0;
   }
 }
 
-export default SingleAgentSystem;
-export type { ConversationContext };
+// Export singleton instance
+export const singleAgentSystem = new SingleAgentSystem();

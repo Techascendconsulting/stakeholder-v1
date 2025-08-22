@@ -1200,6 +1200,18 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     addToBackgroundTranscript(userMessage);
 
     try {
+      // Validate system status and stakeholders
+      if (!selectedStakeholders || selectedStakeholders.length === 0) {
+        throw new Error('No stakeholders selected for meeting');
+      }
+
+      // Initialize AI system if needed
+      const aiStatus = singleAgentSystem.getStatus();
+      if (!aiStatus.initialized) {
+        console.warn('⚠️ AI system not initialized, attempting to initialize...');
+        await singleAgentSystem.initialize();
+      }
+
       // Check for direct stakeholder mentions in user message FIRST
       const aiService = AIService.getInstance();
       const availableStakeholders = selectedStakeholders.map(s => ({
