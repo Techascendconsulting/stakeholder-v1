@@ -68,13 +68,13 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-20 right-6 z-50">
       {/* Floating Chat Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-105"
-          title="Question suggestions"
+          title="Question Bank"
         >
           <Lightbulb className="w-5 h-5" />
         </button>
@@ -88,7 +88,7 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Lightbulb className="w-4 h-4" />
-                <h3 className="font-semibold text-sm">Questions</h3>
+                <h3 className="font-semibold text-sm">Question Bank</h3>
               </div>
               <button
                 onClick={() => setIsOpen(false)}

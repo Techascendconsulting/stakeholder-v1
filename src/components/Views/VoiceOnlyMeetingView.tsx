@@ -3877,33 +3877,7 @@ Guidelines:
               <Square className="w-4 h-4 text-white" />
             </button>
 
-            {/* Debug Button - Remove after testing */}
-            <button
-              onClick={() => {
-                console.log('🔍 DEBUG INFO:', {
-                  meetingId,
-                  userId: user?.id,
-                  userEmail: user?.email,
-                  backgroundTranscriptLength: backgroundTranscript.length,
-                  messagesLength: messages.length,
-                  selectedProject: selectedProject?.name,
-                  selectedStakeholdersCount: selectedStakeholders?.length,
-                  meetingStartTime,
-                  elapsedTime: Math.floor((Date.now() - meetingStartTime) / 1000)
-                });
-                
-                // Test database connection
-                DatabaseService.getUserProgress(user?.id || '').then(progress => {
-                  console.log('🔍 DATABASE TEST - User progress:', progress);
-                }).catch(error => {
-                  console.error('🔍 DATABASE TEST - Error:', error);
-                });
-              }}
-              className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center transition-colors"
-              title="Debug info"
-            >
-              <span className="text-white text-xs">?</span>
-            </button>
+
 
             {/* Manual Initialize Meeting Button */}
             {!meetingId && (
