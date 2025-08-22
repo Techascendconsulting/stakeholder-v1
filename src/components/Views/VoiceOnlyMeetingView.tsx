@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
-import SingleAgentSystem from '../../services/singleAgentSystem';
+import { singleAgentSystem } from '../../services/singleAgentSystem';
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio, registerExternalAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
@@ -17,6 +17,7 @@ import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtil
 import { useNavigate } from 'react-router-dom';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 import QuestionHelperBot from '../QuestionHelperBot';
+import SystemHealthCheck from '../Debug/SystemHealthCheck';
 
 interface ParticipantCardProps {
   participant: any;
@@ -348,6 +349,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   
   // Meeting ending states to prevent multiple clicks and show progress
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
+  const [isHealthCheckOpen, setIsHealthCheckOpen] = useState(false);
   const [endingProgress, setEndingProgress] = useState('');
   
   // Reset meeting state when component mounts to ensure fresh meeting

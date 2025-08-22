@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import SingleAgentSystem from './singleAgentSystem'; // Cost-effective single-agent system
+import { singleAgentSystem } from './singleAgentSystem'; // Cost-effective single-agent system
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -66,11 +66,11 @@ export interface ConversationContext {
 class AIService {
   private static instance: AIService;
   private conversationState: ConversationState;
-  private singleAgentSystem: SingleAgentSystem; // Cost-effective single-agent system
+  private singleAgentSystem: any; // Cost-effective single-agent system
   
   private constructor() {
     this.conversationState = this.initializeConversationState();
-    this.singleAgentSystem = SingleAgentSystem.getInstance(); // Initialize single-agent system
+    this.singleAgentSystem = singleAgentSystem; // Initialize single-agent system
   }
 
   private initializeConversationState(): ConversationState {
@@ -240,8 +240,7 @@ class AIService {
 
   // Use single agent system instead of hardcoded responses
   private async generateProjectSpecificResponse(stakeholder: StakeholderContext, context: ConversationContext): Promise<string> {
-    const SingleAgentSystem = (await import('./singleAgentSystem')).default;
-    const singleAgentSystem = SingleAgentSystem.getInstance();
+    const { singleAgentSystem } = await import('./singleAgentSystem');
     
     // Use the last user message as context
     const recentMessages = context?.conversationHistory || [];

@@ -1,5 +1,3 @@
-import { kbData } from '../data/kb_onboarding.json';
-
 interface KBEntry {
   id: string;
   category: string;
@@ -22,6 +20,14 @@ class KnowledgeBase {
 
   async initialize(): Promise<boolean> {
     try {
+      // Load KB data dynamically
+      const response = await fetch('/data/kb_onboarding.json');
+      if (!response.ok) {
+        throw new Error(`Failed to load KB data: ${response.status}`);
+      }
+      
+      const kbData = await response.json();
+      
       // Validate KB data structure
       if (!kbData || !Array.isArray(kbData)) {
         throw new Error('Invalid KB data structure: expected array');
