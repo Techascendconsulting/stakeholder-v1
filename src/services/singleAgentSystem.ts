@@ -156,20 +156,20 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
         messages: [
           {
             role: 'system',
-            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently.`
+            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently. Keep responses brief.`
           },
           {
             role: 'user',
             content: `Project Context: ${projectContext}\n\nUser Question: ${userMessage}`
           }
         ],
-        max_tokens: 150,
-        temperature: 0.5
+        max_tokens: 100,
+        temperature: 0.7
       });
 
-      return response.choices[0]?.message?.content || "I'm having trouble processing that right now.";
+      return response.choices[0]?.message?.content || "Sorry, I'm having technical difficulties right now.";
     } catch (error) {
-      return "I'm having trouble processing that right now.";
+      return "Sorry, I'm having technical difficulties right now.";
     }
   }
 

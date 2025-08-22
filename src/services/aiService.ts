@@ -643,11 +643,31 @@ class AIService {
       const { messages, project, participants, duration, startTime, endTime } = meetingData;
       
       if (!messages || messages.length === 0) {
-        return "No meeting content available to summarize.";
+        // Use OpenAI to generate a contextual response instead of hardcoded message
+        const response = await openai.chat.completions.create({
+          model: MODEL,
+          messages: [
+            { role: "system", content: "You are a professional Business Analyst. Explain why no meeting summary can be created when there's no content." },
+            { role: "user", content: "There are no messages or meeting content to summarize." }
+          ],
+          temperature: 0.3,
+          max_tokens: 50
+        });
+        return response.choices[0]?.message?.content || "Unable to create summary without meeting content.";
       }
 
       if (messages.length < 2) {
-        return "Insufficient meeting content to create a meaningful summary.";
+        // Use OpenAI to generate a contextual response instead of hardcoded message
+        const response = await openai.chat.completions.create({
+          model: MODEL,
+          messages: [
+            { role: "system", content: "You are a professional Business Analyst. Explain why a meaningful meeting summary cannot be created with very limited content." },
+            { role: "user", content: "There is very limited meeting content (less than 2 messages) to create a meaningful summary from." }
+          ],
+          temperature: 0.3,
+          max_tokens: 50
+        });
+        return response.choices[0]?.message?.content || "Unable to create meaningful summary with limited content.";
       }
 
       progressCallback?.("Generating comprehensive meeting summary...");
@@ -679,11 +699,38 @@ class AIService {
       
       progressCallback?.("Summary generation completed.");
       
-      return summary || "Unable to generate meeting summary.";
+      if (!summary) {
+        // Use OpenAI to generate a contextual error response
+        const errorResponse = await openai.chat.completions.create({
+          model: MODEL,
+          messages: [
+            { role: "system", content: "You are a professional Business Analyst. Explain why a meeting summary could not be generated." },
+            { role: "user", content: "The AI system was unable to generate a meeting summary from the provided content." }
+          ],
+          temperature: 0.3,
+          max_tokens: 50
+        });
+        return errorResponse.choices[0]?.message?.content || "Summary generation was unsuccessful.";
+      }
+      return summary;
       
     } catch (error) {
       console.error("Error generating interview notes:", error);
-      return "Unable to generate meeting summary due to an error.";
+      // Use OpenAI to generate a contextual error response
+      try {
+        const errorResponse = await openai.chat.completions.create({
+          model: MODEL,
+          messages: [
+            { role: "system", content: "You are a professional Business Analyst. Explain that there was a technical error preventing meeting summary generation." },
+            { role: "user", content: `There was a technical error while trying to generate the meeting summary: ${error}` }
+          ],
+          temperature: 0.3,
+          max_tokens: 50
+        });
+        return errorResponse.choices[0]?.message?.content || "Technical error prevented summary generation.";
+      } catch (fallbackError) {
+        return "Technical error prevented summary generation.";
+      }
     }
   }
 }
