@@ -15,7 +15,6 @@ import { UserAvatar } from '../Common/UserAvatar';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 import { useNavigate } from 'react-router-dom';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
-import DebugConsole from '../DebugConsole';
 import QuestionHelperBot from '../QuestionHelperBot';
 
 interface ParticipantCardProps {

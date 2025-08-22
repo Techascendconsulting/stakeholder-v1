@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, X, ChevronUp, ChevronDown, Lightbulb, Send } from 'lucide-react';
+import { MessageCircle, X, ChevronUp, ChevronDown, Bot, Send } from 'lucide-react';
 import QuestionSuggestionsService, { QuestionSuggestion, ConversationStage } from '../services/questionSuggestions';
 
 interface QuestionHelperBotProps {
@@ -76,7 +76,7 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
           className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-105"
           title="Question Bank"
         >
-          <Lightbulb className="w-5 h-5" />
+          <Bot className="w-5 h-5" />
         </button>
       )}
 
@@ -87,7 +87,7 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
           <div className="bg-indigo-600 text-white p-3 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Lightbulb className="w-4 h-4" />
+                <Bot className="w-4 h-4" />
                 <h3 className="font-semibold text-sm">Question Bank</h3>
               </div>
               <button
