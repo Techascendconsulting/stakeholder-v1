@@ -4251,16 +4251,26 @@ Guidelines:
               {/* Stage Progress */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-gray-600">Stage 1 of 5</span>
+                  <span className="text-sm text-gray-600">
+                    {(() => {
+                      const stageOrder = ['discovery', 'as_is', 'to_be', 'solution', 'closure'];
+                      const currentStageIndex = stageOrder.indexOf(setupData?.selectedStage || 'discovery');
+                      return `Stage ${currentStageIndex + 1} of 5`;
+                    })()}
+                  </span>
                   <div className="flex space-x-1">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2 h-2 rounded-full ${
-                          index === 0 ? 'bg-indigo-600' : 'bg-gray-300'
-                        }`}
-                      />
-                    ))}
+                    {Array.from({ length: 5 }).map((_, index) => {
+                      const stageOrder = ['discovery', 'as_is', 'to_be', 'solution', 'closure'];
+                      const currentStageIndex = stageOrder.indexOf(setupData?.selectedStage || 'discovery');
+                      return (
+                        <div
+                          key={index}
+                          className={`w-2 h-2 rounded-full ${
+                            index <= currentStageIndex ? 'bg-indigo-600' : 'bg-gray-300'
+                          }`}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -4269,28 +4279,317 @@ Guidelines:
               <div className="bg-indigo-50 rounded-lg p-6 border border-indigo-100 mb-6">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">1</span>
+                    <span className="text-white font-semibold text-lg">
+                      {(() => {
+                        const stageOrder = ['discovery', 'as_is', 'to_be', 'solution', 'closure'];
+                        const currentStageIndex = stageOrder.indexOf(setupData?.selectedStage || 'discovery');
+                        return currentStageIndex + 1;
+                      })()}
+                    </span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{(setupData?.selectedStage || 'kickoff').replace(/\b\w/g, c => c.toUpperCase())}</h3>
-                    <p className="text-gray-600">{setupData?.selectedStage === 'discovery' ? 'Gather detailed requirements and understand current state processes' : setupData?.selectedStage === 'analysis' ? 'Analyze gathered information and identify gaps or opportunities' : setupData?.selectedStage === 'solution' ? 'Collaborate on potential solutions and validate approaches' : setupData?.selectedStage === 'closure' ? 'Summarize findings, confirm next steps, and close the session' : 'Establish rapport, set expectations, and understand the project context'}</p>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      {(() => {
+                        const stageNames = {
+                          'discovery': 'Discovery',
+                          'as_is': 'As-Is Process Analysis',
+                          'to_be': 'To-Be Discussion',
+                          'solution': 'Solution Design',
+                          'closure': 'Closure & Next Steps'
+                        };
+                        return stageNames[setupData?.selectedStage as keyof typeof stageNames] || 'Discovery';
+                      })()}
+                    </h3>
+                    <p className="text-gray-600">
+                      {(() => {
+                        const stageDescriptions = {
+                          'discovery': 'Gather detailed requirements and understand current state processes for the Customer Onboarding optimization project',
+                          'as_is': 'Document the current 10-step onboarding process, identify bottlenecks, and understand pain points',
+                          'to_be': 'Explore future state goals, improvements, and desired outcomes for the optimized onboarding process',
+                          'solution': 'Collaborate on potential solutions, validate approaches, and design the new onboarding system',
+                          'closure': 'Summarize findings, confirm next steps, and establish implementation roadmap'
+                        };
+                        return stageDescriptions[setupData?.selectedStage as keyof typeof stageDescriptions] || stageDescriptions.discovery;
+                      })()}
+                    </p>
                   </div>
+                </div>
+              </div>
+
+              {/* Stage Overview */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Stage Overview</h4>
+                <div className="prose prose-sm max-w-none">
+                  {(() => {
+                    const stageOverviews = {
+                      'discovery': (
+                        <div>
+                          <p className="text-gray-700 mb-4">
+                            In this Discovery stage, you'll explore the current state of TechCorp's customer onboarding process. 
+                            The company has experienced significant growth, adding 340 enterprise customers in 18 months, but this 
+                            has exposed critical inefficiencies in their onboarding workflow.
+                          </p>
+                          <p className="text-gray-700">
+                            Your goal is to understand the root causes of the 23% customer churn rate, the 6-8 week onboarding timeline 
+                            (vs competitors' 3-4 weeks), and the $2.3M annual loss from operational inefficiencies.
+                          </p>
+                        </div>
+                      ),
+                      'as_is': (
+                        <div>
+                          <p className="text-gray-700 mb-4">
+                            Now you'll dive deep into the current 10-step onboarding process to understand exactly how things work today. 
+                            This involves mapping out the manual handoffs, disconnected systems, and fragmented communication that's 
+                            causing delays and customer frustration.
+                          </p>
+                          <p className="text-gray-700">
+                            Focus on identifying specific bottlenecks, understanding the 4 disconnected systems (Salesforce, Monday.com, 
+                            IT tools, Product/Support systems), and documenting the pain points across all 7 departments involved.
+                          </p>
+                        </div>
+                      ),
+                      'to_be': (
+                        <div>
+                          <p className="text-gray-700 mb-4">
+                            In this stage, you'll explore the desired future state for TechCorp's onboarding process. The goal is to 
+                            transform the current 6-8 week process into a streamlined 3-4 week experience that reduces churn and 
+                            improves customer satisfaction.
+                          </p>
+                          <p className="text-gray-700">
+                            Focus on understanding the vision for automated handoffs, centralized tracking, customer dashboard, 
+                            and standardized communication that will achieve the target metrics: CSAT 8.5+, 40% churn reduction, 
+                            and 35% efficiency improvement.
+                          </p>
+                        </div>
+                      ),
+                      'solution': (
+                        <div>
+                          <p className="text-gray-700 mb-4">
+                            Now you'll work on designing the solution architecture and implementation approach for the optimized 
+                            onboarding process. This involves exploring technical options, validating feasibility, and discussing 
+                            constraints and trade-offs.
+                          </p>
+                          <p className="text-gray-700">
+                            Focus on system integration strategies, automation opportunities, change management approaches, and 
+                            implementation planning to achieve the Q4 2024 target for the 3-4 week onboarding timeline.
+                          </p>
+                        </div>
+                      ),
+                      'closure': (
+                        <div>
+                          <p className="text-gray-700 mb-4">
+                            In this final stage, you'll summarize all findings, confirm next steps, and establish the implementation 
+                            roadmap. This involves consolidating insights from all previous stages and creating a clear path forward.
+                          </p>
+                          <p className="text-gray-700">
+                            Focus on finalizing recommendations, establishing success metrics, planning resource requirements, 
+                            and setting up the governance structure for the onboarding optimization project.
+                          </p>
+                        </div>
+                      )
+                    };
+                    return stageOverviews[setupData?.selectedStage as keyof typeof stageOverviews] || stageOverviews.discovery;
+                  })()}
                 </div>
               </div>
 
               {/* Stage Objectives */}
               <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 <h4 className="font-semibold text-gray-900 mb-4">Stage Objectives</h4>
-                <p className="text-gray-600">Practice the fundamentals of stakeholder engagement and conversation flow</p>
+                <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                  {(() => {
+                    const stageObjectives = {
+                      'discovery': [
+                        'Understand the root causes of 23% customer churn in first 90 days',
+                        'Identify why onboarding takes 6-8 weeks vs competitors\' 3-4 weeks',
+                        'Explore the $2.3M annual loss from operational inefficiencies',
+                        'Understand customer pain points and frustration drivers',
+                        'Gather insights on the 7 departments involved in onboarding'
+                      ],
+                      'as_is': [
+                        'Map out the complete 10-step current onboarding process',
+                        'Identify specific bottlenecks and delay points',
+                        'Understand the 4 disconnected systems and their integration gaps',
+                        'Document manual handoff processes and their inefficiencies',
+                        'Analyze communication fragmentation across departments'
+                      ],
+                      'to_be': [
+                        'Define the vision for 3-4 week onboarding timeline',
+                        'Explore automated handoff and tracking capabilities',
+                        'Design customer dashboard and visibility features',
+                        'Establish standardized communication protocols',
+                        'Set target metrics: CSAT 8.5+, 40% churn reduction, 35% efficiency'
+                      ],
+                      'solution': [
+                        'Design system integration architecture',
+                        'Identify automation opportunities and technical approaches',
+                        'Plan change management and training requirements',
+                        'Validate feasibility and identify constraints',
+                        'Create implementation roadmap for Q4 2024 target'
+                      ],
+                      'closure': [
+                        'Consolidate findings from all previous stages',
+                        'Finalize recommendations and implementation plan',
+                        'Establish success metrics and monitoring framework',
+                        'Plan resource requirements and budget allocation',
+                        'Set up governance structure and next steps'
+                      ]
+                    };
+                    return (stageObjectives[setupData?.selectedStage as keyof typeof stageObjectives] || stageObjectives.discovery).map((objective, index) => (
+                      <li key={index}>{objective}</li>
+                    ));
+                  })()}
+                </ul>
               </div>
 
-              {/* Guidance */}
+              {/* Relevant Questions */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h4 className="font-semibold text-gray-900 mb-4">Relevant Questions for This Stage</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(() => {
+                    const stageQuestions = {
+                      'discovery': [
+                        'What are the main reasons customers leave within 90 days?',
+                        'How does the current 6-8 week timeline impact customer satisfaction?',
+                        'What specific pain points do customers mention most often?',
+                        'How does the $2.3M annual loss break down across different areas?',
+                        'What feedback do you get from customers about the onboarding experience?',
+                        'How do the 7 departments currently coordinate during onboarding?',
+                        'What are the biggest bottlenecks in the current process?',
+                        'How does our onboarding compare to competitors\' 3-4 week timeline?',
+                        'What systems are currently used and how well do they integrate?',
+                        'What are the most common customer complaints during onboarding?',
+                        'How do delays in onboarding affect customer relationships?',
+                        'What metrics do you currently track for onboarding success?',
+                        'How do different departments view the current process?',
+                        'What external factors contribute to onboarding delays?',
+                        'How do customers typically describe their onboarding experience?'
+                      ],
+                      'as_is': [
+                        'Can you walk me through each of the 10 steps in detail?',
+                        'Where do the biggest delays occur in the current process?',
+                        'How do the 4 disconnected systems create bottlenecks?',
+                        'What happens during the manual email handoffs?',
+                        'How do teams communicate during the parallel setup phase?',
+                        'What causes the conflicting stakeholder calls?',
+                        'How is progress currently tracked throughout the process?',
+                        'What happens when UAT testing fails?',
+                        'How do the different departments coordinate their work?',
+                        'What tools and systems are used at each step?',
+                        'How do customers experience the current process?',
+                        'What are the escalation procedures when issues arise?',
+                        'How do data transfers work between systems?',
+                        'What are the most common failure points?',
+                        'How do teams handle incomplete or delayed information?'
+                      ],
+                      'to_be': [
+                        'What would an ideal 3-4 week onboarding process look like?',
+                        'How could we automate the manual handoffs?',
+                        'What features would be most valuable in a customer dashboard?',
+                        'How should communication be standardized across teams?',
+                        'What would success look like for customer satisfaction?',
+                        'How could we reduce the 23% churn rate to 14%?',
+                        'What capabilities do we need that we don\'t have now?',
+                        'How should progress tracking work in the future state?',
+                        'What would make the biggest impact on efficiency?',
+                        'How should the customer experience be different?',
+                        'What metrics should we track in the new process?',
+                        'How could we improve milestone visibility?',
+                        'What would an optimized handoff process look like?',
+                        'How should teams collaborate in the future state?',
+                        'What would make customers feel more confident and supported?'
+                      ],
+                      'solution': [
+                        'What system integration approach would work best?',
+                        'How can we automate the handoff processes?',
+                        'What technical constraints should we consider?',
+                        'How should we manage the transition from old to new process?',
+                        'What training will teams need for the new system?',
+                        'How can we ensure data consistency across integrated systems?',
+                        'What change management approach should we use?',
+                        'How should we handle the parallel system testing?',
+                        'What resources and budget will be required?',
+                        'How can we minimize disruption during implementation?',
+                        'What risks should we plan for and how to mitigate them?',
+                        'How should we phase the implementation?',
+                        'What success criteria should we use for the new system?',
+                        'How should we handle edge cases and exceptions?',
+                        'What governance structure should oversee the implementation?'
+                      ],
+                      'closure': [
+                        'What are the key findings from our analysis?',
+                        'What are the most critical recommendations?',
+                        'What is the implementation timeline and milestones?',
+                        'What resources and budget are required?',
+                        'How will we measure success and track progress?',
+                        'What are the main risks and mitigation strategies?',
+                        'Who should be involved in the implementation team?',
+                        'What training and change management is needed?',
+                        'How should we communicate the changes to stakeholders?',
+                        'What governance structure should oversee the project?',
+                        'What are the next immediate steps?',
+                        'How should we handle the transition period?',
+                        'What success metrics should we establish?',
+                        'How should we monitor and report progress?',
+                        'What contingency plans should we have in place?'
+                      ]
+                    };
+                    return (stageQuestions[setupData?.selectedStage as keyof typeof stageQuestions] || stageQuestions.discovery).map((question, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <p className="text-sm text-gray-700">{question}</p>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+
+              {/* Stage Guidance */}
               <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-6">
                 <h4 className="font-semibold text-yellow-800 mb-2">Stage Guidance</h4>
-                <p className="text-yellow-700 text-sm">
-                  You are now practicing the <strong>{(setupData?.selectedStage || 'kickoff').replace(/\b\w/g, c => c.toUpperCase())}</strong> stage. 
-                  Focus on the specific objectives for this stage and use appropriate techniques for this phase of the interview.
-                </p>
+                <div className="text-yellow-700 text-sm space-y-2">
+                  {(() => {
+                    const stageGuidance = {
+                      'discovery': [
+                        'Focus on understanding the "why" behind the problems - dig deep into root causes',
+                        'Ask follow-up questions to get specific examples and data points',
+                        'Explore both customer and internal perspectives on the issues',
+                        'Use open-ended questions to uncover hidden pain points',
+                        'Validate your understanding by summarizing what you\'ve heard'
+                      ],
+                      'as_is': [
+                        'Map out the process step-by-step to identify exact bottlenecks',
+                        'Ask for specific examples of delays and their causes',
+                        'Understand the handoff points and what information is lost',
+                        'Explore how different systems don\'t communicate effectively',
+                        'Focus on the customer experience through each step'
+                      ],
+                      'to_be': [
+                        'Help stakeholders envision the ideal future state',
+                        'Focus on outcomes and benefits rather than just features',
+                        'Explore what success would look like from multiple perspectives',
+                        'Ask about priorities and what would make the biggest impact',
+                        'Validate that the vision aligns with business goals'
+                      ],
+                      'solution': [
+                        'Explore multiple solution options before settling on one',
+                        'Validate technical feasibility and constraints',
+                        'Consider change management and adoption challenges',
+                        'Focus on practical implementation approaches',
+                        'Ensure the solution addresses the root causes identified'
+                      ],
+                      'closure': [
+                        'Summarize key findings and recommendations clearly',
+                        'Confirm next steps and ownership for each action',
+                        'Establish clear success criteria and timelines',
+                        'Address any remaining concerns or questions',
+                        'Ensure everyone is aligned on the path forward'
+                      ]
+                    };
+                    return (stageGuidance[setupData?.selectedStage as keyof typeof stageGuidance] || stageGuidance.discovery).map((guidance, index) => (
+                      <p key={index}>• {guidance}</p>
+                    ));
+                  })()}
+                </div>
               </div>
             </div>
           </div>
