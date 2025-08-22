@@ -139,10 +139,10 @@ class AIService {
 
       const response = await openai.chat.completions.create(createApiParams(messages));
       const completion = response as any; // Type assertion to handle OpenAI API type issues
-      return completion.choices[0]?.message?.content || this.generateProjectSpecificResponse(stakeholder, context);
+      return completion.choices[0]?.message?.content || await this.generateProjectSpecificResponse(stakeholder, context);
     } catch (error) {
       console.error('Error in generateResponse:', error);
-      return this.generateProjectSpecificResponse(stakeholder, context);
+      return await this.generateProjectSpecificResponse(stakeholder, context);
     }
   }
 
@@ -175,7 +175,7 @@ class AIService {
       console.error('❌ SINGLE-AGENT ERROR:', error);
       
       // Fallback to project-specific response
-      return this.generateProjectSpecificResponse(stakeholder, context);
+      return await this.generateProjectSpecificResponse(stakeholder, context);
     }
   }
 
@@ -238,50 +238,20 @@ class AIService {
     return s.length <= max ? s : s.slice(0, max - 1) + '…';
   }
 
-  // Generate project-specific responses based on mock data - agents must always have something relevant to say
-  private generateProjectSpecificResponse(stakeholder: StakeholderContext, context: ConversationContext): string {
-    const project = context?.project;
-    if (!project) {
-      return `As ${stakeholder.role}, I'm ready to discuss our current project. What would you like to know?`;
-    }
-
-    // Check if this is a BA introduction context
+  // Use single agent system instead of hardcoded responses
+  private async generateProjectSpecificResponse(stakeholder: StakeholderContext, context: ConversationContext): Promise<string> {
+    const SingleAgentSystem = (await import('./singleAgentSystem')).default;
+    const singleAgentSystem = SingleAgentSystem.getInstance();
+    
+    // Use the last user message as context
     const recentMessages = context?.conversationHistory || [];
-    const lastUserMessage = recentMessages.slice(-1)[0]?.content || '';
-    const isBAIntroduction = lastUserMessage.toLowerCase().includes('business analyst') && 
-                            (lastUserMessage.toLowerCase().includes('name') || lastUserMessage.toLowerCase().includes('i am') || lastUserMessage.toLowerCase().includes('i\'m'));
-
-    if (isBAIntroduction) {
-      const projectName = project.name || 'this project';
-      return `Hey! I'm ${stakeholder.name}, ${stakeholder.role}${stakeholder.department ? ' in ' + stakeholder.department : ''}. Nice to meet you! Looking forward to working on ${projectName} together.`;
-    }
-
-    // Generate role-specific responses based on project data
-    const role = stakeholder.role.toLowerCase();
-    const projectName = project.name || 'this project';
+    const lastUserMessage = recentMessages.slice(-1)[0]?.content || 'Hello';
     
-    if (role.includes('customer') || role.includes('service')) {
-      return `Yeah, I can definitely talk about our customer service processes and pain points for ${projectName}. What's on your mind?`;
-    }
-    
-    if (role.includes('it') || role.includes('technical')) {
-      return `Sure, I can help with the technical side of ${projectName}. What specific areas are you thinking about?`;
-    }
-    
-    if (role.includes('operations') || role.includes('process')) {
-      return `Absolutely, I can walk you through our operations and processes for ${projectName}. What would you like to know?`;
-    }
-    
-    if (role.includes('finance') || role.includes('cost')) {
-      return `Yeah, I can discuss the financial aspects of ${projectName}. What's your main concern?`;
-    }
-    
-    if (role.includes('hr') || role.includes('people')) {
-      return `Sure, I can help with the people and change management side of ${projectName}. What are you looking at?`;
-    }
-    
-    // Default role-specific response
-    return `Yeah, I can definitely help with ${projectName}. What would you like to know about our current processes?`;
+    return await singleAgentSystem.processUserMessage(
+      lastUserMessage,
+      stakeholder,
+      context?.project
+    );
   }
 
   private isGreetingSmallTalk(lower: string): boolean {

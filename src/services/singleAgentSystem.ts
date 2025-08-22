@@ -114,6 +114,8 @@ TALK LIKE A REAL HUMAN:
 - Be specific to what's being asked
 - ALWAYS use the KB content when available - don't make up answers
 - Give complete answers, not truncated ones
+- NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
+- ALWAYS provide specific, actionable information from the project context
 
 KB Context:
 ${kbContext || 'No specific KB matches found'}
@@ -165,9 +167,9 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
         temperature: 0.5
       });
 
-      return response.choices[0]?.message?.content || "I'm having trouble processing that right now, but I can help with our onboarding project.";
+      return response.choices[0]?.message?.content || "I'm having trouble processing that right now.";
     } catch (error) {
-      return "I'm having trouble processing that right now, but I can help with our onboarding project.";
+      return "I'm having trouble processing that right now.";
     }
   }
 

@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
+import SingleAgentSystem from '../../services/singleAgentSystem';
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio, registerExternalAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
@@ -266,8 +267,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const { globalAudioEnabled, setGlobalAudioEnabled, getStakeholderVoice, isStakeholderVoiceEnabled } = useVoice();
   const { setupData } = useMeetingSetup();
   
-  // Component-level aiService instance
-  const aiService = AIService.getInstance();
+  // Component-level single agent system instance
+  const singleAgentSystem = SingleAgentSystem.getInstance();
   
   // State management (same as before)
   const [messages, setMessages] = useState<Message[]>([]);
@@ -543,12 +544,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       })()
     };
 
-    const aiService = AIService.getInstance();
-    return await aiService.generateStakeholderResponse(
+    return await singleAgentSystem.processUserMessage(
       userMessage,
       stakeholderContext,
-      conversationContext,
-      responseType
+      conversationContext.project
     );
   };
 
@@ -627,11 +626,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         isOneOnOne: selectedStakeholders.length === 1
       };
       
-      const response = await aiService.generateStakeholderResponse(
+      const response = await singleAgentSystem.processUserMessage(
         messageContent,
         stakeholderContext,
-        conversationContext,
-        responseContext as any
+        conversationContext.project
       );
       
       // Create message object
@@ -875,15 +873,10 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           expertise: stakeholder.expertise || []
         };
         
-        const response = await aiService.generateStakeholderResponse(
+        const response = await singleAgentSystem.processUserMessage(
           messageContent,
           stakeholderContext,
-          { 
-            project: selectedProject!,
-            conversationHistory: workingMessages,
-            conversationPhase: 'as_is'
-          },
-          'direct_mention'
+          selectedProject!
         );
         
         // Update response message with generated content
