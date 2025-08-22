@@ -4272,8 +4272,8 @@ Guidelines:
                     content: msg.content 
                   }))}
                   onQuestionSelect={(question) => {
-                    // Auto-submit the question
-                    handleUserMessage(question);
+                    // Auto-submit the question using the correct function
+                    handleSendMessageWithText(question);
                   }}
                   stakeholderContext={selectedStakeholders?.[0]}
                   className="mb-4"
