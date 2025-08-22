@@ -183,6 +183,100 @@ class LectureService {
       examples: ['Sprint Planning: Clarify acceptance criteria', 'Sprint Review: Explain business value delivered'],
       relatedTopics: ['user-stories', 'backlog-management'],
       difficulty: 'intermediate'
+    },
+
+    // Technical Analysis Topics
+    {
+      id: 'system-analysis-1',
+      topic: 'System Analysis Techniques',
+      question: 'What are the key system analysis techniques for BAs?',
+      answer: 'Key system analysis techniques include: System context diagrams, data flow diagrams, entity relationship diagrams, use case modeling, and system interface analysis. These techniques help BAs understand how systems interact, identify integration points, and document technical requirements for software solutions.',
+      examples: ['Creating system context diagrams to show system boundaries', 'Mapping data flows between systems', 'Documenting API requirements for system integration'],
+      relatedTopics: ['technical-analysis', 'requirements-gathering'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'api-integration-1',
+      topic: 'API and Integration Requirements',
+      question: 'How do BAs gather requirements for API and system integration?',
+      answer: 'BAs gather API integration requirements by understanding data exchange needs, identifying system interfaces, documenting data formats, defining authentication requirements, and specifying error handling. They work with technical teams to ensure APIs meet business needs while following technical standards.',
+      examples: ['Documenting data exchange requirements between CRM and ERP systems', 'Specifying API endpoints for mobile app integration', 'Defining authentication and security requirements'],
+      relatedTopics: ['technical-analysis', 'system-analysis'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'database-requirements-1',
+      topic: 'Database Requirements Analysis',
+      question: 'What is involved in database requirements analysis for BAs?',
+      answer: 'Database requirements analysis involves understanding data needs, identifying data entities and relationships, documenting data validation rules, specifying reporting requirements, and ensuring data quality standards. BAs translate business data needs into technical database specifications.',
+      examples: ['Mapping customer data requirements for a CRM system', 'Defining data validation rules for user input', 'Specifying reporting and analytics data needs'],
+      relatedTopics: ['technical-analysis', 'data-modeling'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'technical-docs-1',
+      topic: 'Technical Documentation Standards',
+      question: 'What are the key technical documentation standards for BAs?',
+      answer: 'Key technical documentation standards include: Requirements specifications, technical specifications, API documentation, data dictionaries, and system architecture documents. BAs ensure documentation is clear, complete, and follows industry standards for technical teams.',
+      examples: ['Writing detailed requirements specifications', 'Creating API documentation for developers', 'Maintaining data dictionaries for system integration'],
+      relatedTopics: ['technical-analysis', 'documentation'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'technical-feasibility-1',
+      topic: 'Technical Feasibility Assessment',
+      question: 'How do BAs assess technical feasibility of requirements?',
+      answer: 'BAs assess technical feasibility by evaluating technology constraints, resource availability, timeline requirements, and risk factors. They collaborate with technical teams to understand implementation challenges and ensure requirements are achievable within project constraints.',
+      examples: ['Evaluating if a requirement can be implemented with current technology', 'Assessing development effort and timeline requirements', 'Identifying technical risks and mitigation strategies'],
+      relatedTopics: ['technical-analysis', 'project-management'],
+      difficulty: 'intermediate'
+    },
+
+    // Process Modeling Topics
+    {
+      id: 'bpmn-1',
+      topic: 'BPMN Notation',
+      question: 'What is BPMN and how do BAs use it?',
+      answer: 'BPMN (Business Process Model and Notation) is a standard for modeling business processes using visual symbols. BAs use BPMN to create process flow diagrams, document business workflows, identify inefficiencies, and communicate process requirements to technical teams.',
+      examples: ['Creating process flow diagrams for customer onboarding', 'Mapping current vs future state processes', 'Identifying process bottlenecks and improvement opportunities'],
+      relatedTopics: ['process-modeling', 'business-processes'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'swimlane-1',
+      topic: 'Swimlane Diagrams',
+      question: 'How do BAs use swimlane diagrams?',
+      answer: 'Swimlane diagrams show process flows across different departments or roles. BAs use them to identify handoffs between teams, clarify responsibilities, and identify process inefficiencies. They help visualize how work flows through an organization.',
+      examples: ['Mapping customer service process across Sales, Support, and Billing teams', 'Identifying handoff points and responsibilities', 'Documenting approval workflows across management levels'],
+      relatedTopics: ['process-modeling', 'organizational-structure'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'current-future-state-1',
+      topic: 'Current vs Future State Mapping',
+      question: 'How do BAs map current vs future state processes?',
+      answer: 'BAs map current state processes to understand existing workflows, then design future state processes to show desired improvements. This gap analysis helps identify changes needed, resource requirements, and implementation steps for process optimization.',
+      examples: ['Documenting current manual process vs future automated workflow', 'Identifying process improvements and efficiency gains', 'Planning change management for process transitions'],
+      relatedTopics: ['process-modeling', 'change-management'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'gap-analysis-1',
+      topic: 'Gap Analysis',
+      question: 'What is gap analysis in BA work?',
+      answer: 'Gap analysis identifies the difference between current state and desired future state. BAs use it to identify missing capabilities, process inefficiencies, technology gaps, and resource needs. It helps prioritize improvements and plan implementation strategies.',
+      examples: ['Identifying missing system capabilities for business needs', 'Analyzing process gaps between departments', 'Assessing technology gaps for digital transformation'],
+      relatedTopics: ['process-modeling', 'requirements-analysis'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'process-optimization-1',
+      topic: 'Process Optimization',
+      question: 'How do BAs optimize business processes?',
+      answer: 'BAs optimize processes by identifying inefficiencies, eliminating redundant steps, automating manual tasks, improving handoffs, and enhancing user experience. They use data analysis, stakeholder feedback, and process modeling to design improved workflows.',
+      examples: ['Automating manual data entry processes', 'Streamlining approval workflows', 'Improving customer service response times'],
+      relatedTopics: ['process-modeling', 'efficiency-improvement'],
+      difficulty: 'intermediate'
     }
   ];
 
@@ -235,6 +329,47 @@ class LectureService {
     return {
       content: aiResponse,
       phase: 'teach',
+      topic: topic,
+      moduleId: moduleId,
+      questionsRemaining: context.maxQuestions - context.questionsAsked
+    };
+  }
+
+  // Start a practice session
+  async startPractice(moduleId: string, topic: string): Promise<LectureResponse> {
+    const module = this.getModuleById(moduleId);
+    const topicIndex = module.topics.findIndex(t => t === topic);
+    
+    const context: LectureContext = {
+      moduleId,
+      topicIndex: topicIndex >= 0 ? topicIndex : 0,
+      currentPhase: 'practice',
+      conversationHistory: [],
+      questionsAsked: 0,
+      maxQuestions: 10
+    };
+    
+    this.lectureContexts.set(moduleId, context);
+
+    const systemPrompt = this.buildPracticePrompt(module, topic, context);
+    
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Let's practice ${topic}. Give me a practical scenario or exercise related to this topic, then ask me to solve it or explain my approach.` }
+      ],
+      max_tokens: 300,
+      temperature: 0.7
+    });
+
+    const aiResponse = response.choices[0]?.message?.content || 'Let\'s start practicing!';
+    
+    context.conversationHistory.push({ role: 'ai', content: aiResponse });
+    
+    return {
+      content: aiResponse,
+      phase: 'practice',
       topic: topic,
       moduleId: moduleId,
       questionsRemaining: context.maxQuestions - context.questionsAsked
@@ -391,6 +526,68 @@ class LectureService {
     - Keep responses focused on ${topic}
     
     If the user asks about topics outside of ${topic}, redirect them back to the current topic or suggest how it relates to what we're learning.`;
+  }
+
+  // Build practice prompt for hands-on exercises
+  private buildPracticePrompt(module: any, topic: string, context: LectureContext): string {
+    return `You are an expert Business Analyst mentor creating practice exercises for ${topic} in the context of ${module.title}.
+
+    Current Phase: ${context.currentPhase}
+    Questions Asked: ${context.questionsAsked}/${context.maxQuestions}
+    
+    PRACTICE GUIDELINES:
+    - Create realistic, practical scenarios that BAs would encounter in real work
+    - Provide clear context and background information
+    - Ask specific questions that test practical application of concepts
+    - Give students opportunities to think through problems step-by-step
+    - Focus on real-world application, not just theoretical knowledge
+    
+    EXERCISE TYPES:
+    - Case studies with business scenarios
+    - Requirements gathering exercises
+    - Process modeling challenges
+    - Stakeholder analysis scenarios
+    - Documentation exercises
+    
+    RESPONSE STYLE:
+    - Be professional and direct - avoid over-enthusiastic language
+    - Use simple, clear language
+    - Provide constructive feedback on student responses
+    - Keep exercises focused on ${topic}
+    - Encourage critical thinking and practical problem-solving
+    
+    Create exercises that help students apply ${topic} concepts in realistic business situations.`;
+  }
+
+  // Build practice prompt for AI interactions
+  private buildPracticePrompt(module: any, topic: string, context: LectureContext): string {
+    return `You are an expert Business Analyst mentor providing practice exercises for ${topic} in the context of ${module.title}.
+
+    Current Phase: ${context.currentPhase}
+    Questions Asked: ${context.questionsAsked}/${context.maxQuestions}
+    
+    PRACTICE GUIDELINES:
+    - Provide realistic, practical scenarios that BAs would encounter
+    - Create exercises that test application of concepts, not just memorization
+    - Give clear, specific scenarios with enough context to work with
+    - Ask for specific deliverables or approaches a BA would provide
+    - Focus on real-world application of ${topic}
+    
+    EXERCISE TYPES:
+    - Case studies with business problems to solve
+    - Requirements gathering scenarios
+    - Process analysis exercises
+    - Stakeholder interview simulations
+    - Documentation challenges
+    
+    RESPONSE STYLE:
+    - Be professional and direct - avoid over-enthusiastic language
+    - Present scenarios clearly and concisely
+    - Ask specific questions about how the user would approach the scenario
+    - Provide enough context for meaningful practice
+    - Keep focus on practical BA skills
+    
+    Always provide a realistic scenario first, then ask the user to demonstrate their understanding through practical application.`;
   }
 
   // Determine next phase based on user input
