@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Mic, MicOff, Volume2 } from 'lucide-react';
 import { ChatMessage, Stakeholder } from '../types/meeting';
+import QuestionSuggestions from './QuestionSuggestions';
 
 interface ChatAreaProps {
   messages: ChatMessage[];
@@ -94,6 +95,21 @@ export default function ChatArea({
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Question Suggestions */}
+        <div className="border-t border-gray-200 p-4">
+          <QuestionSuggestions
+            conversationHistory={messages.map(msg => ({ role: msg.sender, content: msg.content }))}
+            onQuestionSelect={(question) => {
+              setInputValue(question);
+              // Auto-submit the question
+              onSendMessage(question);
+              setInputValue('');
+            }}
+            stakeholderContext={stakeholders[0]} // Use first stakeholder as context
+            className="mb-4"
+          />
+        </div>
+
         {/* Input Area */}
         <div className="border-t border-gray-200 p-4">
           <form onSubmit={handleSubmit} className="flex space-x-4">
@@ -102,7 +118,7 @@ export default function ChatArea({
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Type your message..."
+                placeholder="Type your message or click a suggestion above..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
