@@ -671,11 +671,83 @@ class AIService {
 
       progressCallback?.("Generating comprehensive meeting summary...");
 
-      const systemPrompt = "You are a professional Business Analyst creating concise meeting notes. Create a brief, structured summary with: Meeting Context (date, duration, participants, project), Summary (1-2 sentences max), and Key Points (3-4 bullet points of main topics discussed). Keep it short and focused. If the conversation was brief or only greetings, simply state that no substantive topics were discussed. CRITICAL: Do NOT use markdown formatting, bold text, or any special formatting. Write in plain text only.";
-
-      const conversationText = messages.map((msg: any) => msg.speaker + ": " + msg.content).join("\n\n");
+      // Auto-populate standard template sections
       const meetingDate = startTime ? new Date(startTime).toLocaleDateString() : new Date().toLocaleDateString();
-      const userPrompt = "Project: " + (project?.name || "Unknown Project") + " Date: " + meetingDate + " Duration: " + (duration || 0) + " minutes Participants: " + (participants?.map((p: any) => p.name + " (" + p.role + ")").join(", ") || "Unknown") + " Conversation: " + conversationText + " Create a concise summary with: Meeting Context, Summary (1-2 sentences), and Key Points (3-4 bullet points). Keep it brief and focused.";
+      const participantList = participants?.map((p: any) => `${p.name} (${p.role})`).join(", ") || "Unknown";
+      const messageCount = messages.length;
+      const userMessageCount = messages.filter((m: any) => m.speaker === 'user').length;
+      const stakeholderMessageCount = messageCount - userMessageCount;
+      
+      // Create auto-populated template
+      const templateSections = `## Meeting Overview
+**Project:** ${project?.name || "Customer Onboarding Process Optimization"}
+**Date:** ${meetingDate}
+**Duration:** ${duration || 0} minutes
+**Participants:** ${participantList}
+**Total Messages:** ${messageCount} (${userMessageCount} questions, ${stakeholderMessageCount} responses)
+
+## Project Context
+Customer Onboarding Process Optimization at TechCorp Solutions
+- **Current Issues:** 6 to 8 week onboarding timeline, 23% churn rate, fragmented processes across 7 departments
+- **Goals:** Reduce to 3 to 4 weeks, improve CSAT, decrease churn by 40%
+- **Key Stakeholders:** Sales, Implementation, IT, Product, Support, Customer Success teams
+- **Current Process:** Manual handoffs, 4 disconnected systems, no centralized tracking
+
+## Conversation Analysis
+[AI-GENERATED CONTENT WILL GO HERE]
+
+## Key Discussion Points
+[AI-GENERATED CONTENT WILL GO HERE]
+
+## Requirements & Pain Points Identified
+[AI-GENERATED CONTENT WILL GO HERE]
+
+## Technical Insights & Systems Discussed
+[AI-GENERATED CONTENT WILL GO HERE]
+
+## Action Items & Next Steps
+[AI-GENERATED CONTENT WILL GO HERE]
+
+## Stakeholder Perspectives
+[AI-GENERATED CONTENT WILL GO HERE]`;
+
+      const systemPrompt = `You are a professional Business Analyst analyzing a stakeholder meeting conversation. 
+
+Analyze the conversation and provide insights for the following sections:
+
+1. **Conversation Analysis**: Brief overview of what was discussed and the meeting flow
+2. **Key Discussion Points**: Main topics covered and important insights shared
+3. **Requirements & Pain Points**: Any business requirements, pain points, or needs identified
+4. **Technical Insights**: Systems, tools, and process details discussed
+5. **Action Items**: Any next steps, decisions, or follow-up items mentioned
+6. **Stakeholder Perspectives**: Key viewpoints and concerns from each participant
+
+Keep each section concise but insightful. Use bullet points where appropriate. Focus on actionable insights and project-relevant information.`;
+
+      const conversationText = messages.map((msg: any) => `${msg.speaker}: ${msg.content}`).join("\n\n");
+      const userPrompt = `Please analyze this stakeholder meeting conversation and provide insights for the template sections:
+
+${conversationText}
+
+Provide content for each section in this exact format:
+
+Conversation Analysis:
+[Your analysis here]
+
+Key Discussion Points:
+[Your points here]
+
+Requirements & Pain Points:
+[Your requirements here]
+
+Technical Insights:
+[Your technical insights here]
+
+Action Items:
+[Your action items here]
+
+Stakeholder Perspectives:
+[Your stakeholder insights here]`;
 
       const response = await openai.chat.completions.create({
         model: MODEL,
@@ -684,21 +756,16 @@ class AIService {
           { role: "user", content: userPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 250,
+        max_tokens: 600,
         presence_penalty: 0,
         frequency_penalty: 0
       });
 
-      let summary = response.choices[0]?.message?.content?.trim();
-      
-      // Remove markdown formatting from summary
-      if (summary) {
-        summary = this.removeMarkdownFormatting(summary);
-      }
+      let aiContent = response.choices[0]?.message?.content?.trim();
       
       progressCallback?.("Summary generation completed.");
       
-      if (!summary) {
+      if (!aiContent) {
         // Use OpenAI to generate a contextual error response
         const errorResponse = await openai.chat.completions.create({
           model: MODEL,
@@ -711,6 +778,35 @@ class AIService {
         });
         return errorResponse.choices[0]?.message?.content || "Summary generation was unsuccessful.";
       }
+      
+      // Parse AI content into sections and combine with template
+      const sections = {
+        'Conversation Analysis': '',
+        'Key Discussion Points': '',
+        'Requirements & Pain Points': '',
+        'Technical Insights': '',
+        'Action Items': '',
+        'Stakeholder Perspectives': ''
+      };
+      
+      // Extract content for each section
+      Object.keys(sections).forEach(sectionName => {
+        const regex = new RegExp(`${sectionName}:\\s*([\\s\\S]*?)(?=\\n\\n\\w+:|$)`, 'i');
+        const match = aiContent.match(regex);
+        if (match) {
+          sections[sectionName] = match[1].trim();
+        }
+      });
+      
+      // Combine template with parsed sections
+      let summary = templateSections;
+      summary = summary.replace('## Conversation Analysis\n[AI-GENERATED CONTENT WILL GO HERE]', `## Conversation Analysis\n${sections['Conversation Analysis']}`);
+      summary = summary.replace('## Key Discussion Points\n[AI-GENERATED CONTENT WILL GO HERE]', `## Key Discussion Points\n${sections['Key Discussion Points']}`);
+      summary = summary.replace('## Requirements & Pain Points Identified\n[AI-GENERATED CONTENT WILL GO HERE]', `## Requirements & Pain Points Identified\n${sections['Requirements & Pain Points']}`);
+      summary = summary.replace('## Technical Insights & Systems Discussed\n[AI-GENERATED CONTENT WILL GO HERE]', `## Technical Insights & Systems Discussed\n${sections['Technical Insights']}`);
+      summary = summary.replace('## Action Items & Next Steps\n[AI-GENERATED CONTENT WILL GO HERE]', `## Action Items & Next Steps\n${sections['Action Items']}`);
+      summary = summary.replace('## Stakeholder Perspectives\n[AI-GENERATED CONTENT WILL GO HERE]', `## Stakeholder Perspectives\n${sections['Stakeholder Perspectives']}`);
+      
       return summary;
       
     } catch (error) {
