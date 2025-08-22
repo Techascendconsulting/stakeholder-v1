@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import MultiAgentSystem from './multiAgentSystem'; // Multi-agent system like ChatGPT
+import SingleAgentSystem from './singleAgentSystem'; // Cost-effective single-agent system
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -66,11 +66,11 @@ export interface ConversationContext {
 class AIService {
   private static instance: AIService;
   private conversationState: ConversationState;
-  private multiAgentSystem: MultiAgentSystem; // Multi-agent system like ChatGPT
+  private singleAgentSystem: SingleAgentSystem; // Cost-effective single-agent system
   
   private constructor() {
     this.conversationState = this.initializeConversationState();
-    this.multiAgentSystem = MultiAgentSystem.getInstance(); // Initialize multi-agent system
+    this.singleAgentSystem = SingleAgentSystem.getInstance(); // Initialize single-agent system
   }
 
   private initializeConversationState(): ConversationState {
@@ -110,18 +110,18 @@ class AIService {
     }
   }
 
-  // Multi-agent system stakeholder response (like ChatGPT)
+  // Cost-effective single-agent system stakeholder response
   public async generateStakeholderResponse(
     userMessage: string,
     stakeholder: StakeholderContext,
     context: ConversationContext = {},
     responseType: 'discussion' | 'baton_pass' | 'direct_mention' = 'discussion'
   ): Promise<string> {
-    console.log(`🤖 MULTI-AGENT: Generating response for ${stakeholder.name} (${stakeholder.role})`);
+    console.log(`🤖 SINGLE-AGENT: Generating response for ${stakeholder.name} (${stakeholder.role})`);
     
     try {
-      // Use multi-agent system to process the message
-      const response = await this.multiAgentSystem.processUserMessage(
+      // Use single-agent system to process the message (1-2 API calls max)
+      const response = await this.singleAgentSystem.processUserMessage(
         userMessage,
         stakeholder,
         context.project || {
@@ -132,11 +132,11 @@ class AIService {
         }
       );
 
-      console.log(`✅ MULTI-AGENT: ${stakeholder.name} response: "${response}"`);
+      console.log(`✅ SINGLE-AGENT: ${stakeholder.name} response: "${response}"`);
       return response;
       
     } catch (error) {
-      console.error('❌ MULTI-AGENT ERROR:', error);
+      console.error('❌ SINGLE-AGENT ERROR:', error);
       
       // Fallback to project-specific response
       return this.generateProjectSpecificResponse(stakeholder, context);
