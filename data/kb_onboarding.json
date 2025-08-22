@@ -339,6 +339,174 @@
       "refs": ["risks", "mitigation"]
     },
     {
+      "id": "KB-080",
+      "category": "customer_feedback",
+      "questions": ["what are the most common customer complaints during onboarding", "customer complaints", "what do customers complain about", "customer feedback issues"],
+      "short": "Most common complaints: delays, lack of progress visibility, inconsistent communication, unclear go-live dates, and feeling lost in the process.",
+      "expanded": "Customers most commonly complain about: onboarding delays that extend beyond promised timelines, lack of progress visibility throughout the process, inconsistent communication from different departments, unclear go-live dates that keep changing, and feeling lost in the complex process with no single point of contact.",
+      "refs": ["customer_experience", "pain_points"]
+    },
+    {
+      "id": "KB-081",
+      "category": "customer_feedback",
+      "questions": ["how do customers typically describe their onboarding experience", "customer experience description", "how do customers feel", "customer onboarding experience"],
+      "short": "Customers describe onboarding as frustrating, confusing, slow, and lacking transparency with no clear progress tracking.",
+      "expanded": "Customers typically describe their onboarding experience as frustrating due to delays, confusing due to multiple department contacts, slow compared to competitors, and lacking transparency with no clear progress tracking or milestone visibility.",
+      "refs": ["customer_experience", "pain_points"]
+    },
+    {
+      "id": "KB-082",
+      "category": "process_steps",
+      "questions": ["what happens during step 1 sales close", "sales close process", "step 1 onboarding", "sales process"],
+      "short": "Step 1: Sales closes deal in Salesforce, marking official start of onboarding process with no automated handoff.",
+      "expanded": "Step 1: Sales closes the deal in Salesforce, marking the official start of the onboarding process. However, there's no automated handoff to the next step, which creates a gap and delays the process by 24-48 hours.",
+      "refs": ["as_is_process", "sales"]
+    },
+    {
+      "id": "KB-083",
+      "category": "process_steps",
+      "questions": ["what happens during step 2 email handoff", "email handoff process", "step 2 onboarding", "handoff delays"],
+      "short": "Step 2: Manual email handoff from Sales to Implementation causes 24-48 hour delays with inconsistent information transfer.",
+      "expanded": "Step 2: Manual email handoff from Sales to Implementation team causes 24-48 hour delays. This manual process leads to inconsistent information transfer, customer confusion, and lack of accountability for the handoff.",
+      "refs": ["as_is_process", "handoffs"]
+    },
+    {
+      "id": "KB-084",
+      "category": "process_steps",
+      "questions": ["what happens during step 3 kickoff call", "kickoff call process", "step 3 onboarding", "initial meeting"],
+      "short": "Step 3: Kickoff call scheduled 3-5 business days after handoff, often delayed due to calendar conflicts.",
+      "expanded": "Step 3: Kickoff call is scheduled 3-5 business days after the handoff, but often gets delayed due to calendar conflicts between multiple stakeholders. This creates further delays in the process.",
+      "refs": ["as_is_process", "kickoff"]
+    },
+    {
+      "id": "KB-085",
+      "category": "process_steps",
+      "questions": ["what happens during step 4 monday.com data entry", "monday.com process", "step 4 onboarding", "data entry"],
+      "short": "Step 4: Customer data manually entered into Monday.com for project tracking, time-consuming and error-prone.",
+      "expanded": "Step 4: Customer data is manually entered into Monday.com for project tracking. This involves copying information from Salesforce and other sources, which is time-consuming and prone to errors.",
+      "refs": ["as_is_process", "data_entry"]
+    },
+    {
+      "id": "KB-086",
+      "category": "process_steps",
+      "questions": ["what happens during step 5 parallel technical setup", "technical setup process", "step 5 onboarding", "parallel work"],
+      "short": "Step 5: Technical setup runs in parallel silos across IT/Product/Support teams without coordination.",
+      "expanded": "Step 5: Technical setup runs in parallel silos across IT/Product/Support teams without proper coordination. Each team works independently, leading to conflicts and inefficiencies.",
+      "refs": ["as_is_process", "technical_setup"]
+    },
+    {
+      "id": "KB-087",
+      "category": "process_steps",
+      "questions": ["what happens during step 6 conflicting stakeholder calls", "stakeholder calls", "step 6 onboarding", "conflicting meetings"],
+      "short": "Step 6: Independent stakeholder calls scheduled by different teams cause conflicts and customer confusion.",
+      "expanded": "Step 6: Independent stakeholder calls are scheduled by different teams, causing conflicts and customer confusion. Customers receive multiple meeting requests at the same time from different departments.",
+      "refs": ["as_is_process", "stakeholder_calls"]
+    },
+    {
+      "id": "KB-088",
+      "category": "process_steps",
+      "questions": ["what happens during step 7 staging configuration", "staging config", "step 7 onboarding", "configuration"],
+      "short": "Step 7: Configuration done in staging environment, often delayed due to incomplete requirements.",
+      "expanded": "Step 7: Configuration is done in the staging environment, but often gets delayed due to incomplete requirements or missing information from previous steps.",
+      "refs": ["as_is_process", "staging"]
+    },
+    {
+      "id": "KB-089",
+      "category": "process_steps",
+      "questions": ["what happens during step 8 uat coordination", "uat process", "step 8 onboarding", "user acceptance testing"],
+      "short": "Step 8: UAT coordinated via email communication, leading to delays and miscommunication.",
+      "expanded": "Step 8: User Acceptance Testing (UAT) is coordinated via email communication, leading to delays, miscommunication, and unclear resolution timelines when issues arise.",
+      "refs": ["as_is_process", "uat"]
+    },
+    {
+      "id": "KB-090",
+      "category": "process_steps",
+      "questions": ["what happens during step 9 go-live scheduling", "go-live process", "step 9 onboarding", "launch scheduling"],
+      "short": "Step 9: Go-live scheduled, often delayed due to UAT issues or resource constraints.",
+      "expanded": "Step 9: Go-live is scheduled, but often gets delayed due to UAT issues, resource constraints, or incomplete configurations from previous steps.",
+      "refs": ["as_is_process", "go_live"]
+    },
+    {
+      "id": "KB-091",
+      "category": "process_steps",
+      "questions": ["what happens during step 10 customer success handoff", "cs handoff", "step 10 onboarding", "customer success transition"],
+      "short": "Step 10: Handoff to Customer Success, often inconsistent and leads to gaps in customer support.",
+      "expanded": "Step 10: Handoff to Customer Success team, but this transition is often inconsistent and leads to gaps in customer support and follow-up.",
+      "refs": ["as_is_process", "customer_success"]
+    },
+    {
+      "id": "KB-092",
+      "category": "future_state",
+      "questions": ["what would an ideal 3-4 week onboarding process look like", "ideal process", "future process", "optimized onboarding"],
+      "short": "Ideal process: automated handoffs, centralized tracking, customer dashboard, standardized communication, milestone visibility.",
+      "expanded": "An ideal 3-4 week onboarding process would feature automated handoffs between departments, centralized tracking and milestone visibility, customer-facing dashboard for progress updates, standardized communication protocols, and seamless system integration.",
+      "refs": ["future_state", "optimization"]
+    },
+    {
+      "id": "KB-093",
+      "category": "future_state",
+      "questions": ["what features would be most valuable in a customer dashboard", "customer dashboard features", "progress tracking", "customer visibility"],
+      "short": "Most valuable features: real-time progress tracking, milestone visibility, communication updates, go-live countdown, status notifications.",
+      "expanded": "Most valuable customer dashboard features would include real-time progress tracking, milestone visibility with completion percentages, communication updates and history, go-live countdown timer, and status notifications for next steps.",
+      "refs": ["future_state", "customer_experience"]
+    },
+    {
+      "id": "KB-094",
+      "category": "future_state",
+      "questions": ["how should communication be standardized across teams", "communication standardization", "team coordination", "unified communication"],
+      "short": "Standardized communication: centralized system, consistent cadence, automated updates, coordinated messaging, single point of contact.",
+      "expanded": "Communication should be standardized through a centralized system with consistent cadence, automated updates, coordinated messaging across all departments, and a single point of contact for customers.",
+      "refs": ["future_state", "communication"]
+    },
+    {
+      "id": "KB-095",
+      "category": "implementation",
+      "questions": ["how should we phase the implementation", "implementation phasing", "rollout strategy", "deployment phases"],
+      "short": "Phased implementation: pilot with select customers, department-by-department rollout, parallel system testing, gradual transition.",
+      "expanded": "Implementation should be phased with a pilot program using select customers, department-by-department rollout, parallel system testing, and gradual transition to minimize disruption and manage risks.",
+      "refs": ["implementation", "change_management"]
+    },
+    {
+      "id": "KB-096",
+      "category": "implementation",
+      "questions": ["what governance structure should oversee the implementation", "governance structure", "project oversight", "implementation management"],
+      "short": "Governance structure: Executive steering committee, project management office, department leads, regular review meetings, escalation procedures.",
+      "expanded": "Governance structure should include an executive steering committee with Chief Customer Officer and VP of Operations, project management office, department leads, regular review meetings, and clear escalation procedures.",
+      "refs": ["implementation", "governance"]
+    },
+    {
+      "id": "KB-097",
+      "category": "implementation",
+      "questions": ["how should we monitor and report progress", "progress monitoring", "reporting framework", "success tracking"],
+      "short": "Progress monitoring: integrated dashboard, automated milestone tracking, regular KPI reporting, stakeholder updates, issue escalation.",
+      "expanded": "Progress monitoring should include integrated dashboard for real-time tracking, automated milestone monitoring, regular KPI reporting across all departments, stakeholder updates, and issue escalation procedures.",
+      "refs": ["implementation", "monitoring"]
+    },
+    {
+      "id": "KB-098",
+      "category": "competitor_analysis",
+      "questions": ["how does our onboarding compare to competitors 3-4 week timeline", "competitor comparison", "industry benchmark", "competitive analysis"],
+      "short": "Our 6-8 week timeline is 50-100% longer than competitors' 3-4 weeks, causing customer dissatisfaction and churn.",
+      "expanded": "Our 6-8 week onboarding timeline is 50-100% longer than competitors' 3-4 weeks. This significant difference causes customer dissatisfaction, contributes to our 23% churn rate, and puts us at a competitive disadvantage.",
+      "refs": ["benchmarking", "competitive_analysis"]
+    },
+    {
+      "id": "KB-099",
+      "category": "metrics",
+      "questions": ["what metrics do you currently track for onboarding success", "current metrics", "success tracking", "onboarding kpis"],
+      "short": "Current metrics: timeline duration, go-live dates, basic completion rates, but lack customer satisfaction and efficiency measures.",
+      "expanded": "Currently track basic metrics like timeline duration, go-live dates, and completion rates, but lack comprehensive customer satisfaction measures, efficiency metrics, and detailed bottleneck analysis.",
+      "refs": ["metrics", "monitoring"]
+    },
+    {
+      "id": "KB-100",
+      "category": "systems_tools",
+      "questions": ["what systems and tools are currently being used", "current systems", "tools used", "software systems", "what systems do we use"],
+      "short": "Current systems: Salesforce CRM, Monday.com project tracking, IT tools, Product/Support systems - all disconnected requiring manual data entry.",
+      "expanded": "We currently use 4 disconnected systems: Salesforce CRM for deal management, Monday.com for project tracking, IT tools for technical setup, and Product/Support systems for configuration. These systems don't integrate, requiring manual data entry between them and causing delays.",
+      "refs": ["systems", "tools", "integration"]
+    }
+    {
       "id": "KB-005",
       "category": "problem_statement",
       "questions": ["what problem are we solving", "why is this project needed", "what issues exist", "current problems"],

@@ -64,6 +64,17 @@ class SingleAgentSystem {
       
       console.log('📚 KB Results:', topResults.length, 'entries found');
 
+      // If no relevant KB results found, return a clear "no information" response
+      if (topResults.length === 0) {
+        const noInfoResponse = `I don't have specific information about that. Could you ask about our onboarding process, current challenges, business goals, or stakeholder roles?`;
+        this.conversationContext.history.push({
+          role: 'assistant',
+          content: noInfoResponse,
+          timestamp: new Date()
+        });
+        return noInfoResponse;
+      }
+
       // Step 2: Single API call with all context
       const response = await this.generateResponse(userMessage, topResults);
       
@@ -101,15 +112,16 @@ Expanded: ${entry.expanded}`;
     const systemPrompt = `You are ${this.conversationContext.stakeholderContext?.name || 'a team member'} (${this.conversationContext.stakeholderContext?.role || 'stakeholder'}) in the Customer Onboarding Process Optimization project at TechCorp Solutions.
 
 CRITICAL RULES:
-1. Use ONLY information from the provided KB context
+1. Use ONLY information from the provided KB context - do NOT invent or assume anything
 2. Be conversational and natural - NOT formal or robotic
 3. NEVER use asterisks (*) - write naturally
 4. NEVER use dashes in numbers - say "6 to 8 weeks" not "6-8 weeks"
-5. AVOID repetitive phrases like "feel free to ask", "let me know"
-6. Be direct and specific - don't be overly helpful
-7. If information isn't in the KB, simply say "I don't have that information"
-8. Speak like a real person, not customer service
+5. AVOID repetitive phrases like "feel free to ask", "let me know", "if you have questions"
+6. Be direct and specific - don't be overly helpful or formal
+7. If the KB context doesn't contain the specific information needed, say "I don't have that specific information" and suggest related topics
+8. Speak like a real person, not a customer service representative
 9. Keep responses concise but informative
+10. NEVER give generic responses - always be specific to the question asked
 
 KB Context:
 ${kbContext}
