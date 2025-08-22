@@ -178,6 +178,13 @@ class QuestionSuggestionsService {
         category: 'context',
         difficulty: 'beginner',
         context: 'Understand the technical landscape'
+      },
+      {
+        id: 'intro-7',
+        text: "What specific products and services do we offer?",
+        category: 'context',
+        difficulty: 'beginner',
+        context: 'Understand our product portfolio'
       }
     ];
   }

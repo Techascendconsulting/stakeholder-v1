@@ -165,6 +165,7 @@ class KnowledgeBase {
             score,
             matchedQuestion: matchedQuestion || undefined
           });
+          console.log(`🔍 KB Match: ${entry.id} (score: ${score}) for query: "${query}"`);
         }
       }
 

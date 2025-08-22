@@ -108,6 +108,10 @@ class SingleAgentSystem {
     try {
       const results = await kb.search(query, 3);
       console.log(`🔍 KB search found ${results.length} results for: "${query}"`);
+      if (results.length > 0) {
+        console.log(`🔍 Top KB result: ${results[0].entry.id} (score: ${results[0].score})`);
+        console.log(`🔍 KB content: ${results[0].entry.short}`);
+      }
       return results;
     } catch (error) {
       console.error('❌ KB search failed:', error);

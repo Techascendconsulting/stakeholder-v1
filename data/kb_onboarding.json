@@ -43,6 +43,14 @@
       "refs": ["business_context"]
     },
     {
+      "id": "KB-107",
+      "category": "products_services",
+      "questions": ["what specific products do we offer", "what software do we sell", "what are our main products", "what solutions do we provide"],
+      "short": "Our main products include TechCorp CRM (customer management), ProjectFlow (project management), and AutoSync (business automation).",
+      "expanded": "Our main products include TechCorp CRM for customer relationship management and sales tracking, ProjectFlow for team collaboration and project management, and AutoSync for business process automation and workflow optimization. We also offer implementation services, training programs, and ongoing customer support.",
+      "refs": ["products", "services", "solutions"]
+    },
+    {
       "id": "KB-047",
       "category": "pain_points",
       "questions": ["what are the current pain points customers are experiencing", "customer pain points", "what problems do customers face", "customer issues"],
