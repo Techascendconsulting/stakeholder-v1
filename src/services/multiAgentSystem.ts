@@ -94,6 +94,7 @@ class MultiAgentSystem {
 
     } catch (error) {
       console.error('❌ Multi-agent system error:', error);
+      console.log('🆘 FALLBACK TRIGGERED due to error');
       return await this.fallbackAgent(userMessage);
     }
   }
@@ -135,8 +136,11 @@ Respond with a JSON object containing these fields.`;
   // Agent 2: Knowledge Retrieval Agent
   private async knowledgeRetrievalAgent(userMessage: string, queryAnalysis: any): Promise<SearchResult[]> {
     try {
+      console.log('📚 Knowledge Retrieval Agent - Searching for:', userMessage);
+      
       // Search KB with hybrid approach
       const results = await this.kb.searchKB(userMessage);
+      console.log('📚 Raw KB results:', results.length, 'entries');
       
       // Filter and rank based on query analysis
       const relevantResults = results.filter(result => {
@@ -145,6 +149,11 @@ Respond with a JSON object containing these fields.`;
         const intentMatch = this.matchesIntent(entry, queryAnalysis.intent);
         return topicMatch || intentMatch || result.score > 0.5;
       });
+
+      console.log('📚 Filtered relevant results:', relevantResults.length, 'entries');
+      if (relevantResults.length > 0) {
+        console.log('📚 Top result:', relevantResults[0].entry.short);
+      }
 
       return relevantResults.slice(0, 5); // Top 5 most relevant
     } catch (error) {
@@ -289,6 +298,8 @@ Generate a natural, contextual response that addresses the user's question using
 
   // Agent 6: Fallback Agent
   private async fallbackAgent(userMessage: string): Promise<string> {
+    console.log('🆘 FALLBACK AGENT TRIGGERED for:', userMessage);
+    
     const systemPrompt = `You are a Fallback Agent for the Customer Onboarding Process Optimization project. 
 The user asked: "${userMessage}"
 
@@ -309,8 +320,11 @@ Be professional and helpful.`;
       temperature: 0.5
     });
 
-    return response.choices[0]?.message?.content || 
+    const fallbackResponse = response.choices[0]?.message?.content || 
       "I'd be happy to help you with our Customer Onboarding Process Optimization project. What would you like to know about our current process, goals, or challenges?";
+    
+    console.log('🆘 FALLBACK RESPONSE:', fallbackResponse);
+    return fallbackResponse;
   }
 
   // Helper method to match KB entries with user intent
