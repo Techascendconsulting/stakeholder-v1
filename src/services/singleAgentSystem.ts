@@ -77,6 +77,8 @@ class SingleAgentSystem {
       // Reset retry count for new message
       this.retryCount = 0;
 
+      console.log(`📝 Processing message: "${userMessage.substring(0, 50)}..."`);
+
       // Search Knowledge Base
       const kbResults = await this.searchKnowledgeBase(userMessage);
       
@@ -85,6 +87,8 @@ class SingleAgentSystem {
       
       // Reset error state on success
       this.lastError = null;
+      
+      console.log(`✅ Generated response: "${response.substring(0, 50)}..."`);
       
       return response;
 
@@ -156,8 +160,10 @@ class SingleAgentSystem {
             content: userMessage
           }
         ],
-        max_tokens: 300,
-        temperature: 0.7,
+        max_tokens: 100,
+        temperature: 0.8, // Slightly higher temperature for more variety
+        presence_penalty: 0.1, // Slight penalty for repetition
+        frequency_penalty: 0.1, // Slight penalty for repetition
       });
 
       const generatedResponse = response.choices[0]?.message?.content;
@@ -180,6 +186,7 @@ class SingleAgentSystem {
     kbContext: string
   ): string {
     const hasKBContext = kbContext && kbContext.trim().length > 0;
+    const timestamp = new Date().toISOString();
     
     const basePrompt = `You are ${stakeholderContext.name}, a ${stakeholderContext.role} at ${stakeholderContext.department}.
 
@@ -188,7 +195,9 @@ Your priorities: ${stakeholderContext.priorities.join(', ')}
 Your expertise: ${stakeholderContext.expertise.join(', ')}
 
 Project Context: ${projectContext.name}
-${projectContext.description}`;
+${projectContext.description}
+
+Current time: ${timestamp}`;
 
     const kbSection = hasKBContext ? `\nKnowledge Base Context:\n${kbContext}\n` : '';
     
@@ -197,7 +206,7 @@ ${projectContext.description}`;
 - Be conversational and natural, like a real person
 - Use information from KB context when available, otherwise use project context
 - If you don't have specific information, make an educated guess based on project context
-- Keep responses concise (1-3 sentences)
+- Keep responses very concise (1-2 sentences maximum)
 - Be professional but casual
 - NEVER use asterisks, dashes in numbers, or bullet points
 - NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
@@ -207,7 +216,7 @@ ${projectContext.description}`;
 - Be conversational and natural, like a real person
 - You don't have specific KB information for this question, so make an intelligent guess based on project context
 - Use your knowledge of the project and your role to provide a helpful response
-- Keep responses concise (1-3 sentences)
+- Keep responses very concise (1-2 sentences maximum)
 - Be professional but casual
 - NEVER use asterisks, dashes in numbers, or bullet points
 - NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
@@ -238,7 +247,7 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
             content: `Project Context: ${projectContext}\n\nUser Question: ${userMessage}`
           }
         ],
-        max_tokens: 150,
+        max_tokens: 100,
         temperature: 0.5,
       });
 
