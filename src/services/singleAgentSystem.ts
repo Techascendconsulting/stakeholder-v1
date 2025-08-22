@@ -108,11 +108,17 @@ class SingleAgentSystem {
     try {
       const results = await kb.search(query, 3);
       console.log(`🔍 KB search found ${results.length} results for: "${query}"`);
+      
+      // Filter out low-quality matches (score < 1.5)
+      const highQualityResults = results.filter(result => result.score >= 1.5);
+      
       if (results.length > 0) {
         console.log(`🔍 Top KB result: ${results[0].entry.id} (score: ${results[0].score})`);
         console.log(`🔍 KB content: ${results[0].entry.short}`);
+        console.log(`🔍 High quality results: ${highQualityResults.length}/${results.length}`);
       }
-      return results;
+      
+      return highQualityResults;
     } catch (error) {
       console.error('❌ KB search failed:', error);
       return [];
@@ -136,6 +142,7 @@ class SingleAgentSystem {
       // Use GPT-3.5 when no KB results (doesn't understand question well)
       // Use GPT-4o-mini when we have KB context (better quality for informed responses)
       const model = kbResults.length > 0 ? 'gpt-4o-mini' : 'gpt-3.5-turbo';
+      console.log(`🤖 Using ${model} for response generation (KB results: ${kbResults.length})`);
       
       const response = await this.openai.chat.completions.create({
         model: model,
@@ -172,18 +179,21 @@ class SingleAgentSystem {
     projectContext: ProjectContext,
     kbContext: string
   ): string {
-    return `You are ${stakeholderContext.name}, a ${stakeholderContext.role} at ${stakeholderContext.department}.
+    const hasKBContext = kbContext && kbContext.trim().length > 0;
+    
+    const basePrompt = `You are ${stakeholderContext.name}, a ${stakeholderContext.role} at ${stakeholderContext.department}.
 
 Your personality: ${stakeholderContext.personality}
 Your priorities: ${stakeholderContext.priorities.join(', ')}
 Your expertise: ${stakeholderContext.expertise.join(', ')}
 
 Project Context: ${projectContext.name}
-${projectContext.description}
+${projectContext.description}`;
 
-${kbContext ? `Knowledge Base Context:\n${kbContext}\n` : ''}
-
-Response Guidelines:
+    const kbSection = hasKBContext ? `\nKnowledge Base Context:\n${kbContext}\n` : '';
+    
+    const responseGuidelines = hasKBContext 
+      ? `Response Guidelines:
 - Be conversational and natural, like a real person
 - Use information from KB context when available, otherwise use project context
 - If you don't have specific information, make an educated guess based on project context
@@ -192,7 +202,20 @@ Response Guidelines:
 - NEVER use asterisks, dashes in numbers, or bullet points
 - NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
 - ALWAYS provide specific, actionable information from the project context
-- Respond as ${stakeholderContext.name} would naturally speak`;
+- Respond as ${stakeholderContext.name} would naturally speak`
+      : `Response Guidelines:
+- Be conversational and natural, like a real person
+- You don't have specific KB information for this question, so make an intelligent guess based on project context
+- Use your knowledge of the project and your role to provide a helpful response
+- Keep responses concise (1-3 sentences)
+- Be professional but casual
+- NEVER use asterisks, dashes in numbers, or bullet points
+- NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
+- ALWAYS provide specific, actionable information from the project context
+- Respond as ${stakeholderContext.name} would naturally speak
+- If you're unsure, make an educated guess based on your role and the project context`;
+
+    return `${basePrompt}${kbSection}\n${responseGuidelines}`;
   }
 
   private async generateErrorResponse(userMessage: string): Promise<string> {
