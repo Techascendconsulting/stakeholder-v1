@@ -7,7 +7,7 @@
       "category": "greeting",
       "questions": ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "greetings"],
       "short": "Hello! How can I help you today with the Customer Onboarding Process Optimization project?",
-      "expanded": "Hello! I'm here to help you with the Customer Onboarding Process Optimization project at TechCorp Solutions. We're working to reduce onboarding time from 6-8 weeks to 3-4 weeks and improve customer satisfaction. What would you like to know?",
+      "expanded": "Hello! I'm here to help you with the Customer Onboarding Process Optimization project at TechCorp Solutions. We're working to reduce onboarding time from 6 to 8 weeks to 3 to 4 weeks and improve customer satisfaction. What would you like to know?",
       "refs": ["business_context"]
     },
     {
@@ -22,8 +22,8 @@
       "id": "KB-003",
       "category": "business_context", 
       "questions": ["what is this project about", "tell me about the project", "project overview", "what are we working on"],
-      "short": "This project optimizes TechCorp's customer onboarding process, currently taking 6-8 weeks with 23% churn in first 90 days.",
-      "expanded": "This project focuses on optimizing TechCorp Solutions' customer onboarding process. Currently, onboarding takes 6-8 weeks for enterprise clients, leading to customer dissatisfaction and 23% churn within the first 90 days. Our NPS has dropped from 8.2 to 6.4. The goal is to reduce onboarding time to 3-4 weeks, improve customer satisfaction, and decrease churn by 40%.",
+      "short": "This project optimizes TechCorp's customer onboarding process, currently taking 6 to 8 weeks with 23% churn in first 90 days.",
+      "expanded": "This project focuses on optimizing TechCorp Solutions' customer onboarding process. Currently, onboarding takes 6 to 8 weeks for enterprise clients, leading to customer dissatisfaction and 23% churn within the first 90 days. Our NPS has dropped from 8.2 to 6.4. The goal is to reduce onboarding time to 3 to 4 weeks, improve customer satisfaction, and decrease churn by 40%.",
       "refs": ["business_context", "problem_statement", "goals"]
     },
     {
@@ -47,7 +47,7 @@
       "category": "pain_points",
       "questions": ["what are the current pain points customers are experiencing", "customer pain points", "what problems do customers face", "customer issues"],
       "short": "Customers experience delays, lack of progress visibility, inconsistent communication, and unclear go-live dates.",
-      "expanded": "Customers face multiple pain points: onboarding takes 6-8 weeks (vs competitors' 3-4 weeks), lack of progress visibility throughout the process, inconsistent communication from different departments, unclear go-live dates, and no centralized tracking system. This leads to frustration and 23% churn within 90 days.",
+      "expanded": "Customers face multiple pain points: onboarding takes 6 to 8 weeks (vs competitors' 3 to 4 weeks), lack of progress visibility throughout the process, inconsistent communication from different departments, unclear go-live dates, and no centralized tracking system. This leads to frustration and 23% churn within 90 days.",
       "refs": ["pain_points", "customer_experience"]
     },
     {
@@ -71,7 +71,7 @@
       "category": "goals",
       "questions": ["what are our business goals for this project", "business goals", "project objectives", "what do we want to achieve"],
       "short": "Goals: 3-4 week onboarding, CSAT 8.5+, 40% churn reduction, 35% efficiency gain, standardized handoffs, customer dashboard, 95% on-time delivery.",
-      "expanded": "Business goals: reduce onboarding from 6-8 to 3-4 weeks by Q4 2024, increase CSAT from 6.2 to 8.5+, reduce churn by 40% (23% to 14%), improve internal efficiency by 35%, standardize handoffs between departments, implement customer-facing progress dashboard, achieve 95% on-time go-live delivery.",
+      "expanded": "Business goals: reduce onboarding from 6-8 to 3 to 4 weeks by Q4 2024, increase CSAT from 6.2 to 8.5+, reduce churn by 40% (23% to 14%), improve internal efficiency by 35%, standardize handoffs between departments, implement customer-facing progress dashboard, achieve 95% on-time go-live delivery.",
       "refs": ["goals", "metrics"]
     },
     {
@@ -87,15 +87,15 @@
       "category": "goals",
       "questions": ["what are our business goals", "project objectives", "what do we want to achieve", "success criteria", "targets for this project"],
       "short": "Goals: 3-4 week onboarding by Q4 2024, CSAT 6.2→8.5+, churn 23%→14%, +35% efficiency, standardized handoffs, customer dashboard, 95% on-time go-live.",
-      "expanded": "Our business goals are: 1) Reduce onboarding time from 6-8 weeks to 3-4 weeks by Q4 2024, 2) Increase CSAT scores from 6.2 to 8.5+, 3) Reduce onboarding-related churn from 23% to 14%, 4) Improve internal efficiency by 35%, 5) Standardize handoffs between departments, 6) Implement automated progress tracking with customer-facing dashboard, 7) Achieve 95% on-time go-live delivery.",
+      "expanded": "Our business goals are: 1) Reduce onboarding time from 6 to 8 weeks to 3 to 4 weeks by Q4 2024, 2) Increase CSAT scores from 6.2 to 8.5+, 3) Reduce onboarding-related churn from 23% to 14%, 4) Improve internal efficiency by 35%, 5) Standardize handoffs between departments, 6) Implement automated progress tracking with customer-facing dashboard, 7) Achieve 95% on-time go-live delivery.",
       "refs": ["goals", "metrics", "timeline"]
     },
     {
       "id": "KB-049",
       "category": "timeline",
       "questions": ["how long does the current process take", "current onboarding timeline", "how many weeks", "current duration"],
-      "short": "Currently onboarding takes 6-8 weeks for enterprise clients, compared to competitors' 3-4 weeks.",
-      "expanded": "Currently, onboarding takes 6-8 weeks for enterprise clients, which is significantly longer than our competitors who complete onboarding in 3-4 weeks. This extended timeline contributes to customer dissatisfaction and the high churn rate of 23% within the first 90 days.",
+      "short": "Currently onboarding takes 6 to 8 weeks for enterprise clients, compared to competitors' 3 to 4 weeks.",
+      "expanded": "Currently, onboarding takes 6 to 8 weeks for enterprise clients, which is significantly longer than our competitors who complete onboarding in 3 to 4 weeks. This extended timeline contributes to customer dissatisfaction and the high churn rate of 23% within the first 90 days.",
       "refs": ["timeline", "benchmarking"]
     },
     {
@@ -133,9 +133,9 @@
     {
       "id": "KB-054",
       "category": "analysis",
-      "questions": ["why is our onboarding taking 6-8 weeks vs competitors 3-4 weeks", "competitor comparison", "industry benchmark", "why are we slower"],
+      "questions": ["why is our onboarding taking 6 to 8 weeks vs competitors 3 to 4 weeks", "competitor comparison", "industry benchmark", "why are we slower"],
       "short": "We're slower due to manual handoffs, disconnected systems, siloed teams, and lack of centralized tracking compared to competitors' streamlined processes.",
-      "expanded": "Our onboarding takes 6-8 weeks vs competitors' 3-4 weeks due to manual handoffs between departments, 4 disconnected systems that don't integrate, siloed teams working independently, and lack of centralized tracking and milestone visibility that competitors have.",
+      "expanded": "Our onboarding takes 6 to 8 weeks vs competitors' 3 to 4 weeks due to manual handoffs between departments, 4 disconnected systems that don't integrate, siloed teams working independently, and lack of centralized tracking and milestone visibility that competitors have.",
       "refs": ["benchmarking", "process_analysis"]
     },
     {
@@ -245,9 +245,9 @@
     {
       "id": "KB-068",
       "category": "solutions",
-      "questions": ["how can we reduce onboarding time from 6-8 to 3-4 weeks", "timeline optimization", "speed improvement"],
+      "questions": ["how can we reduce onboarding time from 6-8 to 3 to 4 weeks", "timeline optimization", "speed improvement"],
       "short": "Reduce time by automating handoffs, implementing centralized tracking, standardizing communication, and eliminating manual processes.",
-      "expanded": "We can reduce onboarding time from 6-8 to 3-4 weeks by automating handoffs between departments, implementing centralized tracking and milestone visibility, standardizing communication cadence, and eliminating manual data entry and coordination processes.",
+      "expanded": "We can reduce onboarding time from 6-8 to 3 to 4 weeks by automating handoffs between departments, implementing centralized tracking and milestone visibility, standardizing communication cadence, and eliminating manual data entry and coordination processes.",
       "refs": ["timeline_optimization", "automation"]
     },
     {
@@ -286,8 +286,8 @@
       "id": "KB-073",
       "category": "solutions",
       "questions": ["what metrics should we track to measure success", "kpis", "success metrics"],
-      "short": "Track: onboarding timeline (3-4 weeks), CSAT (8.5+), churn rate (14%), efficiency (35% improvement), on-time delivery (95%).",
-      "expanded": "Key metrics to track: onboarding timeline (3-4 weeks), CSAT scores (8.5+), churn rate (14%), internal efficiency (35% improvement), and on-time go-live delivery (95%).",
+      "short": "Track: onboarding timeline (3 to 4 weeks), CSAT (8.5+), churn rate (14%), efficiency (35% improvement), on-time delivery (95%).",
+      "expanded": "Key metrics to track: onboarding timeline (3 to 4 weeks), CSAT scores (8.5+), churn rate (14%), internal efficiency (35% improvement), and on-time go-live delivery (95%).",
       "refs": ["kpis", "success_metrics"]
     },
     {
@@ -486,8 +486,8 @@
       "id": "KB-098",
       "category": "competitor_analysis",
       "questions": ["how does our onboarding compare to competitors 3-4 week timeline", "competitor comparison", "industry benchmark", "competitive analysis"],
-      "short": "Our 6-8 week timeline is 50-100% longer than competitors' 3-4 weeks, causing customer dissatisfaction and churn.",
-      "expanded": "Our 6-8 week onboarding timeline is 50-100% longer than competitors' 3-4 weeks. This significant difference causes customer dissatisfaction, contributes to our 23% churn rate, and puts us at a competitive disadvantage.",
+      "short": "Our 6-8 week timeline is 50-100% longer than competitors' 3 to 4 weeks, causing customer dissatisfaction and churn.",
+      "expanded": "Our 6-8 week onboarding timeline is 50-100% longer than competitors' 3 to 4 weeks. This significant difference causes customer dissatisfaction, contributes to our 23% churn rate, and puts us at a competitive disadvantage.",
       "refs": ["benchmarking", "competitive_analysis"]
     },
     {
@@ -505,6 +505,14 @@
       "short": "Current systems: Salesforce CRM, Monday.com project tracking, IT tools, Product/Support systems - all disconnected requiring manual data entry.",
       "expanded": "We currently use 4 disconnected systems: Salesforce CRM for deal management, Monday.com for project tracking, IT tools for technical setup, and Product/Support systems for configuration. These systems don't integrate, requiring manual data entry between them and causing delays.",
       "refs": ["systems", "tools", "integration"]
+    },
+    {
+      "id": "KB-101",
+      "category": "team_interactions",
+      "questions": ["how do the teams interact", "team interactions", "how do departments work together", "team collaboration", "how do they interact"],
+      "short": "Teams interact through manual handoffs, independent calls, and email coordination, leading to conflicts and delays.",
+      "expanded": "The 7 teams interact poorly: Sales hands off to Implementation via email (24-48hr delays), Implementation schedules kickoff calls independently, IT/Product/Support work in parallel silos without coordination, teams schedule conflicting stakeholder calls, and there's no centralized communication or tracking system.",
+      "refs": ["team_interactions", "handoffs", "communication"]
     }
     {
       "id": "KB-005",
@@ -614,8 +622,8 @@
       "id": "KB-018",
       "category": "goals",
       "questions": ["what are the business goals", "project objectives", "targets", "what do we want to achieve"],
-      "short": "Reduce onboarding to 3-4 weeks, increase CSAT to 8.5+, reduce churn to 14%, improve efficiency by 35%, standardize handoffs, create customer dashboard, achieve 95% on-time go-live.",
-      "expanded": "Business goals: 1) Reduce onboarding time from 6-8 weeks to 3-4 weeks by Q4 2024, 2) Increase CSAT scores from 6.2 to 8.5+, 3) Reduce onboarding-related churn from 23% to 14%, 4) Improve internal efficiency by 35%, 5) Standardize handoffs between departments, 6) Implement customer-facing dashboard for progress tracking, 7) Achieve 95% on-time go-live delivery.",
+      "short": "Reduce onboarding to 3 to 4 weeks, increase CSAT to 8.5+, reduce churn to 14%, improve efficiency by 35%, standardize handoffs, create customer dashboard, achieve 95% on-time go-live.",
+      "expanded": "Business goals: 1) Reduce onboarding time from 6 to 8 weeks to 3 to 4 weeks by Q4 2024, 2) Increase CSAT scores from 6.2 to 8.5+, 3) Reduce onboarding-related churn from 23% to 14%, 4) Improve internal efficiency by 35%, 5) Standardize handoffs between departments, 6) Implement customer-facing dashboard for progress tracking, 7) Achieve 95% on-time go-live delivery.",
       "refs": ["goals", "success_metrics"]
     },
     {
@@ -702,16 +710,16 @@
       "id": "KB-029",
       "category": "timeline",
       "questions": ["how long is onboarding now", "current timeline", "how many weeks"],
-      "short": "Currently 6-8 weeks for enterprise clients, compared to competitors' 3-4 weeks.",
-      "expanded": "Currently, onboarding takes 6-8 weeks for enterprise clients, which is significantly longer than competitors who complete onboarding in 3-4 weeks. This extended timeline contributes to customer dissatisfaction and churn.",
+      "short": "Currently 6 to 8 weeks for enterprise clients, compared to competitors' 3 to 4 weeks.",
+      "expanded": "Currently, onboarding takes 6 to 8 weeks for enterprise clients, which is significantly longer than competitors who complete onboarding in 3 to 4 weeks. This extended timeline contributes to customer dissatisfaction and churn.",
       "refs": ["timeline_current"]
     },
     {
       "id": "KB-030",
       "category": "timeline",
       "questions": ["what is the target timeline", "goal timeline", "future timeline"],
-      "short": "Target is 3-4 weeks by Q4 2024, matching competitor timelines.",
-      "expanded": "The target timeline is to reduce onboarding to 3-4 weeks by Q4 2024, which would match competitor timelines and significantly improve customer satisfaction and reduce churn.",
+      "short": "Target is 3 to 4 weeks by Q4 2024, matching competitor timelines.",
+      "expanded": "The target timeline is to reduce onboarding to 3 to 4 weeks by Q4 2024, which would match competitor timelines and significantly improve customer satisfaction and reduce churn.",
       "refs": ["timeline_target"]
     },
     {
