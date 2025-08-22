@@ -16,6 +16,7 @@ import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtil
 import { useNavigate } from 'react-router-dom';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 import DebugConsole from '../DebugConsole';
+import QuestionSuggestions from '../QuestionSuggestions';
 
 interface ParticipantCardProps {
   participant: any;
@@ -4261,6 +4262,22 @@ Guidelines:
                   )}
                   <div ref={transcriptEndRef} />
                 </div>
+              </div>
+
+              {/* Question Suggestions */}
+              <div className="mt-4">
+                <QuestionSuggestions
+                  conversationHistory={transcriptMessages.map(msg => ({ 
+                    role: msg.speaker === 'user' ? 'user' : 'assistant', 
+                    content: msg.content 
+                  }))}
+                  onQuestionSelect={(question) => {
+                    // Auto-submit the question
+                    handleUserMessage(question);
+                  }}
+                  stakeholderContext={selectedStakeholders?.[0]}
+                  className="mb-4"
+                />
               </div>
             </>
           )}
