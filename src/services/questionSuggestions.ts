@@ -225,6 +225,41 @@ class QuestionSuggestionsService {
         category: 'challenges',
         difficulty: 'intermediate',
         context: 'Gather customer insights'
+      },
+      {
+        id: 'problem-7',
+        text: "What challenges do teams currently face?",
+        category: 'challenges',
+        difficulty: 'beginner',
+        context: 'Understand team-level pain points'
+      },
+      {
+        id: 'problem-8',
+        text: "Where are the most bottlenecks in the process?",
+        category: 'analysis',
+        difficulty: 'intermediate',
+        context: 'Identify specific bottleneck points'
+      },
+      {
+        id: 'problem-9',
+        text: "How many stages do we have in the process?",
+        category: 'process',
+        difficulty: 'beginner',
+        context: 'Understand process complexity'
+      },
+      {
+        id: 'problem-10',
+        text: "Do we have any central system where all teams communicate about customers?",
+        category: 'process',
+        difficulty: 'intermediate',
+        context: 'Assess system integration gaps'
+      },
+      {
+        id: 'problem-11',
+        text: "Where do our customers find us?",
+        category: 'context',
+        difficulty: 'beginner',
+        context: 'Understand customer acquisition channels'
       }
     ];
   }

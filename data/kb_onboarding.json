@@ -841,6 +841,46 @@
       "short": "Thanks for discussing the Customer Onboarding Process Optimization project! Let me know if you need anything else.",
       "expanded": "Thanks for discussing the Customer Onboarding Process Optimization project! I'm here to help with any questions about our goals, current process, pain points, or implementation plans. Feel free to reach out anytime.",
       "refs": ["business_context"]
+    },
+    {
+      "id": "KB-102",
+      "category": "team_challenges",
+      "questions": ["what challenges do teams currently face", "team challenges", "department challenges", "what problems do teams have", "team issues"],
+      "short": "Teams face challenges with manual handoffs, conflicting schedules, lack of coordination, and working in silos across 7 departments.",
+      "expanded": "Teams currently face multiple challenges: manual handoffs between departments causing 24-48 hour delays, conflicting stakeholder call schedules when departments work independently, lack of coordination between IT/Product/Support teams working in parallel silos, no centralized communication system, and inconsistent processes across 7 departments leading to customer confusion and delays.",
+      "refs": ["team_challenges", "coordination", "handoffs"]
+    },
+    {
+      "id": "KB-103",
+      "category": "bottlenecks",
+      "questions": ["where is the most bottlenecks", "where are the bottlenecks", "bottleneck points", "where do delays occur", "biggest bottlenecks"],
+      "short": "Biggest bottlenecks: manual email handoffs (24-48hrs), conflicting stakeholder calls, parallel silo work, and no centralized tracking system.",
+      "expanded": "The biggest bottlenecks occur at: 1) Manual email handoffs from Sales to Implementation (24-48 hour delays), 2) Conflicting stakeholder calls when departments schedule independently, 3) Parallel silo work across IT/Product/Support teams without coordination, 4) No centralized tracking system causing lack of progress visibility, and 5) Manual data entry between 4 disconnected systems.",
+      "refs": ["bottlenecks", "delays", "process_issues"]
+    },
+    {
+      "id": "KB-104",
+      "category": "process_stages",
+      "questions": ["how many stages do we have in the process", "how many steps in onboarding", "process stages", "onboarding steps", "how many phases"],
+      "short": "The current onboarding process has 10 stages: Sales close → email handoff → kickoff → Monday.com → parallel setup → stakeholder calls → staging → UAT → go-live → CS handoff.",
+      "expanded": "The current onboarding process has 10 distinct stages: 1) Sales closes deal in Salesforce, 2) Manual email handoff to Implementation (24-48hrs delay), 3) Kickoff call (3-5 business days), 4) Data entry into Monday.com, 5) Parallel technical setup across IT/Product/Support, 6) Independent stakeholder calls (often conflicting), 7) Staging configuration, 8) UAT coordination via email, 9) Go-live scheduling, 10) Handoff to Customer Success. Each stage has its own delays and inefficiencies.",
+      "refs": ["process_stages", "workflow", "as_is_process"]
+    },
+    {
+      "id": "KB-105",
+      "category": "centralized_systems",
+      "questions": ["do you now have any central system where all teams communicate about customers", "centralized communication", "central system", "unified platform", "single system for teams"],
+      "short": "No centralized system exists. Teams use 4 disconnected systems: Salesforce, Monday.com, IT tools, and Product/Support systems with no integration.",
+      "expanded": "Currently, there is no centralized system where all teams communicate about customers. Teams use 4 disconnected systems: Salesforce for CRM, Monday.com for project tracking, separate IT tools, and Product/Support systems. This lack of integration causes manual data entry, delays in information flow, and prevents real-time coordination between teams. The project aims to implement a unified platform for all customer communications and progress tracking.",
+      "refs": ["systems", "integration", "communication"]
+    },
+    {
+      "id": "KB-106",
+      "category": "customer_acquisition",
+      "questions": ["where do our customers find us", "customer acquisition", "how do customers find us", "marketing channels", "customer sources"],
+      "short": "Customers find TechCorp through website, social media, online advertising, word-of-mouth referrals, and customer reviews.",
+      "expanded": "Customers find TechCorp Solutions through various online channels including our website, social media platforms, targeted online advertising, word-of-mouth referrals from existing customers, and customer reviews. Our online presence and digital marketing efforts play a significant role in attracting new enterprise clients. The quality of our onboarding experience directly impacts customer referrals and reviews.",
+      "refs": ["marketing", "customer_acquisition", "digital_presence"]
     }
   ]
 }
