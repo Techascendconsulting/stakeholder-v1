@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, X, ChevronUp, ChevronDown, Bot, Send } from 'lucide-react';
+import { MessageCircle, X, ChevronUp, ChevronDown, Send } from 'lucide-react';
 import QuestionSuggestionsService, { QuestionSuggestion, ConversationStage } from '../services/questionSuggestions';
 
 interface QuestionHelperBotProps {
@@ -17,12 +17,22 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
   const [suggestions, setSuggestions] = useState<QuestionSuggestion[]>([]);
   const [currentStage, setCurrentStage] = useState<ConversationStage | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [usedQuestions, setUsedQuestions] = useState<Set<string>>(new Set());
 
   const questionService = QuestionSuggestionsService.getInstance();
 
   useEffect(() => {
     const newSuggestions = questionService.getQuestionSuggestions(conversationHistory, stakeholderContext);
     const stage = questionService.getCurrentStage();
+    
+    // Track which questions have been asked by checking conversation history
+    const askedQuestions = new Set<string>();
+    conversationHistory.forEach(msg => {
+      if (msg.role === 'user') {
+        askedQuestions.add(msg.content.toLowerCase().trim());
+      }
+    });
+    setUsedQuestions(askedQuestions);
     
     setSuggestions(newSuggestions);
     setCurrentStage(stage);
@@ -69,25 +79,26 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
 
   return (
     <div className="fixed bottom-20 right-6 z-50">
-      {/* Floating Chat Button */}
+      {/* Floating Question Bank Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-105"
+          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-105 flex items-center space-x-2"
           title="Question Bank"
         >
-          <Bot className="w-5 h-5" />
+          <MessageCircle className="w-5 h-5" />
+          <span className="text-sm font-medium">Question Bank</span>
         </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-white rounded-lg shadow-xl border border-gray-200 w-72 max-h-80 flex flex-col">
+        <div className="bg-white rounded-lg shadow-xl border border-gray-200 w-64 max-h-96 flex flex-col">
           {/* Header */}
-          <div className="bg-indigo-600 text-white p-3 rounded-t-lg">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Bot className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4" />
                 <h3 className="font-semibold text-sm">Question Bank</h3>
               </div>
               <button
@@ -105,34 +116,43 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-3">
-              {(isExpanded ? suggestions : suggestions.slice(0, 4)).map((suggestion) => (
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="space-y-2">
+              {(isExpanded ? suggestions : suggestions.slice(0, 3)).map((suggestion) => {
+                const isUsed = usedQuestions.has(suggestion.text.toLowerCase().trim());
+                return (
                 <div
                   key={suggestion.id}
-                  className="group cursor-pointer p-3 rounded-lg border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-200"
+                  className={`group p-2 rounded-lg border transition-all duration-200 ${
+                    isUsed 
+                      ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60' 
+                      : 'border-gray-100 hover:border-indigo-200 hover:bg-indigo-50 cursor-pointer'
+                  }`}
                   onClick={() => {
-                    onQuestionSelect(suggestion.text);
-                    setIsOpen(false); // Close after selection
+                    if (!isUsed) {
+                      onQuestionSelect(suggestion.text);
+                      setIsOpen(false); // Close after selection
+                    }
                   }}
                 >
-                  <div className="flex items-start space-x-3">
-                    <span className="text-lg">{getCategoryIcon(suggestion.category)}</span>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-sm">{getCategoryIcon(suggestion.category)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 group-hover:text-indigo-900 font-medium leading-relaxed">
+                      <p className={`text-xs font-medium leading-relaxed ${
+                        isUsed ? 'text-gray-500' : 'text-gray-900 group-hover:text-indigo-900'
+                      }`}>
                         {suggestion.text}
                       </p>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(suggestion.difficulty)}`}>
-                          {suggestion.difficulty}
-                        </span>
-                        <span className="text-xs text-gray-500 truncate">
-                          {suggestion.context}
+                      <div className="flex items-center space-x-1 mt-1">
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${
+                          isUsed ? 'bg-gray-100 text-gray-500 border-gray-200' : getDifficultyColor(suggestion.difficulty)
+                        }`}>
+                          {isUsed ? 'Used' : suggestion.difficulty}
                         </span>
                       </div>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Send className="w-4 h-4 text-indigo-600" />
+                      <Send className="w-3 h-3 text-indigo-600" />
                     </div>
                   </div>
                 </div>
@@ -140,20 +160,20 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
             </div>
 
             {/* Show More/Less Button */}
-            {suggestions.length > 4 && (
+            {suggestions.length > 3 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full mt-3 text-center text-sm text-indigo-600 hover:text-indigo-800 py-2 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors"
+                className="w-full mt-2 text-center text-xs text-indigo-600 hover:text-indigo-800 py-1.5 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors"
               >
                 {isExpanded ? (
                   <span className="flex items-center justify-center space-x-1">
-                    <ChevronUp className="w-4 h-4" />
+                    <ChevronUp className="w-3 h-3" />
                     Show Less
                   </span>
                 ) : (
                   <span className="flex items-center justify-center space-x-1">
-                    <ChevronDown className="w-4 h-4" />
-                    Show More ({suggestions.length - 4} more)
+                    <ChevronDown className="w-3 h-3" />
+                    Show More ({suggestions.length - 3} more)
                   </span>
                 )}
               </button>
@@ -161,28 +181,28 @@ const QuestionHelperBot: React.FC<QuestionHelperBotProps> = ({
 
             {/* Progress indicator */}
             {currentStage && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                  <span>Learning Progress</span>
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                  <span>Progress</span>
                   <span>{currentStage.progress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
                   <div
-                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 h-1.5 rounded-full transition-all duration-300"
                     style={{ width: `${currentStage.progress}%` }}
                   ></div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Stage: {getStageName(currentStage.stage)}
+                  {getStageName(currentStage.stage)}
                 </p>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="p-3 bg-gray-50 rounded-b-lg border-t border-gray-200">
+          <div className="p-2 bg-gray-50 rounded-b-lg border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
-              Click any question to ask it automatically
+              Click to ask automatically
             </p>
           </div>
         </div>

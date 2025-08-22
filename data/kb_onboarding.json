@@ -44,6 +44,38 @@
     },
     {
       "id": "KB-047",
+      "category": "pain_points",
+      "questions": ["what are the current pain points customers are experiencing", "customer pain points", "what problems do customers face", "customer issues"],
+      "short": "Customers experience delays, lack of progress visibility, inconsistent communication, and unclear go-live dates.",
+      "expanded": "Customers face multiple pain points: onboarding takes 6-8 weeks (vs competitors' 3-4 weeks), lack of progress visibility throughout the process, inconsistent communication from different departments, unclear go-live dates, and no centralized tracking system. This leads to frustration and 23% churn within 90 days.",
+      "refs": ["pain_points", "customer_experience"]
+    },
+    {
+      "id": "KB-048",
+      "category": "stakeholders",
+      "questions": ["who are the key stakeholders involved in this project", "key stakeholders", "who is involved", "project stakeholders"],
+      "short": "Key stakeholders include Sales, Implementation, IT, Product, Support, Customer Success teams, and enterprise clients.",
+      "expanded": "The project involves 7 departments: Sales (closes deals), Implementation (manages onboarding), IT (technical setup), Product (feature configuration), Support (ongoing assistance), Customer Success (post-onboarding), and enterprise clients going through the process. Executive sponsorship comes from Chief Customer Officer and VP of Operations.",
+      "refs": ["stakeholders", "business_context"]
+    },
+    {
+      "id": "KB-049",
+      "category": "process",
+      "questions": ["what is the current process", "current process", "how does onboarding work now", "as-is process"],
+      "short": "Current process: Sales → email handoff → kickoff → Monday.com → parallel IT/Product/Support → conflicting calls → staging → UAT → go-live → CS handoff.",
+      "expanded": "The current 10-step process: 1) Sales closes in Salesforce, 2) Manual email handoff to Implementation (24-48hrs delay), 3) Kickoff call (3-5 business days), 4) Data entry into Monday.com, 5) Parallel technical setup across IT/Product/Support, 6) Independent stakeholder calls (conflicts), 7) Staging configuration, 8) UAT via email, 9) Go-live scheduling, 10) Handoff to Customer Success. No centralized tracking or milestone visibility.",
+      "refs": ["as_is_process", "pain_points"]
+    },
+    {
+      "id": "KB-050",
+      "category": "goals",
+      "questions": ["what are our business goals for this project", "business goals", "project objectives", "what do we want to achieve"],
+      "short": "Goals: 3-4 week onboarding, CSAT 8.5+, 40% churn reduction, 35% efficiency gain, standardized handoffs, customer dashboard, 95% on-time delivery.",
+      "expanded": "Business goals: reduce onboarding from 6-8 to 3-4 weeks by Q4 2024, increase CSAT from 6.2 to 8.5+, reduce churn by 40% (23% to 14%), improve internal efficiency by 35%, standardize handoffs between departments, implement customer-facing progress dashboard, achieve 95% on-time go-live delivery.",
+      "refs": ["goals", "metrics"]
+    },
+    {
+      "id": "KB-047",
       "category": "stakeholders",
       "questions": ["who are the key stakeholders", "who is involved", "key people", "who owns this project", "who are the stakeholders"],
       "short": "Key stakeholders include Sales, Implementation, IT, Product, Support, Customer Success teams, and enterprise clients.",
