@@ -133,8 +133,12 @@ class SingleAgentSystem {
 
       const systemPrompt = this.buildSystemPrompt(stakeholderContext, projectContext, kbContext);
       
+      // Use GPT-3.5 when no KB results (doesn't understand question well)
+      // Use GPT-4o-mini when we have KB context (better quality for informed responses)
+      const model = kbResults.length > 0 ? 'gpt-4o-mini' : 'gpt-3.5-turbo';
+      
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: model,
         messages: [
           {
             role: 'system',
@@ -200,11 +204,11 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
-            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently.`
+            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently. If you don't understand the question, make an educated guess based on the project context.`
           },
           {
             role: 'user',
