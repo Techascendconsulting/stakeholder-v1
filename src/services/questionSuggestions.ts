@@ -275,41 +275,48 @@ class QuestionSuggestionsService {
     return [
       {
         id: 'process-1',
+        text: "What's the current process?",
+        category: 'process',
+        difficulty: 'beginner',
+        context: 'Get an overview of the current onboarding workflow'
+      },
+      {
+        id: 'process-2',
         text: "Can you walk me through the current 10-step onboarding process?",
         category: 'process',
         difficulty: 'intermediate',
         context: 'Map out the complete current workflow'
       },
       {
-        id: 'process-2',
+        id: 'process-3',
         text: "Where do the biggest delays occur in the process?",
         category: 'analysis',
         difficulty: 'intermediate',
         context: 'Identify bottleneck points'
       },
       {
-        id: 'process-3',
+        id: 'process-4',
         text: "How do teams communicate during handoffs?",
         category: 'process',
         difficulty: 'intermediate',
         context: 'Understand communication gaps'
       },
       {
-        id: 'process-4',
+        id: 'process-5',
         text: "What happens when UAT testing fails?",
         category: 'process',
         difficulty: 'advanced',
         context: 'Analyze failure scenarios'
       },
       {
-        id: 'process-5',
+        id: 'process-6',
         text: "How is progress tracked throughout the process?",
         category: 'process',
         difficulty: 'intermediate',
         context: 'Identify tracking mechanisms'
       },
       {
-        id: 'process-6',
+        id: 'process-7',
         text: "What are the escalation procedures when issues arise?",
         category: 'process',
         difficulty: 'advanced',
