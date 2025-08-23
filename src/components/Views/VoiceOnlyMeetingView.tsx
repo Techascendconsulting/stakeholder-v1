@@ -363,7 +363,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setMeetingId(null);
     setMeetingStartTime(Date.now());
     setBackgroundTranscript([]);
-    setMessages([]);
+    // Only reset messages if there are no existing messages
+    if (messages.length === 0) {
+      setMessages([]);
+    } else {
+      console.log('🔄 Preserving existing messages:', messages.length);
+    }
     setTranscriptMessages([]);
     setIsEndingMeeting(false);
     setEndingProgress('');
