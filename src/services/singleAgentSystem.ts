@@ -114,8 +114,8 @@ class SingleAgentSystem {
       const results = await kb.search(query, 3);
       console.log(`🔍 KB search found ${results.length} results for: "${query}"`);
       
-      // Filter out low-quality matches (score < 1.5)
-      const highQualityResults = results.filter(result => result.score >= 1.5);
+      // Filter out low-quality matches (score < 0.5)
+      const highQualityResults = results.filter(result => result.score >= 0.5);
       
       if (results.length > 0) {
         console.log(`🔍 Top KB result: ${results[0].entry.id} (score: ${results[0].score})`);
@@ -207,13 +207,14 @@ Current time: ${timestamp}`;
     const responseGuidelines = hasKBContext 
       ? `Response Guidelines:
 - Be conversational and natural, like a real person
-- Use information from KB context when available, otherwise use project context
-- If you don't have specific information, make an educated guess based on project context
+- ALWAYS use the specific information from the KB context provided above
+- The KB context contains accurate, detailed information about the project - use it as your primary source
+- If the KB context has relevant information, use it instead of making guesses
 - Keep responses very concise (1-2 sentences maximum)
 - Be professional but casual
 - NEVER use asterisks, dashes in numbers, or bullet points
 - NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
-- ALWAYS provide specific, actionable information from the project context
+- ALWAYS provide specific, actionable information from the KB context
 - Respond as ${stakeholderContext.name} would naturally speak`
       : `Response Guidelines:
 - Be conversational and natural, like a real person
