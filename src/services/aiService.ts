@@ -98,7 +98,7 @@ class AIService {
       
     } catch (error) {
       console.error('❌ AISERVICE ERROR:', error);
-      return "I'm here to help with the onboarding project. What would you like to know?";
+      return "I'm here to help. What would you like to know?";
     }
   }
 
@@ -128,7 +128,7 @@ class AIService {
       return response;
     } catch (error) {
       console.error('❌ AISERVICE generateResponse ERROR:', error);
-      return "I'm here to help with the onboarding project. What would you like to know?";
+      return "I'm here to help. What would you like to know?";
     }
   }
 
