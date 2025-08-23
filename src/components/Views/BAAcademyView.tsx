@@ -560,7 +560,28 @@ const BAAcademyView: React.FC = () => {
                  <Play className="w-4 h-4" />
                  <span>Start Practice</span>
                </button>
-               <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+               <button 
+                 onClick={async () => {
+                   const nextTopicIndex = currentTopic + 1;
+                   if (nextTopicIndex < module.topics.length) {
+                     setCurrentTopic(nextTopicIndex);
+                     setConversationHistory([]);
+                     setIsLoading(true);
+                     try {
+                       const lecture = await lectureService.startLecture(selectedModule, nextTopicIndex);
+                       setCurrentLecture(lecture);
+                       setConversationHistory([{ role: 'ai', content: lecture.content }]);
+                     } catch (error) {
+                       console.error('Error switching to next topic:', error);
+                       setConversationHistory([{ role: 'ai', content: `Welcome to ${module.topics[nextTopicIndex]}! Let's start learning about this topic.` }]);
+                     } finally {
+                       setIsLoading(false);
+                     }
+                   }
+                 }}
+                 disabled={currentTopic >= module.topics.length - 1}
+                 className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+               >
                  <ArrowRight className="w-4 h-4" />
                  <span>Next Topic</span>
                </button>
@@ -573,16 +594,34 @@ const BAAcademyView: React.FC = () => {
             {module.topics.map((topic, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentTopic(index)}
+                onClick={async () => {
+                  setCurrentTopic(index);
+                  setConversationHistory([]);
+                  setIsLoading(true);
+                  try {
+                    const lecture = await lectureService.startLecture(selectedModule, index);
+                    setCurrentLecture(lecture);
+                    setConversationHistory([{ role: 'ai', content: lecture.content }]);
+                  } catch (error) {
+                    console.error('Error switching topic:', error);
+                    setConversationHistory([{ role: 'ai', content: `Welcome to ${topic}! Let's start learning about this topic.` }]);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   index === currentTopic
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
+                title={`Topic ${index + 1}: ${topic}`}
               >
                 {index + 1}
               </button>
             ))}
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Topic {currentTopic + 1} of {module.topics.length}
           </div>
         </div>
       </div>
