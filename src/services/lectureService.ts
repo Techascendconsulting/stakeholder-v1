@@ -50,56 +50,56 @@ class LectureService {
       question: 'What is Business Analysis and what does it involve?',
       answer: `Business Analysis is the practice of enabling change in organizations by identifying business needs and recommending solutions that deliver value to stakeholders. It's about understanding how organizations work and helping them improve their processes, systems, and capabilities.
 
-**Core Purpose of Business Analysis**:
+**Core Purpose of Business Analysis**
 Business Analysis exists to bridge the gap between business problems and technical solutions. It helps organizations understand what they need to change, why they need to change it, and how to implement those changes successfully.
 
-**What Business Analysts Do**:
-- **Understand Business Context**: Analyze how organizations function, their goals, challenges, and operating environment
-- **Identify Problems and Opportunities**: Discover inefficiencies, gaps, and areas for improvement in business processes
-- **Define Requirements**: Document what the organization needs to achieve its goals and solve its problems
-- **Recommend Solutions**: Propose changes to processes, systems, or organizational structures
-- **Facilitate Change**: Help organizations implement and adopt new ways of working
-- **Validate Outcomes**: Ensure that changes deliver the expected value and benefits
+**What Business Analysts Do**
+- Understand Business Context: Analyze how organizations function, their goals, challenges, and operating environment
+- Identify Problems and Opportunities: Discover inefficiencies, gaps, and areas for improvement in business processes
+- Define Requirements: Document what the organization needs to achieve its goals and solve its problems
+- Recommend Solutions: Propose changes to processes, systems, or organizational structures
+- Facilitate Change: Help organizations implement and adopt new ways of working
+- Validate Outcomes: Ensure that changes deliver the expected value and benefits
 
-**Key Areas of Focus**:
-1. **Strategic Analysis**: Understanding organizational goals, market position, and competitive landscape
-2. **Process Analysis**: Examining current workflows, identifying inefficiencies, and designing improved processes
-3. **Requirements Engineering**: Gathering, analyzing, and documenting what stakeholders need
-4. **Solution Assessment**: Evaluating proposed solutions and their impact on the organization
-5. **Change Management**: Helping organizations adapt to new processes and systems
-6. **Stakeholder Management**: Working with people across the organization to understand their needs and concerns
+**Key Areas of Focus**
+1. Strategic Analysis: Understanding organizational goals, market position, and competitive landscape
+2. Process Analysis: Examining current workflows, identifying inefficiencies, and designing improved processes
+3. Requirements Engineering: Gathering, analyzing, and documenting what stakeholders need
+4. Solution Assessment: Evaluating proposed solutions and their impact on the organization
+5. Change Management: Helping organizations adapt to new processes and systems
+6. Stakeholder Management: Working with people across the organization to understand their needs and concerns
 
-**The Business Analysis Process**:
-1. **Discovery**: Understanding the current state and identifying problems or opportunities
-2. **Analysis**: Breaking down complex problems into manageable components
-3. **Design**: Creating solutions that address identified needs
-4. **Implementation**: Supporting the rollout of changes
-5. **Validation**: Ensuring that changes deliver the expected benefits
+**The Business Analysis Process**
+1. Discovery: Understanding the current state and identifying problems or opportunities
+2. Analysis: Breaking down complex problems into manageable components
+3. Design: Creating solutions that address identified needs
+4. Implementation: Supporting the rollout of changes
+5. Validation: Ensuring that changes deliver the expected benefits
 
-**Value Delivered by Business Analysis**:
-- **Reduced Costs**: Identifying inefficiencies and eliminating waste
-- **Improved Efficiency**: Streamlining processes and workflows
-- **Better Customer Experience**: Understanding customer needs and improving service delivery
-- **Risk Mitigation**: Identifying potential problems before they occur
-- **Informed Decision Making**: Providing clear analysis and recommendations
-- **Successful Change**: Ensuring that organizational changes are implemented effectively
+**Value Delivered by Business Analysis**
+- Reduced Costs: Identifying inefficiencies and eliminating waste
+- Improved Efficiency: Streamlining processes and workflows
+- Better Customer Experience: Understanding customer needs and improving service delivery
+- Risk Mitigation: Identifying potential problems before they occur
+- Informed Decision Making: Providing clear analysis and recommendations
+- Successful Change: Ensuring that organizational changes are implemented effectively
 
-**Business Analysis vs Other Roles**:
-- **Project Managers**: Focus on delivering projects on time and budget; BAs focus on delivering the right solution
-- **Systems Analysts**: Focus on technical system requirements; BAs focus on business needs and processes
-- **Product Managers**: Focus on product strategy and roadmap; BAs focus on organizational change and improvement
-- **Consultants**: May provide strategic advice; BAs provide detailed analysis and implementation support
+**Business Analysis vs Other Roles**
+- Project Managers: Focus on delivering projects on time and budget; BAs focus on delivering the right solution
+- Systems Analysts: Focus on technical system requirements; BAs focus on business needs and processes
+- Product Managers: Focus on product strategy and roadmap; BAs focus on organizational change and improvement
+- Consultants: May provide strategic advice; BAs provide detailed analysis and implementation support
 
-**Skills Required for Business Analysis**:
-- **Analytical Thinking**: Breaking down complex problems and understanding root causes
-- **Communication**: Explaining complex concepts to different audiences
-- **Facilitation**: Leading workshops and meetings to gather information
-- **Documentation**: Creating clear, comprehensive requirements and process documents
-- **Stakeholder Management**: Working effectively with people at all levels of the organization
-- **Technical Understanding**: Knowing enough about technology to understand possibilities and constraints
-- **Business Acumen**: Understanding how organizations work and what drives success
+**Skills Required for Business Analysis**
+- Analytical Thinking: Breaking down complex problems and understanding root causes
+- Communication: Explaining complex concepts to different audiences
+- Facilitation: Leading workshops and meetings to gather information
+- Documentation: Creating clear, comprehensive requirements and process documents
+- Stakeholder Management: Working effectively with people at all levels of the organization
+- Technical Understanding: Knowing enough about technology to understand possibilities and constraints
+- Business Acumen: Understanding how organizations work and what drives success
 
-**Common Business Analysis Deliverables**:
+**Common Business Analysis Deliverables**
 - Business requirements documents
 - Process models and flowcharts
 - Stakeholder analysis and communication plans
@@ -153,8 +153,8 @@ When you don't understand how an organization works, you end up:
 
 **The Simple Truth**
 Every organization has two structures:
-1. **The Official Structure** - what's on the org chart
-2. **The Real Structure** - how things actually get done
+1. The Official Structure - what's on the org chart
+2. The Real Structure - how things actually get done
 
 **A Real Example**
 Let's say you're implementing a new CRM system. The org chart shows that IT reports to the CFO, so you think you need the CFO's approval. But in reality, the IT director has a direct line to the CEO and makes all the technology decisions. If you don't know this, you'll waste weeks going through the wrong approval process.
@@ -176,9 +176,9 @@ Start with the official org chart, but then add the real relationships. Who actu
 - How do they handle change? (Embrace it, resist it, need lots of explanation?)
 
 **The Three Questions That Matter**
-1. **Who needs to be involved?** (Not just who should be involved)
-2. **How do decisions really get made?** (Not how they're supposed to get made)
-3. **What will make this project succeed or fail?** (Based on how the organization actually works)
+1. Who needs to be involved? (Not just who should be involved)
+2. How do decisions really get made? (Not how they're supposed to get made)
+3. What will make this project succeed or fail? (Based on how the organization actually works)
 
 **Practical Tools You'll Actually Use**
 
@@ -518,7 +518,7 @@ Organizational structure analysis isn't about memorizing theories or creating co
     
     if (knowledgeBaseContent) {
       // Use knowledge base content directly
-      const aiResponse = `Let me teach you about ${topic}.\n\n${knowledgeBaseContent}\n\nBased on what I just taught you about ${topic}, what questions do you have?`;
+      const aiResponse = `${knowledgeBaseContent}\n\nWhat questions do you have about ${topic}?`;
       
       context.conversationHistory.push({ role: 'ai', content: aiResponse });
       
@@ -532,14 +532,14 @@ Organizational structure analysis isn't about memorizing theories or creating co
     }
 
     // Fallback to AI generation with strict topic focus
-    const systemPrompt = `You are teaching about the specific topic: "${topic}". 
+    const systemPrompt = `You are providing information about the specific topic: "${topic}". 
 
-CRITICAL: You must ONLY teach about "${topic}" and nothing else. Do not teach about other BA topics.
+CRITICAL: You must ONLY cover "${topic}" and nothing else. Do not cover other BA topics.
 
-If the topic is "Requirements Classification and Types", teach ONLY about how requirements are classified and the different types of requirements.
-If the topic is "Business Analysis Definition (BABOK)", teach ONLY about BABOK's definition of business analysis.
-If the topic is "Core BA Competencies (IIBA)", teach ONLY about IIBA's core competencies.
-If the topic is "Requirements Elicitation Techniques (BABOK)", teach ONLY about BABOK's elicitation techniques.
+If the topic is "Requirements Classification and Types", cover ONLY how requirements are classified and the different types of requirements.
+If the topic is "Business Analysis Definition (BABOK)", cover ONLY the definition of business analysis.
+If the topic is "Core BA Competencies (IIBA)", cover ONLY the core competencies.
+If the topic is "Requirements Elicitation Techniques (BABOK)", cover ONLY elicitation techniques.
 
 Stay focused on the exact topic. Do not deviate to other subjects.`;
     
@@ -547,13 +547,13 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Teach me specifically about ${topic}. Provide a comprehensive explanation with examples, then ask a question about ${topic}.` }
+        { role: 'user', content: `Provide comprehensive information about ${topic} with examples, then ask a question about ${topic}.` }
       ],
       max_tokens: 400,
       temperature: 0.3
     });
 
-    const aiResponse = response.choices[0]?.message?.content || `Let me teach you about ${topic}.`;
+    const aiResponse = response.choices[0]?.message?.content || `Here's information about ${topic}.`;
     
     context.conversationHistory.push({ role: 'ai', content: aiResponse });
     
