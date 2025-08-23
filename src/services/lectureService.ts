@@ -47,9 +47,74 @@ class LectureService {
     {
       id: 'ba-definition-1',
       topic: 'Business Analysis Definition (BABOK)',
-      question: 'What is Business Analysis according to IIBA BABOK?',
-      answer: 'Business Analysis is the practice of enabling change in an enterprise by defining needs and recommending solutions that deliver value to stakeholders. It involves understanding how organizations function to accomplish their purposes, defining the capabilities an enterprise requires to provide products and services to external stakeholders, and determining the optimal way to organize, coordinate, and support those capabilities.',
-      examples: ['Analyzing customer onboarding process to identify improvement opportunities', 'Defining requirements for a new customer portal', 'Recommending process changes to reduce operational costs'],
+      question: 'What is Business Analysis and what does it involve?',
+      answer: `Business Analysis is the practice of enabling change in organizations by identifying business needs and recommending solutions that deliver value to stakeholders. It's about understanding how organizations work and helping them improve their processes, systems, and capabilities.
+
+**Core Purpose of Business Analysis**:
+Business Analysis exists to bridge the gap between business problems and technical solutions. It helps organizations understand what they need to change, why they need to change it, and how to implement those changes successfully.
+
+**What Business Analysts Do**:
+- **Understand Business Context**: Analyze how organizations function, their goals, challenges, and operating environment
+- **Identify Problems and Opportunities**: Discover inefficiencies, gaps, and areas for improvement in business processes
+- **Define Requirements**: Document what the organization needs to achieve its goals and solve its problems
+- **Recommend Solutions**: Propose changes to processes, systems, or organizational structures
+- **Facilitate Change**: Help organizations implement and adopt new ways of working
+- **Validate Outcomes**: Ensure that changes deliver the expected value and benefits
+
+**Key Areas of Focus**:
+1. **Strategic Analysis**: Understanding organizational goals, market position, and competitive landscape
+2. **Process Analysis**: Examining current workflows, identifying inefficiencies, and designing improved processes
+3. **Requirements Engineering**: Gathering, analyzing, and documenting what stakeholders need
+4. **Solution Assessment**: Evaluating proposed solutions and their impact on the organization
+5. **Change Management**: Helping organizations adapt to new processes and systems
+6. **Stakeholder Management**: Working with people across the organization to understand their needs and concerns
+
+**The Business Analysis Process**:
+1. **Discovery**: Understanding the current state and identifying problems or opportunities
+2. **Analysis**: Breaking down complex problems into manageable components
+3. **Design**: Creating solutions that address identified needs
+4. **Implementation**: Supporting the rollout of changes
+5. **Validation**: Ensuring that changes deliver the expected benefits
+
+**Value Delivered by Business Analysis**:
+- **Reduced Costs**: Identifying inefficiencies and eliminating waste
+- **Improved Efficiency**: Streamlining processes and workflows
+- **Better Customer Experience**: Understanding customer needs and improving service delivery
+- **Risk Mitigation**: Identifying potential problems before they occur
+- **Informed Decision Making**: Providing clear analysis and recommendations
+- **Successful Change**: Ensuring that organizational changes are implemented effectively
+
+**Business Analysis vs Other Roles**:
+- **Project Managers**: Focus on delivering projects on time and budget; BAs focus on delivering the right solution
+- **Systems Analysts**: Focus on technical system requirements; BAs focus on business needs and processes
+- **Product Managers**: Focus on product strategy and roadmap; BAs focus on organizational change and improvement
+- **Consultants**: May provide strategic advice; BAs provide detailed analysis and implementation support
+
+**Skills Required for Business Analysis**:
+- **Analytical Thinking**: Breaking down complex problems and understanding root causes
+- **Communication**: Explaining complex concepts to different audiences
+- **Facilitation**: Leading workshops and meetings to gather information
+- **Documentation**: Creating clear, comprehensive requirements and process documents
+- **Stakeholder Management**: Working effectively with people at all levels of the organization
+- **Technical Understanding**: Knowing enough about technology to understand possibilities and constraints
+- **Business Acumen**: Understanding how organizations work and what drives success
+
+**Common Business Analysis Deliverables**:
+- Business requirements documents
+- Process models and flowcharts
+- Stakeholder analysis and communication plans
+- Requirements traceability matrices
+- Solution assessment reports
+- Change management plans
+- User stories and acceptance criteria
+- Business cases and feasibility studies`,
+      examples: [
+        'Analyzing a customer service process to identify why response times are slow and recommending improvements',
+        'Working with sales teams to understand their needs for a new CRM system and documenting requirements',
+        'Facilitating workshops with multiple departments to design a new order fulfillment process',
+        'Creating a business case for implementing an automated invoicing system to reduce manual work',
+        'Leading the requirements gathering for a new e-commerce platform that will increase online sales'
+      ],
       relatedTopics: ['requirements-engineering', 'stakeholder-management'],
       difficulty: 'beginner'
     },
@@ -140,9 +205,57 @@ class LectureService {
     {
       id: 'requirements-elicitation-1',
       topic: 'Requirements Elicitation Techniques (BABOK)',
-      question: 'What are the key requirements elicitation techniques according to BABOK?',
-      answer: 'BABOK defines several elicitation techniques: Brainstorming, Document Analysis, Focus Groups, Interface Analysis, Interviews, Observation, Prototyping, Requirements Workshops, and Survey/Questionnaire. Each technique has specific use cases and should be selected based on the situation, stakeholders, and information needs.',
-      examples: ['Conducting stakeholder interviews to understand business needs', 'Facilitating requirements workshops with cross-functional teams', 'Using document analysis to understand existing processes'],
+      question: 'What are the key requirements elicitation techniques and how do you use them effectively?',
+      answer: `Requirements elicitation is the process of gathering information from stakeholders to understand their needs and requirements. Here are the key techniques and how to use them effectively:
+
+**Interviews**: One-on-one or group conversations with stakeholders to understand their needs, pain points, and expectations. Prepare structured questions, listen actively, and document responses thoroughly. Use open-ended questions to explore needs and closed questions to confirm understanding.
+
+**Workshops**: Collaborative sessions with multiple stakeholders to gather requirements, resolve conflicts, and reach consensus. Facilitate discussions, use visual aids like whiteboards, and ensure all voices are heard. Workshops are excellent for complex requirements that need input from multiple perspectives.
+
+**Document Analysis**: Review existing documentation, processes, and systems to understand current state and identify requirements. Analyze user manuals, process flows, system documentation, and business rules. This technique helps understand what exists and what needs to change.
+
+**Observation**: Watch users perform their work to understand actual processes and identify unstated requirements. Observe in the natural work environment, take detailed notes, and look for workarounds and inefficiencies that users might not mention in interviews.
+
+**Surveys and Questionnaires**: Collect information from large groups of stakeholders efficiently. Design clear, focused questions, use both quantitative and qualitative approaches, and follow up with interviews for deeper insights.
+
+**Prototyping**: Create mockups or working models to help stakeholders visualize and refine requirements. Use wireframes, storyboards, or interactive prototypes to gather feedback and iterate on requirements.
+
+**Focus Groups**: Bring together representative stakeholders to discuss requirements in a moderated setting. Use this technique to understand group dynamics, identify common needs, and explore different perspectives on requirements.
+
+**Brainstorming**: Generate creative ideas and solutions through structured group sessions. Set clear objectives, encourage all ideas without criticism, and use techniques like mind mapping to organize thoughts.
+
+**Interface Analysis**: Examine how systems and processes interact to identify integration requirements and dependencies. Map data flows, system interfaces, and user interactions to understand complete requirements.
+
+**Process Modeling**: Create visual representations of current and future processes to identify requirements. Use flowcharts, swim lane diagrams, and process maps to understand workflows and identify improvement opportunities.
+
+**When to Use Each Technique**:
+- Use interviews for initial exploration and detailed requirements gathering
+- Use workshops for complex requirements involving multiple stakeholders
+- Use document analysis when understanding existing systems and processes
+- Use observation when users can't articulate their needs clearly
+- Use surveys for gathering input from large groups efficiently
+- Use prototyping when requirements are unclear or need visualization
+- Use focus groups for understanding group perspectives and priorities
+- Use brainstorming for generating creative solutions and alternatives
+- Use interface analysis for system integration and data flow requirements
+- Use process modeling for understanding workflows and identifying improvements
+
+**Best Practices**:
+- Always prepare thoroughly for each technique
+- Use multiple techniques to validate and cross-check requirements
+- Document everything clearly and consistently
+- Involve the right stakeholders for each technique
+- Follow up on unclear or conflicting information
+- Validate requirements with stakeholders after gathering them
+- Consider the context and constraints when selecting techniques
+- Be flexible and adapt techniques to the specific situation`,
+      examples: [
+        'Conducting structured interviews with sales managers to understand CRM requirements',
+        'Facilitating a requirements workshop with IT, business, and end users to define a new customer portal',
+        'Analyzing existing order processing documentation to identify gaps in current system',
+        'Observing customer service representatives to understand their actual workflow and pain points',
+        'Creating wireframe prototypes of a mobile app to gather user feedback on interface requirements'
+      ],
       relatedTopics: ['requirements-engineering', 'stakeholder-management'],
       difficulty: 'beginner'
     },
