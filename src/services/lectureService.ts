@@ -41,7 +41,7 @@ class LectureService {
   private openai: OpenAI;
   private lectureContexts: Map<string, LectureContext> = new Map();
 
-  // Comprehensive BA Knowledge Base - Authoritative BCS/IIBA/BABOK Content
+  // Clean Knowledge Base - Only Correct Content
   private knowledgeBase: KnowledgeItem[] = [
     // Business Analysis Definition (BABOK)
     {
@@ -355,9 +355,61 @@ Organizational structure analysis isn't about memorizing theories or creating co
       id: 'sprint-planning-1',
       topic: 'Sprint Planning and Backlog Management',
       question: 'What is the BA role in sprint planning?',
-      answer: 'BAs prepare user stories for sprint planning by ensuring they are well-defined with clear acceptance criteria. They participate in sprint planning to clarify requirements, answer questions from the development team, and help estimate story points. BAs also maintain the product backlog.',
-      examples: ['Refining user stories before sprint planning', 'Clarifying acceptance criteria during planning', 'Updating backlog based on stakeholder feedback'],
-      relatedTopics: ['agile-techniques', 'user-stories'],
+      answer: `Sprint planning is a critical ceremony in agile development where the team decides what work to complete in the upcoming sprint. As a Business Analyst, your role is to ensure the team has clear, actionable requirements to work with.
+
+**The BA's Role in Sprint Planning**
+
+**Preparation Before Sprint Planning**
+- Ensure user stories are well-defined with clear acceptance criteria
+- Review and refine the product backlog with the Product Owner
+- Identify any missing requirements or clarifications needed
+- Prepare to answer questions from the development team
+
+**During Sprint Planning**
+- Clarify requirements and acceptance criteria for each story
+- Explain the business context and value of each story
+- Help the team understand what "done" means for each story
+- Address any questions about requirements or business rules
+- Collaborate with the team to break down complex stories
+
+**Key Responsibilities**
+- **Requirements Clarification**: Ensure the team understands what needs to be built
+- **Acceptance Criteria**: Define clear, testable criteria for each story
+- **Business Context**: Explain why each story matters to the business
+- **Scope Management**: Help prevent scope creep during the sprint
+- **Stakeholder Communication**: Bridge the gap between business and technical teams
+
+**Best Practices for Sprint Planning**
+- Come prepared with well-refined stories
+- Be ready to answer detailed questions
+- Focus on the "what" and "why", let the team handle the "how"
+- Keep discussions focused and time-boxed
+- Document any decisions or clarifications made
+
+**Common Challenges and Solutions**
+- **Unclear Requirements**: Spend time refining stories before planning
+- **Scope Creep**: Stick to the sprint goal and avoid adding new requirements
+- **Time Pressure**: Prepare thoroughly to make planning efficient
+- **Team Confusion**: Use examples and visual aids to clarify requirements
+
+**Tools and Techniques**
+- User story mapping to show relationships between stories
+- Acceptance criteria templates for consistency
+- Definition of Ready checklist to ensure stories are sprint-ready
+- Story point estimation techniques for planning
+
+**Success Metrics**
+- Team has clear understanding of what to build
+- All stories have well-defined acceptance criteria
+- Sprint goal is achievable and valuable
+- Team commitment is realistic and achievable`,
+      examples: [
+        'Clarifying acceptance criteria for a user registration story during sprint planning',
+        'Explaining the business value of a reporting feature to the development team',
+        'Breaking down a complex story into smaller, manageable pieces',
+        'Working with the Product Owner to prioritize stories for the sprint'
+      ],
+      relatedTopics: ['agile-business-analysis', 'requirements-engineering'],
       difficulty: 'beginner'
     },
     {
