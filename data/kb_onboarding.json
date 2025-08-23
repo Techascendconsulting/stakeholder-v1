@@ -173,9 +173,9 @@
     {
       "id": "KB-108",
       "category": "process",
-      "questions": ["show me the process document", "where can I find the process", "process documentation", "process steps document"],
-      "short": "I have the complete process document available. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, and current problems.",
-      "expanded": "I have the complete process document available in our data folder. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, current problems, and optimization goals. You can access it through our document viewer or download it directly. The document provides comprehensive coverage of our current process and serves as the authoritative source for process information.",
+      "questions": ["show me the process document", "where can I find the process", "process documentation", "process steps document", "what's the current process", "what is the current process", "tell me about the current process", "explain the current process", "steps in the process", "step by step", "current process", "process", "workflows", "workflow", "process steps", "workflow steps", "process overview", "process summary", "process details", "flow chart", "swimlane", "process map", "as is process", "as-is process", "the process now", "process diagram", "workflow diagram", "onboarding flow", "onboarding process"],
+      "short": "I have the complete process document available. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, and current problems. You can click to view the document in our viewer.",
+      "expanded": "I have the complete process document available in our data folder. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, current problems, and optimization goals. You can click the document viewer button to access it, or download it directly. The document provides comprehensive coverage of our current process and serves as the authoritative source for process information. Would you like me to open it for you?",
       "refs": ["process_document", "documentation"]
     },
     {

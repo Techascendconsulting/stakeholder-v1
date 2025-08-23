@@ -350,6 +350,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   
   // Process document viewer state
   const [isDocumentViewerOpen, setIsDocumentViewerOpen] = useState(false);
+  const [documentButtonMessageId, setDocumentButtonMessageId] = useState<string | null>(null);
   
   // Meeting ending states to prevent multiple clicks and show progress
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
@@ -1235,14 +1236,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // DYNAMIC AI-POWERED GREETING DETECTION (no hardcoded patterns)
       const isGeneralGreeting = await detectGeneralGreeting(messageContent);
       
-      // CHECK FOR PROCESS DOCUMENT REQUESTS
-      const isProcessDocumentRequest = detectProcessDocumentRequest(messageContent);
-      
-      if (isProcessDocumentRequest) {
-        console.log(`📄 PROCESS DOCUMENT REQUEST: "${messageContent}" - opening document viewer`);
-        setIsDocumentViewerOpen(true);
-        return; // Don't generate AI response, just open the document
-      }
+        // CHECK FOR PROCESS DOCUMENT REQUESTS (but don't auto-open, let stakeholder mention it)
+  const isProcessDocumentRequest = detectProcessDocumentRequest(messageContent);
+  console.log(`📄 PROCESS DOCUMENT REQUEST: "${messageContent}" - stakeholder will reference document`);
+  
+  // Function to detect if stakeholder response mentions the document
+  const detectDocumentMention = (response: string): boolean => {
+    const docKeywords = ['process document', 'document', 'document viewer', 'click to view', 'open it'];
+    return docKeywords.some(keyword => response.toLowerCase().includes(keyword));
+  };
       
       if (isGeneralGreeting) {
         console.log(`👋 GENERAL GREETING: "${messageContent}" detected by AI - all stakeholders respond with simple greetings`);
@@ -3506,9 +3508,49 @@ Please review the raw transcript for detailed conversation content.`;
   const detectProcessDocumentRequest = (message: string): boolean => {
     const msg = message.trim().toLowerCase();
     const documentPatterns = [
+      // Direct document requests
       /\b(show|open|view|see|get|find|access)\b.*\b(process|document|steps|workflow)\b/,
       /\b(process|document|steps|workflow)\b.*\b(document|file|pdf|markdown)\b/,
-      /\b(where|how).*\b(find|get|access|view)\b.*\b(process|document)\b/
+      /\b(where|how).*\b(find|get|access|view)\b.*\b(process|document)\b/,
+      
+      // Process questions
+      /\bwhat'?s?\s+(the\s+)?(current\s+)?(process|workflow|steps)\b/,
+      /\bwhat\s+(is|are)\s+(the\s+)?(current\s+)?(process|workflow|steps)\b/,
+      /\b(current\s+)?process\b/,
+      /\b(current\s+)?workflow\b/,
+      /\b(current\s+)?steps\b/,
+      /\bthe\s+process\s+now\b/,
+      /\bas\s+is\s+process\b/,
+      /\bas-is\s+process\b/,
+      
+      // Onboarding specific
+      /\bonboarding\s+(process|flow|workflow|steps)\b/,
+      /\bonboarding\s+(current\s+)?(process|flow|workflow)\b/,
+      
+      // Step-by-step requests
+      /\bstep\s+by\s+step\b/,
+      /\bsteps\s+in\s+(the\s+)?process\b/,
+      /\bprocess\s+steps\b/,
+      /\bworkflow\s+steps\b/,
+      
+      // Explain/describe requests
+      /\b(tell|explain|describe)\s+(me\s+)?(about\s+)?(the\s+)?(current\s+)?(process|workflow|steps)\b/,
+      /\b(what|how|tell|explain|describe).*\b(current\s+)?(process|workflow|steps)\b/,
+      /\b(current\s+)?(process|workflow|steps)\b.*\b(what|how|tell|explain|describe)\b/,
+      
+      // Overview/summary requests
+      /\b(process|workflow|steps)\s+(overview|summary|details)\b/,
+      /\b(overview|summary|details)\s+of\s+(the\s+)?(process|workflow|steps)\b/,
+      
+      // Process visualization requests
+      /\b(flow\s+)?chart\b/,
+      /\bswimlane\b/,
+      /\bprocess\s+map\b/,
+      /\bprocess\s+diagram\b/,
+      /\bworkflow\s+diagram\b/,
+      
+      // Document specific
+      /\b(process|workflow|steps)\s+(document|file|pdf|markdown)\b/
     ];
     const isDocumentRequest = documentPatterns.some((re) => re.test(msg));
     console.log(`📄 Process Document Request Detection: "${message}" → ${isDocumentRequest ? 'yes' : 'no'}`);
@@ -3539,6 +3581,12 @@ Please review the raw transcript for detailed conversation content.`;
       const responseMessage = createResponseMessage(stakeholder, response, currentMessages.length);
       setMessages(prev => [...prev, responseMessage]);
       addToBackgroundTranscript(responseMessage);
+      
+      // Check if response mentions document and show button
+      if (detectDocumentMention(response)) {
+        setDocumentButtonMessageId(responseMessage.id);
+        console.log(`📄 DOCUMENT MENTION DETECTED: Showing button for message ${responseMessage.id}`);
+      }
       
       console.log(`⚡ SINGLE: ${stakeholder.name} text shown in ${aiTime.toFixed(0)}ms`);
       
@@ -4214,7 +4262,8 @@ Guidelines:
                               {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-gray-200 text-xs leading-relaxed">
+                          <div className="space-y-2">
+                                                      <p className="text-gray-200 text-xs leading-relaxed">
                             {message.content
                               .replace(/^\d+\.\s*/gm, '') // Remove numbered lists (1. 2. 3.)
                               .replace(/^[-*•]\s*/gm, '') // Remove bullet points (- * •)
@@ -4223,6 +4272,34 @@ Guidelines:
                               .replace(/`(.*?)`/g, '$1') // Remove code formatting
                               .trim()}
                           </p>
+                          {documentButtonMessageId === message.id && (
+                            <div className="mt-2">
+                              <button
+                                onClick={() => {
+                                  setIsDocumentViewerOpen(true);
+                                  setDocumentButtonMessageId(null); // Hide button after use
+                                }}
+                                className="inline-flex items-center space-x-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                              >
+                                <FileText className="w-3 h-3" />
+                                <span>View Process Document</span>
+                              </button>
+                            </div>
+                                                    )}
+                            {message.speaker !== 'user' && 
+                             message.content.toLowerCase().includes('document') && 
+                             (message.content.toLowerCase().includes('process') || 
+                              message.content.toLowerCase().includes('view') || 
+                              message.content.toLowerCase().includes('click')) && (
+                              <button
+                                onClick={() => setIsDocumentViewerOpen(true)}
+                                className="inline-flex items-center space-x-1 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
+                              >
+                                <FileText className="w-3 h-3" />
+                                <span>View Process Document</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))
