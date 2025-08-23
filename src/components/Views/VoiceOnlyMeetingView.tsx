@@ -3124,9 +3124,6 @@ Please review the raw transcript for detailed conversation content.`;
   // Initialize conversation WITHOUT artificial welcome message
   useEffect(() => {
     if (selectedProject && selectedStakeholders.length > 0) {
-      const aiService = AIService.getInstance();
-      aiService.resetConversationState();
-      
       // No welcome message - let the meeting start naturally
       setMessages([]);
     }
