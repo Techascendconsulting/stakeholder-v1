@@ -46,7 +46,7 @@ class LectureService {
     // Business Analysis Definition
     {
       id: 'ba-definition-1',
-      topic: 'Business Analysis Definition (BABOK)',
+      topic: 'Business Analysis Definition',
       question: 'What is Business Analysis and what does it involve?',
       answer: `Business Analysis is the practice of enabling change in organizations by identifying business needs and recommending solutions that deliver value to stakeholders. It's about understanding how organizations work and helping them improve their processes, systems, and capabilities.
 
@@ -122,7 +122,7 @@ Business Analysis exists to bridge the gap between business problems and technic
     // Requirements Elicitation Techniques
     {
       id: 'requirements-elicitation-1',
-      topic: 'Requirements Elicitation Techniques (BABOK)',
+      topic: 'Requirements Elicitation Techniques',
       question: 'What are the key requirements elicitation techniques and how do you use them effectively?',
       answer: `Requirements elicitation is the process of gathering information from stakeholders to understand their needs and requirements. Here are the key techniques and how to use them effectively:
 
@@ -181,7 +181,7 @@ Business Analysis exists to bridge the gap between business problems and technic
     // Organizational Structure Analysis
     {
       id: 'org-structure-1',
-      topic: 'Organizational Structure Analysis (BCS)',
+      topic: 'Organizational Structure Analysis',
       question: 'How do Business Analysts analyze organizational structure?',
       answer: `Imagine you're starting a new project at a company you've never worked with before. You walk in on day one and everyone seems to know who to talk to about what, but you're completely lost. That's exactly why Business Analysts need to understand organizational structure.
 

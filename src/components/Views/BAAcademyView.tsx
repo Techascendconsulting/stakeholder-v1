@@ -29,14 +29,14 @@ const BAAcademyView: React.FC = () => {
     {
       id: 'ba-fundamentals',
       title: 'Business Analysis Fundamentals',
-      description: 'Master core business analysis concepts based on IIBA BABOK standards. Learn the practice of enabling change by defining needs and recommending solutions that deliver value to stakeholders.',
+      description: 'Master core business analysis concepts and practices. Learn the practice of enabling change by defining needs and recommending solutions that deliver value to stakeholders.',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Business Analysis Definition (BABOK)',
-        'Requirements Elicitation Techniques (BABOK)',
-        'Organizational Structure Analysis (BCS)'
+        'Business Analysis Definition',
+        'Requirements Elicitation Techniques',
+        'Organizational Structure Analysis'
       ]
     },
 
