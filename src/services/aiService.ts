@@ -78,7 +78,13 @@ class AIService {
     try {
       const response = await singleAgentSystem.processUserMessage(
         userMessage,
-        stakeholder,
+        {
+          ...stakeholder,
+          department: stakeholder.department || 'General',
+          priorities: stakeholder.priorities || [],
+          expertise: stakeholder.expertise || [],
+          personality: stakeholder.personality || 'Professional'
+        },
         context.project || {
           id: 'customer-onboarding',
           name: 'Customer Onboarding Process Optimization',
@@ -92,7 +98,7 @@ class AIService {
       
     } catch (error) {
       console.error('❌ AISERVICE ERROR:', error);
-      return "I need to gather more information to answer that properly. Could you clarify what you'd like to know about our onboarding process?";
+      return "I'm here to help with the onboarding project. What would you like to know?";
     }
   }
 
@@ -122,7 +128,7 @@ class AIService {
       return response;
     } catch (error) {
       console.error('❌ AISERVICE generateResponse ERROR:', error);
-      return "I need to gather more information to answer that properly. Could you clarify your question?";
+      return "I'm here to help with the onboarding project. What would you like to know?";
     }
   }
 

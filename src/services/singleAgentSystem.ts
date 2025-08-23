@@ -161,7 +161,7 @@ class SingleAgentSystem {
             content: userMessage
           }
         ],
-        max_tokens: 100,
+        max_tokens: 200,
         temperature: 0.8, // Slightly higher temperature for more variety
         presence_penalty: 0.1, // Slight penalty for repetition
         frequency_penalty: 0.1, // Slight penalty for repetition
@@ -208,37 +208,32 @@ Detailed Project Information:
 - Current Process: Manual handoffs, 4 disconnected systems, no centralized tracking
 - Products: TechCorp CRM, ProjectFlow, AutoSync (enterprise software solutions)
 
+CURRENT ONBOARDING PROCESS (10 STEPS):
+1. Sales closes deal in Salesforce
+2. Manual email handoff to Implementation (24-48hrs delay)
+3. Kickoff call (3-5 business days)
+4. Data entry into Monday.com
+5. Parallel technical setup across IT/Product/Support
+6. Independent stakeholder calls (conflicts)
+7. Staging configuration
+8. UAT via email
+9. Go-live scheduling
+10. Handoff to Customer Success
+
+PROBLEMS WITH CURRENT PROCESS:
+- No centralized tracking system
+- Manual handoffs between departments
+- 4 disconnected systems (Salesforce, Monday.com, staging, UAT)
+- 6-8 week timeline (vs competitors' 3-4 weeks)
+- 23% churn rate within 90 days
+
 Current time: ${timestamp}`;
 
     const kbSection = hasKBContext ? `\nKnowledge Base Context:\n${kbContext}\n` : '';
     
     const responseGuidelines = hasKBContext 
-      ? `Response Guidelines:
-- Be conversational and natural, like a real person
-- ALWAYS use the specific information from the KB context provided above
-- The KB context contains accurate, detailed information about the project - use it as your primary source
-- If the KB context has relevant information, use it instead of making guesses
-- Keep responses very concise (1-2 sentences maximum)
-- Be professional but casual
-- NEVER use asterisks, dashes in numbers, or bullet points
-- NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
-- ALWAYS provide specific, actionable information from the KB context
-- Respond as ${stakeholderContext.name} would naturally speak`
-      : `Response Guidelines:
-- Be conversational and natural, like a real person
-- You don't have specific KB information for this question, so use the detailed project information above
-- ALWAYS reference specific details from the project context (timeline, departments, products, goals, etc.)
-- Use your role and expertise to provide relevant, specific information
-- Keep responses very concise (1-2 sentences maximum)
-- Be professional but casual
-- NEVER use asterisks, dashes in numbers, or bullet points
-- NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
-- ALWAYS provide specific, actionable information from the project context
-- Respond as ${stakeholderContext.name} would naturally speak
-- If asked about process, mention the 10-step process, 7 departments, 4 systems
-- If asked about products, mention TechCorp CRM, ProjectFlow, AutoSync
-- If asked about problems, mention 6-8 week timeline, 23% churn, fragmented processes
-- If asked about goals, mention 3-4 week target, CSAT improvement, 40% churn reduction`;
+      ? `You are ${stakeholderContext.name}. Use the KB context above to provide accurate, detailed information. Be conversational and natural.`
+      : `You are ${stakeholderContext.name}. Use the project information above to provide helpful, specific responses. Be conversational and natural.`;
 
     return `${basePrompt}${kbSection}\n${responseGuidelines}`;
   }
