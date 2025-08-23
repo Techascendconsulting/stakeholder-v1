@@ -171,6 +171,14 @@
       "refs": ["delays", "bottlenecks"]
     },
     {
+      "id": "KB-108",
+      "category": "process",
+      "questions": ["show me the process document", "where can I find the process", "process documentation", "process steps document"],
+      "short": "I have the complete process document available. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, and current problems.",
+      "expanded": "I have the complete process document available in our data folder. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, current problems, and optimization goals. You can access it through our document viewer or download it directly. The document provides comprehensive coverage of our current process and serves as the authoritative source for process information.",
+      "refs": ["process_document", "documentation"]
+    },
+    {
       "id": "KB-058",
       "category": "process",
       "questions": ["how do teams communicate during handoffs", "communication gaps", "team coordination"],

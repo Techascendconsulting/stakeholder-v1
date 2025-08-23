@@ -161,7 +161,7 @@ class SingleAgentSystem {
             content: userMessage
           }
         ],
-        max_tokens: 200,
+        max_tokens: 400,
         temperature: 0.8, // Slightly higher temperature for more variety
         presence_penalty: 0.1, // Slight penalty for repetition
         frequency_penalty: 0.1, // Slight penalty for repetition
@@ -208,32 +208,27 @@ Detailed Project Information:
 - Current Process: Manual handoffs, 4 disconnected systems, no centralized tracking
 - Products: TechCorp CRM, ProjectFlow, AutoSync (enterprise software solutions)
 
-CURRENT ONBOARDING PROCESS (10 STEPS):
-1. Sales closes deal in Salesforce
-2. Manual email handoff to Implementation (24-48hrs delay)
-3. Kickoff call (3-5 business days)
-4. Data entry into Monday.com
-5. Parallel technical setup across IT/Product/Support
-6. Independent stakeholder calls (conflicts)
-7. Staging configuration
-8. UAT via email
-9. Go-live scheduling
-10. Handoff to Customer Success
+PROCESS DOCUMENTATION:
+- Complete process details are available in our process document
+- Document contains all 10 steps with detailed information
+- When asked about process steps, refer users to the process document
+- Document is accessible via document viewer or download
+- Use document as authoritative source for process information
 
-PROBLEMS WITH CURRENT PROCESS:
-- No centralized tracking system
-- Manual handoffs between departments
-- 4 disconnected systems (Salesforce, Monday.com, staging, UAT)
-- 6-8 week timeline (vs competitors' 3-4 weeks)
-- 23% churn rate within 90 days
+KEY PROCESS POINTS:
+- 10-step onboarding process currently takes 6-8 weeks
+- Target is to reduce to 3-4 weeks
+- Current churn rate: 23%, target: 13.8% (40% reduction)
+- 7 departments involved: Sales, Implementation, IT, Product, Support, Customer Success
+- 4 disconnected systems causing coordination issues
 
 Current time: ${timestamp}`;
 
     const kbSection = hasKBContext ? `\nKnowledge Base Context:\n${kbContext}\n` : '';
     
     const responseGuidelines = hasKBContext 
-      ? `You are ${stakeholderContext.name}. Use the KB context above to provide accurate, detailed information. Be conversational and natural.`
-      : `You are ${stakeholderContext.name}. Use the project information above to provide helpful, specific responses. Be conversational and natural.`;
+      ? `You are ${stakeholderContext.name}. Use the KB context above to provide accurate, detailed information. Be conversational and natural. Do not use asterisks (*) or special formatting in your responses.`
+      : `You are ${stakeholderContext.name}. Use the project information above to provide helpful, specific responses. Be conversational and natural. Do not use asterisks (*) or special formatting in your responses.`;
 
     return `${basePrompt}${kbSection}\n${responseGuidelines}`;
   }
@@ -251,14 +246,14 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
         messages: [
           {
             role: 'system',
-            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently. If you don't understand the question, make an educated guess based on the project context.`
+            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently. If you don't understand the question, make an educated guess based on the project context. Do not use asterisks (*) or special formatting in your responses.`
           },
           {
             role: 'user',
             content: `Project Context: ${projectContext}\n\nUser Question: ${userMessage}`
           }
         ],
-        max_tokens: 100,
+        max_tokens: 200,
         temperature: 0.5,
       });
 

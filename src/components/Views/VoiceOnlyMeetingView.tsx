@@ -17,6 +17,7 @@ import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtil
 import { useNavigate } from 'react-router-dom';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 import QuestionHelperBot from '../QuestionHelperBot';
+import ProcessDocumentViewer from './ProcessDocumentViewer';
 
 
 interface ParticipantCardProps {
@@ -346,6 +347,9 @@ export const VoiceOnlyMeetingView: React.FC = () => {
   const [backgroundTranscript, setBackgroundTranscript] = useState<Message[]>([]);
   const [meetingId, setMeetingId] = useState<string | null>(null);
   const [meetingStartTime, setMeetingStartTime] = useState(Date.now());
+  
+  // Process document viewer state
+  const [isDocumentViewerOpen, setIsDocumentViewerOpen] = useState(false);
   
   // Meeting ending states to prevent multiple clicks and show progress
   const [isEndingMeeting, setIsEndingMeeting] = useState(false);
@@ -1230,6 +1234,15 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       
       // DYNAMIC AI-POWERED GREETING DETECTION (no hardcoded patterns)
       const isGeneralGreeting = await detectGeneralGreeting(messageContent);
+      
+      // CHECK FOR PROCESS DOCUMENT REQUESTS
+      const isProcessDocumentRequest = detectProcessDocumentRequest(messageContent);
+      
+      if (isProcessDocumentRequest) {
+        console.log(`📄 PROCESS DOCUMENT REQUEST: "${messageContent}" - opening document viewer`);
+        setIsDocumentViewerOpen(true);
+        return; // Don't generate AI response, just open the document
+      }
       
       if (isGeneralGreeting) {
         console.log(`👋 GENERAL GREETING: "${messageContent}" detected by AI - all stakeholders respond with simple greetings`);
@@ -3489,6 +3502,19 @@ Please review the raw transcript for detailed conversation content.`;
     return isGreeting;
   };
 
+  // DETECT PROCESS DOCUMENT REQUESTS
+  const detectProcessDocumentRequest = (message: string): boolean => {
+    const msg = message.trim().toLowerCase();
+    const documentPatterns = [
+      /\b(show|open|view|see|get|find|access)\b.*\b(process|document|steps|workflow)\b/,
+      /\b(process|document|steps|workflow)\b.*\b(document|file|pdf|markdown)\b/,
+      /\b(where|how).*\b(find|get|access|view)\b.*\b(process|document)\b/
+    ];
+    const isDocumentRequest = documentPatterns.some((re) => re.test(msg));
+    console.log(`📄 Process Document Request Detection: "${message}" → ${isDocumentRequest ? 'yes' : 'no'}`);
+    return isDocumentRequest;
+  };
+
   // SINGLE STAKEHOLDER RESPONSE: Handle response from one most relevant stakeholder
   const handleSingleStakeholderResponse = async (stakeholder: any, messageContent: string, currentMessages: Message[]) => {
     console.log(`⚡ SINGLE RESPONSE: Generating response from ${stakeholder.name} only`);
@@ -4622,6 +4648,13 @@ Guidelines:
           }}
           stakeholderContext={selectedStakeholders?.[0]}
           selectedStage={setupData?.selectedStage}
+        />
+
+        {/* Process Document Viewer */}
+        <ProcessDocumentViewer
+          isOpen={isDocumentViewerOpen}
+          onClose={() => setIsDocumentViewerOpen(false)}
+          documentPath="/onboarding_process_document.md"
         />
       </div>
     </div>
