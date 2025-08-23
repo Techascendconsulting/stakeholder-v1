@@ -137,7 +137,23 @@ class SingleAgentSystem {
     kbResults: any[]
   ): Promise<string> {
     try {
-      // Build context from KB results
+      // Check if we have a perfect KB match (high score)
+      const perfectMatch = kbResults.find(r => r.score >= 2.5);
+      
+      if (perfectMatch) {
+        console.log(`📚 PERFECT KB MATCH: Using KB content directly (score: ${perfectMatch.score})`);
+        console.log(`📚 KB Entry: ${perfectMatch.entry.id} - ${perfectMatch.entry.short}`);
+        
+        // Use the KB content directly, but make it conversational
+        const kbContent = perfectMatch.entry.expanded || perfectMatch.entry.short;
+        
+        // Simple conversational wrapper
+        const response = `${kbContent}`;
+        console.log(`📚 DIRECT KB RESPONSE: "${response}"`);
+        return response;
+      }
+
+      // Build context from KB results for partial matches
       const kbContext = kbResults.length > 0 
         ? kbResults.map(r => `${r.entry.short}\n${r.entry.expanded}`).join('\n\n')
         : '';
