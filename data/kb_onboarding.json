@@ -6,15 +6,15 @@
       "id": "KB-001",
       "category": "greeting",
       "questions": ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "greetings"],
-      "short": "How can I help you today with the Customer Onboarding Process Optimization project?",
-      "expanded": "I'm here to help you with the Customer Onboarding Process Optimization project at TechCorp Solutions. We're working to reduce onboarding time from 6 to 8 weeks to 3 to 4 weeks and improve customer satisfaction. What would you like to know?",
+      "short": "Hello! How can I help you today?",
+      "expanded": "Hello! I'm here to help you with the Customer Onboarding Process Optimization project. We're working to reduce onboarding time from 6 to 8 weeks to 3 to 4 weeks and improve customer satisfaction. What would you like to know?",
       "refs": ["business_context"]
     },
     {
       "id": "KB-002", 
       "category": "greeting",
       "questions": ["how are you", "how is it going", "what's up", "how are things"],
-      "short": "I'm doing well, thanks! Ready to discuss our onboarding optimization project.",
+      "short": "I'm doing well, thanks! How about you?",
       "expanded": "I'm doing well, thanks for asking! I'm ready to help you with our Customer Onboarding Process Optimization project. We have some exciting goals to achieve - reducing onboarding time and improving customer satisfaction. What's on your mind?",
       "refs": ["business_context"]
     },
@@ -177,6 +177,38 @@
       "short": "I have the complete process document available. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, and current problems. You can click to view the document in our viewer.",
       "expanded": "I have the complete process document available in our data folder. It contains all 10 steps of our current onboarding workflow with detailed information about each step, department responsibilities, current problems, and optimization goals. You can click the document viewer button to access it, or download it directly. The document provides comprehensive coverage of our current process and serves as the authoritative source for process information. Would you like me to open it for you?",
       "refs": ["process_document", "documentation"]
+    },
+    {
+      "id": "KB-109",
+      "category": "greeting",
+      "questions": ["hi everyone", "hello everyone", "hey everyone", "hi team", "hello team", "hey team", "hi guys", "hello guys", "hey guys", "hi all", "hello all", "hey all"],
+      "short": "Hello everyone!",
+      "expanded": "Hello everyone! I'm here to help with our Customer Onboarding Process Optimization project. What would you like to discuss today?",
+      "refs": ["greeting", "team"]
+    },
+    {
+      "id": "KB-110",
+      "category": "greeting",
+      "questions": ["good morning", "good afternoon", "good evening", "morning", "afternoon", "evening"],
+      "short": "Good morning! How can I help you today?",
+      "expanded": "Good morning! I'm ready to help you with our Customer Onboarding Process Optimization project. What would you like to know?",
+      "refs": ["greeting", "time"]
+    },
+    {
+      "id": "KB-111",
+      "category": "meeting_end",
+      "questions": ["bye", "goodbye", "see you", "see you later", "thanks bye", "thank you bye", "that's all", "we're done", "meeting over", "end meeting", "finish meeting", "wrap up", "that's it", "thanks everyone", "thank you everyone"],
+      "short": "Goodbye! Thanks for the meeting.",
+      "expanded": "Goodbye! Thanks for the productive meeting. I'm looking forward to our next discussion about the Customer Onboarding Process Optimization project. Have a great day!",
+      "refs": ["meeting_end", "farewell"]
+    },
+    {
+      "id": "KB-112",
+      "category": "meeting_end",
+      "questions": ["thanks", "thank you", "appreciate it", "thanks for your help", "thank you for your help", "thanks for the information", "thank you for the information"],
+      "short": "You're welcome! Happy to help.",
+      "expanded": "You're welcome! I'm happy to help with the Customer Onboarding Process Optimization project. If you have any more questions, feel free to ask. Good luck with the project!",
+      "refs": ["meeting_end", "appreciation"]
     },
     {
       "id": "KB-058",

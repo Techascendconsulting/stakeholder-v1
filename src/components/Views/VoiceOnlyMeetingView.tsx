@@ -1930,53 +1930,40 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
 
 
-  // EXPERT GREETING GENERATION: Using singleAgentSystem for consistent behavior
+  // NATURAL GREETING GENERATION: Using KB for contextual, human responses
   const generateSimpleGreeting = async (stakeholder: any, messageContent: string): Promise<string> => {
-    console.log(`👋 EXPERT GREETING: Generating professional greeting for ${stakeholder.name}`);
+    console.log(`👋 NATURAL GREETING: Generating contextual greeting for ${stakeholder.name}`);
     
     try {
-      // Use singleAgentSystem for greeting generation
+      // Use singleAgentSystem to get contextual greeting from KB
       const greeting = await singleAgentSystem.processUserMessage(
-        'Generate a brief, natural greeting for a team meeting (maximum 5 words)',
+        messageContent, // Use the actual greeting message for context
         stakeholder,
         {
-          id: 'greeting',
+          id: 'greeting-context',
           name: 'Team Meeting',
-          description: 'Team meeting greeting',
+          description: 'Team meeting greeting context',
           type: 'Meeting',
           painPoints: [],
           asIsProcess: 'Team meeting'
         }
       );
-
-      // Limit to 5 words, ensure terminal punctuation
-      const limitedGreeting = greeting.split(' ').slice(0, 5).join(' ').trim();
-      const finalGreeting = !/[\.!?]$/.test(limitedGreeting) ? limitedGreeting + '.' : limitedGreeting;
-
-      console.log(`✅ EXPERT GREETING: Generated "${finalGreeting}" for ${stakeholder.name}`);
-      return finalGreeting;
+      
+      console.log(`✅ NATURAL GREETING: Generated "${greeting}" for ${stakeholder.name}`);
+      return greeting;
       
     } catch (error) {
-      console.error('❌ Greeting generation failed, using AI fallback', error);
-      // Use singleAgentSystem for fallback instead of hardcoded response
-      try {
-        const fallbackGreeting = await singleAgentSystem.processUserMessage(
-          'Generate a simple greeting',
-          stakeholder,
-          {
-            id: 'fallback',
-            name: 'Fallback',
-            description: 'Fallback greeting',
-            type: 'Fallback',
-            painPoints: [],
-            asIsProcess: 'Fallback'
-          }
-        );
-        return fallbackGreeting.substring(0, 20) + (fallbackGreeting.length > 20 ? '...' : '');
-      } catch (fallbackError) {
-        console.error('❌ Fallback greeting also failed:', fallbackError);
-        return 'Hello.';
-      }
+      console.error('❌ Greeting generation failed, using fallback', error);
+      // Simple fallback greetings
+      const fallbackGreetings = [
+        'Hello everyone.',
+        'Hi team.',
+        'Good morning.',
+        'Hey there.',
+        'Hello.',
+        'Hi all.'
+      ];
+      return fallbackGreetings[Math.floor(Math.random() * fallbackGreetings.length)];
     }
   };
 
