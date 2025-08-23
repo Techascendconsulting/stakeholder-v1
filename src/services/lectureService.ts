@@ -638,64 +638,13 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
   private getModuleById(moduleId: string): any {
     // Define the actual module data that matches BAAcademyView with authoritative content
     const modules = {
-      'organizational-context': {
-        id: 'organizational-context',
-        title: 'Organizational Context & Business Operations',
-        topics: [
-          'Organizational Structure Analysis (BCS)',
-          'Business Operating Models',
-          'Organizational Culture Assessment',
-          'Stakeholder Landscape Mapping',
-          'Business Context Understanding',
-          'Organizational Change Readiness'
-        ]
-      },
-      'project-lifecycle': {
-        id: 'project-lifecycle',
-        title: 'Project Lifecycle & IT Team Structure',
-        topics: [
-          'Project Lifecycle Management (BABOK)',
-          'IT Team Structure and Roles',
-          'Software Development Lifecycle',
-          'Requirements Lifecycle Management',
-          'Solution Evaluation Planning',
-          'Cross-functional Team Collaboration'
-        ]
-      },
       'ba-fundamentals': {
         id: 'ba-fundamentals',
         title: 'Business Analysis Fundamentals',
         topics: [
           'Business Analysis Definition (BABOK)',
-          'Core BA Competencies (IIBA)',
-          'Business Analysis Planning and Monitoring',
-          'Elicitation and Collaboration',
-          'Requirements Analysis and Design Definition',
-          'Solution Evaluation'
-        ]
-      },
-      'requirements-gathering': {
-        id: 'requirements-gathering',
-        title: 'Requirements Engineering',
-        topics: [
           'Requirements Elicitation Techniques (BABOK)',
-          'Requirements Analysis and Documentation',
-          'Requirements Classification and Types',
-          'Requirements Validation and Verification',
-          'Requirements Traceability Management',
-          'Requirements Change Management'
-        ]
-      },
-      'agile-techniques': {
-        id: 'agile-techniques',
-        title: 'Agile Business Analysis',
-        topics: [
-          'Agile BA Principles and Values',
-          'User Story Development and Refinement',
-          'Sprint Planning and Backlog Management',
-          'Agile Requirements Lifecycle',
-          'Continuous Stakeholder Engagement',
-          'Agile Solution Evaluation'
+          'Organizational Structure Analysis (BCS)'
         ]
       }
     };
