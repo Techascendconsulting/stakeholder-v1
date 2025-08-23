@@ -41,45 +41,45 @@ class LectureService {
   private openai: OpenAI;
   private lectureContexts: Map<string, LectureContext> = new Map();
 
-  // Comprehensive BA Knowledge Base
+  // Comprehensive BA Knowledge Base - Authoritative BCS/IIBA/BABOK Content
   private knowledgeBase: KnowledgeItem[] = [
-    // Software BA Role and Responsibilities
+    // Business Analysis Definition (BABOK)
     {
-      id: 'ba-role-1',
-      topic: 'Software BA Role and Responsibilities',
-      question: 'What is the role of a Software Business Analyst?',
-      answer: 'A Software Business Analyst bridges the gap between business needs and technical solutions. They analyze business processes, gather requirements, document specifications, and ensure the final software meets business objectives. BAs act as translators between stakeholders and development teams.',
-      examples: ['Gathering requirements from sales team for a new CRM feature', 'Documenting user stories for a mobile app', 'Analyzing current processes to identify automation opportunities'],
-      relatedTopics: ['requirements-gathering', 'stakeholder-analysis'],
+      id: 'ba-definition-1',
+      topic: 'Business Analysis Definition (BABOK)',
+      question: 'What is Business Analysis according to IIBA BABOK?',
+      answer: 'Business Analysis is the practice of enabling change in an enterprise by defining needs and recommending solutions that deliver value to stakeholders. It involves understanding how organizations function to accomplish their purposes, defining the capabilities an enterprise requires to provide products and services to external stakeholders, and determining the optimal way to organize, coordinate, and support those capabilities.',
+      examples: ['Analyzing customer onboarding process to identify improvement opportunities', 'Defining requirements for a new customer portal', 'Recommending process changes to reduce operational costs'],
+      relatedTopics: ['requirements-engineering', 'stakeholder-management'],
       difficulty: 'beginner'
     },
     {
-      id: 'ba-role-2',
-      topic: 'Software BA Role and Responsibilities',
-      question: 'What are the key responsibilities of a Software BA?',
-      answer: 'Key responsibilities include: Requirements elicitation and analysis, stakeholder management, process modeling, user story creation, acceptance criteria definition, testing coordination, and change management. BAs ensure software solutions align with business goals and user needs.',
-      examples: ['Conducting stakeholder interviews', 'Creating process flow diagrams', 'Writing detailed user stories with acceptance criteria'],
-      relatedTopics: ['requirements-gathering', 'agile-techniques'],
+      id: 'ba-competencies-1',
+      topic: 'Core BA Competencies (IIBA)',
+      question: 'What are the core competencies of a Business Analyst according to IIBA?',
+      answer: 'IIBA defines six core competencies: Analytical Thinking and Problem Solving, Behavioral Characteristics, Business Knowledge, Communication Skills, Interaction Skills, and Tools and Technology. These competencies enable BAs to effectively perform their role and deliver value to organizations.',
+      examples: ['Using analytical thinking to break down complex business problems', 'Applying business knowledge to understand industry context', 'Using communication skills to bridge business and technical teams'],
+      relatedTopics: ['business-analysis-definition', 'requirements-engineering'],
       difficulty: 'beginner'
     },
     {
-      id: 'ba-role-3',
-      topic: 'Software BA Role and Responsibilities',
-      question: 'How does a BA contribute to software development?',
-      answer: 'BAs contribute by understanding business problems, translating them into technical requirements, ensuring clear communication between business and IT teams, validating solutions meet business needs, and facilitating user acceptance testing. They are the voice of the business in technical discussions.',
-      examples: ['Creating detailed requirements documents', 'Facilitating sprint planning sessions', 'Coordinating user acceptance testing'],
-      relatedTopics: ['agile-techniques', 'requirements-gathering'],
+      id: 'ba-planning-1',
+      topic: 'Business Analysis Planning and Monitoring',
+      question: 'What is Business Analysis Planning and Monitoring?',
+      answer: 'Business Analysis Planning and Monitoring is a BABOK knowledge area that involves planning how to approach business analysis activities, monitoring the performance of business analysis work, and ensuring the business analysis approach is appropriate for the situation. It includes stakeholder analysis, governance, information management, and performance improvement.',
+      examples: ['Creating a business analysis plan for a new project', 'Identifying and analyzing stakeholders', 'Establishing requirements governance processes'],
+      relatedTopics: ['business-analysis-definition', 'stakeholder-management'],
       difficulty: 'beginner'
     },
     
-    // Understanding Organizational Structure
+    // Organizational Structure Analysis (BCS)
     {
       id: 'org-structure-1',
-      topic: 'Understanding Organizational Structure',
-      question: 'How do organizations structure their departments?',
-      answer: 'Organizations structure departments based on function (Sales, Marketing, IT), product lines, customer segments, or geographic regions. Each structure has implications for how information flows, decisions are made, and projects are managed. BAs need to understand these structures to identify stakeholders and process inefficiencies.',
-      examples: ['Functional structure: separate Sales, Marketing, IT departments', 'Product-based: teams organized around specific products', 'Matrix structure: employees report to both functional and project managers'],
-      relatedTopics: ['stakeholder-analysis', 'process-modeling'],
+      topic: 'Organizational Structure Analysis (BCS)',
+      question: 'How do BAs analyze organizational structure according to BCS standards?',
+      answer: 'BCS defines organizational structure analysis as understanding how organizations are designed to achieve their objectives. BAs analyze formal structures (reporting relationships, departments) and informal structures (communication networks, influence patterns) to understand decision-making processes, information flows, and stakeholder relationships. This analysis helps identify process inefficiencies and change management challenges.',
+      examples: ['Mapping reporting relationships for a new system implementation', 'Analyzing cross-departmental communication patterns', 'Identifying stakeholders affected by process changes'],
+      relatedTopics: ['business-operating-models', 'stakeholder-management'],
       difficulty: 'beginner'
     },
     {
@@ -136,14 +136,14 @@ class LectureService {
       difficulty: 'beginner'
     },
     
-    // User Story Writing and Development
+    // Requirements Elicitation Techniques (BABOK)
     {
-      id: 'user-stories-1',
-      topic: 'User Story Writing and Development',
-      question: 'How do you write effective user stories?',
-      answer: 'User stories follow the format: "As a [user], I want [feature] so that [benefit]." They should be user-focused, independent, negotiable, valuable, estimable, small, and testable (INVEST). Include acceptance criteria that define when the story is complete.',
-      examples: ['"As a sales rep, I want to see customer history so that I can provide better service"', 'Acceptance criteria: customer data displays, search functionality works, data is current'],
-      relatedTopics: ['agile-techniques', 'requirements-gathering'],
+      id: 'requirements-elicitation-1',
+      topic: 'Requirements Elicitation Techniques (BABOK)',
+      question: 'What are the key requirements elicitation techniques according to BABOK?',
+      answer: 'BABOK defines several elicitation techniques: Brainstorming, Document Analysis, Focus Groups, Interface Analysis, Interviews, Observation, Prototyping, Requirements Workshops, and Survey/Questionnaire. Each technique has specific use cases and should be selected based on the situation, stakeholders, and information needs.',
+      examples: ['Conducting stakeholder interviews to understand business needs', 'Facilitating requirements workshops with cross-functional teams', 'Using document analysis to understand existing processes'],
+      relatedTopics: ['requirements-engineering', 'stakeholder-management'],
       difficulty: 'beginner'
     },
     
@@ -167,21 +167,21 @@ class LectureService {
       difficulty: 'intermediate'
     },
     {
-      id: 'user-stories-1',
-      topic: 'user-stories',
-      question: 'What is the INVEST criteria for user stories?',
-      answer: 'INVEST stands for: Independent (can be developed separately), Negotiable (details can be discussed), Valuable (provides user value), Estimable (can be sized), Small (can be completed in one sprint), and Testable (can be verified). These criteria help ensure user stories are well-formed and actionable.',
-      examples: ['Independent: "As a user, I want to login" vs "As a user, I want to login and see my profile"', 'Small: Break large stories into smaller, focused ones'],
-      relatedTopics: ['acceptance-criteria', 'story-points'],
+      id: 'requirements-analysis-1',
+      topic: 'Requirements Analysis and Documentation',
+      question: 'What is Requirements Analysis and Design Definition according to BABOK?',
+      answer: 'Requirements Analysis and Design Definition is a BABOK knowledge area that involves organizing, specifying, and modeling requirements and designs. It includes specifying and modeling requirements, verifying requirements, validating requirements, defining requirements architecture, defining design options, analyzing potential value, and recommending solutions.',
+      examples: ['Creating requirements models using UML or BPMN', 'Specifying functional and non-functional requirements', 'Validating requirements with stakeholders'],
+      relatedTopics: ['requirements-engineering', 'solution-evaluation'],
       difficulty: 'intermediate'
     },
     {
-      id: 'agile-1',
-      topic: 'agile-techniques',
-      question: 'What is the role of a BA in agile ceremonies?',
-      answer: 'BAs participate in all agile ceremonies: Sprint Planning (clarify requirements), Daily Standups (report blockers), Sprint Review (demonstrate value), and Sprint Retrospective (improve process). BAs focus on ensuring requirements are clear, prioritized, and deliver business value while supporting the team\'s understanding of user needs.',
-      examples: ['Sprint Planning: Clarify acceptance criteria', 'Sprint Review: Explain business value delivered'],
-      relatedTopics: ['user-stories', 'backlog-management'],
+      id: 'agile-principles-1',
+      topic: 'Agile BA Principles and Values',
+      question: 'What are the core principles of Agile Business Analysis according to IIBA?',
+      answer: 'IIBA Agile Extension defines key principles: See the Whole, Think as a Customer, Analyze to Determine What is Valuable, Get Real Using Examples, Understand What is Doable, Stimulate Collaboration and Continuous Improvement, and Avoid Waste. These principles guide BAs in delivering value through iterative, collaborative approaches.',
+      examples: ['Using customer journey mapping to see the whole experience', 'Creating user stories with real examples and acceptance criteria', 'Collaborating with development teams to understand technical constraints'],
+      relatedTopics: ['agile-business-analysis', 'requirements-engineering'],
       difficulty: 'intermediate'
     },
 
@@ -607,64 +607,66 @@ class LectureService {
 
   // Get module by ID
   private getModuleById(moduleId: string): any {
-    // Define the actual module data that matches BAAcademyView
+    // Define the actual module data that matches BAAcademyView with authoritative content
     const modules = {
       'organizational-context': {
         id: 'organizational-context',
         title: 'Organizational Context & Business Operations',
         topics: [
-          'Understanding Organizational Structure',
-          'Department Functions and Interactions',
-          'Customer Journey Across Departments',
-          'IT Team Roles and Responsibilities',
-          'Products/Services Impact on Structure',
-          'Common Departmental Inefficiencies'
+          'Organizational Structure Analysis (BCS)',
+          'Business Operating Models',
+          'Organizational Culture Assessment',
+          'Stakeholder Landscape Mapping',
+          'Business Context Understanding',
+          'Organizational Change Readiness'
         ]
       },
       'project-lifecycle': {
         id: 'project-lifecycle',
         title: 'Project Lifecycle & IT Team Structure',
         topics: [
-          'Project Emergence from Business Needs',
+          'Project Lifecycle Management (BABOK)',
           'IT Team Structure and Roles',
-          'Hardware and Software Implementation',
-          'Problem Phase: Stakeholder Engagement',
-          'Delivery Phase: Development Team Collaboration',
-          'Cross-functional Team Dynamics'
+          'Software Development Lifecycle',
+          'Requirements Lifecycle Management',
+          'Solution Evaluation Planning',
+          'Cross-functional Team Collaboration'
         ]
       },
       'ba-fundamentals': {
         id: 'ba-fundamentals',
-        title: 'Software BA Fundamentals',
+        title: 'Business Analysis Fundamentals',
         topics: [
-          'Software BA Role and Responsibilities',
-          'BA vs Product Manager vs Product Owner',
-          'Software Development Lifecycle',
-          'Agile vs Waterfall Overview',
-          'Essential BA Tools'
+          'Business Analysis Definition (BABOK)',
+          'Core BA Competencies (IIBA)',
+          'Business Analysis Planning and Monitoring',
+          'Elicitation and Collaboration',
+          'Requirements Analysis and Design Definition',
+          'Solution Evaluation'
         ]
       },
       'requirements-gathering': {
         id: 'requirements-gathering',
-        title: 'Requirements Gathering',
+        title: 'Requirements Engineering',
         topics: [
-          'User Story Writing and Development',
-          'Stakeholder Interview Techniques',
-          'Workshop Facilitation Skills',
-          'Requirements Documentation Standards',
-          'Acceptance Criteria Development'
+          'Requirements Elicitation Techniques (BABOK)',
+          'Requirements Analysis and Documentation',
+          'Requirements Classification and Types',
+          'Requirements Validation and Verification',
+          'Requirements Traceability Management',
+          'Requirements Change Management'
         ]
       },
       'agile-techniques': {
         id: 'agile-techniques',
-        title: 'Agile BA Techniques',
+        title: 'Agile Business Analysis',
         topics: [
+          'Agile BA Principles and Values',
+          'User Story Development and Refinement',
           'Sprint Planning and Backlog Management',
-          'Agile Ceremonies for BAs',
-          'User Story Refinement',
-          'Sprint Review and Retrospective',
-          'Agile Metrics and Reporting',
-          'BA Team Management'
+          'Agile Requirements Lifecycle',
+          'Continuous Stakeholder Engagement',
+          'Agile Solution Evaluation'
         ]
       }
     };
