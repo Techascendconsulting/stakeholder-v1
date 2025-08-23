@@ -89,6 +89,7 @@ class SingleAgentSystem {
       this.lastError = null;
       
       console.log(`✅ Generated response: "${response.substring(0, 50)}..."`);
+      console.log(`🔍 FULL RESPONSE: "${response}"`);
       
       return response;
 
@@ -167,6 +168,8 @@ class SingleAgentSystem {
       });
 
       const generatedResponse = response.choices[0]?.message?.content;
+      
+      console.log(`🤖 OpenAI response: "${generatedResponse}"`);
       
       if (!generatedResponse?.trim()) {
         throw new Error('Empty response from OpenAI');
@@ -251,7 +254,9 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
         temperature: 0.5,
       });
 
-      return response.choices[0]?.message?.content || "I'm having trouble processing that right now.";
+      const errorResponse = response.choices[0]?.message?.content || "I'm having trouble processing that right now.";
+      console.log(`🆘 ERROR RESPONSE: "${errorResponse}"`);
+      return errorResponse;
     } catch (error) {
       console.error('❌ Error response generation failed:', error);
       return "I'm having trouble processing that right now.";

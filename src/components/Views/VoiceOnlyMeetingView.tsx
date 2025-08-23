@@ -4,7 +4,6 @@ import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
-import AIService, { StakeholderContext, ConversationContext } from '../../services/aiService';
 import { singleAgentSystem } from '../../services/singleAgentSystem';
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio, registerExternalAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
