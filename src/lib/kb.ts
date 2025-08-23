@@ -28,14 +28,17 @@ class KnowledgeBase {
       
       const kbData = await response.json();
       
+      // Extract knowledge_base array from the JSON structure
+      const knowledgeBaseArray = kbData.knowledge_base || kbData;
+      
       // Validate KB data structure
-      if (!kbData || !Array.isArray(kbData)) {
+      if (!knowledgeBaseArray || !Array.isArray(knowledgeBaseArray)) {
         throw new Error('Invalid KB data structure: expected array');
       }
 
       // Validate each entry
       const validatedEntries: KBEntry[] = [];
-      for (const entry of kbData) {
+      for (const entry of knowledgeBaseArray) {
         if (!this.validateKBEntry(entry)) {
           console.warn(`⚠️ Skipping invalid KB entry: ${entry?.id || 'unknown'}`);
           continue;
