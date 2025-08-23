@@ -621,9 +621,9 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
         id: 'ba-fundamentals',
         title: 'Business Analysis Fundamentals',
         topics: [
-          'Business Analysis Definition (BABOK)',
-          'Requirements Elicitation Techniques (BABOK)',
-          'Organizational Structure Analysis (BCS)'
+          'Business Analysis Definition',
+          'Requirements Elicitation Techniques',
+          'Organizational Structure Analysis'
         ]
       }
     };
