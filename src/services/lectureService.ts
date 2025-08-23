@@ -474,9 +474,14 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
 
   // Get knowledge base content for a specific topic
   private getKnowledgeBaseContentForTopic(topic: string): string | null {
+    console.log('🔍 Looking for topic:', topic);
+    console.log('🔍 Available topics in KB:', this.knowledgeBase.map(item => item.topic));
+    
     const relevantItems = this.knowledgeBase.filter(item => 
       item.topic === topic
     );
+
+    console.log('🔍 Found items:', relevantItems.length);
 
     if (relevantItems.length > 0) {
       const bestMatch = relevantItems[0];
@@ -486,8 +491,11 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
         content += `\n\nExamples:\n${bestMatch.examples.map(example => `• ${example}`).join('\n')}`;
       }
       
+      console.log('✅ Using knowledge base content for:', topic);
       return content;
     }
+    
+    console.log('❌ No knowledge base content found for:', topic);
     return null;
   }
 
