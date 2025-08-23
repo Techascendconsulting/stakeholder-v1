@@ -1910,95 +1910,53 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
 
 
-  // EXPERT GREETING GENERATION: Professional, confident greetings
+  // EXPERT GREETING GENERATION: Using singleAgentSystem for consistent behavior
   const generateSimpleGreeting = async (stakeholder: any, messageContent: string): Promise<string> => {
     console.log(`👋 EXPERT GREETING: Generating professional greeting for ${stakeholder.name}`);
     
     try {
-      // Detect if the user used a time-of-day salutation; only mirror if present
-      const timeSalutationMatch = messageContent.match(/\b(good\s+(morning|afternoon|evening|night))\b/i);
-      const userTimeSalutation = timeSalutationMatch ? timeSalutationMatch[0] : '';
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            {
-              role: 'system',
-              content: `You are ${stakeholder.name.split(' ')[0]}, a ${stakeholder.role}. Generate a calm, professional, natural greeting suitable for a business meeting.
-
-Tone: friendly, concise, neutral (no hype). Avoid exclamations.
-Length: maximum 5 words.
-When to use time-of-day:
-- Do NOT use time-of-day greetings (Good morning/afternoon/evening/night) unless the user's message contains one.
-- If the user's message contains a time-of-day greeting, you MAY mirror it exactly once.
-Otherwise, prefer neutral salutations like "Hello" or "Hi team".
-
-Provide one short variant only.`
-            },
-            {
-              role: 'user',
-              content: messageContent
-            }
-          ],
-          max_tokens: 10,
-          temperature: 0.5
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      let greeting = (data.choices?.[0]?.message?.content?.trim() || '').replace(/[!]+/g, '').replace(/[?]+/g, '').trim();
-
-      // Enforce: No time-of-day unless user used it
-      const startsWithTimeOfDay = /^good\s+(morning|afternoon|evening|night)\b/i.test(greeting);
-      if (!userTimeSalutation && startsWithTimeOfDay) {
-        greeting = 'Hello.';
-      }
-
-      // If mirroring, normalize to exactly the user's phrase capitalization
-      if (userTimeSalutation && startsWithTimeOfDay) {
-        const lower = greeting.toLowerCase();
-        greeting = lower.replace(/^good\s+(morning|afternoon|evening|night)\b/i, userTimeSalutation);
-      }
-
-      // Normalize and avoid repetition across session
-      const normalized = greeting.toLowerCase().replace(/\.$/, '');
-      const commonSet = ['hello team', 'hi team', 'hello everyone', 'hello'];
-      if (usedGreetingSetRef.current.has(normalized) || commonSet.slice(0, 2).includes(normalized)) {
-        // Generate a new greeting using AI instead of hardcoded variants
-        try {
-          const aiResponse = await singleAgentSystem.processUserMessage(
-            'Generate a brief, natural greeting for a team meeting',
-            stakeholder,
-            project
-          );
-          greeting = aiResponse;
-        } catch (error) {
-          console.error('❌ AI greeting generation failed, using fallback', error);
-          greeting = 'Hello.';
+      // Use singleAgentSystem for greeting generation
+      const greeting = await singleAgentSystem.processUserMessage(
+        'Generate a brief, natural greeting for a team meeting (maximum 5 words)',
+        stakeholder,
+        {
+          id: 'greeting',
+          name: 'Team Meeting',
+          description: 'Team meeting greeting',
+          type: 'Meeting',
+          painPoints: [],
+          asIsProcess: 'Team meeting'
         }
-      }
-      usedGreetingSetRef.current.add(greeting.toLowerCase().replace(/\.$/, ''));
+      );
 
       // Limit to 5 words, ensure terminal punctuation
-      greeting = greeting.split(' ').slice(0, 5).join(' ').trim();
-      if (!/[\.!?]$/.test(greeting)) greeting += '.';
+      const limitedGreeting = greeting.split(' ').slice(0, 5).join(' ').trim();
+      const finalGreeting = !/[\.!?]$/.test(limitedGreeting) ? limitedGreeting + '.' : limitedGreeting;
 
-      console.log(`✅ EXPERT GREETING: Generated "${greeting}" for ${stakeholder.name}`);
-      return greeting;
+      console.log(`✅ EXPERT GREETING: Generated "${finalGreeting}" for ${stakeholder.name}`);
+      return finalGreeting;
       
     } catch (error) {
-      console.error('❌ Greeting generation failed, using neutral fallback', error);
-      return 'Hello.';
+      console.error('❌ Greeting generation failed, using AI fallback', error);
+      // Use singleAgentSystem for fallback instead of hardcoded response
+      try {
+        const fallbackGreeting = await singleAgentSystem.processUserMessage(
+          'Generate a simple greeting',
+          stakeholder,
+          {
+            id: 'fallback',
+            name: 'Fallback',
+            description: 'Fallback greeting',
+            type: 'Fallback',
+            painPoints: [],
+            asIsProcess: 'Fallback'
+          }
+        );
+        return fallbackGreeting.substring(0, 20) + (fallbackGreeting.length > 20 ? '...' : '');
+      } catch (fallbackError) {
+        console.error('❌ Fallback greeting also failed:', fallbackError);
+        return 'Hello.';
+      }
     }
   };
 

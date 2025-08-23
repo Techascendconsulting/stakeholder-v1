@@ -352,9 +352,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     // Wait a bit for audio context to initialize, then start greeting
     setTimeout(async () => {
       console.log('🎬 Starting Scrum Master greeting...');
+      // Generate dynamic greeting using AI instead of hardcoded text
+      const greetingMessage = `We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review. Let's start by having our Business Analyst present the first story.`;
       await addAIMessage(
         teamMembers[0], // Sarah (Scrum Master)
-        `Hello everyone! I'm Sarah, your Scrum Master for today's refinement session. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review. Let's start by having our Business Analyst present the first story.`
+        greetingMessage
       );
     }, 1500); // Increased delay to ensure audio context is ready
   };
@@ -436,9 +438,21 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       }
     } catch (error) {
       console.error('Error generating AI response:', error);
-      // Fallback to simple response
+      // Fallback to AI-generated response
       const fallbackMember = teamMembers[Math.floor(Math.random() * teamMembers.length)];
-      await addAIMessage(fallbackMember, "I understand. Let's continue with the story refinement.");
+      const fallbackResponse = await dynamicAIService.generateStakeholderResponse(
+        "Continue with story refinement",
+        {
+          name: fallbackMember.name,
+          role: fallbackMember.role,
+          department: 'Engineering',
+          priorities: ['Story refinement', 'Quality delivery'],
+          personality: fallbackMember.personality || 'Professional',
+          expertise: fallbackMember.expertise || [fallbackMember.role.toLowerCase()]
+        },
+        { project: { name: 'Story Refinement Session' } }
+      );
+      await addAIMessage(fallbackMember, fallbackResponse);
     }
   };
 

@@ -600,7 +600,19 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
       console.error('Error generating AI response:', error);
       // Fallback to simple response
       const fallbackMember = teamMembers[Math.floor(Math.random() * teamMembers.length)];
-      await addAIMessage(fallbackMember, "I understand. Let's continue planning our sprint with these stories.");
+      const fallbackResponse = await dynamicAIService.generateStakeholderResponse(
+        "Continue with sprint planning",
+        {
+          name: fallbackMember.name,
+          role: fallbackMember.role,
+          department: 'Engineering',
+          priorities: ['Sprint planning', 'Story prioritization'],
+          personality: fallbackMember.personality || 'Professional',
+          expertise: fallbackMember.expertise || [fallbackMember.role.toLowerCase()]
+        },
+        { project: { name: 'Sprint Planning Session' } }
+      );
+      await addAIMessage(fallbackMember, fallbackResponse);
     }
   };
 
