@@ -1,3 +1,5 @@
+import OpenAI from 'openai';
+
 interface KBEntry {
   id: string;
   category: string;
@@ -86,6 +88,56 @@ class KnowledgeBase {
     return true;
   }
 
+  private extractKeyTerms(query: string): string[] {
+    // Common words to ignore
+    const stopWords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+      'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those',
+      'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+      'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'his', 'hers', 'ours', 'theirs',
+      'what', 'when', 'where', 'why', 'how', 'who', 'which', 'whom', 'whose',
+      'ok', 'okay', 'yes', 'no', 'not', 'so', 'very', 'just', 'now', 'then', 'here', 'there',
+      'go', 'going', 'went', 'gone', 'want', 'wants', 'wanted', 'tell', 'tells', 'told',
+      'know', 'knows', 'knew', 'understand', 'understands', 'understood', 'like', 'likes', 'liked',
+      'please', 'thanks', 'thank', 'hello', 'hi', 'hey', 'good', 'morning', 'afternoon', 'evening'
+    ]);
+
+    // Extract meaningful terms
+    const words = query.split(/\s+/).filter(word => {
+      const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+      return cleanWord.length > 2 && !stopWords.has(cleanWord);
+    });
+
+    // Add semantic variations for common terms
+    const semanticTerms = new Set(words);
+    
+    // Process-specific terms
+    if (words.some(w => ['process', 'workflow', 'steps', 'stages'].includes(w))) {
+      semanticTerms.add('process');
+      semanticTerms.add('workflow');
+      semanticTerms.add('steps');
+    }
+    
+    if (words.some(w => ['current', 'now', 'present', 'existing'].includes(w))) {
+      semanticTerms.add('current');
+      semanticTerms.add('as-is');
+    }
+    
+    if (words.some(w => ['break', 'breakdown', 'explain', 'describe', 'detail'].includes(w))) {
+      semanticTerms.add('explain');
+      semanticTerms.add('describe');
+      semanticTerms.add('detail');
+    }
+    
+    if (words.some(w => ['understand', 'know', 'learn', 'find'].includes(w))) {
+      semanticTerms.add('understand');
+      semanticTerms.add('know');
+    }
+
+    return Array.from(semanticTerms);
+  }
+
   private getFallbackEntries(): KBEntry[] {
     return [
       {
@@ -131,56 +183,154 @@ class KnowledgeBase {
     }
 
     try {
-      const results: SearchResult[] = [];
-      const queryLower = query.toLowerCase();
-
-      // Keyword-based search
-      for (const entry of this.entries) {
-        let score = 0;
-        let matchedQuestion = '';
-
-        // Check questions
-        for (const question of entry.questions) {
-          if (question.toLowerCase().includes(queryLower)) {
-            score += 2;
-            matchedQuestion = question;
-          }
-        }
-
-        // Check short and expanded content
-        if (entry.short.toLowerCase().includes(queryLower)) {
-          score += 1;
-        }
-        if (entry.expanded.toLowerCase().includes(queryLower)) {
-          score += 0.5;
-        }
-
-        // Check references
-        for (const ref of entry.refs) {
-          if (ref.toLowerCase().includes(queryLower)) {
-            score += 0.5;
-          }
-        }
-
-        if (score > 0) {
-          results.push({
-            entry,
-            score,
-            matchedQuestion: matchedQuestion || undefined
-          });
-          console.log(`🔍 KB Match: ${entry.id} (score: ${score}) for query: "${query}"`);
-        }
+      // First, try AI-powered intent matching
+      const aiResults = await this.aiPoweredSearch(query, maxResults);
+      if (aiResults.length > 0) {
+        console.log(`🤖 AI-powered search found ${aiResults.length} results`);
+        return aiResults;
       }
 
-      // Sort by score and limit results
-      return results
-        .sort((a, b) => b.score - a.score)
-        .slice(0, maxResults);
+      // Fallback to keyword search if AI search fails
+      console.log(`🔄 AI search failed, falling back to keyword search`);
+      return await this.keywordSearch(query, maxResults);
 
     } catch (error) {
       console.error('❌ Error during KB search:', error);
+      return await this.keywordSearch(query, maxResults);
+    }
+  }
+
+  private async aiPoweredSearch(query: string, maxResults: number): Promise<SearchResult[]> {
+    try {
+      // Get all available KB entries for context
+      const allEntries = this.entries.map(entry => ({
+        id: entry.id,
+        category: entry.category,
+        questions: entry.questions,
+        short: entry.short,
+        expanded: entry.expanded
+      }));
+
+      // Use OpenAI to find the most relevant entries
+      const openai = new OpenAI({
+        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+        dangerouslyAllowBrowser: true
+      });
+
+      const response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a knowledge base search assistant. Given a user query and a list of knowledge base entries, find the most relevant entries.
+
+Available KB entries:
+${allEntries.map(entry => `
+ID: ${entry.id}
+Category: ${entry.category}
+Questions: ${entry.questions.join(', ')}
+Short: ${entry.short}
+`).join('\n')}
+
+User query: "${query}"
+
+Return ONLY a JSON array of the most relevant entry IDs, ordered by relevance. Maximum ${maxResults} entries.
+Format: ["KB-001", "KB-002", "KB-003"]`
+          }
+        ],
+        max_tokens: 100,
+        temperature: 0.1
+      });
+
+      const aiResponse = response.choices[0]?.message?.content;
+      if (!aiResponse) return [];
+
+      // Parse AI response to get relevant entry IDs
+      const relevantIds = JSON.parse(aiResponse);
+      console.log(`🤖 AI identified relevant entries: ${relevantIds.join(', ')}`);
+
+      // Return the actual KB entries
+      const results: SearchResult[] = [];
+      for (const id of relevantIds) {
+        const entry = this.entries.find(e => e.id === id);
+        if (entry) {
+          results.push({
+            entry,
+            score: 3.0, // High score for AI-selected entries
+            matchedQuestion: 'AI-powered match'
+          });
+        }
+      }
+
+      return results.slice(0, maxResults);
+
+    } catch (error) {
+      console.error('❌ AI-powered search failed:', error);
       return [];
     }
+  }
+
+  private async keywordSearch(query: string, maxResults: number): Promise<SearchResult[]> {
+    const results: SearchResult[] = [];
+    const queryLower = query.toLowerCase();
+
+    // Extract key terms from query
+    const keyTerms = this.extractKeyTerms(queryLower);
+    console.log(`🔍 KEYWORD SEARCH: Query: "${query}", Key terms: [${keyTerms.join(', ')}]`);
+
+    // Keyword-based search
+    for (const entry of this.entries) {
+      let score = 0;
+      let matchedQuestion = '';
+
+      // Check questions with key terms
+      for (const question of entry.questions) {
+        const questionLower = question.toLowerCase();
+        for (const term of keyTerms) {
+          if (questionLower.includes(term)) {
+            score += 2;
+            matchedQuestion = question;
+            break; // Only count once per question
+          }
+        }
+      }
+
+      // Check short and expanded content with key terms
+      const shortLower = entry.short.toLowerCase();
+      const expandedLower = entry.expanded.toLowerCase();
+      for (const term of keyTerms) {
+        if (shortLower.includes(term)) {
+          score += 1;
+        }
+        if (expandedLower.includes(term)) {
+          score += 0.5;
+        }
+      }
+
+      // Check references
+      for (const ref of entry.refs) {
+        const refLower = ref.toLowerCase();
+        for (const term of keyTerms) {
+          if (refLower.includes(term)) {
+            score += 0.5;
+          }
+        }
+      }
+
+      if (score > 0) {
+        results.push({
+          entry,
+          score,
+          matchedQuestion: matchedQuestion || undefined
+        });
+        console.log(`🔍 KB Match: ${entry.id} (score: ${score}) for query: "${query}"`);
+      }
+    }
+
+    // Sort by score and limit results
+    return results
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxResults);
   }
 
   async semanticSearch(query: string, maxResults: number = 3): Promise<SearchResult[]> {

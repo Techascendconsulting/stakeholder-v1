@@ -200,6 +200,14 @@ Your expertise: ${stakeholderContext.expertise.join(', ')}
 Project Context: ${projectContext.name}
 ${projectContext.description}
 
+Detailed Project Information:
+- Company: TechCorp Solutions (enterprise software company)
+- Current Problem: 6 to 8 week onboarding timeline, 23% churn rate, fragmented processes across 7 departments
+- Goals: Reduce onboarding to 3 to 4 weeks, improve CSAT, decrease churn by 40%
+- Departments Involved: Sales, Implementation, IT, Product, Support, Customer Success
+- Current Process: Manual handoffs, 4 disconnected systems, no centralized tracking
+- Products: TechCorp CRM, ProjectFlow, AutoSync (enterprise software solutions)
+
 Current time: ${timestamp}`;
 
     const kbSection = hasKBContext ? `\nKnowledge Base Context:\n${kbContext}\n` : '';
@@ -218,15 +226,19 @@ Current time: ${timestamp}`;
 - Respond as ${stakeholderContext.name} would naturally speak`
       : `Response Guidelines:
 - Be conversational and natural, like a real person
-- You don't have specific KB information for this question, so make an intelligent guess based on project context
-- Use your knowledge of the project and your role to provide a helpful response
+- You don't have specific KB information for this question, so use the detailed project information above
+- ALWAYS reference specific details from the project context (timeline, departments, products, goals, etc.)
+- Use your role and expertise to provide relevant, specific information
 - Keep responses very concise (1-2 sentences maximum)
 - Be professional but casual
 - NEVER use asterisks, dashes in numbers, or bullet points
 - NEVER give generic responses like "Hello, let's discuss this" or "I'd be happy to help"
 - ALWAYS provide specific, actionable information from the project context
 - Respond as ${stakeholderContext.name} would naturally speak
-- If you're unsure, make an educated guess based on your role and the project context`;
+- If asked about process, mention the 10-step process, 7 departments, 4 systems
+- If asked about products, mention TechCorp CRM, ProjectFlow, AutoSync
+- If asked about problems, mention 6-8 week timeline, 23% churn, fragmented processes
+- If asked about goals, mention 3-4 week target, CSAT improvement, 40% churn reduction`;
 
     return `${basePrompt}${kbSection}\n${responseGuidelines}`;
   }
