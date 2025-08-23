@@ -27,38 +27,6 @@ const BAAcademyView: React.FC = () => {
   const learningModules: LearningModule[] = [
     // Phase 1: Foundation (Months 1-3)
     {
-      id: 'organizational-context',
-      title: 'Organizational Context & Business Operations',
-      description: 'Master organizational analysis and business operations understanding as defined by BCS and IIBA. Learn to analyze organizational structure, culture, and operating models to support effective business analysis.',
-      difficulty: 'Beginner',
-      status: 'not-started',
-      progress: 0,
-      topics: [
-        'Organizational Structure Analysis (BCS)',
-        'Business Operating Models',
-        'Organizational Culture Assessment',
-        'Stakeholder Landscape Mapping',
-        'Business Context Understanding',
-        'Organizational Change Readiness'
-      ]
-    },
-    {
-      id: 'project-lifecycle',
-      title: 'Project Lifecycle & IT Team Structure',
-      description: 'Understand project lifecycle management and IT team structures according to BABOK knowledge areas. Learn to navigate project phases and collaborate effectively with technical teams.',
-      difficulty: 'Beginner',
-      status: 'not-started',
-      progress: 0,
-      topics: [
-        'Project Lifecycle Management (BABOK)',
-        'IT Team Structure and Roles',
-        'Software Development Lifecycle',
-        'Requirements Lifecycle Management',
-        'Solution Evaluation Planning',
-        'Cross-functional Team Collaboration'
-      ]
-    },
-    {
       id: 'ba-fundamentals',
       title: 'Business Analysis Fundamentals',
       description: 'Master core business analysis concepts based on IIBA BABOK standards. Learn the practice of enabling change by defining needs and recommending solutions that deliver value to stakeholders.',
@@ -67,43 +35,8 @@ const BAAcademyView: React.FC = () => {
       progress: 0,
       topics: [
         'Business Analysis Definition (BABOK)',
-        'Core BA Competencies (IIBA)',
-        'Business Analysis Planning and Monitoring',
-        'Elicitation and Collaboration',
-        'Requirements Analysis and Design Definition',
-        'Solution Evaluation'
-      ]
-    },
-    {
-      id: 'requirements-gathering',
-      title: 'Requirements Engineering',
-      description: 'Master requirements engineering practices based on BCS and IIBA standards. Learn systematic approaches to eliciting, analyzing, documenting, and managing requirements throughout the project lifecycle.',
-      difficulty: 'Beginner',
-      status: 'not-started',
-      progress: 0,
-      topics: [
         'Requirements Elicitation Techniques (BABOK)',
-        'Requirements Analysis and Documentation',
-        'Requirements Classification and Types',
-        'Requirements Validation and Verification',
-        'Requirements Traceability Management',
-        'Requirements Change Management'
-      ]
-    },
-    {
-      id: 'agile-techniques',
-      title: 'Agile Business Analysis',
-      description: 'Master agile business analysis practices as defined in the Agile Extension to the BABOK. Learn to adapt traditional BA practices for agile development environments.',
-      difficulty: 'Beginner',
-      status: 'not-started',
-      progress: 0,
-      topics: [
-        'Agile BA Principles and Values',
-        'User Story Development and Refinement',
-        'Sprint Planning and Backlog Management',
-        'Agile Requirements Lifecycle',
-        'Continuous Stakeholder Engagement',
-        'Agile Solution Evaluation'
+        'Organizational Structure Analysis (BCS)'
       ]
     },
 
