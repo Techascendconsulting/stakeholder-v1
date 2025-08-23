@@ -1,0 +1,892 @@
+{
+  "knowledge_base": [
+    {
+      "module": "Foundation",
+      "topic": "Organizational Context & Business Operations",
+      "id": "ORG-001",
+      "level": "Beginner",
+      "tags": ["organization", "business context", "operations", "structure"],
+      "questions": [
+        "What is organizational context in business analysis?",
+        "How do I understand the business environment?",
+        "What should I know about the organization before starting analysis?",
+        "How do business operations affect my analysis?",
+        "What is the organizational structure and why does it matter?"
+      ],
+      "short": "Organizational context is understanding how the business operates, its structure, culture, and environment before starting any analysis work.",
+      "expanded": "Organizational context is the foundation of effective business analysis. It involves understanding the company's mission, vision, values, organizational structure, culture, and operating environment. This includes knowing who makes decisions, how information flows, what the company does, and how it makes money. For example, analyzing a retail bank's processes requires understanding banking regulations, customer service expectations, and the branch network structure. Without this context, you might miss critical constraints or stakeholder needs.",
+      "starter_questions": [
+        "What is the company's mission and vision?",
+        "How is the organization structured?",
+        "What are the main business processes?",
+        "Who are the key decision makers?",
+        "What industry regulations apply?",
+        "How does the company make money?",
+        "What is the organizational culture like?",
+        "What are the current business challenges?"
+      ],
+      "glossary": [
+        {
+          "term": "Organizational Context",
+          "definition": "The complete understanding of how a business operates, including its structure, culture, environment, and operating model"
+        },
+        {
+          "term": "Business Operations",
+          "definition": "The day-to-day activities and processes that keep a business running and delivering value to customers"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Organizational Context & Business Operations",
+      "id": "ORG-002",
+      "level": "Beginner",
+      "tags": ["stakeholders", "roles", "responsibilities", "RACI"],
+      "questions": [
+        "How do I identify stakeholders in an organization?",
+        "What is a stakeholder and why are they important?",
+        "How do I map out who does what in the business?",
+        "What is RACI and how do I use it?",
+        "How do I understand roles and responsibilities?"
+      ],
+      "short": "Stakeholders are people affected by or who can affect your project. RACI (Responsible, Accountable, Consulted, Informed) helps clarify who does what.",
+      "expanded": "Stakeholders are individuals or groups who have an interest in or are affected by the outcome of your analysis. They can be internal (employees, managers) or external (customers, suppliers, regulators). The RACI matrix is a tool to clarify roles: Responsible (does the work), Accountable (owns the outcome), Consulted (provides input), and Informed (kept updated). For example, in a software implementation, the IT team is Responsible for technical setup, the project manager is Accountable for delivery, subject matter experts are Consulted for requirements, and end users are Informed of progress.",
+      "starter_questions": [
+        "Who will be affected by this change?",
+        "Who has decision-making authority?",
+        "Who needs to be consulted for requirements?",
+        "Who should be kept informed of progress?",
+        "What are each stakeholder's concerns?",
+        "How do stakeholders communicate?",
+        "What is each person's level of influence?",
+        "How do I engage different stakeholder types?"
+      ],
+      "glossary": [
+        {
+          "term": "Stakeholder",
+          "definition": "Any person, group, or organization that has an interest in or is affected by a project, process, or decision"
+        },
+        {
+          "term": "RACI Matrix",
+          "definition": "A responsibility assignment chart that defines who is Responsible, Accountable, Consulted, and Informed for each task or deliverable"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Project Lifecycle & IT Team Structure",
+      "id": "PROJ-001",
+      "level": "Beginner",
+      "tags": ["project lifecycle", "SDLC", "phases", "gates"],
+      "questions": [
+        "What is the project lifecycle?",
+        "What are the main phases of a project?",
+        "How do projects typically progress?",
+        "What is SDLC and how does it work?",
+        "How do I understand project phases?"
+      ],
+      "short": "The project lifecycle is the series of phases a project goes through from start to finish, typically including initiation, planning, execution, monitoring, and closure.",
+      "expanded": "The project lifecycle represents the complete journey of a project from conception to completion. It typically includes five main phases: Initiation (defining the project), Planning (creating detailed plans), Execution (doing the work), Monitoring & Controlling (tracking progress), and Closure (finishing and learning). Each phase has specific deliverables and gates that must be passed before moving to the next. For example, in the initiation phase, you might create a business case and project charter, while the planning phase produces detailed requirements, schedules, and resource plans.",
+      "starter_questions": [
+        "What are the key deliverables for each phase?",
+        "How do I know when to move to the next phase?",
+        "What are the decision gates between phases?",
+        "How do I handle phase transitions?",
+        "What happens if a phase fails?",
+        "How do I track progress across phases?",
+        "What documentation is needed for each phase?",
+        "How do I manage risks across the lifecycle?"
+      ],
+      "glossary": [
+        {
+          "term": "Project Lifecycle",
+          "definition": "The complete sequence of phases that a project goes through from start to finish"
+        },
+        {
+          "term": "SDLC",
+          "definition": "Software Development Life Cycle - the process used to design, develop, test, and deploy software"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Project Lifecycle & IT Team Structure",
+      "id": "PROJ-002",
+      "level": "Beginner",
+      "tags": ["IT teams", "roles", "development", "testing", "operations"],
+      "questions": [
+        "What are the typical roles in an IT team?",
+        "How do IT teams work together?",
+        "What does each IT role do?",
+        "How do developers and testers interact?",
+        "What is the difference between development and operations?"
+      ],
+      "short": "IT teams typically include developers (build), testers (verify), operations (run), and business analysts (bridge business and IT). Each role has specific responsibilities and skills.",
+      "expanded": "Modern IT teams are structured around specialized roles that work together to deliver software solutions. Developers write code and build features, testers ensure quality and find defects, operations teams deploy and maintain systems, and business analysts bridge the gap between business needs and technical solutions. DevOps teams combine development and operations for faster delivery. For example, in an agile team, the BA works with product owners to clarify requirements, developers estimate and build features, testers create test cases and validate functionality, and operations ensures smooth deployment and monitoring.",
+      "starter_questions": [
+        "What skills does each role require?",
+        "How do roles communicate with each other?",
+        "What are the handoffs between roles?",
+        "How do I work effectively with developers?",
+        "What do testers need from me?",
+        "How do operations teams affect my analysis?",
+        "What is the role of architects?",
+        "How do project managers fit in?"
+      ],
+      "glossary": [
+        {
+          "term": "Development Team",
+          "definition": "The group responsible for designing, coding, and building software solutions"
+        },
+        {
+          "term": "Operations Team",
+          "definition": "The group responsible for deploying, running, and maintaining software systems in production"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Software BA Fundamentals",
+      "id": "BA-001",
+      "level": "Beginner",
+      "tags": ["business analysis", "role", "responsibilities", "skills"],
+      "questions": [
+        "What is business analysis?",
+        "What does a business analyst do?",
+        "What are the main responsibilities of a BA?",
+        "What skills do I need to be a BA?",
+        "How do I understand the BA role?"
+      ],
+      "short": "Business analysis is the practice of understanding business needs and recommending solutions that deliver value to stakeholders. BAs bridge the gap between business problems and technical solutions.",
+      "expanded": "Business analysis is a disciplined approach to introducing and managing change in organizations. BAs identify business problems, analyze needs, and recommend solutions that deliver value. They act as a bridge between business stakeholders and technical teams, translating business requirements into technical specifications. Key responsibilities include requirements gathering, process modeling, stakeholder management, and solution evaluation. For example, when a company wants to improve customer service, the BA might analyze current processes, identify pain points, gather requirements from different departments, and recommend a new CRM system with specific features.",
+      "starter_questions": [
+        "What are the core BA competencies?",
+        "How do I gather requirements effectively?",
+        "What tools and techniques should I use?",
+        "How do I manage stakeholder relationships?",
+        "What is the difference between functional and non-functional requirements?",
+        "How do I validate requirements?",
+        "What is the BA's role in testing?",
+        "How do I measure the success of my analysis?"
+      ],
+      "glossary": [
+        {
+          "term": "Business Analysis",
+          "definition": "The practice of understanding business needs and recommending solutions that deliver value to stakeholders"
+        },
+        {
+          "term": "Business Analyst",
+          "definition": "A professional who analyzes business processes, identifies needs, and recommends solutions to improve business performance"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Software BA Fundamentals",
+      "id": "BA-002",
+      "level": "Beginner",
+      "tags": ["requirements", "functional", "non-functional", "business rules"],
+      "questions": [
+        "What are requirements?",
+        "What is the difference between functional and non-functional requirements?",
+        "How do I identify requirements?",
+        "What are business rules?",
+        "How do I write good requirements?"
+      ],
+      "short": "Requirements are statements that describe what a system must do (functional) or how it must perform (non-functional). Business rules are policies that govern how the business operates.",
+      "expanded": "Requirements are the foundation of any software project. Functional requirements describe what the system should do - the features and functions users can perform. Non-functional requirements describe how the system should perform - qualities like speed, security, reliability, and usability. Business rules are specific policies that govern how the business operates and must be enforced by the system. For example, a functional requirement might be 'Users can reset their password,' while a non-functional requirement could be 'Password reset emails must be sent within 5 minutes,' and a business rule might be 'Passwords must be at least 8 characters long and contain uppercase, lowercase, and numbers.'",
+      "starter_questions": [
+        "How do I distinguish between functional and non-functional requirements?",
+        "What makes a requirement testable?",
+        "How do I prioritize requirements?",
+        "What is the difference between requirements and specifications?",
+        "How do I handle conflicting requirements?",
+        "What is requirements traceability?",
+        "How do I validate requirements with stakeholders?",
+        "What is the role of acceptance criteria?"
+      ],
+      "glossary": [
+        {
+          "term": "Functional Requirements",
+          "definition": "Statements that describe what a system should do - the features and functions it must provide"
+        },
+        {
+          "term": "Non-Functional Requirements",
+          "definition": "Statements that describe how a system should perform - qualities like performance, security, reliability, and usability"
+        },
+        {
+          "term": "Business Rules",
+          "definition": "Specific policies, procedures, or constraints that govern how the business operates and must be enforced by the system"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Requirements Gathering",
+      "id": "REQ-001",
+      "level": "Beginner",
+      "tags": ["requirements gathering", "elicitation", "techniques", "interviews"],
+      "questions": [
+        "What is requirements gathering?",
+        "How do I gather requirements from stakeholders?",
+        "What techniques can I use to gather requirements?",
+        "How do I conduct effective interviews?",
+        "What is the difference between gathering and elicitation?"
+      ],
+      "short": "Requirements gathering is the process of collecting information about what stakeholders need from a system. It involves various techniques like interviews, workshops, and observation.",
+      "expanded": "Requirements gathering is the systematic process of collecting, documenting, and validating information about what stakeholders need from a system or solution. It's more than just asking questions - it involves understanding the business context, identifying hidden needs, and ensuring requirements are complete and accurate. Common techniques include interviews, workshops, observation, surveys, and document analysis. For example, when gathering requirements for a new customer portal, you might interview customer service representatives to understand their pain points, observe how customers currently interact with the system, and hold workshops with different departments to identify conflicting needs.",
+      "starter_questions": [
+        "Who are the key stakeholders to interview?",
+        "What questions should I ask in interviews?",
+        "How do I prepare for a requirements workshop?",
+        "What documents should I review?",
+        "How do I handle conflicting requirements?",
+        "What is the role of observation in requirements gathering?",
+        "How do I validate requirements with stakeholders?",
+        "What tools can help with requirements gathering?"
+      ],
+      "glossary": [
+        {
+          "term": "Requirements Gathering",
+          "definition": "The process of collecting information about stakeholder needs and system requirements"
+        },
+        {
+          "term": "Elicitation",
+          "definition": "The process of drawing out or discovering requirements from stakeholders through various techniques"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Requirements Gathering",
+      "id": "REQ-002",
+      "level": "Beginner",
+      "tags": ["user stories", "acceptance criteria", "agile", "scenarios"],
+      "questions": [
+        "What are user stories?",
+        "How do I write good user stories?",
+        "What is acceptance criteria?",
+        "How do user stories relate to requirements?",
+        "What is the INVEST criteria for user stories?"
+      ],
+      "short": "User stories are short descriptions of features from the user's perspective, written as 'As a [user], I want [feature] so that [benefit].' Acceptance criteria define when the story is complete.",
+      "expanded": "User stories are a way to capture requirements in agile development. They focus on the user's perspective and value, written in simple language that everyone can understand. The format 'As a [user], I want [feature] so that [benefit]' ensures you capture who needs what and why. Acceptance criteria define the specific conditions that must be met for the story to be considered complete. For example, a user story might be 'As a customer, I want to reset my password so that I can access my account when I forget my password,' with acceptance criteria like 'User receives email within 5 minutes,' 'Link expires after 24 hours,' and 'New password meets security requirements.'",
+      "starter_questions": [
+        "How do I identify the right user roles?",
+        "What makes a user story too big or too small?",
+        "How do I write acceptance criteria?",
+        "What is the difference between user stories and use cases?",
+        "How do I estimate user stories?",
+        "What is story mapping?",
+        "How do I prioritize user stories?",
+        "What is the role of personas in user stories?"
+      ],
+      "glossary": [
+        {
+          "term": "User Story",
+          "definition": "A short description of a feature from the user's perspective, written as 'As a [user], I want [feature] so that [benefit]'"
+        },
+        {
+          "term": "Acceptance Criteria",
+          "definition": "Specific conditions that must be met for a user story or requirement to be considered complete"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Agile BA Techniques",
+      "id": "AGILE-001",
+      "level": "Beginner",
+      "tags": ["agile", "sprint", "backlog", "scrum", "kanban"],
+      "questions": [
+        "What is agile methodology?",
+        "How does agile differ from waterfall?",
+        "What is a sprint in agile?",
+        "What is a product backlog?",
+        "How do I work as a BA in an agile team?"
+      ],
+      "short": "Agile is an iterative approach to software development that delivers working software in short cycles called sprints. It emphasizes collaboration, flexibility, and continuous improvement.",
+      "expanded": "Agile methodology is an iterative and incremental approach to software development that emphasizes flexibility, collaboration, and delivering working software quickly. Unlike waterfall, which follows a linear sequence, agile works in short cycles called sprints (typically 2-4 weeks) where teams plan, build, test, and review small increments of functionality. The product backlog contains all the work to be done, prioritized by business value. As a BA in an agile team, you work closely with product owners to refine requirements, help prioritize the backlog, and ensure the team understands what needs to be built. For example, in a 2-week sprint, you might spend the first few days clarifying requirements for the upcoming stories, then support the team throughout development by answering questions and validating that the solution meets business needs.",
+      "starter_questions": [
+        "What is the role of the product owner?",
+        "How do I prepare for sprint planning?",
+        "What is backlog refinement?",
+        "How do I handle changing requirements in agile?",
+        "What is the difference between scrum and kanban?",
+        "How do I write requirements for agile teams?",
+        "What is the role of the scrum master?",
+        "How do I measure success in agile projects?"
+      ],
+      "glossary": [
+        {
+          "term": "Agile",
+          "definition": "An iterative approach to software development that emphasizes flexibility, collaboration, and delivering working software in short cycles"
+        },
+        {
+          "term": "Sprint",
+          "definition": "A fixed time period (usually 2-4 weeks) in which a specific set of work must be completed and made ready for review"
+        },
+        {
+          "term": "Product Backlog",
+          "definition": "An ordered list of everything that might be needed in the product, prioritized by business value"
+        }
+      ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Agile BA Techniques",
+      "id": "AGILE-002",
+      "level": "Beginner",
+      "tags": ["sprint planning", "backlog refinement", "story points", "velocity"],
+      "questions": [
+        "What is sprint planning?",
+        "How do I prepare for sprint planning?",
+        "What is backlog refinement?",
+        "What are story points?",
+        "How do teams estimate work in agile?"
+      ],
+      "short": "Sprint planning is where the team decides what work to do in the next sprint. Backlog refinement prepares stories for planning. Story points estimate effort, not time.",
+      "expanded": "Sprint planning is a collaborative event where the team decides what work to commit to in the upcoming sprint. The BA plays a crucial role by ensuring requirements are clear and helping the team understand what needs to be built. Backlog refinement is an ongoing process of preparing stories for sprint planning by adding detail, acceptance criteria, and estimates. Story points are a relative measure of effort, not time - a 2-point story takes roughly twice as much effort as a 1-point story. Teams use techniques like planning poker to estimate story points. For example, in sprint planning, you might present a user story about password reset functionality, the team asks clarifying questions, you refine the acceptance criteria, and then the team estimates it as 5 story points based on complexity and effort.",
+      "starter_questions": [
+        "How do I facilitate sprint planning?",
+        "What makes a story ready for sprint planning?",
+        "How do I handle stories that are too big?",
+        "What is the definition of ready?",
+        "How do I work with the product owner?",
+        "What is velocity and how do I track it?",
+        "How do I handle scope creep in sprints?",
+        "What is the role of acceptance criteria in planning?"
+      ],
+      "glossary": [
+        {
+          "term": "Sprint Planning",
+          "definition": "A collaborative event where the team decides what work to commit to in the upcoming sprint"
+        },
+        {
+          "term": "Story Points",
+          "definition": "A relative measure of effort used to estimate the complexity and work required for user stories"
+        },
+        {
+          "term": "Velocity",
+          "definition": "The average number of story points a team completes per sprint, used for capacity planning"
+        }
+      ]
+    },
+    {
+      "module": "Technical Skills",
+      "topic": "Technical Analysis",
+      "id": "TECH-001",
+      "level": "Beginner",
+      "tags": ["technical analysis", "systems", "architecture", "integration"],
+      "questions": [
+        "What is technical analysis in business analysis?",
+        "How do I understand technical systems?",
+        "What technical knowledge do I need as a BA?",
+        "How do I analyze system architecture?",
+        "What is the difference between business and technical analysis?"
+      ],
+      "short": "Technical analysis involves understanding how systems work, their architecture, and technical constraints. BAs need enough technical knowledge to bridge business needs with technical solutions.",
+      "expanded": "Technical analysis in business analysis involves understanding the technical aspects of systems, applications, and infrastructure that support business processes. While BAs don't need to be programmers, they need sufficient technical knowledge to understand system capabilities, constraints, and integration points. This includes understanding basic concepts like databases, APIs, web services, cloud computing, and system architecture. For example, when analyzing a customer portal requirement, you need to understand whether the existing system can handle the new features, what integrations are needed with other systems, and what technical constraints might impact the solution design.",
+      "starter_questions": [
+        "What technical concepts should I understand?",
+        "How do I learn about system architecture?",
+        "What questions should I ask technical teams?",
+        "How do I understand integration requirements?",
+        "What is the role of APIs in modern systems?",
+        "How do I assess technical feasibility?",
+        "What is the difference between frontend and backend?",
+        "How do I understand database requirements?"
+      ],
+      "glossary": [
+        {
+          "term": "Technical Analysis",
+          "definition": "The process of understanding technical systems, architecture, and constraints to support business analysis"
+        },
+        {
+          "term": "System Architecture",
+          "definition": "The overall structure of a system, including its components, relationships, and design principles"
+        }
+      ]
+    },
+    {
+      "module": "Technical Skills",
+      "topic": "Technical Analysis",
+      "id": "TECH-002",
+      "level": "Intermediate",
+      "tags": ["APIs", "web services", "integration", "data flow"],
+      "questions": [
+        "What are APIs and how do they work?",
+        "How do systems integrate with each other?",
+        "What is the difference between APIs and web services?",
+        "How do I understand data flow between systems?",
+        "What are the common integration patterns?"
+      ],
+      "short": "APIs (Application Programming Interfaces) allow systems to communicate with each other. They define how software components interact and exchange data.",
+      "expanded": "APIs (Application Programming Interfaces) are sets of rules and protocols that allow different software applications to communicate with each other. They define how systems can request and exchange data, making it possible for applications to work together without needing to understand each other's internal workings. Web services are a type of API that uses web standards like HTTP and XML/JSON. Common integration patterns include point-to-point (direct connection), hub-and-spoke (centralized), and event-driven (asynchronous messaging). For example, when a customer places an order, the e-commerce system might use APIs to check inventory in the warehouse system, process payment through the payment gateway, and send confirmation through the email service.",
+      "starter_questions": [
+        "What types of APIs are commonly used?",
+        "How do I document integration requirements?",
+        "What are the security considerations for APIs?",
+        "How do I test API integrations?",
+        "What is the difference between REST and SOAP?",
+        "How do I handle API errors and exceptions?",
+        "What is API versioning and why is it important?",
+        "How do I monitor API performance?"
+      ],
+      "glossary": [
+        {
+          "term": "API",
+          "definition": "Application Programming Interface - a set of rules that allows software applications to communicate with each other"
+        },
+        {
+          "term": "Web Service",
+          "definition": "A type of API that uses web standards like HTTP and XML/JSON for communication"
+        },
+        {
+          "term": "Integration",
+          "definition": "The process of connecting different systems or applications to work together"
+        }
+      ]
+    },
+    {
+      "module": "Technical Skills",
+      "topic": "Process Modeling",
+      "id": "PROC-001",
+      "level": "Beginner",
+      "tags": ["process modeling", "BPMN", "flowcharts", "swimlanes"],
+      "questions": [
+        "What is process modeling?",
+        "How do I create process models?",
+        "What is BPMN and how do I use it?",
+        "What are the different types of process diagrams?",
+        "How do I choose the right modeling technique?"
+      ],
+      "short": "Process modeling is creating visual representations of business processes to understand, analyze, and improve them. BPMN (Business Process Model and Notation) is the standard notation for process modeling.",
+      "expanded": "Process modeling is the practice of creating visual representations of business processes to understand how work flows through an organization. It helps identify inefficiencies, bottlenecks, and opportunities for improvement. BPMN (Business Process Model and Notation) is the industry standard for process modeling, providing a common language that both business and technical stakeholders can understand. Process models can be simple flowcharts or complex diagrams with swimlanes showing different roles and responsibilities. For example, modeling a customer order process might show the flow from order placement through payment processing, inventory checking, and order fulfillment, with different swimlanes for sales, finance, and operations teams.",
+      "starter_questions": [
+        "What are the basic BPMN symbols?",
+        "How do I model decision points in processes?",
+        "What is the difference between as-is and to-be modeling?",
+        "How do I handle exceptions in process models?",
+        "What tools can I use for process modeling?",
+        "How do I validate process models with stakeholders?",
+        "What is the role of swimlanes in process modeling?",
+        "How do I model parallel and sequential activities?"
+      ],
+      "glossary": [
+        {
+          "term": "Process Modeling",
+          "definition": "The practice of creating visual representations of business processes to understand and improve workflow"
+        },
+        {
+          "term": "BPMN",
+          "definition": "Business Process Model and Notation - the standard notation for modeling business processes"
+        },
+        {
+          "term": "Swimlane",
+          "definition": "A visual element in process diagrams that shows which role or department is responsible for each activity"
+        }
+      ]
+    },
+    {
+      "module": "Technical Skills",
+      "topic": "Process Modeling",
+      "id": "PROC-002",
+      "level": "Intermediate",
+      "tags": ["use cases", "activity diagrams", "sequence diagrams", "UML"],
+      "questions": [
+        "What are use cases and how do I create them?",
+        "How do use cases relate to requirements?",
+        "What is UML and when do I use it?",
+        "How do I create activity diagrams?",
+        "What is the difference between use cases and user stories?"
+      ],
+      "short": "Use cases describe how users interact with a system to achieve specific goals. They include actors, goals, and scenarios. UML (Unified Modeling Language) provides standard diagrams for modeling software systems.",
+      "expanded": "Use cases are a technique for capturing functional requirements by describing how users (actors) interact with a system to achieve specific goals. Each use case includes the actor, the goal, preconditions, main flow, alternative flows, and postconditions. UML (Unified Modeling Language) is a standardized modeling language that provides various diagram types for modeling software systems. Activity diagrams show the flow of activities and decisions, while sequence diagrams show the interaction between different components over time. For example, a 'Reset Password' use case might have the actor 'Customer,' goal 'Reset forgotten password,' main flow including email verification, and alternative flows for invalid email or expired links.",
+      "starter_questions": [
+        "How do I identify actors in a system?",
+        "What makes a good use case?",
+        "How do I handle complex use case scenarios?",
+        "What is the difference between include and extend relationships?",
+        "How do I create activity diagrams from use cases?",
+        "What is the role of sequence diagrams?",
+        "How do I validate use cases with stakeholders?",
+        "What tools support UML modeling?"
+      ],
+      "glossary": [
+        {
+          "term": "Use Case",
+          "definition": "A description of how a user interacts with a system to achieve a specific goal"
+        },
+        {
+          "term": "UML",
+          "definition": "Unified Modeling Language - a standardized modeling language for visualizing software systems"
+        },
+        {
+          "term": "Actor",
+          "definition": "A person, system, or device that interacts with the system being modeled"
+        }
+      ]
+    },
+    {
+      "module": "Advanced Techniques",
+      "topic": "Stakeholder Management",
+      "id": "STAKE-001",
+      "level": "Intermediate",
+      "tags": ["stakeholder management", "communication", "influence", "politics"],
+      "questions": [
+        "How do I manage difficult stakeholders?",
+        "What is stakeholder influence mapping?",
+        "How do I handle conflicting stakeholder interests?",
+        "What is the difference between stakeholder management and stakeholder engagement?",
+        "How do I build relationships with key stakeholders?"
+      ],
+      "short": "Stakeholder management involves identifying, analyzing, and engaging with people who can affect or are affected by your project. It requires understanding their interests, influence, and communication preferences.",
+      "expanded": "Stakeholder management is the systematic process of identifying, analyzing, and engaging with individuals or groups who have an interest in or can affect your project. It goes beyond simple identification to understanding stakeholder interests, influence levels, communication preferences, and potential conflicts. Effective stakeholder management involves creating engagement strategies, building relationships, and managing expectations. For example, when implementing a new CRM system, you might map stakeholders by their influence (high/medium/low) and interest (supportive/neutral/resistant), then develop specific communication plans for each group - regular updates for supportive high-influence stakeholders, detailed explanations for resistant high-influence stakeholders, and awareness campaigns for low-influence stakeholders.",
+      "starter_questions": [
+        "How do I identify all relevant stakeholders?",
+        "What is a stakeholder analysis matrix?",
+        "How do I handle resistant stakeholders?",
+        "What communication strategies work best?",
+        "How do I manage stakeholder expectations?",
+        "What is the role of influence in stakeholder management?",
+        "How do I handle stakeholder conflicts?",
+        "What tools can help with stakeholder management?"
+      ],
+      "glossary": [
+        {
+          "term": "Stakeholder Management",
+          "definition": "The systematic process of identifying, analyzing, and engaging with project stakeholders"
+        },
+        {
+          "term": "Stakeholder Influence",
+          "definition": "The degree to which a stakeholder can affect project outcomes or decisions"
+        },
+        {
+          "term": "Stakeholder Engagement",
+          "definition": "The process of involving stakeholders in project activities and decision-making"
+        }
+      ]
+    },
+    {
+      "module": "Advanced Techniques",
+      "topic": "Documentation & Communication",
+      "id": "DOC-001",
+      "level": "Intermediate",
+      "tags": ["documentation", "communication", "presentation", "reporting"],
+      "questions": [
+        "How do I write effective business requirements documents?",
+        "What makes good documentation?",
+        "How do I present findings to senior management?",
+        "What is the difference between technical and business documentation?",
+        "How do I create executive summaries?"
+      ],
+      "short": "Effective documentation communicates complex information clearly to different audiences. It should be accurate, complete, and tailored to the reader's needs and technical level.",
+      "expanded": "Documentation and communication are critical skills for business analysts. Effective documentation must be clear, accurate, complete, and appropriate for the intended audience. Business requirements documents should focus on what the system needs to do, while technical documentation focuses on how it will be implemented. Executive summaries should highlight key points and business value, while detailed specifications provide comprehensive information for development teams. For example, when documenting a new customer portal, you might create an executive summary highlighting improved customer satisfaction and reduced support costs, a business requirements document describing features and business rules, and technical specifications detailing integration requirements and data flows.",
+      "starter_questions": [
+        "What are the key components of a BRD?",
+        "How do I structure a requirements document?",
+        "What is the difference between BRD and SRS?",
+        "How do I write for different audiences?",
+        "What makes a good presentation?",
+        "How do I handle technical writing?",
+        "What tools should I use for documentation?",
+        "How do I ensure documentation quality?"
+      ],
+      "glossary": [
+        {
+          "term": "BRD",
+          "definition": "Business Requirements Document - a formal document that describes business needs and requirements"
+        },
+        {
+          "term": "SRS",
+          "definition": "Software Requirements Specification - a detailed document that describes how software will meet business requirements"
+        },
+        {
+          "term": "Executive Summary",
+          "definition": "A brief overview of key points and recommendations, typically written for senior management"
+        }
+      ]
+    },
+    {
+      "module": "Advanced Techniques",
+      "topic": "Quality Assurance",
+      "id": "QA-001",
+      "level": "Intermediate",
+      "tags": ["quality assurance", "testing", "validation", "verification", "UAT"],
+      "questions": [
+        "What is the BA's role in testing?",
+        "How do I write test cases from requirements?",
+        "What is UAT and how do I facilitate it?",
+        "How do I validate that requirements are met?",
+        "What is the difference between validation and verification?"
+      ],
+      "short": "Quality assurance ensures that the delivered solution meets business requirements. BAs participate in testing by writing test cases, facilitating UAT, and validating that business needs are satisfied.",
+      "expanded": "Quality assurance in business analysis involves ensuring that the delivered solution meets the business requirements and provides value to stakeholders. BAs play a crucial role in testing by writing test cases based on requirements, facilitating User Acceptance Testing (UAT), and validating that the solution meets business needs. Validation ensures you're building the right thing (meeting business needs), while verification ensures you're building it right (meeting specifications). For example, when testing a new order processing system, you might write test cases covering normal scenarios (successful orders), edge cases (invalid data), and error conditions (system failures), then work with business users during UAT to ensure the system works as expected in real business scenarios.",
+      "starter_questions": [
+        "How do I create test scenarios from requirements?",
+        "What is the difference between functional and non-functional testing?",
+        "How do I prepare for UAT sessions?",
+        "What is requirements traceability in testing?",
+        "How do I handle defects during testing?",
+        "What is the role of acceptance criteria in testing?",
+        "How do I validate non-functional requirements?",
+        "What testing tools should I know about?"
+      ],
+      "glossary": [
+        {
+          "term": "UAT",
+          "definition": "User Acceptance Testing - testing performed by end users to validate that the system meets business requirements"
+        },
+        {
+          "term": "Validation",
+          "definition": "Ensuring that the right product is being built (meeting business needs)"
+        },
+        {
+          "term": "Verification",
+          "definition": "Ensuring that the product is being built right (meeting specifications)"
+        }
+      ]
+    },
+    {
+      "module": "Specialization",
+      "topic": "Cloud & SaaS",
+      "id": "CLOUD-001",
+      "level": "Intermediate",
+      "tags": ["cloud computing", "SaaS", "IaaS", "PaaS", "integration"],
+      "questions": [
+        "What is cloud computing and how does it affect business analysis?",
+        "What is the difference between SaaS, IaaS, and PaaS?",
+        "How do I analyze requirements for cloud-based solutions?",
+        "What are the benefits and risks of cloud solutions?",
+        "How do I handle integration with cloud services?"
+      ],
+      "short": "Cloud computing provides on-demand access to computing resources over the internet. SaaS (Software as a Service) delivers applications, IaaS (Infrastructure as a Service) provides computing resources, and PaaS (Platform as a Service) offers development platforms.",
+      "expanded": "Cloud computing has transformed how organizations deploy and manage software solutions. SaaS (Software as a Service) delivers complete applications over the internet, IaaS (Infrastructure as a Service) provides virtual computing resources, and PaaS (Platform as a Service) offers development and deployment platforms. When analyzing requirements for cloud solutions, BAs need to consider factors like data security, compliance, integration capabilities, scalability, and vendor lock-in. For example, when evaluating a cloud-based CRM system, you might analyze requirements around data residency (where data is stored), integration with existing on-premise systems, user access controls, backup and recovery procedures, and compliance with industry regulations like GDPR or HIPAA.",
+      "starter_questions": [
+        "What are the security considerations for cloud solutions?",
+        "How do I evaluate cloud service providers?",
+        "What is vendor lock-in and how do I avoid it?",
+        "How do I handle data migration to the cloud?",
+        "What are the cost implications of cloud solutions?",
+        "How do I ensure compliance in cloud environments?",
+        "What is the role of APIs in cloud integration?",
+        "How do I plan for cloud scalability?"
+      ],
+      "glossary": [
+        {
+          "term": "SaaS",
+          "definition": "Software as a Service - software applications delivered over the internet on a subscription basis"
+        },
+        {
+          "term": "IaaS",
+          "definition": "Infrastructure as a Service - virtual computing resources (servers, storage, networking) provided over the internet"
+        },
+        {
+          "term": "PaaS",
+          "definition": "Platform as a Service - development and deployment platforms provided over the internet"
+        }
+      ]
+    },
+    {
+      "module": "Specialization",
+      "topic": "AI & Machine Learning",
+      "id": "AI-001",
+      "level": "Advanced",
+      "tags": ["artificial intelligence", "machine learning", "data science", "automation"],
+      "questions": [
+        "How does AI and machine learning affect business analysis?",
+        "What are the different types of machine learning?",
+        "How do I gather requirements for AI systems?",
+        "What are the ethical considerations for AI projects?",
+        "How do I validate AI system requirements?"
+      ],
+      "short": "AI and machine learning systems can automate decision-making and provide insights from data. BAs need to understand data requirements, model validation, and ethical considerations when analyzing AI requirements.",
+      "expanded": "AI and machine learning are transforming business processes by automating decision-making, providing predictive insights, and enabling new capabilities. When analyzing requirements for AI systems, BAs need to understand data requirements (quality, quantity, sources), model validation and testing approaches, ethical considerations (bias, transparency, accountability), and integration with existing systems. Different types of machine learning include supervised learning (using labeled data), unsupervised learning (finding patterns in unlabeled data), and reinforcement learning (learning through trial and error). For example, when implementing a customer churn prediction system, you need to analyze requirements around data sources (customer behavior, transaction history), model accuracy thresholds, explainability requirements (why did the model make this prediction?), and integration with customer service systems.",
+      "starter_questions": [
+        "What data requirements are needed for AI systems?",
+        "How do I handle bias in AI systems?",
+        "What is model explainability and why is it important?",
+        "How do I validate AI model performance?",
+        "What are the privacy implications of AI systems?",
+        "How do I integrate AI with existing business processes?",
+        "What is the role of data governance in AI projects?",
+        "How do I measure the success of AI implementations?"
+      ],
+      "glossary": [
+        {
+          "term": "Machine Learning",
+          "definition": "A subset of AI that enables systems to learn and improve from experience without being explicitly programmed"
+        },
+        {
+          "term": "Supervised Learning",
+          "definition": "Machine learning using labeled training data to learn patterns and make predictions"
+        },
+        {
+          "term": "Model Explainability",
+          "definition": "The ability to understand and explain how an AI model makes decisions"
+        }
+      ]
+    },
+    {
+      "module": "Mastery",
+      "topic": "DevOps & CI/CD",
+      "id": "DEVOPS-001",
+      "level": "Advanced",
+      "tags": ["DevOps", "CI/CD", "continuous integration", "continuous deployment", "automation"],
+      "questions": [
+        "What is DevOps and how does it affect business analysis?",
+        "What is CI/CD and why is it important?",
+        "How do I gather requirements for DevOps processes?",
+        "What is the role of automation in modern software delivery?",
+        "How do I analyze requirements for infrastructure as code?"
+      ],
+      "short": "DevOps combines development and operations to enable faster, more reliable software delivery. CI/CD (Continuous Integration/Continuous Deployment) automates the build, test, and deployment process.",
+      "expanded": "DevOps is a set of practices that combines software development (Dev) and IT operations (Ops) to shorten the development lifecycle and provide continuous delivery of high-quality software. CI/CD (Continuous Integration/Continuous Deployment) is a key DevOps practice that automates the process of building, testing, and deploying software. When analyzing requirements for DevOps implementations, BAs need to understand automation opportunities, deployment processes, monitoring requirements, and feedback loops. For example, when implementing a CI/CD pipeline, you might analyze requirements around automated testing (unit tests, integration tests, performance tests), deployment environments (development, staging, production), rollback procedures, monitoring and alerting, and security scanning. The goal is to enable teams to deliver software changes more frequently and reliably.",
+      "starter_questions": [
+        "What are the key DevOps practices?",
+        "How do I identify automation opportunities?",
+        "What is infrastructure as code?",
+        "How do I gather requirements for monitoring and alerting?",
+        "What is the role of security in DevOps?",
+        "How do I analyze deployment requirements?",
+        "What is the difference between continuous integration and continuous deployment?",
+        "How do I measure DevOps success?"
+      ],
+      "glossary": [
+        {
+          "term": "DevOps",
+          "definition": "A set of practices that combines software development and IT operations to enable faster, more reliable software delivery"
+        },
+        {
+          "term": "CI/CD",
+          "definition": "Continuous Integration/Continuous Deployment - automated processes for building, testing, and deploying software"
+        },
+        {
+          "term": "Infrastructure as Code",
+          "definition": "Managing and provisioning computing infrastructure through machine-readable definition files rather than physical hardware configuration"
+        }
+      ]
+    },
+    {
+      "module": "Mastery",
+      "topic": "Strategic Planning",
+      "id": "STRAT-001",
+      "level": "Advanced",
+      "tags": ["strategic planning", "business strategy", "roadmapping", "portfolio management"],
+      "questions": [
+        "How do I contribute to strategic planning as a BA?",
+        "What is the role of business analysis in strategy?",
+        "How do I create technology roadmaps?",
+        "What is portfolio management and how does it relate to BA?",
+        "How do I align projects with business strategy?"
+      ],
+      "short": "Strategic planning involves aligning technology initiatives with business goals. BAs contribute by analyzing business needs, creating roadmaps, and ensuring projects deliver strategic value.",
+      "expanded": "Strategic planning in business analysis involves aligning technology initiatives with overall business strategy and goals. Senior BAs contribute to strategic planning by analyzing business needs, identifying technology opportunities, creating roadmaps, and ensuring that projects deliver strategic value. This includes understanding market trends, competitive landscape, technology capabilities, and business priorities. For example, when developing a technology roadmap, you might analyze current business capabilities, identify gaps and opportunities, assess technology trends and vendor solutions, prioritize initiatives based on business value and feasibility, and create a multi-year plan that aligns with business objectives. The goal is to ensure that technology investments support business strategy and deliver measurable value.",
+      "starter_questions": [
+        "How do I analyze business capabilities?",
+        "What is the role of market analysis in strategic planning?",
+        "How do I create business cases for strategic initiatives?",
+        "What is the difference between strategic and tactical planning?",
+        "How do I measure strategic value?",
+        "What is the role of risk assessment in strategic planning?",
+        "How do I align multiple projects with strategy?",
+        "What tools support strategic planning?"
+      ],
+      "glossary": [
+        {
+          "term": "Strategic Planning",
+          "definition": "The process of defining an organization's strategy and making decisions about allocating resources to pursue this strategy"
+        },
+        {
+          "term": "Technology Roadmap",
+          "definition": "A plan that aligns technology initiatives with business goals over time"
+        },
+        {
+          "term": "Portfolio Management",
+          "definition": "The centralized management of multiple projects and programs to achieve strategic objectives"
+        }
+      ]
+    },
+    {
+      "module": "Mastery",
+      "topic": "Team Leadership",
+      "id": "LEAD-001",
+      "level": "Advanced",
+      "tags": ["leadership", "team management", "mentoring", "change management"],
+      "questions": [
+        "How do I lead a team of business analysts?",
+        "What are the key leadership skills for senior BAs?",
+        "How do I mentor junior business analysts?",
+        "What is the role of change management in BA leadership?",
+        "How do I build high-performing BA teams?"
+      ],
+      "short": "BA leadership involves guiding teams, mentoring junior analysts, and driving organizational change. It requires strong communication, strategic thinking, and the ability to influence stakeholders at all levels.",
+      "expanded": "Team leadership in business analysis involves guiding teams of analysts, mentoring junior professionals, and driving organizational change through effective analysis and communication. Senior BAs need strong leadership skills including strategic thinking, communication, influence, and the ability to build relationships across the organization. This includes establishing BA best practices, creating training programs, managing stakeholder relationships at the executive level, and driving the adoption of new methodologies and tools. For example, when leading a BA team, you might establish standard processes and templates, create mentoring programs for junior analysts, develop relationships with key stakeholders, advocate for the BA function at the executive level, and drive the adoption of agile practices or new tools across the organization.",
+      "starter_questions": [
+        "How do I establish BA best practices?",
+        "What is the role of mentoring in BA leadership?",
+        "How do I manage stakeholder relationships at the executive level?",
+        "What is change management and how does it relate to BA leadership?",
+        "How do I measure team performance?",
+        "What is the role of professional development in BA leadership?",
+        "How do I advocate for the BA function?",
+        "What leadership styles work best for BA teams?"
+      ],
+      "glossary": [
+        {
+          "term": "BA Leadership",
+          "definition": "The practice of guiding and developing business analysis teams and capabilities within an organization"
+        },
+        {
+          "term": "Change Management",
+          "definition": "The process of helping individuals and organizations transition from current state to desired future state"
+        },
+        {
+          "term": "Mentoring",
+          "definition": "A relationship in which a more experienced person helps guide the development of a less experienced person"
+        }
+      ]
+    },
+    {
+      "module": "Mastery",
+      "topic": "Team Leadership",
+      "id": "LEAD-002",
+      "level": "Advanced",
+      "tags": ["organizational change", "transformation", "culture", "governance"],
+      "questions": [
+        "How do I drive organizational transformation as a BA leader?",
+        "What is the role of BA in digital transformation?",
+        "How do I establish BA governance frameworks?",
+        "What is the difference between change management and transformation?",
+        "How do I build a BA center of excellence?"
+      ],
+      "short": "Organizational transformation involves fundamental changes to how an organization operates. BA leaders drive transformation by establishing governance frameworks, building centers of excellence, and leading cultural change.",
+      "expanded": "Organizational transformation involves fundamental changes to how an organization operates, often driven by technology, market changes, or strategic shifts. BA leaders play a crucial role in driving transformation by establishing governance frameworks, building centers of excellence, and leading cultural change. This includes creating standard processes and methodologies, establishing quality standards, developing training programs, and building relationships across the organization. For example, when establishing a BA Center of Excellence, you might create standard templates and processes, establish quality review procedures, develop training and certification programs, create communities of practice, and establish metrics to measure BA effectiveness. The goal is to improve the consistency, quality, and value of business analysis across the organization.",
+      "starter_questions": [
+        "What are the key components of a BA Center of Excellence?",
+        "How do I establish BA governance?",
+        "What is the role of metrics in BA leadership?",
+        "How do I drive cultural change in an organization?",
+        "What is the difference between transformation and change?",
+        "How do I build communities of practice?",
+        "What is the role of technology in BA transformation?",
+        "How do I measure the success of BA transformation?"
+      ],
+      "glossary": [
+        {
+          "term": "Organizational Transformation",
+          "definition": "Fundamental changes to how an organization operates, often driven by technology, market changes, or strategic shifts"
+        },
+        {
+          "term": "Center of Excellence",
+          "definition": "A team or organizational unit that provides leadership, best practices, research, support, and training for a specific area of expertise"
+        },
+        {
+          "term": "Governance",
+          "definition": "The framework of rules, relationships, systems, and processes that control how an organization operates"
+        }
+      ]
+    }
+  ]
+}
