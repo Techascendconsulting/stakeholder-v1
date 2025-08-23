@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useVoice } from '../../contexts/VoiceContext';
 import { Message } from '../../types';
 import { singleAgentSystem } from '../../services/singleAgentSystem';
+import AIService from '../../services/aiService';
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio, registerExternalAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeWithDeepgram, getSupportedDeepgramFormats } from '../../lib/deepgram';
@@ -596,7 +597,6 @@ export const VoiceOnlyMeetingView: React.FC = () => {
       // Current speaker is set during playback
       
       // Generate GPT response with streaming
-      const aiService = AIService.getInstance();
       const stakeholderContext = {
         name: stakeholder.name,
         role: stakeholder.role,
@@ -3376,7 +3376,6 @@ Please review the raw transcript for detailed conversation content.`;
   // Note: Hardcoded greeting patterns removed - now using dynamic AI detection above
   
   const handleAdaptiveGreeting = async (messageContent: string, currentMessages: Message[]) => {
-    const aiService = AIService.getInstance();
     const greetingIteration = conversationDynamics.greetingIterations + 1;
     
     console.log(`👋 Adaptive greeting - iteration ${greetingIteration}, phase: ${conversationDynamics.phase}`);
