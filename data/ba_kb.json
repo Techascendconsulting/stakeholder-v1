@@ -887,6 +887,50 @@
           "definition": "The framework of rules, relationships, systems, and processes that control how an organization operates"
         }
       ]
+    },
+    {
+      "module": "Foundation",
+      "topic": "Organizational Context & Business Operations",
+      "id": "ORG-003",
+      "level": "Beginner",
+      "tags": ["organizational structure", "hierarchy", "functional", "divisional", "matrix"],
+      "questions": [
+        "What is organizational structure?",
+        "What are the different types of organizational structures?",
+        "How do I understand how an organization is structured?",
+        "What is the difference between functional and divisional structures?",
+        "How does organizational structure affect business analysis?"
+      ],
+      "short": "Organizational structure refers to how an organization arranges its lines of authority, communications, rights, and duties. It defines how tasks are divided, grouped, and coordinated.",
+      "expanded": "Organizational structure refers to the way in which an organization arranges its lines of authority, communications, rights, and duties. It defines how tasks are divided, grouped, and coordinated within an organization. Understanding organizational structure is crucial as it helps employees know who they report to, who they collaborate with, and how decisions are made. There are several common types: Functional Structure groups employees by specialization (marketing, finance, IT), Divisional Structure divides by products/services/markets, Matrix Structure combines functional and divisional with dual reporting, Flat Structure has few management layers, and Hierarchical Structure has a clear chain of command. For example, a functional structure might group all IT staff together regardless of project, while a matrix structure might have IT staff report to both the IT manager and project managers.",
+      "starter_questions": [
+        "What type of structure does my organization use?",
+        "How does the structure affect decision-making?",
+        "What are the advantages and disadvantages of each structure?",
+        "How do I navigate the organizational hierarchy?",
+        "How does structure impact communication flows?",
+        "What is the role of middle management?",
+        "How do I identify key decision makers?",
+        "How does structure affect project management?"
+      ],
+      "glossary": [
+        {
+          "term": "Organizational Structure",
+          "definition": "The way an organization arranges its lines of authority, communications, rights, and duties"
+        },
+        {
+          "term": "Functional Structure",
+          "definition": "Organizational structure where employees are grouped based on their area of specialization"
+        },
+        {
+          "term": "Matrix Structure",
+          "definition": "Organizational structure that combines functional and divisional structures with dual reporting relationships"
+        },
+        {
+          "term": "Hierarchical Structure",
+          "definition": "Traditional organizational structure with a clear chain of command from top management to lower-level employees"
+        }
+      ]
     }
   ]
 }
