@@ -435,7 +435,11 @@ const BAAcademyView: React.FC = () => {
                            ? 'bg-blue-600 text-white' 
                            : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
                        }`}>
-                         <p className="text-sm">{message.content}</p>
+                         <div className="text-sm whitespace-pre-wrap" dangerouslySetInnerHTML={{ 
+                           __html: message.content
+                             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                             .replace(/\n/g, '<br>')
+                         }} />
                        </div>
                      </div>
                    ))}
