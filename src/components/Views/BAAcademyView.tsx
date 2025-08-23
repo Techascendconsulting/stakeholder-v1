@@ -29,78 +29,81 @@ const BAAcademyView: React.FC = () => {
     {
       id: 'organizational-context',
       title: 'Organizational Context & Business Operations',
-      description: 'Understand how organizations operate, how departments work together, and the business context where BAs work.',
+      description: 'Master organizational analysis and business operations understanding as defined by BCS and IIBA. Learn to analyze organizational structure, culture, and operating models to support effective business analysis.',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Understanding Organizational Structure',
-        'Department Functions and Interactions',
-        'Customer Journey Across Departments',
-        'IT Team Roles and Responsibilities',
-        'Products/Services Impact on Structure',
-        'Common Departmental Inefficiencies'
+        'Organizational Structure Analysis (BCS)',
+        'Business Operating Models',
+        'Organizational Culture Assessment',
+        'Stakeholder Landscape Mapping',
+        'Business Context Understanding',
+        'Organizational Change Readiness'
       ]
     },
     {
       id: 'project-lifecycle',
       title: 'Project Lifecycle & IT Team Structure',
-      description: 'Learn how projects emerge from business needs, IT team structure, and the problem vs delivery phases.',
+      description: 'Understand project lifecycle management and IT team structures according to BABOK knowledge areas. Learn to navigate project phases and collaborate effectively with technical teams.',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Project Emergence from Business Needs',
+        'Project Lifecycle Management (BABOK)',
         'IT Team Structure and Roles',
-        'Hardware and Software Implementation',
-        'Problem Phase: Stakeholder Engagement',
-        'Delivery Phase: Development Team Collaboration',
-        'Cross-functional Team Dynamics'
+        'Software Development Lifecycle',
+        'Requirements Lifecycle Management',
+        'Solution Evaluation Planning',
+        'Cross-functional Team Collaboration'
       ]
     },
     {
       id: 'ba-fundamentals',
-      title: 'Software BA Fundamentals',
-      description: 'Learn the core concepts and role of a Software Business Analyst in modern development teams.',
+      title: 'Business Analysis Fundamentals',
+      description: 'Master core business analysis concepts based on IIBA BABOK standards. Learn the practice of enabling change by defining needs and recommending solutions that deliver value to stakeholders.',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Software BA Role and Responsibilities',
-        'BA vs Product Manager vs Product Owner',
-        'Software Development Lifecycle',
-        'Agile vs Waterfall Overview',
-        'Essential BA Tools'
+        'Business Analysis Definition (BABOK)',
+        'Core BA Competencies (IIBA)',
+        'Business Analysis Planning and Monitoring',
+        'Elicitation and Collaboration',
+        'Requirements Analysis and Design Definition',
+        'Solution Evaluation'
       ]
     },
     {
       id: 'requirements-gathering',
-      title: 'Requirements Gathering',
-      description: 'Master the art of gathering, documenting, and managing software requirements effectively.',
+      title: 'Requirements Engineering',
+      description: 'Master requirements engineering practices based on BCS and IIBA standards. Learn systematic approaches to eliciting, analyzing, documenting, and managing requirements throughout the project lifecycle.',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
-        'User Story Writing and Development',
-        'Stakeholder Interview Techniques',
-        'Workshop Facilitation Skills',
-        'Requirements Documentation Standards',
-        'Acceptance Criteria Development'
+        'Requirements Elicitation Techniques (BABOK)',
+        'Requirements Analysis and Documentation',
+        'Requirements Classification and Types',
+        'Requirements Validation and Verification',
+        'Requirements Traceability Management',
+        'Requirements Change Management'
       ]
     },
     {
       id: 'agile-techniques',
-      title: 'Agile BA Techniques',
-      description: 'Master agile methodologies and ceremonies for effective software development collaboration.',
+      title: 'Agile Business Analysis',
+      description: 'Master agile business analysis practices as defined in the Agile Extension to the BABOK. Learn to adapt traditional BA practices for agile development environments.',
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
       topics: [
+        'Agile BA Principles and Values',
+        'User Story Development and Refinement',
         'Sprint Planning and Backlog Management',
-        'Agile Ceremonies for BAs',
-        'User Acceptance Testing (UAT)',
-        'Story Point Estimation',
-        'Velocity Tracking and Forecasting'
+        'Agile Requirements Lifecycle',
+        'Continuous Stakeholder Engagement',
+        'Agile Solution Evaluation'
       ]
     },
 
@@ -108,46 +111,49 @@ const BAAcademyView: React.FC = () => {
     {
       id: 'technical-analysis',
       title: 'Technical Analysis',
-      description: 'Develop technical analysis skills for software projects and system integration.',
+      description: 'Develop technical analysis competencies as outlined in BCS and IIBA frameworks. Learn to analyze system requirements, integration needs, and technical feasibility for software solutions.',
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
       topics: [
-        'System Analysis Techniques',
+        'System Requirements Analysis (BCS)',
         'API and Integration Requirements',
-        'Database Requirements Analysis',
+        'Technical Feasibility Assessment',
+        'System Architecture Understanding',
         'Technical Documentation Standards',
-        'Technical Feasibility Assessment'
+        'Technology Stack Evaluation'
       ]
     },
     {
       id: 'process-modeling',
       title: 'Process Modeling',
-      description: 'Learn to model and optimize business processes for software implementation.',
+      description: 'Master business process modeling techniques using BPMN and other industry standards. Learn to analyze, design, and optimize business processes for software implementation.',
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
       topics: [
-        'BPMN Notation',
-        'Swimlane Diagrams',
-        'Current vs Future State Mapping',
-        'Gap Analysis',
-        'Process Optimization'
+        'BPMN 2.0 Notation Standards',
+        'Process Analysis and Design',
+        'Current State vs Future State Modeling',
+        'Process Gap Analysis',
+        'Process Optimization Techniques',
+        'Process Automation Requirements'
       ]
     },
     {
       id: 'stakeholder-management',
       title: 'Stakeholder Management',
-      description: 'Master stakeholder analysis, communication, and relationship management.',
+      description: 'Master stakeholder analysis and management practices based on IIBA BABOK standards. Learn to identify, analyze, and engage stakeholders effectively throughout the business analysis lifecycle.',
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Stakeholder Analysis (RACI Matrix)',
-        'Power/Interest Grid',
-        'Communication Planning',
-        'Requirements Prioritization',
-        'Change Management'
+        'Stakeholder Identification and Analysis (BABOK)',
+        'RACI Matrix and Responsibility Assignment',
+        'Stakeholder Engagement Planning',
+        'Communication Strategy Development',
+        'Stakeholder Influence and Interest Mapping',
+        'Change Management and Stakeholder Adoption'
       ]
     },
 
@@ -155,49 +161,52 @@ const BAAcademyView: React.FC = () => {
     {
       id: 'documentation-communication',
       title: 'Documentation & Communication',
-      description: 'Master BA documentation standards and effective communication techniques.',
+      description: 'Master business analysis documentation standards and communication techniques as defined by BCS and IIBA. Learn to create clear, comprehensive, and professional BA deliverables.',
       duration: '6 weeks',
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Requirements Documentation',
-        'Presentation Skills',
-        'Report Writing',
-        'Executive Communication',
-        'Visual Aids and Diagrams'
+        'Business Requirements Documentation (BABOK)',
+        'Requirements Specification Standards',
+        'Executive Communication and Reporting',
+        'Visual Modeling and Diagrams',
+        'Documentation Quality Assurance',
+        'Stakeholder Communication Planning'
       ]
     },
     {
       id: 'quality-assurance',
       title: 'Quality Assurance',
-      description: 'Learn to coordinate testing, ensure quality, and manage software delivery.',
+      description: 'Master solution evaluation and quality assurance practices based on BABOK standards. Learn to assess solution performance, validate requirements, and ensure quality delivery.',
       duration: '5 weeks',
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Test Strategy Development',
-        'UAT Planning and Coordination',
-        'Defect Management',
-        'Quality Metrics and KPIs',
-        'Release Management'
+        'Solution Evaluation (BABOK)',
+        'Requirements Validation and Verification',
+        'User Acceptance Testing (UAT)',
+        'Quality Metrics and Performance Measurement',
+        'Solution Performance Assessment',
+        'Continuous Improvement and Optimization'
       ]
     },
     {
       id: 'software-tools',
-      title: 'Software BA Tools',
-      description: 'Master essential tools and technologies for modern software BA work.',
+      title: 'Business Analysis Tools',
+      description: 'Master essential business analysis tools and technologies as recommended by BCS and IIBA. Learn to leverage technology for effective requirements management and stakeholder collaboration.',
       duration: '4 weeks',
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
       topics: [
-        'Jira and Confluence',
         'Requirements Management Tools',
-        'Process Modeling Tools',
-        'Data Analysis Tools',
-        'Collaboration Platforms'
+        'Process Modeling and BPMN Tools',
+        'Collaboration and Communication Platforms',
+        'Data Analysis and Visualization Tools',
+        'Project Management Integration',
+        'Business Analysis Tool Selection'
       ]
     },
 

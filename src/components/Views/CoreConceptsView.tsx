@@ -46,14 +46,14 @@ const concepts: ConceptCard[] = [
   },
   {
     id: 2,
-    title: "How Organisations Work",
-    description: "To solve business problems, you must understand how businesses operate.",
-    detailedDescription: "Every organisation either sells products, services, or both. They exist to deliver value — money, time saved, or impact. Understanding what they sell helps you understand their goals. BA work always ties back to business performance and value.",
+    title: "Core BA Competencies",
+    description: "Understand the six core competency areas that enable effective business analysis.",
+    detailedDescription: "According to the BABOK, Business Analysts need six core competency areas: Analytical Thinking and Problem Solving (logical reasoning, creative thinking, learning, systems thinking), Behavioral Characteristics (ethics, personal accountability, trustworthiness, adaptability), Business Knowledge (business principles, industry knowledge, organization knowledge, solution knowledge), Communication Skills (verbal, nonverbal, written, listening), Interaction Skills (facilitation, leadership, teamwork, negotiation), and Tools and Technology (office productivity, business analysis, communication, specialized).",
     keyPoints: [
-      "Every organisation either sells products, services, or both.",
-      "They exist to deliver value — money, time saved, or impact.",
-      "Understanding what they sell helps you understand their goals.",
-      "BA work always ties back to business performance and value."
+      "Six core competency areas enable effective business analysis.",
+      "Analytical thinking and problem-solving are fundamental skills.",
+      "Communication and interaction skills are essential for stakeholder engagement.",
+      "Business knowledge and technical tools support analysis work."
     ],
     icon: <Building2 className="w-8 h-8" />,
     color: "from-blue-500 to-cyan-600",
