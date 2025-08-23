@@ -85,6 +85,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'dashboard',
         'guided-practice-hub',
         'project-setup',
+        'ba-fundamentals',
         // Training flow
         'projects',
         'project-brief',
