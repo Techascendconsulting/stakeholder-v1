@@ -38,6 +38,209 @@ const BAAcademyView: React.FC = () => {
         'Requirements Elicitation Techniques',
         'Organizational Structure Analysis'
       ]
+    },
+
+    // Phase 2: Technical Skills (Months 4-6)
+    {
+      id: 'technical-analysis',
+      title: 'Technical Analysis',
+      description: 'Develop technical analysis competencies as outlined in BCS and IIBA frameworks. Learn to analyze system requirements, integration needs, and technical feasibility for software solutions.',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'System Requirements Analysis (BCS)',
+        'API and Integration Requirements',
+        'Technical Feasibility Assessment',
+        'System Architecture Understanding',
+        'Technical Documentation Standards',
+        'Technology Stack Evaluation'
+      ]
+    },
+    {
+      id: 'process-modeling',
+      title: 'Process Modeling',
+      description: 'Master business process modeling techniques using BPMN and other industry standards. Learn to analyze, design, and optimize business processes for software implementation.',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'BPMN 2.0 Notation Standards',
+        'Process Analysis and Design',
+        'Current State vs Future State Modeling',
+        'Process Gap Analysis',
+        'Process Optimization Techniques',
+        'Process Automation Requirements'
+      ]
+    },
+    {
+      id: 'stakeholder-management',
+      title: 'Stakeholder Management',
+      description: 'Master stakeholder analysis and management practices based on IIBA BABOK standards. Learn to identify, analyze, and engage stakeholders effectively throughout the business analysis lifecycle.',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Stakeholder Identification and Analysis (BABOK)',
+        'RACI Matrix and Responsibility Assignment',
+        'Stakeholder Engagement Planning',
+        'Communication Strategy Development',
+        'Stakeholder Influence and Interest Mapping',
+        'Change Management and Stakeholder Adoption'
+      ]
+    },
+
+    // Phase 3: Advanced Techniques (Months 7-9)
+    {
+      id: 'documentation-communication',
+      title: 'Documentation & Communication',
+      description: 'Master business analysis documentation standards and communication techniques as defined by BCS and IIBA. Learn to create clear, comprehensive, and professional BA deliverables.',
+      duration: '6 weeks',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Business Requirements Documentation (BABOK)',
+        'Requirements Specification Standards',
+        'Executive Communication and Reporting',
+        'Visual Modeling and Diagrams',
+        'Documentation Quality Assurance',
+        'Stakeholder Communication Planning'
+      ]
+    },
+    {
+      id: 'quality-assurance',
+      title: 'Quality Assurance',
+      description: 'Master solution evaluation and quality assurance practices based on BABOK standards. Learn to assess solution performance, validate requirements, and ensure quality delivery.',
+      duration: '5 weeks',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Solution Evaluation (BABOK)',
+        'Requirements Validation and Verification',
+        'User Acceptance Testing (UAT)',
+        'Quality Metrics and Performance Measurement',
+        'Solution Performance Assessment',
+        'Continuous Improvement and Optimization'
+      ]
+    },
+    {
+      id: 'software-tools',
+      title: 'Business Analysis Tools',
+      description: 'Master essential business analysis tools and technologies as recommended by BCS and IIBA. Learn to leverage technology for effective requirements management and stakeholder collaboration.',
+      duration: '4 weeks',
+      difficulty: 'Intermediate',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Requirements Management Tools',
+        'Process Modeling and BPMN Tools',
+        'Collaboration and Communication Platforms',
+        'Data Analysis and Visualization Tools',
+        'Project Management Integration',
+        'Business Analysis Tool Selection'
+      ]
+    },
+
+    // Phase 4: Specialization (Months 10-12)
+    {
+      id: 'cloud-saas',
+      title: 'Cloud & SaaS',
+      description: 'Specialize in cloud migration and SaaS implementation requirements.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Cloud Migration Requirements',
+        'SaaS Implementation',
+        'Multi-tenant Architecture',
+        'Cloud Security Requirements',
+        'Cost Optimization'
+      ]
+    },
+    {
+      id: 'mobile-web',
+      title: 'Mobile & Web Applications',
+      description: 'Master requirements gathering for mobile and web application development.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Mobile App Requirements',
+        'Responsive Web Design',
+        'Progressive Web Apps',
+        'App Store Requirements',
+        'Cross-platform Considerations'
+      ]
+    },
+    {
+      id: 'ai-ml',
+      title: 'AI & Machine Learning',
+      description: 'Learn to gather requirements for AI and machine learning projects.',
+      duration: '6 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'AI/ML Requirements Gathering',
+        'Data Requirements for ML',
+        'Model Validation Requirements',
+        'Ethical AI Considerations',
+        'AI Integration Requirements'
+      ]
+    },
+
+    // Phase 5: Mastery (Months 13-15)
+    {
+      id: 'devops-cicd',
+      title: 'DevOps & CI/CD',
+      description: 'Master requirements for DevOps and continuous integration/continuous deployment.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'CI/CD Requirements',
+        'Release Automation',
+        'Environment Management',
+        'Monitoring and Observability',
+        'Deployment Strategies'
+      ]
+    },
+    {
+      id: 'strategic-planning',
+      title: 'Strategic Planning',
+      description: 'Develop strategic BA skills for product planning and business alignment.',
+      duration: '6 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Product Strategy Alignment',
+        'Roadmap Planning',
+        'Business Case Development',
+        'ROI Analysis',
+        'Strategic Requirements'
+      ]
+    },
+    {
+      id: 'team-leadership',
+      title: 'Team Leadership',
+      description: 'Master BA team leadership and process improvement skills.',
+      duration: '5 weeks',
+      difficulty: 'Advanced',
+      status: 'not-started',
+      progress: 0,
+      topics: [
+        'Leading BA Teams',
+        'Mentoring Junior BAs',
+        'Process Improvement',
+        'Best Practices Establishment',
+        'BA Team Management'
+      ]
     }
   ];
 

@@ -259,6 +259,249 @@ Organizational structure analysis isn't about memorizing theories or creating co
       ],
       relatedTopics: ['business-operating-models', 'stakeholder-management'],
       difficulty: 'beginner'
+    },
+
+    // Technical Analysis Topics
+    {
+      id: 'system-requirements-1',
+      topic: 'System Requirements Analysis (BCS)',
+      question: 'How do Business Analysts analyze system requirements?',
+      answer: `Imagine you're building a house. You wouldn't just tell the contractor "build me a house" and walk away. You'd specify how many bedrooms, what style kitchen, where the electrical outlets go, and how the plumbing should work. System requirements analysis is exactly like that - but for software systems.
+
+**The Real Problem**
+When you don't properly analyze system requirements, you end up with:
+- A system that doesn't do what users need
+- Features that are too complex or too simple
+- Performance problems that make users frustrated
+- Security holes that put data at risk
+- Integration issues that break other systems
+
+**The Simple Truth**
+Every system has two types of requirements:
+1. **Functional Requirements** - What the system must do (like "users can reset their password")
+2. **Non-Functional Requirements** - How the system must perform (like "the system must respond within 2 seconds")
+
+**A Real Example**
+Let's say you're building a customer portal for a bank. The business says "customers should be able to view their accounts." But as a BA, you need to dig deeper:
+- Can customers see all accounts or just checking accounts?
+- How often should the data refresh?
+- What happens if the account information is wrong?
+- How do we handle customers with multiple accounts?
+- What security measures are needed?
+
+**What You Actually Need to Do**
+
+**Step 1: Understand the Business Need**
+Don't just ask "what do you want?" Ask "what problem are you trying to solve?" and "what would success look like?"
+
+**Step 2: Break Down the Requirements**
+Take big, vague requirements and break them into specific, testable pieces. "Users can view accounts" becomes:
+- Users can see account numbers and balances
+- Users can see transaction history for the last 90 days
+- Users can download statements in PDF format
+- Users can see pending transactions
+
+**Step 3: Consider the Non-Functional Stuff**
+This is where most projects fail. You need to think about:
+- **Performance**: How fast does it need to be?
+- **Security**: How do we protect sensitive data?
+- **Reliability**: What happens when things go wrong?
+- **Usability**: How easy should it be to use?
+- **Scalability**: What happens when we have more users?
+
+**The Three Questions That Matter**
+1. What exactly does the system need to do? (Not what would be nice to have)
+2. How well does it need to perform? (Speed, reliability, security)
+3. What are the constraints? (Budget, time, technology, regulations)
+
+**Practical Tools You'll Actually Use**
+
+**The Requirements Checklist**
+For every requirement, ask:
+- Is it clear and specific?
+- Can we test it?
+- Does it solve a real business problem?
+- Is it within our technical capabilities?
+- What are the risks and dependencies?
+
+**The Stakeholder Interview**
+Don't just ask what they want - ask:
+- What's the current process?
+- What problems do they face?
+- What would make their job easier?
+- What are their biggest frustrations?
+- How do they measure success?
+
+**The Prototype Approach**
+Create simple mockups or wireframes to:
+- Validate requirements with users
+- Identify missing requirements
+- Clarify ambiguous requirements
+- Get early feedback before development starts
+
+**Real-World Application**
+When you properly analyze system requirements, you can:
+- Prevent scope creep and project delays
+- Ensure the system actually solves business problems
+- Reduce development costs and rework
+- Build systems that users actually want to use
+- Avoid expensive mistakes and project failures
+
+**The Bottom Line**
+System requirements analysis isn't about creating perfect documentation. It's about understanding what needs to be built, why it needs to be built, and how to build it successfully. The better you understand the requirements, the more likely your project will succeed.`,
+      examples: [
+        'Analyzing requirements for a new customer portal that integrates with existing CRM and billing systems',
+        'Defining performance requirements for an e-commerce system that must handle 10,000 concurrent users',
+        'Specifying security requirements for a healthcare application that must comply with HIPAA regulations',
+        'Creating use cases for a mobile banking app that allows customers to transfer money and pay bills',
+        'Documenting data requirements for a reporting system that aggregates information from multiple sources'
+      ],
+      relatedTopics: ['technical-analysis', 'requirements-engineering'],
+      difficulty: 'intermediate'
+    },
+
+    {
+      id: 'api-integration-1',
+      topic: 'API and Integration Requirements',
+      question: 'How do BAs gather requirements for API and system integration?',
+      answer: `API and integration requirements define how different systems communicate and share data. This is crucial for modern applications that need to work with multiple systems and services.
+
+**What API Integration Requirements Cover**
+
+**Data Exchange Requirements**
+- What data needs to be shared between systems
+- How often data should be synchronized
+- What format the data should be in
+- How to handle data validation and errors
+- What happens when systems are unavailable
+
+**Authentication and Security**
+- How systems authenticate with each other
+- What security protocols to use
+- How to handle sensitive data
+- What access controls are needed
+- How to audit integration activities
+
+**Performance Requirements**
+- How fast integrations must respond
+- How much data can be transferred
+- What happens during peak usage
+- How to handle timeouts and retries
+- What monitoring and alerting is needed
+
+**The Requirements Gathering Process**
+1. **Map System Landscape**: Identify all systems that need to integrate
+2. **Define Data Flows**: Document how data moves between systems
+3. **Specify Interfaces**: Define what each system exposes and consumes
+4. **Plan Error Handling**: Determine how to handle failures
+5. **Design Security**: Specify authentication and authorization
+6. **Test Integration**: Validate that systems work together
+
+**Key Considerations**
+- **Data Consistency**: Ensuring data stays synchronized across systems
+- **Error Handling**: What to do when integrations fail
+- **Performance Impact**: How integrations affect system speed
+- **Security Risks**: Protecting data during transmission
+- **Maintenance**: How to update and monitor integrations
+
+**Common Integration Patterns**
+- **Point-to-Point**: Direct connections between two systems
+- **Hub-and-Spoke**: Central system coordinating multiple others
+- **Event-Driven**: Systems responding to events from others
+- **Batch Processing**: Periodic data synchronization
+- **Real-Time**: Immediate data exchange
+
+**Documentation Requirements**
+- API specifications and documentation
+- Data mapping and transformation rules
+- Error codes and handling procedures
+- Performance benchmarks and SLAs
+- Security requirements and compliance`,
+      examples: [
+        'Defining requirements for a payment gateway integration that processes credit card transactions',
+        'Specifying data synchronization requirements between a CRM and marketing automation system',
+        'Creating requirements for a real-time inventory system that updates across multiple warehouses',
+        'Documenting API requirements for a mobile app that connects to backend services',
+        'Planning integration requirements for a new ERP system that replaces multiple legacy systems'
+      ],
+      relatedTopics: ['technical-analysis', 'system-requirements'],
+      difficulty: 'intermediate'
+    },
+
+    {
+      id: 'technical-feasibility-1',
+      topic: 'Technical Feasibility Assessment',
+      question: 'How do BAs assess technical feasibility of requirements?',
+      answer: `Technical feasibility assessment evaluates whether proposed requirements can be implemented with available technology, resources, and constraints. It helps prevent projects from failing due to unrealistic technical expectations.
+
+**What Technical Feasibility Involves**
+
+**Technology Assessment**
+- Can the required technology be implemented?
+- Is the technology mature and stable?
+- Are there licensing or cost constraints?
+- Does the team have the necessary skills?
+- Are there security or compliance issues?
+
+**Resource Evaluation**
+- Do we have the right people with the right skills?
+- Is there enough time to implement the solution?
+- Do we have the necessary infrastructure?
+- What are the development and maintenance costs?
+- Are there external dependencies or vendors needed?
+
+**Risk Analysis**
+- What are the technical risks?
+- How likely are these risks to occur?
+- What is the impact if risks materialize?
+- How can we mitigate these risks?
+- What are the contingency plans?
+
+**The Assessment Process**
+1. **Review Requirements**: Understand what needs to be built
+2. **Research Technology**: Investigate available solutions
+3. **Evaluate Skills**: Assess team capabilities
+4. **Analyze Constraints**: Identify limitations and blockers
+5. **Estimate Effort**: Determine time and resource requirements
+6. **Identify Risks**: Document potential problems
+7. **Make Recommendations**: Provide go/no-go decision
+
+**Key Assessment Areas**
+- **Architecture Feasibility**: Can the system architecture support the requirements?
+- **Performance Feasibility**: Can the system meet performance requirements?
+- **Security Feasibility**: Can security requirements be met?
+- **Integration Feasibility**: Can the system integrate with existing systems?
+- **Scalability Feasibility**: Can the system handle future growth?
+
+**Common Feasibility Issues**
+- **Unrealistic Performance Expectations**: Requirements that exceed technology capabilities
+- **Missing Skills**: Team lacks necessary technical expertise
+- **Integration Complexity**: Difficult or impossible system connections
+- **Security Constraints**: Requirements conflict with security policies
+- **Cost Overruns**: Implementation costs exceed budget
+
+**Feasibility Deliverables**
+- Technical feasibility report
+- Risk assessment and mitigation plan
+- Resource requirements and timeline
+- Cost estimates and budget impact
+- Alternative solution recommendations
+
+**Best Practices**
+- Involve technical experts early in the process
+- Consider multiple technology options
+- Document assumptions and constraints
+- Plan for technology evolution
+- Include contingency plans`,
+      examples: [
+        'Assessing whether a real-time analytics dashboard can be built with current infrastructure',
+        'Evaluating if a mobile app can integrate with legacy mainframe systems',
+        'Determining if cloud migration is feasible given security requirements',
+        'Analyzing whether AI features can be implemented within budget constraints',
+        'Assessing if a new payment system can meet compliance requirements'
+      ],
+      relatedTopics: ['technical-analysis', 'project-management'],
+      difficulty: 'intermediate'
     }
   ];
 
@@ -617,6 +860,15 @@ Stay focused on the exact topic. Do not deviate to other subjects.`;
           'Business Analysis Definition',
           'Requirements Elicitation Techniques',
           'Organizational Structure Analysis'
+        ]
+      },
+      'technical-analysis': {
+        id: 'technical-analysis',
+        title: 'Technical Analysis',
+        topics: [
+          'System Requirements Analysis (BCS)',
+          'API and Integration Requirements',
+          'Technical Feasibility Assessment'
         ]
       }
     };
