@@ -329,7 +329,7 @@ Be professional and helpful.`;
     });
 
     const fallbackResponse = response.choices[0]?.message?.content || 
-      "I'd be happy to help you with our Customer Onboarding Process Optimization project. What would you like to know about our current process, goals, or challenges?";
+      "I need to gather more information to answer that properly. Could you clarify what you'd like to know about our onboarding process?";
     
     console.log('🆘 FALLBACK RESPONSE:', fallbackResponse);
     return fallbackResponse;

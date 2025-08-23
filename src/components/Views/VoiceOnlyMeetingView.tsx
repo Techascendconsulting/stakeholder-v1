@@ -1962,7 +1962,7 @@ Provide one short variant only.`
       // Enforce: No time-of-day unless user used it
       const startsWithTimeOfDay = /^good\s+(morning|afternoon|evening|night)\b/i.test(greeting);
       if (!userTimeSalutation && startsWithTimeOfDay) {
-        greeting = 'Hello team.';
+        greeting = 'Hello.';
       }
 
       // If mirroring, normalize to exactly the user's phrase capitalization
@@ -1975,10 +1975,18 @@ Provide one short variant only.`
       const normalized = greeting.toLowerCase().replace(/\.$/, '');
       const commonSet = ['hello team', 'hi team', 'hello everyone', 'hello'];
       if (usedGreetingSetRef.current.has(normalized) || commonSet.slice(0, 2).includes(normalized)) {
-        // Pick a neutral short alternative not used yet
-        const variants = ['Hi team.', 'Hello.', 'Good to be here.', 'Thanks for joining.', "Let's begin."];
-        const alt = variants.find(v => !usedGreetingSetRef.current.has(v.toLowerCase().replace(/\.$/, ''))) || 'Hello.';
-        greeting = alt;
+        // Generate a new greeting using AI instead of hardcoded variants
+        try {
+          const aiResponse = await singleAgentSystem.processUserMessage(
+            'Generate a brief, natural greeting for a team meeting',
+            stakeholder,
+            project
+          );
+          greeting = aiResponse;
+        } catch (error) {
+          console.error('❌ AI greeting generation failed, using fallback', error);
+          greeting = 'Hello.';
+        }
       }
       usedGreetingSetRef.current.add(greeting.toLowerCase().replace(/\.$/, ''));
 

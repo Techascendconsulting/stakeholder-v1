@@ -316,7 +316,7 @@ const IndividualAgentMeeting: React.FC = () => {
 
   // Generate stakeholder-specific system prompt
   const generateStakeholderPrompt = (stakeholder: any): string => {
-    return `Hello! I'm ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. We're here today to discuss "${selectedProject?.name}".
+    return `You are ${stakeholder.name}, ${stakeholder.role} in the ${stakeholder.department} department. We're here today to discuss "${selectedProject?.name}".
 
 Let me share some context about this project:
 - ${selectedProject?.description}

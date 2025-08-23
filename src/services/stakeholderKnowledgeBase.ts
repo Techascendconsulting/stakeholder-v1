@@ -70,16 +70,7 @@ class StakeholderKnowledgeBase {
       priority: 1
     });
 
-    responses.push({
-      id: `${project.id}-greeting-how-are-you`,
-      question: 'how are you',
-      answer: `I'm doing well, thanks for asking! Ready to dive into our ${project.name} work. What's on your mind?`,
-      voiceAnswer: `I'm doing well, thanks! Ready to work on our ${project.name} project.`,
-      stakeholderRoles: project.stakeholders?.map(s => s.role) || [],
-      keywords: ['how are you', 'how are things', 'how is it going', 'what\'s up'],
-      category: 'greeting',
-      priority: 1
-    });
+    // Note: Removed hardcoded "how are you" response - will use AI generation instead
 
     // AS-IS Responses (Current State)
     if (project.painPoints && project.painPoints.length > 0) {

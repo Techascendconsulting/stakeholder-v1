@@ -6,8 +6,8 @@
       "id": "KB-001",
       "category": "greeting",
       "questions": ["hi", "hello", "hey", "good morning", "good afternoon", "good evening", "greetings"],
-      "short": "Hello! How can I help you today with the Customer Onboarding Process Optimization project?",
-      "expanded": "Hello! I'm here to help you with the Customer Onboarding Process Optimization project at TechCorp Solutions. We're working to reduce onboarding time from 6 to 8 weeks to 3 to 4 weeks and improve customer satisfaction. What would you like to know?",
+      "short": "How can I help you today with the Customer Onboarding Process Optimization project?",
+      "expanded": "I'm here to help you with the Customer Onboarding Process Optimization project at TechCorp Solutions. We're working to reduce onboarding time from 6 to 8 weeks to 3 to 4 weeks and improve customer satisfaction. What would you like to know?",
       "refs": ["business_context"]
     },
     {
