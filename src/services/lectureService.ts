@@ -146,6 +146,24 @@ class LectureService {
       relatedTopics: ['requirements-engineering', 'stakeholder-management'],
       difficulty: 'beginner'
     },
+    {
+      id: 'requirements-analysis-1',
+      topic: 'Requirements Analysis and Documentation',
+      question: 'What is Requirements Analysis and Design Definition according to BABOK?',
+      answer: 'Requirements Analysis and Design Definition is a BABOK knowledge area that involves organizing, specifying, and modeling requirements and designs. It includes specifying and modeling requirements, verifying requirements, validating requirements, defining requirements architecture, defining design options, analyzing potential value, and recommending solutions.',
+      examples: ['Creating requirements models using UML or BPMN', 'Specifying functional and non-functional requirements', 'Validating requirements with stakeholders'],
+      relatedTopics: ['requirements-engineering', 'solution-evaluation'],
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'requirements-classification-1',
+      topic: 'Requirements Classification and Types',
+      question: 'How does BABOK classify different types of requirements?',
+      answer: 'BABOK classifies requirements into several categories: Business Requirements (high-level goals), Stakeholder Requirements (needs of specific stakeholders), Solution Requirements (functional and non-functional), and Transition Requirements (temporary needs for change). Understanding these classifications helps BAs organize and prioritize requirements effectively.',
+      examples: ['Business requirement: "Increase customer satisfaction by 20%"', 'Functional requirement: "System must allow users to reset passwords"', 'Non-functional requirement: "System must respond within 2 seconds"'],
+      relatedTopics: ['requirements-engineering', 'requirements-analysis'],
+      difficulty: 'intermediate'
+    },
     
     // Sprint Planning and Backlog Management
     {
@@ -310,19 +328,47 @@ class LectureService {
     
     this.lectureContexts.set(moduleId, context);
 
-    const systemPrompt = this.buildSystemPrompt(module, topic, context);
+    // First, try to get content from knowledge base for this specific topic
+    const knowledgeBaseContent = this.getKnowledgeBaseContentForTopic(topic);
+    
+    if (knowledgeBaseContent) {
+      // Use knowledge base content directly
+      const aiResponse = `Let me teach you about ${topic}.\n\n${knowledgeBaseContent}\n\nBased on what I just taught you about ${topic}, what questions do you have?`;
+      
+      context.conversationHistory.push({ role: 'ai', content: aiResponse });
+      
+      return {
+        content: aiResponse,
+        phase: 'teach',
+        topic: topic,
+        moduleId: moduleId,
+        questionsRemaining: context.maxQuestions - context.questionsAsked
+      };
+    }
+
+    // Fallback to AI generation with strict topic focus
+    const systemPrompt = `You are teaching about the specific topic: "${topic}". 
+
+CRITICAL: You must ONLY teach about "${topic}" and nothing else. Do not teach about other BA topics.
+
+If the topic is "Requirements Classification and Types", teach ONLY about how requirements are classified and the different types of requirements.
+If the topic is "Business Analysis Definition (BABOK)", teach ONLY about BABOK's definition of business analysis.
+If the topic is "Core BA Competencies (IIBA)", teach ONLY about IIBA's core competencies.
+If the topic is "Requirements Elicitation Techniques (BABOK)", teach ONLY about BABOK's elicitation techniques.
+
+Stay focused on the exact topic. Do not deviate to other subjects.`;
     
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Start teaching me about ${topic}. Provide a comprehensive explanation with examples, then ask a question to test my understanding of what you just taught.` }
+        { role: 'user', content: `Teach me specifically about ${topic}. Provide a comprehensive explanation with examples, then ask a question about ${topic}.` }
       ],
       max_tokens: 400,
-      temperature: 0.7
+      temperature: 0.3
     });
 
-    const aiResponse = response.choices[0]?.message?.content || 'Let\'s start learning!';
+    const aiResponse = response.choices[0]?.message?.content || `Let me teach you about ${topic}.`;
     
     context.conversationHistory.push({ role: 'ai', content: aiResponse });
     
@@ -460,6 +506,25 @@ class LectureService {
     
     // Parse the AI response into structured format
     return this.parseAssignmentAnalysis(analysisText, assignmentType);
+  }
+
+  // Get knowledge base content for a specific topic
+  private getKnowledgeBaseContentForTopic(topic: string): string | null {
+    const relevantItems = this.knowledgeBase.filter(item => 
+      item.topic === topic
+    );
+
+    if (relevantItems.length > 0) {
+      const bestMatch = relevantItems[0];
+      let content = bestMatch.answer;
+      
+      if (bestMatch.examples && bestMatch.examples.length > 0) {
+        content += `\n\nExamples:\n${bestMatch.examples.map(example => `• ${example}`).join('\n')}`;
+      }
+      
+      return content;
+    }
+    return null;
   }
 
   // Search knowledge base for relevant answers
@@ -605,7 +670,7 @@ class LectureService {
     return 'teach';
   }
 
-  // Get module by ID
+  // Get module by ID - This should match exactly with BAAcademyView.tsx
   private getModuleById(moduleId: string): any {
     // Define the actual module data that matches BAAcademyView with authoritative content
     const modules = {
