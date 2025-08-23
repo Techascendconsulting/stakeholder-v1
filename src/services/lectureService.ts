@@ -43,7 +43,7 @@ class LectureService {
 
   // Clean Knowledge Base - Only Correct Content
   private knowledgeBase: KnowledgeItem[] = [
-    // Business Analysis Definition (BABOK)
+    // Business Analysis Definition
     {
       id: 'ba-definition-1',
       topic: 'Business Analysis Definition (BABOK)',
@@ -118,24 +118,149 @@ Business Analysis exists to bridge the gap between business problems and technic
       relatedTopics: ['requirements-engineering', 'stakeholder-management'],
       difficulty: 'beginner'
     },
+
+    // Requirements Elicitation Techniques
     {
-      id: 'ba-competencies-1',
-      topic: 'Core BA Competencies (IIBA)',
-      question: 'What are the core competencies of a Business Analyst according to IIBA?',
-      answer: 'IIBA defines six core competencies: Analytical Thinking and Problem Solving, Behavioral Characteristics, Business Knowledge, Communication Skills, Interaction Skills, and Tools and Technology. These competencies enable BAs to effectively perform their role and deliver value to organizations.',
-      examples: ['Using analytical thinking to break down complex business problems', 'Applying business knowledge to understand industry context', 'Using communication skills to bridge business and technical teams'],
-      relatedTopics: ['business-analysis-definition', 'requirements-engineering'],
+      id: 'requirements-elicitation-1',
+      topic: 'Requirements Elicitation Techniques (BABOK)',
+      question: 'What are the key requirements elicitation techniques and how do you use them effectively?',
+      answer: `Requirements elicitation is the process of gathering information from stakeholders to understand their needs and requirements. Here are the key techniques and how to use them effectively:
+
+**Interviews**: One-on-one or group conversations with stakeholders to understand their needs, pain points, and expectations. Prepare structured questions, listen actively, and document responses thoroughly. Use open-ended questions to explore needs and closed questions to confirm understanding.
+
+**Workshops**: Collaborative sessions with multiple stakeholders to gather requirements, resolve conflicts, and reach consensus. Facilitate discussions, use visual aids like whiteboards, and ensure all voices are heard. Workshops are excellent for complex requirements that need input from multiple perspectives.
+
+**Document Analysis**: Review existing documentation, processes, and systems to understand current state and identify requirements. Analyze user manuals, process flows, system documentation, and business rules. This technique helps understand what exists and what needs to change.
+
+**Observation**: Watch users perform their work to understand actual processes and identify unstated requirements. Observe in the natural work environment, take detailed notes, and look for workarounds and inefficiencies that users might not mention in interviews.
+
+**Surveys and Questionnaires**: Collect information from large groups of stakeholders efficiently. Design clear, focused questions, use both quantitative and qualitative approaches, and follow up with interviews for deeper insights.
+
+**Prototyping**: Create mockups or working models to help stakeholders visualize and refine requirements. Use wireframes, storyboards, or interactive prototypes to gather feedback and iterate on requirements.
+
+**Focus Groups**: Bring together representative stakeholders to discuss requirements in a moderated setting. Use this technique to understand group dynamics, identify common needs, and explore different perspectives on requirements.
+
+**Brainstorming**: Generate creative ideas and solutions through structured group sessions. Set clear objectives, encourage all ideas without criticism, and use techniques like mind mapping to organize thoughts.
+
+**Interface Analysis**: Examine how systems and processes interact to identify integration requirements and dependencies. Map data flows, system interfaces, and user interactions to understand complete requirements.
+
+**Process Modeling**: Create visual representations of current and future processes to identify requirements. Use flowcharts, swim lane diagrams, and process maps to understand workflows and identify improvement opportunities.
+
+**When to Use Each Technique**:
+- Use interviews for initial exploration and detailed requirements gathering
+- Use workshops for complex requirements involving multiple stakeholders
+- Use document analysis when understanding existing systems and processes
+- Use observation when users can't articulate their needs clearly
+- Use surveys for gathering input from large groups efficiently
+- Use prototyping when requirements are unclear or need visualization
+- Use focus groups for understanding group perspectives and priorities
+- Use brainstorming for generating creative solutions and alternatives
+- Use interface analysis for system integration and data flow requirements
+- Use process modeling for understanding workflows and identifying improvements
+
+**Best Practices**:
+- Always prepare thoroughly for each technique
+- Use multiple techniques to validate and cross-check requirements
+- Document everything clearly and consistently
+- Involve the right stakeholders for each technique
+- Follow up on unclear or conflicting information
+- Validate requirements with stakeholders after gathering them
+- Consider the context and constraints when selecting techniques
+- Be flexible and adapt techniques to the specific situation`,
+      examples: [
+        'Conducting structured interviews with sales managers to understand CRM requirements',
+        'Facilitating a requirements workshop with IT, business, and end users to define a new customer portal',
+        'Analyzing existing order processing documentation to identify gaps in current system',
+        'Observing customer service representatives to understand their actual workflow and pain points',
+        'Creating wireframe prototypes of a mobile app to gather user feedback on interface requirements'
+      ],
+      relatedTopics: ['requirements-engineering', 'stakeholder-management'],
       difficulty: 'beginner'
     },
+
+    // Organizational Structure Analysis
     {
-      id: 'ba-planning-1',
-      topic: 'Business Analysis Planning and Monitoring',
-      question: 'What is Business Analysis Planning and Monitoring?',
-      answer: 'Business Analysis Planning and Monitoring is a BABOK knowledge area that involves planning how to approach business analysis activities, monitoring the performance of business analysis work, and ensuring the business analysis approach is appropriate for the situation. It includes stakeholder analysis, governance, information management, and performance improvement.',
-      examples: ['Creating a business analysis plan for a new project', 'Identifying and analyzing stakeholders', 'Establishing requirements governance processes'],
-      relatedTopics: ['business-analysis-definition', 'stakeholder-management'],
+      id: 'org-structure-1',
+      topic: 'Organizational Structure Analysis (BCS)',
+      question: 'How do Business Analysts analyze organizational structure?',
+      answer: `Imagine you're starting a new project at a company you've never worked with before. You walk in on day one and everyone seems to know who to talk to about what, but you're completely lost. That's exactly why Business Analysts need to understand organizational structure.
+
+**The Real Problem**
+When you don't understand how an organization works, you end up:
+- Talking to the wrong people about the wrong things
+- Missing key stakeholders who will block your project
+- Designing solutions that don't fit how the company actually operates
+- Wasting time going through the wrong approval channels
+
+**The Simple Truth**
+Every organization has two structures:
+1. The Official Structure - what's on the org chart
+2. The Real Structure - how things actually get done
+
+**A Real Example**
+Let's say you're implementing a new CRM system. The org chart shows that IT reports to the CFO, so you think you need the CFO's approval. But in reality, the IT director has a direct line to the CEO and makes all the technology decisions. If you don't know this, you'll waste weeks going through the wrong approval process.
+
+**What You Actually Need to Do**
+
+**Step 1: Draw the Picture**
+Start with the official org chart, but then add the real relationships. Who actually makes decisions? Who do people go to when they need something done quickly? Who has influence even though they're not in charge?
+
+**Step 2: Follow the Money (and Information)**
+- Where do decisions actually get made?
+- How does information flow through the organization?
+- Who gets copied on important emails?
+- Who gets invited to key meetings?
+
+**Step 3: Understand the Culture**
+- How do people prefer to communicate? (Email, meetings, hallway conversations?)
+- What's the decision-making style? (Consensus, top-down, collaborative?)
+- How do they handle change? (Embrace it, resist it, need lots of explanation?)
+
+**The Three Questions That Matter**
+1. Who needs to be involved? (Not just who should be involved)
+2. How do decisions really get made? (Not how they're supposed to get made)
+3. What will make this project succeed or fail? (Based on how the organization actually works)
+
+**Practical Tools You'll Actually Use**
+
+**The Stakeholder Map**
+Draw a simple diagram with three circles:
+- Inner circle: People who can kill your project
+- Middle circle: People who can help or hurt your project
+- Outer circle: People who need to know what's happening
+
+**The Communication Plan**
+Based on how the organization actually works:
+- Who needs to hear what, when, and how?
+- What's the best way to reach each person?
+- Who should deliver each message?
+
+**The Change Readiness Assessment**
+- How has this organization handled similar changes?
+- Who are the natural champions and resistors?
+- What's the best approach for this specific organization?
+
+**Real-World Application**
+When you understand organizational structure, you can:
+- Identify the right stakeholders early
+- Plan communications that actually reach people
+- Design solutions that fit the organization's style
+- Anticipate and avoid common pitfalls
+- Build support for your recommendations
+
+**The Bottom Line**
+Organizational structure analysis isn't about memorizing theories or creating complex diagrams. It's about understanding how to get things done in the specific organization you're working with. The better you understand how the organization really works, the more successful your projects will be.`,
+      examples: [
+        'Mapping reporting relationships to understand who needs to approve a new system implementation',
+        'Analyzing communication patterns between sales and operations to identify process improvement opportunities',
+        'Identifying key influencers in the organization who can help drive adoption of a new process',
+        'Assessing how a matrix structure affects decision-making for a cross-functional project',
+        'Understanding cultural norms to plan effective change management for a new technology rollout'
+      ],
+      relatedTopics: ['business-operating-models', 'stakeholder-management'],
       difficulty: 'beginner'
-    },
+    }
+  ];
     
     // Organizational Structure Analysis (BCS)
     {
