@@ -111,6 +111,7 @@ const CommunityLoungeView: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
   const [typingIndicators, setTypingIndicators] = useState<TypingIndicator[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -614,8 +615,8 @@ const CommunityLoungeView: React.FC = () => {
             {messages.filter(message => message.channel_id === selectedChannel?.id).map((message) => (
               <div
                 key={message.id}
-                className={`group relative p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors message-container ${
-                  hoveredMessageId === message.id ? 'bg-gray-50 dark:bg-gray-800/50' : ''
+                className={`group relative p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-200 message-container mb-4 ${
+                  hoveredMessageId === message.id ? 'ring-2 ring-blue-500/20' : ''
                 }`}
                 onMouseEnter={() => {
                   const timeout = setTimeout(() => setHoveredMessageId(message.id), 150);
@@ -653,24 +654,26 @@ const CommunityLoungeView: React.FC = () => {
                 )}
 
                 {/* Message Content */}
-                <div className="flex space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
+                <div className="flex space-x-4">
+                  <div className="flex-shrink-0 relative">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-md relative">
                       {message.user?.display_name?.charAt(0) || message.user?.email?.charAt(0) || 'U'}
+                      {/* Online Status Indicator on Avatar */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full shadow-sm"></div>
                     </div>
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <div className="flex items-baseline space-x-3">
+                      <span className="text-base font-bold text-gray-900 dark:text-white">
                         {message.user?.display_name || message.user?.email?.split('@')[0] || 'User'}
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                         {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                     
-                    <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                    <div className="mt-2 text-base text-gray-700 dark:text-gray-300 leading-relaxed">
                       {renderWithMentions(message.body)}
                     </div>
 
@@ -712,22 +715,25 @@ const CommunityLoungeView: React.FC = () => {
                           const threadMessages = messages.filter(msg => msg.replied_to_id === message.id);
                           setThreadReplies(threadMessages);
                         }}
-                        className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                        className="mt-3 inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                       >
-                        {messageReplyCounts[message.id]} {messageReplyCounts[message.id] === 1 ? 'reply' : 'replies'} • View thread
+                        <MessageSquare className="w-3 h-3" />
+                        <span>{messageReplyCounts[message.id]} {messageReplyCounts[message.id] === 1 ? 'reply' : 'replies'}</span>
+                        <span>•</span>
+                        <span>View thread</span>
                       </button>
                     )}
 
                     {/* Reactions */}
                     {message.reactions && message.reactions.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
+                      <div className="mt-3 flex flex-wrap gap-2">
                         {message.reactions.map((reaction, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center space-x-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full"
+                            className="inline-flex items-center space-x-1 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer shadow-sm"
                           >
-                            <span>{reaction.emoji}</span>
-                            <span>{reaction.count}</span>
+                            <span className="text-base">{reaction.emoji}</span>
+                            <span className="font-medium">{reaction.count}</span>
                           </span>
                         ))}
                       </div>
