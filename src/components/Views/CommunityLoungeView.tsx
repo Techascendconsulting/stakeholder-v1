@@ -45,6 +45,7 @@ import {
   type Space,
   type UserPresence 
 } from '../../lib/communityLoungeService';
+import { supabase } from '../../lib/communityLoungeService';
 import type { PinnedMessage, TypingIndicator, SearchResult } from '../../types/chat';
 import { seedCommunityLounge } from '../../lib/communityLoungeSeed';
 import { setupTestUser } from '../../lib/setupTestUser';
@@ -103,6 +104,23 @@ const CommunityLoungeView: React.FC = () => {
 
   // Emojis for reactions
   const emojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🙏', '🔥', '💯', '✨', '🎉', '🤔', '👀', '💪', '🚀', '💡', '🎯', '⭐', '💎'];
+
+  // Upload helper
+  const uploadFileToStorage = async (file: File, prefix: string): Promise<{ file_url?: string; file_name?: string; file_size?: number; error?: string }> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const { data, error } = await supabase.storage.from('chat-attachments').upload(filePath, file, {
+        upsert: false,
+        contentType: file.type || undefined,
+      });
+      if (error) return { error: error.message };
+      const { data: urlData } = supabase.storage.from('chat-attachments').getPublicUrl(data.path);
+      return { file_url: urlData.publicUrl, file_name: file.name, file_size: file.size };
+    } catch (err: any) {
+      return { error: err?.message || 'Upload failed' };
+    }
+  };
 
   // Sample data for testing
   useEffect(() => {
@@ -164,16 +182,36 @@ const CommunityLoungeView: React.FC = () => {
     setChannels(sampleChannels);
     setMessages(sampleMessages);
     setSelectedChannel(sampleChannels[0]);
-    setMessageReplyCounts({ 1: 2, 2: 1 });
+    
+    // Calculate actual reply counts from messages
+    const replyCounts: Record<number, number> = {};
+    sampleMessages.forEach(message => {
+      const replies = sampleMessages.filter(msg => msg.replied_to_id === message.id);
+      if (replies.length > 0) {
+        replyCounts[message.id] = replies.length;
+      }
+    });
+    setMessageReplyCounts(replyCounts);
+    
     setIsLoading(false);
   }, []);
 
-  const handleSendMessage = (content: string, html: string) => {
+  const handleSendMessage = async (content: string, html: string) => {
     console.log('🚀 handleSendMessage called with:', { content, html, selectedChannel });
     
     if (!content.trim() || !selectedChannel) {
       console.log('❌ Message not sent - missing content or channel');
       return;
+    }
+    let attachment: { file_url?: string; file_name?: string; file_size?: number } | undefined;
+    if (selectedFile) {
+      const uploaded = await uploadFileToStorage(selectedFile, `channels/${selectedChannel.id}`);
+      if (uploaded.error) {
+        console.error('Attachment upload failed:', uploaded.error);
+      } else {
+        attachment = uploaded;
+      }
+      setSelectedFile(null);
     }
 
     const newMessage: Message = {
@@ -181,6 +219,9 @@ const CommunityLoungeView: React.FC = () => {
       channel_id: selectedChannel.id,
       user_id: user?.id || '1',
       body: content,
+      file_url: attachment?.file_url,
+      file_name: attachment?.file_name,
+      file_size: attachment?.file_size,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       user: {
@@ -199,12 +240,23 @@ const CommunityLoungeView: React.FC = () => {
     console.log('✅ Message sent successfully');
   };
 
-  const handleSendThreadReply = (content: string, html: string) => {
+  const handleSendThreadReply = async (content: string, html: string) => {
     console.log('🧵 handleSendThreadReply called with:', { content, html, replyingToMessage });
     
     if (!content.trim() || !replyingToMessage) {
       console.log('❌ Thread reply not sent - missing content or reply message');
       return;
+    }
+
+    let attachment: { file_url?: string; file_name?: string; file_size?: number } | undefined;
+    if (selectedThreadFile) {
+      const uploaded = await uploadFileToStorage(selectedThreadFile, `threads/${replyingToMessage.id}`);
+      if (uploaded.error) {
+        console.error('Thread attachment upload failed:', uploaded.error);
+      } else {
+        attachment = uploaded;
+      }
+      setSelectedThreadFile(null);
     }
 
     const newReply: Message = {
@@ -213,6 +265,9 @@ const CommunityLoungeView: React.FC = () => {
       user_id: user?.id || '1',
       body: content,
       replied_to_id: replyingToMessage.id,
+      file_url: attachment?.file_url,
+      file_name: attachment?.file_name,
+      file_size: attachment?.file_size,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       user: {
@@ -227,6 +282,13 @@ const CommunityLoungeView: React.FC = () => {
       console.log('📊 Updated thread replies array:', updatedReplies);
       return updatedReplies;
     });
+    
+    // Update reply count for the original message
+    setMessageReplyCounts(prevCounts => ({
+      ...prevCounts,
+      [replyingToMessage.id]: (prevCounts[replyingToMessage.id] || 0) + 1
+    }));
+    
     setNewMessage('');
     console.log('✅ Thread reply sent successfully');
   };
@@ -461,7 +523,8 @@ const CommunityLoungeView: React.FC = () => {
 
           {/* Messages */}
           <div className="space-y-1">
-            {messages.map((message) => (
+            <div className="text-xs text-gray-500 mb-2">Total messages: {messages.filter(m => m.channel_id === selectedChannel?.id).length}</div>
+            {messages.filter(message => message.channel_id === selectedChannel?.id).map((message) => (
               <div
                 key={message.id}
                 className={`group relative p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
@@ -529,7 +592,11 @@ const CommunityLoungeView: React.FC = () => {
                     {messageReplyCounts[message.id] > 0 && (
                       <button
                         onClick={() => {
-                          // openThread(message);
+                          console.log('🧵 Opening thread for message:', message);
+                          setReplyingToMessage(message);
+                          // Load thread replies for this message
+                          const threadMessages = messages.filter(msg => msg.replied_to_id === message.id);
+                          setThreadReplies(threadMessages);
                         }}
                         className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
                       >
