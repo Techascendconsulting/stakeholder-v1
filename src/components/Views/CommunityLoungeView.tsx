@@ -291,57 +291,94 @@ const CommunityLoungeView: React.FC = () => {
     }
   };
 
-  // Sample data for testing
+  // Sample data for testing - only load if no messages exist
   useEffect(() => {
-    // Initialize with sample data
+    // Check if we already have messages (persisted in localStorage)
+    const savedMessages = localStorage.getItem('communityLoungeMessages');
+    const savedChannels = localStorage.getItem('communityLoungeChannels');
+    
+    if (savedMessages && savedChannels) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        const parsedChannels = JSON.parse(savedChannels);
+        
+        setMessages(parsedMessages);
+        setChannels(parsedChannels);
+        setSelectedChannel(parsedChannels[0]);
+        
+        // Calculate reply counts from saved messages
+        const replyCounts: Record<number, number> = {};
+        parsedMessages.forEach((message: Message) => {
+          const replies = parsedMessages.filter((msg: Message) => msg.replied_to_id === message.id);
+          if (replies.length > 0) {
+            replyCounts[message.id] = replies.length;
+          }
+        });
+        setMessageReplyCounts(replyCounts);
+        
+        console.log('📱 Loaded saved messages from localStorage');
+      } catch (error) {
+        console.error('❌ Error loading saved messages:', error);
+        // Fall back to sample data if loading fails
+        loadSampleData();
+      }
+    } else {
+      // Only load sample data if no saved data exists
+      loadSampleData();
+    }
+    
+    setIsLoading(false);
+  }, []);
+
+  const loadSampleData = () => {
     const sampleChannels: Channel[] = [
       {
         id: '1',
         space_id: '1',
-      name: 'general',
-      description: 'General discussion',
-      is_private: false,
-      is_staff_only: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
+        name: 'general',
+        description: 'General discussion',
+        is_private: false,
+        is_staff_only: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
         id: '2',
         space_id: '1',
         name: 'random',
         description: 'Random chat',
-      is_private: false,
-      is_staff_only: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-  ];
+        is_private: false,
+        is_staff_only: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
 
     const sampleMessages: Message[] = [
-    {
-      id: 1,
+      {
+        id: 1,
         channel_id: '1',
         user_id: '1',
         body: 'Hello everyone! Welcome to the BA Community! 👋',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      user: {
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: {
           email: 'admin@batraining.com',
           display_name: 'Admin'
-      },
+        },
         reactions: [
           { emoji: '👋', count: 3, users: ['1', '2', '3'] },
           { emoji: '🎉', count: 1, users: ['2'] }
         ]
-    },
-    {
-      id: 2,
+      },
+      {
+        id: 2,
         channel_id: '1',
         user_id: '2',
         body: 'Thanks for having us! Looking forward to learning together.',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      user: {
+        user: {
           email: 'user1@example.com',
           display_name: 'Sarah'
         }
@@ -362,8 +399,12 @@ const CommunityLoungeView: React.FC = () => {
     });
     setMessageReplyCounts(replyCounts);
     
-    setIsLoading(false);
-  }, []);
+    // Save sample data to localStorage
+    localStorage.setItem('communityLoungeMessages', JSON.stringify(sampleMessages));
+    localStorage.setItem('communityLoungeChannels', JSON.stringify(sampleChannels));
+    
+    console.log('📱 Loaded sample data and saved to localStorage');
+  };
 
   // Quote rotation effect
   useEffect(() => {
@@ -395,6 +436,22 @@ const CommunityLoungeView: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Persist messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('communityLoungeMessages', JSON.stringify(messages));
+      console.log('💾 Messages saved to localStorage');
+    }
+  }, [messages]);
+
+  // Persist channels to localStorage whenever they change
+  useEffect(() => {
+    if (channels.length > 0) {
+      localStorage.setItem('communityLoungeChannels', JSON.stringify(channels));
+      console.log('💾 Channels saved to localStorage');
+    }
+  }, [channels]);
 
   // Close thread panel on outside click and ESC key
   useEffect(() => {
