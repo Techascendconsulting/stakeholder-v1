@@ -856,99 +856,110 @@ const CommunityLoungeView: React.FC = () => {
                 {/* Content Area */}
         <div className="flex-1 overflow-y-auto min-h-0">
           {/* Home Section */}
-          {currentSection === 'home' && (
-            <div className="p-3 space-y-3">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Welcome back</h3>
+                    {currentSection === 'home' && (
+            <div className="p-4">
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Welcome back</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Here's what's happening in your workspace</p>
+              </div>
 
-              {/* Top Row: Quick Actions + Today's Quote */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Quick Actions */}
-                <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Quick actions</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => setCurrentSection('channels')} className="px-3 py-2 text-xs rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Jump to channel</button>
-                    <button onClick={() => setCurrentSection('threads')} className="px-3 py-2 text-xs rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">View threads</button>
-                    <button onClick={() => setCurrentSection('dms')} className="px-3 py-2 text-xs rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Start DM</button>
-                    <button onClick={() => setShowAddChannel(true)} className="px-3 py-2 text-xs rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Create channel</button>
+              {/* Today's Quote */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-lg">{motivationalQuotes[currentQuoteIndex].emoji}</span>
                   </div>
-                </div>
-
-                {/* Today's Quote */}
-                <div className="p-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm">{motivationalQuotes[currentQuoteIndex].emoji}</span>
-        </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs text-gray-700 dark:text-gray-200 italic">"{motivationalQuotes[currentQuoteIndex].text}"</div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">— {motivationalQuotes[currentQuoteIndex].author}</div>
-      </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-800 dark:text-gray-200 italic leading-relaxed">"{motivationalQuotes[currentQuoteIndex].text}"</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">— {motivationalQuotes[currentQuoteIndex].author}</div>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom Row: Recent Threads + Mentions + Pinned */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* Recent Threads */}
-                <div className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Recent threads</h4>
-                  <div className="space-y-1 max-h-52 overflow-auto">
-                    {messages.filter(m => (messageReplyCounts[m.id] || 0) > 0).slice(0,6).map(m => (
-            <button
-                        key={m.id}
-                        onClick={() => {
-                          setCurrentSection('threads');
-                          setReplyingToMessage(m);
-                          const threadMessages = messages.filter(msg => msg.replied_to_id === m.id);
-                          setThreadReplies(threadMessages);
-                        }}
-                        className="w-full text-left px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <div className="text-xs text-gray-700 dark:text-gray-300 truncate">{m.body || '—'}</div>
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400">{messageReplyCounts[m.id]} replies</div>
-            </button>
-                    ))}
-                    {messages.filter(m => (messageReplyCounts[m.id] || 0) > 0).length === 0 && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">No threads yet</div>
-                    )}
-          </div>
-        </div>
-
-                {/* Mentions & Unreads (lightweight placeholder) */}
-                <div className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Mentions & unreads</h4>
-                  <div className="space-y-1 max-h-52 overflow-auto">
-                    {messages.filter(m => (m.body || '').toLowerCase().includes(`@${(user?.email || '').split('@')[0]}`.toLowerCase())).slice(0,6).map(m => (
-            <button
-                        key={m.id}
-                        onClick={() => {
-                          setCurrentSection('channels');
-                          setTimeout(() => {
-                            document.getElementById(`message-${m.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            setHighlightedMessageId(Number(m.id));
-                            setTimeout(() => setHighlightedMessageId(null), 2000);
-                          }, 80);
-                        }}
-                        className="w-full text-left px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <div className="text-xs text-gray-700 dark:text-gray-300 truncate">{m.body || '—'}</div>
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400">from {m.user?.display_name || m.user?.email || 'User'}</div>
-            </button>
-                    ))}
-                    {messages.filter(m => (m.body || '').toLowerCase().includes(`@${(user?.email || '').split('@')[0]}`.toLowerCase())).length === 0 && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">No mentions</div>
-                    )}
-                  </div>
+              {/* Quick Actions */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Quick actions</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setCurrentSection('channels')} 
+                    className="p-3 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Hash className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Browse channels</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Find and join discussions</p>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setCurrentSection('threads')} 
+                    className="p-3 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <MessageSquare className="w-4 h-4 text-green-500" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">View threads</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Continue conversations</p>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setCurrentSection('dms')} 
+                    className="p-3 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Direct messages</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Chat with team members</p>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setShowAddChannel(true)} 
+                    className="p-3 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Plus className="w-4 h-4 text-orange-500" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Create channel</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Start a new discussion</p>
+                  </button>
                 </div>
+              </div>
 
-                {/* Pinned (placeholder) */}
-                <div className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Pinned</h4>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">No pinned items yet</div>
+              {/* Recent Activity */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Recent activity</h3>
+                <div className="space-y-2">
+                  {messages.filter(m => (messageReplyCounts[m.id] || 0) > 0).slice(0, 3).map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => {
+                        setCurrentSection('threads');
+                        setReplyingToMessage(m);
+                        const threadMessages = messages.filter(msg => msg.replied_to_id === m.id);
+                        setThreadReplies(threadMessages);
+                      }}
+                      className="w-full p-3 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2 mb-1">
+                        <MessageSquare className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">Thread</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">• {messageReplyCounts[m.id]} replies</span>
+                      </div>
+                      <div className="text-sm text-gray-700 dark:text-gray-300 truncate">{m.body || '—'}</div>
+                    </button>
+                  ))}
+                  {messages.filter(m => (messageReplyCounts[m.id] || 0) > 0).length === 0 && (
+                    <div className="p-4 text-center bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <MessageSquare className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">Start a conversation to see it here</p>
+                    </div>
+                  )}
                 </div>
-          </div>
-        </div>
-      )}
+              </div>
+            </div>
+          )}
 
           {/* Threads Section */}
           {currentSection === 'threads' && (
