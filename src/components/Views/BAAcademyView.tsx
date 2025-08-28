@@ -11,6 +11,9 @@ interface LearningModule {
   status: 'not-started' | 'in-progress' | 'completed';
   progress: number;
   topics: string[];
+  estimatedHours: number;
+  learningOutcomes: string[];
+  prerequisites?: string[];
 }
 
 const BAAcademyView: React.FC = () => {
@@ -23,6 +26,47 @@ const BAAcademyView: React.FC = () => {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'ai'; content: string }>>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
+
+  // Calculate overall progress
+  const calculateOverallProgress = () => {
+    const totalModules = learningModules.length;
+    const completedModules = learningModules.filter(m => m.status === 'completed').length;
+    const inProgressModules = learningModules.filter(m => m.status === 'in-progress').length;
+    
+    // Count in-progress as 50% complete
+    const progressScore = (completedModules + (inProgressModules * 0.5)) / totalModules * 100;
+    return Math.round(progressScore);
+  };
+
+  // Find recommended next module
+  const getRecommendedNextModule = () => {
+    // Find first not-started module
+    return learningModules.find(m => m.status === 'not-started') || null;
+  };
+
+  // Filter modules based on search and difficulty
+  const getFilteredModules = () => {
+    return learningModules.filter(module => {
+      const matchesSearch = searchTerm === '' || 
+        module.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        module.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        module.topics.some(topic => topic.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesDifficulty = difficultyFilter === 'all' || module.difficulty === difficultyFilter;
+      
+      return matchesSearch && matchesDifficulty;
+    });
+  };
+
+  // Get filtered modules for a specific phase
+  const getFilteredModulesForPhase = (startIndex: number, endIndex: number) => {
+    const filteredModules = getFilteredModules();
+    return learningModules.slice(startIndex, endIndex).filter(module => 
+      filteredModules.includes(module)
+    );
+  };
 
   const learningModules: LearningModule[] = [
     // Phase 1: Foundation (Months 1-3)
@@ -33,10 +77,17 @@ const BAAcademyView: React.FC = () => {
       difficulty: 'Beginner',
       status: 'not-started',
       progress: 0,
+      estimatedHours: 8,
       topics: [
         'Business Analysis Definition',
         'Requirements Elicitation Techniques',
         'Organizational Structure Analysis'
+      ],
+      learningOutcomes: [
+        'Define business analysis and its role in organizations',
+        'Identify key stakeholders and their needs',
+        'Apply basic requirements elicitation techniques',
+        'Understand organizational structures and impact on BA work'
       ]
     },
 
@@ -48,6 +99,8 @@ const BAAcademyView: React.FC = () => {
       difficulty: 'Intermediate',
       status: 'not-started',
       progress: 0,
+      estimatedHours: 12,
+      prerequisites: ['ba-fundamentals'],
       topics: [
         'System Requirements Analysis (BCS)',
         'API and Integration Requirements',
@@ -55,6 +108,13 @@ const BAAcademyView: React.FC = () => {
         'System Architecture Understanding',
         'Technical Documentation Standards',
         'Technology Stack Evaluation'
+      ],
+      learningOutcomes: [
+        'Analyze system requirements for software projects',
+        'Evaluate technical feasibility of proposed solutions',
+        'Document API and integration requirements',
+        'Communicate effectively with development teams',
+        'Assess technology stack options and trade-offs'
       ]
     },
     {
@@ -378,34 +438,53 @@ const BAAcademyView: React.FC = () => {
         </div>
       </div>
 
-      {/* Topics Preview */}
-      <div className="mb-6">
-        <div className="flex items-center mb-3">
-          <BookOpen className="w-4 h-4 mr-2 text-gray-500" />
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Key Topics ({module.topics.length})
-          </h4>
+      {/* Learning Outcomes */}
+      {module.learningOutcomes && (
+        <div className="mb-6">
+          <div className="flex items-center mb-3">
+            <Target className="w-4 h-4 mr-2 text-gray-500" />
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+              What You'll Learn
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {module.learningOutcomes.slice(0, 3).map((outcome, index) => (
+              <div key={index} className="flex items-start text-sm text-gray-600 dark:text-gray-400">
+                <CheckCircle className="w-3 h-3 text-emerald-500 mr-2 mt-0.5 flex-shrink-0" />
+                <span className="line-clamp-2">{outcome}</span>
+              </div>
+            ))}
+            {module.learningOutcomes.length > 3 && (
+              <div className="text-xs text-gray-500 dark:text-gray-500 ml-5 font-medium">
+                +{module.learningOutcomes.length - 3} more outcomes
+              </div>
+            )}
+          </div>
         </div>
-        <div className="space-y-2">
-          {module.topics.slice(0, 3).map((topic, index) => (
-            <div key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-3 flex-shrink-0"></div>
-              <span className="truncate">{topic}</span>
-            </div>
-          ))}
-          {module.topics.length > 3 && (
-            <div className="text-xs text-gray-500 dark:text-gray-500 ml-5 font-medium">
-              +{module.topics.length - 3} more topics
-            </div>
-          )}
+      )}
+
+      {/* Prerequisites */}
+      {module.prerequisites && module.prerequisites.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center mb-2">
+            <ArrowRight className="w-3 h-3 mr-2 text-amber-500" />
+            <h4 className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+              Prerequisites Required
+            </h4>
+          </div>
+          <div className="text-xs text-amber-600 dark:text-amber-400">
+            Complete {module.prerequisites.map(prereq => 
+              learningModules.find(m => m.id === prereq)?.title || prereq
+            ).join(', ')} first
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Action Button */}
       <div className="flex items-center justify-between">
         <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
           <Clock className="w-3 h-3 mr-1" />
-          <span>~{Math.ceil(module.topics.length * 2)}h</span>
+          <span>{module.estimatedHours || Math.ceil(module.topics.length * 2)}h</span>
         </div>
         <button
           onClick={() => startModule(module.id)}
@@ -724,90 +803,214 @@ const BAAcademyView: React.FC = () => {
             </div>
           </div>
 
+          {/* Overall Progress Section */}
+          <div className="mb-12">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                {/* Progress Info */}
+                <div className="flex-1">
+                  <div className="flex items-center mb-4">
+                    <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Your Learning Progress</h3>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <span>Overall Completion</span>
+                      <span className="font-semibold">{calculateOverallProgress()}% Complete</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all duration-1000 ease-out relative overflow-hidden" 
+                        style={{ width: `${calculateOverallProgress()}%` }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {learningModules.filter(m => m.status === 'completed').length}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">Completed</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {learningModules.filter(m => m.status === 'in-progress').length}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">In Progress</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
+                        {learningModules.filter(m => m.status === 'not-started').length}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">Remaining</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommended Next Module */}
+                {getRecommendedNextModule() && (
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800/50 lg:max-w-md">
+                    <div className="flex items-center mb-3">
+                      <Target className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Recommended Next</h4>
+                    </div>
+                    <h5 className="font-bold text-gray-900 dark:text-white mb-2">
+                      {getRecommendedNextModule()?.title}
+                    </h5>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                      {getRecommendedNextModule()?.description}
+                    </p>
+                    <button
+                      onClick={() => getRecommendedNextModule() && startModule(getRecommendedNextModule()!.id)}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <Play className="w-4 h-4" />
+                      <span>Continue Learning</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Search and Filter */}
+          <div className="mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search modules, topics, or skills..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Difficulty Filter */}
+                <div className="md:w-48">
+                  <select
+                    value={difficultyFilter}
+                    onChange={(e) => setDifficultyFilter(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="all">All Levels</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
+
+                {/* Results Count */}
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <span>{getFilteredModules().length} of {learningModules.length} modules</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Content */}
           {isLectureActive ? (
             renderLectureView()
           ) : (
             <div className="space-y-16">
               {/* Phase 1: Foundation */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">1</span>
+              {getFilteredModulesForPhase(0, 5).length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center mb-8">
+                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-xl mr-6">
+                      <span className="text-2xl font-bold text-white">1</span>
+                    </div>
+                    <div>
+                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Foundation</h2>
+                      <p className="text-gray-600 dark:text-gray-400 text-lg">Build your core BA knowledge and skills</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Foundation</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Build your core BA knowledge and skills</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {getFilteredModulesForPhase(0, 5).map(renderModuleCard)}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(0, 5).map(renderModuleCard)}
-                </div>
-              </div>
+              )}
 
               {/* Phase 2: Technical Skills */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">2</span>
+              {getFilteredModulesForPhase(5, 8).length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center mb-8">
+                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl mr-6">
+                      <span className="text-2xl font-bold text-white">2</span>
+                    </div>
+                    <div>
+                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Technical Skills</h2>
+                      <p className="text-gray-600 dark:text-gray-400 text-lg">Develop technical analysis capabilities</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Technical Skills</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Develop technical analysis capabilities</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {getFilteredModulesForPhase(5, 8).map(renderModuleCard)}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(5, 8).map(renderModuleCard)}
-                </div>
-              </div>
+              )}
 
               {/* Phase 3: Advanced Techniques */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">3</span>
+              {getFilteredModulesForPhase(8, 11).length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center mb-8">
+                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl mr-6">
+                      <span className="text-2xl font-bold text-white">3</span>
+                    </div>
+                    <div>
+                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Advanced Techniques</h2>
+                      <p className="text-gray-600 dark:text-gray-400 text-lg">Master sophisticated BA methodologies</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Advanced Techniques</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Master sophisticated BA methodologies</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {getFilteredModulesForPhase(8, 11).map(renderModuleCard)}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(8, 11).map(renderModuleCard)}
-                </div>
-              </div>
+              )}
 
               {/* Phase 4: Specialization */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">4</span>
+              {getFilteredModulesForPhase(11, 14).length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center mb-8">
+                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl shadow-xl mr-6">
+                      <span className="text-2xl font-bold text-white">4</span>
+                    </div>
+                    <div>
+                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Specialization</h2>
+                      <p className="text-gray-600 dark:text-gray-400 text-lg">Focus on cutting-edge technologies</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Specialization</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Focus on cutting-edge technologies</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {getFilteredModulesForPhase(11, 14).map(renderModuleCard)}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(11, 14).map(renderModuleCard)}
-                </div>
-              </div>
+              )}
 
               {/* Phase 5: Mastery */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">5</span>
+              {getFilteredModulesForPhase(14, 17).length > 0 && (
+                <div className="relative">
+                  <div className="flex items-center mb-8">
+                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-xl mr-6">
+                      <span className="text-2xl font-bold text-white">5</span>
+                    </div>
+                    <div>
+                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Mastery</h2>
+                      <p className="text-gray-600 dark:text-gray-400 text-lg">Achieve leadership and strategic expertise</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Mastery</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Achieve leadership and strategic expertise</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {getFilteredModulesForPhase(14, 17).map(renderModuleCard)}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(14, 17).map(renderModuleCard)}
-                </div>
-              </div>
+              )}
 
               {/* Call to Action */}
               <div className="text-center py-16">
