@@ -99,6 +99,51 @@ const CommunityLoungeView: React.FC = () => {
       return { ...m, reactions: [ ...(m.reactions || []), { emoji, count: 1, users: [user?.id || 'me'] } ] };
     }));
   };
+
+  // Edit, Copy, Delete functions
+  const handleEditMessage = (messageId: number) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message) {
+      setEditingMessageId(messageId);
+      setEditMessageText(message.body || '');
+      setShowMoreMenu(null);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (editingMessageId && editMessageText.trim()) {
+      setMessages(prev => prev.map(m => 
+        m.id === editingMessageId 
+          ? { ...m, body: editMessageText.trim(), updated_at: new Date().toISOString() }
+          : m
+      ));
+      setEditingMessageId(null);
+      setEditMessageText('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditMessageText('');
+  };
+
+  const handleCopyMessage = (messageId: number) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message?.body) {
+      navigator.clipboard.writeText(message.body);
+      setShowMoreMenu(null);
+      // Show a brief success indicator
+      console.log('✅ Message copied to clipboard');
+    }
+  };
+
+  const handleDeleteMessage = (messageId: number) => {
+    if (confirm('Are you sure you want to delete this message?')) {
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      setShowMoreMenu(null);
+      console.log('🗑️ Message deleted');
+    }
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -872,15 +917,41 @@ const CommunityLoungeView: React.FC = () => {
                     </span>
                   </div>
                   
-                    <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                      {renderWithMentions(message.body)}
-                      {/* Debug: Show raw content */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <div className="mt-1 text-xs text-gray-400 border-t pt-1">
-                          Raw: "{message.body?.replace(/\n/g, '\\n')}"
+                    {editingMessageId === message.id ? (
+                      <div className="mt-2">
+                        <textarea
+                          value={editMessageText}
+                          onChange={(e) => setEditMessageText(e.target.value)}
+                          className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                          rows={3}
+                          autoFocus
+                        />
+                        <div className="mt-2 flex space-x-2">
+                          <button
+                            onClick={handleSaveEdit}
+                            className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                          >
+                            Cancel
+                          </button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {renderWithMentions(message.body)}
+                        {/* Debug: Show raw content */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="mt-1 text-xs text-gray-400 border-t pt-1">
+                            Raw: "{message.body?.replace(/\n/g, '\\n')}"
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Attachment Preview */}
                   {message.file_url && (
@@ -963,20 +1034,29 @@ const CommunityLoungeView: React.FC = () => {
                 {/* More Options Menu */}
                 {showMoreMenu === message.id && (
                   <div className="absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1 z-20">
-                    <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                    <button 
+                      onClick={() => handleEditMessage(message.id)}
+                      className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    >
                       <Edit className="w-4 h-4" />
                       <span>Edit</span>
-                      </button>
-                    <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                    </button>
+                    <button 
+                      onClick={() => handleCopyMessage(message.id)}
+                      className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    >
                       <Copy className="w-4 h-4" />
                       <span>Copy</span>
                     </button>
-                    <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                    <button 
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                    >
                       <Trash2 className="w-4 h-4" />
                       <span>Delete</span>
                     </button>
-                </div>
-              )}
+                  </div>
+                )}
             </div>
           ))}
         </div>
