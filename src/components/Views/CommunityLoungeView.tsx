@@ -5,7 +5,6 @@ import { advancedChatService } from '../../lib/advancedChatService';
 import RichTextEditor from './RichTextEditor';
 import { 
   Hash, 
-  Plus, 
   Users, 
   Bell, 
   Paperclip,
@@ -37,9 +36,7 @@ import {
   Copy,
   Trash2,
   User,
-  Home,
-  Crown,
-  Star
+  Crown
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -68,12 +65,12 @@ const CommunityLoungeView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState<UserPresence[]>([]);
   const [showSettings, setShowSettings] = useState(false);
-  const [showAddChannel, setShowAddChannel] = useState(false);
+
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showPeople, setShowPeople] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
-  const [newChannelName, setNewChannelName] = useState('');
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedThreadFile, setSelectedThreadFile] = useState<File | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -127,13 +124,13 @@ const CommunityLoungeView: React.FC = () => {
   const [threadPanelHeight, setThreadPanelHeight] = useState('h-96'); // Start with short height
   const [showDMSection, setShowDMSection] = useState(true);
   const [dmChannels, setDmChannels] = useState<Channel[]>([]);
-  const [showNewDM, setShowNewDM] = useState(false);
+
   const [dmSearchQuery, setDmSearchQuery] = useState('');
   const [currentSection, setCurrentSection] = useState<'threads' | 'dms' | 'channels' | 'cohorts'>('cohorts');
   const [selectedCohort, setSelectedCohort] = useState<string | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null);
   const [currentCohort, setCurrentCohort] = useState('premium@example.com');
-  const [showAddCohort, setShowAddCohort] = useState(false);
+
   
   // Dynamic cohorts data - would come from database
   const [cohorts, setCohorts] = useState([
@@ -155,8 +152,7 @@ const CommunityLoungeView: React.FC = () => {
     }
   ]);
   
-  // User type detection
-  const isAdmin = user?.email === 'admin@batraining.com';
+  // User type detection - simplified for student interface
   const isNewUser = !user || !cohorts.some(c => c.isUserInCohort);
   const isReturningUser = user && cohorts.some(c => c.isUserInCohort);
   
@@ -772,8 +768,6 @@ const CommunityLoungeView: React.FC = () => {
         };
         
     setChannels([...channels, newChannel]);
-        setNewChannelName('');
-        setShowAddChannel(false);
   };
 
     return (
@@ -793,45 +787,7 @@ const CommunityLoungeView: React.FC = () => {
 
         </div>
 
-        {/* Add Channel Inline - At Top */}
-        {showAddChannel && (
-          <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                placeholder="Channel name"
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
-                value={newChannelName}
-                onChange={(e) => setNewChannelName(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && newChannelName.trim()) {
-                    handleCreateChannel(newChannelName);
-                  }
-                }}
-                autoFocus
-              />
-            <button
-                onClick={() => {
-                  if (newChannelName.trim()) {
-                    handleCreateChannel(newChannelName);
-                  }
-                }}
-                className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Create
-            </button>
-            <button 
-                onClick={() => {
-                  setShowAddChannel(false);
-                  setNewChannelName('');
-                }}
-                className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-              >
-                Cancel
-            </button>
-          </div>
-        </div>
-        )}
+
 
         {/* Main Navigation */}
         <div className="p-3 border-b border-gray-200 dark:border-gray-700">
@@ -891,59 +847,7 @@ const CommunityLoungeView: React.FC = () => {
                 {/* Content Area */}
         <div className="flex-1 overflow-y-auto min-h-0">
           
-          {/* Welcome Page for New Users */}
-          {isNewUser && (
-            <div className="p-8 text-center">
-              <div className="max-w-2xl mx-auto">
-                <div className="mb-8">
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    Welcome to BA WorkXP Platform! 🚀
-                  </h1>
-                  <p className="text-lg text-gray-600 dark:text-gray-400">
-                    Your journey to becoming a Business Analyst starts here
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Join a Cohort</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Connect with fellow learners and mentors</p>
-                  </div>
-                  
-                  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <MessageSquare className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Learn Together</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Collaborate on real BA projects</p>
-                  </div>
-                  
-                  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <Crown className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Get Certified</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Earn your BA certification</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <button 
-                    onClick={() => setCurrentSection('cohorts')}
-                    className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
-                  >
-                    Browse Available Cohorts
-                  </button>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Choose the cohort that fits your schedule and learning goals
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+
 
                     {/* Threads Section */}
           {currentSection === 'threads' && (
@@ -1050,63 +954,9 @@ const CommunityLoungeView: React.FC = () => {
         <div className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Direct Messages</h3>
-                <button 
-                  onClick={() => setShowNewDM(!showNewDM)}
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
               </div>
 
-              {/* New DM Input */}
-              {showNewDM && (
-                <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
-            <input
-              type="text"
-                      placeholder="Search users..."
-                      className="w-full pl-8 pr-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      value={dmSearchQuery}
-                      onChange={(e) => setDmSearchQuery(e.target.value)}
-                      autoFocus
-            />
-          </div>
-                  {dmSearchQuery && (
-                    <div className="mt-2 space-y-1">
-                      {['admin@batraining.com', 'user1@example.com', 'user2@example.com'].filter(email => 
-                        email.toLowerCase().includes(dmSearchQuery.toLowerCase())
-                      ).map((email) => (
-                        <button
-                          key={email}
-                          onClick={() => {
-                            const dmChannel = dmChannels.find(dm => dm.name === email) || {
-                              id: `dm-${email}`,
-                              space_id: '1',
-                              name: email,
-                              description: `Direct message with ${email}`,
-                              is_private: true,
-                              is_staff_only: false,
-                              created_at: new Date().toISOString(),
-                              updated_at: new Date().toISOString()
-                            };
-                            setDmChannels(prev => prev.find(dm => dm.id === dmChannel.id) ? prev : [...prev, dmChannel]);
-                            setSelectedChannel(dmChannel);
-                            setShowNewDM(false);
-                            setDmSearchQuery('');
-                          }}
-                          className="w-full flex items-center space-x-2 px-2 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded"
-                        >
-                          <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                            {email.charAt(0).toUpperCase()}
-        </div>
-                          <span className="truncate">{email.split('@')[0]}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+
 
               {/* DM Channels List */}
               <div className="space-y-1">
@@ -1136,13 +986,7 @@ const CommunityLoungeView: React.FC = () => {
             <div className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Channels</h3>
-              <button 
-                onClick={() => setShowAddChannel(!showAddChannel)}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
+              </div>
             
               {/* Channel Search */}
               <div className="mb-3">
@@ -1185,77 +1029,13 @@ const CommunityLoungeView: React.FC = () => {
         </div>
           )}
 
-          {/* Admin Dashboard */}
-          {isAdmin && currentSection === 'cohorts' && (
-            <div className="p-4">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h2>
-                <p className="text-gray-600 dark:text-gray-400">Manage cohorts, users, and platform analytics</p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Total Cohorts</h3>
-                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold">{cohorts.length}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Active learning groups</p>
-                </div>
-                
-                <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Total Users</h3>
-                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold">{cohorts.reduce((sum, c) => sum + c.studentCount, 0)}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Registered learners</p>
-                </div>
-                
-                <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revenue</h3>
-                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold">${cohorts.reduce((sum, c) => sum + c.price, 0)}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Monthly recurring</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <button 
-                  onClick={() => setShowAddCohort(true)}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
-                >
-                  Create New Cohort
-                </button>
-                <button 
-                  onClick={() => setCurrentSection('channels')}
-                  className="ml-4 px-6 py-3 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition-colors"
-                >
-                  Manage Channels
-                </button>
-              </div>
-            </div>
-          )}
+
 
           {/* Cohorts Section */}
           {currentSection === 'cohorts' && (
             <div className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Cohorts</h3>
-                {/* Admin can create new cohorts */}
-                {user?.email === 'admin@batraining.com' && (
-                  <button 
-                    onClick={() => setShowAddCohort(true)}
-                    className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                )}
               </div>
               
               <div className="space-y-3">
