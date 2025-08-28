@@ -848,49 +848,68 @@ const CommunityLoungeView: React.FC = () => {
           </div>
         </div>
 
-                {/* Scrollable Content Area */}
+                {/* Content Area */}
         <div className="flex-1 overflow-y-auto min-h-0">
-          {/* Channels List */}
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <Hash className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Channels</h3>
-              </div>
-              <button 
-                onClick={() => setShowAddChannel(!showAddChannel)}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="space-y-1">
-            {channels.map((channel) => (
-              <button
-                key={channel.id}
-                  onClick={() => setSelectedChannel(channel)}
-                  className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                  selectedChannel?.id === channel.id
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                  <Hash className="w-4 h-4" />
-                  <span className="truncate">{channel.name}</span>
-              </button>
-            ))}
-            </div>
-          </div>
-
-          {/* Direct Messages Section */}
-          <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+          {/* Home Section */}
+          {currentSection === 'home' && (
             <div className="p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Direct Messages</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Welcome to BA Community</h3>
+              <div className="space-y-3">
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Recent Activity</h4>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">No recent activity</p>
                 </div>
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-2">Quick Actions</h4>
+                  <div className="space-y-2">
+                    <button className="w-full text-left text-xs text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100">
+                      • Start a new conversation
+                    </button>
+                    <button className="w-full text-left text-xs text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100">
+                      • View your threads
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Threads Section */}
+          {currentSection === 'threads' && (
+            <div className="p-3">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Your Threads</h3>
+              <div className="space-y-2">
+                {messages.filter(msg => messageReplyCounts[msg.id] > 0).map((message) => (
+                  <button
+                    key={message.id}
+                    onClick={() => {
+                      setReplyingToMessage(message);
+                      const threadMessages = messages.filter(msg => msg.replied_to_id === message.id);
+                      setThreadReplies(threadMessages);
+                    }}
+                    className="w-full text-left p-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <MessageSquare className="w-4 h-4 text-gray-400" />
+                      <span className="truncate">{message.body?.substring(0, 50)}...</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {messageReplyCounts[message.id]} replies
+                    </div>
+                  </button>
+                ))}
+                {messages.filter(msg => messageReplyCounts[msg.id] > 0).length === 0 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">No active threads</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* DMs Section */}
+          {currentSection === 'dms' && (
+            <div className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Direct Messages</h3>
                 <button 
                   onClick={() => setShowNewDM(!showNewDM)}
                   className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -921,7 +940,6 @@ const CommunityLoungeView: React.FC = () => {
                         <button
                           key={email}
                           onClick={() => {
-                            // Create or open DM with this user
                             const dmChannel = dmChannels.find(dm => dm.name === email) || {
                               id: `dm-${email}`,
                               space_id: '1',
@@ -971,7 +989,61 @@ const CommunityLoungeView: React.FC = () => {
                 ))}
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Channels Section */}
+          {currentSection === 'channels' && (
+            <div className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Channels</h3>
+                <button 
+                  onClick={() => setShowAddChannel(!showAddChannel)}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {/* Channel Search */}
+              <div className="mb-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search channels..."
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-all duration-200"
+                    value={channelSearchQuery}
+                    onChange={(e) => setChannelSearchQuery(e.target.value)}
+                  />
+                  {channelSearchQuery && (
+                    <button
+                      onClick={() => setChannelSearchQuery('')}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+              {channels.map((channel) => (
+                <button
+                  key={channel.id}
+                    onClick={() => setSelectedChannel(channel)}
+                    className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
+                    selectedChannel?.id === channel.id
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                    <Hash className="w-4 h-4" />
+                    <span className="truncate">{channel.name}</span>
+                </button>
+              ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
