@@ -104,6 +104,130 @@ const CommunityLoungeView: React.FC = () => {
   // Emojis for reactions
   const emojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🙏', '🔥', '💯', '✨', '🎉', '🤔', '👀', '💪', '🚀', '💡', '🎯', '⭐', '💎'];
 
+  // Sample data for testing
+  useEffect(() => {
+    // Initialize with sample data
+    const sampleChannels: Channel[] = [
+      {
+        id: '1',
+        space_id: '1',
+        name: 'general',
+        description: 'General discussion',
+        is_private: false,
+        is_staff_only: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: '2',
+        space_id: '1',
+        name: 'random',
+        description: 'Random chat',
+        is_private: false,
+        is_staff_only: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+
+    const sampleMessages: Message[] = [
+      {
+        id: 1,
+        channel_id: '1',
+        user_id: '1',
+        body: 'Hello everyone! Welcome to the BA Community! 👋',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: {
+          email: 'admin@batraining.com',
+          display_name: 'Admin'
+        },
+        reactions: [
+          { emoji: '👋', count: 3, users: ['1', '2', '3'] },
+          { emoji: '🎉', count: 1, users: ['2'] }
+        ]
+      },
+      {
+        id: 2,
+        channel_id: '1',
+        user_id: '2',
+        body: 'Thanks for having us! Looking forward to learning together.',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: {
+          email: 'user1@example.com',
+          display_name: 'Sarah'
+        }
+      }
+    ];
+
+    setChannels(sampleChannels);
+    setMessages(sampleMessages);
+    setSelectedChannel(sampleChannels[0]);
+    setMessageReplyCounts({ 1: 2, 2: 1 });
+    setIsLoading(false);
+  }, []);
+
+  const handleSendMessage = (content: string, html: string) => {
+    if (!content.trim() || !selectedChannel) return;
+
+    const newMessage: Message = {
+      id: Date.now(),
+      channel_id: selectedChannel.id,
+      user_id: user?.id || '1',
+      body: content,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: {
+        email: user?.email || 'user@example.com',
+        display_name: user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User'
+      }
+    };
+
+    setMessages([...messages, newMessage]);
+    setNewMessage('');
+  };
+
+  const handleSendThreadReply = (content: string, html: string) => {
+    if (!content.trim() || !replyingToMessage) return;
+
+    const newReply: Message = {
+      id: Date.now(),
+      channel_id: replyingToMessage.channel_id,
+      user_id: user?.id || '1',
+      body: content,
+      replied_to_id: replyingToMessage.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: {
+        email: user?.email || 'user@example.com',
+        display_name: user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User'
+      }
+    };
+
+    setThreadReplies([...threadReplies, newReply]);
+    setNewMessage('');
+  };
+
+  const handleCreateChannel = (name: string) => {
+    if (!name.trim()) return;
+
+    const newChannel: Channel = {
+      id: Date.now().toString(),
+      space_id: selectedSpace?.id || '1',
+      name: name.trim(),
+      description: '',
+      is_private: false,
+      is_staff_only: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    setChannels([...channels, newChannel]);
+    setNewChannelName('');
+    setShowAddChannel(false);
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 flex relative">
       <div className="w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -118,6 +242,46 @@ const CommunityLoungeView: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Add Channel Inline - At Top */}
+        {showAddChannel && (
+          <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                placeholder="Channel name"
+                className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                value={newChannelName}
+                onChange={(e) => setNewChannelName(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && newChannelName.trim()) {
+                    handleCreateChannel(newChannelName);
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  if (newChannelName.trim()) {
+                    handleCreateChannel(newChannelName);
+                  }
+                }}
+                className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Create
+              </button>
+              <button
+                onClick={() => {
+                  setShowAddChannel(false);
+                  setNewChannelName('');
+                }}
+                className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Channel Search */}
         <div className="p-3 border-b border-gray-200 dark:border-gray-700">
@@ -172,40 +336,6 @@ const CommunityLoungeView: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Add Channel Modal */}
-        {showAddChannel && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-80">
-              <h3 className="text-lg font-semibold mb-4">Create Channel</h3>
-              <input
-                type="text"
-                placeholder="Channel name"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-4"
-                value={newChannelName}
-                onChange={(e) => setNewChannelName(e.target.value)}
-              />
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setShowAddChannel(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    // createChannel(newChannelName);
-                    setNewChannelName('');
-                    setShowAddChannel(false);
-                  }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Create
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       
       <div className="flex-1 flex flex-col">
@@ -229,7 +359,27 @@ const CommunityLoungeView: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
-                    // searchMessages(e.target.value);
+                    if (e.target.value.trim()) {
+                      const filtered = messages.filter(message => 
+                        message.body?.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                        message.user?.display_name?.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                        message.user?.email?.toLowerCase().includes(e.target.value.toLowerCase())
+                      );
+                      setSearchResults(filtered.map(msg => ({
+                        id: msg.id,
+                        type: 'message' as const,
+                        title: msg.user?.display_name || msg.user?.email || 'User',
+                        content: msg.body || '',
+                        user: msg.user?.display_name || msg.user?.email || 'User',
+                        timestamp: msg.created_at,
+                        channel: selectedChannel?.name || '',
+                        created_at: msg.created_at
+                      })));
+                      setShowSearchResults(true);
+                    } else {
+                      setShowSearchResults(false);
+                      setSearchResults([]);
+                    }
                   }}
                 />
                 {searchQuery && (
@@ -300,7 +450,7 @@ const CommunityLoungeView: React.FC = () => {
               >
                 {/* Hover Bar */}
                 {hoveredMessageId === message.id && (
-                  <div className="absolute -top-2 left-0 right-0 flex items-center justify-center space-x-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1 z-10">
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1 z-10">
                     <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                       ✅
                     </button>
@@ -335,14 +485,14 @@ const CommunityLoungeView: React.FC = () => {
                 <div className="flex space-x-3">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
-                      {message.sender?.profile?.display_name?.charAt(0) || message.sender?.email?.charAt(0) || 'U'}
+                      {message.user?.display_name?.charAt(0) || message.user?.email?.charAt(0) || 'U'}
                     </div>
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline space-x-2">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {message.sender?.profile?.display_name || message.sender?.email?.split('@')[0] || 'User'}
+                        {message.user?.display_name || message.user?.email?.split('@')[0] || 'User'}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -350,7 +500,7 @@ const CommunityLoungeView: React.FC = () => {
                     </div>
                     
                     <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                      {message.content}
+                      {message.body}
                     </div>
 
                     {/* Reply Count */}
@@ -414,7 +564,7 @@ const CommunityLoungeView: React.FC = () => {
                 <div className="flex-1">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Replying to</div>
                   <div className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                    {replyingToMessage.content}
+                    {replyingToMessage.body}
                   </div>
                 </div>
                 <button
@@ -430,11 +580,26 @@ const CommunityLoungeView: React.FC = () => {
           <div className="flex items-end space-x-3">
             <div className="flex-1">
               <RichTextEditor
-                value={newMessage}
-                onChange={setNewMessage}
+                onSend={handleSendMessage}
+                onFileSelect={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
                 placeholder="Message #general"
-                onSend={() => {
-                  // sendMessage();
+              />
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setSelectedFile(file);
+                    // Handle file upload here
+                    console.log('File selected:', file.name);
+                  }
                 }}
               />
             </div>
@@ -476,20 +641,20 @@ const CommunityLoungeView: React.FC = () => {
             <div className="flex space-x-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
-                  {replyingToMessage.sender?.profile?.display_name?.charAt(0) || replyingToMessage.sender?.email?.charAt(0) || 'U'}
+                  {replyingToMessage.user?.display_name?.charAt(0) || replyingToMessage.user?.email?.charAt(0) || 'U'}
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline space-x-2">
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {replyingToMessage.sender?.profile?.display_name || replyingToMessage.sender?.email?.split('@')[0] || 'User'}
+                    {replyingToMessage.user?.display_name || replyingToMessage.user?.email?.split('@')[0] || 'User'}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(replyingToMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                  {replyingToMessage.content}
+                  {replyingToMessage.body}
                 </div>
               </div>
             </div>
@@ -500,22 +665,22 @@ const CommunityLoungeView: React.FC = () => {
             {threadReplies.map((reply) => (
               <div key={reply.id} className="flex space-x-3">
                 <div className="flex-shrink-0">
-                  <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center text-white text-xs font-semibold">
-                    {reply.sender?.profile?.display_name?.charAt(0) || reply.sender?.email?.charAt(0) || 'U'}
-                  </div>
+                                  <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center text-white text-xs font-semibold">
+                  {reply.user?.display_name?.charAt(0) || reply.user?.email?.charAt(0) || 'U'}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                      {reply.sender?.profile?.display_name || reply.sender?.email?.split('@')[0] || 'User'}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                  <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                    {reply.content}
-                  </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline space-x-2">
+                  <span className="text-xs font-semibold text-gray-900 dark:text-white">
+                    {reply.user?.display_name || reply.user?.email?.split('@')[0] || 'User'}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                  {reply.body}
+                </div>
                 </div>
               </div>
             ))}
@@ -525,14 +690,28 @@ const CommunityLoungeView: React.FC = () => {
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-end space-x-2">
               <div className="flex-1">
-                <RichTextEditor
-                  value={newMessage}
-                  onChange={setNewMessage}
-                  placeholder="Reply to thread..."
-                  onSend={() => {
-                    // sendThreadReply();
-                  }}
-                />
+                              <RichTextEditor
+                onSend={handleSendThreadReply}
+                onFileSelect={() => {
+                  if (threadFileInputRef.current) {
+                    threadFileInputRef.current.click();
+                  }
+                }}
+                placeholder="Reply to thread..."
+              />
+              
+              <input
+                ref={threadFileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setSelectedThreadFile(file);
+                    console.log('Thread file selected:', file.name);
+                  }
+                }}
+              />
               </div>
               <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                 <Paperclip className="w-4 h-4" />
