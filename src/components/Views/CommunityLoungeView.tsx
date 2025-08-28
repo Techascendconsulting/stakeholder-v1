@@ -1059,44 +1059,7 @@ const CommunityLoungeView: React.FC = () => {
                   </div>
                 ))}
 
-                {/* Cohort Details (if user is in cohort) */}
-                {cohorts.filter(c => c.isUserInCohort).map(cohort => (
-                  <div key={cohort.id} className="space-y-3">
-                    {/* Cohort Channels */}
-                    <div>
-                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Your Cohort Channels</h4>
-                      <div className="space-y-1">
-                        {cohort.channels.map(channel => (
-                          <div key={channel} className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <Hash className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm text-gray-900 dark:text-white">{channel}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
 
-                    {/* Pinned Resources */}
-                    <div>
-                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Pinned Resources</h4>
-                      <div className="space-y-1">
-                        {cohort.pinnedResources.map(resource => (
-                          <div key={resource} className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <Pin className="w-4 h-4 text-blue-500" />
-                            <span className="text-sm text-gray-900 dark:text-white">{resource}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Cohort Members */}
-                    <div>
-                      
-                      <div className="space-y-1">
-
-                      </div>
-                    </div>
-                  </div>
-                ))}
 
                 {/* All Cohorts */}
                 <div className="space-y-2">
