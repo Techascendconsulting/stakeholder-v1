@@ -1395,8 +1395,8 @@ const CommunityLoungeView: React.FC = () => {
               <div
                 key={message.id}
                 id={`message-${message.id}`}
-                className={`group relative p-3 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-200 message-container mb-3 ${
-                  hoveredMessageId === message.id ? 'ring-2 ring-blue-500/20' : ''
+                className={`group relative p-4 rounded-2xl bg-white dark:bg-gray-800/90 shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600/50 transition-all duration-300 message-container mb-4 backdrop-blur-sm ${
+                  hoveredMessageId === message.id ? 'ring-2 ring-blue-500/30 shadow-lg' : ''
                 }`}
                 onMouseEnter={() => {
                   const timeout = setTimeout(() => setHoveredMessageId(message.id), 150);
@@ -1408,57 +1408,58 @@ const CommunityLoungeView: React.FC = () => {
                   setHoverTimeout(null);
                 }}
               >
-                {/* Hover Bar */}
+                                {/* Hover Bar */}
                 {hoveredMessageId === message.id && (
-                  <div className="absolute -top-8 right-0 flex items-center space-x-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1 z-10">
-                    <button onClick={() => addReaction(message.id, '✅')} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">✅</button>
-                    <button onClick={() => addReaction(message.id, '👀')} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">👀</button>
-                    <button onClick={() => addReaction(message.id, '✋')} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">✋</button>
-                    <button onClick={() => setReactionPickerForId(prev => prev === message.id ? null : message.id)} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">React</button>
+                  <div className="absolute -top-10 right-4 flex items-center space-x-1 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-2 z-10">
+                    <button onClick={() => addReaction(message.id, '✅')} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">✅</button>
+                    <button onClick={() => addReaction(message.id, '👀')} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">👀</button>
+                    <button onClick={() => addReaction(message.id, '✋')} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">✋</button>
+                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                    <button onClick={() => setReactionPickerForId(prev => prev === message.id ? null : message.id)} className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">React</button>
                     <button 
                       onClick={() => {
                         console.log('🧵 Opening thread for reply to message:', message);
                         setReplyingToMessage(message);
                         setHoveredMessageId(null);
                       }}
-                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       Reply
                     </button>
                     <button 
                       onClick={() => setShowMoreMenu(message.id)}
-                      className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
-                      More Options
+                      More
                     </button>
-          </div>
-        )}
+                  </div>
+                )}
 
                 {/* Message Content */}
                 <div className="flex space-x-4">
                   <div className="flex-shrink-0 relative">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-md relative">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-base font-bold shadow-lg relative">
                       {message.user?.display_name?.charAt(0) || message.user?.email?.charAt(0) || 'U'}
                       {/* Online Status Indicator on Avatar */}
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full shadow-sm"></div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-3 border-white dark:border-gray-800 rounded-full shadow-md"></div>
                     </div>
                   </div>
                 
                 <div className="flex-1 min-w-0">
                     <div className={`flex items-baseline space-x-3 ${highlightedMessageId === message.id ? 'animate-pulse ring-2 ring-yellow-400 rounded-md px-1 -mx-1' : ''}`}>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <span className="text-base font-semibold text-gray-900 dark:text-white">
                         {message.user?.display_name || message.user?.email?.split('@')[0] || 'User'}
-                    </span>
+                      </span>
                       {/* Cohort Badge */}
                       {message.user?.email && cohortData[message.user.email as keyof typeof cohortData] && (
-                        <span className={`inline-flex items-center space-x-1 px-2 py-0.5 text-xs font-medium bg-gradient-to-r ${cohortData[message.user.email as keyof typeof cohortData].color} text-white rounded-full shadow-sm`}>
+                        <span className={`inline-flex items-center space-x-1 px-3 py-1 text-xs font-semibold bg-gradient-to-r ${cohortData[message.user.email as keyof typeof cohortData].color} text-white rounded-full shadow-md`}>
                           <span>{cohortData[message.user.email as keyof typeof cohortData].badge}</span>
                           <span>{cohortData[message.user.email as keyof typeof cohortData].type}</span>
                         </span>
                       )}
-                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                         {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                      </span>
                   </div>
                   
                                          {editingMessageId === message.id ? (
@@ -1485,10 +1486,10 @@ const CommunityLoungeView: React.FC = () => {
                            </button>
                          </div>
                        </div>
-                     ) : (
-                                            <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                       {renderWithMentions(message.body)}
-                     </div>
+                                          ) : (
+                       <div className="mt-2 text-base text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                         {renderWithMentions(message.body)}
+                       </div>
                      )}
 
                     {/* Attachment Preview */}
@@ -1559,14 +1560,14 @@ const CommunityLoungeView: React.FC = () => {
                   
                   {/* Reactions */}
                   {message.reactions && message.reactions.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
                       {message.reactions.map((reaction, index) => (
                           <span
                           key={index}
-                            className="inline-flex items-center space-x-1 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer shadow-sm"
+                            className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200 cursor-pointer shadow-sm border border-gray-200 dark:border-gray-600"
                           >
-                                                      <span className="text-sm">{reaction.emoji}</span>
-                          <span className="font-medium">{reaction.count}</span>
+                                                      <span className="text-base">{reaction.emoji}</span>
+                          <span className="font-semibold text-xs">{reaction.count}</span>
                           </span>
                       ))}
                     </div>
