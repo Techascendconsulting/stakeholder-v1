@@ -204,6 +204,11 @@ const CommunityLoungeView: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Scroll to bottom of thread replies
+  const scrollToThreadBottom = () => {
+    threadRepliesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Render helpers
   const startDirectMessage = (handle: string) => {
     // Switch to Direct Messages view and pass recipient info
@@ -447,6 +452,13 @@ const CommunityLoungeView: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Auto-scroll to bottom when thread replies change
+  useEffect(() => {
+    if (threadReplies.length > 0) {
+      scrollToThreadBottom();
+    }
+  }, [threadReplies]);
+
   // Persist messages to localStorage whenever they change
   useEffect(() => {
     if (messages.length > 0) {
@@ -495,19 +507,37 @@ const CommunityLoungeView: React.FC = () => {
   useEffect(() => {
     if (replyingToMessage && threadReplies.length > 0) {
       const replyCount = threadReplies.length;
+      
+      // Check if any replies have images
+      const hasImages = threadReplies.some(reply => 
+        reply.file_url && /(png|jpe?g|gif|webp|bmp|svg)$/i.test(reply.file_name || '')
+      );
+      
       let newHeight = 'h-96';
       
-      if (replyCount <= 3) {
-        newHeight = 'h-[500px]';
-      } else if (replyCount <= 8) {
-        newHeight = 'h-[600px]';
+      if (hasImages) {
+        // If there are images, use larger height to accommodate them
+        if (replyCount <= 2) {
+          newHeight = 'h-[600px]';
+        } else if (replyCount <= 5) {
+          newHeight = 'h-[700px]';
+        } else {
+          newHeight = 'h-screen';
+        }
       } else {
-        newHeight = 'h-screen';
+        // Text-only replies can use smaller height
+        if (replyCount <= 3) {
+          newHeight = 'h-[500px]';
+        } else if (replyCount <= 8) {
+          newHeight = 'h-[600px]';
+        } else {
+          newHeight = 'h-screen';
+        }
       }
       
       if (newHeight !== threadPanelHeight) {
         setThreadPanelHeight(newHeight);
-        console.log('📏 Updated thread panel height to:', newHeight, 'for', replyCount, 'replies');
+        console.log('📏 Updated thread panel height to:', newHeight, 'for', replyCount, 'replies', hasImages ? 'with images' : 'text only');
       }
     }
   }, [threadReplies.length, replyingToMessage, threadPanelHeight]);
@@ -785,119 +815,124 @@ const CommunityLoungeView: React.FC = () => {
           </div>
         </div>
 
-        {/* Channels List */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Channels</h3>
-              <button 
-                onClick={() => setShowAddChannel(!showAddChannel)}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="space-y-1">
-            {channels.map((channel) => (
-              <button
-                key={channel.id}
-                  onClick={() => setSelectedChannel(channel)}
-                  className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                  selectedChannel?.id === channel.id
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                  <Hash className="w-4 h-4" />
-                  <span className="truncate">{channel.name}</span>
-              </button>
-            ))}
-            </div>
-          </div>
-
-          {/* Direct Messages Section */}
-          <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Direct Messages</h3>
-              <button 
-                onClick={() => setShowNewDM(!showNewDM)}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* New DM Input */}
-            {showNewDM && (
-              <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
-                  <input
-                    type="text"
-                    placeholder="Search users..."
-                    className="w-full pl-8 pr-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    value={dmSearchQuery}
-                    onChange={(e) => setDmSearchQuery(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-                {dmSearchQuery && (
-                  <div className="mt-2 space-y-1">
-                    {['admin@batraining.com', 'user1@example.com', 'user2@example.com'].filter(email => 
-                      email.toLowerCase().includes(dmSearchQuery.toLowerCase())
-                    ).map((email) => (
-                      <button
-                        key={email}
-                        onClick={() => {
-                          // Create or open DM with this user
-                                                     const dmChannel = dmChannels.find(dm => dm.name === email) || {
-                             id: `dm-${email}`,
-                             space_id: '1',
-                             name: email,
-                             description: `Direct message with ${email}`,
-                             is_private: true,
-                             is_staff_only: false,
-                             created_at: new Date().toISOString(),
-                             updated_at: new Date().toISOString()
-                           };
-                          setDmChannels(prev => prev.find(dm => dm.id === dmChannel.id) ? prev : [...prev, dmChannel]);
-                          setSelectedChannel(dmChannel);
-                          setShowNewDM(false);
-                          setDmSearchQuery('');
-                        }}
-                        className="w-full flex items-center space-x-2 px-2 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded"
-                      >
-                        <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                          {email.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="truncate">{email.split('@')[0]}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+        {/* Scrollable Content Area */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Channels List - Scrollable */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="p-3">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Channels</h3>
+                <button 
+                  onClick={() => setShowAddChannel(!showAddChannel)}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
               </div>
-            )}
-
-            {/* DM Channels List */}
-            <div className="space-y-1">
-              {dmChannels.map((dm) => (
+              
+              <div className="space-y-1">
+              {channels.map((channel) => (
                 <button
-                  key={dm.id}
-                  onClick={() => setSelectedChannel(dm)}
-                  className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                    selectedChannel?.id === dm.id
+                  key={channel.id}
+                    onClick={() => setSelectedChannel(channel)}
+                    className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
+                    selectedChannel?.id === channel.id
                       ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold relative">
-                    {dm.name.charAt(0).toUpperCase()}
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 border border-white rounded-full"></div>
-                  </div>
-                  <span className="truncate">{dm.name.split('@')[0]}</span>
+                    <Hash className="w-4 h-4" />
+                    <span className="truncate">{channel.name}</span>
                 </button>
               ))}
+              </div>
+            </div>
+          </div>
+
+                    {/* Direct Messages Section - Fixed at Bottom */}
+          <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
+            <div className="p-3">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Direct Messages</h3>
+                <button 
+                  onClick={() => setShowNewDM(!showNewDM)}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* New DM Input */}
+              {showNewDM && (
+                <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      className="w-full pl-8 pr-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      value={dmSearchQuery}
+                      onChange={(e) => setDmSearchQuery(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  {dmSearchQuery && (
+                    <div className="mt-2 space-y-1">
+                      {['admin@batraining.com', 'user1@example.com', 'user2@example.com'].filter(email => 
+                        email.toLowerCase().includes(dmSearchQuery.toLowerCase())
+                      ).map((email) => (
+                        <button
+                          key={email}
+                          onClick={() => {
+                            // Create or open DM with this user
+                            const dmChannel = dmChannels.find(dm => dm.name === email) || {
+                              id: `dm-${email}`,
+                              space_id: '1',
+                              name: email,
+                              description: `Direct message with ${email}`,
+                              is_private: true,
+                              is_staff_only: false,
+                              created_at: new Date().toISOString(),
+                              updated_at: new Date().toISOString()
+                            };
+                            setDmChannels(prev => prev.find(dm => dm.id === dmChannel.id) ? prev : [...prev, dmChannel]);
+                            setSelectedChannel(dmChannel);
+                            setShowNewDM(false);
+                            setDmSearchQuery('');
+                          }}
+                          className="w-full flex items-center space-x-2 px-2 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded"
+                        >
+                          <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            {email.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="truncate">{email.split('@')[0]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* DM Channels List */}
+              <div className="space-y-1">
+                {dmChannels.map((dm) => (
+                  <button
+                    key={dm.id}
+                    onClick={() => setSelectedChannel(dm)}
+                    className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
+                      selectedChannel?.id === dm.id
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold relative">
+                      {dm.name.charAt(0).toUpperCase()}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 border border-white rounded-full"></div>
+                    </div>
+                    <span className="truncate">{dm.name.split('@')[0]}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1367,6 +1402,7 @@ const CommunityLoungeView: React.FC = () => {
 
           {/* Thread Replies */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+            <div ref={threadRepliesEndRef} />
             {threadReplies.map((reply) => (
               <div key={reply.id} className="flex space-x-3">
                 <div className="flex-shrink-0">
