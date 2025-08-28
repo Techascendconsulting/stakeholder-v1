@@ -116,6 +116,9 @@ const CommunityLoungeView: React.FC = () => {
   const [showQuoteActions, setShowQuoteActions] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [editMessageContent, setEditMessageContent] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
+  const [imageError, setImageError] = useState<Record<string, boolean>>({});
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -473,6 +476,7 @@ const CommunityLoungeView: React.FC = () => {
         setShowMoreMenu(null);
         setReactionPickerForId(null);
         setReplyingToMessage(null);
+        setSelectedImage(null);
         if (hoverTimeout) clearTimeout(hoverTimeout);
       }
     };
@@ -1009,13 +1013,35 @@ const CommunityLoungeView: React.FC = () => {
                   {message.file_url && (
                     <div className="mt-2">
                         {/(png|jpe?g|gif|webp|bmp|svg)$/i.test(message.file_name || '') ? (
-                          <a href={message.file_url} target="_blank" rel="noreferrer">
-                            <img
-                              src={message.file_url}
-                              alt={message.file_name || 'attachment'}
-                              className="max-h-56 rounded-md border border-gray-200 dark:border-gray-700"
-                            />
-                          </a>
+                          <div className="relative">
+                            {imageLoading[message.file_url] && (
+                              <div className="max-h-56 w-full bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse flex items-center justify-center">
+                                <div className="text-gray-500 text-sm">Loading image...</div>
+                              </div>
+                            )}
+                            {imageError[message.file_url] ? (
+                              <div className="max-h-56 w-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-center justify-center">
+                                <div className="text-red-500 text-sm">Failed to load image</div>
+                              </div>
+                            ) : (
+                              <img
+                                src={message.file_url}
+                                alt={message.file_name || 'attachment'}
+                                className={`max-h-56 max-w-full rounded-md border border-gray-200 dark:border-gray-700 object-cover cursor-pointer hover:opacity-90 transition-opacity ${
+                                  imageLoading[message.file_url] ? 'hidden' : ''
+                                }`}
+                                onClick={() => setSelectedImage(message.file_url || null)}
+                                onLoad={() => setImageLoading(prev => ({ ...prev, [message.file_url!]: false }))}
+                                onError={() => {
+                                  setImageLoading(prev => ({ ...prev, [message.file_url!]: false }));
+                                  setImageError(prev => ({ ...prev, [message.file_url!]: true }));
+                                }}
+                              />
+                            )}
+                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              {message.file_name} {message.file_size && `• ${Math.ceil(message.file_size / 1024)} KB`}
+                            </div>
+                          </div>
                         ) : (
                       <a 
                         href={message.file_url} 
@@ -1218,13 +1244,35 @@ const CommunityLoungeView: React.FC = () => {
                 {reply.file_url && (
                   <div className="mt-2">
                     {/(png|jpe?g|gif|webp|bmp|svg)$/i.test(reply.file_name || '') ? (
-                      <a href={reply.file_url} target="_blank" rel="noreferrer">
-                        <img
-                          src={reply.file_url}
-                          alt={reply.file_name || 'attachment'}
-                          className="max-h-48 rounded-md border border-gray-200 dark:border-gray-700"
-                        />
-                      </a>
+                      <div className="relative">
+                        {imageLoading[reply.file_url] && (
+                          <div className="max-h-48 w-full bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse flex items-center justify-center">
+                            <div className="text-gray-500 text-xs">Loading...</div>
+                          </div>
+                        )}
+                        {imageError[reply.file_url] ? (
+                          <div className="max-h-48 w-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-center justify-center">
+                            <div className="text-red-500 text-xs">Failed to load image</div>
+                          </div>
+                        ) : (
+                          <img
+                            src={reply.file_url}
+                            alt={reply.file_name || 'attachment'}
+                            className={`max-h-48 max-w-full rounded-md border border-gray-200 dark:border-gray-700 object-cover cursor-pointer hover:opacity-90 transition-opacity ${
+                              imageLoading[reply.file_url] ? 'hidden' : ''
+                            }`}
+                            onClick={() => setSelectedImage(reply.file_url || null)}
+                            onLoad={() => setImageLoading(prev => ({ ...prev, [reply.file_url!]: false }))}
+                            onError={() => {
+                              setImageLoading(prev => ({ ...prev, [reply.file_url!]: false }));
+                              setImageError(prev => ({ ...prev, [reply.file_url!]: true }));
+                            }}
+                          />
+                        )}
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {reply.file_name} {reply.file_size && `• ${Math.ceil(reply.file_size / 1024)} KB`}
+                        </div>
+                      </div>
                     ) : (
                       <a
                         href={reply.file_url}
@@ -1278,6 +1326,29 @@ const CommunityLoungeView: React.FC = () => {
                 <Paperclip className="w-4 h-4" />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-full">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl font-bold z-10"
+            >
+              ×
+            </button>
+            <img
+              src={selectedImage}
+              alt="Full size image"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}
