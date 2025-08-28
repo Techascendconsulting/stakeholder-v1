@@ -119,6 +119,8 @@ const CommunityLoungeView: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
+  const [showThreadScrollButton, setShowThreadScrollButton] = useState(false);
+  const [threadPanelHeight, setThreadPanelHeight] = useState('h-96'); // Start with short height
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -126,6 +128,7 @@ const CommunityLoungeView: React.FC = () => {
   const threadFileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const threadPanelRef = useRef<HTMLDivElement>(null);
+  const threadRepliesEndRef = useRef<HTMLDivElement>(null);
 
   // Emojis for reactions
   const emojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🙏', '🔥', '💯', '✨', '🎉', '🤔', '👀', '💪', '🚀', '💡', '🎯', '⭐', '💎'];
@@ -455,6 +458,55 @@ const CommunityLoungeView: React.FC = () => {
       console.log('💾 Channels saved to localStorage');
     }
   }, [channels]);
+
+  // Load thread replies when replyingToMessage changes
+  useEffect(() => {
+    if (replyingToMessage) {
+      const threadMessages = messages.filter(msg => msg.replied_to_id === replyingToMessage.id);
+      setThreadReplies(threadMessages);
+      
+      // Calculate dynamic height based on number of replies
+      const replyCount = threadMessages.length;
+      let newHeight = 'h-96'; // Default short height
+      
+      if (replyCount === 0) {
+        newHeight = 'h-96'; // Short height for no replies
+      } else if (replyCount <= 3) {
+        newHeight = 'h-[500px]'; // Medium height for 1-3 replies
+      } else if (replyCount <= 8) {
+        newHeight = 'h-[600px]'; // Larger height for 4-8 replies
+      } else {
+        newHeight = 'h-screen'; // Full height for many replies
+      }
+      
+      setThreadPanelHeight(newHeight);
+      console.log('🧵 Loaded thread replies for message:', replyingToMessage.id, 'Count:', replyCount, 'Height:', newHeight);
+    } else {
+      setThreadReplies([]);
+      setThreadPanelHeight('h-96');
+    }
+  }, [replyingToMessage, messages]);
+
+  // Update thread panel height when thread replies change
+  useEffect(() => {
+    if (replyingToMessage && threadReplies.length > 0) {
+      const replyCount = threadReplies.length;
+      let newHeight = 'h-96';
+      
+      if (replyCount <= 3) {
+        newHeight = 'h-[500px]';
+      } else if (replyCount <= 8) {
+        newHeight = 'h-[600px]';
+      } else {
+        newHeight = 'h-screen';
+      }
+      
+      if (newHeight !== threadPanelHeight) {
+        setThreadPanelHeight(newHeight);
+        console.log('📏 Updated thread panel height to:', newHeight, 'for', replyCount, 'replies');
+      }
+    }
+  }, [threadReplies.length, replyingToMessage, threadPanelHeight]);
 
   // Close thread panel on outside click and ESC key
   useEffect(() => {
@@ -936,6 +988,7 @@ const CommunityLoungeView: React.FC = () => {
                     <button onClick={() => setReactionPickerForId(prev => prev === message.id ? null : message.id)} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">React</button>
                     <button 
                       onClick={() => {
+                        console.log('🧵 Opening thread for reply to message:', message);
                         setReplyingToMessage(message);
                         setHoveredMessageId(null);
                       }}
@@ -1065,9 +1118,6 @@ const CommunityLoungeView: React.FC = () => {
                         onClick={() => {
                           console.log('🧵 Opening thread for message:', message);
                           setReplyingToMessage(message);
-                          // Load thread replies for this message
-                          const threadMessages = messages.filter(msg => msg.replied_to_id === message.id);
-                          setThreadReplies(threadMessages);
                         }}
                         className="mt-2 inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                       >
@@ -1181,7 +1231,7 @@ const CommunityLoungeView: React.FC = () => {
 
       {/* Thread Panel */}
       {replyingToMessage && (
-        <div ref={threadPanelRef} className="fixed top-0 right-0 w-96 h-96 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-xl z-30 flex flex-col">
+        <div ref={threadPanelRef} className={`fixed top-0 right-0 w-96 ${threadPanelHeight} bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-xl z-30 flex flex-col transition-all duration-300 ease-in-out`}>
           {/* Thread Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-2">
@@ -1221,7 +1271,7 @@ const CommunityLoungeView: React.FC = () => {
           </div>
 
           {/* Thread Replies */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             {threadReplies.map((reply) => (
               <div key={reply.id} className="flex space-x-3">
                 <div className="flex-shrink-0">
