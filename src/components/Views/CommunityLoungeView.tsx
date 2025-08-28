@@ -771,7 +771,8 @@ const CommunityLoungeView: React.FC = () => {
   };
 
     return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex relative">
+    <>
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex relative">
       <div className="w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-3">
@@ -1705,6 +1706,7 @@ const CommunityLoungeView: React.FC = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 
