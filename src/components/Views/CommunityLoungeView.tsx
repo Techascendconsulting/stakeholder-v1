@@ -899,7 +899,7 @@ const CommunityLoungeView: React.FC = () => {
             </div>
 
         {/* Message Input */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4">
 
           <div className="flex items-end space-x-3">
             <div className="flex-1">
