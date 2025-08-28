@@ -323,6 +323,23 @@ const CommunityLoungeView: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Reset sending state when component mounts or user changes
+  useEffect(() => {
+    setIsSendingMessage(false);
+  }, [user?.id]);
+
+  // Emergency reset - if sending state is stuck for more than 5 seconds, reset it
+  useEffect(() => {
+    if (isSendingMessage) {
+      const emergencyTimeout = setTimeout(() => {
+        console.log('🚨 Emergency reset of sending state');
+        setIsSendingMessage(false);
+      }, 5000);
+      
+      return () => clearTimeout(emergencyTimeout);
+    }
+  }, [isSendingMessage]);
+
   // Close thread panel on outside click and ESC key
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -427,6 +444,8 @@ const CommunityLoungeView: React.FC = () => {
       
       if (recentMessage) {
         console.log('⚠️ Duplicate message detected, not adding:', newMessage);
+        clearTimeout(timeoutId);
+        setIsSendingMessage(false);
         return prevMessages;
       }
       
