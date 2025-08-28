@@ -1,0 +1,284 @@
+[
+  {
+    "id": "pe_1",
+    "stage_id": "problem_exploration",
+    "skill": "Pain Point Identification",
+    "text": "What are the top 3 most frustrating aspects of the current process for your team?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_2", 
+    "stage_id": "problem_exploration",
+    "skill": "Impact Assessment",
+    "text": "How often do these issues occur and what's the business impact in terms of time, cost, or customer satisfaction?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_3",
+    "stage_id": "problem_exploration", 
+    "skill": "Stakeholder Analysis",
+    "text": "Which teams or departments are most affected by these problems? Who else should we involve in this discussion?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_4",
+    "stage_id": "problem_exploration",
+    "skill": "Root Cause Analysis", 
+    "text": "What workarounds are people currently using to deal with these issues? What does that tell us about the root cause?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_5",
+    "stage_id": "problem_exploration",
+    "skill": "Constraint Identification",
+    "text": "What are the non-negotiable constraints we need to work within? Budget, timeline, technical limitations?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_6",
+    "stage_id": "problem_exploration",
+    "skill": "Frequency Analysis",
+    "text": "How frequently do these problems occur? Daily, weekly, monthly? And what triggers them?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_7",
+    "stage_id": "problem_exploration",
+    "skill": "Severity Assessment",
+    "text": "On a scale of 1-10, how severe is the impact of these problems on your daily operations?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_8",
+    "stage_id": "problem_exploration",
+    "skill": "Business Metrics",
+    "text": "What specific metrics or KPIs are being affected by these problems? Revenue, efficiency, customer satisfaction?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_9",
+    "stage_id": "problem_exploration",
+    "skill": "Workaround Analysis",
+    "text": "What manual processes or workarounds have you developed to cope with these issues?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "pe_10",
+    "stage_id": "problem_exploration",
+    "skill": "Future Vision",
+    "text": "If we could solve these problems, what would success look like for your team?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_1",
+    "stage_id": "as_is",
+    "skill": "Process Triggers",
+    "text": "What event or condition triggers the start of this process? How do you know when to begin?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_2",
+    "stage_id": "as_is",
+    "skill": "Process End",
+    "text": "How do you know when this process is complete? What's the final deliverable or outcome?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_3",
+    "stage_id": "as_is",
+    "skill": "Actor Identification",
+    "text": "Who are all the people involved in this process? What role does each person play?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_4",
+    "stage_id": "as_is",
+    "skill": "Handoff Analysis",
+    "text": "How do you hand off work between different people or departments? What information is passed along?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_5",
+    "stage_id": "as_is",
+    "skill": "System Usage",
+    "text": "What systems or tools do you use in this process? Which screens or features are most important?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_6",
+    "stage_id": "as_is",
+    "skill": "Data Fields",
+    "text": "What key data do you capture or work with? Who owns or maintains this data?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_7",
+    "stage_id": "as_is",
+    "skill": "Exception Handling",
+    "text": "What happens when things don't go according to plan? How do you handle exceptions or errors?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_8",
+    "stage_id": "as_is",
+    "skill": "Volume Analysis",
+    "text": "How many transactions or cases do you process? What's the typical volume and any seasonal patterns?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_9",
+    "stage_id": "as_is",
+    "skill": "SLA Understanding",
+    "text": "What are the time expectations for each step? Are there any service level agreements or deadlines?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "ai_10",
+    "stage_id": "as_is",
+    "skill": "Process Pain Points",
+    "text": "Which steps in the current process are most time-consuming or error-prone?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_1",
+    "stage_id": "to_be",
+    "skill": "Outcome Definition",
+    "text": "What specific outcomes do you want to achieve with the improved process?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_2",
+    "stage_id": "to_be",
+    "skill": "Value Proposition",
+    "text": "What value will this bring to the business? How will we measure success?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_3",
+    "stage_id": "to_be",
+    "skill": "Constraint Identification",
+    "text": "What are the non-negotiable constraints we must work within?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_4",
+    "stage_id": "to_be",
+    "skill": "Success Metrics",
+    "text": "How will we know if the new process is successful? What metrics should we track?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_5",
+    "stage_id": "to_be",
+    "skill": "Dependency Analysis",
+    "text": "What dependencies exist? What needs to happen before we can implement this?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_6",
+    "stage_id": "to_be",
+    "skill": "Impact Assessment",
+    "text": "What impact will this change have on other processes or systems?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_7",
+    "stage_id": "to_be",
+    "skill": "Change Readiness",
+    "text": "How ready is the organization for this change? What resistance might we face?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_8",
+    "stage_id": "to_be",
+    "skill": "Rollout Strategy",
+    "text": "What signals will indicate we're ready to roll out the new process?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_9",
+    "stage_id": "to_be",
+    "skill": "Timeline Planning",
+    "text": "What's a realistic timeline for implementing these changes?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "tb_10",
+    "stage_id": "to_be",
+    "skill": "Risk Assessment",
+    "text": "What risks should we consider in the new process design?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_1",
+    "stage_id": "solution_design",
+    "skill": "Option Generation",
+    "text": "What are 2-3 different approaches we could take to solve this problem?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_2",
+    "stage_id": "solution_design",
+    "skill": "Feasibility Analysis",
+    "text": "How feasible is each option given our constraints and resources?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_3",
+    "stage_id": "solution_design",
+    "skill": "Trade-off Analysis",
+    "text": "What are the trade-offs between cost, time, and risk for each option?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_4",
+    "stage_id": "solution_design",
+    "skill": "Risk Identification",
+    "text": "What risks are associated with each solution option? How can we mitigate them?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_5",
+    "stage_id": "solution_design",
+    "skill": "Pilot Planning",
+    "text": "How should we pilot or test the preferred solution? What criteria define success?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_6",
+    "stage_id": "solution_design",
+    "skill": "Implementation Strategy",
+    "text": "What's the best approach for rolling out the solution? Phased or big bang?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_7",
+    "stage_id": "solution_design",
+    "skill": "Acceptance Criteria",
+    "text": "What specific criteria must be met for the solution to be considered successful?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_8",
+    "stage_id": "solution_design",
+    "skill": "Resource Requirements",
+    "text": "What resources (people, technology, budget) will each option require?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_9",
+    "stage_id": "solution_design",
+    "skill": "Timeline Estimation",
+    "text": "How long will it take to implement each option? What are the key milestones?",
+    "tone_tags": ["professional", "nigerian"]
+  },
+  {
+    "id": "sd_10",
+    "stage_id": "solution_design",
+    "skill": "Success Measurement",
+    "text": "How will we measure the success of the chosen solution? What KPIs should we track?",
+    "tone_tags": ["professional", "nigerian"]
+  }
+]
+
+

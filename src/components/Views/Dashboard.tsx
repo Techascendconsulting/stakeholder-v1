@@ -265,17 +265,26 @@ const Dashboard: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-gray-100">
             Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋
           </h1>
-          <button
-            onClick={() => {
-              console.log('🔄 Dashboard - Manual refresh triggered');
-              loadDashboardData();
-            }}
-            className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
-            disabled={loading}
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setCurrentView('training-dashboard')}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+            >
+              <Target className="w-4 h-4" />
+              <span>Training Dashboard</span>
+            </button>
+            <button
+              onClick={() => {
+                console.log('🔄 Dashboard - Manual refresh triggered');
+                loadDashboardData();
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
+            </button>
+          </div>
         </div>
         <p className="text-gray-600 dark:text-gray-400">
           Here's your stakeholder interview progress and recent activity

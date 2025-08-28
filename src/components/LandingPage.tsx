@@ -193,9 +193,9 @@ const LandingPage: React.FC = () => {
               </div>
             
               <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
-                Master
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient"> Business Analysis </span>
-                <br />with AI-Powered Requirement Gathering
+                BA WorkXP
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient"> Platform </span>
+                <br />Master Business Analysis with AI
               </h1>
               
               <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl">

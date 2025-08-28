@@ -2,6 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom styles for emoji picker */
+.epr-emoji-category-label {
+  @apply text-gray-700 dark:text-gray-300 !important;
+}
+
+.epr-search-container input {
+  @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 !important;
+}
+
+.epr-emoji-category-content {
+  @apply bg-white dark:bg-gray-800 !important;
+}
+
+.epr-emoji-category-content button:hover {
+  @apply bg-gray-100 dark:bg-gray-700 !important;
+}
+
+.epr-category-nav {
+  @apply bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 !important;
+}
+
+.epr-category-nav button {
+  @apply text-gray-600 dark:text-gray-400 !important;
+}
+
+.epr-category-nav button:hover {
+  @apply bg-gray-100 dark:bg-gray-700 !important;
+}
+
+.epr-category-nav button.epr-icn-active {
+  @apply bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 !important;
+}
+
+/* TipTap editor styles */
+.ProseMirror {
+  @apply outline-none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-gray-400 dark:text-gray-500;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.mention {
+  @apply bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1 rounded;
+}
+
+.emoji {
+  @apply inline-block;
+}
+
+/* Markdown formatting styles for textarea */
+.markdown-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.markdown-text strong,
+.markdown-text b {
+  @apply font-bold;
+}
+
+.markdown-text em,
+.markdown-text i {
+  @apply italic;
+}
+
+.markdown-text ul {
+  @apply list-disc list-inside ml-4;
+}
+
+.markdown-text ol {
+  @apply list-decimal list-inside ml-4;
+}
+
+.markdown-text li {
+  @apply mb-1;
+}
+
 /* Custom animations and styles */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }

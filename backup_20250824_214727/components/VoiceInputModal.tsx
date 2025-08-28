@@ -1,0 +1,423 @@
+import React, { useState, useRef, useEffect } from 'react'
+import { 
+  Mic, 
+  MicOff, 
+  Play, 
+  Pause, 
+  Save, 
+  X, 
+  Loader2,
+  Volume2,
+  AlertCircle,
+  Square
+} from 'lucide-react'
+import { transcribeAudio, isAudioRecordingSupported, isWhisperAvailable } from '../lib/whisper'
+
+interface VoiceInputModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSave: (transcription: string) => void
+  onTranscribingChange?: (isTranscribing: boolean) => void
+  initialText?: string
+  darkMode?: boolean // For voice only meeting
+  compact?: boolean // For smaller modal
+}
+
+const VoiceInputModal: React.FC<VoiceInputModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  onTranscribingChange,
+  initialText = '',
+  darkMode = false,
+  compact = false
+}) => {
+  const [isRecording, setIsRecording] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [transcription, setTranscription] = useState(initialText)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const [error, setError] = useState<string | null>(null)
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setTranscription(initialText)
+      setRecordingTime(0)
+      setError(null)
+      setIsRecording(false)
+      setIsPaused(false)
+      setIsTranscribing(false)
+    } else {
+      // Clean up when modal closes
+      stopRecording()
+      cleanupStream()
+    }
+  }, [isOpen, initialText])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupStream()
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current)
+      }
+    }
+  }, [])
+
+  const cleanupStream = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
+    }
+  }
+
+  const startRecording = async () => {
+    if (!isAudioRecordingSupported()) {
+      setError('Audio recording is not supported in your browser')
+      return
+    }
+
+    try {
+      setError(null)
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
+      
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorder.onstop = async () => {
+        if (audioChunksRef.current.length > 0) {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+          await handleAudioTranscription(audioBlob)
+        }
+        cleanupStream()
+      }
+
+      mediaRecorder.start(1000) // Collect data every second
+      setIsRecording(true)
+      setIsPaused(false)
+      setRecordingTime(0)
+
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+    } catch (error) {
+      console.error('Error starting recording:', error)
+      setError('Could not access microphone. Please check permissions.')
+      cleanupStream()
+    }
+  }
+
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current && isRecording && !isPaused) {
+      mediaRecorderRef.current.pause()
+      setIsPaused(true)
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current)
+      }
+    }
+  }
+
+  const resumeRecording = () => {
+    if (mediaRecorderRef.current && isRecording && isPaused) {
+      mediaRecorderRef.current.resume()
+      setIsPaused(false)
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+      setIsPaused(false)
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current)
+      }
+    }
+  }
+
+  const handleAudioTranscription = async (audioBlob: Blob) => {
+    if (!isWhisperAvailable()) {
+      setError('Whisper transcription not available. Please type your message manually.')
+      return
+    }
+
+    setIsTranscribing(true)
+    onTranscribingChange?.(true)
+    try {
+      const newTranscription = await transcribeAudio(audioBlob)
+      
+      // Append to existing transcription with proper spacing
+      setTranscription(prev => {
+        const trimmedPrev = prev.trim()
+        const trimmedNew = newTranscription.trim()
+        
+        if (!trimmedPrev) return trimmedNew
+        if (!trimmedNew) return trimmedPrev
+        
+        // Add appropriate spacing between segments
+        return `${trimmedPrev} ${trimmedNew}`
+      })
+    } catch (error) {
+      console.error('Transcription error:', error)
+      setError(error instanceof Error ? error.message : 'Transcription failed')
+    } finally {
+      setIsTranscribing(false)
+      onTranscribingChange?.(false)
+    }
+  }
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const handleSave = () => {
+    if (transcription.trim()) {
+      onSave(transcription.trim())
+      onClose()
+    }
+  }
+
+  const handleCancel = () => {
+    stopRecording()
+    onClose()
+  }
+
+  const handleClearTranscription = () => {
+    setTranscription('')
+    setError(null)
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div 
+        className={`${
+          darkMode 
+            ? 'bg-gray-900 bg-opacity-95' 
+            : 'bg-white'
+        } rounded-2xl shadow-2xl w-full ${
+          compact ? 'max-w-md max-h-[70vh]' : 'max-w-2xl max-h-[85vh]'
+        } flex flex-col`}
+        style={darkMode ? {
+          backgroundImage: 'url(/audio-image.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'overlay'
+        } : {}}
+      >
+        {/* Header */}
+        <div className={`${
+          darkMode 
+            ? 'bg-black bg-opacity-70 text-white' 
+            : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+        } ${compact ? 'p-4' : 'p-6'} rounded-t-2xl flex-shrink-0`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">Voice Input</h2>
+              <p className="text-blue-100 mt-1">Record your question or message</p>
+            </div>
+            <button
+              onClick={handleCancel}
+              className="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content - Scrollable */}
+        <div className={`flex-1 overflow-y-auto ${compact ? 'p-4' : 'p-6'} ${darkMode ? 'bg-black bg-opacity-30' : ''}`}>
+          <div className={`${compact ? 'space-y-4' : 'space-y-6'}`}>
+            {/* Recording Controls */}
+            <div className="text-center space-y-6">
+              {/* Main Recording Interface */}
+              <div className="flex justify-center items-center space-x-6">
+                {!isRecording ? (
+                  // Start Recording Button
+                  <button
+                    onClick={startRecording}
+                    disabled={isTranscribing}
+                    className="w-20 h-20 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Mic className="w-8 h-8" />
+                  </button>
+                ) : (
+                  // Recording Controls
+                  <div className="flex items-center space-x-4">
+                    {/* Pause/Resume Button */}
+                    <button
+                      onClick={isPaused ? resumeRecording : pauseRecording}
+                      className="w-14 h-14 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200"
+                      title={isPaused ? 'Resume Recording' : 'Pause Recording'}
+                    >
+                      {isPaused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
+                    </button>
+
+                    {/* Stop Recording Button */}
+                    <button
+                      onClick={stopRecording}
+                      className="w-20 h-20 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200"
+                      title="Stop Recording"
+                    >
+                      <Square className="w-8 h-8" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Recording Status */}
+              <div className="space-y-3">
+                {isRecording && (
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className={`w-4 h-4 rounded-full ${isPaused ? 'bg-yellow-500' : 'bg-red-500 animate-pulse'}`}></div>
+                    <span className="text-lg font-semibold text-gray-700">
+                      {isPaused ? 'Recording Paused' : 'Recording'}: {formatRecordingTime(recordingTime)}
+                    </span>
+                  </div>
+                )}
+
+                {isTranscribing && (
+                  <div className="flex items-center justify-center space-x-3 text-blue-600">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span className="text-lg font-semibold">Transcribing audio...</span>
+                  </div>
+                )}
+
+                {!isRecording && !isTranscribing && (
+                  <div className="text-center">
+                    <p className="text-gray-700 text-lg font-medium mb-2">
+                      {transcription ? 'Ready to save or record more' : 'Click the red button to start recording'}
+                    </p>
+                    {!transcription && (
+                      <p className="text-gray-500 text-sm">
+                        Speak clearly and at a normal pace for best results
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons for Recording State */}
+              {isRecording && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-center space-x-4 text-sm text-blue-800">
+                    <div className="flex items-center space-x-2">
+                      <Pause className="w-4 h-4" />
+                      <span>Pause to take a break</span>
+                    </div>
+                    <div className="w-px h-4 bg-blue-300"></div>
+                    <div className="flex items-center space-x-2">
+                      <Square className="w-4 h-4" />
+                      <span>Stop when finished</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-800 font-medium">Recording Error</p>
+                  <p className="text-red-700 text-sm mt-1">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Transcription Display */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Transcription</h3>
+                {transcription && (
+                  <button
+                    onClick={handleClearTranscription}
+                    className="text-sm text-gray-500 hover:text-gray-700 underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              
+              <div className="min-h-[120px]">
+                <textarea
+                  value={transcription}
+                  onChange={(e) => setTranscription(e.target.value)}
+                  placeholder="Your transcribed text will appear here. You can also edit it manually."
+                  className="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
+                />
+              </div>
+            </div>
+
+            {/* Tips */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Volume2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-blue-900 font-medium text-sm">Recording Tips</p>
+                  <ul className="text-blue-800 text-sm mt-1 space-y-1">
+                    <li>• Speak clearly and at a normal pace</li>
+                    <li>• Use pause/resume for longer messages</li>
+                    <li>• Click the square button to stop recording</li>
+                    <li>• You can edit the transcription before saving</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Actions - Always Visible */}
+        <div className={`${
+          darkMode 
+            ? 'bg-black bg-opacity-70 border-gray-700' 
+            : 'bg-gray-50 border-gray-200'
+        } ${compact ? 'px-4 py-3' : 'px-6 py-4'} flex items-center justify-between border-t rounded-b-2xl flex-shrink-0`}>
+          <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            {transcription.length > 0 && `${transcription.length} characters`}
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleCancel}
+              className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!transcription.trim()}
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium flex items-center space-x-2 shadow-sm"
+            >
+              <Save className="w-4 h-4" />
+              <span>Save & Use</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default VoiceInputModal

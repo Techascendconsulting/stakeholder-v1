@@ -82,45 +82,60 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       
       // Validate that the saved view is a valid AppView
       const validViews: AppView[] = [
+        'welcome',
         'dashboard',
+        'core-concepts',
+        'agile-hub',
+        'my-meetings',
+        'voice-meeting',
+        'settings',
+        'profile',
+        'custom-project',
+        'custom-stakeholders',
         'guided-practice-hub',
-        'project-setup',
-        'ba-fundamentals',
-        // Training flow
         'projects',
         'project-brief',
         'stakeholders',
         'meeting-mode-selection',
         'meeting',
         'voice-only-meeting',
+        'elevenlabs-meeting',
+        'individual-agent-meeting',
         'meeting-history',
         'meeting-summary',
         'raw-transcript',
         'notes',
+        'training-hub',
+        'training-practice',
+        'training-assess',
+        'training-feedback',
+        'training-dashboard',
         'deliverables',
+        'advanced-topics',
+        'meeting-details',
+        'enhanced-training-flow',
         'analysis',
-        'custom-project',
-        'custom-stakeholders',
-        // Other areas
-        'core-concepts',
-        'agile-hub',
-        'my-meetings',
-        'voice-meeting',
-        'elevenlabs-meeting',
-        'individual-agent-meeting',
-        'settings',
-        'profile'
+        'ba-fundamentals',
+        'process-mapper',
+        'process-mapper-editor',
+        'community-lounge',
+        'project-setup',
+        'structured-training',
+        'free-practice',
+        'pre-brief',
+        'live-training-meeting',
+        'post-brief'
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
         return savedView as AppView
       } else {
-        console.log('⚠️ INIT: Invalid or missing saved view, defaulting to dashboard. savedView:', savedView)
-        return 'dashboard'
+        console.log('⚠️ INIT: Invalid or missing saved view, defaulting to welcome. savedView:', savedView)
+        return 'welcome'
       }
     } catch (error) {
-      console.log('❌ INIT: Error loading saved view, defaulting to dashboard:', error)
-      return 'dashboard'
+      console.log('❌ INIT: Error loading saved view, defaulting to welcome:', error)
+      return 'welcome'
     }
   })
 

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "problem_exploration",
+    "name": "Problem Exploration",
+    "objective": "Understand the business problem, pain points, and stakeholder needs to establish a clear foundation for analysis.",
+    "must_cover": [
+      "Top 3 pains & frequency/severity",
+      "Affected personas/teams", 
+      "Business impact & metrics",
+      "Current workarounds/root symptoms",
+      "Constraints & non-negotiables"
+    ]
+  },
+  {
+    "id": "as_is",
+    "name": "As-Is Process Analysis",
+    "objective": "Document and analyze the current business process to identify inefficiencies and improvement opportunities.",
+    "must_cover": [
+      "Start & end triggers",
+      "Actors & hand-offs",
+      "Systems & specific screens",
+      "Data fields & IDs/ownership",
+      "Exceptions, volumes & SLAs"
+    ]
+  },
+  {
+    "id": "to_be",
+    "name": "To-Be Process Design",
+    "objective": "Design the future state process that addresses identified problems and meets business objectives.",
+    "must_cover": [
+      "Target outcomes & value",
+      "Non-negotiables/constraints",
+      "Success metrics & measurement",
+      "Dependencies & impacts",
+      "Change readiness/rollout signals"
+    ]
+  },
+  {
+    "id": "solution_design",
+    "name": "Solution Design",
+    "objective": "Design and evaluate solution options that support the future state process and business requirements.",
+    "must_cover": [
+      "2–3 viable options",
+      "Feasibility & constraints fit",
+      "Trade-offs (cost, time, risk)",
+      "Risks & mitigations",
+      "Pilot/rollout & acceptance criteria"
+    ]
+  }
+]
+
+

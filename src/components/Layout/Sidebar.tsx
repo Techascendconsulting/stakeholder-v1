@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   FolderOpen,
@@ -37,31 +37,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { resolvedTheme, toggleTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
-  // Environment indicator for cost awareness
-  const environment = import.meta.env.VITE_APP_ENV || 'development';
-  const isTestMode = environment === 'development';
+
 
   const menuItems = [
+    { id: 'welcome', label: 'Welcome', icon: GraduationCap },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { 
-      id: 'learn', 
-      label: 'Learn', 
+      id: 'training-hub', 
+      label: 'Training Hub', 
       icon: BookOpen,
       subItems: [
         { id: 'ba-fundamentals', label: 'BA Fundamentals', icon: GraduationCap },
         { id: 'core-concepts', label: 'Core Concepts', icon: BookOpen },
-        { id: 'advanced-topics', label: 'Advanced Topics', icon: Zap }
+        { id: 'process-mapper', label: 'Process Mapper', icon: MessageSquare },
+        { id: 'community-lounge', label: '💬 Community Lounge', icon: MessageSquare, isNew: true },
+        { id: 'direct-messages', label: '💬 Direct Messages', icon: MessageSquare, isNew: true },
+        { id: 'advanced-topics', label: 'Agile Scrum', icon: Zap }
       ]
     },
     { 
-      id: 'practice', 
-      label: 'Practice', 
+      id: 'work-experience', 
+      label: 'Work Experience', 
       icon: FolderOpen,
       subItems: [
-        { id: 'guided-practice-hub', label: 'Training Projects', icon: FolderOpen },
-        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
-        { id: 'my-meetings', label: 'My Meetings', icon: Calendar }
+        { id: 'guided-practice-hub', label: 'Project Workspace', icon: FolderOpen },
+        { id: 'agile-hub', label: 'Scrum Meetings', icon: Workflow },
+        { id: 'my-meetings', label: 'Meeting History', icon: Calendar },
+        { id: 'deliverables', label: 'My Deliverables', icon: FileText },
+        { id: 'portfolio', label: 'My Portfolio', icon: BookText }
       ]
     },
     { id: 'custom-project', label: 'Create Your Project', icon: Plus },
@@ -83,10 +88,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     }
   };
 
+  // Debug: log resize and sidebar state to help trace whitespace issues when exiting fullscreen
+  useEffect(() => {
+    const handleResize = () => {
+      // Minimal logging to avoid noise
+      console.debug('[Sidebar] resize', { width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Auto-expand the section that contains the active sub-item
+  useEffect(() => {
+    // Find which section (if any) contains the currentView
+    const section = menuItems.find((item: any) => item.subItems && item.subItems.some((s: any) => s.id === (currentView as any)));
+    if (section && !expandedSections[section.id]) {
+      setExpandedSections((prev) => ({ ...prev, [section.id]: true }));
+    }
+  }, [currentView]);
+
   return (
-    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white ${isCollapsed ? 'w-20' : 'w-64'} min-h-screen flex flex-col shadow-lg transition-all duration-300 ${className}`}>
+    <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white ${isCollapsed ? 'w-20' : 'w-64'} h-screen flex flex-col shadow-lg transition-all duration-300 overflow-hidden ${className}`}>
       {/* Logo/Brand with Toggle */}
-      <div className={`${isCollapsed ? 'p-3' : 'p-6'} border-b border-purple-500/30 transition-all duration-300`}>
+      <div className={`${isCollapsed ? 'p-2' : 'p-4'} border-b border-purple-500/30 transition-all duration-300`}>
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
@@ -94,8 +118,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">BA Interview Pro</h1>
-                <p className="text-xs text-purple-200">Professional Development</p>
+                <h1 className="text-lg font-bold text-white">BA WorkXP Platform</h1>
+
               </div>
             </div>
           )}
@@ -126,21 +150,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           )}
         </div>
 
-        {/* Environment Indicator */}
-        {!isCollapsed && (
-          <div className={`mx-4 mt-3 mb-2 px-2 py-1 rounded-md text-xs font-medium flex items-center space-x-1 ${
-            isTestMode 
-              ? 'bg-green-500/20 text-green-200 border border-green-500/30' 
-              : 'bg-orange-500/20 text-orange-200 border border-orange-500/30'
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${isTestMode ? 'bg-green-400' : 'bg-orange-400'}`}></div>
-            <span>{isTestMode ? '🧪 TEST MODE' : '🚀 PRODUCTION'}</span>
-            {isTestMode && <span className="text-green-300">(85% cheaper)</span>}
-          </div>
-        )}
-
         {/* Theme Toggle */}
-        <div className={`mx-4 mb-4 ${isCollapsed ? 'mx-2' : ''}`}>
+        <div className={`mx-4 mb-2 mt-4 ${isCollapsed ? 'mx-2' : ''}`}>
           <button
             onClick={toggleTheme}
             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2'} px-2 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors group`}
@@ -169,22 +180,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-3 overflow-y-auto">
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id || (item.subItems && item.subItems.some(subItem => currentView === subItem.id));
+            const isExpanded = !!expandedSections[item.id as keyof typeof expandedSections];
 
             return (
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => {
                     if (item.subItems) {
-                      // For main sections, navigate to first sub-item
-                      setCurrentView(item.subItems[0].id as any);
+                      setExpandedSections((prev) => ({ ...prev, [item.id]: !prev[item.id] }));
                     } else {
                       setCurrentView(item.id as any);
                     }
+                    console.debug('[Sidebar] sectionClick', { id: item.id, hasSubItems: !!item.subItems });
                   }}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-4' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
@@ -192,22 +204,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
                   }`}
                   title={isCollapsed ? item.label : ''}
+                  aria-expanded={item.subItems ? isExpanded : undefined}
                 >
                   <Icon size={isCollapsed ? 28 : 20} className={isActive ? 'text-white' : 'text-purple-200'} />
                   {!isCollapsed && (
                     <div className="flex items-center justify-between w-full">
                       <span>{item.label}</span>
-                      {item.isNew && (
-                        <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
-                          NEW
-                        </span>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {(item as any).isNew && (
+                          <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
+                            NEW
+                          </span>
+                        )}
+                        {item.subItems && (
+                          isExpanded ? <ChevronUp size={16} className="text-purple-200" /> : <ChevronDown size={16} className="text-purple-200" />
+                        )}
+                      </div>
                     </div>
                   )}
                 </button>
 
                 {/* Sub-items for expanded mode */}
-                {!isCollapsed && item.subItems && (
+                {!isCollapsed && item.subItems && isExpanded && (
                   <ul className="ml-8 mt-1 space-y-1">
                     {item.subItems.map((subItem) => {
                       const SubIcon = subItem.icon;
@@ -246,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </nav>
 
       {/* User Section with Profile */}
-      <div className="p-4 border-t border-purple-500/30">
+      <div className="p-3 border-t border-purple-500/30">
         <div className="relative">
           <button
             onClick={() => !isCollapsed && setShowUserMenu(!showUserMenu)}

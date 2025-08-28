@@ -34,13 +34,13 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       <img
         src={profilePhoto}
         alt={`${displayName}'s profile`}
-        className={`${sizeClass} rounded-full object-cover ${borderClass} ${className}`}
+        className={`${sizeClass} rounded-lg object-cover ${borderClass} ${className}`}
       />
     );
   }
 
   return (
-    <div className={`${sizeClass} rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold ${borderClass} ${className}`}>
+    <div className={`${sizeClass} rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold ${borderClass} ${className}`}>
       {displayName?.charAt(0)?.toUpperCase() || 'U'}
     </div>
   );

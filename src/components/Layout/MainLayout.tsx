@@ -24,9 +24,21 @@ import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
 import ProjectView from '../Views/ProjectView';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
+// Training Hub Views
+import TrainingHubView from '../Views/TrainingHubView';
+import TrainingPracticeView from '../Views/TrainingPracticeView';
+import TrainingAssessView from '../Views/TrainingAssessView';
+import TrainingFeedbackView from '../Views/TrainingFeedbackView';
+import TrainingDashboardView from '../Views/TrainingDashboardView';
+import WelcomeView from '../Views/WelcomeView';
+import ProcessMapper from '../ProcessMapper';
+import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
+import CommunityLoungeView from '../Views/CommunityLoungeView';
+import DirectMessagesView from '../Views/DirectMessagesView';
+
 
 const MainLayout: React.FC = () => {
-  const { currentView, isLoading, selectedProject } = useApp();
+  const { currentView, setCurrentView, isLoading, selectedProject } = useApp();
 
   if (isLoading) {
     return (
@@ -43,12 +55,23 @@ const MainLayout: React.FC = () => {
 
   const renderView = () => {
     switch (currentView) {
+      case 'welcome':
+        return <WelcomeView />;
       case 'dashboard':
         return <Dashboard />;
       case 'ba-fundamentals':
         return <BAAcademyView />;
       case 'core-concepts':
         return <CoreConceptsView />;
+      case 'process-mapper':
+        return <ProcessMappingIntroView />;
+      case 'process-mapper-editor':
+        return <ProcessMapper />;
+      case 'community-lounge':
+        return <CommunityLoungeView />;
+      case 'direct-messages':
+        return <DirectMessagesView />;
+
       case 'advanced-topics':
         return <BAAcademyView />; // Will be enhanced later
       case 'guided-practice-hub':
@@ -91,15 +114,31 @@ const MainLayout: React.FC = () => {
         return <IndividualAgentMeeting />;
       case 'enhanced-training-flow':
         return <EnhancedTrainingFlow />;
+      // Training Hub Views
+      case 'training-hub':
+        return <TrainingHubView />;
+      case 'training-practice':
+        return <TrainingPracticeView />;
+      case 'training-assess':
+        return <TrainingAssessView />;
+      case 'training-feedback':
+        return <TrainingFeedbackView 
+          sessionId=""
+          stageId=""
+          mode="practice"
+          onBack={() => setCurrentView('training-hub')}
+        />;
+      case 'training-dashboard':
+        return <TrainingDashboardView />;
       default:
         return <ProjectsView />;
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen w-full bg-gray-50 dark:bg-gray-900">
       <Sidebar />
-      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
         {renderView()}
       </main>
     </div>

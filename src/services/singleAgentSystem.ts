@@ -137,33 +137,16 @@ class SingleAgentSystem {
     kbResults: any[]
   ): Promise<string> {
     try {
-      // Check if we have a perfect KB match (high score)
-      const perfectMatch = kbResults.find(r => r.score >= 2.5);
-      
-      if (perfectMatch) {
-        console.log(`📚 PERFECT KB MATCH: Using KB content directly (score: ${perfectMatch.score})`);
-        console.log(`📚 KB Entry: ${perfectMatch.entry.id} - ${perfectMatch.entry.short}`);
-        
-        // Use the KB content directly, but make it conversational
-        const kbContent = perfectMatch.entry.expanded || perfectMatch.entry.short;
-        
-        // Simple conversational wrapper
-        const response = `${kbContent}`;
-        console.log(`📚 DIRECT KB RESPONSE: "${response}"`);
-        return response;
-      }
-
-      // Build context from KB results for partial matches
+      // Always use AI for dynamic responses, but use KB context to inform the AI
       const kbContext = kbResults.length > 0 
         ? kbResults.map(r => `${r.entry.short}\n${r.entry.expanded}`).join('\n\n')
         : '';
 
       const systemPrompt = this.buildSystemPrompt(stakeholderContext, projectContext, kbContext);
       
-      // Use GPT-3.5 when no KB results (doesn't understand question well)
-      // Use GPT-4o-mini when we have KB context (better quality for informed responses)
-      const model = kbResults.length > 0 ? 'gpt-4o-mini' : 'gpt-3.5-turbo';
-      console.log(`🤖 Using ${model} for response generation (KB results: ${kbResults.length})`);
+      // Use GPT-4o-mini for better quality responses
+      const model = 'gpt-4o-mini';
+      console.log(`🤖 Using ${model} for dynamic AI response generation`);
       
       const response = await this.openai.chat.completions.create({
         model: model,
@@ -177,15 +160,15 @@ class SingleAgentSystem {
             content: userMessage
           }
         ],
-        max_tokens: 400,
-        temperature: 0.8, // Slightly higher temperature for more variety
-        presence_penalty: 0.1, // Slight penalty for repetition
-        frequency_penalty: 0.1, // Slight penalty for repetition
+        max_tokens: 150, // Much shorter responses
+        temperature: 0.7, // Balanced creativity
+        presence_penalty: 0.1, // Reduced penalty
+        frequency_penalty: 0.1, // Reduced penalty
       });
 
       const generatedResponse = response.choices[0]?.message?.content;
       
-      console.log(`🤖 OpenAI response: "${generatedResponse}"`);
+      console.log(`🤖 AI Generated Response: "${generatedResponse}"`);
       
       if (!generatedResponse?.trim()) {
         throw new Error('Empty response from OpenAI');
@@ -213,48 +196,28 @@ Your personality: ${stakeholderContext.personality}
 Your priorities: ${stakeholderContext.priorities.join(', ')}
 Your expertise: ${stakeholderContext.expertise.join(', ')}
 
-Project Context: ${projectContext.name}
-${projectContext.description}
+PROJECT CONTEXT:
+Project Name: ${projectContext.name}
+Project Description: ${projectContext.description}
 
-Detailed Project Information:
-- Company: TechCorp Solutions (enterprise software company)
-- Current Problem: 6 to 8 week onboarding timeline, 23% churn rate, fragmented processes across 7 departments
-- Goals: Reduce onboarding to 3 to 4 weeks, improve CSAT, decrease churn by 40%
-- Departments Involved: Sales, Implementation, IT, Product, Support, Customer Success
-- Current Process: Manual handoffs, 4 disconnected systems, no centralized tracking
-- Products: TechCorp CRM, ProjectFlow, AutoSync (enterprise software solutions)
+${projectContext.asIsProcess ? `Current Process: ${projectContext.asIsProcess}` : ''}
 
-PROCESS DOCUMENTATION:
-- Complete process details are available in our process document
-- Document contains all 10 steps with detailed information
-- When asked about process steps, refer users to the process document
-- Document is accessible via document viewer or download
-- Use document as authoritative source for process information
-
-KEY PROCESS POINTS:
-- 10-step onboarding process currently takes 6-8 weeks
-- Target is to reduce to 3-4 weeks
-- Current churn rate: 23%, target: 13.8% (40% reduction)
-- 7 departments involved: Sales, Implementation, IT, Product, Support, Customer Success
-- 4 disconnected systems causing coordination issues
+IMPORTANT: You must respond based on the specific project context above. Do NOT reference TechCorp Solutions unless this is actually the Customer Onboarding project. Each project has different companies, problems, and goals.
 
 Current time: ${timestamp}`;
 
     const kbSection = hasKBContext ? `\nKnowledge Base Context:\n${kbContext}\n` : '';
     
     const responseGuidelines = hasKBContext 
-      ? `You are ${stakeholderContext.name}. Use the KB context above to provide accurate, detailed information. Be conversational and natural. Do not use asterisks (*) or special formatting in your responses.`
-      : `You are ${stakeholderContext.name}. Use the project information above to provide helpful, specific responses. Be conversational and natural. Do not use asterisks (*) or special formatting in your responses.`;
+      ? `You are ${stakeholderContext.name}. Keep responses SHORT and CONVERSATIONAL (1-2 sentences max). Be natural, not formal. Don't dump information - give brief, human-like responses. Use the KB context for accuracy but keep it casual.`
+      : `You are ${stakeholderContext.name}. Keep responses SHORT and CONVERSATIONAL (1-2 sentences max). Be natural, not formal. Don't dump information - give brief, human-like responses. Use the project context but keep it casual.`;
 
     return `${basePrompt}${kbSection}\n${responseGuidelines}`;
   }
 
   private async generateErrorResponse(userMessage: string): Promise<string> {
-    const projectContext = `Project: Customer Onboarding Process Optimization at TechCorp Solutions
-Current Issues: 6 to 8 week onboarding timeline, 23% churn rate, fragmented processes across 7 departments
-Goals: Reduce to 3 to 4 weeks, improve CSAT, decrease churn by 40%
-Key Stakeholders: Sales, Implementation, IT, Product, Support, Customer Success teams
-Current Process: Manual handoffs, 4 disconnected systems, no centralized tracking`;
+    const projectContext = `Project: Unable to determine specific project context
+Please provide more details about the project you're working on.`;
 
     try {
       const response = await this.openai.chat.completions.create({
@@ -262,7 +225,7 @@ Current Process: Manual handoffs, 4 disconnected systems, no centralized trackin
         messages: [
           {
             role: 'system',
-            content: `You are a team member in the Customer Onboarding Process Optimization project. Be conversational and natural. Use the project context to answer questions intelligently. If you don't understand the question, make an educated guess based on the project context. Do not use asterisks (*) or special formatting in your responses.`
+            content: `You are a team member in a business analysis project. Be conversational and natural. If you don't understand the question, ask for clarification about the specific project context. Do not use asterisks (*) or special formatting in your responses.`
           },
           {
             role: 'user',

@@ -365,7 +365,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
     setBackgroundTranscript([]);
     // Only reset messages if there are no existing messages
     if (messages.length === 0) {
-      setMessages([]);
+    setMessages([]);
     } else {
       console.log('🔄 Preserving existing messages:', messages.length);
     }
@@ -1357,7 +1357,7 @@ export const VoiceOnlyMeetingView: React.FC = () => {
           return;
         }
       }
-      
+
       // CHECK FOR EXPLICIT "EVERYONE" REQUESTS
       const explicitEveryoneRequest = /\b(everyone|team|all|folks|guys)\b/i.test(messageContent);
       
@@ -4030,11 +4030,11 @@ Guidelines:
       </div>
 
       {/* Speaking Queue Header - Show in all tabs */}
-      <SpeakingQueueHeader 
-        currentSpeaker={currentSpeaker?.name || null}
-        upcomingQueue={responseQueue.upcoming}
-        selectedStakeholders={selectedStakeholders}
-      />
+        <SpeakingQueueHeader 
+          currentSpeaker={currentSpeaker?.name || null}
+          upcomingQueue={responseQueue.upcoming}
+          selectedStakeholders={selectedStakeholders}
+        />
 
       {/* Tab Content */}
       <div className="flex-1 flex flex-col min-h-0">
@@ -4326,12 +4326,12 @@ Guidelines:
                       const stageOrder = ['discovery', 'as_is', 'to_be', 'solution', 'closure'];
                       const currentStageIndex = stageOrder.indexOf(setupData?.selectedStage || 'discovery');
                       return (
-                        <div
-                          key={index}
-                          className={`w-2 h-2 rounded-full ${
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full ${
                             index <= currentStageIndex ? 'bg-indigo-600' : 'bg-gray-300'
-                          }`}
-                        />
+                        }`}
+                      />
                       );
                     })}
                   </div>

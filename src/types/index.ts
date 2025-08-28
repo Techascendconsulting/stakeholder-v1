@@ -1,101 +1,20 @@
-export interface Project {
-  id: string
-  name: string
-  description: string
-  businessContext: string
-  problemStatement: string
-  asIsProcess: string
-  businessGoals: string[]
-  duration: string
-  complexity: 'Beginner' | 'Intermediate' | 'Advanced'
-  isCustom?: boolean
-  stakeholderRoles?: string[]
-  relevantStakeholders?: string[] // IDs of stakeholders relevant to this project
-  industry?: string
-  projectType?: string
-  // Optional company context to help BAs get quick background
-  companyProducts?: string
-  companyServices?: string
-  companyOverview?: string
-}
+// Export all types
+export * from './meeting';
+export * from './chat';
 
-export interface Stakeholder {
-  id: string
-  name: string
-  role: string
-  department: string
-  bio: string
-  photo: string
-  personality: string
-  priorities: string[]
-  voice: string
-  expertise: string[]
-  agentId?: string // ElevenLabs agent ID for conversational AI
-  isCustom?: boolean
-}
-
-export interface Meeting {
-  id: string
-  projectId: string
-  stakeholderIds: string[]
-  transcript: Message[]
-  date: string
-  duration: number
-  status: 'scheduled' | 'in_progress' | 'completed'
-  meetingType: 'individual' | 'group'
-}
-
-export interface Message {
-  id: string
-  speaker: 'user' | string // stakeholder ID for group meetings
-  content: string
-  timestamp: string
-  stakeholderName?: string
-  stakeholderRole?: string
-}
-
-export interface Deliverable {
-  id: string
-  projectId: string
-  type: 'goals' | 'user-stories' | 'acceptance-criteria' | 'brd'
-  title: string
-  content: string
-  lastModified: string
-}
-
-export interface CoreConcept {
-  id: string;
-  title: string;
-  summary: string;
-  description: string;
-  keyPoints: string[];
-  videoUrl?: string;
-  estimatedTime: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-}
-
-export type AppView = 
-  | 'dashboard' 
-  | 'core-concepts'
-  | 'agile-hub'
-  | 'my-meetings' 
-  | 'voice-meeting' 
-  | 'settings' 
-  | 'profile'
-  | 'custom-project'
-  | 'custom-stakeholders'
-  | 'guided-practice-hub'
-  | 'projects'
-  | 'project-brief'
-  | 'stakeholders'
-  | 'meeting-mode-selection'
-  | 'meeting'
-  | 'voice-only-meeting'
-  | 'elevenlabs-meeting'
-  | 'individual-agent-meeting'
-  | 'meeting-history'
-  | 'meeting-summary'
-  | 'raw-transcript'
-  | 'notes'
-  | 'deliverables'
-  | 'analysis';
+// Re-export specific types for convenience
+export type {
+  Message,
+  DirectMessage,
+  UserProfile,
+  MessageThread,
+  PinnedMessage,
+  TypingIndicator,
+  SearchResult,
+  Conversation,
+  Channel,
+  MessageReaction,
+  SearchResponse,
+  ConversationListResponse,
+  UserProfileResponse
+} from './chat';
