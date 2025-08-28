@@ -99,51 +99,6 @@ const CommunityLoungeView: React.FC = () => {
       return { ...m, reactions: [ ...(m.reactions || []), { emoji, count: 1, users: [user?.id || 'me'] } ] };
     }));
   };
-
-  // Edit, Copy, Delete functions
-  const handleEditMessage = (messageId: number) => {
-    const message = messages.find(m => m.id === messageId);
-    if (message) {
-      setEditingMessageId(messageId);
-      setEditMessageText(message.body || '');
-      setShowMoreMenu(null);
-    }
-  };
-
-  const handleSaveEdit = () => {
-    if (editingMessageId && editMessageText.trim()) {
-      setMessages(prev => prev.map(m => 
-        m.id === editingMessageId 
-          ? { ...m, body: editMessageText.trim(), updated_at: new Date().toISOString() }
-          : m
-      ));
-      setEditingMessageId(null);
-      setEditMessageText('');
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingMessageId(null);
-    setEditMessageText('');
-  };
-
-  const handleCopyMessage = (messageId: number) => {
-    const message = messages.find(m => m.id === messageId);
-    if (message?.body) {
-      navigator.clipboard.writeText(message.body);
-      setShowMoreMenu(null);
-      // Show a brief success indicator
-      console.log('✅ Message copied to clipboard');
-    }
-  };
-
-  const handleDeleteMessage = (messageId: number) => {
-    if (confirm('Are you sure you want to delete this message?')) {
-      setMessages(prev => prev.filter(m => m.id !== messageId));
-      setShowMoreMenu(null);
-      console.log('🗑️ Message deleted');
-    }
-  };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -160,6 +115,7 @@ const CommunityLoungeView: React.FC = () => {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [showQuoteActions, setShowQuoteActions] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [editMessageContent, setEditMessageContent] = useState('');
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -271,6 +227,51 @@ const CommunityLoungeView: React.FC = () => {
     }
     if (lastIndex < text.length) parts.push(text.slice(lastIndex));
     return <>{parts}</>;
+  };
+
+  // Edit, Copy, Delete functions
+  const handleEditMessage = (messageId: number) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message) {
+      setEditingMessageId(messageId);
+      setEditMessageContent(message.body || '');
+      setShowMoreMenu(null);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (editingMessageId && editMessageContent.trim()) {
+      setMessages(prev => prev.map(m => 
+        m.id === editingMessageId 
+          ? { ...m, body: editMessageContent.trim(), updated_at: new Date().toISOString() }
+          : m
+      ));
+      setEditingMessageId(null);
+      setEditMessageContent('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditMessageContent('');
+  };
+
+  const handleCopyMessage = (messageId: number) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message?.body) {
+      navigator.clipboard.writeText(message.body);
+      setShowMoreMenu(null);
+      // Show a brief success indicator
+      console.log('✅ Message copied to clipboard');
+    }
+  };
+
+  const handleDeleteMessage = (messageId: number) => {
+    if (confirm('Are you sure you want to delete this message?')) {
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      setShowMoreMenu(null);
+      console.log('🗑️ Message deleted');
+    }
   };
 
   // Upload helper
@@ -917,41 +918,41 @@ const CommunityLoungeView: React.FC = () => {
                     </span>
                   </div>
                   
-                    {editingMessageId === message.id ? (
-                      <div className="mt-2">
-                        <textarea
-                          value={editMessageText}
-                          onChange={(e) => setEditMessageText(e.target.value)}
-                          className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                          rows={3}
-                          autoFocus
-                        />
-                        <div className="mt-2 flex space-x-2">
-                          <button
-                            onClick={handleSaveEdit}
-                            className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                        {renderWithMentions(message.body)}
-                        {/* Debug: Show raw content */}
-                        {process.env.NODE_ENV === 'development' && (
-                          <div className="mt-1 text-xs text-gray-400 border-t pt-1">
-                            Raw: "{message.body?.replace(/\n/g, '\\n')}"
-                          </div>
-                        )}
-                      </div>
-                    )}
+                                         {editingMessageId === message.id ? (
+                       <div className="mt-2">
+                         <textarea
+                           value={editMessageContent}
+                           onChange={(e) => setEditMessageContent(e.target.value)}
+                           className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                           rows={3}
+                           autoFocus
+                         />
+                         <div className="mt-2 flex space-x-2">
+                           <button
+                             onClick={handleSaveEdit}
+                             className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                           >
+                             Save
+                           </button>
+                           <button
+                             onClick={handleCancelEdit}
+                             className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                           >
+                             Cancel
+                           </button>
+                         </div>
+                       </div>
+                     ) : (
+                       <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                         {renderWithMentions(message.body)}
+                         {/* Debug: Show raw content */}
+                         {process.env.NODE_ENV === 'development' && (
+                           <div className="mt-1 text-xs text-gray-400 border-t pt-1">
+                             Raw: "{message.body?.replace(/\n/g, '\\n')}"
+                           </div>
+                         )}
+                       </div>
+                     )}
 
                     {/* Attachment Preview */}
                   {message.file_url && (
