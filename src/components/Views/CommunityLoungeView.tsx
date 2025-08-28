@@ -53,6 +53,75 @@ import { seedCommunityLounge } from '../../lib/communityLoungeSeed';
 import { setupTestUser } from '../../lib/setupTestUser';
 import { ensureTestUserAuthenticated, ensureTestUser2Authenticated, ensureAdminAuthenticated } from '../../lib/testAuth';
 import LoginForm from './LoginForm';
+import CohortSystem from '../CohortSystem';
+import { Crown, Star, Zap } from 'lucide-react';
+
+// Enhanced cohort data with premium features
+const cohortData = {
+  'premium@example.com': {
+    name: 'Premium Cohort',
+    color: 'from-purple-500 to-pink-500',
+    badge: 'Premium',
+    badgeColor: 'bg-gradient-to-r from-purple-500 to-pink-500',
+    icon: Crown,
+    privileges: ['enhanced_reactions', 'file_sharing', 'priority_messaging', 'unlimited_channels']
+  },
+  'pro@example.com': {
+    name: 'Pro Cohort',
+    color: 'from-yellow-500 to-orange-500',
+    badge: 'Pro',
+    badgeColor: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+    icon: Star,
+    privileges: ['enhanced_reactions', 'file_sharing', 'priority_messaging', 'unlimited_channels', 'admin_features']
+  },
+  'free@example.com': {
+    name: 'Free Cohort',
+    color: 'from-blue-500 to-cyan-500',
+    badge: 'Free',
+    badgeColor: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+    icon: Users,
+    privileges: ['basic_reactions', 'limited_channels']
+  }
+};
+
+// Enhanced channel data with cohort-specific channels
+const channelData = {
+  'general': {
+    name: 'General',
+    cohort: 'all',
+    description: 'General discussion for all cohorts',
+    memberCount: 150,
+    isPremium: false
+  },
+  'homework-help': {
+    name: 'Homework Help',
+    cohort: 'premium',
+    description: 'Premium homework assistance',
+    memberCount: 45,
+    isPremium: true
+  },
+  'resources': {
+    name: 'Resources',
+    cohort: 'all',
+    description: 'Shared learning resources',
+    memberCount: 120,
+    isPremium: false
+  },
+  'premium-resources': {
+    name: 'Premium Resources',
+    cohort: 'premium',
+    description: 'Exclusive premium resources',
+    memberCount: 45,
+    isPremium: true
+  },
+  'admin': {
+    name: 'Admin',
+    cohort: 'pro',
+    description: 'Administrative discussions',
+    memberCount: 5,
+    isPremium: true
+  }
+};
 
 const CommunityLoungeView: React.FC = () => {
   const { user } = useAuth();
@@ -128,6 +197,7 @@ const CommunityLoungeView: React.FC = () => {
   const [dmSearchQuery, setDmSearchQuery] = useState('');
   const [currentSection, setCurrentSection] = useState<'home' | 'threads' | 'dms' | 'channels'>('home');
   const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null);
+  const [currentCohort, setCurrentCohort] = useState('premium@example.com');
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -749,7 +819,7 @@ const CommunityLoungeView: React.FC = () => {
     <div className="min-h-screen bg-white dark:bg-gray-900 flex relative">
       <div className="w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <h1 className="text-lg font-bold text-gray-900 dark:text-white">BA Community</h1>
             <button
               onClick={() => setShowSettings(!showSettings)}
@@ -758,6 +828,13 @@ const CommunityLoungeView: React.FC = () => {
               <Settings className="w-5 h-5" />
             </button>
           </div>
+          
+          {/* Cohort System Integration */}
+          <CohortSystem 
+            currentCohort={currentCohort}
+            onCohortChange={setCurrentCohort}
+            userEmail={user?.email}
+          />
         </div>
 
         {/* Add Channel Inline - At Top */}
