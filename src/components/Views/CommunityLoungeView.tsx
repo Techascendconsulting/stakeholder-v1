@@ -331,6 +331,9 @@ const CommunityLoungeView: React.FC = () => {
       if (showMoreMenu && !(e.target as Element)?.closest('.message-container')) {
         setShowMoreMenu(null);
       }
+      if (reactionPickerForId && !(e.target as Element)?.closest('.reaction-picker')) {
+        setReactionPickerForId(null);
+      }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -349,7 +352,7 @@ const CommunityLoungeView: React.FC = () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [replyingToMessage, showMoreMenu, hoverTimeout]);
+  }, [replyingToMessage, showMoreMenu, reactionPickerForId, hoverTimeout]);
 
   const handleSendMessage = async (content: string, html: string, overrideFile?: File) => {
     console.log('🚀 handleSendMessage called with:', { content, html, selectedChannel });
@@ -855,7 +858,7 @@ const CommunityLoungeView: React.FC = () => {
                 </div>
                 {/* Reaction Picker */}
                 {reactionPickerForId === message.id && (
-                  <div className="absolute -top-8 right-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg p-3 z-20">
+                  <div className="absolute -top-8 right-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg p-3 z-20 reaction-picker">
                     <div className="grid grid-cols-10 gap-1 max-w-[320px] max-h-40 overflow-auto">
                       {['👍','❤️','😂','🤣','😊','😍','😘','😎','😉','😇','🤔','🤨','😐','😴','😮','😢','😭','😡','🤯','👏','🙌','🙏','🔥','✨','🎉','💯','👀','💪','🫶','🙈','✅','❌','🎯','🎪','🎨','🎭','🎬','🎤','🎧','🎵','🎶','🎹','🎸','🎺','🎻','🥁','🎮','🎲','🎯','🎳','🎰','🎪','🎨','🎭','🎬','🎤','🎧','🎵','🎶','🎹','🎸','🎺','🎻','🥁','🎮','🎲','🎯','🎳','🎰'].map(e => (
                         <button
