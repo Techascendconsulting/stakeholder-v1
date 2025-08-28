@@ -114,6 +114,7 @@ const CommunityLoungeView: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [showQuoteActions, setShowQuoteActions] = useState(false);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -357,12 +358,20 @@ const CommunityLoungeView: React.FC = () => {
   const handleSendMessage = async (content: string, html: string, overrideFile?: File) => {
     console.log('🚀 handleSendMessage called with:', { content, html, selectedChannel });
     
+    // Prevent duplicate sends
+    if (isSendingMessage) {
+      console.log('⚠️ Message already being sent, ignoring duplicate call');
+      return;
+    }
+    
     const fileToSend = overrideFile ?? selectedFile ?? null;
     // Allow sending if there is either text content or an attachment queued
     if (!selectedChannel || (!content.trim() && !fileToSend)) {
       console.log('❌ Message not sent - missing content or channel');
       return;
     }
+    
+    setIsSendingMessage(true);
     let attachment: { file_url?: string; file_name?: string; file_size?: number } | undefined;
     if (fileToSend) {
       const uploaded = await uploadFileToStorage(fileToSend, `channels/${selectedChannel.id}`);
@@ -377,7 +386,7 @@ const CommunityLoungeView: React.FC = () => {
     }
 
     const newMessage: Message = {
-          id: Date.now(),
+          id: Date.now() + Math.random(),
       channel_id: selectedChannel.id,
           user_id: user?.id || '1',
       body: content,
@@ -394,8 +403,21 @@ const CommunityLoungeView: React.FC = () => {
 
     console.log('📝 New message created:', newMessage);
     setMessages(prevMessages => {
+      // Check for duplicate messages (same content, same user, within 5 seconds)
+      const recentMessage = prevMessages.find(msg => 
+        msg.body === newMessage.body && 
+        msg.user_id === newMessage.user_id &&
+        Math.abs(new Date(msg.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 5000
+      );
+      
+      if (recentMessage) {
+        console.log('⚠️ Duplicate message detected, not adding:', newMessage);
+        return prevMessages;
+      }
+      
       const updatedMessages = [...prevMessages, newMessage];
       console.log('📊 Updated messages array:', updatedMessages);
+      setIsSendingMessage(false);
       return updatedMessages;
     });
     setNewMessage('');
