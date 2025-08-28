@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { BookOpen, GraduationCap, Zap, CheckCircle, Play, Pause, ArrowRight, Send, MessageCircle, Clock, Users, Award, Star, TrendingUp, Target, Brain } from 'lucide-react';
+import { BookOpen, GraduationCap, Zap, CheckCircle, Play, Pause, ArrowRight, Send, MessageCircle } from 'lucide-react';
 import LectureService, { type LectureResponse } from '../../services/lectureService';
 
 interface LearningModule {
@@ -247,24 +247,24 @@ const BAAcademyView: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-white" />;
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
       case 'in-progress':
-        return <Play className="w-4 h-4 text-white" />;
+        return <Play className="w-5 h-5 text-blue-500" />;
       default:
-        return <BookOpen className="w-4 h-4 text-white" />;
+        return <BookOpen className="w-5 h-5 text-gray-400" />;
     }
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Beginner':
-        return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'Intermediate':
-        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-200 dark:border-amber-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'Advanced':
-        return 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-200 border border-rose-200 dark:border-rose-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-200 border border-gray-200 dark:border-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
 
@@ -315,110 +315,59 @@ const BAAcademyView: React.FC = () => {
   };
 
   const renderModuleCard = (module: LearningModule) => (
-    <div 
-      key={module.id} 
-      className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-2xl border border-white/20 dark:border-gray-700/50 p-6 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1"
-    >
-      {/* Status Indicator */}
-      <div className="absolute -top-2 -right-2">
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ${
-          module.status === 'completed' ? 'bg-emerald-500' : 
-          module.status === 'in-progress' ? 'bg-blue-500' : 'bg-gray-400'
-        }`}>
+    <div key={module.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
           {getStatusIcon(module.status)}
-        </div>
-      </div>
-
-      {/* Difficulty Badge */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex-1">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              module.difficulty === 'Beginner' ? 'bg-emerald-100 dark:bg-emerald-900/30' :
-              module.difficulty === 'Intermediate' ? 'bg-amber-100 dark:bg-amber-900/30' :
-              'bg-rose-100 dark:bg-rose-900/30'
-            }`}>
-              {module.difficulty === 'Beginner' ? <Target className="w-6 h-6 text-emerald-600 dark:text-emerald-400" /> :
-               module.difficulty === 'Intermediate' ? <Brain className="w-6 h-6 text-amber-600 dark:text-amber-400" /> :
-               <Star className="w-6 h-6 text-rose-600 dark:text-rose-400" />}
-            </div>
-            <div>
-              <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(module.difficulty)}`}>
-                {module.difficulty}
-              </span>
-            </div>
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-            {module.title}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3">
-            {module.description}
-          </p>
-        </div>
-      </div>
-
-      {/* Progress Section */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          <span className="flex items-center">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Progress
-          </span>
-          <span className="text-blue-600 dark:text-blue-400">{module.progress}%</span>
-        </div>
-        <div className="relative">
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden" 
-              style={{ width: `${module.progress}%` }}
-            >
-              <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse"></div>
-            </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{module.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{module.description}</p>
           </div>
         </div>
+        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDifficultyColor(module.difficulty)}`}>
+          {module.difficulty}
+        </span>
       </div>
 
-      {/* Topics Preview */}
-      <div className="mb-6">
-        <div className="flex items-center mb-3">
-          <BookOpen className="w-4 h-4 mr-2 text-gray-500" />
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Key Topics ({module.topics.length})
-          </h4>
+      <div className="mb-4">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <span>Progress</span>
+          <span>{module.progress}%</span>
         </div>
-        <div className="space-y-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+            style={{ width: `${module.progress}%` }}
+          ></div>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Topics Covered:</h4>
+        <ul className="space-y-1">
           {module.topics.slice(0, 3).map((topic, index) => (
-            <div key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-3 flex-shrink-0"></div>
-              <span className="truncate">{topic}</span>
-            </div>
+            <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></div>
+              {topic}
+            </li>
           ))}
           {module.topics.length > 3 && (
-            <div className="text-xs text-gray-500 dark:text-gray-500 ml-5 font-medium">
+            <li className="text-sm text-gray-500 dark:text-gray-500">
               +{module.topics.length - 3} more topics
-            </div>
+            </li>
           )}
-        </div>
+        </ul>
       </div>
 
-      {/* Action Button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-          <Clock className="w-3 h-3 mr-1" />
-          <span>~{Math.ceil(module.topics.length * 2)}h</span>
-        </div>
+      <div className="flex items-center justify-end">
         <button
           onClick={() => startModule(module.id)}
-          className="group/btn relative inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+          className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
         >
-          <Play className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+          <Play className="w-4 h-4" />
           <span>Start Learning</span>
-          <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
         </button>
       </div>
-
-      {/* Hover Glow Effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
     </div>
   );
 
@@ -617,219 +566,100 @@ const BAAcademyView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-indigo-900/10 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-700/25 bg-[size:60px_60px] opacity-40"></div>
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-indigo-400/20 to-cyan-400/20 rounded-full blur-3xl"></div>
-      
-      <div className="relative z-10 p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Modern Header */}
-          <div className="mb-12">
-            {/* Hero Section */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-2xl mb-6 relative">
-                <GraduationCap className="w-10 h-10 text-white" />
-                <div className="absolute inset-0 bg-white/20 rounded-2xl backdrop-blur-sm"></div>
-              </div>
-              <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-4">
-                BA Academy
-              </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-                Master Software Business Analysis with our comprehensive, hands-on learning platform
-              </p>
-              
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-8">
-                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-gray-700/50 shadow-lg">
-                  <div className="flex items-center justify-center w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl mb-4 mx-auto">
-                    <Users className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">15+</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Learning Modules</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">BA Academy</h1>
+              <p className="text-gray-600 dark:text-gray-400">Master Software Business Analysis</p>
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Your Learning Journey</h3>
+            <p className="text-blue-800 dark:text-blue-200 text-sm">
+              Follow our structured learning path designed specifically for Software Business Analysts. 
+              Each module builds on the previous one, ensuring you develop comprehensive BA skills.
+            </p>
+          </div>
+        </div>
+
+        {/* Content */}
+        {isLectureActive ? (
+          renderLectureView()
+        ) : (
+          <div className="space-y-8">
+            {/* Phase 1: Foundation */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-green-600 dark:text-green-400 font-bold">1</span>
                 </div>
-                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-gray-700/50 shadow-lg">
-                  <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl mb-4 mx-auto">
-                    <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">100+</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Hours of Content</p>
-                </div>
-                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-gray-700/50 shadow-lg">
-                  <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl mb-4 mx-auto">
-                    <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">5</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Learning Phases</p>
-                </div>
+                Foundation
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(0, 5).map(renderModuleCard)}
               </div>
             </div>
-            
-            {/* Journey Overview */}
-            <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl p-8 border border-white/20 dark:border-gray-700/50 shadow-xl">
-              <div className="flex items-center mb-6">
-                <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl mr-4">
-                  <Target className="w-6 h-6 text-white" />
+
+            {/* Phase 2: Technical Skills */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-blue-600 dark:text-blue-400 font-bold">2</span>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Your Learning Journey</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Structured progression from fundamentals to mastery</p>
-                </div>
+                Technical Skills
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(5, 8).map(renderModuleCard)}
               </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">What You'll Master</h4>
-                  <ul className="space-y-3">
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                      <span>Requirements Elicitation & Analysis</span>
-                    </li>
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                      <span>Stakeholder Management & Communication</span>
-                    </li>
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                      <span>Process Modeling & Documentation</span>
-                    </li>
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                      <span>Technical Analysis & Solution Design</span>
-                    </li>
-                  </ul>
+            </div>
+
+            {/* Phase 3: Advanced Techniques */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-yellow-600 dark:text-yellow-400 font-bold">3</span>
                 </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Approach</h4>
-                  <ul className="space-y-3">
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <Brain className="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" />
-                      <span>Interactive AI-powered lessons</span>
-                    </li>
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <Target className="w-5 h-5 text-purple-500 mr-3 flex-shrink-0" />
-                      <span>Hands-on practice scenarios</span>
-                    </li>
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <Award className="w-5 h-5 text-amber-500 mr-3 flex-shrink-0" />
-                      <span>Progress tracking & assessments</span>
-                    </li>
-                    <li className="flex items-center text-gray-700 dark:text-gray-300">
-                      <Users className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                      <span>Industry-standard frameworks</span>
-                    </li>
-                  </ul>
+                Advanced Techniques
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(8, 11).map(renderModuleCard)}
+              </div>
+            </div>
+
+            {/* Phase 4: Specialization */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-purple-600 dark:text-purple-400 font-bold">4</span>
                 </div>
+                Specialization
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(11, 14).map(renderModuleCard)}
+              </div>
+            </div>
+
+            {/* Phase 5: Mastery */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-red-600 dark:text-red-400 font-bold">5</span>
+                </div>
+                Mastery
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {learningModules.slice(14, 17).map(renderModuleCard)}
               </div>
             </div>
           </div>
-
-          {/* Content */}
-          {isLectureActive ? (
-            renderLectureView()
-          ) : (
-            <div className="space-y-16">
-              {/* Phase 1: Foundation */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">1</span>
-                  </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Foundation</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Build your core BA knowledge and skills</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(0, 5).map(renderModuleCard)}
-                </div>
-              </div>
-
-              {/* Phase 2: Technical Skills */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">2</span>
-                  </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Technical Skills</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Develop technical analysis capabilities</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(5, 8).map(renderModuleCard)}
-                </div>
-              </div>
-
-              {/* Phase 3: Advanced Techniques */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">3</span>
-                  </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Advanced Techniques</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Master sophisticated BA methodologies</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(8, 11).map(renderModuleCard)}
-                </div>
-              </div>
-
-              {/* Phase 4: Specialization */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">4</span>
-                  </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Specialization</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Focus on cutting-edge technologies</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(11, 14).map(renderModuleCard)}
-                </div>
-              </div>
-
-              {/* Phase 5: Mastery */}
-              <div className="relative">
-                <div className="flex items-center mb-8">
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-xl mr-6">
-                    <span className="text-2xl font-bold text-white">5</span>
-                  </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">Mastery</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">Achieve leadership and strategic expertise</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {learningModules.slice(14, 17).map(renderModuleCard)}
-                </div>
-              </div>
-
-              {/* Call to Action */}
-              <div className="text-center py-16">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-white shadow-2xl">
-                  <h3 className="text-3xl font-bold mb-4">Ready to Transform Your BA Career?</h3>
-                  <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-                    Join thousands of professionals who have mastered business analysis through our comprehensive program
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-lg">
-                      Start Your Journey
-                    </button>
-                    <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-colors">
-                      View Curriculum
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
