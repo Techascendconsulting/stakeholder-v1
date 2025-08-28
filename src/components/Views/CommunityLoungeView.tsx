@@ -1189,10 +1189,9 @@ const CommunityLoungeView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
-          <div className="flex-1 overflow-y-auto">
-          {/* Sticky Motivational Banner */}
-          <div className="sticky top-0 z-10 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-b border-green-200 dark:border-green-700 shadow-sm">
+        <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 h-full max-h-screen">
+          {/* Fixed Motivational Banner - Always Visible */}
+          <div className="flex-shrink-0 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-b border-green-200 dark:border-green-700 shadow-sm">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0 mt-1">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
@@ -1221,10 +1220,10 @@ const CommunityLoungeView: React.FC = () => {
             </div>
           </div>
           </div>
-        </div>
 
-          {/* Messages Container */}
-          <div className="p-3 space-y-1">
+          {/* Scrollable Content Container */}
+          <div className="flex-1 overflow-y-auto min-h-0 max-h-full">
+            <div className="p-3 space-y-1">
 
         {/* Messages */}
           <div className="space-y-1">
@@ -1491,8 +1490,8 @@ const CommunityLoungeView: React.FC = () => {
         </div>
 
           <div ref={messagesEndRef} />
-                </div>
-              </div>
+            </div>
+          </div>
         </div>
 
         {/* Message Input */}
