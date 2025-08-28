@@ -57,6 +57,17 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       e.preventDefault();
       handleSend();
     }
+    
+    // Keyboard shortcuts for bullet points and numbered lists
+    if (e.key === '-' && e.ctrlKey) {
+      e.preventDefault();
+      addBulletPoint();
+    }
+    
+    if (e.key === 'n' && e.ctrlKey) {
+      e.preventDefault();
+      addNumberedList();
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -188,15 +199,47 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (textareaRef.current) {
       const textarea = textareaRef.current;
       const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
       
-      // Insert bullet point at cursor position
-      const newContent = content.substring(0, start) + '• ' + content.substring(start);
+      // Get the current line
+      const lines = content.split('\n');
+      let currentLineIndex = 0;
+      let charCount = 0;
+      
+      for (let i = 0; i < lines.length; i++) {
+        if (charCount + lines[i].length >= start) {
+          currentLineIndex = i;
+          break;
+        }
+        charCount += lines[i].length + 1; // +1 for newline
+      }
+      
+      const currentLine = lines[currentLineIndex];
+      const lineStart = charCount;
+      const lineEnd = lineStart + currentLine.length;
+      
+      // Check if line already has a bullet point
+      if (currentLine.trim().startsWith('• ')) {
+        // If already has bullet, just move cursor to end of line
+        const newCursorPos = lineEnd;
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+        return;
+      }
+      
+      // Insert bullet point at the beginning of the current line
+      const newLine = '• ' + currentLine;
+      lines[currentLineIndex] = newLine;
+      const newContent = lines.join('\n');
       setContent(newContent);
       
       // Set cursor position after bullet point
+      const newCursorPos = lineStart + 2;
       setTimeout(() => {
         textarea.focus();
-        textarea.setSelectionRange(start + 2, start + 2);
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
       }, 0);
     }
   };
@@ -206,19 +249,49 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       const textarea = textareaRef.current;
       const start = textarea.selectionStart;
       
+      // Get the current line
+      const lines = content.split('\n');
+      let currentLineIndex = 0;
+      let charCount = 0;
+      
+      for (let i = 0; i < lines.length; i++) {
+        if (charCount + lines[i].length >= start) {
+          currentLineIndex = i;
+          break;
+        }
+        charCount += lines[i].length + 1; // +1 for newline
+      }
+      
+      const currentLine = lines[currentLineIndex];
+      const lineStart = charCount;
+      const lineEnd = lineStart + currentLine.length;
+      
+      // Check if line already has a numbered item
+      if (/^\d+\./.test(currentLine.trim())) {
+        // If already has number, just move cursor to end of line
+        const newCursorPos = lineEnd;
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+        return;
+      }
+      
       // Count existing numbered items to determine next number
-      const lines = content.substring(0, start).split('\n');
       const numberedLines = lines.filter(line => /^\d+\./.test(line.trim()));
       const nextNumber = numberedLines.length + 1;
       
-      // Insert numbered item at cursor position
-      const newContent = content.substring(0, start) + `${nextNumber}. ` + content.substring(start);
+      // Insert numbered item at the beginning of the current line
+      const newLine = `${nextNumber}. ` + currentLine;
+      lines[currentLineIndex] = newLine;
+      const newContent = lines.join('\n');
       setContent(newContent);
       
       // Set cursor position after number
+      const newCursorPos = lineStart + `${nextNumber}. `.length;
       setTimeout(() => {
         textarea.focus();
-        textarea.setSelectionRange(start + `${nextNumber}. `.length, start + `${nextNumber}. `.length);
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
       }, 0);
     }
   };
@@ -296,7 +369,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           onClick={addBulletPoint}
           className="p-1 text-gray-600 hover:text-gray-800 rounded"
-          title="Bullet List"
+          title="Bullet List (Ctrl+-)"
         >
           <List className="w-3 h-3" />
         </button>
@@ -304,7 +377,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           onClick={addNumberedList}
           className="p-1 text-gray-600 hover:text-gray-800 rounded"
-          title="Numbered List"
+          title="Numbered List (Ctrl+N)"
         >
           <ListOrdered className="w-3 h-3" />
         </button>
