@@ -127,6 +127,7 @@ const CommunityLoungeView: React.FC = () => {
   const [showNewDM, setShowNewDM] = useState(false);
   const [dmSearchQuery, setDmSearchQuery] = useState('');
   const [currentSection, setCurrentSection] = useState<'home' | 'threads' | 'dms' | 'channels'>('home');
+  const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -135,6 +136,7 @@ const CommunityLoungeView: React.FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const threadPanelRef = useRef<HTMLDivElement>(null);
   const threadRepliesEndRef = useRef<HTMLDivElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Emojis for reactions
   const emojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🙏', '🔥', '💯', '✨', '🎉', '🤔', '👀', '💪', '🚀', '💡', '🎯', '⭐', '💎'];
@@ -555,6 +557,9 @@ const CommunityLoungeView: React.FC = () => {
       }
       if (reactionPickerForId && !(e.target as Element)?.closest('.reaction-picker')) {
         setReactionPickerForId(null);
+      }
+      if (showSearchResults && !searchContainerRef.current?.contains(e.target as Node)) {
+        setShowSearchResults(false);
       }
     };
 
@@ -1065,7 +1070,7 @@ const CommunityLoungeView: React.FC = () => {
           
             <div className="flex items-center space-x-4 flex-1 ml-6">
               {/* Enhanced Search */}
-              <div className="relative group flex-1 max-w-2xl">
+              <div ref={searchContainerRef} className="relative group flex-1 max-w-2xl">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" size={18} />
                 <input
                   type="text"
@@ -1107,6 +1112,39 @@ const CommunityLoungeView: React.FC = () => {
                   >
                     <X size={16} />
             </button>
+                )}
+
+                {showSearchResults && (
+                  <div className="absolute top-full mt-2 right-0 w-full max-w-xl max-h-80 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl z-20">
+                    {searchResults.length === 0 ? (
+                      <div className="p-3 text-xs text-gray-500 dark:text-gray-400">No results</div>
+                    ) : (
+                      <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                        {searchResults.map(result => (
+                          <button
+                            key={result.id}
+                            onClick={() => {
+                              setShowSearchResults(false);
+                              setSearchQuery('');
+                              setTimeout(() => {
+                                document.getElementById(`message-${result.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setHighlightedMessageId(Number(result.id));
+                                setTimeout(() => setHighlightedMessageId(null), 2000);
+                              }, 50);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          >
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5 truncate">
+                              {result.title} • {new Date(result.created_at).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-gray-800 dark:text-gray-200 truncate">
+                              {result.content}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -1205,6 +1243,7 @@ const CommunityLoungeView: React.FC = () => {
             {messages.filter(message => message.channel_id === selectedChannel?.id).map((message) => (
               <div
                 key={message.id}
+                id={`message-${message.id}`}
                 className={`group relative p-3 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-600 transition-all duration-200 message-container mb-3 ${
                   hoveredMessageId === message.id ? 'ring-2 ring-blue-500/20' : ''
                 }`}
@@ -1255,7 +1294,7 @@ const CommunityLoungeView: React.FC = () => {
                   </div>
                 
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline space-x-3">
+                    <div className={`flex items-baseline space-x-3 ${highlightedMessageId === message.id ? 'animate-pulse ring-2 ring-yellow-400 rounded-md px-1 -mx-1' : ''}`}>
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         {message.user?.display_name || message.user?.email?.split('@')[0] || 'User'}
                     </span>
