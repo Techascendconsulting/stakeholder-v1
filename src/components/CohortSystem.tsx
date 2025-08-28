@@ -96,6 +96,11 @@ const CohortSystem: React.FC<CohortSystemProps> = ({
 
   return (
     <div className="relative">
+      {/* Debug Info */}
+      <div className="mb-2 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded text-xs">
+        Cohort System Active - Current: {currentCohort}
+      </div>
+      
       {/* Cohort Selector Button */}
       <button
         onClick={() => setShowCohortSelector(!showCohortSelector)}
