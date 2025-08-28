@@ -144,11 +144,11 @@ const CommunityLoungeView: React.FC = () => {
       description: 'Advanced BA training with premium features',
       isUserInCohort: true,
       createdBy: 'admin@batraining.com',
-      // Cohort-specific features
-      channels: ['#cohort-a-general', '#cohort-a-projects', '#cohort-a-resources'],
-      pinnedResources: ['Project Brief - E-commerce App', 'Stakeholder Guide', 'Requirements Template'],
+      // Cohort-specific features - will be populated by admin
+      channels: [],
+      pinnedResources: [],
       dmEnabled: true,
-      members: ['user1@example.com', 'user2@example.com', 'user3@example.com']
+      members: []
     }
   ]);
   
@@ -1090,21 +1090,9 @@ const CommunityLoungeView: React.FC = () => {
 
                     {/* Cohort Members */}
                     <div>
-                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Cohort Members ({cohort.members.length})</h4>
+                      
                       <div className="space-y-1">
-                        {cohort.members.slice(0, 3).map(member => (
-                          <div key={member} className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs font-bold">{member.charAt(0).toUpperCase()}</span>
-                            </div>
-                            <span className="text-sm text-gray-900 dark:text-white">{member.split('@')[0]}</span>
-                          </div>
-                        ))}
-                        {cohort.members.length > 3 && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 px-3">
-                            +{cohort.members.length - 3} more members
-                          </div>
-                        )}
+
                       </div>
                     </div>
                   </div>
@@ -1138,48 +1126,7 @@ const CommunityLoungeView: React.FC = () => {
                       {/* Cohort Details (expanded) */}
                       {selectedCohort === cohort.id && (
                         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-3">
-                          {/* Cohort Channels */}
-                          <div>
-                            <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Channels</h5>
-                            <div className="space-y-1">
-                              {cohort.channels.map((channel, index) => (
-                                <div key={index} className="flex items-center space-x-2 px-2 py-1 bg-white dark:bg-gray-700 rounded text-xs">
-                                  <Hash className="w-3 h-3 text-gray-400" />
-                                  <span className="text-gray-700 dark:text-gray-300">{channel}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          {/* Pinned Resources */}
-                          <div>
-                            <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Pinned Resources</h5>
-                            <div className="space-y-1">
-                              {cohort.pinnedResources.map((resource, index) => (
-                                <div key={index} className="flex items-center space-x-2 px-2 py-1 bg-white dark:bg-gray-700 rounded text-xs">
-                                  <Pin className="w-3 h-3 text-gray-400" />
-                                  <span className="text-gray-700 dark:text-gray-300">{resource}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          {/* Cohort Members */}
-                          <div>
-                            <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Members ({cohort.members.length})</h5>
-                            <div className="flex flex-wrap gap-1">
-                              {cohort.members.slice(0, 5).map((member, index) => (
-                                <div key={index} className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                  {member.charAt(0).toUpperCase()}
-                                </div>
-                              ))}
-                              {cohort.members.length > 5 && (
-                                <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-bold">
-                                  +{cohort.members.length - 5}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+
                           
                           {/* Action Buttons */}
                           <div className="flex space-x-2 pt-2">
