@@ -8,7 +8,7 @@ import {
   Plus, 
   Users, 
   Bell, 
-  Paperclip, 
+  Paperclip,
   Image as ImageIcon, 
   Send, 
   Download, 
@@ -246,50 +246,50 @@ const CommunityLoungeView: React.FC = () => {
       {
         id: '1',
         space_id: '1',
-        name: 'general',
-        description: 'General discussion',
-        is_private: false,
-        is_staff_only: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
+      name: 'general',
+      description: 'General discussion',
+      is_private: false,
+      is_staff_only: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
         id: '2',
         space_id: '1',
         name: 'random',
         description: 'Random chat',
-        is_private: false,
-        is_staff_only: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ];
+      is_private: false,
+      is_staff_only: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ];
 
     const sampleMessages: Message[] = [
-      {
-        id: 1,
+    {
+      id: 1,
         channel_id: '1',
         user_id: '1',
         body: 'Hello everyone! Welcome to the BA Community! 👋',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user: {
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: {
           email: 'admin@batraining.com',
           display_name: 'Admin'
-        },
+      },
         reactions: [
           { emoji: '👋', count: 3, users: ['1', '2', '3'] },
           { emoji: '🎉', count: 1, users: ['2'] }
         ]
-      },
-      {
-        id: 2,
+    },
+    {
+      id: 2,
         channel_id: '1',
         user_id: '2',
         body: 'Thanks for having us! Looking forward to learning together.',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        user: {
+      user: {
           email: 'user1@example.com',
           display_name: 'Sarah'
         }
@@ -377,16 +377,16 @@ const CommunityLoungeView: React.FC = () => {
     }
 
     const newMessage: Message = {
-      id: Date.now(),
+          id: Date.now(),
       channel_id: selectedChannel.id,
-      user_id: user?.id || '1',
+          user_id: user?.id || '1',
       body: content,
       file_url: attachment?.file_url,
       file_name: attachment?.file_name,
       file_size: attachment?.file_size,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      user: {
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          user: {
         email: user?.email || 'user@example.com',
         display_name: user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User'
       }
@@ -465,24 +465,24 @@ const CommunityLoungeView: React.FC = () => {
       space_id: selectedSpace?.id || '1',
       name: name.trim(),
       description: '',
-      is_private: false,
-      is_staff_only: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
+          is_private: false,
+          is_staff_only: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
     setChannels([...channels, newChannel]);
-    setNewChannelName('');
-    setShowAddChannel(false);
+        setNewChannelName('');
+        setShowAddChannel(false);
   };
 
-  return (
+    return (
     <div className="min-h-screen bg-white dark:bg-gray-900 flex relative">
       <div className="w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-bold text-gray-900 dark:text-white">BA Community</h1>
-            <button 
+            <button
               onClick={() => setShowSettings(!showSettings)}
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
@@ -508,7 +508,7 @@ const CommunityLoungeView: React.FC = () => {
                 }}
                 autoFocus
               />
-              <button
+            <button
                 onClick={() => {
                   if (newChannelName.trim()) {
                     handleCreateChannel(newChannelName);
@@ -517,8 +517,8 @@ const CommunityLoungeView: React.FC = () => {
                 className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Create
-              </button>
-              <button
+            </button>
+            <button 
                 onClick={() => {
                   setShowAddChannel(false);
                   setNewChannelName('');
@@ -526,9 +526,9 @@ const CommunityLoungeView: React.FC = () => {
                 className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
               >
                 Cancel
-              </button>
-            </div>
+            </button>
           </div>
+        </div>
         )}
 
         {/* Channel Search */}
@@ -558,7 +558,7 @@ const CommunityLoungeView: React.FC = () => {
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Channels</h3>
-              <button
+              <button 
                 onClick={() => setShowAddChannel(!showAddChannel)}
                 className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
@@ -567,35 +567,35 @@ const CommunityLoungeView: React.FC = () => {
             </div>
             
             <div className="space-y-1">
-              {channels.map((channel) => (
-                <button
-                  key={channel.id}
+            {channels.map((channel) => (
+              <button
+                key={channel.id}
                   onClick={() => setSelectedChannel(channel)}
                   className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                    selectedChannel?.id === channel.id
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
+                  selectedChannel?.id === channel.id
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
                   <Hash className="w-4 h-4" />
                   <span className="truncate">{channel.name}</span>
-                </button>
-              ))}
+              </button>
+            ))}
             </div>
           </div>
         </div>
       </div>
-      
+
       <div className="flex-1 flex flex-col">
         <div className="border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center space-x-3 flex-shrink-0">
               <Hash className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {selectedChannel?.name || 'Select a channel'}
-              </h2>
-            </div>
-            
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {selectedChannel?.name || 'Select a channel'}
+            </h2>
+          </div>
+          
             <div className="flex items-center space-x-4 flex-1 ml-6">
               {/* Enhanced Search */}
               <div className="relative group flex-1 max-w-2xl">
@@ -631,7 +631,7 @@ const CommunityLoungeView: React.FC = () => {
                   }}
                 />
                 {searchQuery && (
-                  <button
+            <button 
                     onClick={() => {
                       setSearchQuery('');
                       // searchMessages('');
@@ -639,19 +639,19 @@ const CommunityLoungeView: React.FC = () => {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
                   >
                     <X size={16} />
-                  </button>
+            </button>
                 )}
               </div>
 
               {/* Date Jump Dropdown */}
               <div className="relative">
-                <button
+            <button 
                   onClick={() => setShowDatePicker(!showDatePicker)}
                   className="flex items-center space-x-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   <span>{selectedDate ? selectedDate.toLocaleDateString() : 'Today'}</span>
                   <ChevronDown className="w-4 h-4" />
-                </button>
+            </button>
               </div>
               
               <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
@@ -661,8 +661,9 @@ const CommunityLoungeView: React.FC = () => {
             </div>
           </div>
         </div>
-        
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+
+        <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+          <div className="flex-1 overflow-y-auto">
           {/* Sticky Motivational Banner */}
           <div className="sticky top-0 z-10 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-b border-green-200 dark:border-green-700 shadow-sm">
             <div className="flex items-start space-x-3">
@@ -677,28 +678,28 @@ const CommunityLoungeView: React.FC = () => {
                     Today's Motivation
                   </div>
                   <div className="flex items-center space-x-2">
-                    <button 
+                <button 
                       onClick={() => setShowQuoteActions(!showQuoteActions)}
                       className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    >
+                >
                       <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                </button>
+              </div>
+            </div>
                 <div className="text-xs text-gray-700 dark:text-gray-300 italic leading-relaxed transition-all duration-500">
                   "{motivationalQuotes[currentQuoteIndex].text}" - {motivationalQuotes[currentQuoteIndex].author}
                 </div>
                 <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   Keep pushing forward, you've got this! 🚀
-                </div>
-              </div>
+            </div>
+          </div>
             </div>
           </div>
 
           {/* Messages Container */}
           <div className="p-3 space-y-1">
 
-          {/* Messages */}
+        {/* Messages */}
           <div className="space-y-1">
             <div className="text-xs text-gray-500 mb-2">Total messages: {messages.filter(m => m.channel_id === selectedChannel?.id).length}</div>
             
@@ -771,12 +772,12 @@ const CommunityLoungeView: React.FC = () => {
                       <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full shadow-sm"></div>
                     </div>
                   </div>
-                  
-                  <div className="flex-1 min-w-0">
+                
+                <div className="flex-1 min-w-0">
                     <div className="flex items-baseline space-x-3">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         {message.user?.display_name || message.user?.email?.split('@')[0] || 'User'}
-                      </span>
+                    </span>
                       {/* Cohort Badge */}
                       {message.user?.email && cohortData[message.user.email as keyof typeof cohortData] && (
                         <span className={`inline-flex items-center space-x-1 px-2 py-0.5 text-xs font-medium bg-gradient-to-r ${cohortData[message.user.email as keyof typeof cohortData].color} text-white rounded-full shadow-sm`}>
@@ -786,16 +787,16 @@ const CommunityLoungeView: React.FC = () => {
                       )}
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                         {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    
+                    </span>
+                  </div>
+                  
                     <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                       {renderWithMentions(message.body)}
                     </div>
 
                     {/* Attachment Preview */}
-                    {message.file_url && (
-                      <div className="mt-2">
+                  {message.file_url && (
+                    <div className="mt-2">
                         {/(png|jpe?g|gif|webp|bmp|svg)$/i.test(message.file_name || '') ? (
                           <a href={message.file_url} target="_blank" rel="noreferrer">
                             <img
@@ -805,21 +806,21 @@ const CommunityLoungeView: React.FC = () => {
                             />
                           </a>
                         ) : (
-                          <a
-                            href={message.file_url}
-                            target="_blank"
+                      <a 
+                        href={message.file_url} 
+                        target="_blank" 
                             rel="noreferrer"
                             className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                          >
-                            <FileText className="w-4 h-4" />
+                      >
+                        <FileText className="w-4 h-4" />
                             <span className="truncate max-w-[220px]">{message.file_name || 'attachment'}</span>
                             {message.file_size ? (
                               <span className="text-gray-400">{Math.ceil(message.file_size / 1024)} KB</span>
                             ) : null}
                           </a>
                         )}
-                      </div>
-                    )}
+                    </div>
+                  )}
 
                     {/* Reply Count */}
                     {messageReplyCounts[message.id] > 0 && (
@@ -839,36 +840,36 @@ const CommunityLoungeView: React.FC = () => {
                         <span>View thread</span>
                       </button>
                     )}
-
-                    {/* Reactions */}
-                    {message.reactions && message.reactions.length > 0 && (
+                  
+                  {/* Reactions */}
+                  {message.reactions && message.reactions.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {message.reactions.map((reaction, index) => (
+                      {message.reactions.map((reaction, index) => (
                           <span
-                            key={index}
+                          key={index}
                             className="inline-flex items-center space-x-1 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer shadow-sm"
                           >
                                                       <span className="text-sm">{reaction.emoji}</span>
                           <span className="font-medium">{reaction.count}</span>
                           </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 </div>
                 {/* Reaction Picker */}
                 {reactionPickerForId === message.id && (
                   <div className="absolute -top-8 right-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg p-3 z-20 reaction-picker">
                     <div className="grid grid-cols-10 gap-1 max-w-[320px] max-h-40 overflow-auto">
                       {['👍','❤️','😂','🤣','😊','😍','😘','😎','😉','😇','🤔','🤨','😐','😴','😮','😢','😭','😡','🤯','👏','🙌','🙏','🔥','✨','🎉','💯','👀','💪','🫶','🙈','✅','❌','🎯','🎪','🎨','🎭','🎬','🎤','🎧','🎵','🎶','🎹','🎸','🎺','🎻','🥁','🎮','🎲','🎯','🎳','🎰','🎪','🎨','🎭','🎬','🎤','🎧','🎵','🎶','🎹','🎸','🎺','🎻','🥁','🎮','🎲','🎯','🎳','🎰'].map(e => (
-                        <button
+                  <button 
                           key={e}
                           onClick={() => { addReaction(message.id, e); setReactionPickerForId(null); }}
                           className="px-1 py-1 text-base hover:scale-110 transition"
                         >{e}</button>
                       ))}
-                    </div>
-                  </div>
+                </div>
+              </div>
                 )}
 
                 {/* More Options Menu */}
@@ -877,7 +878,7 @@ const CommunityLoungeView: React.FC = () => {
                     <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                       <Edit className="w-4 h-4" />
                       <span>Edit</span>
-                    </button>
+                      </button>
                     <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                       <Copy className="w-4 h-4" />
                       <span>Copy</span>
@@ -886,15 +887,16 @@ const CommunityLoungeView: React.FC = () => {
                       <Trash2 className="w-4 h-4" />
                       <span>Delete</span>
                     </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div ref={messagesEndRef} />
-          </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
+
+                    <div ref={messagesEndRef} />
+                </div>
+              </div>
+            </div>
 
         {/* Message Input */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-4">
@@ -911,10 +913,10 @@ const CommunityLoungeView: React.FC = () => {
                 placeholder="Message #general"
               />
               
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
@@ -940,13 +942,13 @@ const CommunityLoungeView: React.FC = () => {
               <MessageSquare className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Thread</h3>
             </div>
-            <button
+              <button
               onClick={() => setReplyingToMessage(null)}
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            >
+              >
               <X className="w-4 h-4" />
-            </button>
-          </div>
+              </button>
+            </div>
 
           {/* Original Message */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
@@ -954,7 +956,7 @@ const CommunityLoungeView: React.FC = () => {
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
                   {replyingToMessage.user?.display_name?.charAt(0) || replyingToMessage.user?.email?.charAt(0) || 'U'}
-                </div>
+              </div>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline space-x-2">
@@ -964,7 +966,7 @@ const CommunityLoungeView: React.FC = () => {
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(replyingToMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
-                </div>
+            </div>
                 <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                   {replyingToMessage.body}
                 </div>
