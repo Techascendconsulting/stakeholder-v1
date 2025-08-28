@@ -112,6 +112,8 @@ const CommunityLoungeView: React.FC = () => {
   const [pinnedMessages, setPinnedMessages] = useState<PinnedMessage[]>([]);
   const [typingIndicators, setTypingIndicators] = useState<TypingIndicator[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const [showQuoteActions, setShowQuoteActions] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -122,6 +124,68 @@ const CommunityLoungeView: React.FC = () => {
 
   // Emojis for reactions
   const emojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🙏', '🔥', '💯', '✨', '🎉', '🤔', '👀', '💪', '🚀', '💡', '🎯', '⭐', '💎'];
+
+  // Motivational quotes
+  const motivationalQuotes = [
+    {
+      text: "The only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle.",
+      author: "Steve Jobs",
+      emoji: "💪"
+    },
+    {
+      text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+      author: "Winston Churchill",
+      emoji: "🚀"
+    },
+    {
+      text: "The future belongs to those who believe in the beauty of their dreams.",
+      author: "Eleanor Roosevelt",
+      emoji: "✨"
+    },
+    {
+      text: "Don't watch the clock; do what it does. Keep going.",
+      author: "Sam Levenson",
+      emoji: "⏰"
+    },
+    {
+      text: "The only limit to our realization of tomorrow is our doubts of today.",
+      author: "Franklin D. Roosevelt",
+      emoji: "🌟"
+    }
+  ];
+
+  // Cohort data
+  const cohortData = {
+    'admin@batraining.com': { type: 'Pro', color: 'from-purple-500 to-pink-600', badge: '👑' },
+    'user1@example.com': { type: 'Premium', color: 'from-blue-500 to-indigo-600', badge: '⭐' },
+    'user2@example.com': { type: 'Free', color: 'from-gray-400 to-gray-600', badge: '📚' }
+  };
+
+  // Date grouping helper
+  const getDateGroup = (date: string) => {
+    const messageDate = new Date(date);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (messageDate.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (messageDate.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      const diffTime = Math.abs(today.getTime() - messageDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays <= 7) {
+        return messageDate.toLocaleDateString('en-US', { weekday: 'long' });
+      } else {
+        return messageDate.toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric',
+          year: messageDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+        });
+      }
+    }
+  };
 
   // Render helpers
   const startDirectMessage = (handle: string) => {
@@ -247,6 +311,15 @@ const CommunityLoungeView: React.FC = () => {
     setMessageReplyCounts(replyCounts);
     
     setIsLoading(false);
+  }, []);
+
+  // Quote rotation effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuoteIndex((prev) => (prev + 1) % motivationalQuotes.length);
+    }, 30000); // Rotate every 30 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   // Close thread panel on outside click and ESC key
