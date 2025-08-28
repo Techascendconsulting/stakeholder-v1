@@ -46,6 +46,7 @@ import {
   type UserPresence 
 } from '../../lib/communityLoungeService';
 import { supabase } from '../../lib/communityLoungeService';
+const STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'chat-attachments';
 import type { PinnedMessage, TypingIndicator, SearchResult } from '../../types/chat';
 import { seedCommunityLounge } from '../../lib/communityLoungeSeed';
 import { setupTestUser } from '../../lib/setupTestUser';
@@ -75,6 +76,7 @@ const CommunityLoungeView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [testMode, setTestMode] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState<number | null>(null);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const [emojiPickerMessageId, setEmojiPickerMessageId] = useState<number | null>(null);
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
   const [showMoreMenu, setShowMoreMenu] = useState<number | null>(null);
@@ -83,6 +85,20 @@ const CommunityLoungeView: React.FC = () => {
   const [replyingToMessage, setReplyingToMessage] = useState<Message | null>(null);
   const [threadReplies, setThreadReplies] = useState<Message[]>([]);
   const [messageReplyCounts, setMessageReplyCounts] = useState<Record<number, number>>({});
+  const [reactionPickerForId, setReactionPickerForId] = useState<number | null>(null);
+  const addReaction = (messageId: number, emoji: string) => {
+    setMessages(prev => prev.map(m => {
+      if (m.id !== messageId) return m;
+      const existing = (m.reactions || []).find(r => r.emoji === emoji);
+      if (existing) {
+        return {
+          ...m,
+          reactions: (m.reactions || []).map(r => r.emoji === emoji ? { ...r, count: r.count + 1 } : r)
+        };
+      }
+      return { ...m, reactions: [ ...(m.reactions || []), { emoji, count: 1, users: [user?.id || 'me'] } ] };
+    }));
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -101,21 +117,57 @@ const CommunityLoungeView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const threadFileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const threadPanelRef = useRef<HTMLDivElement>(null);
 
   // Emojis for reactions
   const emojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🙏', '🔥', '💯', '✨', '🎉', '🤔', '👀', '💪', '🚀', '💡', '🎯', '⭐', '💎'];
+
+  // Render helpers
+  const startDirectMessage = (handle: string) => {
+    // Switch to Direct Messages view and pass recipient info
+    // This will be handled by the AppContext to switch views
+    console.log('🚀 Starting DM with:', handle);
+    // For now, we'll use a simple approach - in a real app this would use AppContext
+    alert(`Starting DM with @${handle} - this would switch to Direct Messages view`);
+  };
+
+  const renderWithMentions = (text?: string) => {
+    if (!text) return null;
+    const parts: Array<string | JSX.Element> = [];
+    const mentionRegex = /@([A-Za-z0-9_.-]+)/g; // simple handle-style mention
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = mentionRegex.exec(text)) !== null) {
+      const [full, handle] = match;
+      const start = match.index;
+      if (start > lastIndex) parts.push(text.slice(lastIndex, start));
+      parts.push(
+        <button
+          key={`${handle}-${start}`}
+          className="text-blue-600 hover:underline cursor-pointer"
+          onClick={() => startDirectMessage(handle)}
+          aria-label={`View ${handle}`}
+        >
+          @{handle}
+        </button>
+      );
+      lastIndex = start + full.length;
+    }
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+    return <>{parts}</>;
+  };
 
   // Upload helper
   const uploadFileToStorage = async (file: File, prefix: string): Promise<{ file_url?: string; file_name?: string; file_size?: number; error?: string }> => {
     try {
       const fileExt = file.name.split('.').pop();
       const filePath = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-      const { data, error } = await supabase.storage.from('chat-attachments').upload(filePath, file, {
+      const { data, error } = await supabase.storage.from(STORAGE_BUCKET).upload(filePath, file, {
         upsert: false,
         contentType: file.type || undefined,
       });
       if (error) return { error: error.message };
-      const { data: urlData } = supabase.storage.from('chat-attachments').getPublicUrl(data.path);
+      const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
       return { file_url: urlData.publicUrl, file_name: file.name, file_size: file.size };
     } catch (err: any) {
       return { error: err?.message || 'Upload failed' };
@@ -196,18 +248,51 @@ const CommunityLoungeView: React.FC = () => {
     setIsLoading(false);
   }, []);
 
-  const handleSendMessage = async (content: string, html: string) => {
+  // Close thread panel on outside click and ESC key
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (replyingToMessage && !threadPanelRef.current?.contains(e.target as Node)) {
+        setReplyingToMessage(null);
+      }
+      if (showMoreMenu && !(e.target as Element)?.closest('.message-container')) {
+        setShowMoreMenu(null);
+      }
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setHoveredMessageId(null);
+        setShowMoreMenu(null);
+        setReactionPickerForId(null);
+        setReplyingToMessage(null);
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+      }
+    };
+
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [replyingToMessage, showMoreMenu, hoverTimeout]);
+
+  const handleSendMessage = async (content: string, html: string, overrideFile?: File) => {
     console.log('🚀 handleSendMessage called with:', { content, html, selectedChannel });
     
-    if (!content.trim() || !selectedChannel) {
+    const fileToSend = overrideFile ?? selectedFile ?? null;
+    // Allow sending if there is either text content or an attachment queued
+    if (!selectedChannel || (!content.trim() && !fileToSend)) {
       console.log('❌ Message not sent - missing content or channel');
       return;
     }
     let attachment: { file_url?: string; file_name?: string; file_size?: number } | undefined;
-    if (selectedFile) {
-      const uploaded = await uploadFileToStorage(selectedFile, `channels/${selectedChannel.id}`);
+    if (fileToSend) {
+      const uploaded = await uploadFileToStorage(fileToSend, `channels/${selectedChannel.id}`);
       if (uploaded.error) {
         console.error('Attachment upload failed:', uploaded.error);
+        // If only an attachment was being sent, abort instead of sending empty message
+        if (!content.trim()) return;
       } else {
         attachment = uploaded;
       }
@@ -240,17 +325,19 @@ const CommunityLoungeView: React.FC = () => {
     console.log('✅ Message sent successfully');
   };
 
-  const handleSendThreadReply = async (content: string, html: string) => {
+  const handleSendThreadReply = async (content: string, html: string, overrideFile?: File) => {
     console.log('🧵 handleSendThreadReply called with:', { content, html, replyingToMessage });
     
-    if (!content.trim() || !replyingToMessage) {
+    const fileToSend = overrideFile ?? selectedThreadFile ?? null;
+    // Allow sending if there is either text content or a thread attachment queued
+    if (!replyingToMessage || (!content.trim() && !fileToSend)) {
       console.log('❌ Thread reply not sent - missing content or reply message');
       return;
     }
 
     let attachment: { file_url?: string; file_name?: string; file_size?: number } | undefined;
-    if (selectedThreadFile) {
-      const uploaded = await uploadFileToStorage(selectedThreadFile, `threads/${replyingToMessage.id}`);
+    if (fileToSend) {
+      const uploaded = await uploadFileToStorage(fileToSend, `threads/${replyingToMessage.id}`);
       if (uploaded.error) {
         console.error('Thread attachment upload failed:', uploaded.error);
       } else {
@@ -527,27 +614,26 @@ const CommunityLoungeView: React.FC = () => {
             {messages.filter(message => message.channel_id === selectedChannel?.id).map((message) => (
               <div
                 key={message.id}
-                className={`group relative p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
+                className={`group relative p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors message-container ${
                   hoveredMessageId === message.id ? 'bg-gray-50 dark:bg-gray-800/50' : ''
                 }`}
-                onMouseEnter={() => setHoveredMessageId(message.id)}
-                onMouseLeave={() => setHoveredMessageId(null)}
+                onMouseEnter={() => {
+                  const timeout = setTimeout(() => setHoveredMessageId(message.id), 150);
+                  setHoverTimeout(timeout);
+                }}
+                onMouseLeave={() => {
+                  if (hoverTimeout) clearTimeout(hoverTimeout);
+                  setHoveredMessageId(null);
+                  setHoverTimeout(null);
+                }}
               >
                 {/* Hover Bar */}
                 {hoveredMessageId === message.id && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1 z-10">
-                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                      ✅
-                    </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                      👀
-                    </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                      ✋
-                    </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                      React
-                    </button>
+                  <div className="absolute -top-8 right-0 flex items-center space-x-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1 z-10">
+                    <button onClick={() => addReaction(message.id, '✅')} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">✅</button>
+                    <button onClick={() => addReaction(message.id, '👀')} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">👀</button>
+                    <button onClick={() => addReaction(message.id, '✋')} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">✋</button>
+                    <button onClick={() => setReactionPickerForId(prev => prev === message.id ? null : message.id)} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">React</button>
                     <button 
                       onClick={() => {
                         setReplyingToMessage(message);
@@ -585,8 +671,36 @@ const CommunityLoungeView: React.FC = () => {
                     </div>
                     
                     <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                      {message.body}
+                      {renderWithMentions(message.body)}
                     </div>
+
+                    {/* Attachment Preview */}
+                    {message.file_url && (
+                      <div className="mt-2">
+                        {/(png|jpe?g|gif|webp|bmp|svg)$/i.test(message.file_name || '') ? (
+                          <a href={message.file_url} target="_blank" rel="noreferrer">
+                            <img
+                              src={message.file_url}
+                              alt={message.file_name || 'attachment'}
+                              className="max-h-56 rounded-md border border-gray-200 dark:border-gray-700"
+                            />
+                          </a>
+                        ) : (
+                          <a
+                            href={message.file_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          >
+                            <FileText className="w-4 h-4" />
+                            <span className="truncate max-w-[220px]">{message.file_name || 'attachment'}</span>
+                            {message.file_size ? (
+                              <span className="text-gray-400">{Math.ceil(message.file_size / 1024)} KB</span>
+                            ) : null}
+                          </a>
+                        )}
+                      </div>
+                    )}
 
                     {/* Reply Count */}
                     {messageReplyCounts[message.id] > 0 && (
@@ -620,6 +734,20 @@ const CommunityLoungeView: React.FC = () => {
                     )}
                   </div>
                 </div>
+                {/* Reaction Picker */}
+                {reactionPickerForId === message.id && (
+                  <div className="absolute -top-8 right-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg p-3 z-20">
+                    <div className="grid grid-cols-10 gap-1 max-w-[320px] max-h-40 overflow-auto">
+                      {['👍','❤️','😂','🤣','😊','😍','😘','😎','😉','😇','🤔','🤨','😐','😴','😮','😢','😭','😡','🤯','👏','🙌','🙏','🔥','✨','🎉','💯','👀','💪','🫶','🙈','✅','❌','🎯','🎪','🎨','🎭','🎬','🎤','🎧','🎵','🎶','🎹','🎸','🎺','🎻','🥁','🎮','🎲','🎯','🎳','🎰','🎪','🎨','🎭','🎬','🎤','🎧','🎵','🎶','🎹','🎸','🎺','🎻','🥁','🎮','🎲','🎯','🎳','🎰'].map(e => (
+                        <button
+                          key={e}
+                          onClick={() => { addReaction(message.id, e); setReactionPickerForId(null); }}
+                          className="px-1 py-1 text-base hover:scale-110 transition"
+                        >{e}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* More Options Menu */}
                 {showMoreMenu === message.id && (
@@ -647,24 +775,6 @@ const CommunityLoungeView: React.FC = () => {
 
         {/* Message Input */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-          {replyingToMessage && (
-            <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border-l-4 border-blue-500">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Replying to</div>
-                  <div className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                    {replyingToMessage.body}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setReplyingToMessage(null)}
-                  className="ml-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
 
           <div className="flex items-end space-x-3">
             <div className="flex-1">
@@ -685,24 +795,14 @@ const CommunityLoungeView: React.FC = () => {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    setSelectedFile(file);
-                    // Handle file upload here
-                    console.log('File selected:', file.name);
+                    // Auto-send with the selected file (do not require text)
+                    console.log('File selected (main):', file.name);
+                    void handleSendMessage('', '', file);
+                    // Reset input value so selecting the same file again re-triggers change
+                    e.currentTarget.value = '';
                   }
                 }}
               />
-            </div>
-            
-            <div className="flex items-center space-x-1">
-              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <Paperclip className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <ImageIcon className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <Smile className="w-5 h-5" />
-              </button>
             </div>
           </div>
         </div>
@@ -710,7 +810,7 @@ const CommunityLoungeView: React.FC = () => {
 
       {/* Thread Panel */}
       {replyingToMessage && (
-        <div className="fixed top-0 right-0 w-96 h-96 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-xl z-30 flex flex-col">
+        <div ref={threadPanelRef} className="fixed top-0 right-0 w-96 h-96 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-xl z-30 flex flex-col">
           {/* Thread Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-2">
@@ -768,8 +868,34 @@ const CommunityLoungeView: React.FC = () => {
                   </span>
                 </div>
                 <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                  {reply.body}
+                  {renderWithMentions(reply.body)}
                 </div>
+                {reply.file_url && (
+                  <div className="mt-2">
+                    {/(png|jpe?g|gif|webp|bmp|svg)$/i.test(reply.file_name || '') ? (
+                      <a href={reply.file_url} target="_blank" rel="noreferrer">
+                        <img
+                          src={reply.file_url}
+                          alt={reply.file_name || 'attachment'}
+                          className="max-h-48 rounded-md border border-gray-200 dark:border-gray-700"
+                        />
+                      </a>
+                    ) : (
+                      <a
+                        href={reply.file_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span className="truncate max-w-[200px]">{reply.file_name || 'attachment'}</span>
+                        {reply.file_size ? (
+                          <span className="text-gray-400">{Math.ceil(reply.file_size / 1024)} KB</span>
+                        ) : null}
+                      </a>
+                    )}
+                  </div>
+                )}
                 </div>
               </div>
             ))}
@@ -796,8 +922,9 @@ const CommunityLoungeView: React.FC = () => {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    setSelectedThreadFile(file);
                     console.log('Thread file selected:', file.name);
+                    void handleSendThreadReply('', '', file);
+                    e.currentTarget.value = '';
                   }
                 }}
               />
