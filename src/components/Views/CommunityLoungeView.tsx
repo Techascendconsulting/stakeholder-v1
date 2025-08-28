@@ -872,8 +872,14 @@ const CommunityLoungeView: React.FC = () => {
                     </span>
                   </div>
                   
-                    <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                    <div className="mt-1 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                       {renderWithMentions(message.body)}
+                      {/* Debug: Show raw content */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <div className="mt-1 text-xs text-gray-400 border-t pt-1">
+                          Raw: "{message.body?.replace(/\n/g, '\\n')}"
+                        </div>
+                      )}
                     </div>
 
                     {/* Attachment Preview */}
