@@ -129,6 +129,50 @@ const CommunityLoungeView: React.FC = () => {
                 {selectedChannel?.name || 'Select a channel'}
               </h2>
             </div>
+            
+            <div className="flex items-center space-x-4 flex-1 ml-6">
+              {/* Enhanced Search */}
+              <div className="relative group flex-1 max-w-2xl">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search messages, files, and more..."
+                  className="w-full pl-12 pr-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md focus:shadow-lg"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    // searchMessages(e.target.value);
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      // searchMessages('');
+                    }}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Date Jump Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className="flex items-center space-x-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <span>{selectedDate ? selectedDate.toLocaleDateString() : 'Today'}</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                <Users className="w-4 h-4" />
+                <span>1</span>
+              </div>
+            </div>
           </div>
         </div>
         
