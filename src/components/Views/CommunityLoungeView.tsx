@@ -188,6 +188,11 @@ const CommunityLoungeView: React.FC = () => {
     }
   };
 
+  // Scroll to bottom helper
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Render helpers
   const startDirectMessage = (handle: string) => {
     // Switch to Direct Messages view and pass recipient info
@@ -340,6 +345,11 @@ const CommunityLoungeView: React.FC = () => {
     }
   }, [isSendingMessage]);
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   // Close thread panel on outside click and ESC key
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -453,6 +463,8 @@ const CommunityLoungeView: React.FC = () => {
       console.log('📊 Updated messages array:', updatedMessages);
       clearTimeout(timeoutId);
       setIsSendingMessage(false);
+      // Scroll to bottom after message is added
+      setTimeout(() => scrollToBottom(), 100);
       return updatedMessages;
     });
     setNewMessage('');
