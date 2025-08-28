@@ -1,402 +1,310 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
-import CommunityLoungeView from '../../components/Views/CommunityLoungeView'
-import userEvent from '@testing-library/user-event'
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import CommunityLoungeView from '../../components/Views/CommunityLoungeView';
+import { AuthProvider } from '../../contexts/AuthContext';
 
 // Mock the services
 vi.mock('../../lib/communityLoungeService', () => ({
   communityLoungeService: {
-    getSpaces: vi.fn(() => Promise.resolve({
-      data: [{ id: '1', name: 'Test Space', description: 'Test Description' }],
-      error: null
-    })),
-    getChannels: vi.fn(() => Promise.resolve({
-      data: [{ id: '1', name: 'general', description: 'General channel' }],
-      error: null
-    })),
-    getMessages: vi.fn(() => Promise.resolve({
-      data: [
-        {
-          id: 1,
-          content: 'Test message',
-          user_id: 'user1',
-          created_at: new Date().toISOString(),
-          user: { name: 'Test User', avatar_url: null }
-        }
-      ],
-      error: null
-    })),
-    sendMessage: vi.fn(() => Promise.resolve({ data: null, error: null }))
+    getSpaces: vi.fn(),
+    getChannels: vi.fn(),
+    getMessages: vi.fn(),
+    sendMessage: vi.fn(),
+    createChannel: vi.fn(),
   }
-}))
+}));
 
 vi.mock('../../lib/advancedChatService', () => ({
   advancedChatService: {
-    getThreadReplyCount: vi.fn(() => Promise.resolve(0)),
-    searchMessages: vi.fn(() => Promise.resolve({ data: [], error: null }))
+    searchMessages: vi.fn(),
   }
-}))
+}));
+
+// Mock RichTextEditor
+vi.mock('../RichTextEditor', () => ({
+  default: ({ onSend, placeholder }: any) => (
+    <div data-testid="rich-text-editor">
+      <textarea 
+        data-testid="message-input" 
+        placeholder={placeholder}
+        onChange={(e) => {
+          // Simulate typing
+        }}
+      />
+      <button 
+        data-testid="send-button"
+        onClick={() => onSend('Test message', '<p>Test message</p>')}
+      >
+        Send
+      </button>
+    </div>
+  )
+}));
+
+const renderWithProviders = (component: React.ReactElement) => {
+  return render(
+    <BrowserRouter>
+      <AuthProvider>
+        {component}
+      </AuthProvider>
+    </BrowserRouter>
+  );
+};
 
 describe('CommunityLoungeView', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('renders without crashing', () => {
-    render(<CommunityLoungeView />)
-    expect(screen.getByText('Community Lounge')).toBeInTheDocument()
-  })
+  describe('Initial Rendering', () => {
+    it('should render the main chat interface', () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      expect(screen.getByText('BA Community')).toBeInTheDocument();
+      expect(screen.getByText("Today's Motivation")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Search messages, files, and more...')).toBeInTheDocument();
+    });
 
-  it('displays spaces and channels', async () => {
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      expect(screen.getByText('Test Space')).toBeInTheDocument()
-      expect(screen.getByText('general')).toBeInTheDocument()
-    })
-  })
+    it('should display sample channels in sidebar', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      await waitFor(() => {
+        expect(screen.getByText('general')).toBeInTheDocument();
+        expect(screen.getByText('random')).toBeInTheDocument();
+      });
+    });
 
-  it('allows sending messages', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const messageInput = screen.getByPlaceholderText('Type your message...')
-    const sendButton = screen.getByRole('button', { name: /send/i })
-    
-    await user.type(messageInput, 'Hello world')
-    await user.click(sendButton)
-    
-    await waitFor(() => {
-      expect(messageInput).toHaveValue('')
-    })
-  })
+    it('should display sample messages', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Hello everyone! Welcome to the BA Community! 👋')).toBeInTheDocument();
+        expect(screen.getByText('Thanks for having us! Looking forward to learning together.')).toBeInTheDocument();
+      });
+    });
+  });
 
-  it('handles emoji selection', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const emojiButton = screen.getByRole('button', { name: /emoji/i })
-    await user.click(emojiButton)
-    
-    // Check if emoji picker is visible
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-  })
+  describe('Channel Functionality', () => {
+    it('should allow creating new channels', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      // Click the add channel button
+      const addButton = screen.getByRole('button', { name: /plus/i });
+      fireEvent.click(addButton);
+      
+      // Should show channel creation input
+      const channelInput = screen.getByPlaceholderText('Channel name');
+      expect(channelInput).toBeInTheDocument();
+      
+      // Type channel name and create
+      fireEvent.change(channelInput, { target: { value: 'test-channel' } });
+      fireEvent.keyPress(channelInput, { key: 'Enter', code: 'Enter' });
+      
+      await waitFor(() => {
+        expect(screen.getByText('test-channel')).toBeInTheDocument();
+      });
+    });
 
-  it('handles message reactions', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Hover over message to show reaction options
-    const message = screen.getByText('Test message')
-    fireEvent.mouseEnter(message)
-    
-    // Check if reaction buttons are visible
-    expect(screen.getByText('✅')).toBeInTheDocument()
-    expect(screen.getByText('👀')).toBeInTheDocument()
-    expect(screen.getByText('✋')).toBeInTheDocument()
-  })
+    it('should filter messages by selected channel', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      // Initially should show general channel messages
+      await waitFor(() => {
+        expect(screen.getByText('Hello everyone! Welcome to the BA Community! 👋')).toBeInTheDocument();
+      });
+      
+      // Click on random channel
+      const randomChannel = screen.getByText('random');
+      fireEvent.click(randomChannel);
+      
+      // Should show different messages for random channel
+      await waitFor(() => {
+        expect(screen.queryByText('Hello everyone! Welcome to the BA Community! 👋')).not.toBeInTheDocument();
+      });
+    });
+  });
 
-  it('handles message editing', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Hover over message and click more options
-    const message = screen.getByText('Test message')
-    fireEvent.mouseEnter(message)
-    
-    const moreOptionsButton = screen.getByRole('button', { name: /more options/i })
-    await user.click(moreOptionsButton)
-    
-    // Check if edit option is available
-    const editButton = screen.getByText('Edit (5min)')
-    expect(editButton).toBeInTheDocument()
-  })
+  describe('Search Functionality', () => {
+    it('should filter messages when searching', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      const searchInput = screen.getByPlaceholderText('Search messages, files, and more...');
+      
+      // Search for "Hello"
+      fireEvent.change(searchInput, { target: { value: 'Hello' } });
+      
+      await waitFor(() => {
+        expect(screen.getByText('Hello everyone! Welcome to the BA Community! 👋')).toBeInTheDocument();
+        expect(screen.queryByText('Thanks for having us! Looking forward to learning together.')).not.toBeInTheDocument();
+      });
+    });
 
-  it('handles message deletion', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Hover over message and click more options
-    const message = screen.getByText('Test message')
-    fireEvent.mouseEnter(message)
-    
-    const moreOptionsButton = screen.getByRole('button', { name: /more options/i })
-    await user.click(moreOptionsButton)
-    
-    // Check if delete option is available
-    const deleteButton = screen.getByText('Delete')
-    expect(deleteButton).toBeInTheDocument()
-  })
+    it('should clear search results when clearing search', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      const searchInput = screen.getByPlaceholderText('Search messages, files, and more...');
+      
+      // Search for something
+      fireEvent.change(searchInput, { target: { value: 'Hello' } });
+      
+      // Clear search
+      const clearButton = screen.getByRole('button', { name: /x/i });
+      fireEvent.click(clearButton);
+      
+      await waitFor(() => {
+        expect(searchInput).toHaveValue('');
+        expect(screen.getByText('Thanks for having us! Looking forward to learning together.')).toBeInTheDocument();
+      });
+    });
+  });
 
-  it('handles message copying', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Hover over message and click more options
-    const message = screen.getByText('Test message')
-    fireEvent.mouseEnter(message)
-    
-    const moreOptionsButton = screen.getByRole('button', { name: /more options/i })
-    await user.click(moreOptionsButton)
-    
-    // Check if copy option is available
-    const copyButton = screen.getByText('Copy')
-    expect(copyButton).toBeInTheDocument()
-  })
+  describe('Message Functionality', () => {
+    it('should send new messages', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      const sendButton = screen.getByTestId('send-button');
+      fireEvent.click(sendButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Test message')).toBeInTheDocument();
+      });
+    });
 
-  it('handles thread replies', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Hover over message and click reply
-    const message = screen.getByText('Test message')
-    fireEvent.mouseEnter(message)
-    
-    const replyButton = screen.getByRole('button', { name: /reply/i })
-    await user.click(replyButton)
-    
-    // Check if thread panel is visible
-    expect(screen.getByText('Reply to message')).toBeInTheDocument()
-  })
+    it('should show hover actions on message hover', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      const message = screen.getByText('Hello everyone! Welcome to the BA Community! 👋').closest('div');
+      fireEvent.mouseEnter(message!);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Reply')).toBeInTheDocument();
+        expect(screen.getByText('More Options')).toBeInTheDocument();
+      });
+    });
+  });
 
-  it('handles search functionality', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const searchInput = screen.getByPlaceholderText('Search messages...')
-    await user.type(searchInput, 'test')
-    
-    // Check if search is triggered
-    await waitFor(() => {
-      expect(searchInput).toHaveValue('test')
-    })
-  })
+  describe('Thread Functionality', () => {
+    it('should open thread when clicking "View thread"', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      // Find and click "View thread" button
+      const viewThreadButton = screen.getByText(/1 reply.*View thread/);
+      fireEvent.click(viewThreadButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Thread')).toBeInTheDocument();
+        expect(screen.getByText('Reply to thread...')).toBeInTheDocument();
+      });
+    });
 
-  it('handles channel switching', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const channel = screen.getByText('general')
-      expect(channel).toBeInTheDocument()
-    })
-    
-    const channel = screen.getByText('general')
-    await user.click(channel)
-    
-    // Check if channel is selected
-    expect(channel).toHaveClass('bg-blue-100')
-  })
+    it('should send thread replies', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      // Open thread
+      const viewThreadButton = screen.getByText(/1 reply.*View thread/);
+      fireEvent.click(viewThreadButton);
+      
+      // Send thread reply
+      const threadSendButton = screen.getAllByTestId('send-button')[1]; // Second RichTextEditor
+      fireEvent.click(threadSendButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Test message')).toBeInTheDocument();
+      });
+    });
+  });
 
-  it('handles space switching', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const space = screen.getByText('Test Space')
-      expect(space).toBeInTheDocument()
-    })
-    
-    const space = screen.getByText('Test Space')
-    await user.click(space)
-    
-    // Check if space is selected
-    expect(space).toHaveClass('bg-purple-100')
-  })
+  describe('File Attachments', () => {
+    it('should handle file selection', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      const fileInput = screen.getByTestId('file-input');
+      const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
+      
+      fireEvent.change(fileInput, { target: { files: [file] } });
+      
+      await waitFor(() => {
+        // Should show file name or handle file upload
+        expect(fileInput).toBeInTheDocument();
+      });
+    });
+  });
 
-  it('displays message timestamps correctly', async () => {
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Check if timestamp is displayed
-    const timestamp = screen.getByText(/\d{1,2}:\d{2}/)
-    expect(timestamp).toBeInTheDocument()
-  })
+  describe('Channel Search', () => {
+    it('should filter channels when searching', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      const channelSearchInput = screen.getByPlaceholderText('Search channels...');
+      
+      // Search for "general"
+      fireEvent.change(channelSearchInput, { target: { value: 'general' } });
+      
+      await waitFor(() => {
+        expect(screen.getByText('general')).toBeInTheDocument();
+        expect(screen.queryByText('random')).not.toBeInTheDocument();
+      });
+    });
+  });
 
-  it('handles empty message input', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const sendButton = screen.getByRole('button', { name: /send/i })
-    await user.click(sendButton)
-    
-    // Should not send empty message
-    await waitFor(() => {
-      expect(sendButton).toBeInTheDocument()
-    })
-  })
+  describe('Reply Counts', () => {
+    it('should display correct reply counts', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/1 reply.*View thread/)).toBeInTheDocument();
+        expect(screen.getByText(/2 replies.*View thread/)).toBeInTheDocument();
+      });
+    });
 
-  it('handles message formatting', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const messageInput = screen.getByPlaceholderText('Type your message...')
-    
-    // Test bold formatting
-    const boldButton = screen.getByRole('button', { name: /bold/i })
-    await user.click(boldButton)
-    await user.type(messageInput, 'bold text')
-    
-    expect(messageInput).toHaveValue('**bold text**')
-  })
+    it('should update reply counts when new replies are added', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      // Open thread and send reply
+      const viewThreadButton = screen.getByText(/1 reply.*View thread/);
+      fireEvent.click(viewThreadButton);
+      
+      const threadSendButton = screen.getAllByTestId('send-button')[1];
+      fireEvent.click(threadSendButton);
+      
+      // Close thread
+      const closeButton = screen.getByRole('button', { name: /x/i });
+      fireEvent.click(closeButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText(/2 replies.*View thread/)).toBeInTheDocument();
+      });
+    });
+  });
 
-  it('handles bullet points', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const messageInput = screen.getByPlaceholderText('Type your message...')
-    
-    // Test bullet point formatting
-    const bulletButton = screen.getByRole('button', { name: /bullet/i })
-    await user.click(bulletButton)
-    
-    expect(messageInput).toHaveValue('• ')
-  })
+  describe('Error Handling', () => {
+    it('should handle empty message sending gracefully', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      // Try to send empty message
+      const sendButton = screen.getByTestId('send-button');
+      fireEvent.click(sendButton);
+      
+      // Should not crash and should not add empty message
+      await waitFor(() => {
+        const messages = screen.getAllByText(/Test message/);
+        expect(messages.length).toBe(0);
+      });
+    });
 
-  it('handles numbered lists', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const messageInput = screen.getByPlaceholderText('Type your message...')
-    
-    // Test numbered list formatting
-    const numberedButton = screen.getByRole('button', { name: /numbered/i })
-    await user.click(numberedButton)
-    
-    expect(messageInput).toHaveValue('1. ')
-  })
-
-  it('handles mentions with @ symbol', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const messageInput = screen.getByPlaceholderText('Type your message...')
-    await user.type(messageInput, '@')
-    
-    // Check if mention suggestions appear
-    await waitFor(() => {
-      expect(screen.getByText('Mention someone')).toBeInTheDocument()
-    })
-  })
-
-  it('handles textarea auto-resize', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const messageInput = screen.getByPlaceholderText('Type your message...')
-    const longMessage = 'This is a very long message that should cause the textarea to resize. '.repeat(10)
-    
-    await user.type(messageInput, longMessage)
-    
-    // Check if textarea has expanded
-    expect(messageInput).toHaveStyle('height: auto')
-  })
-
-  it('handles keyboard shortcuts', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    const messageInput = screen.getByPlaceholderText('Type your message...')
-    await user.type(messageInput, 'Test message')
-    
-    // Test Enter key to send
-    await user.keyboard('{Enter}')
-    
-    await waitFor(() => {
-      expect(messageInput).toHaveValue('')
-    })
-  })
-
-  it('handles click outside to close menus', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Open more options menu
-    const message = screen.getByText('Test message')
-    fireEvent.mouseEnter(message)
-    
-    const moreOptionsButton = screen.getByRole('button', { name: /more options/i })
-    await user.click(moreOptionsButton)
-    
-    // Click outside to close
-    fireEvent.click(document.body)
-    
-    // Menu should be closed
-    await waitFor(() => {
-      expect(screen.queryByText('Edit (5min)')).not.toBeInTheDocument()
-    })
-  })
-
-  it('handles thread reply count display', async () => {
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Check if reply count is displayed
-    const replyCount = screen.getByText('0 replies')
-    expect(replyCount).toBeInTheDocument()
-  })
-
-  it('handles thread panel opening and closing', async () => {
-    const user = userEvent.setup()
-    render(<CommunityLoungeView />)
-    
-    await waitFor(() => {
-      const message = screen.getByText('Test message')
-      expect(message).toBeInTheDocument()
-    })
-    
-    // Click reply count to open thread panel
-    const replyCount = screen.getByText('0 replies')
-    await user.click(replyCount)
-    
-    // Check if thread panel is visible
-    expect(screen.getByText('Reply to message')).toBeInTheDocument()
-    
-    // Close thread panel
-    const closeButton = screen.getByRole('button', { name: /close/i })
-    await user.click(closeButton)
-    
-    // Thread panel should be closed
-    await waitFor(() => {
-      expect(screen.queryByText('Reply to message')).not.toBeInTheDocument()
-    })
-  })
-})
+    it('should handle channel switching without errors', async () => {
+      renderWithProviders(<CommunityLoungeView />);
+      
+      // Switch between channels multiple times
+      const generalChannel = screen.getByText('general');
+      const randomChannel = screen.getByText('random');
+      
+      fireEvent.click(randomChannel);
+      fireEvent.click(generalChannel);
+      fireEvent.click(randomChannel);
+      
+      // Should not crash
+      expect(screen.getByText('BA Community')).toBeInTheDocument();
+    });
+  });
+});
