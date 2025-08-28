@@ -155,6 +155,11 @@ const CommunityLoungeView: React.FC = () => {
     }
   ]);
   
+  // User type detection
+  const isAdmin = user?.email === 'admin@batraining.com';
+  const isNewUser = !user || !cohorts.some(c => c.isUserInCohort);
+  const isReturningUser = user && cohorts.some(c => c.isUserInCohort);
+  
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -885,6 +890,60 @@ const CommunityLoungeView: React.FC = () => {
 
                 {/* Content Area */}
         <div className="flex-1 overflow-y-auto min-h-0">
+          
+          {/* Welcome Page for New Users */}
+          {isNewUser && (
+            <div className="p-8 text-center">
+              <div className="max-w-2xl mx-auto">
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                    Welcome to BA WorkXP Platform! 🚀
+                  </h1>
+                  <p className="text-lg text-gray-600 dark:text-gray-400">
+                    Your journey to becoming a Business Analyst starts here
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Join a Cohort</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Connect with fellow learners and mentors</p>
+                  </div>
+                  
+                  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Learn Together</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Collaborate on real BA projects</p>
+                  </div>
+                  
+                  <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Crown className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Get Certified</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Earn your BA certification</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <button 
+                    onClick={() => setCurrentSection('cohorts')}
+                    className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
+                  >
+                    Browse Available Cohorts
+                  </button>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Choose the cohort that fits your schedule and learning goals
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
                     {/* Threads Section */}
           {currentSection === 'threads' && (
@@ -1124,6 +1183,63 @@ const CommunityLoungeView: React.FC = () => {
             ))}
           </div>
         </div>
+          )}
+
+          {/* Admin Dashboard */}
+          {isAdmin && currentSection === 'cohorts' && (
+            <div className="p-4">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Admin Dashboard</h2>
+                <p className="text-gray-600 dark:text-gray-400">Manage cohorts, users, and platform analytics</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Total Cohorts</h3>
+                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold">{cohorts.length}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Active learning groups</p>
+                </div>
+                
+                <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Total Users</h3>
+                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold">{cohorts.reduce((sum, c) => sum + c.studentCount, 0)}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Registered learners</p>
+                </div>
+                
+                <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revenue</h3>
+                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold">${cohorts.reduce((sum, c) => sum + c.price, 0)}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Monthly recurring</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <button 
+                  onClick={() => setShowAddCohort(true)}
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
+                >
+                  Create New Cohort
+                </button>
+                <button 
+                  onClick={() => setCurrentSection('channels')}
+                  className="ml-4 px-6 py-3 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition-colors"
+                >
+                  Manage Channels
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Cohorts Section */}
