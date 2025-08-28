@@ -169,7 +169,12 @@ const CommunityLoungeView: React.FC = () => {
   }, []);
 
   const handleSendMessage = (content: string, html: string) => {
-    if (!content.trim() || !selectedChannel) return;
+    console.log('🚀 handleSendMessage called with:', { content, html, selectedChannel });
+    
+    if (!content.trim() || !selectedChannel) {
+      console.log('❌ Message not sent - missing content or channel');
+      return;
+    }
 
     const newMessage: Message = {
       id: Date.now(),
@@ -184,12 +189,23 @@ const CommunityLoungeView: React.FC = () => {
       }
     };
 
-    setMessages([...messages, newMessage]);
+    console.log('📝 New message created:', newMessage);
+    setMessages(prevMessages => {
+      const updatedMessages = [...prevMessages, newMessage];
+      console.log('📊 Updated messages array:', updatedMessages);
+      return updatedMessages;
+    });
     setNewMessage('');
+    console.log('✅ Message sent successfully');
   };
 
   const handleSendThreadReply = (content: string, html: string) => {
-    if (!content.trim() || !replyingToMessage) return;
+    console.log('🧵 handleSendThreadReply called with:', { content, html, replyingToMessage });
+    
+    if (!content.trim() || !replyingToMessage) {
+      console.log('❌ Thread reply not sent - missing content or reply message');
+      return;
+    }
 
     const newReply: Message = {
       id: Date.now(),
@@ -205,8 +221,14 @@ const CommunityLoungeView: React.FC = () => {
       }
     };
 
-    setThreadReplies([...threadReplies, newReply]);
+    console.log('📝 New thread reply created:', newReply);
+    setThreadReplies(prevReplies => {
+      const updatedReplies = [...prevReplies, newReply];
+      console.log('📊 Updated thread replies array:', updatedReplies);
+      return updatedReplies;
+    });
     setNewMessage('');
+    console.log('✅ Thread reply sent successfully');
   };
 
   const handleCreateChannel = (name: string) => {
