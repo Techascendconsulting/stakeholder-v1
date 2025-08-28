@@ -698,6 +698,26 @@ const CommunityLoungeView: React.FC = () => {
           {/* Messages */}
           <div className="space-y-1">
             <div className="text-xs text-gray-500 mb-2">Total messages: {messages.filter(m => m.channel_id === selectedChannel?.id).length}</div>
+            
+            {/* Typing Indicator */}
+            {isTyping && (
+              <div className="flex items-center space-x-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-md">
+                  S
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sarah</span>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span className="text-xs text-gray-500">is typing...</span>
+                  </div>
+                </div>
+              </div>
+            )}
             {messages.filter(message => message.channel_id === selectedChannel?.id).map((message) => (
               <div
                 key={message.id}
@@ -754,6 +774,13 @@ const CommunityLoungeView: React.FC = () => {
                       <span className="text-base font-bold text-gray-900 dark:text-white">
                         {message.user?.display_name || message.user?.email?.split('@')[0] || 'User'}
                       </span>
+                      {/* Cohort Badge */}
+                      {message.user?.email && cohortData[message.user.email as keyof typeof cohortData] && (
+                        <span className={`inline-flex items-center space-x-1 px-2 py-0.5 text-xs font-medium bg-gradient-to-r ${cohortData[message.user.email as keyof typeof cohortData].color} text-white rounded-full shadow-sm`}>
+                          <span>{cohortData[message.user.email as keyof typeof cohortData].badge}</span>
+                          <span>{cohortData[message.user.email as keyof typeof cohortData].type}</span>
+                        </span>
+                      )}
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                         {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
