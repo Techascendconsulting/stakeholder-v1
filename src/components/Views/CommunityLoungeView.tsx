@@ -130,6 +130,7 @@ const CommunityLoungeView: React.FC = () => {
   const [showNewDM, setShowNewDM] = useState(false);
   const [dmSearchQuery, setDmSearchQuery] = useState('');
   const [currentSection, setCurrentSection] = useState<'home' | 'threads' | 'dms' | 'channels' | 'cohorts'>('home');
+  const [selectedCohort, setSelectedCohort] = useState<string | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null);
   const [currentCohort, setCurrentCohort] = useState('premium@example.com');
   const [showAddCohort, setShowAddCohort] = useState(false);
@@ -138,14 +139,19 @@ const CommunityLoungeView: React.FC = () => {
   const [cohorts, setCohorts] = useState([
     {
       id: 'cohort-a',
-      name: 'Cohort A',
+      name: 'Cohort A - August 2025',
       type: 'Premium',
       price: 299,
-      startDate: 'Jan 2024',
+      startDate: 'Aug 2025',
       studentCount: 25,
       description: 'Advanced BA training with premium features',
       isUserInCohort: true,
-      createdBy: 'admin@batraining.com'
+      createdBy: 'admin@batraining.com',
+      // Cohort-specific features
+      channels: ['#cohort-a-general', '#cohort-a-projects', '#cohort-a-resources'],
+      pinnedResources: ['Project Brief - E-commerce App', 'Stakeholder Guide', 'Requirements Template'],
+      dmEnabled: true,
+      members: ['user1@example.com', 'user2@example.com', 'user3@example.com']
     }
   ]);
   
@@ -1272,12 +1278,67 @@ const CommunityLoungeView: React.FC = () => {
                   </div>
                 ))}
 
+                {/* Cohort Details (if user is in cohort) */}
+                {cohorts.filter(c => c.isUserInCohort).map(cohort => (
+                  <div key={cohort.id} className="space-y-3">
+                    {/* Cohort Channels */}
+                    <div>
+                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Your Cohort Channels</h4>
+                      <div className="space-y-1">
+                        {cohort.channels.map(channel => (
+                          <div key={channel} className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <Hash className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-900 dark:text-white">{channel}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Pinned Resources */}
+                    <div>
+                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Pinned Resources</h4>
+                      <div className="space-y-1">
+                        {cohort.pinnedResources.map(resource => (
+                          <div key={resource} className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <Pin className="w-4 h-4 text-blue-500" />
+                            <span className="text-sm text-gray-900 dark:text-white">{resource}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Cohort Members */}
+                    <div>
+                      <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Cohort Members ({cohort.members.length})</h4>
+                      <div className="space-y-1">
+                        {cohort.members.slice(0, 3).map(member => (
+                          <div key={member} className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">{member.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <span className="text-sm text-gray-900 dark:text-white">{member.split('@')[0]}</span>
+                          </div>
+                        ))}
+                        {cohort.members.length > 3 && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 px-3">
+                            +{cohort.members.length - 3} more members
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
                 {/* All Cohorts */}
                 <div className="space-y-2">
                   <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">All Cohorts</h4>
                   
                   {cohorts.map(cohort => (
-                    <div key={cohort.id} className={`p-3 rounded-lg border ${cohort.isUserInCohort ? 'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60'}`}>
+                    <button
+                      key={cohort.id}
+                      onClick={() => setSelectedCohort(selectedCohort === cohort.id ? null : cohort.id)}
+                      className={`w-full p-3 rounded-lg border text-left transition-all duration-200 ${cohort.isUserInCohort ? 'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800 hover:from-purple-100 hover:to-pink-100' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 hover:opacity-80'}`}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cohort.type === 'Premium' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-blue-500 to-cyan-500'}`}>
@@ -1292,7 +1353,65 @@ const CommunityLoungeView: React.FC = () => {
                           {cohort.isUserInCohort ? `$${cohort.price}` : 'No Access'}
                         </div>
                       </div>
-                    </div>
+                      
+                      {/* Cohort Details (expanded) */}
+                      {selectedCohort === cohort.id && (
+                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                          {/* Cohort Channels */}
+                          <div>
+                            <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Channels</h5>
+                            <div className="space-y-1">
+                              {cohort.channels.map((channel, index) => (
+                                <div key={index} className="flex items-center space-x-2 px-2 py-1 bg-white dark:bg-gray-700 rounded text-xs">
+                                  <Hash className="w-3 h-3 text-gray-400" />
+                                  <span className="text-gray-700 dark:text-gray-300">{channel}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Pinned Resources */}
+                          <div>
+                            <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Pinned Resources</h5>
+                            <div className="space-y-1">
+                              {cohort.pinnedResources.map((resource, index) => (
+                                <div key={index} className="flex items-center space-x-2 px-2 py-1 bg-white dark:bg-gray-700 rounded text-xs">
+                                  <Pin className="w-3 h-3 text-gray-400" />
+                                  <span className="text-gray-700 dark:text-gray-300">{resource}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Cohort Members */}
+                          <div>
+                            <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Members ({cohort.members.length})</h5>
+                            <div className="flex flex-wrap gap-1">
+                              {cohort.members.slice(0, 5).map((member, index) => (
+                                <div key={index} className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                  {member.charAt(0).toUpperCase()}
+                                </div>
+                              ))}
+                              {cohort.members.length > 5 && (
+                                <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 text-xs font-bold">
+                                  +{cohort.members.length - 5}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex space-x-2 pt-2">
+                            <button className="flex-1 px-3 py-1.5 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors">
+                              Join Cohort
+                            </button>
+                            <button className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </button>
                   ))}
                 </div>
 
