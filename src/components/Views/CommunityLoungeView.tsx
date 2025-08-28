@@ -134,6 +134,21 @@ const CommunityLoungeView: React.FC = () => {
   const [currentCohort, setCurrentCohort] = useState('premium@example.com');
   const [showAddCohort, setShowAddCohort] = useState(false);
   
+  // Dynamic cohorts data - would come from database
+  const [cohorts, setCohorts] = useState([
+    {
+      id: 'cohort-a',
+      name: 'Cohort A',
+      type: 'Premium',
+      price: 299,
+      startDate: 'Jan 2024',
+      studentCount: 25,
+      description: 'Advanced BA training with premium features',
+      isUserInCohort: true,
+      createdBy: 'admin@batraining.com'
+    }
+  ]);
+  
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1238,98 +1253,47 @@ const CommunityLoungeView: React.FC = () => {
               
               <div className="space-y-3">
                 {/* User's Current Cohort */}
-                <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <Users className="w-4 h-4 text-white" />
+                {cohorts.filter(c => c.isUserInCohort).map(cohort => (
+                  <div key={cohort.id} className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                          <Users className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Your Cohort</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">{cohort.name} - {cohort.type}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">Your Cohort</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Cohort A - Premium</div>
+                      <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-medium">
+                        Active
                       </div>
-                    </div>
-                    <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-medium">
-                      Active
                     </div>
                   </div>
-                </div>
+                ))}
 
                 {/* All Cohorts */}
                 <div className="space-y-2">
                   <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">All Cohorts</h4>
                   
-                  {/* Cohort A - Premium (User's cohort) */}
-                  <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                          <Crown className="w-4 h-4 text-white" />
+                  {cohorts.map(cohort => (
+                    <div key={cohort.id} className={`p-3 rounded-lg border ${cohort.isUserInCohort ? 'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60'}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cohort.type === 'Premium' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-blue-500 to-cyan-500'}`}>
+                            {cohort.type === 'Premium' ? <Crown className="w-4 h-4 text-white" /> : <Users className="w-4 h-4 text-white" />}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-white">{cohort.name} - {cohort.type}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">{cohort.startDate} • {cohort.studentCount} students</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Cohort A - Premium</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Started Jan 2024 • 25 students</div>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${cohort.isUserInCohort ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200' : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200'}`}>
+                          {cohort.isUserInCohort ? `$${cohort.price}` : 'No Access'}
                         </div>
-                      </div>
-                      <div className="bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs font-medium">
-                        $299
                       </div>
                     </div>
-                  </div>
-
-                  {/* Cohort B - Free (Access denied) */}
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 opacity-60">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                          <Users className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Cohort B - Free</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Started Feb 2024 • 45 students</div>
-                        </div>
-                      </div>
-                      <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">
-                        No Access
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Cohort C - Premium (Access denied) */}
-                  <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800 opacity-60">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                          <Crown className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Cohort C - Premium</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Starting Mar 2024 • 30 students</div>
-                        </div>
-                      </div>
-                      <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">
-                        No Access
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Cohort D - Pro (Access denied) */}
-                  <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 opacity-60">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-                          <Star className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Cohort D - Pro</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Starting Apr 2024 • 15 students</div>
-                        </div>
-                      </div>
-                      <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">
-                        No Access
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
                 {/* FOMO Message */}
