@@ -372,17 +372,32 @@ const CommunityLoungeView: React.FC = () => {
     }
     
     setIsSendingMessage(true);
+    
+    // Safety timeout to reset sending state if it gets stuck
+    const timeoutId = setTimeout(() => {
+      console.log('⚠️ Sending timeout reached, resetting state');
+      setIsSendingMessage(false);
+    }, 10000); // 10 second timeout
     let attachment: { file_url?: string; file_name?: string; file_size?: number } | undefined;
-    if (fileToSend) {
-      const uploaded = await uploadFileToStorage(fileToSend, `channels/${selectedChannel.id}`);
-      if (uploaded.error) {
-        console.error('Attachment upload failed:', uploaded.error);
-        // If only an attachment was being sent, abort instead of sending empty message
-        if (!content.trim()) return;
-      } else {
-        attachment = uploaded;
+    try {
+      if (fileToSend) {
+        const uploaded = await uploadFileToStorage(fileToSend, `channels/${selectedChannel.id}`);
+        if (uploaded.error) {
+          console.error('Attachment upload failed:', uploaded.error);
+          // If only an attachment was being sent, abort instead of sending empty message
+          if (!content.trim()) {
+            setIsSendingMessage(false);
+            return;
+          }
+        } else {
+          attachment = uploaded;
+        }
+        setSelectedFile(null);
       }
-      setSelectedFile(null);
+    } catch (error) {
+      console.error('Error processing attachment:', error);
+      setIsSendingMessage(false);
+      return;
     }
 
     const newMessage: Message = {
@@ -417,6 +432,7 @@ const CommunityLoungeView: React.FC = () => {
       
       const updatedMessages = [...prevMessages, newMessage];
       console.log('📊 Updated messages array:', updatedMessages);
+      clearTimeout(timeoutId);
       setIsSendingMessage(false);
       return updatedMessages;
     });
@@ -723,7 +739,20 @@ const CommunityLoungeView: React.FC = () => {
 
         {/* Messages */}
           <div className="space-y-1">
-            <div className="text-xs text-gray-500 mb-2">Total messages: {messages.filter(m => m.channel_id === selectedChannel?.id).length}</div>
+            <div className="text-xs text-gray-500 mb-2">
+              Total messages: {messages.filter(m => m.channel_id === selectedChannel?.id).length}
+              {isSendingMessage && (
+                <button 
+                  onClick={() => {
+                    console.log('🔄 Manual reset of sending state');
+                    setIsSendingMessage(false);
+                  }}
+                  className="ml-2 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Reset Sending State
+                </button>
+              )}
+            </div>
             
             {/* Typing Indicator */}
             {isTyping && (
