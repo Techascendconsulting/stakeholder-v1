@@ -1679,6 +1679,7 @@ const CommunityLoungeView: React.FC = () => {
         </div>
       </div>
         </div>
+      </div>
       )}
 
       {/* Image Modal */}
