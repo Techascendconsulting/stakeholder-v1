@@ -132,6 +132,7 @@ const CommunityLoungeView: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<'home' | 'threads' | 'dms' | 'channels' | 'cohorts'>('home');
   const [highlightedMessageId, setHighlightedMessageId] = useState<number | null>(null);
   const [currentCohort, setCurrentCohort] = useState('premium@example.com');
+  const [showAddCohort, setShowAddCohort] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1224,6 +1225,15 @@ const CommunityLoungeView: React.FC = () => {
             <div className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Cohorts</h3>
+                {/* Admin can create new cohorts */}
+                {user?.email === 'admin@batraining.com' && (
+                  <button 
+                    onClick={() => setShowAddCohort(true)}
+                    className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               
               <div className="space-y-3">
@@ -1236,7 +1246,7 @@ const CommunityLoungeView: React.FC = () => {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">Your Cohort</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Premium Cohort</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Cohort A - Premium</div>
                       </div>
                     </div>
                     <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-medium">
@@ -1245,27 +1255,11 @@ const CommunityLoungeView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* All Available Cohorts (with FOMO) */}
+                {/* All Cohorts */}
                 <div className="space-y-2">
                   <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">All Cohorts</h4>
                   
-                  {/* Free Cohort */}
-                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                          <Users className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Free Cohort</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Basic access, limited features</div>
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Free</div>
-                    </div>
-                  </div>
-
-                  {/* Premium Cohort */}
+                  {/* Cohort A - Premium (User's cohort) */}
                   <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -1273,30 +1267,66 @@ const CommunityLoungeView: React.FC = () => {
                           <Crown className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Premium Cohort</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Enhanced features, exclusive content</div>
+                          <div className="font-medium text-gray-900 dark:text-white">Cohort A - Premium</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Started Jan 2024 • 25 students</div>
                         </div>
                       </div>
                       <div className="bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs font-medium">
-                        $29/month
+                        $299
                       </div>
                     </div>
                   </div>
 
-                  {/* Pro Cohort */}
-                  <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  {/* Cohort B - Free (Access denied) */}
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 opacity-60">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                          <Users className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Cohort B - Free</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Started Feb 2024 • 45 students</div>
+                        </div>
+                      </div>
+                      <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">
+                        No Access
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cohort C - Premium (Access denied) */}
+                  <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800 opacity-60">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                          <Crown className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">Cohort C - Premium</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Starting Mar 2024 • 30 students</div>
+                        </div>
+                      </div>
+                      <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">
+                        No Access
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cohort D - Pro (Access denied) */}
+                  <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 opacity-60">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
                           <Star className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Pro Cohort</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Admin access, all features</div>
+                          <div className="font-medium text-gray-900 dark:text-white">Cohort D - Pro</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Starting Apr 2024 • 15 students</div>
                         </div>
                       </div>
-                      <div className="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full text-xs font-medium">
-                        $99/month
+                      <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">
+                        No Access
                       </div>
                     </div>
                   </div>
@@ -1309,12 +1339,12 @@ const CommunityLoungeView: React.FC = () => {
                       <span className="text-white text-xs">🔥</span>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">Upgrade for More Access!</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">Get exclusive channels, priority support, and advanced features</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">Join More Cohorts!</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">Access exclusive content and connect with different student groups</div>
                     </div>
                   </div>
                   <button className="mt-2 w-full px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:from-orange-600 hover:to-red-600 transition-all duration-200">
-                    Upgrade Now
+                    Contact Admin
                   </button>
                 </div>
               </div>
