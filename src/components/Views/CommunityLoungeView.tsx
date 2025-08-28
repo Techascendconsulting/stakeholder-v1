@@ -815,45 +815,49 @@ const CommunityLoungeView: React.FC = () => {
           </div>
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Channels List - Scrollable */}
-          <div className="flex-1 overflow-y-auto min-h-0">
-            <div className="p-3">
-              <div className="flex items-center justify-between mb-2">
+                {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Channels List */}
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Hash className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Channels</h3>
-                <button 
-                  onClick={() => setShowAddChannel(!showAddChannel)}
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
               </div>
-              
-              <div className="space-y-1">
-              {channels.map((channel) => (
-                <button
-                  key={channel.id}
-                    onClick={() => setSelectedChannel(channel)}
-                    className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                    selectedChannel?.id === channel.id
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                    <Hash className="w-4 h-4" />
-                    <span className="truncate">{channel.name}</span>
-                </button>
-              ))}
-              </div>
+              <button 
+                onClick={() => setShowAddChannel(!showAddChannel)}
+                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-1">
+            {channels.map((channel) => (
+              <button
+                key={channel.id}
+                  onClick={() => setSelectedChannel(channel)}
+                  className={`w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
+                  selectedChannel?.id === channel.id
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                  <Hash className="w-4 h-4" />
+                  <span className="truncate">{channel.name}</span>
+              </button>
+            ))}
             </div>
           </div>
 
-                    {/* Direct Messages Section - Fixed at Bottom */}
-          <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700">
+          {/* Direct Messages Section */}
+          <div className="p-3 border-t border-gray-200 dark:border-gray-700">
             <div className="p-3">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Direct Messages</h3>
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Direct Messages</h3>
+                </div>
                 <button 
                   onClick={() => setShowNewDM(!showNewDM)}
                   className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
