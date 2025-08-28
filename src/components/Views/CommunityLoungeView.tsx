@@ -36,7 +36,8 @@ import {
   Edit,
   Copy,
   Trash2,
-  User
+  User,
+  Home
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -125,6 +126,7 @@ const CommunityLoungeView: React.FC = () => {
   const [dmChannels, setDmChannels] = useState<Channel[]>([]);
   const [showNewDM, setShowNewDM] = useState(false);
   const [dmSearchQuery, setDmSearchQuery] = useState('');
+  const [currentSection, setCurrentSection] = useState<'home' | 'threads' | 'dms' | 'channels'>('home');
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -793,25 +795,56 @@ const CommunityLoungeView: React.FC = () => {
         </div>
         )}
 
-        {/* Channel Search */}
+        {/* Main Navigation */}
         <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-            <input
-              type="text"
-              placeholder="Search channels..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-all duration-200"
-              value={channelSearchQuery}
-              onChange={(e) => setChannelSearchQuery(e.target.value)}
-            />
-            {channelSearchQuery && (
-              <button
-                onClick={() => setChannelSearchQuery('')}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <X size={14} />
-              </button>
-            )}
+          <div className="space-y-1">
+            <button
+              onClick={() => setCurrentSection('home')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-md transition-colors ${
+                currentSection === 'home'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <Home className="w-4 h-4" />
+              <span>Home</span>
+            </button>
+            
+            <button
+              onClick={() => setCurrentSection('threads')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-md transition-colors ${
+                currentSection === 'threads'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Threads</span>
+            </button>
+            
+            <button
+              onClick={() => setCurrentSection('dms')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-md transition-colors ${
+                currentSection === 'dms'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>DMs</span>
+            </button>
+            
+            <button
+              onClick={() => setCurrentSection('channels')}
+              className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-md transition-colors ${
+                currentSection === 'channels'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <Hash className="w-4 h-4" />
+              <span>Channels</span>
+            </button>
           </div>
         </div>
 
