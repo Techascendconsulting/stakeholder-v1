@@ -121,6 +121,10 @@ const CommunityLoungeView: React.FC = () => {
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
   const [showThreadScrollButton, setShowThreadScrollButton] = useState(false);
   const [threadPanelHeight, setThreadPanelHeight] = useState('h-96'); // Start with short height
+  const [showDMSection, setShowDMSection] = useState(true);
+  const [dmChannels, setDmChannels] = useState<Channel[]>([]);
+  const [showNewDM, setShowNewDM] = useState(false);
+  const [dmSearchQuery, setDmSearchQuery] = useState('');
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
