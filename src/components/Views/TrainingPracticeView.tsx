@@ -7,6 +7,13 @@ import { mockProjects, mockStakeholders } from '../../data/mockData';
 import { Stakeholder } from '../../types';
 import { singleAgentSystem } from '../../services/singleAgentSystem';
 import AIService from '../../services/aiService';
+import CoachingPanel from '../CoachingPanel';
+import { 
+  CoachingSession, 
+  coachingReducer, 
+  initializeCoachingSession,
+  CoachingEvent 
+} from '../../services/coachingStateReducer';
 import { 
   ArrowLeft, 
   Send, 
@@ -36,6 +43,11 @@ const TrainingPracticeView: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<TrainingQuestion | null>(null);
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([]);
+  
+  // New coaching system state
+  const [coachingSession, setCoachingSession] = useState<CoachingSession>(initializeCoachingSession());
+  
+  // Keep old coaching for backward compatibility during transition
   const [coaching, setCoaching] = useState<{
     suggestions: string[];
     warnings: string[];
@@ -49,12 +61,35 @@ const TrainingPracticeView: React.FC = () => {
     coverage: {},
     hintEvents: []
   });
+  
   const [feedback, setFeedback] = useState<TrainingFeedback | null>(null);
   const [meetingTime, setMeetingTime] = useState(0);
   const [isMeetingActive, setIsMeetingActive] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const trainingService = TrainingService.getInstance();
+
+  // Coaching session management functions
+  const handleNextCoaching = () => {
+    const nextEvent: CoachingEvent = { type: 'USER_CLICK_NEXT' };
+    setCoachingSession(prev => coachingReducer(prev, nextEvent));
+  };
+
+  const handleSendSummary = (summary: string) => {
+    // Send the summary as a user message
+    setInputMessage(summary);
+    handleSendMessage();
+  };
+
+  const handleAddPainPoint = (painPoint: { text: string; who: string; example?: string }) => {
+    const painPointEvent: CoachingEvent = { type: 'ADD_PAIN_POINT', painPoint };
+    setCoachingSession(prev => coachingReducer(prev, painPointEvent));
+  };
+
+  const handleAddSessionNote = (category: string, note: string) => {
+    const noteEvent: CoachingEvent = { type: 'ADD_SESSION_NOTE', category, note };
+    setCoachingSession(prev => coachingReducer(prev, noteEvent));
+  };
 
   useEffect(() => {
     // Restore state from sessionStorage on page refresh
@@ -289,6 +324,10 @@ Remember to start with a professional greeting and introduce yourself. Then focu
     setInputMessage('');
     setIsTyping(true);
 
+    // Update coaching session with user message
+    const userEvent: CoachingEvent = { type: 'USER_SENT_QUESTION', message: inputMessage };
+    setCoachingSession(prev => coachingReducer(prev, userEvent));
+
     try {
       // Get project context from mockProjects
       const project = mockProjects.find(p => p.id === session?.projectId);
@@ -405,6 +444,10 @@ Remember to start with a professional greeting and introduce yourself. Then focu
               }
               return newMessages;
             });
+
+            // Update coaching session with stakeholder response
+            const stakeholderEvent: CoachingEvent = { type: 'STAKEHOLDER_ANSWER', message: response };
+            setCoachingSession(prev => coachingReducer(prev, stakeholderEvent));
           } catch (error) {
             console.error(`Error generating response for ${stakeholder.name}:`, error);
           }
@@ -1044,91 +1087,14 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           </div>
         </div>
 
-        {/* Right Sidebar - Coaching and Progress */}
-        <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
-          {/* Current Question */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-              <Target className="w-5 h-5 text-blue-600" />
-              <span>Current Focus</span>
-            </h3>
-            {currentQuestion && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  <span className="font-medium">Skill:</span> {currentQuestion.skill}
-                </p>
-                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                  {currentQuestion.text}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Coaching */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-              <Lightbulb className="w-5 h-5 text-purple-600" />
-              <span>Coaching</span>
-            </h3>
-            
-            {coaching.warnings.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2 flex items-center space-x-1">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>Warnings</span>
-                </h4>
-                <ul className="space-y-1">
-                  {coaching.warnings.map((warning, index) => (
-                    <li key={index} className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                      {warning}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {coaching.suggestions.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2 flex items-center space-x-1">
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Suggestions</span>
-                </h4>
-                <ul className="space-y-1">
-                  {coaching.suggestions.map((suggestion, index) => (
-                    <li key={index} className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {coaching.tips.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2 flex items-center space-x-1">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Tips</span>
-                </h4>
-                <ul className="space-y-1">
-                  {coaching.tips.map((tip, index) => (
-                    <li key={index} className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded">
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {coaching.warnings.length === 0 && coaching.suggestions.length === 0 && coaching.tips.length === 0 && (
-              <div className="text-center py-8">
-                <Lightbulb className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Start asking questions to receive coaching feedback
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* New Coaching Panel */}
+        <CoachingPanel
+          session={coachingSession}
+          onNext={handleNextCoaching}
+          onSendSummary={handleSendSummary}
+          onAddPainPoint={handleAddPainPoint}
+          onAddSessionNote={handleAddSessionNote}
+        />
       </div>
     </div>
   );
