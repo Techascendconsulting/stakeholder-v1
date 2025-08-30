@@ -2,11 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TrainingService } from '../../services/trainingService';
-import { TrainingSession, TrainingQuestion, TrainingFeedback } from '../../types/training';
+import { TrainingSession, TrainingQuestion, TrainingFeedback, CoachingCard, SessionState, PainPoint } from '../../types/training';
 import { mockProjects, mockStakeholders } from '../../data/mockData';
+import { getCoachingCards } from '../../data/coachingCards';
+import { SessionStateManager } from '../../services/sessionStateManager';
 import { Stakeholder } from '../../types';
 import { singleAgentSystem } from '../../services/singleAgentSystem';
 import AIService from '../../services/aiService';
+import CoachingPanel from '../CoachingPanel';
 import { 
   ArrowLeft, 
   Send, 
@@ -54,7 +57,13 @@ const TrainingPracticeView: React.FC = () => {
   const [isMeetingActive, setIsMeetingActive] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // New coaching system state
+  const [currentCoachingCard, setCurrentCoachingCard] = useState<CoachingCard | null>(null);
+  const [sessionState, setSessionState] = useState<SessionState | null>(null);
+  const [painPoints, setPainPoints] = useState<PainPoint[]>([]);
+
   const trainingService = TrainingService.getInstance();
+  const sessionStateManager = SessionStateManager.getInstance();
 
   useEffect(() => {
     // Restore state from sessionStorage on page refresh
@@ -87,6 +96,15 @@ const TrainingPracticeView: React.FC = () => {
                 // Load the current question for the new session
                 const question = trainingService.getCurrentQuestion(newSession.id);
                 setCurrentQuestion(question);
+                
+                // Initialize coaching system
+                const initialState = sessionStateManager.initializeSession(newSession.id, newSession.stage);
+                setSessionState(initialState);
+                
+                // Load coaching cards for this stage and project
+                const coachingCards = getCoachingCards(newSession.stage, newSession.projectId);
+                const activeCard = coachingCards.find(card => card.id === initialState.currentCardId);
+                setCurrentCoachingCard(activeCard || null);
                 
                 // Save the new session config
                 const config = {
@@ -288,6 +306,25 @@ Remember to start with a professional greeting and introduce yourself. Then focu
     });
     setInputMessage('');
     setIsTyping(true);
+
+    // Smart coaching: Analyze user message and update coaching
+    if (session) {
+      const analysis = sessionStateManager.analyzeUserMessage(inputMessage, session.id);
+      console.log('🎯 Smart Coaching Analysis:', analysis);
+      
+      // Update session state based on analysis
+      if (analysis.confidence > 0.7) {
+        const updatedState = sessionStateManager.advanceToNextCard(session.id);
+        if (updatedState) {
+          setSessionState(updatedState);
+          
+          // Update coaching card
+          const coachingCards = getCoachingCards(updatedState.currentPhase, session.projectId);
+          const newActiveCard = coachingCards.find(card => card.id === updatedState.currentCardId);
+          setCurrentCoachingCard(newActiveCard || null);
+        }
+      }
+    }
 
     try {
       // Get project context from mockProjects
@@ -1044,91 +1081,41 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           </div>
         </div>
 
-        {/* Right Sidebar - Coaching and Progress */}
-        <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
-          {/* Current Question */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-              <Target className="w-5 h-5 text-blue-600" />
-              <span>Current Focus</span>
-            </h3>
-            {currentQuestion && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  <span className="font-medium">Skill:</span> {currentQuestion.skill}
-                </p>
-                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                  {currentQuestion.text}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Coaching */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-              <Lightbulb className="w-5 h-5 text-purple-600" />
-              <span>Coaching</span>
-            </h3>
-            
-            {coaching.warnings.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2 flex items-center space-x-1">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>Warnings</span>
-                </h4>
-                <ul className="space-y-1">
-                  {coaching.warnings.map((warning, index) => (
-                    <li key={index} className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                      {warning}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {coaching.suggestions.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2 flex items-center space-x-1">
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Suggestions</span>
-                </h4>
-                <ul className="space-y-1">
-                  {coaching.suggestions.map((suggestion, index) => (
-                    <li key={index} className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {coaching.tips.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2 flex items-center space-x-1">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Tips</span>
-                </h4>
-                <ul className="space-y-1">
-                  {coaching.tips.map((tip, index) => (
-                    <li key={index} className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded">
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {coaching.warnings.length === 0 && coaching.suggestions.length === 0 && coaching.tips.length === 0 && (
-              <div className="text-center py-8">
-                <Lightbulb className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Start asking questions to receive coaching feedback
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Enhanced Coaching Panel */}
+        <CoachingPanel
+          currentCard={currentCoachingCard}
+          sessionState={sessionState}
+          painPoints={painPoints}
+          onCardChange={(cardId) => {
+            if (session) {
+              const updatedState = sessionStateManager.updateSessionState(session.id, { currentCardId: cardId });
+              if (updatedState) {
+                setSessionState(updatedState);
+                const coachingCards = getCoachingCards(updatedState.currentPhase, session.projectId);
+                const newCard = coachingCards.find(card => card.id === cardId);
+                setCurrentCoachingCard(newCard || null);
+              }
+            }
+          }}
+          onPainPointUpdate={(painPoint) => {
+            if (session) {
+              const updatedState = sessionStateManager.updatePainPoint(session.id, painPoint.id, painPoint);
+              if (updatedState) {
+                setSessionState(updatedState);
+                setPainPoints(updatedState.painPoints);
+              }
+            }
+          }}
+          onAddPainPoint={(painPoint) => {
+            if (session) {
+              const updatedState = sessionStateManager.addPainPoint(session.id, painPoint);
+              if (updatedState) {
+                setSessionState(updatedState);
+                setPainPoints(updatedState.painPoints);
+              }
+            }
+          }}
+        />
       </div>
     </div>
   );
