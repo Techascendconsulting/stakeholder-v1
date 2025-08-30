@@ -8,6 +8,7 @@ import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
 import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
+import { OnboardingProvider } from './contexts/OnboardingContext'
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
@@ -142,9 +143,11 @@ function App() {
           <AuthProvider>
             <VoiceProvider>
               <AppProvider>
-                <MeetingSetupProvider>
-                  <AppContent />
-                </MeetingSetupProvider>
+                <OnboardingProvider>
+                  <MeetingSetupProvider>
+                    <AppContent />
+                  </MeetingSetupProvider>
+                </OnboardingProvider>
               </AppProvider>
             </VoiceProvider>
           </AuthProvider>

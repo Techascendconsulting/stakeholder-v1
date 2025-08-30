@@ -46,14 +46,14 @@ const concepts: ConceptCard[] = [
   },
   {
     id: 2,
-    title: "Core BA Competencies",
-    description: "Understand the six core competency areas that enable effective business analysis.",
-    detailedDescription: "According to the BABOK, Business Analysts need six core competency areas: Analytical Thinking and Problem Solving (logical reasoning, creative thinking, learning, systems thinking), Behavioral Characteristics (ethics, personal accountability, trustworthiness, adaptability), Business Knowledge (business principles, industry knowledge, organization knowledge, solution knowledge), Communication Skills (verbal, nonverbal, written, listening), Interaction Skills (facilitation, leadership, teamwork, negotiation), and Tools and Technology (office productivity, business analysis, communication, specialized).",
+    title: "How Organisations Work",
+    description: "To solve business problems, you must understand how businesses operate.",
+    detailedDescription: "Every organisation either sells products, services, or both. They exist to deliver value — money, time saved, or impact. Understanding what they sell helps you understand their goals. BA work always ties back to business performance and value.",
     keyPoints: [
-      "Six core competency areas enable effective business analysis.",
-      "Analytical thinking and problem-solving are fundamental skills.",
-      "Communication and interaction skills are essential for stakeholder engagement.",
-      "Business knowledge and technical tools support analysis work."
+      "Every organisation either sells products, services, or both.",
+      "They exist to deliver value — money, time saved, or impact.",
+      "Understanding what they sell helps you understand their goals.",
+      "BA work always ties back to business performance and value."
     ],
     icon: <Building2 className="w-8 h-8" />,
     color: "from-blue-500 to-cyan-600",
@@ -61,8 +61,8 @@ const concepts: ConceptCard[] = [
   },
   {
     id: 3,
-    title: "Departments in Organisations",
-    description: "Departments help the business deliver its services or products.",
+    title: "Departments in an Organisation",
+    description: "The different departments help the business deliver its services or products.",
     detailedDescription: "Common departments include Sales, Marketing, Finance, Operations, Compliance, and Customer Service. Each one has its own goals and pain points. BAs often work across departments to understand where processes break down. Knowing who does what helps you ask better questions and involve the right people.",
     keyPoints: [
       "Common departments include Sales, Marketing, Finance, Operations, Compliance, and Customer Service.",
@@ -241,45 +241,37 @@ const concepts: ConceptCard[] = [
   }
 ];
 
-// Helper function to get static gradient classes (prevents Tailwind purging)
-const getGradientClass = (conceptId: number): string => {
-  const gradientClasses = {
-    1: 'bg-gradient-to-r from-purple-500 to-indigo-600',
-    2: 'bg-gradient-to-r from-blue-500 to-cyan-600',
-    3: 'bg-gradient-to-r from-emerald-500 to-teal-600',
-    4: 'bg-gradient-to-r from-orange-500 to-red-600',
-    5: 'bg-gradient-to-r from-pink-500 to-rose-600',
-    6: 'bg-gradient-to-r from-violet-500 to-fuchsia-600',
-    7: 'bg-gradient-to-r from-amber-500 to-yellow-600',
-    8: 'bg-gradient-to-r from-green-500 to-emerald-600',
-    9: 'bg-gradient-to-r from-slate-500 to-gray-600',
-    10: 'bg-gradient-to-r from-indigo-500 to-blue-600',
-    11: 'bg-gradient-to-r from-teal-500 to-cyan-600',
-    12: 'bg-gradient-to-r from-rose-500 to-pink-500',
-    13: 'bg-gradient-to-r from-yellow-500 to-orange-600',
-    14: 'bg-gradient-to-r from-lime-500 to-green-600'
-  };
-  
-  return gradientClasses[conceptId as keyof typeof gradientClasses] || 'bg-gradient-to-r from-gray-500 to-gray-600';
-};
-
 // Main CoreConceptsView Component
 const CoreConceptsView: React.FC = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<ConceptCard | null>(null);
 
-  // Component no longer forces light theme - now respects dark mode
+  // Force light theme for this component
+  useEffect(() => {
+    const root = document.documentElement;
+    const hadDarkClass = root.classList.contains('dark');
+    
+    // Remove dark class when component mounts
+    root.classList.remove('dark');
+    
+    // Restore original theme when component unmounts
+    return () => {
+      if (hadDarkClass) {
+        root.classList.add('dark');
+      }
+    };
+  }, []);
 
   // Detail view for selected concept
   if (selectedConcept) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-6 py-4">
             <button
               onClick={() => setSelectedConcept(null)}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors group"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               Back to Core Concepts
@@ -293,17 +285,17 @@ const CoreConceptsView: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${selectedConcept.gradient} dark:bg-gray-700 text-gray-700 dark:text-gray-300`}>
+                <div className={`p-3 rounded-xl ${selectedConcept.gradient} text-gray-700`}>
                   {selectedConcept.icon}
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full inline-block mb-2">
+                  <div className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full inline-block mb-2">
                     Concept {selectedConcept.id}
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     {selectedConcept.title}
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-300 text-lg">
+                  <p className="text-gray-600 text-lg">
                     {selectedConcept.description}
                   </p>
                 </div>
@@ -316,33 +308,15 @@ const CoreConceptsView: React.FC = () => {
 
           {/* Video Section */}
           <div className="mb-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              {selectedConcept.id === 1 ? (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Video Explanation</h3>
-                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                    <iframe
-                      className="absolute top-0 left-0 w-full h-full rounded-lg"
-                      src="https://www.youtube.com/embed/b_hJ4S7NYfY"
-                      title="Who is a Business Analyst"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Play className="w-8 h-8 text-blue-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Video Content</h3>
-                  <p className="text-gray-600">
-                    Video content for this concept will be available soon. 
-                    For now, review the key points and description below.
-                  </p>
-                </div>
-              )}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Play className="w-8 h-8 text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Video Content</h3>
+              <p className="text-gray-600">
+                Video content for this concept will be available soon. 
+                For now, review the key points and description below.
+              </p>
             </div>
           </div>
 
@@ -363,7 +337,7 @@ const CoreConceptsView: React.FC = () => {
               <div className="space-y-4">
                 {selectedConcept.keyPoints.map((point, index) => (
                   <div key={index} className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-                    <div className={`w-8 h-8 ${getGradientClass(selectedConcept.id)} rounded-full flex items-center justify-center flex-shrink-0`}>
+                    <div className={`w-8 h-8 bg-gradient-to-r ${selectedConcept.color} rounded-full flex items-center justify-center flex-shrink-0`}>
                       <span className="text-white font-bold text-sm">{index + 1}</span>
                     </div>
                     <p className="text-gray-700 leading-relaxed">
@@ -380,7 +354,7 @@ const CoreConceptsView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">
         <div className="absolute inset-0 bg-black/10"></div>
@@ -397,10 +371,10 @@ const CoreConceptsView: React.FC = () => {
               <BookOpen className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Business Analyst Fundamentals
+              Being a BA
             </h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
-              Master the essential concepts and skills needed to excel as a Business Analyst
+              Explore the mindset, role, and environment of a Business Analyst. This section breaks down what BAs do, how they work, and why they matter.
             </p>
           </div>
         </div>
@@ -413,7 +387,7 @@ const CoreConceptsView: React.FC = () => {
           {concepts.map((concept) => (
             <div
               key={concept.id}
-              className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer card-hover h-80 flex flex-col ${
+              className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer card-hover h-80 flex flex-col ${
                 hoveredCard === concept.id ? 'scale-105 shadow-2xl' : ''
               }`}
               onMouseEnter={() => setHoveredCard(concept.id)}
@@ -421,37 +395,37 @@ const CoreConceptsView: React.FC = () => {
               onClick={() => setSelectedConcept(concept)}
             >
               {/* Card Header with Gradient */}
-              <div className={`h-2 ${getGradientClass(concept.id)}`}></div>
+              <div className={`h-2 bg-gradient-to-r ${concept.color}`}></div>
               
               {/* Card Content */}
               <div className="p-8 flex flex-col flex-grow">
                 {/* Concept Number */}
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                  <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
                     Concept {concept.id}
                   </span>
-                  <div className={`p-3 rounded-xl ${concept.gradient} dark:bg-gray-700 text-gray-700 dark:text-gray-300 group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`p-3 rounded-xl ${concept.gradient} text-gray-700 group-hover:scale-110 transition-transform duration-300`}>
                     {concept.icon}
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-gray-700 transition-colors">
                   {concept.title}
                 </h3>
 
                 {/* Description - with flex-grow to push footer to bottom */}
-                <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6 flex-grow">
+                <p className="text-gray-600 text-base leading-relaxed mb-6 flex-grow">
                   {concept.description}
                 </p>
 
                 {/* Footer - will always be at bottom */}
                 <div className="flex items-center justify-between mt-auto">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                  <span className="text-sm text-gray-500 font-medium">
                     4 key points
                   </span>
                   
-                  <button className={`inline-flex items-center gap-2 text-sm font-semibold ${getGradientClass(concept.id)} text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 group-hover:translate-x-1`}>
+                  <button className={`inline-flex items-center gap-2 text-sm font-semibold bg-gradient-to-r ${concept.color} text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 group-hover:translate-x-1`}>
                     Click to learn
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
@@ -466,10 +440,10 @@ const CoreConceptsView: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+      <div className="border-t border-gray-200 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="text-center">
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-600">
               Complete all concepts to build a comprehensive understanding of Business Analysis
             </p>
           </div>

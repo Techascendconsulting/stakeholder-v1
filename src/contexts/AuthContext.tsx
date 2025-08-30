@@ -31,8 +31,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const getInitialSession = async () => {
       try {
         console.log('🔐 AUTH - Getting initial session...')
-        console.log('🔐 AUTH - Supabase URL:', supabaseUrl)
-        console.log('🔐 AUTH - Supabase Key exists:', !!supabaseAnonKey)
         
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) {

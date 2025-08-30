@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TrainingService } from '../../services/trainingService';
 import { TrainingSession, TrainingQuestion, TrainingFeedback } from '../../types/training';
 import { mockProjects, mockStakeholders } from '../../data/mockData';
@@ -27,7 +28,7 @@ import {
 } from 'lucide-react';
 
 const TrainingPracticeView: React.FC = () => {
-  const { setCurrentView } = useApp();
+  const { setCurrentView, selectedProject } = useApp();
   const [currentStep, setCurrentStep] = useState<'meeting-prep' | 'live-meeting' | 'feedback'>('meeting-prep');
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -70,6 +71,40 @@ const TrainingPracticeView: React.FC = () => {
             setSession(sessionData);
             const question = trainingService.getCurrentQuestion(parsedConfig.sessionId);
             setCurrentQuestion(question);
+          }
+        } else {
+          // Fallback: Create a new session if no config exists
+          console.log('🔄 TrainingPracticeView: No training config found, creating new session');
+          if (selectedProject) {
+            try {
+              // Find the project ID from the selected project name
+              const project = mockProjects.find(p => p.name === selectedProject.name);
+              if (project) {
+                console.log('🔄 TrainingPracticeView: Creating session for project:', project.name);
+                const newSession = await trainingService.startSession('problem_exploration', project.id, 'practice', []);
+                setSession(newSession);
+                
+                // Load the current question for the new session
+                const question = trainingService.getCurrentQuestion(newSession.id);
+                setCurrentQuestion(question);
+                
+                // Save the new session config
+                const config = {
+                  sessionId: newSession.id,
+                  stage: newSession.stage,
+                  projectId: newSession.projectId,
+                  mode: newSession.mode
+                };
+                sessionStorage.setItem('trainingConfig', JSON.stringify(config));
+                console.log('🔄 TrainingPracticeView: Saved new session config:', config);
+              } else {
+                console.error('❌ TrainingPracticeView: Could not find project for:', selectedProject.name);
+              }
+            } catch (error) {
+              console.error('❌ TrainingPracticeView: Error creating new session:', error);
+            }
+          } else {
+            console.error('❌ TrainingPracticeView: No selected project available for fallback session');
           }
         }
 
@@ -114,7 +149,7 @@ const TrainingPracticeView: React.FC = () => {
     };
 
     restoreState();
-  }, []);
+  }, [selectedProject]);
 
   useEffect(() => {
     scrollToBottom();
@@ -215,6 +250,7 @@ const TrainingPracticeView: React.FC = () => {
       
       // Add initial greeting with stakeholder context
       const stakeholderNames = selectedStakeholders.map(s => `${s.name} (${s.role})`).join(', ');
+      const currentQuestionText = currentQuestion?.text || 'Understanding current process challenges';
       const initialMessage = {
         id: 'initial',
         sender: 'system',
@@ -222,7 +258,7 @@ const TrainingPracticeView: React.FC = () => {
 
 You'll be meeting with ${stakeholderNames} from ${selectedStakeholders[0].department}.
 
-Current Focus: ${currentQuestion?.text}
+Current Focus: ${currentQuestionText}
 
 Remember to start with a professional greeting and introduce yourself. Then focus on addressing the current question while maintaining professional etiquette throughout the conversation.`,
         timestamp: new Date(),
@@ -317,10 +353,14 @@ Remember to start with a professional greeting and introduce yourself. Then focu
         // User specifically mentioned stakeholder(s) via AI detection - only those should respond
         console.log(`🎯 Training: AI detected stakeholder mention(s): ${userMentionResult.mentionedStakeholders.map(s => s.name).join(', ')}`);
         respondingStakeholders = userMentionResult.mentionedStakeholders;
-      } else if (inputMessage.toLowerCase().includes('hello') || inputMessage.toLowerCase().includes('hi') || inputMessage.toLowerCase().includes('hey') || inputMessage.toLowerCase().includes('greetings')) {
-        // Greeting - all stakeholders can respond
-        console.log('👋 Training: Greeting detected - all stakeholders will respond');
+      } else if (inputMessage.toLowerCase().includes('hello') || inputMessage.toLowerCase().includes('hi') || inputMessage.toLowerCase().includes('greetings')) {
+        // Formal greeting - all stakeholders can respond
+        console.log('👋 Training: Formal greeting detected - all stakeholders will respond');
         respondingStakeholders = selectedStakeholders;
+      } else if (inputMessage.toLowerCase().includes('hey') || inputMessage.toLowerCase().includes('hey guys') || inputMessage.toLowerCase().includes('hey there')) {
+        // Casual greeting - only one stakeholder responds to avoid overwhelming
+        console.log('👋 Training: Casual greeting detected - one stakeholder will respond');
+        respondingStakeholders = [selectedStakeholders[0]];
       } else {
         // General question - one stakeholder responds (first one)
         console.log('❓ Training: General question - one stakeholder will respond');
@@ -406,7 +446,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
     };
     newCoaching.hintEvents.push(hintEvent);
 
-    // Coach Trigger 1: Missing Greetings (first 30 seconds)
+    // Coach Trigger 1: Missing Greetings (first 30 seconds only)
     if (meetingTime <= 30 && messages.length <= 2) {
       const hasGreeting = messages.some(m => 
         m.sender === 'user' && (
@@ -423,9 +463,16 @@ Remember to start with a professional greeting and introduce yourself. Then focu
       );
       
       if (!hasGreeting) {
-        newCoaching.warnings.push("Start with a professional greeting! Try: 'Hello [Name], thank you for taking the time to meet with me today.'");
-        newCoaching.warnings.push("Remember to introduce yourself and explain the purpose of the meeting briefly.");
+        newCoaching.warnings.push("Start with a greeting and briefly explain why you're meeting.");
       }
+    }
+
+    // Coach Trigger 1.5: Clear old warnings after conversation starts
+    if (messages.length > 3) {
+      newCoaching.warnings = newCoaching.warnings.filter(warning => 
+        !warning.includes('Start with a greeting') && 
+        !warning.includes('introduce yourself')
+      );
     }
 
     // Coach Trigger 2: Silence ≥ 40s → surface 3 cards
@@ -521,165 +568,227 @@ Remember to start with a professional greeting and introduce yourself. Then focu
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const renderPreBrief = () => (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
-      {/* Header */}
-      <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 px-8 py-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={handleBack}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
-                Meeting Preparation
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Prepare for your {session?.stage?.replace('_', ' ')} meeting
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200/50 dark:border-green-700/50">
-              <span className="text-sm font-medium text-green-700 dark:text-green-300">Practice Mode</span>
+  const renderMeetingPrep = () => {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={handleBack}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Meeting Preparation
+                  </h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Prepare for your meeting
+                  </p>
+                </div>
+              </div>
+              <div className="px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <span className="text-sm font-medium text-green-700 dark:text-green-300">Practice Mode</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Session Overview Card */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
-                  <Target className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Session Overview</h2>
+        {/* Project Indicator */}
+        {selectedProject && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+            <div className="max-w-7xl mx-auto px-6 py-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Current Project:
+                </span>
+                <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                  {selectedProject.name}
+                </span>
+                {session?.projectId && (
+                  <span className="text-xs text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                    ID: {session.projectId}
+                  </span>
+                )}
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200/30 dark:border-blue-700/30">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Training Stage</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white capitalize">
-                      {session?.stage.replace('_', ' ')}
-                    </span>
+            </div>
+          </div>
+        )}
+
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          {/* Quick Action Section - Prominently placed at top */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 mb-8 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold mb-2">Ready to Continue?</h2>
+                <p className="text-purple-100 mb-4">
+                  {selectedStakeholders.length > 0 
+                    ? `Continue your practice session with ${selectedStakeholders.length} stakeholder${selectedStakeholders.length > 1 ? 's' : ''}`
+                    : 'Select your stakeholders to begin your practice session'
+                  }
+                </p>
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4" />
+                    <span>12 min session</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200/30 dark:border-green-700/30">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Project</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white text-right max-w-xs">
-                      {mockProjects.find(p => p.id === session?.projectId)?.name || session?.projectId}
-                    </span>
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Coaching enabled</span>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg border border-orange-200/30 dark:border-orange-700/30">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Duration</span>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">8-12 minutes</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200/30 dark:border-purple-700/30">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Mode</span>
-                    </div>
-                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">Practice (with coaching)</span>
+              </div>
+              <div className="ml-6">
+                <button
+                  onClick={handleStartMeeting}
+                  disabled={selectedStakeholders.length === 0}
+                  className={`px-8 py-4 rounded-lg font-semibold transition-all duration-200 ${
+                    selectedStakeholders.length > 0
+                      ? 'bg-white text-purple-600 hover:bg-purple-50 shadow-lg hover:shadow-xl'
+                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  {selectedStakeholders.length === 0 ? 'Select Stakeholders First' : 'Start Practice Session'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* No Selection Warning - Moved above Session Overview */}
+          {selectedStakeholders.length === 0 && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+                <span className="text-sm font-medium text-red-800 dark:text-red-200">
+                  No stakeholders selected
+                </span>
+              </div>
+              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                Please select at least one stakeholder below to begin your practice session.
+              </p>
+            </div>
+          )}
+
+          {/* Session Overview */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Target className="w-5 h-5 text-purple-600 mr-2" />
+              Session Overview
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Training Stage</div>
+                <div className="font-medium text-gray-900 dark:text-white capitalize">
+                  {session?.stage?.replace('_', ' ') || 'Requirements Gathering'}
+                </div>
+              </div>
+              <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Project</div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {mockProjects.find(p => p.id === session?.projectId)?.name || 'E-commerce Platform'}
+                </div>
+              </div>
+              <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Duration</div>
+                <div className="font-medium text-gray-900 dark:text-white">8-12 minutes</div>
+              </div>
+              <div className="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mode</div>
+                <div className="font-medium text-indigo-600 dark:text-indigo-400">Practice (with coaching)</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Meeting Details */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+              Meeting Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Meeting Type</div>
+                <div className="font-medium text-gray-900 dark:text-white">Business Analysis Discovery Call</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Duration</div>
+                <div className="font-medium text-gray-900 dark:text-white">30 minutes</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Format</div>
+                <div className="font-medium text-gray-900 dark:text-white">Video Conference</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Agenda</div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {session?.stage?.replace('_', ' ') || 'Requirements Gathering'} Discussion
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-purple-800 dark:text-purple-200 mb-1">Meeting Etiquette</div>
+                  <div className="text-sm text-purple-700 dark:text-purple-300">
+                    Remember to start with a professional greeting, introduce yourself, and explain the purpose of the meeting before diving into questions.
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Current Focus Card */}
-            {currentQuestion && (
-              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
-                    <Focus className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Current Focus</h2>
+          {/* Stakeholder Selection */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Users className="w-5 h-5 text-purple-600 mr-2" />
+              Select Your Stakeholders
+            </h2>
+            
+
+            
+            {/* Clear Instructions */}
+            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-white text-sm font-bold">!</span>
                 </div>
+                <div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100 mb-1">How to Select Stakeholders</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="mb-2">For this <strong>Requirements Gathering</strong> practice session, you'll be meeting with key stakeholders to understand their needs.</p>
+                    <p><strong>Select 1-3 stakeholders</strong> who would typically be involved in this type of meeting. You can select multiple for a group meeting scenario.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Available Stakeholders */}
+            <div className="mb-4">
+              <h3 className="text-md font-medium text-gray-900 dark:text-white mb-3">
+                Available Stakeholders for {selectedProject?.name || 'Current Project'}:
+              </h3>
+            </div>
+            
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(() => {
+                const project = mockProjects.find(p => p.id === session?.projectId);
                 
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200/50 dark:border-blue-700/50">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
-                        {currentQuestion.skill}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-lg font-medium text-gray-900 dark:text-white leading-relaxed">
-                    {currentQuestion.text}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Meeting Booking Simulation */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg">
-                  <Calendar className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Meeting Details</h2>
-              </div>
-              
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-4 border border-blue-200/30 dark:border-blue-700/30">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-2">Meeting Type</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Business Analysis Discovery Call</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-2">Duration</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">30 minutes</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-2">Format</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Video Conference</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-2">Agenda</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{session?.stage.replace('_', ' ')} Discussion</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200/30 dark:border-yellow-700/30">
-                <div className="flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    <strong>Meeting Etiquette:</strong> Remember to start with a professional greeting, introduce yourself, and explain the purpose of the meeting before diving into questions.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Stakeholder Selection Card */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Select Your Stakeholders</h2>
-                <span className="text-sm text-gray-600 dark:text-gray-400">(Select multiple for group meetings)</span>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {mockProjects.find(p => p.id === session?.projectId)?.relevantStakeholders?.map(stakeholderId => {
+                if (!project) {
+                  return <div className="col-span-3 text-center text-gray-500">Project not found</div>;
+                }
+                
+                if (!project.relevantStakeholders || project.relevantStakeholders.length === 0) {
+                  return <div className="col-span-3 text-center text-gray-500">No stakeholders available for this project</div>;
+                }
+                
+                return project.relevantStakeholders.map(stakeholderId => {
                   const stakeholder = mockStakeholders.find(s => s.id === stakeholderId);
                   if (!stakeholder) return null;
                   
@@ -695,10 +804,10 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                           setSelectedStakeholders(prev => [...prev, stakeholder]);
                         }
                       }}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                      className={`p-4 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-md ${
                         isSelected
-                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-lg transform scale-105'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md'
+                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-md'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
                       }`}
                     >
                       <div className="flex items-center space-x-3 mb-3">
@@ -706,154 +815,110 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                           <img 
                             src={stakeholder.photo} 
                             alt={stakeholder.name}
-                            className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                            className="w-12 h-12 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                             {stakeholder.name.split(' ').map(n => n[0]).join('')}
                           </div>
                         )}
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{stakeholder.name}</h4>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">{stakeholder.role}</p>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900 dark:text-white text-sm">{stakeholder.name}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{stakeholder.role}</div>
+                          <div className="text-xs text-purple-600 dark:text-purple-400 font-medium">{stakeholder.department}</div>
                         </div>
                         {isSelected && (
-                          <div className="ml-auto">
-                            <CheckCircle className="w-5 h-5 text-purple-600" />
-                          </div>
+                          <CheckCircle className="w-6 h-6 text-purple-600 flex-shrink-0" />
                         )}
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">{stakeholder.department}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 line-clamp-2">{stakeholder.bio}</p>
+                      
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                        <strong>Focus:</strong> {stakeholder.priorities?.join(', ') || 'Process optimization'}
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 dark:text-gray-500 line-clamp-2">
+                        {stakeholder.bio}
+                      </div>
+                      
+                      <div className="mt-2 text-xs text-purple-600 dark:text-purple-400 font-medium">
+                        {isSelected ? '✓ Selected' : 'Click to select'}
+                      </div>
                     </button>
                   );
-                })}
-              </div>
-              
-              {selectedStakeholders.length > 0 && (
-                <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200/30 dark:border-green-700/30">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-semibold text-green-700 dark:text-green-300">
-                      {selectedStakeholders.length} Stakeholder{selectedStakeholders.length > 1 ? 's' : ''} Selected
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedStakeholders.map(stakeholder => (
-                      <div key={stakeholder.id} className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">
-                        {stakeholder.photo ? (
-                          <img 
-                            src={stakeholder.photo} 
-                            alt={stakeholder.name}
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                            {stakeholder.name.split(' ').map(n => n[0]).join('')}
-                          </div>
-                        )}
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{stakeholder.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                });
+              })()}
             </div>
+            
+            {/* Selection Summary */}
+            {selectedStakeholders.length > 0 && (
+              <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center space-x-2 mb-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                    {selectedStakeholders.length} Stakeholder{selectedStakeholders.length > 1 ? 's' : ''} Selected
+                  </span>
+                </div>
+                <div className="text-sm text-green-700 dark:text-green-300 mb-3">
+                  You'll be practicing with: <strong>{selectedStakeholders.map(s => s.name).join(', ')}</strong>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedStakeholders.map(stakeholder => (
+                    <div key={stakeholder.id} className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{stakeholder.name}</span>
+                      <span className="text-xs text-gray-500">({stakeholder.role})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
 
-            {/* Success Tips Card */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
-                  <Lightbulb className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Success Strategies</h2>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-lg border border-green-200/30 dark:border-green-700/30">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">Open Questions</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Ask detailed, open-ended questions to gather comprehensive information</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10 rounded-lg border border-blue-200/30 dark:border-blue-700/30">
-                  <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">Follow Up</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Dig deeper with follow-up questions on stakeholder responses</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/10 dark:to-violet-900/10 rounded-lg border border-purple-200/30 dark:border-purple-700/30">
-                  <CheckCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">Problem First</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Understand the problem thoroughly before suggesting solutions</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/10 dark:to-red-900/10 rounded-lg border border-orange-200/30 dark:border-orange-700/30">
-                  <CheckCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">Coaching Panel</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Monitor the coaching panel for real-time guidance and tips</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Stats */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Session Stats</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Questions Available</span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">4</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Time Limit</span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">12 min</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Coaching</span>
-                  <span className="text-sm font-semibold text-green-600 dark:text-green-400">Enabled</span>
+          {/* Success Strategies */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Lightbulb className="w-5 h-5 text-orange-600 mr-2" />
+              Success Strategies
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start space-x-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Open Questions</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Ask detailed, open-ended questions to gather comprehensive information</div>
                 </div>
               </div>
-            </div>
-
-            {/* Action Card */}
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 shadow-lg">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Play className="w-8 h-8 text-white" />
+              
+              <div className="flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Follow Up</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Dig deeper with follow-up questions on stakeholder responses</div>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Ready to Start?</h3>
-                <p className="text-green-100 text-sm mb-6">
-                  Begin your practice session with real-time coaching and feedback
-                </p>
-                <button
-                  onClick={handleStartMeeting}
-                  disabled={selectedStakeholders.length === 0}
-                  className={`w-full px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 ${
-                    selectedStakeholders.length > 0
-                      ? 'bg-white text-green-600 hover:bg-gray-50'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  {selectedStakeholders.length > 0 ? 'Start Meeting' : 'Select Stakeholders First'}
-                </button>
+              </div>
+              
+              <div className="flex items-start space-x-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <CheckCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Problem First</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Understand the problem thoroughly before suggesting solutions</div>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                <CheckCircle className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">Coaching Panel</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Monitor the coaching panel for real-time guidance and tips</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderLiveMeeting = () => (
     <div className="h-full flex flex-col">
@@ -924,7 +989,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                           </span>
                         )}
                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {message.timestamp.toLocaleTimeString()}
+                          {new Date(message.timestamp).toLocaleTimeString()}
                         </span>
                       </div>
                       <p className="text-sm leading-relaxed">{message.content}</p>
@@ -1002,7 +1067,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           {/* Coaching */}
           <div className="flex-1 p-4 overflow-y-auto">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
-              <Lightbulb className="w-5 h-5 text-yellow-600" />
+              <Lightbulb className="w-5 h-5 text-purple-600" />
               <span>Coaching</span>
             </h3>
             
@@ -1190,7 +1255,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
 
   return (
     <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-      {currentStep === 'meeting-prep' && renderPreBrief()}
+      {currentStep === 'meeting-prep' && renderMeetingPrep()}
       {currentStep === 'live-meeting' && renderLiveMeeting()}
               {currentStep === 'feedback' && renderPostBrief()}
     </div>

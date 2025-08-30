@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TrainingService } from '../../services/trainingService';
 import { TrainingStage } from '../../types/training';
 import { Project } from '../../types';
@@ -27,6 +28,7 @@ import { mockProjects } from '../../data/mockData';
 
 const TrainingHubView: React.FC = () => {
   const { setCurrentView, selectedProject: appSelectedProject, setSelectedProject: setAppSelectedProject } = useApp();
+  const { onboardingData } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<'intro' | 'project-selection' | 'training-hub'>('intro');
   const [selectedStage, setSelectedStage] = useState<TrainingStage | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -355,11 +357,16 @@ const TrainingHubView: React.FC = () => {
             <MessageSquare className="w-12 h-12 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-            Asking the Right Questions as a Business Analyst
+            {onboardingData?.experience_level === 'new' 
+              ? 'Practice Stakeholder Conversations' 
+              : 'Asking the Right Questions as a Business Analyst'
+            }
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Now that you understand the theory, it's time to practice the most critical skill: 
-            conducting meaningful conversations with business stakeholders to drive real change.
+            {onboardingData?.experience_level === 'new' 
+              ? 'Ready to put your BA knowledge into action? Practice the most critical skill: conducting meaningful conversations with business stakeholders to drive real change.'
+              : 'Now that you understand the theory, it\'s time to practice the most critical skill: conducting meaningful conversations with business stakeholders to drive real change.'
+            }
           </p>
         </div>
 
@@ -371,8 +378,10 @@ const TrainingHubView: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Real Stakeholder Conversations</h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Practice with realistic AI stakeholders who respond like real business people, 
-              not robots. Learn to navigate complex organizational dynamics.
+              {onboardingData?.experience_level === 'new' 
+                ? 'Practice with realistic AI stakeholders who respond like real business people. Apply what you\'ve learned in a safe environment.'
+                : 'Practice with realistic AI stakeholders who respond like real business people, not robots. Learn to navigate complex organizational dynamics.'
+              }
             </p>
           </div>
 
@@ -382,8 +391,10 @@ const TrainingHubView: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Guided Learning Journey</h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Follow a structured approach: Learn the patterns, Practice with coaching, 
-              and Assess your skills. Build confidence step by step.
+              {onboardingData?.experience_level === 'new' 
+                ? 'Follow a structured approach: Learn the patterns, Practice with coaching, and Assess your skills. Perfect for applying your BA fundamentals.'
+                : 'Follow a structured approach: Learn the patterns, Practice with coaching, and Assess your skills. Build confidence step by step.'
+              }
             </p>
           </div>
 

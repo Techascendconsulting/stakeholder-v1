@@ -31,10 +31,11 @@ import TrainingAssessView from '../Views/TrainingAssessView';
 import TrainingFeedbackView from '../Views/TrainingFeedbackView';
 import TrainingDashboardView from '../Views/TrainingDashboardView';
 import WelcomeView from '../Views/WelcomeView';
+import GetStartedView from '../Views/GetStartedView';
+import PracticeLabView from '../Views/PracticeLabView';
 import ProcessMapper from '../ProcessMapper';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
-import CommunityLoungeView from '../Views/CommunityLoungeView';
-import DirectMessagesView from '../Views/DirectMessagesView';
+
 
 
 const MainLayout: React.FC = () => {
@@ -57,20 +58,37 @@ const MainLayout: React.FC = () => {
     switch (currentView) {
       case 'welcome':
         return <WelcomeView />;
+      case 'get-started':
+        return <GetStartedView />;
       case 'dashboard':
         return <Dashboard />;
-      case 'ba-fundamentals':
-        return <BAAcademyView />;
+
       case 'core-concepts':
         return <CoreConceptsView />;
+      case 'agile-scrum':
+        return <BAAcademyView />; // TODO: Create AgileScrumView
+      case 'practice-lab':
+        return <PracticeLabView />;
+      case 'progress-tracking':
+        return <TrainingDashboardView />; // TODO: Create ProgressTrackingView
+      case 'certifications':
+        return <TrainingDashboardView />; // TODO: Create CertificationsView
+      case 'project-workspace':
+        return <GuidedPracticeHub />;
+      case 'meeting-history':
+        return <MyMeetingsView />;
+      case 'portfolio':
+        return <DeliverablesView />; // TODO: Create PortfolioView
+      case 'create-project':
+        return <CustomProjectView />;
+      case 'ba-fundamentals':
+        return <BAAcademyView />;
+
       case 'process-mapper':
         return <ProcessMappingIntroView />;
       case 'process-mapper-editor':
         return <ProcessMapper />;
-      case 'community-lounge':
-        return <CommunityLoungeView />;
-      case 'direct-messages':
-        return <DirectMessagesView />;
+
 
       case 'advanced-topics':
         return <BAAcademyView />; // Will be enhanced later
@@ -84,10 +102,6 @@ const MainLayout: React.FC = () => {
         return <MeetingView />;
       case 'voice-only-meeting':
         return <VoiceOnlyMeetingView />;
-      case 'my-meetings':
-        return <MyMeetingsView />;
-      case 'meeting-history':
-        return <MeetingHistoryView />;
       case 'meeting-summary':
         return <MeetingSummaryView />;
       case 'meeting-details':
@@ -130,6 +144,8 @@ const MainLayout: React.FC = () => {
         />;
       case 'training-dashboard':
         return <TrainingDashboardView />;
+      case 'project-practice':
+        return <TrainingPracticeView />;
       default:
         return <ProjectsView />;
     }

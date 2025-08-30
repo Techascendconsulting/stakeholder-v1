@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff, Sun, Moon, Monitor } from 'lucide-react';
+import { User, Mail, Settings, Bell, Shield, Palette, Globe, Save, Edit3, Camera, Lock, Eye, EyeOff, Sun, Moon, Monitor, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { supabase } from '../../lib/supabase';
 import { getUserProfile, updateUserProfile } from '../../utils/profileUtils';
 
 export const ProfileView: React.FC = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { setCurrentView } = useApp();
+  const { resetOnboarding } = useOnboarding();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'notifications' | 'security'>('profile');
 
@@ -559,6 +562,32 @@ export const ProfileView: React.FC = () => {
                   <option value="Asia/Tokyo">Tokyo</option>
                   <option value="Australia/Sydney">Sydney</option>
                 </select>
+              </div>
+
+              {/* Reset Onboarding Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-sm font-bold">!</span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">Reset Onboarding</h4>
+                      <p className="text-sm text-purple-700 dark:text-purple-300 mb-3">
+                        If you want to change your experience level or starting path, you can reset the onboarding process. This will take you back to the initial setup.
+                      </p>
+                      <button
+                        onClick={async () => {
+                          await resetOnboarding();
+                          setCurrentView('get-started');
+                        }}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                      >
+                        Reset Onboarding
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

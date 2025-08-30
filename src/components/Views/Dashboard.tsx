@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, MessageSquare, FileText, Clock, Award, Target, Calendar, ChevronRight, Play, FolderOpen, Eye, ArrowRight, Lightbulb, Zap, BookOpen, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { TrendingUp, Users, MessageSquare, FileText, Clock, Award, Target, Calendar, ChevronRight, Play, FolderOpen, Eye, ArrowRight, Lightbulb, Zap, BookOpen, RefreshCw, CheckCircle, AlertCircle, Settings } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { DatabaseService, DatabaseProgress, DatabaseMeeting } from '../../lib/database';
 import { MeetingDataService, MeetingStats } from '../../lib/meetingDataService';
 
 const Dashboard: React.FC = () => {
   const { currentView, setCurrentView, setSelectedMeeting, refreshMeetingData, selectedProject, selectedStakeholders } = useApp();
   const { user } = useAuth();
+  const { resetOnboarding } = useOnboarding();
   const [progress, setProgress] = useState<DatabaseProgress | null>(null);
   const [recentMeetings, setRecentMeetings] = useState<DatabaseMeeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -267,11 +269,14 @@ const Dashboard: React.FC = () => {
           </h1>
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => setCurrentView('training-dashboard')}
-              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+              onClick={async () => {
+                await resetOnboarding();
+                setCurrentView('get-started');
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
             >
-              <Target className="w-4 h-4" />
-              <span>Training Dashboard</span>
+              <RefreshCw className="w-4 h-4" />
+              <span>Reset Onboarding</span>
             </button>
             <button
               onClick={() => {
@@ -668,7 +673,7 @@ const Dashboard: React.FC = () => {
             {progress.achievements.map((achievement, index) => (
               <span
                 key={index}
-                className="px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium border border-yellow-200"
+                className="px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium border border-purple-200"
               >
                 🏆 {achievement}
               </span>
@@ -676,6 +681,20 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Reset Onboarding Link */}
+      <div className="mt-8 text-center">
+        <button
+          onClick={async () => {
+            await resetOnboarding();
+            setCurrentView('get-started');
+          }}
+          className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 flex items-center justify-center space-x-2 font-medium"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Reset Onboarding</span>
+        </button>
+      </div>
     </div>
   );
 };

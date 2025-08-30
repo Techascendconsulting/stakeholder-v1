@@ -20,7 +20,11 @@ import {
   Moon,
   Calendar,
   Workflow,
-  Zap
+  Zap,
+  Target,
+  Play,
+  BarChart3,
+  Award
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -42,34 +46,60 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
 
 
   const menuItems = [
-    { id: 'welcome', label: 'Welcome', icon: GraduationCap },
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { 
+      id: 'welcome', 
+      label: 'Welcome', 
+      icon: GraduationCap,
+      subItems: [
+        { id: 'get-started', label: 'Get Started', icon: Play, isNew: true },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }
+      ]
+    },
     { 
       id: 'training-hub', 
       label: 'Training Hub', 
       icon: BookOpen,
-      subItems: [
+              subItems: [
+          { id: 'core-concepts', label: 'Being a BA', icon: BookText },
         { id: 'ba-fundamentals', label: 'BA Fundamentals', icon: GraduationCap },
-        { id: 'core-concepts', label: 'Core Concepts', icon: BookOpen },
         { id: 'process-mapper', label: 'Process Mapper', icon: MessageSquare },
-        { id: 'community-lounge', label: '💬 Community Lounge', icon: MessageSquare, isNew: true },
-        { id: 'direct-messages', label: '💬 Direct Messages', icon: MessageSquare, isNew: true },
-        { id: 'advanced-topics', label: 'Agile Scrum', icon: Zap }
+        { id: 'agile-scrum', label: 'Agile & Scrum', icon: Zap },
+        { id: 'practice-lab', label: 'Practice Lab', icon: Target, isNew: true },
+        { id: 'training-hub', label: 'Project Practice', icon: Target },
+        { id: 'progress-tracking', label: 'Progress Tracking', icon: BarChart3, isNew: true },
+        { id: 'certifications', label: 'Certifications', icon: Award, isNew: true }
       ]
     },
     { 
-      id: 'work-experience', 
-      label: 'Work Experience', 
+      id: 'practice', 
+      label: 'Practice', 
       icon: FolderOpen,
       subItems: [
-        { id: 'guided-practice-hub', label: 'Project Workspace', icon: FolderOpen },
-        { id: 'agile-hub', label: 'Scrum Meetings', icon: Workflow },
-        { id: 'my-meetings', label: 'Meeting History', icon: Calendar },
-        { id: 'deliverables', label: 'My Deliverables', icon: FileText },
-        { id: 'portfolio', label: 'My Portfolio', icon: BookText }
+        { id: 'guided-practice-hub', label: 'Project Practice', icon: FolderOpen },
+        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
+        { id: 'meeting-history', label: 'Meeting History', icon: Calendar }
       ]
     },
-    { id: 'custom-project', label: 'Create Your Project', icon: Plus },
+    { 
+      id: 'project-experience', 
+      label: 'Project Experience', 
+      icon: FolderOpen,
+      subItems: [
+        { id: 'project-workspace', label: 'Project Workspace', icon: FolderOpen },
+        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow, isNew: true },
+        { id: 'meeting-history', label: 'Meeting History', icon: Calendar },
+        { id: 'deliverables', label: 'My Deliverables', icon: FileText },
+        { id: 'portfolio', label: 'Portfolio', icon: BookText, isNew: true }
+      ]
+    },
+    { 
+      id: 'custom-projects', 
+      label: 'Custom Projects', 
+      icon: Plus,
+      subItems: [
+        { id: 'create-project', label: 'Create Your Own Project', icon: Plus }
+      ]
+    },
   ];
 
   const handleSignOut = async () => {

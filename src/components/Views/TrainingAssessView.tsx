@@ -201,7 +201,7 @@ Good luck!`,
     <div className="space-y-6">
       <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-6">
         <h2 className="text-xl font-semibold text-purple-900 dark:text-purple-100 mb-2">
-          Assessment: {session?.stage.replace('_', ' ')}
+          Assessment: {session?.stage?.replace('_', ' ') || 'Unknown Stage'}
         </h2>
         <p className="text-purple-700 dark:text-purple-300 mb-4">
           This is an independent assessment. No coaching will be provided - demonstrate your skills and knowledge.
@@ -214,7 +214,7 @@ Good luck!`,
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">Stage:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{session?.stage.replace('_', ' ')}</span>
+              <span className="font-medium text-gray-900 dark:text-white">{session?.stage?.replace('_', ' ') || 'Unknown Stage'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600 dark:text-gray-400">Project:</span>
@@ -305,7 +305,7 @@ Good luck!`,
             <div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Assessment Meeting</h1>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {session?.stage.replace('_', ' ')} • {formatTime(meetingTime)}
+                {session?.stage?.replace('_', ' ') || 'Unknown Stage'} • {formatTime(meetingTime)}
               </p>
             </div>
           </div>
@@ -478,7 +478,7 @@ Good luck!`,
             🎉 Assessment Passed!
           </h2>
           <p className="text-green-700 dark:text-green-300">
-            Congratulations! You've successfully demonstrated mastery of the {session?.stage.replace('_', ' ')} stage.
+            Congratulations! You've successfully demonstrated mastery of the {session?.stage?.replace('_', ' ') || 'Unknown Stage'} stage.
           </p>
         </div>
       ) : (
