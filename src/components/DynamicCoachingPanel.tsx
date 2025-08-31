@@ -173,12 +173,26 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(`${res.status} ${data?.error ?? 'Unknown error'}`);
 
-        setStakeholderAnalysis(data.analysis);
+        // Check if this is the final question (15/15)
+        const nextQuestionNumber = Math.min(currentQuestionNumber + 1, 15);
+        setCurrentQuestionNumber(nextQuestionNumber);
+        
+        if (nextQuestionNumber === 15) {
+          // Force wrap-up question for the final question
+          const wrapUpAnalysis = {
+            nextQuestion: "Looking ahead, what changes would make the biggest difference for your team's success?",
+            reasoning: "This wrap-up question helps summarize key insights and identify priority areas for improvement.",
+            technique: "Summary & Prioritization"
+          };
+          setStakeholderAnalysis(wrapUpAnalysis);
+        } else {
+          setStakeholderAnalysis(data.analysis);
+        }
+        
         setShowStakeholderAnalysis(true);
         setIsAnalyzingStakeholder(false);
         setLastAnalyzedMessageId(lastMessage?.id || null);
-        setCurrentQuestionNumber(prev => Math.min(prev + 1, 15)); // Increment question counter, max 15
-        console.log('[DC] done - Question', currentQuestionNumber + 1);
+        console.log('[DC] done - Question', nextQuestionNumber);
       } catch (e) {
         didAnalyzeRef.current = false;           // allow retry if it failed
         setIsAnalyzingStakeholder(false);
@@ -355,6 +369,8 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
         });
         // Don't lock input - let stakeholder respond
         setInputLocked(false);
+        // Increment question counter for user's own question
+        setCurrentQuestionNumber(prev => Math.min(prev + 1, 15));
       } else {
         setCoachingFeedback({
           verdict: 'AMBER',
