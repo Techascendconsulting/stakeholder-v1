@@ -3,6 +3,7 @@ import { MessageSquare, CheckCircle, AlertTriangle, Copy, Lightbulb } from 'luci
 import GreetingCoachingService from '../services/greetingCoachingService';
 import ProblemExplorationService from '../services/problemExplorationService';
 import StakeholderResponseAnalysisService from '../services/stakeholderResponseAnalysisService';
+import AsIsProcessService from '../services/asIsProcessService';
 
 // Types
 type Verdict = 'GOOD' | 'AMBER' | 'OOS';
@@ -32,6 +33,22 @@ type ProblemExplorationGuidance = {
 };
 
 type ProblemExplorationEvaluation = {
+  verdict: 'GOOD' | 'AMBER' | 'OOS';
+  message: string;
+  suggestedRewrite?: string;
+  reasoning: string;
+  technique: string;
+};
+
+type AsIsProcessGuidance = {
+  title: string;
+  description: string;
+  why: string;
+  how: string;
+  examples: string[];
+};
+
+type AsIsProcessEvaluation = {
   verdict: 'GOOD' | 'AMBER' | 'OOS';
   message: string;
   suggestedRewrite?: string;
@@ -77,6 +94,9 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
   const [showNextPhase, setShowNextPhase] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [problemExplorationCompleted, setProblemExplorationCompleted] = useState(false);
+  const [asIsProcessGuidance, setAsIsProcessGuidance] = useState<AsIsProcessGuidance | null>(null);
+  const [asIsProcessFeedback, setAsIsProcessFeedback] = useState<AsIsProcessEvaluation | null>(null);
+  const [asIsProcessCompleted, setAsIsProcessCompleted] = useState(false);
   const [stakeholderAnalysis, setStakeholderAnalysis] = useState<StakeholderResponseAnalysis | null>(null);
   const [showStakeholderAnalysis, setShowStakeholderAnalysis] = useState(false);
   const [isAnalyzingStakeholder, setIsAnalyzingStakeholder] = useState(false);
@@ -131,14 +151,18 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
           // In problem exploration phase
           console.log('🔍 EVALUATING PROBLEM EXPLORATION');
           evaluateProblemExplorationQuestion(lastMessage.content);
-        } else if (problemExplorationCompleted && showStakeholderAnalysis) {
+        } else if (problemExplorationCompleted && !asIsProcessCompleted && asIsProcessGuidance) {
+          // In As-Is process mapping phase
+          console.log('🔍 EVALUATING AS-IS PROCESS MAPPING');
+          evaluateAsIsProcessQuestion(lastMessage.content);
+        } else if (asIsProcessCompleted && showStakeholderAnalysis) {
           // Evaluate user questions in stakeholder analysis phase
           console.log('🔍 EVALUATING USER QUESTION');
           evaluateUserQuestion(lastMessage.content);
         }
       }
     }
-  }, [conversationHistory, greetingCompleted, showNextPhase, problemExplorationCompleted, showStakeholderAnalysis, isEvaluating]);
+  }, [conversationHistory, greetingCompleted, showNextPhase, problemExplorationCompleted, asIsProcessCompleted, asIsProcessGuidance, showStakeholderAnalysis, isEvaluating]);
 
   // Separate effect for stakeholder analysis with surgical debugging
   useEffect(() => {
@@ -301,6 +325,17 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
           setProblemExplorationFeedback(null);
           // Don't set problemExplorationCompleted again - it's already set
           console.log('✅ Problem exploration completed - ready for stakeholder analysis');
+          
+          // Load As-Is process guidance for the next phase
+          const loadAsIsGuidance = async () => {
+            try {
+              const guidance = await AsIsProcessService.getInstance().getAsIsProcessGuidance();
+              setAsIsProcessGuidance(guidance);
+            } catch (error) {
+              console.error('Failed to load As-Is process guidance:', error);
+            }
+          };
+          loadAsIsGuidance();
         }, 2000);
       } else {
         setProblemExplorationFeedback({
@@ -334,6 +369,70 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
           suggestedRewrite: "What specific challenges or pain points are you experiencing that led to this project being initiated?",
           reasoning: "The question could better focus on problems rather than solutions.",
           technique: "Problem Exploration"
+        });
+        setAwaitingAcknowledgement(true);
+        setInputLocked(true);
+      }
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
+  // Evaluate As-Is process mapping questions
+  const evaluateAsIsProcessQuestion = async (message: string) => {
+    console.log('🔍 Evaluating As-Is process question:', message);
+    setIsEvaluating(true);
+
+    try {
+      const evaluation = await AsIsProcessService.getInstance().evaluateAsIsProcessQuestion(message);
+      
+      if (evaluation.verdict === 'GOOD') {
+        setAsIsProcessFeedback({
+          verdict: 'GOOD',
+          message: evaluation.message,
+          reasoning: evaluation.reasoning,
+          technique: evaluation.technique
+        });
+        setAsIsProcessCompleted(true);
+        setInputLocked(false);
+        
+        // Show success briefly, then move to next phase
+        setTimeout(() => {
+          setAsIsProcessFeedback(null);
+          console.log('✅ As-Is process mapping completed - ready for stakeholder analysis');
+        }, 2000);
+      } else {
+        setAsIsProcessFeedback({
+          verdict: evaluation.verdict,
+          message: evaluation.message,
+          suggestedRewrite: evaluation.suggestedRewrite,
+          reasoning: evaluation.reasoning,
+          technique: evaluation.technique
+        });
+        setAwaitingAcknowledgement(true);
+        setInputLocked(true);
+      }
+    } catch (error) {
+      console.error('As-Is process evaluation failed:', error);
+      // Fallback evaluation
+      const isProcessMapping = /(walk.*through|step.*step|process.*work|how.*work|current.*process|who.*what|systems|tools)/i.test(message);
+      const isAsIs = /(today|current|now|existing|present)/i.test(message);
+      
+      if (isProcessMapping && isAsIs) {
+        setAsIsProcessFeedback({
+          verdict: 'GOOD',
+          message: "Excellent process mapping question!",
+          reasoning: "This question effectively asks for a step-by-step walkthrough of the current process.",
+          technique: "Process Mapping"
+        });
+        setAsIsProcessCompleted(true);
+      } else {
+        setAsIsProcessFeedback({
+          verdict: 'AMBER',
+          message: "Let's refine this to focus more on the current process mapping.",
+          suggestedRewrite: "From your perspective, can you walk me through how this process works today, from the moment it starts to the final outcome? Who does what, using which systems?",
+          reasoning: "The question could be more specific about mapping the current process step-by-step.",
+          technique: "Process Mapping"
         });
         setAwaitingAcknowledgement(true);
         setInputLocked(true);
@@ -525,7 +624,9 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
         <div className="flex items-center space-x-2 mb-2">
           <MessageSquare size={16} />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {showStakeholderAnalysis ? 'Stakeholder Analysis' : (showNextPhase ? 'Problem Exploration' : 'Greeting')}
+            {showStakeholderAnalysis ? 'Stakeholder Analysis' : 
+             (problemExplorationCompleted && !asIsProcessCompleted) ? 'As-Is Process Mapping' :
+             (showNextPhase ? 'Problem Exploration' : 'Greeting')}
           </h2>
         </div>
         <div className="mb-2">
@@ -539,6 +640,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
             <span>
               {showStakeholderAnalysis 
                 ? `Question ${currentQuestionNumber}/15 (${Math.round((currentQuestionNumber / 15) * 100)}%)`
+                : (problemExplorationCompleted && !asIsProcessCompleted) ? '13%'
                 : (showNextPhase ? '7%' : (greetingCompleted ? '7%' : '0%'))
               }
             </span>
@@ -549,6 +651,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
               style={{ 
                 width: showStakeholderAnalysis 
                   ? `${Math.round((currentQuestionNumber / 15) * 100)}%`
+                  : (problemExplorationCompleted && !asIsProcessCompleted) ? '13%'
                   : (showNextPhase ? '7%' : (greetingCompleted ? '7%' : '0%'))
               }}
             />
@@ -680,6 +783,47 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
           </div>
         )}
 
+        {/* As-Is Process Feedback */}
+        {asIsProcessFeedback && (
+          <div className={`mb-4 p-4 rounded-lg border ${
+            asIsProcessFeedback.verdict === 'GOOD' 
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' 
+              : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700'
+          }`}>
+            <div className="flex items-center space-x-2 mb-3">
+              {asIsProcessFeedback.verdict === 'GOOD' ? (
+                <CheckCircle size={20} className="text-green-600 dark:text-green-400" />
+              ) : (
+                <AlertTriangle size={20} className="text-amber-600 dark:text-amber-400" />
+              )}
+              <h3 className="font-semibold text-sm">
+                {asIsProcessFeedback.verdict === 'GOOD' ? 'Great!' : 'Let\'s refine this'}
+              </h3>
+            </div>
+            <p className="text-sm mb-3">{asIsProcessFeedback.message}</p>
+            
+            {asIsProcessFeedback.suggestedRewrite && (
+              <div className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-amber-200 dark:border-amber-600 mb-3">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                  {asIsProcessFeedback.suggestedRewrite}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Consider using this improved question in your next interaction.
+                </p>
+              </div>
+            )}
+
+            {awaitingAcknowledgement && (
+              <button
+                onClick={handleAcknowledge}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Okay, I understand
+              </button>
+            )}
+          </div>
+        )}
+
                        {/* Greeting Completed Message */}
                {greetingCompleted && !coachingFeedback && !showNextPhase && (
                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
@@ -715,6 +859,26 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
                  </div>
                )}
 
+               {/* As-Is Process Question */}
+               {problemExplorationCompleted && !asIsProcessFeedback && !showStakeholderAnalysis && !isAnalyzingStakeholder && currentQuestionNumber === 1 && (
+                 <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                   <div className="flex items-center space-x-2 mb-3">
+                     <MessageSquare size={20} className="text-gray-600 dark:text-gray-400" />
+                     <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                       Current Question
+                     </h3>
+                   </div>
+                   <div className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                     <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                       From your perspective, can you walk me through how this process works today, from the moment it starts to the final outcome? Who does what, using which systems?
+                     </p>
+                     <p className="text-xs text-gray-500 dark:text-gray-400">
+                       Use the guidance below to help you ask this question effectively during process mapping discussions.
+                     </p>
+                   </div>
+                 </div>
+               )}
+
                {/* Problem Exploration Guidance - Show only for first question */}
                {showNextPhase && problemExplorationGuidance && !problemExplorationFeedback && !showStakeholderAnalysis && !isAnalyzingStakeholder && currentQuestionNumber === 1 && (
                  <div className="mb-4 p-4 rounded-lg border bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700">
@@ -743,6 +907,42 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
                        <h4 className="font-medium text-xs text-blue-800 dark:text-blue-200 mb-1">Examples:</h4>
                        <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
                          {problemExplorationGuidance.examples.map((example, index) => (
+                           <li key={index} className="pl-2">• {example}</li>
+                         ))}
+                       </ul>
+                     </div>
+                   </div>
+                 </div>
+               )}
+
+               {/* As-Is Process Mapping Guidance - Show only for first question */}
+               {problemExplorationCompleted && asIsProcessGuidance && !asIsProcessFeedback && !showStakeholderAnalysis && !isAnalyzingStakeholder && currentQuestionNumber === 1 && (
+                 <div className="mb-4 p-4 rounded-lg border bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700">
+                   <div className="flex items-center space-x-2 mb-3">
+                     <Lightbulb size={20} className="text-amber-600 dark:text-amber-400" />
+                     <h3 className="font-semibold text-sm text-amber-800 dark:text-amber-200">
+                       {asIsProcessGuidance.title}
+                     </h3>
+                   </div>
+                   <p className="text-sm mb-3 text-amber-700 dark:text-amber-300">
+                     {asIsProcessGuidance.description}
+                   </p>
+                   
+                   <div className="space-y-3">
+                     <div>
+                       <h4 className="font-medium text-xs text-amber-800 dark:text-amber-200 mb-1">Why?</h4>
+                       <p className="text-xs text-amber-700 dark:text-amber-300">{asIsProcessGuidance.why}</p>
+                     </div>
+                     
+                     <div>
+                       <h4 className="font-medium text-xs text-amber-800 dark:text-amber-200 mb-1">How?</h4>
+                       <p className="text-xs text-amber-700 dark:text-amber-300">{asIsProcessGuidance.how}</p>
+                     </div>
+                     
+                     <div>
+                       <h4 className="font-medium text-xs text-amber-800 dark:text-amber-200 mb-1">Examples:</h4>
+                       <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1">
+                         {asIsProcessGuidance.examples.map((example, index) => (
                            <li key={index} className="pl-2">• {example}</li>
                          ))}
                        </ul>
