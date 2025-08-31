@@ -65,6 +65,34 @@ const TrainingPracticeView: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dynamicPanelRef = useRef<{ onUserSubmitted: (messageId: string) => void } | null>(null);
 
+  // Session initialization refs to prevent race conditions
+  const initRef = useRef(false);        // prevents double init (StrictMode)
+  const restoringRef = useRef(false);   // blocks other effects during restore
+
+  type StoredConfig = {
+    sessionId: string;
+    projectId?: string;
+    stage?: 'as_is' | 'problem_exploration' | 'to_be' | string;
+    mode?: 'practice' | 'assessment' | string;
+  };
+
+  function readStoredConfig(): StoredConfig | null {
+    const raw =
+      sessionStorage.getItem('trainingConfig') ??
+      localStorage.getItem('trainingConfig');
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed.sessionId === 'string' ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeStoredConfig(cfg: StoredConfig) {
+    sessionStorage.setItem('trainingConfig', JSON.stringify(cfg));
+  }
+
   const trainingService = TrainingService.getInstance();
 
   // Pure AI response generator without KB integration
@@ -123,102 +151,96 @@ Response:`;
     }
   }, []);
 
+  // Single-threaded session initialization to prevent race conditions
   useEffect(() => {
-    // Restore state from sessionStorage on page refresh
-    const restoreState = async () => {
+    if (initRef.current) return;
+    initRef.current = true;
+    restoringRef.current = true;
+
+    (async () => {
       try {
-        // Restore session config
-        const config = sessionStorage.getItem('trainingConfig');
-        if (config) {
-          const parsedConfig = JSON.parse(config);
-          console.log('🔄 TrainingPracticeView: Restoring session config:', parsedConfig);
-          
-          const sessionData = await trainingService.getSession(parsedConfig.sessionId);
-          if (sessionData) {
-            setSession(sessionData);
-            const question = trainingService.getCurrentQuestion(parsedConfig.sessionId);
-            setCurrentQuestion(question);
+        const cfg = readStoredConfig();
+
+        if (cfg?.sessionId) {
+          console.log('🔄 Restoring session from storage:', cfg);
+          const existing = await trainingService.getSession(cfg.sessionId);
+
+          if (existing) {
+            setSession(existing);
+            const q = trainingService.getCurrentQuestion(cfg.sessionId);
+            setCurrentQuestion(q);
+            console.log('✅ Restored existing session:', existing.id);
+            
+            // Restore other state for existing session
+            const savedStakeholders = sessionStorage.getItem('trainingStakeholders');
+            if (savedStakeholders) {
+              const stakeholders = JSON.parse(savedStakeholders);
+              console.log('🔄 TrainingPracticeView: Restoring stakeholders:', stakeholders);
+              setSelectedStakeholders(stakeholders);
+            }
+
+            const savedStep = sessionStorage.getItem('trainingCurrentStep');
+            if (savedStep) {
+              console.log('🔄 TrainingPracticeView: Restoring current step:', savedStep);
+              setCurrentStep(savedStep as any);
+            }
+
+            const savedMessages = sessionStorage.getItem('trainingMessages');
+            if (savedMessages) {
+              const messages = JSON.parse(savedMessages);
+              console.log('🔄 TrainingPracticeView: Restoring messages:', messages.length);
+              setMessages(messages);
+            }
+
+            const savedMeetingTime = sessionStorage.getItem('trainingMeetingTime');
+            if (savedMeetingTime) {
+              setMeetingTime(parseInt(savedMeetingTime));
+            }
+
+            const savedMeetingActive = sessionStorage.getItem('trainingMeetingActive');
+            if (savedMeetingActive) {
+              setIsMeetingActive(JSON.parse(savedMeetingActive));
+            }
+            
+            return; // IMPORTANT: stop here, do NOT create a new session
+          }
+
+          console.log('ℹ️ Stored sessionId not found on service, will create a new one.');
+        } else {
+          console.log('ℹ️ No stored config. Will create a new session.');
+        }
+
+        // Fallback ONLY if we couldn't restore
+        if (selectedProject) {
+          const project = mockProjects.find(p => p.name === selectedProject.name);
+          if (project) {
+            console.log('🔄 TrainingPracticeView: Creating session for project:', project.name);
+            const stage = cfg?.stage || 'problem_exploration';
+            const newSession = await trainingService.startSession(stage, project.id, 'practice', []);
+            
+            writeStoredConfig({
+              sessionId: newSession.id,
+              projectId: newSession.projectId,
+              stage: newSession.stage,
+              mode: newSession.mode,
+            });
+
+            setSession(newSession);
+            const q2 = trainingService.getCurrentQuestion(newSession.id);
+            setCurrentQuestion(q2);
+            console.log('🆕 Created new session:', newSession.id);
+          } else {
+            console.error('❌ TrainingPracticeView: Could not find project for:', selectedProject.name);
           }
         } else {
-          // Fallback: Create a new session if no config exists
-          console.log('🔄 TrainingPracticeView: No training config found, creating new session');
-          if (selectedProject) {
-            try {
-              // Find the project ID from the selected project name
-              const project = mockProjects.find(p => p.name === selectedProject.name);
-              if (project) {
-                console.log('🔄 TrainingPracticeView: Creating session for project:', project.name);
-                // Get the stage from sessionStorage or default to problem_exploration
-                const savedConfig = sessionStorage.getItem('trainingConfig');
-                const stage = savedConfig ? JSON.parse(savedConfig).stage : 'problem_exploration';
-                const newSession = await trainingService.startSession(stage, project.id, 'practice', []);
-                setSession(newSession);
-                
-                // Load the current question for the new session
-                const question = trainingService.getCurrentQuestion(newSession.id);
-                setCurrentQuestion(question);
-                
-                // Save the new session config
-                const config = {
-                  sessionId: newSession.id,
-                  stage: newSession.stage,
-                  projectId: newSession.projectId,
-                  mode: newSession.mode
-                };
-                sessionStorage.setItem('trainingConfig', JSON.stringify(config));
-                console.log('🔄 TrainingPracticeView: Saved new session config:', config);
-              } else {
-                console.error('❌ TrainingPracticeView: Could not find project for:', selectedProject.name);
-              }
-            } catch (error) {
-              console.error('❌ TrainingPracticeView: Error creating new session:', error);
-            }
-          } else {
-            console.error('❌ TrainingPracticeView: No selected project available for fallback session');
-          }
+          console.error('❌ TrainingPracticeView: No selected project available for fallback session');
         }
-
-        // Restore selected stakeholders
-        const savedStakeholders = sessionStorage.getItem('trainingStakeholders');
-        if (savedStakeholders) {
-          const stakeholders = JSON.parse(savedStakeholders);
-          console.log('🔄 TrainingPracticeView: Restoring stakeholders:', stakeholders);
-          setSelectedStakeholders(stakeholders);
-        }
-
-        // Restore current step
-        const savedStep = sessionStorage.getItem('trainingCurrentStep');
-        if (savedStep) {
-          console.log('🔄 TrainingPracticeView: Restoring current step:', savedStep);
-          setCurrentStep(savedStep as any);
-        }
-
-        // Restore messages if in live meeting
-        const savedMessages = sessionStorage.getItem('trainingMessages');
-        if (savedMessages) {
-          const messages = JSON.parse(savedMessages);
-          console.log('🔄 TrainingPracticeView: Restoring messages:', messages.length);
-          setMessages(messages);
-        }
-
-        // Restore meeting time
-        const savedMeetingTime = sessionStorage.getItem('trainingMeetingTime');
-        if (savedMeetingTime) {
-          setMeetingTime(parseInt(savedMeetingTime));
-        }
-
-        // Restore meeting active state
-        const savedMeetingActive = sessionStorage.getItem('trainingMeetingActive');
-        if (savedMeetingActive) {
-          setIsMeetingActive(JSON.parse(savedMeetingActive));
-        }
-
-      } catch (error) {
-        console.error('❌ TrainingPracticeView: Error restoring state:', error);
+      } catch (e) {
+        console.error('❌ Session init failed:', e);
+      } finally {
+        restoringRef.current = false;
       }
-    };
-
-    restoreState();
+    })();
   }, [selectedProject]);
 
   useEffect(() => {
