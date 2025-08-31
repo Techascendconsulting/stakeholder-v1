@@ -44,13 +44,17 @@ class ProblemExplorationService {
     2. How to effectively ask this question
     3. Examples of good problem exploration questions
 
-    Return JSON only with this structure:
+    IMPORTANT: Use this exact format and content:
     {
       "title": "Problem Exploration Guide",
-      "description": "Brief overview of what makes a good problem exploration question",
-      "why": "Why this question is important in stakeholder meetings",
-      "how": "How to effectively ask this question",
-      "examples": ["example1", "example2", "example3"]
+      "description": "Brief overview of what makes a good problem exploration question:",
+      "why": "This question is crucial in project meetings because it helps ensure everyone is aligned on the core issue the project is meant to address.",
+      "how": "Ask open-ended questions that prompt stakeholders to reflect on pain points, not just proposed solutions. Encourage them to describe real situations and the impact.",
+      "examples": [
+        "What challenges led to this project being initiated?",
+        "Can you describe a recent issue that highlighted this need?",
+        "What would success look like once this problem is solved?"
+      ]
     }`;
 
     try {

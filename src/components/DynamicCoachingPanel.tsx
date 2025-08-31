@@ -473,10 +473,10 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
                    </div>
                    <div className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                       What problems are we trying to solve?
+                       What Problem Are We Trying to Solve?
                      </p>
                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                       Use the guidance below to help you ask this question effectively.
+                       Use the guidance below to help you ask this question effectively during project discussions.
                      </p>
                    </div>
                  </div>
