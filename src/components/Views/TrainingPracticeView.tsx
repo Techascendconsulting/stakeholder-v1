@@ -1098,13 +1098,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           onSuggestedRewrite={handleSuggestedRewrite}
         />
         
-        {/* Debug Info */}
-        <div className="fixed bottom-4 right-4 bg-black text-white p-2 text-xs rounded opacity-75">
-          <div>Messages: {messages.length}</div>
-          <div>User Messages: {messages.filter(m => m.sender === 'user').length}</div>
-          <div>Stakeholder Messages: {messages.filter(m => m.sender === 'stakeholder' || m.sender === 'ai').length}</div>
-          <div>Awaiting Ack: {awaitingAcknowledgement ? 'Yes' : 'No'}</div>
-        </div>
+
       </div>
     </div>
   );
