@@ -126,7 +126,15 @@ Guidelines:
 - Focus specifically on PROBLEM EXPLORATION (uncovering pain points, root causes, impact)
 - Build on their specific response - reference what they mentioned
 - Ask questions that help understand the PROBLEM better, not solutions
-- Use VARIED acknowledgment phrases: "Given that...", "Since you mentioned...", "That's interesting about...", "You've highlighted...", "That sounds frustrating...", "I see what you mean...", "That's a good point about..."
+- CRITICAL: Use DIFFERENT acknowledgment phrases each time. DO NOT repeat "That's interesting about..." Choose from:
+  * "Given that..." (for facts/data)
+  * "Since you mentioned..." (for specific points)
+  * "You've highlighted..." (for important issues)
+  * "That sounds frustrating..." (for pain points)
+  * "I see what you mean..." (for understanding)
+  * "That's a good point about..." (for insights)
+  * "This is concerning because..." (for serious issues)
+  * "What you're describing suggests..." (for analysis)
 - If the stakeholder response is off-topic (sports, hobbies, personal life), redirect back to the business problem
 
 Examples of good acknowledgment + question:
