@@ -1096,6 +1096,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           conversationHistory={messages}
           onAcknowledgementStateChange={handleAcknowledgementStateChange}
           onSuggestedRewrite={handleSuggestedRewrite}
+          onSessionComplete={handleEndMeeting}
         />
         
 
@@ -1238,11 +1239,13 @@ const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: str
   conversationHistory: any[];
   onAcknowledgementStateChange: (awaiting: boolean) => void;
   onSuggestedRewrite: (rewrite: string) => void;
+  onSessionComplete?: () => void;
 }>(({
   projectName,
   conversationHistory,
   onAcknowledgementStateChange,
   onSuggestedRewrite,
+  onSessionComplete,
 }, ref) => {
   const useDynamic = useMemo(() => true, []); // Temporarily hardcoded to test dynamic system
   
@@ -1258,6 +1261,7 @@ const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: str
       onAcknowledgementStateChange={onAcknowledgementStateChange}
       onSuggestedRewrite={onSuggestedRewrite}
       onSubmitMessage={handleSubmitMessage}
+      onSessionComplete={onSessionComplete}
     />
   ) : (
     <CompleteCoachingPanel

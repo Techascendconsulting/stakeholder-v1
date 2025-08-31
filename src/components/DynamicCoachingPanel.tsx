@@ -55,6 +55,7 @@ interface DynamicCoachingPanelProps {
   onSuggestedRewrite?: (rewrite: string) => void;
   onSubmitMessage?: (message: string) => void;
   onPopulateInput?: (message: string) => void;
+  onSessionComplete?: () => void;
 }
 
 const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: string) => void }, DynamicCoachingPanelProps>(({
@@ -63,6 +64,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
   onAcknowledgementStateChange,
   onSuggestedRewrite,
   onSubmitMessage,
+  onSessionComplete,
 }, ref) => {
   // State management - ONLY for greeting
   const [inputLocked, setInputLocked] = useState(false);
@@ -185,6 +187,12 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
             technique: "Summary & Prioritization"
           };
           setStakeholderAnalysis(wrapUpAnalysis);
+          
+          // Auto-end session after a delay to allow user to see the final question
+          setTimeout(() => {
+            console.log('🎯 Auto-ending session after 15 questions');
+            onSessionComplete?.();
+          }, 5000); // 5 second delay
         } else {
           setStakeholderAnalysis(data.analysis);
         }
