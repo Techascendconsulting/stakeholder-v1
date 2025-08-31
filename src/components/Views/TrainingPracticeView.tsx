@@ -1079,6 +1079,13 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                 <span>Send</span>
               </button>
             </div>
+            
+            {/* User Guidance */}
+            {!awaitingAcknowledgement && (
+              <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                💡 <strong>Tip:</strong> You can ask your own questions or use the suggested question above. The AI will evaluate your question and provide coaching feedback.
+              </div>
+            )}
           </div>
         </div>
 
