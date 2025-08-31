@@ -164,7 +164,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             transcript: lastMessage?.content ?? '', 
-            context: { nextPhase, probDone } 
+            context: { nextPhase, probDone, projectName } 
           }),
           signal: ac.signal,
         });
@@ -503,6 +503,11 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {showStakeholderAnalysis ? 'Stakeholder Analysis' : (showNextPhase ? 'Problem Exploration' : 'Greeting')}
           </h2>
+        </div>
+        <div className="mb-2">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Project: <span className="font-medium text-gray-800 dark:text-gray-200">{projectName}</span>
+          </p>
         </div>
         <div className="mt-3">
           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">

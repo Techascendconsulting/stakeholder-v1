@@ -114,8 +114,10 @@ export default defineConfig({
 });
 
 function buildPrompt(transcript: string, context?: any) {
+  const projectName = context?.projectName || 'the current project';
+  
   return [
-    `You are a Business Analyst coach helping someone conduct a Problem Exploration interview. Given the stakeholder's response, provide ONE best follow-up question.
+    `You are a Business Analyst coach helping someone conduct a Problem Exploration interview for: ${projectName}. Given the stakeholder's response, provide ONE best follow-up question.
 
 Respond ONLY with minified JSON:
 {"next_question":"string","rationale":"string","technique":"string"}
@@ -135,12 +137,12 @@ Guidelines:
   * "That's a good point about..." (for insights)
   * "This is concerning because..." (for serious issues)
   * "What you're describing suggests..." (for analysis)
-- If the stakeholder response is off-topic (sports, hobbies, personal life), redirect back to the business problem
+- If the stakeholder response is off-topic (sports, hobbies, personal life), redirect back to the ${projectName} project
 
 Examples of good acknowledgment + question:
 - "Given that managers spend 3 hours per review, what specific challenges do they face during that time?"
 - "Since you mentioned employees feel undervalued, can you tell me more about when this feeling typically arises?"
-- "I understand you enjoy tennis, but let's focus on the performance management challenges. What specific issues are you experiencing with the current review process?"
+- "I understand you enjoy tennis, but let's focus on the ${projectName} challenges. What specific issues are you experiencing with the current process?"
 - "That's interesting about the manual process. What specific pain points does that create for your team?"
 - "You've highlighted some real challenges there. Can you walk me through a typical day when these issues surface?"
 - "That sounds frustrating. What impact does this have on your team's productivity?"
@@ -149,7 +151,7 @@ Examples of good acknowledgment + question:
 
 Technique options: Probing, Process Mapping, Priority Framing, Root Cause Analysis
 
-Remember: This is Problem Exploration stage - focus on understanding the problem, not designing solutions. If the stakeholder goes off-topic, gently redirect them back to the business problem.`,
+Remember: This is Problem Exploration stage for ${projectName} - focus on understanding the problem, not designing solutions. If the stakeholder goes off-topic, gently redirect them back to the ${projectName} project.`,
     'Stakeholder Response:\n' + transcript,
   ].filter(Boolean).join('\n\n');
 }
