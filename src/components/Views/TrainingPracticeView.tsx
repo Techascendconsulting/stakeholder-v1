@@ -148,7 +148,10 @@ Response:`;
               const project = mockProjects.find(p => p.name === selectedProject.name);
               if (project) {
                 console.log('🔄 TrainingPracticeView: Creating session for project:', project.name);
-                const newSession = await trainingService.startSession('problem_exploration', project.id, 'practice', []);
+                // Get the stage from sessionStorage or default to problem_exploration
+                const savedConfig = sessionStorage.getItem('trainingConfig');
+                const stage = savedConfig ? JSON.parse(savedConfig).stage : 'problem_exploration';
+                const newSession = await trainingService.startSession(stage, project.id, 'practice', []);
                 setSession(newSession);
                 
                 // Load the current question for the new session
@@ -317,7 +320,15 @@ Response:`;
       
       // Add initial greeting with stakeholder context
       const stakeholderNames = selectedStakeholders.map(s => `${s.name} (${s.role})`).join(', ');
-      const currentQuestionText = currentQuestion?.text || 'Understanding current process challenges';
+      
+      // Set the correct question based on the stage
+      let currentQuestionText = 'Understanding current process challenges';
+      if (session.stage === 'as_is') {
+        currentQuestionText = "From your perspective, can you walk me through how this process works today, from the moment it starts to the final outcome? Who does what, using which systems?";
+      } else if (session.stage === 'problem_exploration') {
+        currentQuestionText = currentQuestion?.text || 'What problems are we trying to solve?';
+      }
+      
       const initialMessage = {
         id: 'initial',
         sender: 'system',

@@ -1,4 +1,4 @@
-import { singleAgentSystem } from './kb';
+import { singleAgentSystem } from './singleAgentSystem';
 
 export interface AsIsProcessGuidance {
   title: string;
