@@ -35,7 +35,7 @@ import GetStartedView from '../Views/GetStartedView';
 import PracticeLabView from '../Views/PracticeLabView';
 import ProcessMapper from '../ProcessMapper';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
-
+import StakeholderInterviewView from '../Views/StakeholderInterviewView';
 
 
 const MainLayout: React.FC = () => {
@@ -146,6 +146,8 @@ const MainLayout: React.FC = () => {
         return <TrainingDashboardView />;
       case 'project-practice':
         return <TrainingPracticeView />;
+      case 'stakeholder-interview':
+        return <StakeholderInterviewView />;
       default:
         return <ProjectsView />;
     }

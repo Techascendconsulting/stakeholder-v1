@@ -433,7 +433,7 @@ export class TrainingService {
 
     // Get actual conversation messages from session
     const userMessages: any[] = session.messages?.filter(msg => msg.sender === 'user') || [];
-    const stakeholderMessages: any[] = session.messages?.filter(msg => msg.sender === 'ai') || [];
+    const stakeholderMessages: any[] = session.messages?.filter(msg => msg.sender === 'ai' || msg.sender === 'stakeholder') || [];
 
     console.log('💬 Message counts:', {
       user: userMessages.length,

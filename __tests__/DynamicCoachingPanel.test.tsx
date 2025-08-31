@@ -42,6 +42,62 @@ vi.mock('../src/services/greetingCoachingService', () => ({
   }
 }));
 
+// Mock the ProblemExplorationService
+vi.mock('../src/services/problemExplorationService', () => ({
+  default: {
+    getInstance: vi.fn(() => ({
+      getProblemExplorationGuidance: vi.fn().mockResolvedValue({
+        title: "Problem Exploration Guide",
+        description: "Brief overview of what makes a good problem exploration question:",
+        why: "This question is crucial in project meetings because it helps ensure everyone is aligned on the core issue the project is meant to address.",
+        how: "Ask open-ended questions that prompt stakeholders to reflect on pain points, not just proposed solutions. Encourage them to describe real situations and the impact.",
+        examples: [
+          "What challenges led to this project being initiated?",
+          "Can you describe a recent issue that highlighted this need?",
+          "What would success look like once this problem is solved?"
+        ]
+      }),
+      evaluateProblemExplorationQuestion: vi.fn().mockImplementation((question) => {
+        const isProblemFocused = /(problem|challenge|issue|pain|difficulty|struggle|concern)/i.test(question);
+        const isOpenEnded = /(what|how|why|when|where|describe|explain|tell)/i.test(question);
+        
+        if (isProblemFocused && isOpenEnded) {
+          return Promise.resolve({
+            verdict: 'GOOD',
+            message: "Great problem exploration question!",
+            reasoning: "The question effectively focuses on problems and encourages open-ended exploration.",
+            technique: "Problem Exploration"
+          });
+        } else {
+          return Promise.resolve({
+            verdict: 'AMBER',
+            message: "This question could be more effective for problem exploration.",
+            suggestedRewrite: "What specific challenges or pain points are you experiencing that led to this project being initiated?",
+            reasoning: "The question could better focus on problems rather than solutions.",
+            technique: "Problem Exploration"
+          });
+        }
+      })
+    }))
+  }
+}));
+
+// Mock the StakeholderResponseAnalysisService
+vi.mock('../src/services/stakeholderResponseAnalysisService', () => ({
+  default: {
+    getInstance: vi.fn(() => ({
+      analyzeStakeholderResponse: vi.fn().mockResolvedValue({
+        insights: ["Stakeholder mentioned manual processes being time-consuming"],
+        painPoints: ["Manual processes", "Time-consuming workflows"],
+        blockers: ["Lack of automation", "Inefficient processes"],
+        nextQuestion: "Can you walk me through a typical day and show me where the bottlenecks occur?",
+        reasoning: "This will help us understand the specific pain points in their daily workflow",
+        technique: "Process Mapping"
+      })
+    }))
+  }
+}));
+
 const mockOnAcknowledgementStateChange = vi.fn();
 const mockOnSuggestedRewrite = vi.fn();
 const mockOnSubmitMessage = vi.fn();
@@ -129,7 +185,7 @@ describe('DynamicCoachingPanel - Phase 1: Greeting Only', () => {
     
     await waitFor(() => {
       expect(screen.getByText(/Great professional greeting!/i)).toBeInTheDocument();
-      expect(screen.getByText('100%')).toBeInTheDocument();
+      expect(screen.getByText('7%')).toBeInTheDocument();
     });
   });
 
@@ -192,8 +248,8 @@ describe('DynamicCoachingPanel - Phase 1: Greeting Only', () => {
     // Should show problem exploration feedback
     await waitFor(() => {
       expect(screen.getByText('Let\'s refine this')).toBeInTheDocument();
-      expect(screen.getByText('Use This Question')).toBeInTheDocument();
-      expect(screen.getByText('25%')).toBeInTheDocument();
+      expect(screen.getByText('Consider using this improved question in your next interaction.')).toBeInTheDocument();
+      expect(screen.getByText('7%')).toBeInTheDocument();
     });
   });
 
@@ -217,6 +273,90 @@ describe('DynamicCoachingPanel - Phase 1: Greeting Only', () => {
     
     await waitFor(() => {
       expect(mockOnAcknowledgementStateChange).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it('should trigger stakeholder analysis when stakeholder responds after GOOD problem exploration question', async () => {
+    const { rerender } = render(<DynamicCoachingPanel {...defaultProps} />);
+    
+    // First, complete greeting phase
+    const propsWithGoodGreeting = {
+      ...defaultProps,
+      conversationHistory: [
+        {
+          id: '1',
+          sender: 'user',
+          content: 'Hello everyone, thank you for taking the time to meet today. I\'m the business analyst on this project.',
+          timestamp: new Date()
+        }
+      ]
+    };
+
+    rerender(<DynamicCoachingPanel {...propsWithGoodGreeting} />);
+    
+    // Wait for greeting to be evaluated and move to problem exploration
+    // The setTimeout in evaluateGreeting takes 2 seconds, so we need to wait
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    await waitFor(() => {
+      expect(screen.getByText('Problem Exploration')).toBeInTheDocument();
+    });
+
+    // Now add a GOOD problem exploration question
+    const propsWithGoodProblemQuestion = {
+      ...defaultProps,
+      conversationHistory: [
+        {
+          id: '1',
+          sender: 'user',
+          content: 'Hello everyone, thank you for taking the time to meet today. I\'m the business analyst on this project.',
+          timestamp: new Date()
+        },
+        {
+          id: '2',
+          sender: 'user',
+          content: 'What specific challenges or pain points are you experiencing that led to this project being initiated?',
+          timestamp: new Date()
+        }
+      ]
+    };
+
+    rerender(<DynamicCoachingPanel {...propsWithGoodProblemQuestion} />);
+    
+    // Wait for problem exploration to be evaluated as GOOD
+    await waitFor(() => {
+      expect(screen.getByText('Great problem exploration question!')).toBeInTheDocument();
+    });
+
+    // Now add stakeholder response
+    const propsWithStakeholderResponse = {
+      ...defaultProps,
+      conversationHistory: [
+        {
+          id: '1',
+          sender: 'user',
+          content: 'Hello everyone, thank you for taking the time to meet today. I\'m the business analyst on this project.',
+          timestamp: new Date()
+        },
+        {
+          id: '2',
+          sender: 'user',
+          content: 'What specific challenges or pain points are you experiencing that led to this project being initiated?',
+          timestamp: new Date()
+        },
+        {
+          id: '3',
+          sender: 'stakeholder',
+          content: 'We\'re having issues with our current process being too manual and time-consuming.',
+          timestamp: new Date()
+        }
+      ]
+    };
+
+    rerender(<DynamicCoachingPanel {...propsWithStakeholderResponse} />);
+    
+    // Wait for stakeholder analysis to be triggered
+    await waitFor(() => {
+      expect(screen.getByText('Stakeholder Analysis')).toBeInTheDocument();
     });
   });
 });

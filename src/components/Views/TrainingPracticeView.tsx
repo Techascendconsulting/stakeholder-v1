@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TrainingService } from '../../services/trainingService';
@@ -7,13 +7,9 @@ import { mockProjects, mockStakeholders } from '../../data/mockData';
 import { Stakeholder } from '../../types';
 import { singleAgentSystem } from '../../services/singleAgentSystem';
 import AIService from '../../services/aiService';
-import CoachingPanel from '../CoachingPanel';
-import { 
-  CoachingSession, 
-  coachingReducer, 
-  initializeCoachingSession,
-  CoachingEvent 
-} from '../../services/coachingStateReducer';
+import CompleteCoachingPanel from '../CompleteCoachingPanel';
+import DynamicCoachingPanel from '../DynamicCoachingPanel';
+
 import { 
   ArrowLeft, 
   Send, 
@@ -45,7 +41,7 @@ const TrainingPracticeView: React.FC = () => {
   const [selectedStakeholders, setSelectedStakeholders] = useState<Stakeholder[]>([]);
   
   // New coaching system state
-  const [coachingSession, setCoachingSession] = useState<CoachingSession>(initializeCoachingSession());
+
   
   // Keep old coaching for backward compatibility during transition
   const [coaching, setCoaching] = useState<{
@@ -65,31 +61,67 @@ const TrainingPracticeView: React.FC = () => {
   const [feedback, setFeedback] = useState<TrainingFeedback | null>(null);
   const [meetingTime, setMeetingTime] = useState(0);
   const [isMeetingActive, setIsMeetingActive] = useState(false);
+  const [awaitingAcknowledgement, setAwaitingAcknowledgement] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dynamicPanelRef = useRef<{ onUserSubmitted: (messageId: string) => void } | null>(null);
 
   const trainingService = TrainingService.getInstance();
 
-  // Coaching session management functions
-  const handleNextCoaching = () => {
-    const nextEvent: CoachingEvent = { type: 'USER_CLICK_NEXT' };
-    setCoachingSession(prev => coachingReducer(prev, nextEvent));
+  // Pure AI response generator without KB integration
+  const generatePureAIResponse = async (
+    userMessage: string,
+    stakeholderContext: any,
+    projectContext: any
+  ): Promise<string> => {
+    try {
+      const prompt = `You are ${stakeholderContext.name}, a ${stakeholderContext.role} at ${stakeholderContext.department}. 
+
+Project Context: ${projectContext.name} - ${projectContext.description}
+
+User's question: "${userMessage}"
+
+Respond as ${stakeholderContext.name} would in a professional business meeting. Keep your response natural, helpful, and focused on the question. Don't mention that you're an AI - just respond as the stakeholder would.
+
+Response:`;
+
+      const response = await fetch('/api/analyzeStakeholder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          transcript: prompt,
+          context: { type: 'stakeholder_response' }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.analysis || 'I understand your question. Let me think about that...';
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+      return 'Thank you for your question. I appreciate you taking the time to understand our perspective.';
+    }
   };
 
-  const handleSendSummary = (summary: string) => {
-    // Send the summary as a user message
-    setInputMessage(summary);
-    handleSendMessage();
-  };
 
-  const handleAddPainPoint = (painPoint: { text: string; who: string; example?: string }) => {
-    const painPointEvent: CoachingEvent = { type: 'ADD_PAIN_POINT', painPoint };
-    setCoachingSession(prev => coachingReducer(prev, painPointEvent));
-  };
 
-  const handleAddSessionNote = (category: string, note: string) => {
-    const noteEvent: CoachingEvent = { type: 'ADD_SESSION_NOTE', category, note };
-    setCoachingSession(prev => coachingReducer(prev, noteEvent));
-  };
+  const handleAcknowledgementStateChange = useCallback((awaiting: boolean) => {
+    console.log('🔄 TrainingPracticeView: handleAcknowledgementStateChange called with:', awaiting);
+    console.log('🔄 TrainingPracticeView: Previous awaitingAcknowledgement:', awaitingAcknowledgement);
+    setAwaitingAcknowledgement(prev => (prev === awaiting ? prev : awaiting));
+    console.log('🔄 TrainingPracticeView: New awaitingAcknowledgement will be:', awaiting);
+  }, [awaitingAcknowledgement]);
+
+  const handleSuggestedRewrite = useCallback((rewrite: string) => {
+    setInputMessage(rewrite);
+    // Focus the text input
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.focus();
+    }
+  }, []);
 
   useEffect(() => {
     // Restore state from sessionStorage on page refresh
@@ -324,9 +356,13 @@ Remember to start with a professional greeting and introduce yourself. Then focu
     setInputMessage('');
     setIsTyping(true);
 
+    // Notify the dynamic panel about the new message
+    if (dynamicPanelRef.current) {
+      dynamicPanelRef.current.onUserSubmitted(userMessage.id);
+    }
+
     // Update coaching session with user message
-    const userEvent: CoachingEvent = { type: 'USER_SENT_QUESTION', message: inputMessage };
-    setCoachingSession(prev => coachingReducer(prev, userEvent));
+    
 
     try {
       // Get project context from mockProjects
@@ -392,18 +428,11 @@ Remember to start with a professional greeting and introduce yourself. Then focu
         // User specifically mentioned stakeholder(s) via AI detection - only those should respond
         console.log(`🎯 Training: AI detected stakeholder mention(s): ${userMentionResult.mentionedStakeholders.map(s => s.name).join(', ')}`);
         respondingStakeholders = userMentionResult.mentionedStakeholders;
-      } else if (inputMessage.toLowerCase().includes('hello') || inputMessage.toLowerCase().includes('hi') || inputMessage.toLowerCase().includes('greetings')) {
-        // Formal greeting - all stakeholders can respond
-        console.log('👋 Training: Formal greeting detected - all stakeholders will respond');
-        respondingStakeholders = selectedStakeholders;
-      } else if (inputMessage.toLowerCase().includes('hey') || inputMessage.toLowerCase().includes('hey guys') || inputMessage.toLowerCase().includes('hey there')) {
-        // Casual greeting - only one stakeholder responds to avoid overwhelming
-        console.log('👋 Training: Casual greeting detected - one stakeholder will respond');
-        respondingStakeholders = [selectedStakeholders[0]];
       } else {
-        // General question - one stakeholder responds (first one)
-        console.log('❓ Training: General question - one stakeholder will respond');
-        respondingStakeholders = [selectedStakeholders[0]];
+        // General question or greeting - pick one random stakeholder to respond (same as VoiceOnlyMeetingView)
+        console.log('❓ Training: General question/greeting - one random stakeholder will respond');
+        const randomStakeholder = selectedStakeholders[Math.floor(Math.random() * selectedStakeholders.length)];
+        respondingStakeholders = [randomStakeholder];
       }
 
       // Process responses for the determined stakeholders with delays
@@ -429,7 +458,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
             
             const aiMessage = {
               id: (Date.now() + Math.random() + i).toString(),
-              sender: 'ai',
+              sender: 'stakeholder',
               content: response,
               timestamp: new Date(),
               stakeholderName: stakeholder.name,
@@ -446,8 +475,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
             });
 
             // Update coaching session with stakeholder response
-            const stakeholderEvent: CoachingEvent = { type: 'STAKEHOLDER_ANSWER', message: response };
-            setCoachingSession(prev => coachingReducer(prev, stakeholderEvent));
+            
           } catch (error) {
             console.error(`Error generating response for ${stakeholder.name}:`, error);
           }
@@ -664,137 +692,48 @@ Remember to start with a professional greeting and introduce yourself. Then focu
         )}
 
         <div className="max-w-4xl mx-auto px-6 py-8">
-          {/* Quick Action Section - Prominently placed at top */}
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 mb-8 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h2 className="text-xl font-bold mb-2">Ready to Continue?</h2>
-                <p className="text-purple-100 mb-4">
-                  {selectedStakeholders.length > 0 
-                    ? `Continue your practice session with ${selectedStakeholders.length} stakeholder${selectedStakeholders.length > 1 ? 's' : ''}`
-                    : 'Select your stakeholders to begin your practice session'
-                  }
-                </p>
-                <div className="flex items-center space-x-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4" />
-                    <span>12 min session</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Coaching enabled</span>
+          {/* Ready to Start - Moved to TOP */}
+          {(() => {
+            console.log('🔍 Debug - selectedStakeholders length:', selectedStakeholders.length);
+            console.log('🔍 Debug - selectedStakeholders:', selectedStakeholders);
+            return selectedStakeholders.length > 0;
+          })() && (
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 mb-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold mb-2">Ready to Start!</h2>
+                  <p className="text-purple-100 mb-4">
+                    You'll be practicing with {selectedStakeholders.length} stakeholder{selectedStakeholders.length > 1 ? 's' : ''}: <strong>{selectedStakeholders.map(s => s.name).join(', ')}</strong>
+                  </p>
+                  <div className="flex items-center space-x-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-4 h-4" />
+                      <span>12 min session</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Coaching enabled</span>
+                    </div>
                   </div>
                 </div>
+                <div className="ml-6">
+                  <button
+                    onClick={handleStartMeeting}
+                    className="px-8 py-4 rounded-lg font-semibold transition-all duration-200 bg-white text-purple-600 hover:bg-purple-50 shadow-lg hover:shadow-xl"
+                  >
+                    Start Practice Session
+                  </button>
+                </div>
               </div>
-              <div className="ml-6">
-                <button
-                  onClick={handleStartMeeting}
-                  disabled={selectedStakeholders.length === 0}
-                  className={`px-8 py-4 rounded-lg font-semibold transition-all duration-200 ${
-                    selectedStakeholders.length > 0
-                      ? 'bg-white text-purple-600 hover:bg-purple-50 shadow-lg hover:shadow-xl'
-                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  }`}
-                >
-                  {selectedStakeholders.length === 0 ? 'Select Stakeholders First' : 'Start Practice Session'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* No Selection Warning - Moved above Session Overview */}
-          {selectedStakeholders.length === 0 && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="w-5 h-5 text-red-600" />
-                <span className="text-sm font-medium text-red-800 dark:text-red-200">
-                  No stakeholders selected
-                </span>
-              </div>
-              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                Please select at least one stakeholder below to begin your practice session.
-              </p>
             </div>
           )}
 
-          {/* Session Overview */}
+          {/* Stakeholder Selection - PROMINENT */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <Target className="w-5 h-5 text-purple-600 mr-2" />
-              Session Overview
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Training Stage</div>
-                <div className="font-medium text-gray-900 dark:text-white capitalize">
-                  {session?.stage?.replace('_', ' ') || 'Requirements Gathering'}
-                </div>
-              </div>
-              <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Project</div>
-                <div className="font-medium text-gray-900 dark:text-white">
-                  {mockProjects.find(p => p.id === session?.projectId)?.name || 'E-commerce Platform'}
-                </div>
-              </div>
-              <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Duration</div>
-                <div className="font-medium text-gray-900 dark:text-white">8-12 minutes</div>
-              </div>
-              <div className="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mode</div>
-                <div className="font-medium text-indigo-600 dark:text-indigo-400">Practice (with coaching)</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Meeting Details */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <Calendar className="w-5 h-5 text-blue-600 mr-2" />
-              Meeting Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Meeting Type</div>
-                <div className="font-medium text-gray-900 dark:text-white">Business Analysis Discovery Call</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Duration</div>
-                <div className="font-medium text-gray-900 dark:text-white">30 minutes</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Format</div>
-                <div className="font-medium text-gray-900 dark:text-white">Video Conference</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Agenda</div>
-                <div className="font-medium text-gray-900 dark:text-white">
-                  {session?.stage?.replace('_', ' ') || 'Requirements Gathering'} Discussion
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-              <div className="flex items-start space-x-3">
-                <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="font-medium text-purple-800 dark:text-purple-200 mb-1">Meeting Etiquette</div>
-                  <div className="text-sm text-purple-700 dark:text-purple-300">
-                    Remember to start with a professional greeting, introduce yourself, and explain the purpose of the meeting before diving into questions.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stakeholder Selection */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <Users className="w-5 h-5 text-purple-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <Users className="w-6 h-6 text-purple-600 mr-3" />
               Select Your Stakeholders
             </h2>
-            
-
             
             {/* Clear Instructions */}
             <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -819,9 +758,11 @@ Remember to start with a professional greeting and introduce yourself. Then focu
               </h3>
             </div>
             
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {(() => {
                 const project = mockProjects.find(p => p.id === session?.projectId);
+                console.log('🔍 Debug - Project found:', project?.name, 'Project ID:', session?.projectId);
+                console.log('🔍 Debug - Project relevantStakeholders:', project?.relevantStakeholders);
                 
                 if (!project) {
                   return <div className="col-span-3 text-center text-gray-500">Project not found</div>;
@@ -841,10 +782,19 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                     <button
                       key={stakeholder.id}
                       onClick={() => {
+                        console.log('🔍 Debug - Clicking stakeholder:', stakeholder.name, 'Currently selected:', isSelected);
                         if (isSelected) {
-                          setSelectedStakeholders(prev => prev.filter(s => s.id !== stakeholder.id));
+                          setSelectedStakeholders(prev => {
+                            const newSelection = prev.filter(s => s.id !== stakeholder.id);
+                            console.log('🔍 Debug - Removed stakeholder, new selection:', newSelection);
+                            return newSelection;
+                          });
                         } else {
-                          setSelectedStakeholders(prev => [...prev, stakeholder]);
+                          setSelectedStakeholders(prev => {
+                            const newSelection = [...prev, stakeholder];
+                            console.log('🔍 Debug - Added stakeholder, new selection:', newSelection);
+                            return newSelection;
+                          });
                         }
                       }}
                       className={`p-4 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-md ${
@@ -914,9 +864,49 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                 </div>
               </div>
             )}
-            
-
           </div>
+
+          {/* Meeting Details - Only show after stakeholder selection */}
+          {selectedStakeholders.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Calendar className="w-5 h-5 text-blue-600 mr-2" />
+                Meeting Details
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Meeting Type</div>
+                  <div className="font-medium text-gray-900 dark:text-white">Business Analysis Discovery Call</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Duration</div>
+                  <div className="font-medium text-gray-900 dark:text-white">30 minutes</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Format</div>
+                  <div className="font-medium text-gray-900 dark:text-white">Video Conference</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Agenda</div>
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {session?.stage?.replace('_', ' ') || 'Requirements Gathering'} Discussion
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="font-medium text-purple-800 dark:text-purple-200 mb-1">Meeting Etiquette</div>
+                    <div className="text-sm text-purple-700 dark:text-purple-300">
+                      Remember to start with a professional greeting, introduce yourself, and explain the purpose of the meeting before diving into questions.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Success Strategies */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -1017,7 +1007,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                   }`}
                 >
                   <div className="flex items-start space-x-3">
-                    {message.sender === 'ai' && (
+                    {(message.sender === 'ai' || message.sender === 'stakeholder') && (
                       <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
                           {message.stakeholderName ? message.stakeholderName.split(' ').map((n: string) => n[0]).join('').slice(0, 1) : 'S'}
@@ -1026,7 +1016,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                     )}
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        {message.sender === 'ai' && (
+                        {(message.sender === 'ai' || message.sender === 'stakeholder') && (
                           <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                             {message.stakeholderName}
                           </span>
@@ -1070,14 +1060,19 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Type your message here..."
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+                  placeholder={awaitingAcknowledgement ? "Please acknowledge the feedback above first..." : "Type your message here..."}
+                  disabled={awaitingAcknowledgement}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                    awaitingAcknowledgement 
+                      ? 'border-gray-300 bg-gray-100 text-gray-500 placeholder-gray-400 cursor-not-allowed' 
+                      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400'
+                  }`}
                   rows={2}
                 />
               </div>
               <button
                 onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isTyping}
+                disabled={!inputMessage.trim() || isTyping || awaitingAcknowledgement}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
               >
                 <Send className="w-4 h-4" />
@@ -1087,14 +1082,22 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           </div>
         </div>
 
-        {/* New Coaching Panel */}
-        <CoachingPanel
-          session={coachingSession}
-          onNext={handleNextCoaching}
-          onSendSummary={handleSendSummary}
-          onAddPainPoint={handleAddPainPoint}
-          onAddSessionNote={handleAddSessionNote}
+        {/* Dynamic Coaching Panel - New Response-Driven System */}
+        <CoachingPanelWrapper
+          ref={dynamicPanelRef}
+          projectName={selectedProject?.name || ''}
+          conversationHistory={messages}
+          onAcknowledgementStateChange={handleAcknowledgementStateChange}
+          onSuggestedRewrite={handleSuggestedRewrite}
         />
+        
+        {/* Debug Info */}
+        <div className="fixed bottom-4 right-4 bg-black text-white p-2 text-xs rounded opacity-75">
+          <div>Messages: {messages.length}</div>
+          <div>User Messages: {messages.filter(m => m.sender === 'user').length}</div>
+          <div>Stakeholder Messages: {messages.filter(m => m.sender === 'stakeholder' || m.sender === 'ai').length}</div>
+          <div>Awaiting Ack: {awaitingAcknowledgement ? 'Yes' : 'No'}</div>
+        </div>
       </div>
     </div>
   );
@@ -1227,5 +1230,43 @@ Remember to start with a professional greeting and introduce yourself. Then focu
     </div>
   );
 };
+
+// CoachingPanelWrapper component to fix Rules of Hooks violation
+const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: string) => void }, {
+  projectName: string;
+  conversationHistory: any[];
+  onAcknowledgementStateChange: (awaiting: boolean) => void;
+  onSuggestedRewrite: (rewrite: string) => void;
+}>(({
+  projectName,
+  conversationHistory,
+  onAcknowledgementStateChange,
+  onSuggestedRewrite,
+}, ref) => {
+  const useDynamic = useMemo(() => true, []); // Temporarily hardcoded to test dynamic system
+  
+  const handleSubmitMessage = useCallback((message: string) => {
+    console.log('Dynamic panel submitted message:', message);
+  }, []);
+
+  return useDynamic ? (
+    <DynamicCoachingPanel
+      ref={ref}
+      projectName={projectName}
+      conversationHistory={conversationHistory}
+      onAcknowledgementStateChange={onAcknowledgementStateChange}
+      onSuggestedRewrite={onSuggestedRewrite}
+      onSubmitMessage={handleSubmitMessage}
+    />
+  ) : (
+    <CompleteCoachingPanel
+      projectName={projectName}
+      conversationHistory={conversationHistory}
+      onAcknowledgementStateChange={onAcknowledgementStateChange}
+      onSuggestedRewrite={onSuggestedRewrite}
+      onSubmitMessage={handleSubmitMessage}
+    />
+  );
+});
 
 export default TrainingPracticeView;

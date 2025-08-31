@@ -43,7 +43,8 @@ export type AppView =
   | 'training-assess'
   | 'training-feedback'
   | 'training-dashboard'
-  | 'project-practice';
+  | 'project-practice'
+  | 'stakeholder-interview';
 
 // Re-export specific types for convenience
 export type {

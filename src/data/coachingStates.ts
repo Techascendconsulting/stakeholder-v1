@@ -44,15 +44,15 @@ export const coachingStateMachine: CoachingStateMachine = {
   states: {
     warm_up: {
       title: "Warm-up",
-      goal: "Set tone and purpose; gain permission.",
+      goal: "Set tone and purpose; establish rapport.",
       entry: { min_examples: 0 },
       exit: { conditions: ["user_clicked_next", "user_asked_problem_question"] },
       progressWeight: 1,
       cards: {
         guide: {
-          prompt: "Thanks for meeting. Are you okay if I capture notes while we talk?",
-          why: "Establishes consent and professionalism; reduces friction later.",
-          how: "Warm, brief, confident.",
+          prompt: "Hi [Name], thanks for taking the time to meet today. I'm [Your Name] and I'm here to understand your challenges and help identify opportunities for improvement. I'll be taking some notes during our conversation to make sure I capture everything accurately.",
+          why: "Builds rapport, establishes purpose, and sets expectations professionally.",
+          how: "Warm greeting, clear introduction, explain purpose, mention note-taking as standard practice.",
           next_transition_hint: "Move to Problem Exploration once greeting/purpose is done."
         },
         dig_deeper: [
