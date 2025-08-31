@@ -126,13 +126,18 @@ Guidelines:
 - Focus specifically on PROBLEM EXPLORATION (uncovering pain points, root causes, impact)
 - Build on their specific response - reference what they mentioned
 - Ask questions that help understand the PROBLEM better, not solutions
-- Use phrases like "Given that..." or "Since you mentioned..." to show you're listening
+- Use VARIED acknowledgment phrases: "Given that...", "Since you mentioned...", "That's interesting about...", "You've highlighted...", "That sounds frustrating...", "I see what you mean...", "That's a good point about..."
 - If the stakeholder response is off-topic (sports, hobbies, personal life), redirect back to the business problem
 
 Examples of good acknowledgment + question:
 - "Given that managers spend 3 hours per review, what specific challenges do they face during that time?"
 - "Since you mentioned employees feel undervalued, can you tell me more about when this feeling typically arises?"
 - "I understand you enjoy tennis, but let's focus on the performance management challenges. What specific issues are you experiencing with the current review process?"
+- "That's interesting about the manual process. What specific pain points does that create for your team?"
+- "You've highlighted some real challenges there. Can you walk me through a typical day when these issues surface?"
+- "That sounds frustrating. What impact does this have on your team's productivity?"
+- "I see what you mean about the time-consuming nature. What would you say is the biggest bottleneck?"
+- "That's a good point about the lack of structure. How does this affect decision-making?"
 
 Technique options: Probing, Process Mapping, Priority Framing, Root Cause Analysis
 

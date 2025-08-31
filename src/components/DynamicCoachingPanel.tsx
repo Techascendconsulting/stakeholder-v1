@@ -667,7 +667,7 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
                )}
 
                {/* Next Phase Suggestion */}
-               {showNextPhase && !problemExplorationFeedback && !showStakeholderAnalysis && !isAnalyzingStakeholder && (
+               {showNextPhase && !problemExplorationFeedback && !showStakeholderAnalysis && !isAnalyzingStakeholder && currentQuestionNumber === 1 && (
                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                    <div className="flex items-center space-x-2 mb-3">
                      <MessageSquare size={20} className="text-gray-600 dark:text-gray-400" />
@@ -686,8 +686,8 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
                  </div>
                )}
 
-               {/* Problem Exploration Guidance - Show during next phase */}
-               {showNextPhase && problemExplorationGuidance && !problemExplorationFeedback && !showStakeholderAnalysis && !isAnalyzingStakeholder && (
+               {/* Problem Exploration Guidance - Show only for first question */}
+               {showNextPhase && problemExplorationGuidance && !problemExplorationFeedback && !showStakeholderAnalysis && !isAnalyzingStakeholder && currentQuestionNumber === 1 && (
                  <div className="mb-4 p-4 rounded-lg border bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700">
                    <div className="flex items-center space-x-2 mb-3">
                      <Lightbulb size={20} className="text-blue-600 dark:text-blue-400" />
