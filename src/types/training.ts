@@ -1,6 +1,6 @@
 
 
-export type TrainingStage = 'problem_exploration' | 'as_is' | 'to_be' | 'solution_design';
+export type TrainingStage = 'problem_exploration' | 'as_is' | 'as_is_mapping' | 'to_be' | 'solution_design';
 
 export interface TrainingSession {
   id: string;

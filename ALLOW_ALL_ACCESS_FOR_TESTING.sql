@@ -36,3 +36,5 @@ SELECT 'Spaces accessible:' as info, COUNT(*) as count FROM spaces;
 SELECT 'Channels accessible:' as info, COUNT(*) as count FROM channels;
 
 
+
+

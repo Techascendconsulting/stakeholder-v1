@@ -57,6 +57,7 @@ const STAGES = [
   { id: 'kickoff', name: 'Kickoff', description: 'Project Introduction' },
   { id: 'problem_exploration', name: 'Problem Exploration', description: 'Understanding Issues' },
   { id: 'as_is', name: 'As-Is Process', description: 'Current State Analysis' },
+  { id: 'as_is_mapping', name: 'As-Is Process Map', description: 'Process Documentation' },
   { id: 'to_be', name: 'To-Be Process', description: 'Future State Design' },
   { id: 'solution_design', name: 'Solution Design', description: 'Technical Requirements' }
 ];
@@ -75,7 +76,7 @@ const TrainingDashboardView: React.FC = () => {
   const [progress, setProgress] = useState<TrainingProgress>({
     completedStages: ['kickoff', 'problem_exploration'],
     currentStage: 'as_is',
-    totalStages: 5,
+    totalStages: 6,
     stageScores: {
       kickoff: 85,
       problem_exploration: 78
@@ -129,7 +130,7 @@ const TrainingDashboardView: React.FC = () => {
             missedAreas: ['Project Timeline', 'Stakeholder Roles'], // From actual analysis
             transcript: formatTranscriptFromMessages(messages, getUserDisplayName()),
             feedback: ['Good introduction', 'Could ask more about timeline'],
-            projectName: 'Customer Onboarding Process Optimization',
+            projectName: config.projectName || 'Training Project',
             duration: 12,
             stakeholderCount: 2
           };

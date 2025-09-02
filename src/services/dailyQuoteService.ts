@@ -195,3 +195,5 @@ export class DailyQuoteService {
 
 export const dailyQuoteService = DailyQuoteService.getInstance();
 
+
+

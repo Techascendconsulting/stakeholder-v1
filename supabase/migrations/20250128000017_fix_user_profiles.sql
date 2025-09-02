@@ -60,3 +60,5 @@ CREATE TRIGGER update_user_profiles_updated_at
   BEFORE UPDATE ON public.user_profiles
   FOR EACH ROW
   EXECUTE FUNCTION update_user_profiles_updated_at();
+
+

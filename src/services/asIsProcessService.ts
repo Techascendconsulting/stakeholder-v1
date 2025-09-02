@@ -30,16 +30,14 @@ class AsIsProcessService {
 
   async getAsIsProcessGuidance(): Promise<AsIsProcessGuidance> {
     return {
-      title: "As-Is Process Mapping Guide",
-      description: "Understanding the current process step-by-step",
-      why: "This question is crucial because it helps you map out the existing process landscape, identify who does what, which systems are involved, and where the current bottlenecks or inefficiencies lie. It provides the foundation for understanding what needs to change.",
-      how: "Ask open-ended questions that encourage stakeholders to walk through their current process chronologically. Focus on capturing the sequence of activities, roles and responsibilities, systems used, and decision points. Encourage them to describe real scenarios rather than ideal processes.",
+      title: "As-Is Question Guide",
+      description: "Brief overview of what makes a good As-Is process mapping question:",
+      why: "This establishes a shared, step-by-step picture of the current workflow. It surfaces roles, systems, handoffs, controls, and pain points so any change is grounded in reality.",
+      how: "Invite a start-to-finish walkthrough using a real example. Probe for triggers, inputs/outputs, who does what, which systems, handoffs, timings/volumes, and exceptions—stay neutral and descriptive.",
       examples: [
-        "Can you walk me through a typical day when this process happens?",
-        "Who is involved at each step and what do they do?",
-        "What systems or tools do you use during this process?",
-        "Where do you typically encounter delays or issues?",
-        "What happens if something goes wrong at any step?"
+        "What triggers the process, and what marks it as complete?",
+        "For each step, who is responsible, what system or document is used, and what input/output is produced?",
+        "Where do delays, rework, or exceptions occur, and how are they handled today (workarounds, approvals, SLAs)?"
       ]
     };
   }

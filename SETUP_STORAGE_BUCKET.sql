@@ -30,3 +30,5 @@ SELECT '✅ Storage bucket created successfully!' as status;
 SELECT name, public, file_size_limit FROM storage.buckets WHERE id = 'community-files';
 
 
+
+

@@ -97,6 +97,12 @@ export class TrainingService {
           mustCover: ['current_process', 'pain_points', 'inefficiencies', 'stakeholder_roles', 'system_gaps']
         },
         {
+          id: 'as_is_mapping',
+          name: 'As-Is Process Map',
+          objective: 'Document current end-to-end flow to feed the backlog',
+          mustCover: ['process_boundaries', 'actors_systems', 'flow_handoffs', 'data_rules', 'pain_points']
+        },
+        {
           id: 'to_be',
           name: 'To-Be Process',
           objective: 'Design future state solutions',
@@ -1080,6 +1086,48 @@ Respond in JSON format:
           { title: 'Success Metrics', content: 'Define clear, measurable success criteria.' }
         ]
       },
+      as_is_mapping: {
+        stageId: 'as_is_mapping',
+        objective: 'Learn how to create As-Is Process Maps to document current end-to-end flows and feed the backlog',
+        mustCovers: [
+          { area: 'process_boundaries', keywords: ['Start', 'Trigger', 'End', 'Complete', 'Boundary'] },
+          { area: 'actors_systems', keywords: ['Actor', 'Role', 'System', 'Tool', 'Responsibility'] },
+          { area: 'flow_handoffs', keywords: ['Flow', 'Handoff', 'Transfer', 'Sequence', 'Path'] },
+          { area: 'data_rules', keywords: ['Data', 'Document', 'Rule', 'Policy', 'Input', 'Output'] },
+          { area: 'pain_points', keywords: ['Pain', 'Problem', 'Slow', 'Fail', 'Bottleneck'] }
+        ],
+        modelQAs: [
+          { question: 'What triggers this process to start? What proves it\'s done?', answer: 'This defines clear process boundaries and success criteria.' },
+          { question: 'Who does what, using which tools?', answer: 'This maps out actors, roles, and systems involved in the process.' }
+        ],
+        microDrills: [
+          { 
+            type: 'process_boundaries',
+            prompt: 'A stakeholder says: "The process starts when we get a request." What\'s the best follow-up question?', 
+            choices: ['What kind of request?', 'How do you receive it?', 'What proves it\'s complete?', 'All of the above'], 
+            answer: 'All of the above', 
+            explanation: 'Understanding process boundaries helps define scope and success criteria.' 
+          },
+          { 
+            type: 'actor_mapping',
+            prompt: 'A stakeholder says: "Multiple people are involved." What\'s the best follow-up question?', 
+            choices: ['Who are they?', 'What does each person do?', 'How do they hand off work?', 'All of the above'], 
+            answer: 'All of the above', 
+            explanation: 'Mapping actors and their responsibilities is essential for process documentation.' 
+          },
+          { 
+            type: 'system_integration',
+            prompt: 'A stakeholder says: "We use different systems." What\'s the best follow-up question?', 
+            choices: ['Which systems?', 'How do they connect?', 'What data flows between them?', 'All of the above'], 
+            answer: 'All of the above', 
+            explanation: 'Understanding system integration points reveals data flow and handoff complexity.' 
+          }
+        ],
+        cheatCards: [
+          { title: 'Process Boundaries', content: 'Define clear start and end points for each process.' },
+          { title: 'Actor Mapping', content: 'Identify who does what and how work flows between roles.' }
+        ]
+      },
       solution_design: {
         stageId: 'solution_design',
         objective: 'Learn how to conduct a Solution Design meeting to define technical requirements and implementation',
@@ -1158,6 +1206,21 @@ Respond in JSON format:
           { id: 'as_003', stage_id: 'as_is', skill: 'system_investigation', text: 'What systems do you currently use?', tone_tags: ['technical', 'curious'] },
           { id: 'as_004', stage_id: 'as_is', skill: 'gap_analysis', text: 'Where do things typically break down?', tone_tags: ['analytical', 'focused'] },
           { id: 'as_005', stage_id: 'as_is', skill: 'data_understanding', text: 'What data do you track or wish you could track?', tone_tags: ['data_driven', 'forward_thinking'] }
+        ]
+      },
+      as_is_mapping: {
+        stage: {
+          id: 'as_is_mapping',
+          name: 'As-Is Process Map',
+          objective: 'Document current end-to-end flow to feed the backlog',
+          mustCover: ['process_boundaries', 'actors_systems', 'flow_handoffs', 'data_rules', 'pain_points']
+        },
+        cards: [
+          { id: 'aim_001', stage_id: 'as_is_mapping', skill: 'process_boundaries', text: 'What triggers this process to start? What proves it\'s done?', tone_tags: ['methodical', 'clear'] },
+          { id: 'aim_002', stage_id: 'as_is_mapping', skill: 'actors_systems', text: 'Who does what, using which tools?', tone_tags: ['systematic', 'detailed'] },
+          { id: 'aim_003', stage_id: 'as_is_mapping', skill: 'flow_handoffs', text: 'What\'s the normal path? Where do variations occur?', tone_tags: ['analytical', 'thorough'] },
+          { id: 'aim_004', stage_id: 'as_is_mapping', skill: 'data_rules', text: 'What documents/data flow through? What rules apply?', tone_tags: ['data_focused', 'precise'] },
+          { id: 'aim_005', stage_id: 'as_is_mapping', skill: 'pain_points', text: 'Where does it slow down or fail? What are the current metrics?', tone_tags: ['empathetic', 'analytical'] }
         ]
       },
       to_be: {

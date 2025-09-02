@@ -30,12 +30,16 @@ import TrainingPracticeView from '../Views/TrainingPracticeView';
 import TrainingAssessView from '../Views/TrainingAssessView';
 import TrainingFeedbackView from '../Views/TrainingFeedbackView';
 import TrainingDashboardView from '../Views/TrainingDashboardView';
+import TrainingDeliverablesView from '../Views/TrainingDeliverablesView';
+import ProjectDeliverablesView from '../Views/ProjectDeliverablesView';
+import LearnView from '../Views/LearnView';
 import WelcomeView from '../Views/WelcomeView';
 import GetStartedView from '../Views/GetStartedView';
-import PracticeLabView from '../Views/PracticeLabView';
 import ProcessMapper from '../ProcessMapper';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
-import StakeholderInterviewView from '../Views/StakeholderInterviewView';
+import DiagramCreationView from '../Views/DiagramCreationView';
+import { AgilePracticeView } from '../Views/AgilePracticeView';
+import ProcessMapperView from '../Views/ProcessMapperView';
 
 
 const MainLayout: React.FC = () => {
@@ -62,17 +66,17 @@ const MainLayout: React.FC = () => {
         return <GetStartedView />;
       case 'dashboard':
         return <Dashboard />;
+      case 'learn':
+        return <LearnView />;
+      case 'practice':
+        return <TrainingHubView />;
 
       case 'core-concepts':
         return <CoreConceptsView />;
       case 'agile-scrum':
-        return <BAAcademyView />; // TODO: Create AgileScrumView
-      case 'practice-lab':
-        return <PracticeLabView />;
+        return <AgileHubView />;
       case 'progress-tracking':
         return <TrainingDashboardView />; // TODO: Create ProgressTrackingView
-      case 'certifications':
-        return <TrainingDashboardView />; // TODO: Create CertificationsView
       case 'project-workspace':
         return <GuidedPracticeHub />;
       case 'meeting-history':
@@ -87,13 +91,13 @@ const MainLayout: React.FC = () => {
       case 'process-mapper':
         return <ProcessMappingIntroView />;
       case 'process-mapper-editor':
-        return <ProcessMapper />;
+        return <ProcessMapperView />;
+      case 'diagram-creation':
+        return <DiagramCreationView />;
 
 
       case 'advanced-topics':
         return <BAAcademyView />; // Will be enhanced later
-      case 'guided-practice-hub':
-        return <GuidedPracticeHub />;
       case 'projects':
         return <ProjectsView />;
       case 'project-setup':
@@ -131,6 +135,8 @@ const MainLayout: React.FC = () => {
       // Training Hub Views
       case 'training-hub':
         return <TrainingHubView />;
+      case 'agile-practice':
+        return <AgilePracticeView />; // TODO: Create this view for training scenarios
       case 'training-practice':
         return <TrainingPracticeView />;
       case 'training-assess':
@@ -144,10 +150,10 @@ const MainLayout: React.FC = () => {
         />;
       case 'training-dashboard':
         return <TrainingDashboardView />;
-      case 'project-practice':
-        return <TrainingPracticeView />;
-      case 'stakeholder-interview':
-        return <StakeholderInterviewView />;
+      case 'training-deliverables':
+        return <TrainingDeliverablesView />;
+      case 'project-deliverables':
+        return <ProjectDeliverablesView />;
       default:
         return <ProjectsView />;
     }

@@ -23,3 +23,5 @@ console.log('✅ Channel creation should work inline at top');
 console.log('✅ Message sending should work with RichTextEditor');
 
 console.log('🎯 All functionality tests completed. Check browser for actual behavior.');
+
+

@@ -133,7 +133,7 @@ const ProcessDocumentViewer: React.FC<ProcessDocumentViewerProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Customer Onboarding Process Optimization</span>
+            <span>Process Document</span>
             <span>Last updated: {new Date().toLocaleDateString()}</span>
           </div>
         </div>

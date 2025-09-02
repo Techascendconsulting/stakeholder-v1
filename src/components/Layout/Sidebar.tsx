@@ -24,7 +24,8 @@ import {
   Target,
   Play,
   BarChart3,
-  Award
+  Award,
+  Map
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -56,29 +57,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       ]
     },
     { 
-      id: 'training-hub', 
-      label: 'Training Hub', 
+      id: 'learn', 
+      label: 'Learn', 
       icon: BookOpen,
-              subItems: [
-          { id: 'core-concepts', label: 'Being a BA', icon: BookText },
+      subItems: [
+        { id: 'core-concepts', label: 'Being a BA', icon: BookText },
         { id: 'ba-fundamentals', label: 'BA Fundamentals', icon: GraduationCap },
         { id: 'process-mapper', label: 'Process Mapper', icon: MessageSquare },
-        { id: 'agile-scrum', label: 'Agile & Scrum', icon: Zap },
-        { id: 'practice-lab', label: 'Practice Lab', icon: Target, isNew: true },
-        { id: 'training-hub', label: 'Project Practice', icon: Target },
-        { id: 'progress-tracking', label: 'Progress Tracking', icon: BarChart3, isNew: true },
-        { id: 'certifications', label: 'Certifications', icon: Award, isNew: true }
+        { id: 'agile-scrum', label: 'Agile & Scrum', icon: Zap }
       ]
     },
     { 
       id: 'practice', 
       label: 'Practice', 
-      icon: FolderOpen,
+      icon: Target,
       subItems: [
-        { id: 'guided-practice-hub', label: 'Project Practice', icon: FolderOpen },
-        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
-        { id: 'stakeholder-interview', label: 'Stakeholder Interview', icon: MessageSquare, isNew: true },
-        { id: 'meeting-history', label: 'Meeting History', icon: Calendar }
+        { id: 'training-hub', label: 'Project Practice', icon: Target },
+        { id: 'agile-practice', label: 'Agile Practice', icon: Zap },
+        { id: 'training-deliverables', label: 'Practice Deliverables', icon: FileText },
+        { id: 'progress-tracking', label: 'Progress Tracking', icon: BarChart3 }
       ]
     },
     { 
@@ -87,8 +84,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: FolderOpen,
       subItems: [
         { id: 'project-workspace', label: 'Project Workspace', icon: FolderOpen },
-        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow, isNew: true },
+        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
         { id: 'meeting-history', label: 'Meeting History', icon: Calendar },
+        { id: 'project-deliverables', label: 'Project Deliverables', icon: Map },
         { id: 'deliverables', label: 'My Deliverables', icon: FileText },
         { id: 'portfolio', label: 'Portfolio', icon: BookText, isNew: true }
       ]

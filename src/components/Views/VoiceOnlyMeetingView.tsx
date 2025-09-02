@@ -527,12 +527,12 @@ export const VoiceOnlyMeetingView: React.FC = () => {
         painPoints: selectedProject.painPoints || ['manual data entry', 'delayed handoffs'],
         asIsProcess: selectedProject.asIsProcess || 'Manual email-based handoffs'
       } : {
-        id: 'customer-onboarding',
-        name: 'Customer Onboarding Process Optimization',
-        description: 'Project description',
-        type: 'General',
-        painPoints: ['manual data entry', 'delayed handoffs'],
-        asIsProcess: 'Manual email-based handoffs'
+        id: selectedProject?.id || 'default',
+        name: selectedProject?.name || 'Selected Project',
+        description: selectedProject?.description || 'Project description',
+        type: selectedProject?.type || 'General',
+        painPoints: selectedProject?.painPoints || [],
+        asIsProcess: selectedProject?.asIsProcess || 'No specific process defined'
       },
       conversationHistory: currentMessages,
       stakeholders: selectedStakeholders.map(s => ({
@@ -618,8 +618,8 @@ export const VoiceOnlyMeetingView: React.FC = () => {
 
       const conversationContext = {
         project: {
-          id: selectedProject?.id || 'customer-onboarding',
-          name: selectedProject?.name || 'Customer Onboarding Process Optimization',
+          id: selectedProject?.id || 'default',
+          name: selectedProject?.name || 'Current Project',
           description: selectedProject?.description || 'Project description',
           type: selectedProject?.type || 'General',
           painPoints: selectedProject?.painPoints || ['manual data entry', 'delayed handoffs'],
@@ -4366,7 +4366,7 @@ Guidelines:
                     <p className="text-gray-600">
                       {(() => {
                         const stageDescriptions = {
-                          'discovery': 'Gather detailed requirements and understand current state processes for the Customer Onboarding optimization project',
+                          'discovery': `Gather detailed requirements and understand current state processes for the ${selectedProject?.name || 'current'} project`,
                           'as_is': 'Document the current 10-step onboarding process, identify bottlenecks, and understand pain points',
                           'to_be': 'Explore future state goals, improvements, and desired outcomes for the optimized onboarding process',
                           'solution': 'Collaborate on potential solutions, validate approaches, and design the new onboarding system',
@@ -4388,7 +4388,7 @@ Guidelines:
                       'discovery': (
                         <div>
                           <p className="text-gray-700 mb-4">
-                            In this Discovery stage, you'll explore the current state of TechCorp's customer onboarding process. 
+                            In this Discovery stage, you'll explore the current state of the ${selectedProject?.name || 'current'} project. 
                             The company has experienced significant growth, adding 340 enterprise customers in 18 months, but this 
                             has exposed critical inefficiencies in their onboarding workflow.
                           </p>

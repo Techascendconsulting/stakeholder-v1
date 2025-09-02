@@ -202,7 +202,7 @@ Project Description: ${projectContext.description}
 
 ${projectContext.asIsProcess ? `Current Process: ${projectContext.asIsProcess}` : ''}
 
-IMPORTANT: You must respond based on the specific project context above. Do NOT reference TechCorp Solutions unless this is actually the Customer Onboarding project. Each project has different companies, problems, and goals.
+IMPORTANT: You must respond based on the specific project context above. Each project has different companies, problems, and goals. Do NOT reference companies, systems, or processes that are not mentioned in the project context provided.
 
 Current time: ${timestamp}`;
 

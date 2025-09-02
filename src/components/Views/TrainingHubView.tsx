@@ -22,7 +22,9 @@ import {
   ChevronRight,
   Clock,
   Award,
-  Search
+  Search,
+  Map,
+  FileText
 } from 'lucide-react';
 import { mockProjects } from '../../data/mockData';
 
@@ -32,7 +34,7 @@ const TrainingHubView: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<'intro' | 'project-selection' | 'training-hub'>('intro');
   const [selectedStage, setSelectedStage] = useState<TrainingStage | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [activeTab, setActiveTab] = useState<'learn' | 'meeting-prep' | 'practice' | 'feedback'>('learn');
+  const [activeTab, setActiveTab] = useState<'learn' | 'meeting-prep' | 'practice' | 'feedback' | 'deliverables'>('learn');
   const [showLearnContent, setShowLearnContent] = useState(false);
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
 
@@ -124,6 +126,12 @@ const TrainingHubView: React.FC = () => {
       icon: BookOpen
     },
     {
+      id: 'as_is_mapping',
+      name: 'As-Is Process Map',
+      description: 'Document current end-to-end flow to feed the backlog',
+      icon: Map
+    },
+    {
       id: 'to_be',
       name: 'To-Be Process',
       description: 'Design future state solutions',
@@ -164,6 +172,12 @@ const TrainingHubView: React.FC = () => {
       return;
     }
     
+    // Special handling for as_is_mapping stage - redirect to deliverables
+    if (selectedStage === 'as_is_mapping') {
+      setCurrentView('training-deliverables');
+      return;
+    }
+    
     try {
       console.log('Starting practice session...');
       const session = await trainingService.startSession(selectedStage, projectToUse.id, 'practice', []);
@@ -186,6 +200,12 @@ const TrainingHubView: React.FC = () => {
   const handleStartAssess = async () => {
     const projectToUse = appSelectedProject || selectedProject;
     if (selectedStage && projectToUse) {
+      // Special handling for as_is_mapping stage - redirect to deliverables
+      if (selectedStage === 'as_is_mapping') {
+        setCurrentView('training-deliverables');
+        return;
+      }
+      
       try {
         const session = await trainingService.startSession(selectedStage, projectToUse.id, 'assess', []);
         sessionStorage.setItem('trainingConfig', JSON.stringify({
@@ -251,6 +271,31 @@ const TrainingHubView: React.FC = () => {
           "\"Where do things typically break down?\"",
           "\"Who else is involved in this process?\"",
           "\"What data do you track or wish you could track?\""
+        ]
+      },
+      as_is_mapping: {
+        objective: "You've gathered stakeholder insights. Now it's time to map the current process visually to expose bottlenecks and feed your backlog.",
+        description: "Your job is to create a clear, visual representation of the current process flow that stakeholders can validate and that will inform your improvement recommendations.",
+        successCriteria: [
+          "Start and finish triggers clearly defined",
+          "All actors and systems mapped with swimlanes",
+          "Normal path and key variations documented",
+          "Inputs/outputs and business rules captured",
+          "Pain points and current metrics annotated"
+        ],
+        mustCoverAreas: [
+          { area: "Process Boundaries", description: "\"What triggers this process to start? What proves it's done?\"" },
+          { area: "Actors & Systems", description: "\"Who does what, using which tools?\"" },
+          { area: "Flow & Handoffs", description: "\"What's the normal path? Where do variations occur?\"" },
+          { area: "Data & Rules", description: "\"What documents/data flow through? What rules apply?\"" },
+          { area: "Pain Points", description: "\"Where does it slow down or fail? What are the current metrics?\"" }
+        ],
+        exampleQuestions: [
+          "\"Can you walk me through one recent example from start to finish?\"",
+          "\"What happens when this step can't be completed normally?\"",
+          "\"Who else touches this before it moves to the next step?\"",
+          "\"What information do you need to complete this step?\"",
+          "\"How do you know when this step is done correctly?\""
         ]
       },
       to_be: {
@@ -562,7 +607,7 @@ const TrainingHubView: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {project.relevantStakeholders?.length || 0} stakeholders
+                          3 stakeholders
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Available for meetings</p>
                       </div>
@@ -615,14 +660,22 @@ const TrainingHubView: React.FC = () => {
             </button>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
-                Training Hub
+                Practice
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {selectedProject?.name} • Master stakeholder conversations
+                {selectedProject?.name} • Apply your knowledge in real scenarios
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setCurrentView('training-deliverables')}
+              className="px-4 py-2 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200/50 dark:border-purple-700/50 hover:from-purple-100 hover:to-blue-100 dark:hover:from-purple-900/30 dark:hover:to-blue-900/30 transition-all duration-200"
+            >
+              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                Practice Deliverables
+              </span>
+            </button>
             <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200/50 dark:border-green-700/50">
               <span className="text-sm font-medium text-green-700 dark:text-green-300">
                 Credits: {credits?.practiceCredits} Practice • {credits?.assessCredits} Assess
@@ -702,16 +755,16 @@ const TrainingHubView: React.FC = () => {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Step {activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : 4} of 4
+                    Step {activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : activeTab === 'feedback' ? 4 : 5} of 5
                   </span>
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {activeTab === 'learn' ? 'LEARN' : activeTab === 'meeting-prep' ? 'MEETING PREP' : activeTab === 'practice' ? 'PRACTICE' : 'FEEDBACK'}
+                    {activeTab === 'learn' ? 'LEARN' : activeTab === 'meeting-prep' ? 'MEETING PREP' : activeTab === 'practice' ? 'PRACTICE' : activeTab === 'feedback' ? 'FEEDBACK' : 'DELIVERABLES'}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : 4) / 4 * 100}%` }}
+                    style={{ width: `${(activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : activeTab === 'feedback' ? 4 : 5) / 5 * 100}%` }}
                   ></div>
                 </div>
               </div>
@@ -770,6 +823,19 @@ const TrainingHubView: React.FC = () => {
                     <span>FEEDBACK</span>
                   </div>
                 </button>
+                <button
+                  onClick={() => setActiveTab('deliverables')}
+                  className={`flex-1 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
+                    activeTab === 'deliverables'
+                      ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <FileText className="w-4 h-4" />
+                    <span>DELIVERABLES</span>
+                  </div>
+                </button>
               </div>
 
               {/* Navigation Buttons */}
@@ -779,6 +845,7 @@ const TrainingHubView: React.FC = () => {
                     if (activeTab === 'meeting-prep') setActiveTab('learn');
                     else if (activeTab === 'practice') setActiveTab('meeting-prep');
                     else if (activeTab === 'feedback') setActiveTab('practice');
+                    else if (activeTab === 'deliverables') setActiveTab('feedback');
                   }}
                   disabled={activeTab === 'learn'}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -796,8 +863,9 @@ const TrainingHubView: React.FC = () => {
                     if (activeTab === 'learn') setActiveTab('meeting-prep');
                     else if (activeTab === 'meeting-prep') setActiveTab('practice');
                     else if (activeTab === 'practice') setActiveTab('feedback');
+                    else if (activeTab === 'feedback') setActiveTab('deliverables');
                   }}
-                  disabled={activeTab === 'feedback'}
+                  disabled={activeTab === 'deliverables'}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     activeTab === 'feedback'
                       ? 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
@@ -1026,7 +1094,7 @@ const TrainingHubView: React.FC = () => {
                       <span>Time & Credit Reminder</span>
                     </h4>
                     <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                      <p>• You'll have up to 15 turns in this meeting</p>
+                      <p>• You'll have up to 20 turns in this meeting</p>
                       <p>• You can use nudges or hints if stuck</p>
                       <p>• You'll get detailed feedback after the meeting — including what you missed</p>
                     </div>
@@ -1141,6 +1209,50 @@ const TrainingHubView: React.FC = () => {
                     <Target className="w-4 h-4" />
                     <span>Start Assessment</span>
                   </button>
+                </div>
+              )}
+
+              {activeTab === 'deliverables' && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Training Deliverables
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    Create and manage your portfolio of BA work from training sessions.
+                  </p>
+                  <div className="flex items-center justify-center space-x-4 mb-6">
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Map className="w-4 h-4" />
+                      <span>Process Maps</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <FileText className="w-4 h-4" />
+                      <span>Meeting Notes</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Target className="w-4 h-4" />
+                      <span>User Stories</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center space-x-4">
+                    <button
+                      onClick={() => setCurrentView('training-deliverables')}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>Training Deliverables</span>
+                    </button>
+                    <button
+                      onClick={() => setCurrentView('project-deliverables')}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                    >
+                      <Map className="w-4 h-4" />
+                      <span>Project Deliverables</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

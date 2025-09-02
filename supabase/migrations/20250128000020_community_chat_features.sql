@@ -317,3 +317,5 @@ CREATE TRIGGER update_edited_at_trigger
   FOR EACH ROW
   WHEN (OLD.body IS DISTINCT FROM NEW.body)
   EXECUTE FUNCTION update_edited_at();
+
+

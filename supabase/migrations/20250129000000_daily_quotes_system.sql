@@ -145,3 +145,5 @@ COMMENT ON TABLE daily_quotes IS 'Tracks daily motivational quotes posted by the
 COMMENT ON FUNCTION log_daily_quote IS 'Logs a daily quote post with success/error statistics';
 COMMENT ON FUNCTION get_daily_quote_stats IS 'Returns statistics about daily quote posts over a specified period';
 
+
+

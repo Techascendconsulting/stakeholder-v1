@@ -86,10 +86,12 @@ class AIService {
           personality: stakeholder.personality || 'Professional'
         },
         context.project || {
-          id: 'customer-onboarding',
-          name: 'Customer Onboarding Process Optimization',
-          painPoints: ['manual data entry', 'delayed handoffs'],
-          asIsProcess: 'Manual email-based handoffs'
+          id: 'default',
+          name: 'Default Project',
+          description: 'No specific project context provided',
+          type: 'General',
+          painPoints: [],
+          asIsProcess: 'No specific process defined'
         }
       );
 

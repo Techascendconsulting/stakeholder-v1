@@ -57,3 +57,5 @@ VALUES (
   'August 2025 Cohort',
   'Default cohort for new users'
 ) ON CONFLICT (id) DO NOTHING;
+
+

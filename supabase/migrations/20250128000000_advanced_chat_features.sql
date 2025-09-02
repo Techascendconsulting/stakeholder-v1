@@ -293,3 +293,5 @@ $$ language 'plpgsql';
 -- SELECT cron.schedule('cleanup-typing-indicators', '*/30 * * * *', 'SELECT cleanup_typing_indicators();');
 
 
+
+

@@ -38,3 +38,5 @@ LEFT JOIN user_profiles up ON cm.author_user_id = up.user_id
 WHERE cm.cohort_id = '00000000-0000-0000-0000-000000000001'
 ORDER BY cm.created_at DESC
 LIMIT 5;
+
+

@@ -1127,6 +1127,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           ref={dynamicPanelRef}
           projectName={selectedProject?.name || ''}
           conversationHistory={messages}
+          sessionStage={session.stage}
           onAcknowledgementStateChange={handleAcknowledgementStateChange}
           onSuggestedRewrite={handleSuggestedRewrite}
           onSessionComplete={handleEndMeeting}
@@ -1270,12 +1271,14 @@ Remember to start with a professional greeting and introduce yourself. Then focu
 const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: string) => void }, {
   projectName: string;
   conversationHistory: any[];
+  sessionStage?: string;
   onAcknowledgementStateChange: (awaiting: boolean) => void;
   onSuggestedRewrite: (rewrite: string) => void;
   onSessionComplete?: () => void;
 }>(({
   projectName,
   conversationHistory,
+  sessionStage,
   onAcknowledgementStateChange,
   onSuggestedRewrite,
   onSessionComplete,
@@ -1291,6 +1294,7 @@ const CoachingPanelWrapper = React.forwardRef<{ onUserSubmitted: (messageId: str
       ref={ref}
       projectName={projectName}
       conversationHistory={conversationHistory}
+      sessionStage={sessionStage}
       onAcknowledgementStateChange={onAcknowledgementStateChange}
       onSuggestedRewrite={onSuggestedRewrite}
       onSubmitMessage={handleSubmitMessage}

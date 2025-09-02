@@ -211,3 +211,5 @@ SELECT * FROM recent_daily_quotes LIMIT 10;
 
 **Note**: The daily quotes system is designed to enhance user engagement and provide daily motivation for Business Analysts using the platform. It automatically integrates with your existing cohort and community systems.
 
+
+

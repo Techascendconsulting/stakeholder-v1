@@ -15,3 +15,5 @@ WHERE tablename = 'objects' AND schemaname = 'storage';
 SELECT 'Bucket accessible:' as info, COUNT(*) as count FROM storage.objects WHERE bucket_id = 'community-files';
 
 
+
+
