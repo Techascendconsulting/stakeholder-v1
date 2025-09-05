@@ -280,12 +280,12 @@ const WelcomeView: React.FC = () => {
                 <BookOpen className="w-8 h-8 text-white" />
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Start Learning</h4>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Begin with BA fundamentals and build your knowledge foundation.</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Begin with our guided Foundation journey and build your knowledge step by step.</p>
               <button
-                onClick={() => setCurrentView('ba-fundamentals')}
+                onClick={() => setCurrentView('foundation-wizard')}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
-                Go to Fundamentals
+                Start Foundation Journey
               </button>
             </div>
             

@@ -18,6 +18,7 @@ export type AppView =
   | 'portfolio'
   | 'create-project'
   | 'ba-fundamentals'
+  | 'foundation-wizard'
   | 'process-mapper'
   | 'process-mapper-editor'
   | 'diagram-creation'

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react'
 import { useAuth } from './AuthContext'
 import { mockProjects, mockStakeholders } from '../data/mockData'
-import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
+import { Project, Stakeholder, AppView } from '../types'
+import { Meeting, Deliverable } from '../lib/types'
 import { MeetingDataService } from '../lib/meetingDataService'
 
 interface AppContextType {
@@ -126,6 +127,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'enhanced-training-flow',
         'analysis',
         'ba-fundamentals',
+        'foundation-wizard',
         'process-mapper',
         'process-mapper-editor',
         'diagram-creation',

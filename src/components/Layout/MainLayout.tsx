@@ -40,6 +40,7 @@ import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
 import DiagramCreationView from '../Views/DiagramCreationView';
 import { AgilePracticeView } from '../Views/AgilePracticeView';
 import ProcessMapperView from '../Views/ProcessMapperView';
+import { FoundationWizardView } from '../Views/FoundationWizardView';
 
 
 const MainLayout: React.FC = () => {
@@ -87,6 +88,8 @@ const MainLayout: React.FC = () => {
         return <CustomProjectView />;
       case 'ba-fundamentals':
         return <BAAcademyView />;
+      case 'foundation-wizard':
+        return <FoundationWizardView />;
 
       case 'process-mapper':
         return <ProcessMappingIntroView />;
