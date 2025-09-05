@@ -1,6 +1,9 @@
 import React from 'react';
 import { Sidebar } from './Sidebar';
+import { FoundationLayout } from './FoundationLayout';
 import { useApp } from '../../contexts/AppContext';
+import { isFeatureEnabled } from '../../lib/featureFlags';
+import NewWelcomeView from '../Views/NewWelcomeView';
 import Dashboard from '../Views/Dashboard';
 import CoreConceptsView from '../Views/CoreConceptsView';
 import GuidedPracticeHub from '../Views/GuidedPracticeHub';
@@ -59,10 +62,14 @@ const MainLayout: React.FC = () => {
     );
   }
 
+  // Check if we should use clean layouts (no sidebar)
+  const isFoundationRoute = currentView === 'foundation-wizard' && isFeatureEnabled('FOUNDATION_V1');
+  const isNewWelcomeRoute = currentView === 'welcome' && isFeatureEnabled('NEW_WELCOME_V1');
+
   const renderView = () => {
     switch (currentView) {
       case 'welcome':
-        return <WelcomeView />;
+        return isFeatureEnabled('NEW_WELCOME_V1') ? <NewWelcomeView /> : <WelcomeView />;
       case 'get-started':
         return <GetStartedView />;
       case 'dashboard':
@@ -162,6 +169,16 @@ const MainLayout: React.FC = () => {
     }
   };
 
+  // Use Foundation layout for foundation routes (no sidebar)
+  if (isFoundationRoute) {
+    return (
+      <FoundationLayout>
+        {renderView()}
+      </FoundationLayout>
+    );
+  }
+
+  // Use standard layout with sidebar for all other routes
   return (
     <div className="flex h-screen w-full bg-gray-50 dark:bg-gray-900">
       <Sidebar />

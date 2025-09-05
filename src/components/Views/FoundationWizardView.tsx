@@ -6,6 +6,15 @@ import { ChevronLeft, ChevronRight, CheckCircle, Lock, ArrowRight } from 'lucide
 import { BusinessContextStep } from '../Foundation/BusinessContextStep';
 import { WhyBAsExistStep } from '../Foundation/WhyBAsExistStep';
 import { HowProjectsRunStep } from '../Foundation/HowProjectsRunStep';
+import { Cluster1QuizStep } from '../Foundation/Cluster1QuizStep';
+import { RequirementsEngineeringStep } from '../Foundation/RequirementsEngineeringStep';
+import { AgileVsWaterfallStep } from '../Foundation/AgileVsWaterfallStep';
+import { MVPConceptsStep } from '../Foundation/MVPConceptsStep';
+import { Cluster2TaskStep } from '../Foundation/Cluster2TaskStep';
+import { StakeholderMappingStep } from '../Foundation/StakeholderMappingStep';
+import { UnwrittenExpectationsStep } from '../Foundation/UnwrittenExpectationsStep';
+import { Cluster3ReflectionStep } from '../Foundation/Cluster3ReflectionStep';
+import { ProjectBriefUnlockStep } from '../Foundation/ProjectBriefUnlockStep';
 
 interface FoundationWizardViewProps {
   initialStep?: string;
@@ -282,6 +291,18 @@ const ContentStep: React.FC<{ stepId: string; onComplete: () => void }> = ({ ste
       return <WhyBAsExistStep onComplete={onComplete} />;
     case 'how-projects-run':
       return <HowProjectsRunStep onComplete={onComplete} />;
+    case 'requirements-engineering':
+      return <RequirementsEngineeringStep onComplete={onComplete} />;
+    case 'agile-waterfall':
+      return <AgileVsWaterfallStep onComplete={onComplete} />;
+    case 'mvp':
+      return <MVPConceptsStep onComplete={onComplete} />;
+    case 'stakeholder-mapping':
+      return <StakeholderMappingStep onComplete={onComplete} />;
+    case 'unwritten-expectations':
+      return <UnwrittenExpectationsStep onComplete={onComplete} />;
+    case 'project-brief-unlock':
+      return <ProjectBriefUnlockStep onComplete={onComplete} />;
     default:
       return (
         <div>
@@ -298,43 +319,58 @@ const ContentStep: React.FC<{ stepId: string; onComplete: () => void }> = ({ ste
 };
 
 const QuizStep: React.FC<{ stepId: string; onComplete: (score: number) => void }> = ({ stepId, onComplete }) => {
-  return (
-    <div>
-      <p>Quiz for {stepId} will be implemented here.</p>
-      <button 
-        onClick={() => onComplete(85)}
-        className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-      >
-        Complete Quiz
-      </button>
-    </div>
-  );
+  switch (stepId) {
+    case 'cluster1-quiz':
+      return <Cluster1QuizStep onComplete={onComplete} />;
+    default:
+      return (
+        <div>
+          <p>Quiz for {stepId} will be implemented here.</p>
+          <button 
+            onClick={() => onComplete(85)}
+            className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+          >
+            Complete Quiz
+          </button>
+        </div>
+      );
+  }
 };
 
 const TaskStep: React.FC<{ stepId: string; onComplete: (data: any) => void }> = ({ stepId, onComplete }) => {
-  return (
-    <div>
-      <p>Task for {stepId} will be implemented here.</p>
-      <button 
-        onClick={() => onComplete({ completed: true })}
-        className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-      >
-        Complete Task
-      </button>
-    </div>
-  );
+  switch (stepId) {
+    case 'cluster2-task':
+      return <Cluster2TaskStep onComplete={onComplete} />;
+    default:
+      return (
+        <div>
+          <p>Task for {stepId} will be implemented here.</p>
+          <button 
+            onClick={() => onComplete({ completed: true })}
+            className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+          >
+            Complete Task
+          </button>
+        </div>
+      );
+  }
 };
 
 const ReflectionStep: React.FC<{ stepId: string; onComplete: (data: any) => void }> = ({ stepId, onComplete }) => {
-  return (
-    <div>
-      <p>Reflection for {stepId} will be implemented here.</p>
-      <button 
-        onClick={() => onComplete({ reflection: 'completed' })}
-        className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-      >
-        Complete Reflection
-      </button>
-    </div>
-  );
+  switch (stepId) {
+    case 'cluster3-reflection':
+      return <Cluster3ReflectionStep onComplete={onComplete} />;
+    default:
+      return (
+        <div>
+          <p>Reflection for {stepId} will be implemented here.</p>
+          <button 
+            onClick={() => onComplete({ reflection: 'completed' })}
+            className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+          >
+            Complete Reflection
+          </button>
+        </div>
+      );
+  }
 };

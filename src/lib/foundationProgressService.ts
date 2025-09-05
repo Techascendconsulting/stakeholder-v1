@@ -99,18 +99,18 @@ export class FoundationProgressService {
       { id: 'business-context', title: 'Business Context', type: 'content', cluster: 'cluster-1', isCompleted: false, isUnlocked: true },
       { id: 'why-bas-exist', title: 'Why BAs Exist', type: 'content', cluster: 'cluster-1', isCompleted: false, isUnlocked: false },
       { id: 'how-projects-run', title: 'How Projects Run', type: 'content', cluster: 'cluster-1', isCompleted: false, isUnlocked: false },
-      { id: 'cluster-1-quiz', title: 'Business Fundamentals Quiz', type: 'quiz', cluster: 'cluster-1', isCompleted: false, isUnlocked: false },
+      { id: 'cluster1-quiz', title: 'Business Fundamentals Quiz', type: 'quiz', cluster: 'cluster-1', isCompleted: false, isUnlocked: false },
       
       // Cluster 2: Requirements & Methodology
       { id: 'requirements-engineering', title: 'Requirements Engineering', type: 'content', cluster: 'cluster-2', isCompleted: false, isUnlocked: false },
-      { id: 'agile-vs-waterfall', title: 'Agile vs Waterfall', type: 'content', cluster: 'cluster-2', isCompleted: false, isUnlocked: false },
-      { id: 'mvp-concepts', title: 'MVP Concepts', type: 'content', cluster: 'cluster-2', isCompleted: false, isUnlocked: false },
-      { id: 'cluster-2-task', title: 'Requirements Classification Task', type: 'task', cluster: 'cluster-2', isCompleted: false, isUnlocked: false },
+      { id: 'agile-waterfall', title: 'Agile vs Waterfall', type: 'content', cluster: 'cluster-2', isCompleted: false, isUnlocked: false },
+      { id: 'mvp', title: 'MVP Concepts', type: 'content', cluster: 'cluster-2', isCompleted: false, isUnlocked: false },
+      { id: 'cluster2-task', title: 'Requirements Classification Task', type: 'task', cluster: 'cluster-2', isCompleted: false, isUnlocked: false },
       
       // Cluster 3: Stakeholders & Expectations
       { id: 'stakeholder-mapping', title: 'Stakeholder Mapping', type: 'content', cluster: 'cluster-3', isCompleted: false, isUnlocked: false },
       { id: 'unwritten-expectations', title: 'Unwritten Expectations', type: 'content', cluster: 'cluster-3', isCompleted: false, isUnlocked: false },
-      { id: 'cluster-3-reflection', title: 'Stakeholder Scenario Reflection', type: 'reflection', cluster: 'cluster-3', isCompleted: false, isUnlocked: false },
+      { id: 'cluster3-reflection', title: 'Stakeholder Scenario Reflection', type: 'reflection', cluster: 'cluster-3', isCompleted: false, isUnlocked: false },
       
       // Final: Project Brief Unlock
       { id: 'project-brief-unlock', title: 'Project Brief Unlocked', type: 'content', cluster: 'final', isCompleted: false, isUnlocked: false },
@@ -148,14 +148,14 @@ export class FoundationProgressService {
       'business-context',
       'why-bas-exist', 
       'how-projects-run',
-      'cluster-1-quiz',
+      'cluster1-quiz',
       'requirements-engineering',
-      'agile-vs-waterfall',
-      'mvp-concepts',
-      'cluster-2-task',
+      'agile-waterfall',
+      'mvp',
+      'cluster2-task',
       'stakeholder-mapping',
       'unwritten-expectations',
-      'cluster-3-reflection'
+      'cluster3-reflection'
     ];
     
     return requiredSteps.every(step => completedSteps.includes(step));
