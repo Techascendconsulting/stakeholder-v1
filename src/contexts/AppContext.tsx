@@ -74,80 +74,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Track previous user state to detect actual logout vs initial loading
   const prevUser = useRef(user)
 
-  // Initialize currentView from localStorage or default to dashboard
+  // Initialize currentView - always start with welcome for new approach
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
     console.log('🔍 INIT: AppContext initializing currentView...')
-    try {
-      const savedView = localStorage.getItem('currentView')
-      console.log('🔍 INIT: Found saved view in localStorage:', savedView)
-      
-      // Validate that the saved view is a valid AppView
-      const validViews: AppView[] = [
-        'welcome',
-        'get-started',
-        'dashboard',
-        'learn',
-        'practice',
-        'core-concepts',
-        'agile-hub',
-        'agile-scrum',
-        'agile-practice',
-        'my-meetings',
-        'voice-meeting',
-        'settings',
-        'profile',
-        'custom-project',
-        'create-project',
-        'custom-stakeholders',
-        'project-workspace',
-        'projects',
-        'project-brief',
-        'stakeholders',
-        'meeting-mode-selection',
-        'meeting',
-        'voice-only-meeting',
-        'elevenlabs-meeting',
-        'individual-agent-meeting',
-        'meeting-history',
-        'meeting-summary',
-        'raw-transcript',
-        'notes',
-        'training-hub',
-        'training-practice',
-        'training-assess',
-        'training-feedback',
-        'training-dashboard',
-                      'training-deliverables',
-              'project-deliverables',
-              'progress-tracking',
-              'deliverables',
-              'portfolio',
-        'advanced-topics',
-        'meeting-details',
-        'enhanced-training-flow',
-        'analysis',
-        'ba-fundamentals',
-        'foundation-wizard',
-        'process-mapper',
-        'process-mapper-editor',
-        'diagram-creation',
-        'project-setup',
-        'structured-training',
-        'pre-brief',
-        'live-training-meeting',
-        'post-brief'
-      ];
-      if (savedView && validViews.includes(savedView as AppView)) {
-        console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
-        return savedView as AppView
-      } else {
-        console.log('⚠️ INIT: Invalid or missing saved view, defaulting to welcome. savedView:', savedView)
-        return 'welcome'
-      }
-    } catch (error) {
-      console.log('❌ INIT: Error loading saved view, defaulting to welcome:', error)
-      return 'welcome'
-    }
+    console.log('✅ INIT: Using new approach - always starting with welcome page')
+    return 'welcome'
   })
 
   // Custom setCurrentView that handles localStorage automatically
