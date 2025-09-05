@@ -5,6 +5,7 @@ import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
 import { RefinementMeetingView } from './RefinementMeetingView';
 import { SprintPlanningMeetingView } from './SprintPlanningMeetingView';
+import { DatabaseService } from '../../lib/database';
 
 // Types
 interface AgileTicket {
@@ -544,13 +545,44 @@ export const AgileHubView: React.FC = () => {
     return `agile_${type}_${user?.id}_${projectId}`;
   };
 
-  const loadTickets = () => {
-    if (!user?.id) return;
+  const loadTickets = async () => {
+    if (!user?.id || !currentProject) return;
     
-    const storageKey = getStorageKey('tickets');
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      setTickets(JSON.parse(saved));
+    try {
+      // Try to load from database first
+      const dbTickets = await DatabaseService.loadAgileTickets(user.id, currentProject.id);
+      
+      if (dbTickets && dbTickets.length > 0) {
+        console.log('✅ Loaded tickets from database:', dbTickets.length);
+        setTickets(dbTickets);
+        
+        // Update localStorage with database data
+        const storageKey = getStorageKey('tickets');
+        localStorage.setItem(storageKey, JSON.stringify(dbTickets));
+      } else {
+        // Fallback to localStorage if no database data
+        const storageKey = getStorageKey('tickets');
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const localTickets = JSON.parse(saved);
+          console.log('ℹ️ Loaded tickets from localStorage:', localTickets.length);
+          setTickets(localTickets);
+          
+          // Save localStorage data to database
+          if (localTickets.length > 0) {
+            await DatabaseService.saveAgileTickets(user.id, currentProject.id, localTickets);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error loading tickets:', error);
+      
+      // Fallback to localStorage on error
+      const storageKey = getStorageKey('tickets');
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        setTickets(JSON.parse(saved));
+      }
     }
   };
 
@@ -564,12 +596,32 @@ export const AgileHubView: React.FC = () => {
     }
   };
 
-  const saveTickets = (updatedTickets: AgileTicket[]) => {
-    if (!user?.id) return;
+  const saveTickets = async (updatedTickets: AgileTicket[]) => {
+    if (!user?.id || !currentProject) return;
     
+    // Add sort order to tickets for drag and drop persistence
+    const ticketsWithSortOrder = updatedTickets.map((ticket, index) => ({
+      ...ticket,
+      sortOrder: index,
+      updatedAt: new Date().toISOString()
+    }));
+    
+    // Save to localStorage for immediate UI update
     const storageKey = getStorageKey('tickets');
-    localStorage.setItem(storageKey, JSON.stringify(updatedTickets));
-    setTickets(updatedTickets);
+    localStorage.setItem(storageKey, JSON.stringify(ticketsWithSortOrder));
+    setTickets(ticketsWithSortOrder);
+    
+    // Save to database for persistence
+    try {
+      const success = await DatabaseService.saveAgileTickets(user?.id, currentProject.id, ticketsWithSortOrder);
+      if (success) {
+        console.log('✅ Tickets saved to database successfully');
+      } else {
+        console.error('❌ Failed to save tickets to database');
+      }
+    } catch (error) {
+      console.error('❌ Error saving tickets to database:', error);
+    }
   };
 
   const generateTicketNumber = (projectId: string, projectName: string) => {
@@ -735,7 +787,7 @@ export const AgileHubView: React.FC = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, targetTicketId: string) => {
+  const handleDrop = async (e: React.DragEvent, targetTicketId: string) => {
     e.preventDefault();
     if (!draggedItem || draggedItem === targetTicketId) return;
 
@@ -759,11 +811,12 @@ export const AgileHubView: React.FC = () => {
     const newTargetIndex = newTickets.findIndex(ticket => ticket.id === targetTicketId);
     newTickets.splice(newTargetIndex, 0, draggedTicket);
 
-    saveTickets(newTickets);
+    console.log('🔄 Drag and drop: Reordering tickets');
+    await saveTickets(newTickets);
     setDraggedItem(null);
   };
 
-  const moveTicket = (ticketId: string, direction: 'up' | 'down') => {
+  const moveTicket = async (ticketId: string, direction: 'up' | 'down') => {
     const currentIndex = tickets.findIndex(ticket => ticket.id === ticketId);
     if (currentIndex === -1) return;
 
@@ -774,7 +827,8 @@ export const AgileHubView: React.FC = () => {
     const [movedTicket] = newTickets.splice(currentIndex, 1);
     newTickets.splice(newIndex, 0, movedTicket);
 
-    saveTickets(newTickets);
+    console.log('🔄 Move ticket: Reordering tickets');
+    await saveTickets(newTickets);
   };
 
   // Inline editing functions

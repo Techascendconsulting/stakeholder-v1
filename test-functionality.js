@@ -25,3 +25,4 @@ console.log('✅ Message sending should work with RichTextEditor');
 console.log('🎯 All functionality tests completed. Check browser for actual behavior.');
 
 
+

@@ -1,23 +1,27 @@
--- Create process_diagrams table for storing BPMN diagrams
-CREATE TABLE IF NOT EXISTS public.process_diagrams (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    name TEXT NOT NULL DEFAULT 'Untitled Diagram',
-    xml_content TEXT NOT NULL,
-    svg_content TEXT,
-    thumbnail TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- Fix process_diagrams table schema to match ProcessMapper expectations
+-- Drop existing table and recreate with correct schema
+
+DROP TABLE IF EXISTS public.process_diagrams CASCADE;
+
+CREATE TABLE public.process_diagrams (
+    id TEXT PRIMARY KEY, -- Use TEXT for UUID strings
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- Add user_id for proper isolation
+    project_id TEXT NOT NULL, -- Add project_id column
+    name TEXT,
+    xml TEXT NOT NULL, -- Rename from xml_content
+    svg TEXT, -- Rename from svg_content
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create index for faster queries
-CREATE INDEX IF NOT EXISTS idx_process_diagrams_user_id ON public.process_diagrams(user_id);
-CREATE INDEX IF NOT EXISTS idx_process_diagrams_updated_at ON public.process_diagrams(updated_at DESC);
+-- Create indexes for performance
+CREATE INDEX idx_process_diagrams_user_id ON public.process_diagrams(user_id);
+CREATE INDEX idx_process_diagrams_project_id ON public.process_diagrams(project_id);
+CREATE INDEX idx_process_diagrams_updated_at ON public.process_diagrams(updated_at DESC);
 
 -- Enable Row Level Security
 ALTER TABLE public.process_diagrams ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
+-- Create RLS policies with proper user isolation
 CREATE POLICY "Users can view their own diagrams" ON public.process_diagrams
     FOR SELECT USING (auth.uid() = user_id);
 
@@ -43,8 +47,3 @@ CREATE TRIGGER update_process_diagrams_updated_at
     BEFORE UPDATE ON public.process_diagrams 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
-
-
-
-
-

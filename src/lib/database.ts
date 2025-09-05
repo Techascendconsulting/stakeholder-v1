@@ -545,4 +545,219 @@ export class DatabaseService {
       return false
     }
   }
+
+  // Agile Tickets Management
+  static async saveAgileTickets(userId: string, projectId: string, tickets: any[]): Promise<boolean> {
+    try {
+      console.log('🗃️ DATABASE - saveAgileTickets called with:', {
+        userId,
+        projectId,
+        ticketsCount: tickets.length
+      });
+
+      const { data, error } = await supabase
+        .from('agile_tickets')
+        .upsert(
+          tickets.map(ticket => ({
+            id: ticket.id,
+            ticket_number: ticket.ticketNumber,
+            project_id: projectId,
+            project_name: ticket.projectName,
+            type: ticket.type,
+            title: ticket.title,
+            description: ticket.description,
+            acceptance_criteria: ticket.acceptanceCriteria,
+            priority: ticket.priority,
+            status: ticket.status,
+            story_points: ticket.storyPoints,
+            sort_order: ticket.sortOrder || 0,
+            user_id: userId,
+            attachments: ticket.attachments || [],
+            comments: ticket.comments || [],
+            refinement_score: ticket.refinementScore
+          })),
+          { onConflict: 'id' }
+        );
+
+      if (error) {
+        console.error('❌ Error saving agile tickets:', error);
+        return false;
+      }
+
+      console.log('✅ Agile tickets saved successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Error in saveAgileTickets:', error);
+      return false;
+    }
+  }
+
+  static async loadAgileTickets(userId: string, projectId: string): Promise<any[]> {
+    try {
+      console.log('🗃️ DATABASE - loadAgileTickets called with:', {
+        userId,
+        projectId
+      });
+
+      const { data, error } = await supabase
+        .from('agile_tickets')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('project_id', projectId)
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.error('❌ Error loading agile tickets:', error);
+        return [];
+      }
+
+      const tickets = data?.map(ticket => ({
+        id: ticket.id,
+        ticketNumber: ticket.ticket_number,
+        projectId: ticket.project_id,
+        projectName: ticket.project_name,
+        type: ticket.type,
+        title: ticket.title,
+        description: ticket.description,
+        acceptanceCriteria: ticket.acceptance_criteria,
+        priority: ticket.priority,
+        status: ticket.status,
+        storyPoints: ticket.story_points,
+        sortOrder: ticket.sort_order,
+        userId: ticket.user_id,
+        createdAt: ticket.created_at,
+        updatedAt: ticket.updated_at,
+        attachments: ticket.attachments || [],
+        comments: ticket.comments || [],
+        refinementScore: ticket.refinement_score
+      })) || [];
+
+      console.log('✅ Agile tickets loaded successfully:', tickets.length);
+      return tickets;
+    } catch (error) {
+      console.error('❌ Error in loadAgileTickets:', error);
+      return [];
+    }
+  }
+
+  static async deleteAgileTicket(userId: string, ticketId: string): Promise<boolean> {
+    try {
+      console.log('🗃️ DATABASE - deleteAgileTicket called with:', {
+        userId,
+        ticketId
+      });
+
+      const { error } = await supabase
+        .from('agile_tickets')
+        .delete()
+        .eq('id', ticketId)
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('❌ Error deleting agile ticket:', error);
+        return false;
+      }
+
+      console.log('✅ Agile ticket deleted successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Error in deleteAgileTicket:', error);
+      return false;
+    }
+  }
+
+  // Sprint Planning Sessions Management
+  static async saveSprintPlanningSession(
+    userId: string, 
+    projectId: string, 
+    projectName: string,
+    sessionData: {
+      backlogStories: string[];
+      sprintStories: string[];
+      meetingStarted: boolean;
+      sprintStarted: boolean;
+    }
+  ): Promise<boolean> {
+    try {
+      console.log('🗃️ DATABASE - saveSprintPlanningSession called with:', {
+        userId,
+        projectId,
+        projectName,
+        sessionData
+      });
+
+      const sessionId = `sprint_planning_${userId}_${projectId}`;
+
+      const { error } = await supabase
+        .from('sprint_planning_sessions')
+        .upsert({
+          id: sessionId,
+          user_id: userId,
+          project_id: projectId,
+          project_name: projectName,
+          backlog_stories: sessionData.backlogStories,
+          sprint_stories: sessionData.sprintStories,
+          meeting_started: sessionData.meetingStarted,
+          sprint_started: sessionData.sprintStarted
+        }, { onConflict: 'id' });
+
+      if (error) {
+        console.error('❌ Error saving sprint planning session:', error);
+        return false;
+      }
+
+      console.log('✅ Sprint planning session saved successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Error in saveSprintPlanningSession:', error);
+      return false;
+    }
+  }
+
+  static async loadSprintPlanningSession(userId: string, projectId: string): Promise<any | null> {
+    try {
+      console.log('🗃️ DATABASE - loadSprintPlanningSession called with:', {
+        userId,
+        projectId
+      });
+
+      const sessionId = `sprint_planning_${userId}_${projectId}`;
+
+      const { data, error } = await supabase
+        .from('sprint_planning_sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No session found, return null
+          console.log('ℹ️ No sprint planning session found');
+          return null;
+        }
+        console.error('❌ Error loading sprint planning session:', error);
+        return null;
+      }
+
+      const session = {
+        id: data.id,
+        userId: data.user_id,
+        projectId: data.project_id,
+        projectName: data.project_name,
+        sprintName: data.sprint_name,
+        backlogStories: data.backlog_stories || [],
+        sprintStories: data.sprint_stories || [],
+        meetingStarted: data.meeting_started || false,
+        sprintStarted: data.sprint_started || false,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+
+      console.log('✅ Sprint planning session loaded successfully');
+      return session;
+    } catch (error) {
+      console.error('❌ Error in loadSprintPlanningSession:', error);
+      return null;
+    }
+  }
 }

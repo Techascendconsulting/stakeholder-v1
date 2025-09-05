@@ -5,6 +5,7 @@ import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import AIService from '../../services/aiService';
+import { DatabaseService } from '../../lib/database';
 
 // Types - Same as refinement meeting but focused on sprint planning
 interface AgileTicket {
@@ -110,52 +111,72 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   const [backlogStories, setBacklogStories] = useState<string[]>([]);
   const [sprintStories, setSprintStories] = useState<string[]>([]);
   
-  // Initialize state from localStorage and stories on component mount
+  // Initialize state from database first, then localStorage, then stories on component mount
   useEffect(() => {
-    console.log('🔧 Initializing sprint planning state...');
+    const initializeSprintPlanningState = async () => {
+      console.log('🔧 Initializing sprint planning state...');
+      
+      try {
+        let backlogIds: string[] = [];
+        let sprintIds: string[] = [];
+        
+        // Try to load from database first if we have user and project info
+        if (user?.id && stories.length > 0) {
+          const firstStory = stories[0];
+          if (firstStory?.projectId && firstStory?.projectName) {
+            const session = await DatabaseService.loadSprintPlanningSession(user.id, firstStory.projectId);
+            if (session) {
+              sprintIds = session.sprintStories.filter((id: string) => stories.some(s => s.id === id));
+              backlogIds = session.backlogStories.filter((id: string) => stories.some(s => s.id === id));
+              console.log('📥 Loaded sprint planning session from database:', { sprintIds, backlogIds });
+            }
+          }
+        }
+        
+        // If no database data, try localStorage
+        if (backlogIds.length === 0 && sprintIds.length === 0) {
+          const savedBacklog = localStorage.getItem('sprint_planning_backlog');
+          const savedSprint = localStorage.getItem('sprint_planning_sprint');
+          
+          if (savedSprint) {
+            sprintIds = JSON.parse(savedSprint).filter((id: string) => stories.some(s => s.id === id));
+            console.log('📥 Loaded sprint stories from localStorage:', sprintIds);
+          }
+          
+          if (savedBacklog) {
+            backlogIds = JSON.parse(savedBacklog).filter((id: string) => stories.some(s => s.id === id));
+            console.log('📥 Loaded backlog stories from localStorage:', backlogIds);
+          }
+        }
+        
+        // Add any new stories to backlog if they're not already in sprint or backlog
+        const allStoryIds = stories.map(s => s.id);
+        const newStories = allStoryIds.filter(id => !sprintIds.includes(id) && !backlogIds.includes(id));
+        backlogIds = [...backlogIds, ...newStories];
+        
+        if (newStories.length > 0) {
+          console.log('➕ Added new stories to backlog:', newStories);
+        }
+        
+        setSprintStories(sprintIds);
+        setBacklogStories(backlogIds);
+        
+        console.log('✅ Sprint planning state initialized:', {
+          sprint: sprintIds.length,
+          backlog: backlogIds.length,
+          total: stories.length
+        });
+        
+      } catch (error) {
+        console.error('❌ Error loading sprint planning state:', error);
+        // Fallback: put all stories in backlog
+        setBacklogStories(stories.map(s => s.id));
+        setSprintStories([]);
+      }
+    };
     
-    try {
-      const savedBacklog = localStorage.getItem('sprint_planning_backlog');
-      const savedSprint = localStorage.getItem('sprint_planning_sprint');
-      
-      let backlogIds: string[] = [];
-      let sprintIds: string[] = [];
-      
-      if (savedSprint) {
-        sprintIds = JSON.parse(savedSprint).filter((id: string) => stories.some(s => s.id === id));
-        console.log('📥 Loaded sprint stories from localStorage:', sprintIds);
-      }
-      
-      if (savedBacklog) {
-        backlogIds = JSON.parse(savedBacklog).filter((id: string) => stories.some(s => s.id === id));
-        console.log('📥 Loaded backlog stories from localStorage:', backlogIds);
-      }
-      
-      // Add any new stories to backlog if they're not already in sprint or backlog
-      const allStoryIds = stories.map(s => s.id);
-      const newStories = allStoryIds.filter(id => !sprintIds.includes(id) && !backlogIds.includes(id));
-      backlogIds = [...backlogIds, ...newStories];
-      
-      if (newStories.length > 0) {
-        console.log('➕ Added new stories to backlog:', newStories);
-      }
-      
-      setSprintStories(sprintIds);
-      setBacklogStories(backlogIds);
-      
-      console.log('✅ Sprint planning state initialized:', {
-        sprint: sprintIds.length,
-        backlog: backlogIds.length,
-        total: stories.length
-      });
-      
-    } catch (error) {
-      console.error('❌ Error loading sprint planning state:', error);
-      // Fallback: put all stories in backlog
-      setBacklogStories(stories.map(s => s.id));
-      setSprintStories([]);
-    }
-  }, [stories]);
+    initializeSprintPlanningState();
+  }, [stories, user?.id]);
 
   // Save state to localStorage whenever sprint or backlog changes
   useEffect(() => {
@@ -296,7 +317,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, targetArea: 'backlog' | 'sprint') => {
+  const handleDrop = async (e: React.DragEvent, targetArea: 'backlog' | 'sprint') => {
     e.preventDefault();
     const storyId = e.dataTransfer.getData('text/plain');
     const story = stories.find(s => s.id === storyId);
@@ -322,6 +343,30 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
         } catch (error) {
           console.error('❌ Error saving to localStorage:', error);
         }
+        
+        // Save to database for persistence
+        if (user?.id && story?.projectId && story?.projectName) {
+          try {
+            const success = await DatabaseService.saveSprintPlanningSession(
+              user.id,
+              story.projectId,
+              story.projectName,
+              {
+                backlogStories: newBacklog,
+                sprintStories: newSprint,
+                meetingStarted,
+                sprintStarted
+              }
+            );
+            if (success) {
+              console.log('✅ Sprint planning session saved to database successfully');
+            } else {
+              console.error('❌ Failed to save sprint planning session to database');
+            }
+          } catch (error) {
+            console.error('❌ Error saving sprint planning session to database:', error);
+          }
+        }
       }
     } else {
       // Moving back to backlog
@@ -343,6 +388,30 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
           console.log('💾 Saved to localStorage successfully');
         } catch (error) {
           console.error('❌ Error saving to localStorage:', error);
+        }
+        
+        // Save to database for persistence
+        if (user?.id && story?.projectId && story?.projectName) {
+          try {
+            const success = await DatabaseService.saveSprintPlanningSession(
+              user.id,
+              story.projectId,
+              story.projectName,
+              {
+                backlogStories: newBacklog,
+                sprintStories: newSprint,
+                meetingStarted,
+                sprintStarted
+              }
+            );
+            if (success) {
+              console.log('✅ Sprint planning session saved to database successfully');
+            } else {
+              console.error('❌ Failed to save sprint planning session to database');
+            }
+          } catch (error) {
+            console.error('❌ Error saving sprint planning session to database:', error);
+          }
         }
       }
     }

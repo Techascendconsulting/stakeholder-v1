@@ -260,9 +260,9 @@ const TrainingDeliverablesView: React.FC = () => {
   };
 
   const openProcessMapper = () => {
-    // Store the current tab context so Process Mapper knows where to return
-    sessionStorage.setItem('returnToTab', 'process_map');
+    // Store return context for navigation back
     sessionStorage.setItem('returnToView', 'training-deliverables');
+    sessionStorage.setItem('returnToTab', activeTab);
     setCurrentView('process-mapper-editor');
   };
 
@@ -510,48 +510,61 @@ const TrainingDeliverablesView: React.FC = () => {
                        ) : (
                          <div className="prose max-w-none">
                            {deliverable.type === 'process_map' ? (
-                             <div className="space-y-4">
-                               {deliverable.content ? (
-                                 <div>
-                                   <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Process Notes:</h5>
-                                   <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
-                                     <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-                                       {deliverable.content.length > 200 
-                                         ? `${deliverable.content.substring(0, 200)}...` 
-                                         : deliverable.content
-                                       }
-                                     </p>
-                                     {deliverable.content.length > 200 && (
-                                       <button 
-                                         onClick={() => startEditing(deliverable)}
-                                         className="text-purple-600 hover:text-purple-800 text-sm font-medium mt-2"
-                                       >
-                                         Read more...
-                                       </button>
-                                     )}
-                                   </div>
-                                 </div>
-                               ) : (
-                                 <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                                   <Map className="w-8 h-8 mx-auto mb-2" />
-                                   <p>No process notes yet. Click Edit to add notes and documentation.</p>
-                                 </div>
-                               )}
-                               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-                                 <div className="flex items-center space-x-2">
-                                   <Map className="w-4 h-4 text-purple-600" />
-                                   <span className="text-sm font-medium text-purple-800 dark:text-purple-200">Process Map Available</span>
-                                 </div>
-                                 <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
-                                   The visual process map is stored in the Process Mapper. Use the Process Mapper button above to view and edit the diagram.
-                                 </p>
-                               </div>
-                             </div>
-                           ) : (
-                             <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-sans">
-                               {deliverable.content || 'No content yet. Click Edit to add content.'}
-                             </pre>
-                           )}
+                            <div className="space-y-4">
+                              {deliverable.content ? (
+                                <div>
+                                  <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Process Notes:</h5>
+                                  <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
+                                      {deliverable.content.length > 200 
+                                        ? `${deliverable.content.substring(0, 200)}...` 
+                                        : deliverable.content
+                                      }
+                                    </p>
+                                    {deliverable.content.length > 200 && (
+                                      <button 
+                                        onClick={() => startEditing(deliverable)}
+                                        className="text-purple-600 hover:text-purple-800 text-sm font-medium mt-2"
+                                      >
+                                        Read more...
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                                  <Map className="w-8 h-8 mx-auto mb-2" />
+                                  <p>No process notes yet. Click Edit to add notes and documentation.</p>
+                                </div>
+                              )}
+                              <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                                <div className="flex items-center space-x-2">
+                                  <Map className="w-4 h-4 text-purple-600" />
+                                  <span className="text-sm font-medium text-purple-800 dark:text-purple-200">Process Map Available</span>
+                                </div>
+                                <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
+                                  The visual process map is stored in the Process Mapper. Use the Process Mapper button above to view and edit the diagram.
+                                </p>
+                                <div className="mt-3 flex items-center gap-2">
+                                  <button
+                                    onClick={openProcessMapper}
+                                    className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700 transition-colors flex items-center gap-2"
+                                  >
+                                    <Map className="w-4 h-4" />
+                                    Open Process Mapper
+                                  </button>
+                                  <button className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors flex items-center gap-2">
+                                    <BookOpen className="w-4 h-4" />
+                                    Process Mapping 101
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 font-sans">
+                              {deliverable.content || 'No content yet. Click Edit to add content.'}
+                            </pre>
+                          )}
                          </div>
                        )}
                      </div>

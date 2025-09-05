@@ -117,3 +117,35 @@
 .backdrop-blur {
   backdrop-filter: blur(10px);
 }
+
+/* Hide scrollbars but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Smooth scrolling for diagram tabs */
+.diagram-tabs-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Diagram tabs area styling */
+.diagram-tabs-area {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Ensure proper spacing for diagram tabs */
+.diagram-tab {
+  transition: all 0.2s ease-in-out;
+}
+
+.diagram-tab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
