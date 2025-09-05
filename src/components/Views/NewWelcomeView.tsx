@@ -72,8 +72,8 @@ const NewWelcomeView: React.FC = () => {
                 Practice & Projects
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Jump straight into hands-on practice. Work on real BA projects, 
-                create professional deliverables, and build your portfolio.
+                Hands-on practice with real BA projects, professional deliverables, 
+                and portfolio building. (Coming soon - start with Foundation first)
               </p>
               <div className="space-y-3 mb-6 text-sm text-gray-500 dark:text-gray-400">
                 <div className="flex items-center justify-center">
@@ -94,10 +94,10 @@ const NewWelcomeView: React.FC = () => {
                 </div>
               </div>
               <button
-                onClick={() => setCurrentView('guided-practice-hub')}
+                onClick={() => setCurrentView('dashboard')}
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center"
               >
-                Start Practicing
+                Coming Soon
                 <ArrowRight className="w-5 h-5 ml-2" />
               </button>
             </div>

@@ -169,8 +169,8 @@ const MainLayout: React.FC = () => {
     }
   };
 
-  // Use Foundation layout for foundation routes (no sidebar)
-  if (isFoundationRoute) {
+  // Use clean layouts for new approach (no sidebar)
+  if (isFoundationRoute || isNewWelcomeRoute) {
     return (
       <FoundationLayout>
         {renderView()}
