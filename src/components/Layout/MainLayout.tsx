@@ -65,6 +65,11 @@ const MainLayout: React.FC = () => {
   // Check if we should use clean layouts (no sidebar)
   const isFoundationRoute = currentView === 'foundation-wizard' && isFeatureEnabled('FOUNDATION_V1');
   const isNewWelcomeRoute = currentView === 'welcome' && isFeatureEnabled('NEW_WELCOME_V1');
+  
+  // Debug logging
+  console.log('🔍 DEBUG: currentView =', currentView);
+  console.log('🔍 DEBUG: NEW_WELCOME_V1 enabled =', isFeatureEnabled('NEW_WELCOME_V1'));
+  console.log('🔍 DEBUG: isNewWelcomeRoute =', isNewWelcomeRoute);
 
   const renderView = () => {
     switch (currentView) {
