@@ -3,7 +3,7 @@ import { ArrowLeft, FileText, Users, Calendar, Clock, BarChart3, RotateCcw } fro
 import { useApp } from '../../contexts/AppContext';
 import BacklogRefinementSim from './ScrumPractice/BacklogRefinementSim';
 
-const sections = [
+const getSections = (setActiveView: (view: 'main' | 'backlog-refinement') => void) => [
   {
     title: "Requirement Documentation",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
@@ -45,6 +45,8 @@ const sections = [
 export const ScrumPracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [activeView, setActiveView] = useState<'main' | 'backlog-refinement'>('main');
+
+  const sections = getSections(setActiveView);
 
   // Show Backlog Refinement simulation if active
   if (activeView === 'backlog-refinement') {
