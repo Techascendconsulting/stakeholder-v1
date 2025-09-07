@@ -48,14 +48,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
 
   const menuItems = [
     { 
-      id: 'dashboard', 
-      label: 'Dashboard', 
-      icon: LayoutDashboard
-    },
-    { 
       id: 'welcome', 
       label: 'Welcome', 
       icon: GraduationCap
+    },
+    { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: LayoutDashboard
     },
     { 
       id: 'learn', 
@@ -64,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       subItems: [
         { id: 'core-concepts', label: 'BA Essentials', icon: BookText },
         { id: 'process-mapper', label: 'Process Mapper', icon: MessageSquare },
-        { id: 'agile-scrum', label: 'Agile & Scrum', icon: Zap }
+        { id: 'scrum-essentials', label: 'Scrum Essentials', icon: Zap }
       ]
     },
     { 

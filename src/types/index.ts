@@ -11,6 +11,7 @@ export type AppView =
   | 'practice'
   | 'core-concepts'
   | 'agile-scrum'
+  | 'scrum-essentials'
   | 'agile-practice'
   | 'progress-tracking'
   | 'project-workspace'

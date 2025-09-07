@@ -18,6 +18,7 @@ import { ProfileView } from '../Views/ProfileView';
 import AnalysisView from '../Views/AnalysisView';
 import CustomProjectView from '../Views/CustomProjectView';
 import CustomStakeholdersView from '../Views/CustomStakeholdersView';
+import ScrumEssentialsView from '../Views/ScrumEssentialsView';
 import { AgileHubView } from '../Views/AgileHubView';
 import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
 import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
@@ -75,6 +76,8 @@ const MainLayout: React.FC = () => {
         return <CoreConceptsView />;
       case 'agile-scrum':
         return <AgileHubView />;
+      case 'scrum-essentials':
+        return <ScrumEssentialsView />;
       case 'progress-tracking':
         return <TrainingDashboardView />; // TODO: Create ProgressTrackingView
       case 'project-workspace':
