@@ -104,10 +104,7 @@ export const BacklogRefinementSim: React.FC = () => {
           ...baseStory,
           title: "Tenant can upload attachments to support maintenance request",
           description: "Currently, tenants can only describe issues in text when submitting a maintenance request. This often leads to missing details and follow-up calls. Allowing them to upload photos or documents will give the housing team clearer context and speed up resolution.",
-          acceptanceCriteria: `**User Story:**
-As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently.
-
-**Acceptance Criteria:**
+          acceptanceCriteria: `**Acceptance Criteria:**
 1. Tenant should see an upload field labeled "Add attachment (optional)" on the maintenance request form.
 2. Tenant should be able to upload one or more files to support their request.
 3. Accepted file types should include JPG, PNG, and JPEG. If the tenant tries to upload a file in an unsupported format (e.g. .docx, .exe), an error message should be displayed: "Only JPG, PNG, and JPEG files are allowed."

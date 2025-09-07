@@ -580,6 +580,15 @@ ${cleanAcceptanceCriteria}`;
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Bola answers Srikanth's question
+    const baResponse = "Good question Srikanth. Yes, users should be able to upload multiple files at once - up to 5 attachments per maintenance request. So a tenant could upload, for example, 3 photos of the issue, a PDF document with additional details, and a video showing the problem. This gives them flexibility to provide comprehensive evidence for their maintenance request.";
+    const baMember2 = teamMembers.find(m => m.role === 'Business Analyst');
+    if (baMember2) {
+      await addAIMessage(baMember2, baResponse);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // Lisa (Developer) discusses technical implementation with team
     const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
     const lisa = teamMembers.find(m => m.name === 'Lisa');
@@ -649,11 +658,11 @@ ${cleanAcceptanceCriteria}`;
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // BA responds to the team's questions
-    const baFollowUp = "Great questions everyone. Let me address these concerns. For the technical implementation, we can reuse our existing file upload service and add retry logic. The frontend can handle multiple files with a simple drag-and-drop interface. For testing, we'll need to create test files of various sizes and formats. Sarah, you're right about the size - this might be better as two stories: one for basic upload and another for validation and error handling. What do you all think?";
-    const baMember2 = teamMembers.find(m => m.role === 'Business Analyst');
-    if (baMember2) {
-      await addAIMessage(baMember2, baFollowUp);
+    // BA responds to the team's questions (non-technical response)
+    const baFollowUp = "Great questions everyone. I'm glad we could clarify the requirements. The story covers the core functionality tenants need - being able to upload photos and documents to support their maintenance requests. This should help our housing team get better context and resolve issues faster. Does anyone have any other questions about the business requirements?";
+    const baMember3 = teamMembers.find(m => m.role === 'Business Analyst');
+    if (baMember3) {
+      await addAIMessage(baMember3, baFollowUp);
     }
   };
 
