@@ -77,6 +77,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
     console.log('🔍 INIT: AppContext initializing currentView...')
     console.log('✅ INIT: Using new work experience approach - always starting with welcome page')
+    
+    // Clear localStorage to ensure clean start for new approach
+    localStorage.removeItem('currentView')
+    console.log('🧹 INIT: Cleared localStorage currentView for new approach')
+    
     return 'welcome'
     
     // Commented out localStorage logic for new approach
