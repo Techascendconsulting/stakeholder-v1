@@ -213,7 +213,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [isViewingStory, setIsViewingStory] = useState(false); // For read-only viewing during BA presentation
   
   // Kanban columns state with drag-and-drop
-  const [kanbanColumns, setKanbanColumns] = useState({
+  const [kanbanColumns, setKanbanColumns] = useState<{
+    ready: { id: string; title: string; stories: string[] };
+    discussing: { id: string; title: string; stories: string[] };
+    refined: { id: string; title: string; stories: string[] };
+  }>({
     'ready': {
       id: 'ready',
       title: 'Ready for Discussion',
@@ -302,12 +306,17 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       const preGeneratedAudio = findPreGeneratedAudio(teamMember.name, text);
       if (preGeneratedAudio) {
         console.log('✅ Using pre-generated audio:', preGeneratedAudio.id);
-        await playPreGeneratedAudio(preGeneratedAudio.id);
-        console.log(`🚀 AUDIO DEBUG: ${teamMember.name} pre-generated audio completed`);
-        setIsAudioPlaying(false);
-        setPlayingMessageId(null);
-        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-        return Promise.resolve();
+        try {
+          await playPreGeneratedAudio(preGeneratedAudio.id);
+          console.log(`🚀 AUDIO DEBUG: ${teamMember.name} pre-generated audio completed`);
+          setIsAudioPlaying(false);
+          setPlayingMessageId(null);
+          setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+          return Promise.resolve();
+        } catch (error) {
+          console.log('🔄 Pre-generated audio failed, falling back to ElevenLabs');
+          // Continue to ElevenLabs fallback below
+        }
       }
       
       // Fallback to ElevenLabs if no pre-generated audio found
@@ -326,7 +335,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setTimeout(() => reject(new Error('Audio synthesis timeout')), 10000)
           );
           
-          const audioBlob = await Promise.race([synthesisPromise, timeoutPromise]);
+          const audioBlob = await Promise.race([synthesisPromise, timeoutPromise]) as Blob;
           
           if (audioBlob) {
           const audioUrl = URL.createObjectURL(audioBlob);
@@ -966,8 +975,17 @@ ${cleanAcceptanceCriteria}`;
 
   // End meeting
   const handleEndMeeting = async () => {
+    console.log('🔚 END MEETING BUTTON CLICKED!');
+    
     // Stop any current audio first
     stopCurrentAudio();
+    
+    // Set meeting as inactive to stop any ongoing conversation
+    setIsMeetingActive(false);
+    
+    // Clear conversation queue
+    setConversationQueue([]);
+    setCurrentSpeaking(null);
     
     try {
       // Generate meeting summary

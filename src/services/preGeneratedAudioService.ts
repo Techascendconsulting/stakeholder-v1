@@ -121,16 +121,16 @@ export async function playPreGeneratedAudio(audioId: string): Promise<void> {
     audio.onerror = (error) => {
       console.error(`❌ Pre-generated audio error for ${audioId}:`, error);
       console.log(`🔄 Falling back to ElevenLabs for ${audioId}`);
-      // Don't reject - let the calling code handle the fallback
-      resolve();
+      // Reject so the calling code knows to fall back to ElevenLabs
+      reject(new Error(`Pre-generated audio failed: ${audioId}`));
     };
     
     console.log(`🎵 Playing pre-generated audio: ${audioId} (${audioFile.speaker})`);
     audio.play().catch((playError) => {
       console.error(`❌ Audio play failed for ${audioId}:`, playError);
       console.log(`🔄 Falling back to ElevenLabs for ${audioId}`);
-      // Don't reject - let the calling code handle the fallback
-      resolve();
+      // Reject so the calling code knows to fall back to ElevenLabs
+      reject(new Error(`Audio play failed: ${audioId}`));
     });
   });
 }
