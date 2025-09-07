@@ -184,6 +184,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   // Conversation queue to prevent team members from talking over each other
   const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   const [isProcessingResponse, setIsProcessingResponse] = useState(false);
+  const [isMeetingActive, setIsMeetingActive] = useState(true);
   
   // Voice input state (reusing voice meeting patterns)
   const [isRecording, setIsRecording] = useState(false);
@@ -223,6 +224,18 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcript]);
+
+  // Cleanup when component unmounts
+  useEffect(() => {
+    return () => {
+      console.log('🧹 RefinementMeetingView unmounting - cleaning up...');
+      setIsMeetingActive(false);
+      stopCurrentAudio();
+      if (mediaRecorderRef.current && isRecording) {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, []);
 
   // Voice Meeting Audio Control (reused from VoiceOnlyMeetingView)
   const playMessageAudio = async (messageId: string, text: string, teamMember: AgileTeamMemberContext, autoPlay: boolean = true): Promise<void> => {
@@ -340,6 +353,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
   // Add AI message with dynamic response and conversation queue
   const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
+    // Check if meeting is still active
+    if (!isMeetingActive) {
+      console.log(`🚫 Meeting inactive, skipping message from ${teamMember.name}`);
+      return;
+    }
+
     console.log(`🎤 QUEUE: ${teamMember.name} requesting to speak`);
     console.log('📝 Adding AI message from:', teamMember.name);
     console.log('🔊 Global audio enabled:', globalAudioEnabled);
@@ -353,14 +372,14 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     
     // Wait for turn if someone else is speaking
     let waitCount = 0;
-    while (currentSpeaker !== null && currentSpeaker.name !== teamMember.name) {
+    while (currentSpeaker !== null && currentSpeaker.name !== teamMember.name && isMeetingActive) {
       waitCount++;
       console.log(`🎤 QUEUE: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaker?.name}`);
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Safety break after 100 attempts (10 seconds)
-      if (waitCount > 100) {
-        console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long! Breaking wait loop.`);
+      // Safety break after 100 attempts (10 seconds) or if meeting is no longer active
+      if (waitCount > 100 || !isMeetingActive) {
+        console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long or meeting inactive! Breaking wait loop.`);
         break;
       }
     }
@@ -416,8 +435,13 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         greetingMessage
       );
       
-      // Then BA presents the story
+      // Then BA presents the story (only if meeting is still active)
       setTimeout(async () => {
+        if (!isMeetingActive) {
+          console.log('🚫 Meeting no longer active, skipping BA presentation');
+          return;
+        }
+
         const currentStory = initialStories[0];
         
         // Clean markdown formatting from the story content
@@ -456,6 +480,12 @@ I'd like to get your thoughts on the technical implementation and any questions 
 
   // Generate dynamic AI response (using voice-only meeting pattern)
   const generateAIResponse = async (userMessage: string) => {
+    // Check if meeting is still active
+    if (!isMeetingActive) {
+      console.log('🚫 Meeting no longer active, skipping AI response generation');
+      return;
+    }
+
     try {
       console.log('🤖 Generating dynamic AI response for:', userMessage);
       
