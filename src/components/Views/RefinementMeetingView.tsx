@@ -504,14 +504,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
 Story Title: ${cleanTitle}
 
-User Story: ${cleanDescription}
+Description: ${cleanDescription}
+
+User Story: As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently.
 
 Acceptance Criteria:
-${cleanAcceptanceCriteria}
-
-This story is about allowing tenants to upload attachments when submitting maintenance requests. The key requirements are supporting JPG, PNG, and JPEG files with a 5MB size limit, and making the upload optional. 
-
-I'd like to get your thoughts on the technical implementation and any questions you might have about the requirements.`;
+${cleanAcceptanceCriteria}`;
         
         // Find BA team member (assuming it's the user, but we need a BA team member)
         const baMember = teamMembers.find(m => m.role === 'Business Analyst') || {

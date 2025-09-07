@@ -103,7 +103,7 @@ export const BacklogRefinementSim: React.FC = () => {
         return [{
           ...baseStory,
           title: "Tenant can upload attachments to support maintenance request",
-          description: "Tenants should be able to upload one or more files (e.g. images) when submitting a maintenance request. The uploaded files should be stored with the request and accessible to the housing team for reference.",
+          description: "Currently, tenants can only describe issues in text when submitting a maintenance request. This often leads to missing details and follow-up calls. Allowing them to upload photos or documents will give the housing team clearer context and speed up resolution.",
           acceptanceCriteria: `**User Story:**
 As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently.
 
