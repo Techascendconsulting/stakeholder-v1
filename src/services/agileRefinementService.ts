@@ -121,7 +121,7 @@ class AgileRefinementService {
         id: 'tom',
         name: 'Tom',
         role: 'QA Tester',
-        voiceId: '7cOBG34AiHrAzs842Rdi', // Using James' voice ID as fallback
+        voiceId: 'qqBeXuJvzxtQfbsW2f40',
         personality: 'Friendly but precise, quality-focused',
         focusAreas: ['Test coverage', 'Negative paths', 'Environment setup', 'Edge cases'],
         responseStyle: 'Questions testability and error scenarios'
