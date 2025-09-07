@@ -28,6 +28,10 @@ export function isConfigured(): boolean {
       DAVID: VOICE_ID_DAVID,
       JAMES: VOICE_ID_JAMES,
       EMILY: VOICE_ID_EMILY,
+      SRIKANTH: VOICE_ID_SRIKANTH,
+      BOLA: VOICE_ID_BOLA,
+      SARAH: VOICE_ID_SARAH,
+      LISA: VOICE_ID_LISA,
       DEFAULT: DEFAULT_VOICE_ID
     }
   });

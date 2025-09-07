@@ -240,6 +240,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     };
   }, []);
 
+  // Set meeting as active when component mounts
+  useEffect(() => {
+    setIsMeetingActive(true);
+    console.log('🎬 RefinementMeetingView mounted - meeting is active');
+  }, []);
+
   // Voice Meeting Audio Control (reused from VoiceOnlyMeetingView)
   const playMessageAudio = async (messageId: string, text: string, teamMember: AgileTeamMemberContext, autoPlay: boolean = true): Promise<void> => {
     console.log('Audio playback attempt:', { messageId, teamMember: teamMember.name, globalAudioEnabled, autoPlay });
