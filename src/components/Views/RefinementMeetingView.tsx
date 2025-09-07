@@ -559,70 +559,87 @@ ${cleanAcceptanceCriteria}`;
         // Remove setTimeout orchestration - let addAIMessage handle sequential flow
         if (!isMeetingActive) return;
         
-        // Srikanth (Senior Developer) asks a simple clarification question to BA
-        const srikanthResponse = "Thanks Bola, that's clear. Just one quick question - when you say 'one or more files', is there a maximum number of files a tenant can upload per request?";
-        const srikanth = teamMembers.find(m => m.name === 'Srikanth');
-        if (srikanth) {
-          await addAIMessage(srikanth, srikanthResponse);
+    // Add natural pauses between speakers
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Srikanth (Senior Developer) asks a simple clarification question to BA
+    const srikanthResponse = "Thanks Bola, that's clear. Just one quick question - when you say 'one or more files', is there a maximum number of files a tenant can upload per request?";
+    const srikanth = teamMembers.find(m => m.name === 'Srikanth');
+    if (srikanth) {
+      await addAIMessage(srikanth, srikanthResponse);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Lisa (Developer) discusses technical implementation with team
+    const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
+    const lisa = teamMembers.find(m => m.name === 'Lisa');
+    if (lisa) {
+      await addAIMessage(lisa, lisaResponse);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Srikanth responds to Lisa's technical discussion
+    const srikanthResponse2 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
+    if (srikanth) {
+      await addAIMessage(srikanth, srikanthResponse2);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Tom (QA Tester) discusses testing approach with team
+    const tomResponse = "From a testing perspective, we'll need to test all the edge cases - corrupted files, oversized files, wrong file types. I'll create test cases for the error messages to make sure they're user-friendly.";
+    const tom = teamMembers.find(m => m.name === 'Tom');
+    if (tom) {
+      await addAIMessage(tom, tomResponse);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Sarah (Scrum Master) facilitates and asks about sizing
+    const sarahResponse = "Great discussion team. Based on what I'm hearing, this feels like a solid 5-point story. Srikanth, as our senior developer, do you agree with that estimate?";
+    const sarah = teamMembers.find(m => m.name === 'Sarah');
+    if (sarah) {
+      await addAIMessage(sarah, sarahResponse);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Srikanth confirms the story point estimate
+    const srikanthResponse3 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
+    if (srikanth) {
+      await addAIMessage(srikanth, srikanthResponse3);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Sarah concludes the meeting and says she'll mark it as refined
+    const sarahResponse2 = "Perfect! Story estimated at 5 points. I'll mark this as refined and move it to our refined backlog. Great work everyone, this story is ready for sprint planning.";
+    
+    // Move story to "Refined" column
+    if (initialStories.length > 0) {
+      const firstStoryId = initialStories[0].id;
+      setKanbanColumns(prev => ({
+        ...prev,
+        'discussing': {
+          ...prev.discussing,
+          stories: prev.discussing.stories.filter(id => id !== firstStoryId)
+        },
+        'refined': {
+          ...prev.refined,
+          stories: [...prev.refined.stories, firstStoryId]
         }
-        
-        // Lisa (Developer) discusses technical implementation with team
-        const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
-        const lisa = teamMembers.find(m => m.name === 'Lisa');
-        if (lisa) {
-          await addAIMessage(lisa, lisaResponse);
-        }
-        
-        // Srikanth responds to Lisa's technical discussion
-        const srikanthResponse2 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
-        if (srikanth) {
-          await addAIMessage(srikanth, srikanthResponse2);
-        }
-        
-        // Tom (QA Tester) discusses testing approach with team
-        const tomResponse = "From a testing perspective, we'll need to test all the edge cases - corrupted files, oversized files, wrong file types. I'll create test cases for the error messages to make sure they're user-friendly.";
-        const tom = teamMembers.find(m => m.name === 'Tom');
-        if (tom) {
-          await addAIMessage(tom, tomResponse);
-        }
-        
-        // Sarah (Scrum Master) facilitates and asks about sizing
-        const sarahResponse = "Great discussion team. Based on what I'm hearing, this feels like a solid 5-point story. Srikanth, as our senior developer, do you agree with that estimate?";
-        const sarah = teamMembers.find(m => m.name === 'Sarah');
-        if (sarah) {
-          await addAIMessage(sarah, sarahResponse);
-        }
-        
-        // Srikanth confirms the story point estimate
-        const srikanthResponse3 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
-        if (srikanth) {
-          await addAIMessage(srikanth, srikanthResponse3);
-        }
-        
-        // Sarah concludes the meeting and says she'll mark it as refined
-        const sarahResponse2 = "Perfect! Story estimated at 5 points. I'll mark this as refined and move it to our refined backlog. Great work everyone, this story is ready for sprint planning.";
-        
-        // Move story to "Refined" column
-        if (initialStories.length > 0) {
-          const firstStoryId = initialStories[0].id;
-          setKanbanColumns(prev => ({
-            ...prev,
-            'discussing': {
-              ...prev.discussing,
-              stories: prev.discussing.stories.filter(id => id !== firstStoryId)
-            },
-            'refined': {
-              ...prev.refined,
-              stories: [...prev.refined.stories, firstStoryId]
-            }
-          }));
-          console.log('📋 Story moved to "Refined"');
-        }
-        
-        if (sarah) {
-          await addAIMessage(sarah, sarahResponse2);
-        }
-        
+      }));
+      console.log('📋 Story moved to "Refined"');
+    }
+    
+    if (sarah) {
+      await addAIMessage(sarah, sarahResponse2);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // BA responds to the team's questions
     const baFollowUp = "Great questions everyone. Let me address these concerns. For the technical implementation, we can reuse our existing file upload service and add retry logic. The frontend can handle multiple files with a simple drag-and-drop interface. For testing, we'll need to create test files of various sizes and formats. Sarah, you're right about the size - this might be better as two stories: one for basic upload and another for validation and error handling. What do you all think?";
     const baMember2 = teamMembers.find(m => m.role === 'Business Analyst');
