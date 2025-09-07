@@ -378,14 +378,14 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     try {
       // Add to conversation queue to prevent simultaneous speaking - EXACT COPY
       setConversationQueue(prev => {
-        const newQueue = [...prev, teamMember.name];
+        const newQueue = [...prev, teamMember.id];
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} added to queue. New queue: [${newQueue.join(', ')}]`);
         return newQueue;
       });
       
       // Wait for turn if someone else is speaking - EXACT COPY
       let waitCount = 0;
-      while (currentSpeaking !== null && currentSpeaking !== teamMember.name) {
+      while (currentSpeaking !== null && currentSpeaking !== teamMember.id) {
         waitCount++;
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -399,7 +399,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       
       // Start speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} now taking turn to speak`);
-      setCurrentSpeaking(teamMember.name);
+      setCurrentSpeaking(teamMember.id);
       
       // Small delay to ensure state update is processed
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -428,7 +428,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} finished speaking, clearing currentSpeaking`);
       setCurrentSpeaking(null);
       setConversationQueue(prev => {
-        const newQueue = prev.filter(name => name !== teamMember.name);
+        const newQueue = prev.filter(id => id !== teamMember.id);
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} removed from queue. New queue: [${newQueue.join(', ')}]`);
         return newQueue;
       });
@@ -440,7 +440,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} error cleanup - clearing currentSpeaking`);
       setCurrentSpeaking(null);
       setConversationQueue(prev => {
-        const newQueue = prev.filter(name => name !== teamMember.name);
+        const newQueue = prev.filter(id => id !== teamMember.id);
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} error cleanup - removed from queue. New queue: [${newQueue.join(', ')}]`);
         return newQueue;
       });
@@ -511,6 +511,7 @@ ${cleanAcceptanceCriteria}`;
         
         // Find BA team member (assuming it's the user, but we need a BA team member)
         const baMember = teamMembers.find(m => m.role === 'Business Analyst') || {
+          id: 'bola',
           name: 'Business Analyst',
           role: 'Business Analyst',
           voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA || 'en-US-AriaNeural',

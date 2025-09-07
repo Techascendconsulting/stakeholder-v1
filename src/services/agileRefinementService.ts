@@ -7,6 +7,7 @@ const openai = new OpenAI({
 });
 
 export interface AgileTeamMemberContext {
+  id: string;
   name: string;
   role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester' | 'Business Analyst';
   voiceId: string;
@@ -81,6 +82,7 @@ class AgileRefinementService {
     
     return [
       {
+        id: 'sarah',
         name: 'Sarah',
         role: 'Scrum Master',
         voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH || 'en-GB-LibbyNeural',
@@ -89,6 +91,7 @@ class AgileRefinementService {
         responseStyle: 'Keeps meetings on track, asks about sprint feasibility'
       },
       {
+        id: 'bola',
         name: 'Bola',
         role: 'Business Analyst',
         voiceId: 'xeBpkkuzgxa0IwKt7NTP', // Hardcoded to fix caching issue
@@ -97,6 +100,7 @@ class AgileRefinementService {
         responseStyle: 'Presents requirements clearly and answers stakeholder questions'
       },
       {
+        id: 'srikanth',
         name: 'Srikanth',
         role: 'Senior Developer',
         voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH || 'en-IN-PrabhatNeural',
@@ -105,6 +109,7 @@ class AgileRefinementService {
         responseStyle: 'Raises technical concerns, suggests story breakdown'
       },
       {
+        id: 'lisa',
         name: 'Lisa',
         role: 'Developer',
         voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA || 'pl-PL-ZofiaNeural',
@@ -113,6 +118,7 @@ class AgileRefinementService {
         responseStyle: 'Asks about technical details and implementation flow'
       },
       {
+        id: 'tom',
         name: 'Tom',
         role: 'QA Tester',
         voiceId: '7cOBG34AiHrAzs842Rdi', // Using James' voice ID as fallback
