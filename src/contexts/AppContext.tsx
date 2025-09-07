@@ -73,9 +73,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Track previous user state to detect actual logout vs initial loading
   const prevUser = useRef(user)
 
-  // Initialize currentView from localStorage or default to dashboard
+  // Initialize currentView from localStorage or default to welcome for new work experience approach
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
     console.log('🔍 INIT: AppContext initializing currentView...')
+    console.log('✅ INIT: Using new work experience approach - always starting with welcome page')
+    return 'welcome'
+    
+    // Commented out localStorage logic for new approach
+    /*
     try {
       const savedView = localStorage.getItem('currentView')
       console.log('🔍 INIT: Found saved view in localStorage:', savedView)
@@ -146,6 +151,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('❌ INIT: Error loading saved view, defaulting to welcome:', error)
       return 'welcome'
     }
+    */
   })
 
   // Custom setCurrentView that handles localStorage automatically
