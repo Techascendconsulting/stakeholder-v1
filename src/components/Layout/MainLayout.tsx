@@ -20,6 +20,7 @@ import CustomProjectView from '../Views/CustomProjectView';
 import CustomStakeholdersView from '../Views/CustomStakeholdersView';
 import ScrumEssentialsView from '../Views/ScrumEssentialsView';
 import { AgileHubView } from '../Views/AgileHubView';
+import ScrumPracticeView from '../Views/ScrumPracticeView';
 import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
 import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
 import ProjectView from '../Views/ProjectView';
@@ -139,7 +140,7 @@ const MainLayout: React.FC = () => {
       case 'training-hub':
         return <TrainingHubView />;
       case 'agile-practice':
-        return <AgilePracticeView />; // TODO: Create this view for training scenarios
+        return <ScrumPracticeView />; // TODO: Create this view for training scenarios
       case 'training-practice':
         return <TrainingPracticeView />;
       case 'training-assess':

@@ -1,54 +1,85 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Zap, Target, Users, Calendar, FileText, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Zap, Target, Users, Calendar, FileText, BarChart3, Play, CheckCircle, Clock, BookOpen, Workflow, MessageSquare, AlertCircle, ArrowRight } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
 export const AgilePracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
 
-  const agileScenarios = [
+  // Training exercises based on Scrum Essentials sections
+  const scrumTrainingExercises = [
     {
-      id: 'refinement-practice',
-      title: 'Story Refinement Practice',
-      description: 'Practice running refinement meetings with AI team members',
+      id: 'scrum-roles-practice',
+      title: 'Scrum Roles Practice',
+      description: 'Practice working with Product Owner, Scrum Master, and Developers in realistic scenarios',
       icon: Users,
       difficulty: 'Beginner',
       duration: '15-20 min',
-      skills: ['Story Writing', 'Refinement', 'Team Collaboration']
+      skills: ['Role Understanding', 'Collaboration', 'Communication'],
+      section: 'Section 2: Scrum Roles',
+      scenario: 'You\'re a BA joining a new Scrum team. Practice introducing yourself and understanding each role\'s responsibilities.'
     },
     {
-      id: 'sprint-planning-practice',
-      title: 'Sprint Planning Practice',
-      description: 'Practice sprint planning with AI product owners and team',
+      id: 'scrum-events-practice',
+      title: 'Scrum Events Practice',
+      description: 'Practice participating in Daily Scrum, Sprint Planning, Review, and Retrospective',
       icon: Calendar,
       difficulty: 'Intermediate',
-      duration: '20-30 min',
-      skills: ['Sprint Planning', 'Estimation', 'Capacity Planning']
+      duration: '25-30 min',
+      skills: ['Event Facilitation', 'Time Management', 'Team Coordination'],
+      section: 'Section 3: Scrum Events',
+      scenario: 'Lead a Sprint Planning session where you present user stories and work with the team to estimate and commit to work.'
     },
     {
-      id: 'backlog-grooming-practice',
-      title: 'Backlog Grooming Practice',
-      description: 'Practice organizing and prioritizing product backlog',
+      id: 'backlog-refinement-practice',
+      title: 'Backlog Refinement Practice',
+      description: 'Practice the BA\'s key role in making user stories ready for development',
       icon: FileText,
+      difficulty: 'Intermediate',
+      duration: '20-25 min',
+      skills: ['Story Writing', 'Acceptance Criteria', 'Team Collaboration'],
+      section: 'Section 5: Backlog Refinement',
+      scenario: 'Refine a complex user story with the development team, answering questions and breaking it into smaller pieces.'
+    },
+    {
+      id: 'requirements-docs-practice',
+      title: 'Requirements Documentation Practice',
+      description: 'Practice writing just-enough documentation for Scrum teams',
+      icon: BookOpen,
       difficulty: 'Beginner',
       duration: '15-20 min',
-      skills: ['Backlog Management', 'Prioritization', 'User Stories']
+      skills: ['Documentation', 'User Stories', 'Acceptance Criteria'],
+      section: 'Section 6: Requirements Documentation',
+      scenario: 'Write user stories and acceptance criteria for a new feature, balancing detail with agility.'
     },
     {
-      id: 'retrospective-practice',
-      title: 'Retrospective Practice',
-      description: 'Practice facilitating team retrospectives',
-      icon: BarChart3,
-      difficulty: 'Intermediate',
+      id: 'delivery-flow-practice',
+      title: 'End-to-End Delivery Practice',
+      description: 'Practice the complete flow from problem exploration to working software',
+      icon: Workflow,
+      difficulty: 'Advanced',
+      duration: '30-35 min',
+      skills: ['Process Mapping', 'Stakeholder Management', 'Solution Design'],
+      section: 'Section 7: Delivery Flow',
+      scenario: 'Take a business problem through the complete BA journey: problem exploration, process mapping, requirements, and delivery.'
+    },
+    {
+      id: 'scrum-artefacts-practice',
+      title: 'Scrum Artefacts Practice',
+      description: 'Practice working with Product Backlog, Sprint Backlog, and Increments',
+      icon: Target,
+      difficulty: 'Beginner',
       duration: '15-20 min',
-      skills: ['Facilitation', 'Team Dynamics', 'Continuous Improvement']
+      skills: ['Backlog Management', 'Sprint Planning', 'Definition of Done'],
+      section: 'Section 4: Scrum Artefacts',
+      scenario: 'Manage a Product Backlog, prepare items for Sprint Planning, and validate completed increments.'
     }
   ];
 
   const startScenario = (scenarioId: string) => {
     setSelectedScenario(scenarioId);
-    // TODO: Launch the specific Agile practice scenario
-    console.log('Starting Agile practice scenario:', scenarioId);
+    // TODO: Launch the specific Scrum practice scenario
+    console.log('Starting Scrum practice scenario:', scenarioId);
   };
 
   return (
@@ -65,18 +96,18 @@ export const AgilePracticeView: React.FC = () => {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Agile Practice</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Practice Agile methodologies in safe training scenarios</p>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Scrum Practice</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Practice Scrum methodologies with AI team members</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => setCurrentView('agile-scrum')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
+                onClick={() => setCurrentView('scrum-essentials')}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center space-x-2"
               >
-                <Zap className="w-4 h-4" />
-                <span>Learn Agile Concepts</span>
+                <BookOpen className="w-4 h-4" />
+                <span>Review Scrum Essentials</span>
               </button>
             </div>
           </div>
@@ -86,15 +117,27 @@ export const AgilePracticeView: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Introduction */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <Target className="w-8 h-8 text-blue-600" />
-              <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">Practice Agile Skills</h2>
+              <Target className="w-8 h-8 text-purple-600" />
+              <h2 className="text-2xl font-bold text-purple-900 dark:text-purple-100">Practice Scrum Skills</h2>
             </div>
-            <p className="text-blue-800 dark:text-blue-200 text-lg">
-              Apply what you've learned about Agile methodologies in realistic training scenarios. 
-              Practice with AI team members to improve your facilitation, story writing, and team collaboration skills.
+            <p className="text-purple-800 dark:text-purple-200 text-lg">
+              Apply what you've learned from Scrum Essentials in realistic training scenarios. 
+              Practice with AI team members to improve your role understanding, event facilitation, and story refinement skills.
             </p>
+            <div className="mt-4 p-4 bg-purple-100 dark:bg-purple-800/30 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-purple-800 dark:text-purple-200 font-medium">Training Focus</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">
+                    Each exercise is designed to reinforce specific concepts from Scrum Essentials. 
+                    Start with beginner exercises and work your way up to advanced scenarios.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
