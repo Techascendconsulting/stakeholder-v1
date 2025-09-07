@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, ArrowRight, Star, Lightbulb, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
@@ -206,14 +206,130 @@ const ScrumEssentialsView: React.FC = () => {
     return 0;
   };
 
-  const renderMarkdown = (content: string) => {
-    // Simple markdown rendering - you might want to use a proper markdown library
-    return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/^/, '<p>')
-      .replace(/$/, '</p>');
+  const renderContent = (content: string) => {
+    // Split content into sections based on headers
+    const sections = content.split(/(?=## )/);
+    
+    return sections.map((section, index) => {
+      if (section.trim() === '') return null;
+      
+      // Check if it's a header section
+      if (section.startsWith('## ')) {
+        const lines = section.split('\n');
+        const header = lines[0].replace('## ', '');
+        const body = lines.slice(1).join('\n').trim();
+        
+        return (
+          <div key={index} className="mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-6 rounded-r-lg mb-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
+                {getSectionIcon(header)}
+                <span className="ml-3">{header}</span>
+              </h3>
+              <div className="prose prose-gray max-w-none">
+                {renderTextContent(body)}
+              </div>
+            </div>
+          </div>
+        );
+      } else {
+        // Regular content
+        return (
+          <div key={index} className="mb-6">
+            <div className="prose prose-lg max-w-none">
+              {renderTextContent(section)}
+            </div>
+          </div>
+        );
+      }
+    });
+  };
+
+  const getSectionIcon = (header: string) => {
+    const iconMap: { [key: string]: React.ReactNode } = {
+      'The Product Owner': <Target className="w-5 h-5 text-blue-600" />,
+      'The Scrum Master': <Users className="w-5 h-5 text-green-600" />,
+      'The Developers': <Zap className="w-5 h-5 text-purple-600" />,
+      'The Business Analyst': <FileText className="w-5 h-5 text-orange-600" />,
+      'Putting It All Together': <Lightbulb className="w-5 h-5 text-yellow-600" />,
+    };
+    
+    return iconMap[header] || <BookOpen className="w-5 h-5 text-gray-600" />;
+  };
+
+  const renderTextContent = (text: string) => {
+    // Handle bullet points
+    if (text.includes('- ')) {
+      const lines = text.split('\n');
+      return lines.map((line, index) => {
+        if (line.startsWith('- ')) {
+          return (
+            <div key={index} className="flex items-start space-x-3 mb-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+              <span className="text-gray-700">{line.replace('- ', '')}</span>
+            </div>
+          );
+        } else if (line.trim() !== '') {
+          return (
+            <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+              {line.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')}
+            </p>
+          );
+        }
+        return null;
+      });
+    }
+    
+    // Handle numbered lists
+    if (text.includes('1. ')) {
+      const lines = text.split('\n');
+      return lines.map((line, index) => {
+        if (line.match(/^\d+\. /)) {
+          return (
+            <div key={index} className="flex items-start space-x-3 mb-3">
+              <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 mt-0.5">
+                {line.match(/^\d+/)?.[0]}
+              </div>
+              <span className="text-gray-700 leading-relaxed">{line.replace(/^\d+\. /, '')}</span>
+            </div>
+          );
+        } else if (line.trim() !== '') {
+          return (
+            <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+              {line.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')}
+            </p>
+          );
+        }
+        return null;
+      });
+    }
+    
+    // Regular paragraphs
+    return text.split('\n\n').map((paragraph, index) => {
+      if (paragraph.trim() === '') return null;
+      
+      // Check for special formatting
+      if (paragraph.includes('**Where you, the BA, come in:**') || 
+          paragraph.includes('**How you, the BA, fit with') ||
+          paragraph.includes('**Where you fit with')) {
+        return (
+          <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-blue-800">
+                {paragraph.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      return (
+        <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+          {paragraph.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')}
+        </p>
+      );
+    });
   };
 
   if (isLoading || !currentSection) {
@@ -234,14 +350,38 @@ const ScrumEssentialsView: React.FC = () => {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{currentSection.title}</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <div className="flex items-center space-x-3 mb-2">
+                <h1 className="text-2xl font-bold text-gray-900">{currentSection.title}</h1>
+                {progress?.is_complete && (
+                  <div className="flex items-center space-x-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                    <CheckCircle className="w-3 h-3" />
+                    <span>Completed</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-gray-600">
                 Section {currentSectionId} of {totalSections} • {getCompletedCount()}/{totalSections} completed
               </p>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Clock className="w-4 h-4" />
-              <span>{currentSection.estMinutes} min read</span>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <Clock className="w-4 h-4" />
+                <span>{currentSection.estMinutes} min read</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: totalSections }, (_, i) => (
+                  <div
+                    key={i}
+                    className={`w-2 h-2 rounded-full ${
+                      i + 1 < currentSectionId
+                        ? 'bg-green-500'
+                        : i + 1 === currentSectionId
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
           
@@ -260,10 +400,7 @@ const ScrumEssentialsView: React.FC = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div 
-            className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(currentSection.content) }}
-          />
+          {renderContent(currentSection.content)}
         </div>
 
         {/* Reflection Section */}
