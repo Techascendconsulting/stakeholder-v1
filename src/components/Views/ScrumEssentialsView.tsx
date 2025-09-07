@@ -108,7 +108,7 @@ const ScrumEssentialsView: React.FC = () => {
     if (!user) return;
 
     try {
-      // Load progress
+      // Load progress from database
       const { data: progressData } = await supabase
         .from('learning_progress')
         .select('is_complete, completed_at')
@@ -117,9 +117,21 @@ const ScrumEssentialsView: React.FC = () => {
         .eq('section_id', currentSectionId)
         .single();
 
-      setProgress(progressData || { is_complete: false, completed_at: null });
+      if (progressData) {
+        setProgress(progressData);
+      } else {
+        // Fallback to localStorage
+        const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
+        const isComplete = localStorage.getItem(fallbackKey) === 'true';
+        const completedAt = localStorage.getItem(`${fallbackKey}-date`);
+        
+        setProgress({ 
+          is_complete: isComplete, 
+          completed_at: completedAt || null 
+        });
+      }
 
-      // Load reflection
+      // Load reflection from database
       const { data: reflectionData } = await supabase
         .from('learning_reflections')
         .select('notes, updated_at')
@@ -131,9 +143,29 @@ const ScrumEssentialsView: React.FC = () => {
       if (reflectionData) {
         setReflection(reflectionData);
         setReflectionText(reflectionData.notes || '');
+      } else {
+        // Fallback to localStorage for reflections
+        const reflectionKey = `scrum-essentials-${currentSectionId}-reflection`;
+        const savedReflection = localStorage.getItem(reflectionKey);
+        setReflection({ notes: savedReflection || '', updated_at: null });
+        setReflectionText(savedReflection || '');
       }
     } catch (error) {
-      console.error('Error loading progress and reflection:', error);
+      console.log('Database not available, loading from localStorage');
+      // Load from localStorage as fallback
+      const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
+      const isComplete = localStorage.getItem(fallbackKey) === 'true';
+      const completedAt = localStorage.getItem(`${fallbackKey}-date`);
+      
+      setProgress({ 
+        is_complete: isComplete, 
+        completed_at: completedAt || null 
+      });
+
+      const reflectionKey = `scrum-essentials-${currentSectionId}-reflection`;
+      const savedReflection = localStorage.getItem(reflectionKey);
+      setReflection({ notes: savedReflection || '', updated_at: null });
+      setReflectionText(savedReflection || '');
     } finally {
       setIsLoading(false);
     }
