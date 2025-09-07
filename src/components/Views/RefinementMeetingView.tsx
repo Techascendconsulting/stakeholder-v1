@@ -287,10 +287,18 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       
       if (elevenConfigured()) {
           console.log('✅ Using ElevenLabs TTS for audio synthesis');
-          const audioBlob = await synthesizeToBlob(text, { 
+          
+          // Add timeout to prevent hanging
+          const synthesisPromise = synthesizeToBlob(text, { 
             stakeholderName: teamMember.name,
             voiceId: teamMember.voiceId 
           });
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Audio synthesis timeout')), 10000)
+          );
+          
+          const audioBlob = await Promise.race([synthesisPromise, timeoutPromise]);
           
           if (audioBlob) {
           const audioUrl = URL.createObjectURL(audioBlob);
@@ -339,6 +347,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         } else {
           console.warn('❌ ElevenLabs TTS returned null, falling back to browser TTS');
           await playBrowserTTS(text);
+          return Promise.resolve();
         }
       } else {
         console.log('⚠️ ElevenLabs TTS not available, skipping audio playback');
