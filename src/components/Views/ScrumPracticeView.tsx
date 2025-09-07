@@ -88,7 +88,7 @@ export const ScrumPracticeView: React.FC = () => {
               <p className="text-gray-600 mb-4">{section.description}</p>
               <button
                 onClick={section.onClick}
-                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                className="w-full px-4 py-2 border border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 rounded-lg font-normal transition-colors"
               >
                 Go to {section.title}
               </button>
