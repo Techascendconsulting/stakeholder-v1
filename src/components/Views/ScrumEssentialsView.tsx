@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 
 interface ScrumSection {
@@ -22,9 +22,8 @@ interface LearningReflection {
 }
 
 const ScrumEssentialsView: React.FC = () => {
-  const { sectionId } = useParams<{ sectionId: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const { setCurrentView } = useApp();
   const [currentSection, setCurrentSection] = useState<ScrumSection | null>(null);
   const [sections, setSections] = useState<ScrumSection[]>([]);
   const [progress, setProgress] = useState<LearningProgress | null>(null);
@@ -32,8 +31,7 @@ const ScrumEssentialsView: React.FC = () => {
   const [reflectionText, setReflectionText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  const currentSectionId = parseInt(sectionId || '1');
+  const [currentSectionId, setCurrentSectionId] = useState(1);
   const totalSections = 7;
 
   // Load sections data
@@ -186,7 +184,7 @@ const ScrumEssentialsView: React.FC = () => {
   };
 
   const navigateToSection = (sectionId: number) => {
-    navigate(`/scrum-essentials/${sectionId}`);
+    setCurrentSectionId(sectionId);
     window.scrollTo(0, 0);
   };
 
