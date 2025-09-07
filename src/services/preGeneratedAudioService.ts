@@ -16,21 +16,21 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
   {
     id: 'sarah-opening',
     speaker: 'Sarah',
-    text: "Good morning everyone. We have 1 story to review today. Bola, would you like to present the first story for us? I'll mark it as refined once we're done discussing it.",
+    text: "Good morning everyone. We have 1 story to review today. Bola, would you like to present the story for us? I'll mark it as refined once we're done discussing it.",
     voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
     audioPath: '/audio/refinement/sarah-opening.mp3'
   },
   {
     id: 'bola-presentation',
     speaker: 'Bola',
-    text: "Thank you Sarah. I'd like to present our first story: 'Tenant can upload attachments to support maintenance request'. Currently, tenants can only describe issues in text when submitting a maintenance request. This often leads to missing details and follow-up calls. Allowing them to upload photos or documents will give the housing team clearer context and speed up resolution. User Story: As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently. Acceptance Criteria: 1. Tenant should see an upload field labeled 'Add attachment (optional)' on the maintenance request form. 2. Tenant should be able to upload one or more files to support their request. 3. Accepted file types should include JPG, PNG, and JPEG. If the tenant tries to upload a file in an unsupported format (e.g. .docx, .exe), an error message should be displayed: 'Only JPG, PNG, and JPEG files are allowed.' 4. Maximum file size per upload should be 5 MB. If the file is larger than 5MB, an error message should be displayed: 'File size must not exceed 5MB.' 5. Uploading a file should not be mandatory. The tenant should still be able to submit the request without attaching any files. 6. If a file is uploaded, it should be stored with the rest of the request data and made visible to the maintenance team.",
+    text: "Thank you Sarah. I'd like to present our first story: 'Tenant can upload attachments to support maintenance request'. Currently, tenants can only describe issues in text when submitting a maintenance request. This often leads to missing details and follow-up calls. Allowing them to upload photos or documents will give the housing team clearer context and speed up resolution. The User Story says As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently. Acceptance Criteria: 1. As part of submitting a request, tenants should have the ability to upload attachments and this should be optional. 2. Tenant should be able to upload one or more files to support their request. 3. Accepted file types should include JPG, PNG, and JPEG. If the tenant tries to upload a file in an unsupported format (e.g. .docx, .exe), an error message should be displayed: 'Only JPG, PNG, and JPEG files are allowed.' 4. Maximum file size per upload should be 5 MB. If the file is larger than 5MB, an error message should be displayed: 'File size must not exceed 5MB.' 5. Uploading a file should not be mandatory. The tenant should still be able to submit the request without attaching any files. 6. If a file is uploaded, it should be stored with the rest of the request data and made visible to the maintenance team.",
     voiceId: 'xeBpkkuzgxa0IwKt7NTP',
     audioPath: '/audio/refinement/bola-presentation.mp3'
   },
   {
     id: 'srikanth-question',
     speaker: 'Srikanth',
-    text: "Bola, quick question - when you mentioned multiple file types, are we talking about users uploading multiple files at once, or just supporting different formats one at a time?",
+    text: "Thanks Bola, that's clear. Just one quick question - when you say 'one or more files', is there a maximum number of files a tenant can upload per request?",
     voiceId: 'wD6AxxDQzhi2E9kMbk9t',
     audioPath: '/audio/refinement/srikanth-question.mp3'
   },
@@ -40,6 +40,20 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     text: "Good question Srikanth. Yes, users should be able to upload multiple files at once - up to 5 attachments per maintenance request. So a tenant could upload, for example, 3 photos of the issue, a PDF document with additional details, and a video showing the problem. This gives them flexibility to provide comprehensive evidence for their maintenance request.",
     voiceId: 'xeBpkkuzgxa0IwKt7NTP',
     audioPath: '/audio/refinement/bola-answer.mp3'
+  },
+  {
+    id: 'srikanth-question-2',
+    speaker: 'Srikanth',
+    text: "OK Bola, that's clear. it means you will need to include PDF in your acceptance criteria",
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    audioPath: '/audio/refinement/srikanth-question-2.mp3'
+  },
+  {
+    id: 'bola-answer-2',
+    speaker: 'Bola',
+    text: "Good should Srikanth, I will update the acceptance criteria to include PDF, thanks for that",
+    voiceId: 'xeBpkkuzgxa0IwKt7NTP',
+    audioPath: '/audio/refinement/bola-answer-2.mp3'
   },
   {
     id: 'lisa-technical',
@@ -83,13 +97,6 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
     audioPath: '/audio/refinement/sarah-conclude.mp3'
   },
-  {
-    id: 'bola-final',
-    speaker: 'Bola',
-    text: "Great questions everyone. I'm glad we could clarify the requirements. The story covers the core functionality tenants need - being able to upload photos and documents to support their maintenance requests. This should help our housing team get better context and resolve issues faster. Does anyone have any other questions about the business requirements?",
-    voiceId: 'xeBpkkuzgxa0IwKt7NTP',
-    audioPath: '/audio/refinement/bola-final.mp3'
-  }
 ];
 
 /**
@@ -113,11 +120,18 @@ export async function playPreGeneratedAudio(audioId: string): Promise<void> {
     
     audio.onerror = (error) => {
       console.error(`❌ Pre-generated audio error for ${audioId}:`, error);
-      reject(error);
+      console.log(`🔄 Falling back to ElevenLabs for ${audioId}`);
+      // Don't reject - let the calling code handle the fallback
+      resolve();
     };
     
     console.log(`🎵 Playing pre-generated audio: ${audioId} (${audioFile.speaker})`);
-    audio.play().catch(reject);
+    audio.play().catch((playError) => {
+      console.error(`❌ Audio play failed for ${audioId}:`, playError);
+      console.log(`🔄 Falling back to ElevenLabs for ${audioId}`);
+      // Don't reject - let the calling code handle the fallback
+      resolve();
+    });
   });
 }
 

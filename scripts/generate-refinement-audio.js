@@ -17,7 +17,7 @@ const refinementSpeeches = [
   {
     id: 'sarah-opening',
     speaker: 'Sarah',
-    text: "Good morning everyone. We have 1 story to review today. Bola, would you like to present the first story for us? I'll mark it as refined once we're done discussing it.",
+    text: "Good morning everyone. We have 1 story to review today. Bola, would you like to present the story for us? I'll mark it as refined once we're done discussing it.",
     voiceId: 'MzqUf1HbJ8UmQ0wUsx2p'
   },
   {

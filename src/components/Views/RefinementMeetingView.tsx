@@ -460,17 +460,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       console.log('🎵 Attempting to play audio for:', teamMember.name);
       const cleanText = cleanMarkdownForTTS(text);
       
-      // Use pre-generated audio if audioId provided, otherwise use regular audio
-      if (audioId && hasPreGeneratedAudio(audioId)) {
-        console.log('✅ Using pre-generated audio:', audioId);
-        await playPreGeneratedAudio(audioId);
-        console.log(`🚀 AUDIO DEBUG: ${teamMember.name} pre-generated audio completed`);
-        setIsAudioPlaying(false);
-        setPlayingMessageId(null);
-        setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
-      } else {
-        await playMessageAudio(message.id, cleanText, teamMember, true);
-      }
+      // For now, use ElevenLabs until pre-generated audio files are created
+      // TODO: Enable pre-generated audio once audio files are generated
+      console.log('🎵 Using ElevenLabs TTS (pre-generated audio not yet available)');
+      await playMessageAudio(message.id, cleanText, teamMember, true);
       
       // Finish speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} finished speaking, clearing currentSpeaking`);
@@ -629,6 +622,22 @@ ${cleanAcceptanceCriteria}`;
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Srikanth asks about PDF in acceptance criteria
+    const srikanthResponse2 = "OK Bola, that's clear. it means you will need to include PDF in your acceptance criteria";
+    if (srikanth) {
+      await addAIMessage(srikanth, srikanthResponse2, 'srikanth-question-2');
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Bola agrees to update acceptance criteria
+    const baResponse2 = "Good should Srikanth, I will update the acceptance criteria to include PDF, thanks for that";
+    if (baMember2) {
+      await addAIMessage(baMember2, baResponse2, 'bola-answer-2');
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // Lisa (Developer) discusses technical implementation with team
     const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
     const lisa = teamMembers.find(m => m.name === 'Lisa');
@@ -639,9 +648,9 @@ ${cleanAcceptanceCriteria}`;
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Srikanth responds to Lisa's technical discussion
-    const srikanthResponse2 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
+    const srikanthResponse3 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
     if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse2, 'srikanth-response');
+      await addAIMessage(srikanth, srikanthResponse3, 'srikanth-response');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -665,9 +674,9 @@ ${cleanAcceptanceCriteria}`;
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Srikanth confirms the story point estimate
-    const srikanthResponse3 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
+    const srikanthResponse4 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
     if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse3, 'srikanth-confirm');
+      await addAIMessage(srikanth, srikanthResponse4, 'srikanth-confirm');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -696,14 +705,6 @@ ${cleanAcceptanceCriteria}`;
       await addAIMessage(sarah, sarahResponse2, 'sarah-conclude');
     }
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // BA responds to the team's questions (non-technical response)
-    const baFollowUp = "Great questions everyone. I'm glad we could clarify the requirements. The story covers the core functionality tenants need - being able to upload photos and documents to support their maintenance requests. This should help our housing team get better context and resolve issues faster. Does anyone have any other questions about the business requirements?";
-    const baMember3 = teamMembers.find(m => m.role === 'Business Analyst');
-    if (baMember3) {
-      await addAIMessage(baMember3, baFollowUp, 'bola-final');
-    }
   };
 
   // Generate dynamic AI response (using voice-only meeting pattern)
