@@ -115,7 +115,7 @@ class AgileRefinementService {
       {
         name: 'Tom',
         role: 'QA Tester',
-        voiceId: 'en-GB-RyanNeural', // Keep Tom with Microsoft voice for now
+        voiceId: '7cOBG34AiHrAzs842Rdi', // Using James' voice ID as fallback
         personality: 'Friendly but precise, quality-focused',
         focusAreas: ['Test coverage', 'Negative paths', 'Environment setup', 'Edge cases'],
         responseStyle: 'Questions testability and error scenarios'

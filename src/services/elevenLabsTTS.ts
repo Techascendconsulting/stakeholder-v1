@@ -12,8 +12,21 @@ const VOICE_ID_SARAH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH as string 
 const VOICE_ID_LISA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA as string | undefined
 const ENABLE_ELEVENLABS = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'true'
 
-// Audio cache for frequently used phrases
+// Audio cache for frequently used phrases (in-memory fallback)
 const audioCache = new Map<string, Blob>()
+
+// Import persistent cache service
+let persistentCache: any = null;
+(async () => {
+  try {
+    const { audioCacheService } = await import('./audioCacheService');
+    persistentCache = audioCacheService;
+    await persistentCache.init();
+    console.log('✅ ELEVENLABS: Persistent audio cache initialized');
+  } catch (error) {
+    console.warn('⚠️ ELEVENLABS: Failed to initialize persistent cache, using in-memory only:', error);
+  }
+})();
 
 export function isConfigured(): boolean {
   const configured = Boolean(ENABLE_ELEVENLABS && ELEVENLABS_API_KEY)
@@ -132,10 +145,23 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
 
   console.log(`🎤 SYNTHESIZE: Using voice ID: ${voiceId} for stakeholder: ${options?.stakeholderName || 'unknown'}`)
 
-  // Check cache first
+  // Check persistent cache first
+  if (persistentCache) {
+    try {
+      const cachedAudio = await persistentCache.getAudio(text, voiceId, 'refinement');
+      if (cachedAudio) {
+        console.log(`🎤 SYNTHESIZE: Using persistent cached audio for "${text.substring(0, 30)}..."`)
+        return cachedAudio;
+      }
+    } catch (error) {
+      console.warn('⚠️ SYNTHESIZE: Failed to check persistent cache, falling back to in-memory:', error);
+    }
+  }
+
+  // Check in-memory cache as fallback
   const cacheKey = generateCacheKey(text, voiceId)
   if (audioCache.has(cacheKey)) {
-    console.log(`🎤 SYNTHESIZE: Using cached audio for "${text.substring(0, 30)}..."`)
+    console.log(`🎤 SYNTHESIZE: Using in-memory cached audio for "${text.substring(0, 30)}..."`)
     return audioCache.get(cacheKey)!
   }
 
@@ -178,7 +204,17 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
     
     // Cache the result for future use
     audioCache.set(cacheKey, blob)
-    console.log(`🎤 SYNTHESIZE: Cached audio for future use`)
+    console.log(`🎤 SYNTHESIZE: Cached audio in memory for future use`)
+    
+    // Also store in persistent cache
+    if (persistentCache) {
+      try {
+        await persistentCache.storeAudio(text, voiceId, blob, 'refinement');
+        console.log(`🎤 SYNTHESIZE: Stored audio in persistent cache`);
+      } catch (error) {
+        console.warn('⚠️ SYNTHESIZE: Failed to store in persistent cache:', error);
+      }
+    }
     
     return blob
   } catch (error: any) {
@@ -253,5 +289,44 @@ export async function speakAndPlay(text: string, options?: { voiceId?: string; s
 // Clear audio cache
 export function clearAudioCache(): void {
   audioCache.clear()
-  console.log('🧹 AUDIO CACHE: Cleared audio cache')
+  console.log('🧹 AUDIO CACHE: Cleared in-memory audio cache')
+}
+
+// Clear persistent audio cache
+export async function clearPersistentAudioCache(): Promise<void> {
+  if (persistentCache) {
+    try {
+      await persistentCache.clearCache();
+      console.log('🧹 AUDIO CACHE: Cleared persistent audio cache');
+    } catch (error) {
+      console.error('❌ AUDIO CACHE: Failed to clear persistent cache:', error);
+    }
+  }
+}
+
+// Get cache statistics
+export async function getAudioCacheStats(): Promise<any> {
+  if (persistentCache) {
+    try {
+      const stats = await persistentCache.getCacheStats();
+      console.log('📊 AUDIO CACHE: Cache stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('❌ AUDIO CACHE: Failed to get cache stats:', error);
+      return null;
+    }
+  }
+  return null;
+}
+
+// Pre-generate refinement meeting audio
+export async function preGenerateRefinementAudio(): Promise<void> {
+  if (persistentCache) {
+    try {
+      await persistentCache.preGenerateRefinementMeetingAudio();
+      console.log('🎬 AUDIO CACHE: Pre-generation completed');
+    } catch (error) {
+      console.error('❌ AUDIO CACHE: Failed to pre-generate audio:', error);
+    }
+  }
 }

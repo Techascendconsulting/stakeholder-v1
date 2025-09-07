@@ -240,10 +240,23 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     };
   }, []);
 
-  // Set meeting as active when component mounts
+  // Set meeting as active when component mounts and pre-generate audio
   useEffect(() => {
     setIsMeetingActive(true);
     console.log('🎬 RefinementMeetingView mounted - meeting is active');
+    
+    // Pre-generate audio for the refinement meeting
+    const preGenerateAudio = async () => {
+      try {
+        const { audioCacheService } = await import('../../services/audioCacheService');
+        await audioCacheService.preGenerateRefinementMeetingAudio();
+        console.log('🎵 AUDIO: Pre-generation completed');
+      } catch (error) {
+        console.warn('⚠️ AUDIO: Failed to pre-generate audio:', error);
+      }
+    };
+    
+    preGenerateAudio();
   }, []);
 
   // Voice Meeting Audio Control (reused from VoiceOnlyMeetingView)
