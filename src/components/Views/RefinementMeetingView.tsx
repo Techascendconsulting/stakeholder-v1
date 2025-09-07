@@ -419,6 +419,23 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const startMeeting = async () => {
     setMeetingStarted(true);
     
+    // Move the first story to "Currently Discussing" when meeting starts
+    if (initialStories.length > 0) {
+      const firstStoryId = initialStories[0].id;
+      setKanbanColumns(prev => ({
+        ...prev,
+        'ready': {
+          ...prev.ready,
+          stories: prev.ready.stories.filter(id => id !== firstStoryId)
+        },
+        'discussing': {
+          ...prev.discussing,
+          stories: [...prev.discussing.stories, firstStoryId]
+        }
+      }));
+      console.log('📋 Story moved to "Currently Discussing"');
+    }
+    
     // Ensure audio is enabled for the meeting
     if (!globalAudioEnabled) {
       setGlobalAudioEnabled(true);
@@ -473,6 +490,125 @@ I'd like to get your thoughts on the technical implementation and any questions 
         };
         
         await addAIMessage(baMember, baPresentation);
+        
+        // After BA presents, team members respond with realistic questions
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Srikanth (Senior Developer) asks a simple clarification question to BA
+          const srikanthResponse = "Thanks Bola, that's clear. Just one quick question - when you say 'one or more files', is there a maximum number of files a tenant can upload per request?";
+          const srikanth = teamMembers.find(m => m.name === 'Srikanth');
+          if (srikanth) {
+            await addAIMessage(srikanth, srikanthResponse);
+          }
+        }, 8000); // Wait for BA to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Bola (BA) answers the simple question
+          const bolaResponse = "Good question Srikanth. Let me clarify - we should allow up to 5 files per maintenance request. That should be enough for most cases where tenants need to show multiple angles of an issue.";
+          const baMember = teamMembers.find(m => m.role === 'Business Analyst');
+          if (baMember) {
+            await addAIMessage(baMember, bolaResponse);
+          }
+        }, 12000); // Wait for Srikanth to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Lisa (Developer) discusses technical implementation with team
+          const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
+          const lisa = teamMembers.find(m => m.name === 'Lisa');
+          if (lisa) {
+            await addAIMessage(lisa, lisaResponse);
+          }
+        }, 16000); // Wait for BA to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Srikanth responds to Lisa's technical discussion
+          const srikanthResponse2 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
+          const srikanth = teamMembers.find(m => m.name === 'Srikanth');
+          if (srikanth) {
+            await addAIMessage(srikanth, srikanthResponse2);
+          }
+        }, 20000); // Wait for Lisa to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Tom (QA Tester) discusses testing approach with team
+          const tomResponse = "From a testing perspective, we'll need to test all the edge cases - corrupted files, oversized files, wrong file types. I'll create test cases for the error messages to make sure they're user-friendly.";
+          const tom = teamMembers.find(m => m.name === 'Tom');
+          if (tom) {
+            await addAIMessage(tom, tomResponse);
+          }
+        }, 24000); // Wait for Srikanth to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Sarah (Scrum Master) facilitates and asks about sizing
+          const sarahResponse = "Great discussion team. Based on what I'm hearing, this feels like a solid 5-point story. Srikanth, as our senior developer, do you agree with that estimate?";
+          const sarah = teamMembers.find(m => m.name === 'Sarah');
+          if (sarah) {
+            await addAIMessage(sarah, sarahResponse);
+          }
+        }, 28000); // Wait for Tom to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Srikanth confirms the story point estimate
+          const srikanthResponse3 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
+          const srikanth = teamMembers.find(m => m.name === 'Srikanth');
+          if (srikanth) {
+            await addAIMessage(srikanth, srikanthResponse3);
+          }
+        }, 32000); // Wait for Sarah to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // Sarah moves the story to "Refined" and concludes the meeting
+          const sarahResponse2 = "Perfect! Story estimated at 5 points. Let me move this to our refined backlog. Great work everyone, this story is ready for sprint planning.";
+          
+          // Move story to "Refined" column
+          if (initialStories.length > 0) {
+            const firstStoryId = initialStories[0].id;
+            setKanbanColumns(prev => ({
+              ...prev,
+              'discussing': {
+                ...prev.discussing,
+                stories: prev.discussing.stories.filter(id => id !== firstStoryId)
+              },
+              'refined': {
+                ...prev.refined,
+                stories: [...prev.refined.stories, firstStoryId]
+              }
+            }));
+            console.log('📋 Story moved to "Refined"');
+          }
+          
+          const sarah = teamMembers.find(m => m.name === 'Sarah');
+          if (sarah) {
+            await addAIMessage(sarah, sarahResponse2);
+          }
+        }, 36000); // Wait for Srikanth to finish
+        
+        setTimeout(async () => {
+          if (!isMeetingActive) return;
+          
+          // BA responds to the team's questions
+          const baFollowUp = "Great questions everyone. Let me address these concerns. For the technical implementation, we can reuse our existing file upload service and add retry logic. The frontend can handle multiple files with a simple drag-and-drop interface. For testing, we'll need to create test files of various sizes and formats. Sarah, you're right about the size - this might be better as two stories: one for basic upload and another for validation and error handling. What do you all think?";
+          const baMember = teamMembers.find(m => m.role === 'Business Analyst');
+          if (baMember) {
+            await addAIMessage(baMember, baFollowUp);
+          }
+        }, 24000); // Wait for Sarah to finish
+        
       }, 3000); // Wait for Scrum Master to finish
       
     }, 1500); // Initial delay to ensure audio context is ready
