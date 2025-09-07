@@ -1,6 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Sparkles, User, ClipboardList, Play, CheckCircle, Lock, Eye } from 'lucide-react';
 import { useApp } from '../../../contexts/AppContext';
+import { RefinementMeetingView } from '../RefinementMeetingView';
+
+// AgileTicket interface (matching the one from RefinementMeetingView)
+interface AgileTicket {
+  id: string;
+  ticketNumber: string;
+  projectId: string;
+  projectName: string;
+  type: 'Story' | 'Task' | 'Bug' | 'Spike';
+  title: string;
+  description: string;
+  acceptanceCriteria?: string;
+  priority: 'Low' | 'Medium' | 'High';
+  status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'In Sprint' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
+  storyPoints?: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  attachments?: any[];
+  comments?: any[];
+  refinementScore?: {
+    clarity: number;
+    completeness: number;
+    testability: number;
+    overall: number;
+    feedback: string[];
+    aiSummary: string;
+  };
+}
 
 interface RefinementTrial {
   id: number;
@@ -14,6 +43,12 @@ interface RefinementTrial {
 
 export const BacklogRefinementSim: React.FC = () => {
   const { setCurrentView } = useApp();
+  const [activeMeeting, setActiveMeeting] = useState<{
+    trialId: number;
+    stories: AgileTicket[];
+    isWatching: boolean; // true for observation, false for practice
+  } | null>(null);
+
   const [trials, setTrials] = useState<RefinementTrial[]>([
     {
       id: 1,
@@ -47,6 +82,62 @@ export const BacklogRefinementSim: React.FC = () => {
   const [completedTrials, setCompletedTrials] = useState(0);
   const [canPractice, setCanPractice] = useState(false);
 
+  // Generate sample stories for each trial
+  const generateTrialStories = (trialId: number): AgileTicket[] => {
+    const baseStory = {
+      id: `trial-${trialId}-story-1`,
+      ticketNumber: `STORY-${trialId}001`,
+      projectId: 'training-project',
+      projectName: 'Customer Onboarding Training',
+      type: 'Story' as const,
+      status: 'Ready for Refinement' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      userId: 'training-user',
+      attachments: [],
+      comments: []
+    };
+
+    switch (trialId) {
+      case 1: // Basic ID Upload
+        return [{
+          ...baseStory,
+          title: "Customer ID Upload",
+          description: "As a customer, I want to upload my ID online so that I can complete my account verification.",
+          acceptanceCriteria: "Given I am a new customer, when I want to verify my account, then I should be able to upload a photo of my government-issued ID. The system should accept JPG, PNG, and PDF formats up to 5MB.",
+          priority: 'High' as const,
+          storyPoints: 5
+        }];
+      
+      case 2: // Complex File Validation
+        return [{
+          ...baseStory,
+          id: `trial-${trialId}-story-1`,
+          ticketNumber: `STORY-${trialId}001`,
+          title: "Advanced File Validation",
+          description: "As a customer, I want the system to validate my uploaded ID to ensure it's legitimate and readable.",
+          acceptanceCriteria: "Given I upload an ID document, when the system processes it, then it should validate the document format, check for required fields (name, date of birth, ID number), verify image quality, and detect potential fraud indicators.",
+          priority: 'High' as const,
+          storyPoints: 8
+        }];
+      
+      case 3: // Edge Cases & Business Rules
+        return [{
+          ...baseStory,
+          id: `trial-${trialId}-story-1`,
+          ticketNumber: `STORY-${trialId}001`,
+          title: "ID Verification with Fraud Detection",
+          description: "As a business, I want to automatically detect potentially fraudulent ID uploads to protect against identity theft and compliance violations.",
+          acceptanceCriteria: "Given a customer uploads an ID, when the system analyzes it, then it should check against known fraud patterns, verify document authenticity, cross-reference with existing accounts, and flag suspicious uploads for manual review while maintaining GDPR compliance.",
+          priority: 'High' as const,
+          storyPoints: 13
+        }];
+      
+      default:
+        return [baseStory];
+    }
+  };
+
   // Load progress from localStorage
   useEffect(() => {
     const savedTrials = localStorage.getItem('refinement_trials_progress');
@@ -70,18 +161,49 @@ export const BacklogRefinementSim: React.FC = () => {
   }, [trials]);
 
   const startTrial = (trialId: number) => {
-    // TODO: Launch the refinement meeting simulation
     console.log('Starting refinement trial:', trialId);
     
-    // Mark trial as completed (for demo purposes)
-    setTrials(prev => prev.map(trial => 
-      trial.id === trialId ? { ...trial, completed: true } : trial
-    ));
+    // Generate stories for this trial
+    const stories = generateTrialStories(trialId);
+    
+    // Launch the refinement meeting in observation mode
+    setActiveMeeting({
+      trialId,
+      stories,
+      isWatching: true
+    });
   };
 
   const startPractice = () => {
-    // TODO: Launch interactive refinement where user is the BA
     console.log('Starting interactive refinement practice');
+    
+    // Use the first trial's story for practice
+    const stories = generateTrialStories(1);
+    
+    // Launch the refinement meeting in practice mode
+    setActiveMeeting({
+      trialId: 1,
+      stories,
+      isWatching: false
+    });
+  };
+
+  const handleMeetingEnd = (results: any) => {
+    console.log('Meeting ended with results:', results);
+    
+    // Mark the trial as completed
+    if (activeMeeting) {
+      setTrials(prev => prev.map(trial => 
+        trial.id === activeMeeting.trialId ? { ...trial, completed: true } : trial
+      ));
+    }
+    
+    // Close the meeting
+    setActiveMeeting(null);
+  };
+
+  const handleMeetingClose = () => {
+    setActiveMeeting(null);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -98,6 +220,17 @@ export const BacklogRefinementSim: React.FC = () => {
       trial.id === trialId + 1 ? { ...trial, locked: false } : trial
     ));
   };
+
+  // Show refinement meeting if active
+  if (activeMeeting) {
+    return (
+      <RefinementMeetingView
+        stories={activeMeeting.stories}
+        onMeetingEnd={handleMeetingEnd}
+        onClose={handleMeetingClose}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
