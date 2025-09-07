@@ -4,8 +4,9 @@ import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Squar
 import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
 // import { Message } from '../../types'; // Using custom interface for refinement meeting
-// import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS'; // Using browser TTS instead
+import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
+import { playPreGeneratedAudio, findPreGeneratedAudio, hasPreGeneratedAudio } from '../../services/preGeneratedAudioService';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
@@ -256,8 +257,18 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     setIsMeetingActive(true);
     console.log('🎬 RefinementMeetingView mounted - meeting is active');
     
-    // No need to pre-generate audio - using browser TTS
-    console.log('🎵 AUDIO: Using browser TTS (no pre-generation needed)');
+    // Pre-generate audio for the refinement meeting
+    const preGenerateAudio = async () => {
+      try {
+        const { audioCacheService } = await import('../../services/audioCacheService');
+        await audioCacheService.preGenerateRefinementMeetingAudio();
+        console.log('🎵 AUDIO: Pre-generation completed');
+      } catch (error) {
+        console.warn('⚠️ AUDIO: Failed to pre-generate audio:', error);
+      }
+    };
+    
+    preGenerateAudio();
   }, []);
 
   // Voice Meeting Audio Control (reused from VoiceOnlyMeetingView)
@@ -285,9 +296,24 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
       const voiceName = teamMember.voiceId;
       console.log('🎵 Using voice:', voiceName, 'for team member:', teamMember.name);
-      console.log('🔧 Using browser TTS (no API calls)');
+      console.log('🔧 Checking for pre-generated audio...');
       
-      if (false) { // Disabled ElevenLabs, using browser TTS
+      // First, try to find pre-generated audio
+      const preGeneratedAudio = findPreGeneratedAudio(teamMember.name, text);
+      if (preGeneratedAudio) {
+        console.log('✅ Using pre-generated audio:', preGeneratedAudio.id);
+        await playPreGeneratedAudio(preGeneratedAudio.id);
+        console.log(`🚀 AUDIO DEBUG: ${teamMember.name} pre-generated audio completed`);
+        setIsAudioPlaying(false);
+        setPlayingMessageId(null);
+        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
+        return Promise.resolve();
+      }
+      
+      // Fallback to ElevenLabs if no pre-generated audio found
+      console.log('🔧 ElevenLabs TTS Available:', elevenConfigured());
+      
+      if (elevenConfigured()) {
           console.log('✅ Using ElevenLabs TTS for audio synthesis');
           
           // Add timeout to prevent hanging
@@ -352,7 +378,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           return Promise.resolve();
         }
       } else {
-        console.log('✅ Using browser TTS for audio synthesis');
+        console.log('⚠️ ElevenLabs TTS not available, falling back to browser TTS');
         await playBrowserTTS(text);
         console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio completed`);
         setIsAudioPlaying(false);
@@ -381,7 +407,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   };
 
   // EXACT COPY of working processDynamicStakeholderResponse from VoiceOnlyMeetingView
-  const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
+  const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string, audioId?: string) => {
     console.log(`🚀 QUEUE DEBUG: ${teamMember.name} starting addAIMessage`);
     console.log(`🚀 QUEUE DEBUG: Current speaker before: ${currentSpeaking}`);
     console.log(`🚀 QUEUE DEBUG: Current queue before: [${conversationQueue.join(', ')}]`);
@@ -433,7 +459,18 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       // Play audio - EXACT COPY
       console.log('🎵 Attempting to play audio for:', teamMember.name);
       const cleanText = cleanMarkdownForTTS(text);
-      await playMessageAudio(message.id, cleanText, teamMember, true);
+      
+      // Use pre-generated audio if audioId provided, otherwise use regular audio
+      if (audioId && hasPreGeneratedAudio(audioId)) {
+        console.log('✅ Using pre-generated audio:', audioId);
+        await playPreGeneratedAudio(audioId);
+        console.log(`🚀 AUDIO DEBUG: ${teamMember.name} pre-generated audio completed`);
+        setIsAudioPlaying(false);
+        setPlayingMessageId(null);
+        setAudioStates(prev => ({ ...prev, [message.id]: 'stopped' }));
+      } else {
+        await playMessageAudio(message.id, cleanText, teamMember, true);
+      }
       
       // Finish speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} finished speaking, clearing currentSpeaking`);
@@ -477,7 +514,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     const greetingMessage = `Good morning everyone. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review today. Bola, could you please present the first story for us?`;
     await addAIMessage(
       teamMembers[0], // Sarah (Scrum Master)
-      greetingMessage
+      greetingMessage,
+      'sarah-opening'
     );
     
     // Then BA presents the story (only if meeting is still active)
@@ -537,7 +575,7 @@ ${cleanAcceptanceCriteria}`;
         setIsViewingStory(true); // Mark as viewing mode (read-only)
         console.log('📋 Story opened for viewing as BA starts presenting');
         
-        await addAIMessage(baMember, baPresentation);
+        await addAIMessage(baMember, baPresentation, 'bola-presentation');
         
         // Auto-scroll the story content as BA reads
         if (storyContentRef.current) {
@@ -577,7 +615,7 @@ ${cleanAcceptanceCriteria}`;
     const srikanthResponse = "Thanks Bola, that's clear. Just one quick question - when you say 'one or more files', is there a maximum number of files a tenant can upload per request?";
     const srikanth = teamMembers.find(m => m.name === 'Srikanth');
     if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse);
+      await addAIMessage(srikanth, srikanthResponse, 'srikanth-question');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -586,7 +624,7 @@ ${cleanAcceptanceCriteria}`;
     const baResponse = "Good question Srikanth. Yes, users should be able to upload multiple files at once - up to 5 attachments per maintenance request. So a tenant could upload, for example, 3 photos of the issue, a PDF document with additional details, and a video showing the problem. This gives them flexibility to provide comprehensive evidence for their maintenance request.";
     const baMember2 = teamMembers.find(m => m.role === 'Business Analyst');
     if (baMember2) {
-      await addAIMessage(baMember2, baResponse);
+      await addAIMessage(baMember2, baResponse, 'bola-answer');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -595,7 +633,7 @@ ${cleanAcceptanceCriteria}`;
     const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
     const lisa = teamMembers.find(m => m.name === 'Lisa');
     if (lisa) {
-      await addAIMessage(lisa, lisaResponse);
+      await addAIMessage(lisa, lisaResponse, 'lisa-technical');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -603,7 +641,7 @@ ${cleanAcceptanceCriteria}`;
     // Srikanth responds to Lisa's technical discussion
     const srikanthResponse2 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
     if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse2);
+      await addAIMessage(srikanth, srikanthResponse2, 'srikanth-response');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -612,7 +650,7 @@ ${cleanAcceptanceCriteria}`;
     const tomResponse = "From a testing perspective, we'll need to test all the edge cases - corrupted files, oversized files, wrong file types. I'll create test cases for the error messages to make sure they're user-friendly.";
     const tom = teamMembers.find(m => m.name === 'Tom');
     if (tom) {
-      await addAIMessage(tom, tomResponse);
+      await addAIMessage(tom, tomResponse, 'tom-testing');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -621,7 +659,7 @@ ${cleanAcceptanceCriteria}`;
     const sarahResponse = "Great discussion team. Based on what I'm hearing, this feels like a solid 5-point story. Srikanth, as our senior developer, do you agree with that estimate?";
     const sarah = teamMembers.find(m => m.name === 'Sarah');
     if (sarah) {
-      await addAIMessage(sarah, sarahResponse);
+      await addAIMessage(sarah, sarahResponse, 'sarah-sizing');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -629,7 +667,7 @@ ${cleanAcceptanceCriteria}`;
     // Srikanth confirms the story point estimate
     const srikanthResponse3 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
     if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse3);
+      await addAIMessage(srikanth, srikanthResponse3, 'srikanth-confirm');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -655,7 +693,7 @@ ${cleanAcceptanceCriteria}`;
     }
     
     if (sarah) {
-      await addAIMessage(sarah, sarahResponse2);
+      await addAIMessage(sarah, sarahResponse2, 'sarah-conclude');
     }
     
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -664,7 +702,7 @@ ${cleanAcceptanceCriteria}`;
     const baFollowUp = "Great questions everyone. I'm glad we could clarify the requirements. The story covers the core functionality tenants need - being able to upload photos and documents to support their maintenance requests. This should help our housing team get better context and resolve issues faster. Does anyone have any other questions about the business requirements?";
     const baMember3 = teamMembers.find(m => m.role === 'Business Analyst');
     if (baMember3) {
-      await addAIMessage(baMember3, baFollowUp);
+      await addAIMessage(baMember3, baFollowUp, 'bola-final');
     }
   };
 
