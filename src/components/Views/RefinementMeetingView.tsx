@@ -379,16 +379,16 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       return newQueue;
     });
     
-    // Wait for turn if someone else is speaking
+    // Wait for turn if someone else is speaking (but with shorter timeout)
     let waitCount = 0;
     while (currentSpeaker !== null && currentSpeaker.name !== teamMember.name && isMeetingActive) {
       waitCount++;
       console.log(`🎤 QUEUE: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaker?.name}`);
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Safety break after 100 attempts (10 seconds) or if meeting is no longer active
-      if (waitCount > 100 || !isMeetingActive) {
-        console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long or meeting inactive! Breaking wait loop.`);
+      // Safety break after 20 attempts (2 seconds) or if meeting is no longer active
+      if (waitCount > 20 || !isMeetingActive) {
+        console.log(`🚨 QUEUE: ${teamMember.name} breaking wait loop after ${waitCount} attempts. Proceeding anyway.`);
         break;
       }
     }
@@ -539,7 +539,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (srikanth) {
             await addAIMessage(srikanth, srikanthResponse);
           }
-        }, 8000); // Wait for BA to finish
+        }, 3000); // Wait for BA to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -550,7 +550,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (baMember) {
             await addAIMessage(baMember, bolaResponse);
           }
-        }, 12000); // Wait for Srikanth to finish
+        }, 6000); // Wait for Srikanth to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -561,7 +561,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (lisa) {
             await addAIMessage(lisa, lisaResponse);
           }
-        }, 16000); // Wait for BA to finish
+        }, 9000); // Wait for BA to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -572,7 +572,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (srikanth) {
             await addAIMessage(srikanth, srikanthResponse2);
           }
-        }, 20000); // Wait for Lisa to finish
+        }, 12000); // Wait for Lisa to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -583,7 +583,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (tom) {
             await addAIMessage(tom, tomResponse);
           }
-        }, 24000); // Wait for Srikanth to finish
+        }, 15000); // Wait for Srikanth to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -594,7 +594,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (sarah) {
             await addAIMessage(sarah, sarahResponse);
           }
-        }, 28000); // Wait for Tom to finish
+        }, 18000); // Wait for Tom to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -605,7 +605,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (srikanth) {
             await addAIMessage(srikanth, srikanthResponse3);
           }
-        }, 32000); // Wait for Sarah to finish
+        }, 21000); // Wait for Sarah to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -634,7 +634,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (sarah) {
             await addAIMessage(sarah, sarahResponse2);
           }
-        }, 36000); // Wait for Srikanth to finish
+        }, 24000); // Wait for Srikanth to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -645,7 +645,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (baMember) {
             await addAIMessage(baMember, baFollowUp);
           }
-        }, 24000); // Wait for Sarah to finish
+        }, 27000); // Wait for Sarah to finish
         
       }, 3000); // Wait for Scrum Master to finish
       

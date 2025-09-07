@@ -91,7 +91,7 @@ class AgileRefinementService {
       {
         name: 'Bola',
         role: 'Business Analyst',
-        voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA || 'en-US-AriaNeural',
+        voiceId: 'xeBpkkuzgxa0IwKt7NTP', // Hardcoded to fix caching issue
         personality: 'Detail-oriented, user-focused, collaborative',
         focusAreas: ['Requirements clarity', 'User experience', 'Business value', 'Acceptance criteria'],
         responseStyle: 'Presents requirements clearly and answers stakeholder questions'
