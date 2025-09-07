@@ -238,7 +238,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       
       if (elevenConfigured()) {
           console.log('✅ Using ElevenLabs TTS for audio synthesis');
-          const audioBlob = await synthesizeToBlob(text, { stakeholderName: teamMember.name });
+          const audioBlob = await synthesizeToBlob(text, { 
+            stakeholderName: teamMember.name,
+            voiceId: teamMember.voiceId 
+          });
           
           if (audioBlob) {
           const audioUrl = URL.createObjectURL(audioBlob);

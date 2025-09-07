@@ -6,6 +6,10 @@ const VOICE_ID_JESS = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JESS as string | 
 const VOICE_ID_DAVID = import.meta.env.VITE_ELEVENLABS_VOICE_ID_DAVID as string | undefined
 const VOICE_ID_JAMES = import.meta.env.VITE_ELEVENLABS_VOICE_ID_JAMES as string | undefined
 const VOICE_ID_EMILY = import.meta.env.VITE_ELEVENLABS_VOICE_ID_EMILY as string | undefined
+const VOICE_ID_SRIKANTH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH as string | undefined
+const VOICE_ID_BOLA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA as string | undefined
+const VOICE_ID_SARAH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH as string | undefined
+const VOICE_ID_LISA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA as string | undefined
 const ENABLE_ELEVENLABS = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'true'
 
 // Audio cache for frequently used phrases
@@ -59,6 +63,18 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
   } else if (key === 'emily' && VOICE_ID_EMILY) {
     resolvedVoiceId = VOICE_ID_EMILY
     console.log(`🎤 VOICE RESOLUTION: Emily -> ${resolvedVoiceId}`)
+  } else if (key === 'srikanth' && VOICE_ID_SRIKANTH) {
+    resolvedVoiceId = VOICE_ID_SRIKANTH
+    console.log(`🎤 VOICE RESOLUTION: Srikanth -> ${resolvedVoiceId}`)
+  } else if (key === 'bola' && VOICE_ID_BOLA) {
+    resolvedVoiceId = VOICE_ID_BOLA
+    console.log(`🎤 VOICE RESOLUTION: Bola -> ${resolvedVoiceId}`)
+  } else if (key === 'sarah' && VOICE_ID_SARAH) {
+    resolvedVoiceId = VOICE_ID_SARAH
+    console.log(`🎤 VOICE RESOLUTION: Sarah -> ${resolvedVoiceId}`)
+  } else if (key === 'lisa' && VOICE_ID_LISA) {
+    resolvedVoiceId = VOICE_ID_LISA
+    console.log(`🎤 VOICE RESOLUTION: Lisa -> ${resolvedVoiceId}`)
   } else {
     resolvedVoiceId = DEFAULT_VOICE_ID
     console.log(`🎤 VOICE RESOLUTION: No specific match, using DEFAULT -> ${resolvedVoiceId}`)
