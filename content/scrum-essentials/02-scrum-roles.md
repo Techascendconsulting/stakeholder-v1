@@ -4,6 +4,8 @@ title: "Scrum Roles"
 estMinutes: 12
 ---
 
+## Introduction — A Different Team Structure
+
 When you join a Scrum team as a Business Analyst, the first thing you'll notice is that it feels very different from a traditional project team. There are no long chains of command, no heavy project plans pinned on walls, and no single "project manager" who tells everyone what to do. Instead, Scrum divides responsibility across three core roles: the Product Owner, the Scrum Master, and the Developers.
 
 And while the official Scrum Guide doesn't mention a Business Analyst at all, in practice you will almost always be there — because without you, requirements don't move from vague ideas to clear, testable stories.

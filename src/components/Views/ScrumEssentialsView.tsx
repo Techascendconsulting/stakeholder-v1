@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, ArrowRight, Star, Lightbulb, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, ArrowRight, Star, Lightbulb, AlertCircle, CheckSquare } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
@@ -253,6 +253,11 @@ const ScrumEssentialsView: React.FC = () => {
       'The Developers': <Zap className="w-5 h-5 text-purple-600" />,
       'The Business Analyst': <FileText className="w-5 h-5 text-indigo-600" />,
       'Putting It All Together': <Lightbulb className="w-5 h-5 text-purple-600" />,
+      'The Scrum Approach': <Zap className="w-5 h-5 text-purple-600" />,
+      'Why Scrum is Used': <Target className="w-5 h-5 text-indigo-600" />,
+      'What This Means for You as a BA': <FileText className="w-5 h-5 text-purple-600" />,
+      'The Consequences of Poor Scrum Implementation': <AlertCircle className="w-5 h-5 text-indigo-600" />,
+      'Introduction': <BookOpen className="w-5 h-5 text-purple-600" />,
       'Backlog Refinement': <Target className="w-5 h-5 text-purple-600" />,
       'Sprint Planning': <CheckSquare className="w-5 h-5 text-indigo-600" />,
       'Daily Scrum': <Users className="w-5 h-5 text-purple-600" />,
