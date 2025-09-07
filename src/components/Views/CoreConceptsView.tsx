@@ -15,6 +15,7 @@ import {
   Play,
   Clock
 } from 'lucide-react';
+import { useApp } from '../../contexts/AppContext';
 
 interface ConceptCard {
   id: number;
@@ -243,6 +244,7 @@ const concepts: ConceptCard[] = [
 
 // Main CoreConceptsView Component
 const CoreConceptsView: React.FC = () => {
+  const { setCurrentView } = useApp();
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<ConceptCard | null>(null);
 
@@ -442,10 +444,18 @@ const CoreConceptsView: React.FC = () => {
       {/* Footer */}
       <div className="border-t border-gray-200 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="text-center">
+          <div className="text-center space-y-4">
             <p className="text-gray-600">
               Complete all concepts to build a comprehensive understanding of Business Analysis
             </p>
+            <button
+              onClick={() => setCurrentView('training-hub')}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <Play className="w-5 h-5" />
+              <span>Start Project Practice</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>

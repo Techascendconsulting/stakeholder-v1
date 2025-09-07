@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: Target,
       subItems: [
         { id: 'training-hub', label: 'Project Practice', icon: Target },
-        { id: 'agile-practice', label: 'Agile Practice', icon: Zap },
+        { id: 'agile-practice', label: 'Scrum Practice', icon: Zap },
         { id: 'training-deliverables', label: 'Practice Deliverables', icon: FileText },
         { id: 'progress-tracking', label: 'Progress Tracking', icon: BarChart3 }
       ]
