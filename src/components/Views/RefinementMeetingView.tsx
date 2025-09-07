@@ -11,6 +11,21 @@ import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 
+// Utility function to clean markdown formatting for TTS
+const cleanMarkdownForTTS = (text: string): string => {
+  return text
+    .replace(/\*\*/g, '') // Remove bold markers
+    .replace(/\*/g, '') // Remove italic markers
+    .replace(/^#+\s*/gm, '') // Remove markdown headers
+    .replace(/^\d+\.\s*/gm, '') // Remove numbered list formatting
+    .replace(/^-\s*/gm, '') // Remove bullet points
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold formatting
+    .replace(/\*([^*]+)\*/g, '$1') // Remove italic formatting
+    .replace(/`([^`]+)`/g, '$1') // Remove code formatting
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+    .trim();
+};
+
 // AgileTicket interface
 interface AgileTicket {
   id: string;
@@ -368,9 +383,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       return [...prev, message];
     });
     
-    // Play audio using voice meeting logic
+    // Play audio using voice meeting logic (clean markdown for TTS)
     console.log('🎵 Attempting to play audio for:', teamMember.name);
-    await playMessageAudio(message.id, text, teamMember, true);
+    const cleanText = cleanMarkdownForTTS(text);
+    await playMessageAudio(message.id, cleanText, teamMember, true);
     
     // Remove from queue and clear speaker when done
     setTimeout(() => {
@@ -403,14 +419,20 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       // Then BA presents the story
       setTimeout(async () => {
         const currentStory = initialStories[0];
+        
+        // Clean markdown formatting from the story content
+        const cleanTitle = cleanMarkdownForTTS(currentStory.title);
+        const cleanDescription = cleanMarkdownForTTS(currentStory.description);
+        const cleanAcceptanceCriteria = cleanMarkdownForTTS(currentStory.acceptanceCriteria || '');
+        
         const baPresentation = `Thank you Sarah. I'd like to present our first story for refinement today. 
 
-**Story Title:** ${currentStory.title}
+Story Title: ${cleanTitle}
 
-**User Story:** ${currentStory.description}
+User Story: ${cleanDescription}
 
-**Acceptance Criteria:**
-${currentStory.acceptanceCriteria}
+Acceptance Criteria:
+${cleanAcceptanceCriteria}
 
 This story is about allowing tenants to upload attachments when submitting maintenance requests. The key requirements are supporting JPG, PNG, and JPEG files with a 5MB size limit, and making the upload optional. 
 
