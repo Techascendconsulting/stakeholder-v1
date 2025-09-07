@@ -1140,7 +1140,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
                 <ParticipantCard
                   key={member.name}
                   participant={member}
-                  isCurrentSpeaker={currentSpeaker?.name === member.name}
+                  isCurrentSpeaker={currentSpeaking === member.name}
                   isUser={false}
                 />
               ))}
@@ -1153,7 +1153,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
                   <ParticipantCard
                     key={member.name}
                     participant={member}
-                    isCurrentSpeaker={currentSpeaker?.name === member.name}
+                    isCurrentSpeaker={currentSpeaking === member.name}
                     isUser={false}
                   />
                 ))}
@@ -1167,7 +1167,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
                   <ParticipantCard
                     key={teamMembers[3].name}
                     participant={teamMembers[3]}
-                    isCurrentSpeaker={currentSpeaker?.name === teamMembers[3].name}
+                    isCurrentSpeaker={currentSpeaking === teamMembers[3].name}
                     isUser={false}
                   />
                 </div>
