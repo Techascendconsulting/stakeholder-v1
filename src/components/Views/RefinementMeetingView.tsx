@@ -306,9 +306,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setCurrentAudio(null);
             setPlayingMessageId(null);
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaking(null); // Clear current speaker
+            setCurrentSpeaking(null); // Clear current speaker - CRITICAL for turn-taking
             setIsAudioPlaying(false);
-            console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio naturally ended`);
+            console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio naturally ended - cleared currentSpeaking`);
             resolve();
           };
           
@@ -372,7 +372,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }
   };
 
-  // Add AI message with proper turn-taking system (same as voice-only meetings)
+  // Add AI message with EXACT turn-taking system from voice-only meetings
   const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
     // Check if meeting is still active
     if (!isMeetingActive) {
@@ -385,28 +385,28 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     console.log(`🚀 QUEUE DEBUG: Current queue before: [${conversationQueue.join(', ')}]`);
     
     try {
-      // Add to conversation queue to prevent simultaneous speaking
+      // Add to conversation queue to prevent simultaneous speaking - EXACT COPY
       setConversationQueue(prev => {
         const newQueue = [...prev, teamMember.name];
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} added to queue. New queue: [${newQueue.join(', ')}]`);
         return newQueue;
       });
       
-      // Wait for turn if someone else is speaking
+      // Wait for turn if someone else is speaking - EXACT COPY
       let waitCount = 0;
       while (currentSpeaking !== null && currentSpeaking !== teamMember.name) {
         waitCount++;
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Safety break after 100 attempts (10 seconds)
+        // Safety break after 100 attempts (10 seconds) - EXACT COPY
         if (waitCount > 100) {
           console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long! Breaking wait loop.`);
           break;
         }
       }
       
-      // Start speaking
+      // Start speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} now taking turn to speak`);
       setCurrentSpeaking(teamMember.name);
     
@@ -434,12 +434,11 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       setCurrentSpeaking(null); // Clear current speaker on error
     }
     
-    // Remove from queue and clear speaker when done
+    // Remove from queue when done (currentSpeaking cleared by audio completion)
     setTimeout(() => {
       setConversationQueue(prev => prev.filter(name => name !== teamMember.name));
-      setCurrentSpeaking(null);
-      console.log(`🎤 QUEUE: ${teamMember.name} finished speaking`);
-    }, 3000); // Give time for audio to finish
+      console.log(`🎤 QUEUE: ${teamMember.name} removed from queue`);
+    }, 1000); // Short delay to remove from queue
   };
 
   // Handle meeting start
