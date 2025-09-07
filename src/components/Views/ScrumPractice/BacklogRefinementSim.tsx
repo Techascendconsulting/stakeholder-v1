@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Sparkles, User, ClipboardList, Play, CheckCircle, Lock, Eye } from 'lucide-react';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../../../contexts/AppContext';
 
 interface RefinementTrial {
   id: number;
