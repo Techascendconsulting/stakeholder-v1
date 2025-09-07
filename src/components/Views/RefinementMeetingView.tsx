@@ -278,7 +278,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         return Promise.resolve();
       }
 
-      setCurrentSpeaking(teamMember.name);
+      // Don't set currentSpeaking here - addAIMessage handles it
       setIsAudioPlaying(true);
 
       const voiceName = teamMember.voiceId;
@@ -318,7 +318,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setCurrentAudio(null);
             setPlayingMessageId(null);
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaking(null); // Clear current speaker
+            // Don't clear currentSpeaking here - addAIMessage handles it
             setIsAudioPlaying(false);
             resolve();
           };
@@ -331,7 +331,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setCurrentAudio(null);
             setPlayingMessageId(null);
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaking(null);
+            // Don't clear currentSpeaking here - addAIMessage handles it
             setIsAudioPlaying(false);
             resolve();
           });
@@ -342,18 +342,15 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         }
       } else {
         console.log('⚠️ ElevenLabs TTS not available, skipping audio playback');
-        setCurrentSpeaking(teamMember.name);
         setIsAudioPlaying(false);
         // Still show visual feedback that someone is "speaking"
         setTimeout(() => {
-          setCurrentSpeaking(null);
           console.log(`📝 ${teamMember.name} finished speaking (text-only mode)`);
         }, 2000); // Show speaker for 2 seconds
         return Promise.resolve();
       }
     } catch (error) {
       console.error('Error in playMessageAudio:', error);
-      setCurrentSpeaking(null);
       setIsAudioPlaying(false);
       return Promise.resolve();
     }
