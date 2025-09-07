@@ -270,6 +270,10 @@ const ScrumEssentialsView: React.FC = () => {
       'Definition of Ready': <CheckSquare className="w-5 h-5 text-indigo-600" />,
       'Definition of Done': <CheckCircle className="w-5 h-5 text-purple-600" />,
       'Bringing the Artefacts Together': <ArrowRight className="w-5 h-5 text-indigo-600" />,
+      'The Setup': <BookOpen className="w-5 h-5 text-purple-600" />,
+      'Your Role as the BA': <FileText className="w-5 h-5 text-indigo-600" />,
+      'Why It Matters': <Lightbulb className="w-5 h-5 text-purple-600" />,
+      'Summary': <CheckCircle className="w-5 h-5 text-indigo-600" />,
     };
     
     return iconMap[header] || <BookOpen className="w-5 h-5 text-purple-600" />;
