@@ -186,6 +186,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [isProcessingResponse, setIsProcessingResponse] = useState(false);
   const [isMeetingActive, setIsMeetingActive] = useState(true);
   
+  // Ref for story content auto-scrolling
+  const storyContentRef = useRef<HTMLDivElement>(null);
+  
   // Voice input state (reusing voice meeting patterns)
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -433,7 +436,13 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           stories: [...prev.discussing.stories, firstStoryId]
         }
       }));
-      console.log('📋 Story moved to "Currently Discussing"');
+      
+      // Open the story for viewing
+      setSelectedStoryId(firstStoryId);
+      const firstStory = initialStories[0];
+      setEditingStory({ ...firstStory });
+      setIsEditingStory(true);
+      console.log('📋 Story moved to "Currently Discussing" and opened for viewing');
     }
     
     // Ensure audio is enabled for the meeting
@@ -490,6 +499,33 @@ I'd like to get your thoughts on the technical implementation and any questions 
         };
         
         await addAIMessage(baMember, baPresentation);
+        
+        // Auto-scroll the story content as BA reads
+        if (storyContentRef.current) {
+          storyContentRef.current.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+          
+          // Scroll through the content as BA reads
+          setTimeout(() => {
+            if (storyContentRef.current) {
+              storyContentRef.current.scrollTo({
+                top: storyContentRef.current.scrollHeight / 3,
+                behavior: 'smooth'
+              });
+            }
+          }, 2000);
+          
+          setTimeout(() => {
+            if (storyContentRef.current) {
+              storyContentRef.current.scrollTo({
+                top: storyContentRef.current.scrollHeight,
+                behavior: 'smooth'
+              });
+            }
+          }, 4000);
+        }
         
         // After BA presents, team members respond with realistic questions
         setTimeout(async () => {
@@ -817,6 +853,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
   const openStoryEditor = (story: AgileTicket) => {
     setEditingStory({ ...story });
     setIsEditingStory(true);
+    setSelectedStoryId(story.id);
   };
 
   const saveStoryChanges = () => {
@@ -1318,7 +1355,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
       {/* Jira-Style Story Editor Modal */}
       {isEditingStory && editingStory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900" ref={storyContentRef}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">Edit Story</h2>
               <button
