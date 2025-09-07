@@ -274,6 +274,12 @@ const ScrumEssentialsView: React.FC = () => {
       'Your Role as the BA': <FileText className="w-5 h-5 text-indigo-600" />,
       'Why It Matters': <Lightbulb className="w-5 h-5 text-purple-600" />,
       'Summary': <CheckCircle className="w-5 h-5 text-indigo-600" />,
+      'What "Just Enough" Documentation Means': <Target className="w-5 h-5 text-purple-600" />,
+      'Key Artifacts You\'ll Own as a BA': <FileText className="w-5 h-5 text-indigo-600" />,
+      'Where Does This Documentation Live?': <BookOpen className="w-5 h-5 text-purple-600" />,
+      'How Requirements Evolve': <ArrowRight className="w-5 h-5 text-indigo-600" />,
+      'How Much Is Enough?': <Lightbulb className="w-5 h-5 text-purple-600" />,
+      'The BA\'s Real Job in Documentation': <CheckCircle className="w-5 h-5 text-indigo-600" />,
     };
     
     return iconMap[header] || <BookOpen className="w-5 h-5 text-purple-600" />;
