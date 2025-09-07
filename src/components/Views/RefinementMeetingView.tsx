@@ -977,12 +977,10 @@ ${cleanAcceptanceCriteria}`;
             )}
           </div>
           
-          {!elevenConfigured() && (
-            <div className="flex items-center space-x-2 text-yellow-400">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-              <span className="text-sm">Text Only</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-2 text-green-400">
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            <span className="text-sm">Browser TTS</span>
+          </div>
         </div>
 
         <div className="flex items-center space-x-3">
