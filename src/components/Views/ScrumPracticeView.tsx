@@ -49,100 +49,111 @@ interface TrainingMeeting {
   completedAt: string;
 }
 
-// Training scenarios based on Scrum Essentials sections
+// Training scenarios based on actual Scrum Essentials content
 const trainingScenarios: TrainingScenario[] = [
   {
     id: 'scrum-roles-practice',
-    title: 'Scrum Roles Practice',
-    description: 'Practice working with Product Owner, Scrum Master, and Developers in realistic scenarios',
+    title: 'Customer ID Upload: Working with Scrum Roles',
+    description: 'Practice the BA role in a customer onboarding scenario where ID checks are too slow. Work with Product Owner, Scrum Master, and Developers to solve this business problem.',
     section: 'Section 2: Scrum Roles',
     difficulty: 'Beginner',
     duration: '15-20 min',
-    skills: ['Role Understanding', 'Collaboration', 'Communication'],
+    skills: ['Role Understanding', 'Stakeholder Translation', 'Team Collaboration'],
     objectives: [
-      'Understand each Scrum role\'s responsibilities',
-      'Practice effective communication between roles',
-      'Learn how to collaborate as a BA in a Scrum team'
+      'Practice translating PO priorities into clear requirements',
+      'Work with Scrum Master on process blockers',
+      'Answer detailed developer questions about business needs',
+      'Experience being the "translator" between business and technical teams'
     ],
     status: 'Not Started',
     progress: 0
   },
   {
     id: 'scrum-events-practice',
-    title: 'Scrum Events Practice',
-    description: 'Practice participating in Daily Scrum, Sprint Planning, Review, and Retrospective',
+    title: 'ID Upload Feature: Scrum Events in Action',
+    description: 'Take the ID upload story through all Scrum events: Refinement, Sprint Planning, Daily Scrum, Review, and Retrospective. Experience the complete sprint cycle.',
     section: 'Section 3: Scrum Events',
     difficulty: 'Intermediate',
     duration: '25-30 min',
-    skills: ['Event Facilitation', 'Time Management', 'Team Coordination'],
+    skills: ['Event Facilitation', 'Story Refinement', 'Sprint Planning'],
     objectives: [
-      'Lead effective Sprint Planning sessions',
-      'Participate in Daily Scrum meetings',
-      'Facilitate Sprint Reviews and Retrospectives'
+      'Lead refinement sessions with developer questions about file formats and error handling',
+      'Present stories in Sprint Planning with Definition of Ready',
+      'Handle requirements blockers in Daily Scrum',
+      'Validate increments against acceptance criteria in Sprint Review',
+      'Reflect on requirements process in Retrospective'
     ],
     status: 'Not Started',
     progress: 0
   },
   {
     id: 'scrum-artefacts-practice',
-    title: 'Scrum Artefacts Practice',
-    description: 'Practice working with Product Backlog, Sprint Backlog, and Increments',
+    title: 'Managing ID Upload: Product Backlog to Increment',
+    description: 'Practice managing the complete lifecycle of the ID upload story through Product Backlog, Sprint Backlog, and validating the final Increment.',
     section: 'Section 4: Scrum Artefacts',
     difficulty: 'Beginner',
     duration: '15-20 min',
-    skills: ['Backlog Management', 'Sprint Planning', 'Definition of Done'],
+    skills: ['Backlog Management', 'Definition of Ready', 'Definition of Done'],
     objectives: [
-      'Manage Product Backlog effectively',
-      'Prepare items for Sprint Planning',
-      'Validate completed increments'
+      'Place user stories in Product Backlog with proper prioritization',
+      'Ensure stories meet Definition of Ready before Sprint Planning',
+      'Track stories through Sprint Backlog during development',
+      'Validate completed Increment against acceptance criteria',
+      'Apply Definition of Done to ensure quality'
     ],
     status: 'Not Started',
     progress: 0
   },
   {
     id: 'backlog-refinement-practice',
-    title: 'Backlog Refinement Practice',
-    description: 'Practice the BA\'s key role in making user stories ready for development',
+    title: 'Refining the ID Upload Story: The BA\'s Playground',
+    description: 'Practice the BA\'s key role in backlog refinement. Take a basic user story and work with developers to make it sprint-ready through questions and collaboration.',
     section: 'Section 5: Backlog Refinement',
     difficulty: 'Intermediate',
     duration: '20-25 min',
-    skills: ['Story Writing', 'Acceptance Criteria', 'Team Collaboration'],
+    skills: ['Story Writing', 'Question Handling', 'Acceptance Criteria'],
     objectives: [
-      'Write clear, testable user stories',
-      'Facilitate effective refinement sessions',
-      'Break down complex requirements'
+      'Present initial user story: "As a customer, I want to upload a valid ID so I can complete my account verification"',
+      'Handle developer questions about file formats, blurry photos, fraud detection',
+      'Update acceptance criteria based on team discussion',
+      'Split large stories into smaller, deliverable chunks',
+      'Ensure story is clear, complete, and ready for sprint'
     ],
     status: 'Not Started',
     progress: 0
   },
   {
     id: 'requirements-docs-practice',
-    title: 'Requirements Documentation Practice',
-    description: 'Practice writing just-enough documentation for Scrum teams',
+    title: 'Just-Enough Documentation: ID Upload Requirements',
+    description: 'Practice writing lean, living documentation for the ID upload feature. Balance detail with agility while ensuring developers have what they need.',
     section: 'Section 6: Requirements Documentation',
     difficulty: 'Beginner',
     duration: '15-20 min',
-    skills: ['Documentation', 'User Stories', 'Acceptance Criteria'],
+    skills: ['User Stories', 'Acceptance Criteria', 'Edge Cases'],
     objectives: [
-      'Write just-enough documentation',
-      'Create effective user stories',
-      'Define clear acceptance criteria'
+      'Write clear user story: "As a new customer, I want to upload my ID online so that I can complete onboarding quickly"',
+      'Define testable acceptance criteria with Given-When-Then format',
+      'Document edge cases: file too large, wrong format, blurry photos',
+      'Create process maps for before-and-after scenarios',
+      'Practice progressive documentation that evolves with development'
     ],
     status: 'Not Started',
     progress: 0
   },
   {
     id: 'delivery-flow-practice',
-    title: 'End-to-End Delivery Practice',
-    description: 'Practice the complete flow from problem exploration to working software',
+    title: 'Complete BA Journey: From Problem to Working Software',
+    description: 'Experience the full BA delivery flow using the customer onboarding problem. Go from problem exploration through process mapping to working ID upload feature.',
     section: 'Section 7: Delivery Flow',
     difficulty: 'Advanced',
     duration: '30-35 min',
-    skills: ['Process Mapping', 'Stakeholder Management', 'Solution Design'],
+    skills: ['Problem Exploration', 'Process Mapping', 'Solution Design'],
     objectives: [
-      'Navigate complete BA delivery flow',
-      'Practice problem exploration',
-      'Design end-to-end solutions'
+      'Explore the problem: "Manual ID verification delays customer onboarding and increases fraud risk"',
+      'Map As-Is process: email → scan → send → manual check → confirmation',
+      'Design To-Be process: online portal → auto-validate → success/failure message',
+      'Create solution design with UX/UI considerations',
+      'Follow requirement through complete delivery cycle: Elicitation → Draft → Refinement → Planning → Build → Review → Feedback'
     ],
     status: 'Not Started',
     progress: 0
@@ -238,19 +249,19 @@ export const ScrumPracticeView: React.FC = () => {
       'scrum-roles-practice': [
         {
           id: `role-${scenario.id}-1`,
-          ticketNumber: 'ROLE-001',
+          ticketNumber: 'ONBOARD-001',
           scenarioId: scenario.id,
           type: 'Story' as const,
-          title: 'Understand Product Owner Role',
-          description: 'Meet with the Product Owner to understand their responsibilities and how you can support them as a BA.',
-          acceptanceCriteria: 'Given a meeting with the PO, when you discuss their role, then you should understand how to help prioritize and clarify requirements.',
+          title: 'Enable Online ID Upload for Customer Onboarding',
+          description: 'As a BA, work with the Product Owner who has prioritized reducing customer drop-offs. The PO says "ID upload is priority number one" - your job is to make sure the team understands what this means.',
+          acceptanceCriteria: 'Given the PO\'s priority decision, when you meet with stakeholders, then you should shape the request into clear stories and acceptance criteria that developers can build.',
           priority: 'High' as const,
           status: 'Draft' as const,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           userId: user?.id || '',
           isTraining: true,
-          trainingNotes: 'Focus on understanding the PO\'s value-driven decision making process.'
+          trainingNotes: 'Practice being the translator between PO priorities and developer needs. The PO focuses on value, you focus on clarity.'
         }
       ],
       'backlog-refinement-practice': [
@@ -259,16 +270,70 @@ export const ScrumPracticeView: React.FC = () => {
           ticketNumber: 'REF-001',
           scenarioId: scenario.id,
           type: 'Story' as const,
-          title: 'Refine User Story: Customer ID Upload',
-          description: 'Work with the development team to refine a user story about allowing customers to upload ID documents online.',
-          acceptanceCriteria: 'Given a user story, when you facilitate refinement, then the story should be clear, testable, and ready for development.',
+          title: 'Refine: As a customer, I want to upload a valid ID so I can complete my account verification',
+          description: 'You\'ve written this initial story. Now work with developers who will ask: "What formats are allowed - PDF, JPG, PNG? What happens if the photo is blurry? Do we need to detect fraud automatically? What message do we show on error?"',
+          acceptanceCriteria: 'Given the initial user story, when developers ask detailed questions, then you should update the story with clear acceptance criteria and handle edge cases.',
           priority: 'High' as const,
           status: 'Ready for Refinement' as const,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           userId: user?.id || '',
           isTraining: true,
-          trainingNotes: 'Practice asking the right questions to make stories development-ready.'
+          trainingNotes: 'This is the BA\'s playground - where your writing gets tested. Answer questions, capture unknowns, split big stories, update acceptance criteria.'
+        }
+      ],
+      'scrum-events-practice': [
+        {
+          id: `events-${scenario.id}-1`,
+          ticketNumber: 'SPRINT-001',
+          scenarioId: scenario.id,
+          type: 'Story' as const,
+          title: 'Sprint Planning: ID Upload Feature',
+          description: 'Present the refined ID upload story in Sprint Planning. The team will ask: "What happens if the file is too large?" You need to either answer immediately or commit to confirming it quickly.',
+          acceptanceCriteria: 'Given a refined user story, when you present it in Sprint Planning, then the team should commit with confidence because requirements are truly ready.',
+          priority: 'High' as const,
+          status: 'Refined' as const,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          userId: user?.id || '',
+          isTraining: true,
+          trainingNotes: 'Your role is to ensure requirements meet Definition of Ready. No major unknowns, clear acceptance criteria, small enough for one sprint.'
+        }
+      ],
+      'requirements-docs-practice': [
+        {
+          id: `docs-${scenario.id}-1`,
+          ticketNumber: 'DOC-001',
+          scenarioId: scenario.id,
+          type: 'Story' as const,
+          title: 'Write Just-Enough Documentation: ID Upload',
+          description: 'Write lean, living documentation for the ID upload feature. Start with: "As a new customer, I want to upload my ID online so that I can complete onboarding quickly." Then add acceptance criteria and edge cases.',
+          acceptanceCriteria: 'Given the need for just-enough documentation, when you write user stories and acceptance criteria, then developers should have what they need without unnecessary detail.',
+          priority: 'Medium' as const,
+          status: 'Draft' as const,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          userId: user?.id || '',
+          isTraining: true,
+          trainingNotes: 'Balance detail with agility. Document edge cases: file too large, wrong format, blurry photos. Create process maps for before-and-after scenarios.'
+        }
+      ],
+      'delivery-flow-practice': [
+        {
+          id: `flow-${scenario.id}-1`,
+          ticketNumber: 'FLOW-001',
+          scenarioId: scenario.id,
+          type: 'Story' as const,
+          title: 'Complete BA Journey: Customer Onboarding Problem',
+          description: 'Start with the problem: "Manual ID verification delays customer onboarding and increases fraud risk." Map the As-Is process, design the To-Be process, then follow the requirement through the complete delivery cycle.',
+          acceptanceCriteria: 'Given a business problem, when you follow the complete BA delivery flow, then you should have a working solution that solves the original problem.',
+          priority: 'High' as const,
+          status: 'Draft' as const,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          userId: user?.id || '',
+          isTraining: true,
+          trainingNotes: 'Experience the full journey: Problem Exploration → As-Is Mapping → To-Be Design → Solution Design → Refinement → Planning → Build → Review → Feedback.'
         }
       ]
     };
