@@ -76,7 +76,7 @@ class AgileRefinementService {
       {
         name: 'Sarah',
         role: 'Scrum Master',
-        voiceId: 'en-GB-LibbyNeural',
+        voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH || 'en-GB-LibbyNeural',
         personality: 'Calm, steady, process-focused',
         focusAreas: ['Sprint readiness', 'Story size', 'Team delivery', 'Process adherence'],
         responseStyle: 'Keeps meetings on track, asks about sprint feasibility'
@@ -84,7 +84,7 @@ class AgileRefinementService {
       {
         name: 'Srikanth',
         role: 'Senior Developer',
-        voiceId: 'en-IN-PrabhatNeural',
+        voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH || 'en-IN-PrabhatNeural',
         personality: 'Experienced, thoughtful, architecture-focused',
         focusAreas: ['Architecture', 'Backend logic', 'Delivery feasibility', 'Technical complexity'],
         responseStyle: 'Raises technical concerns, suggests story breakdown'
@@ -92,7 +92,7 @@ class AgileRefinementService {
       {
         name: 'Lisa',
         role: 'Developer',
-        voiceId: 'pl-PL-ZofiaNeural',
+        voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA || 'pl-PL-ZofiaNeural',
         personality: 'Fast-paced, technical, implementation-focused',
         focusAreas: ['Implementation clarity', 'Task breakdown', 'Integration points', 'API design'],
         responseStyle: 'Asks about technical details and implementation flow'
@@ -100,7 +100,7 @@ class AgileRefinementService {
       {
         name: 'Tom',
         role: 'QA Tester',
-        voiceId: 'en-GB-RyanNeural',
+        voiceId: 'en-GB-RyanNeural', // Keep Tom with Microsoft voice for now
         personality: 'Friendly but precise, quality-focused',
         focusAreas: ['Test coverage', 'Negative paths', 'Environment setup', 'Edge cases'],
         responseStyle: 'Questions testability and error scenarios'

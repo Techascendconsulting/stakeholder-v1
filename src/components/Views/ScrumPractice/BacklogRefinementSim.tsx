@@ -102,9 +102,20 @@ export const BacklogRefinementSim: React.FC = () => {
       case 1: // Basic ID Upload
         return [{
           ...baseStory,
-          title: "Customer ID Upload",
-          description: "As a customer, I want to upload my ID online so that I can complete my account verification.",
-          acceptanceCriteria: "Given I am a new customer, when I want to verify my account, then I should be able to upload a photo of my government-issued ID. The system should accept JPG, PNG, and PDF formats up to 5MB.",
+          title: "Customer ID Upload for Account Verification",
+          description: "As a new customer, I want to upload a photo of my government-issued ID so that I can verify my identity and complete my account setup.",
+          acceptanceCriteria: `**Given** I am a new customer setting up my account
+**When** I reach the identity verification step
+**Then** I should be able to upload a photo of my government-issued ID
+
+**Acceptance Criteria:**
+- Upload button is clearly visible and accessible
+- System accepts JPG, PNG, and PDF formats
+- Maximum file size is 5MB
+- Clear error messages for invalid formats or oversized files
+- Progress indicator shows upload status
+- Success confirmation when upload completes
+- Option to retake/retry if photo quality is poor`,
           priority: 'High' as const,
           storyPoints: 5
         }];
@@ -114,9 +125,21 @@ export const BacklogRefinementSim: React.FC = () => {
           ...baseStory,
           id: `trial-${trialId}-story-1`,
           ticketNumber: `STORY-${trialId}001`,
-          title: "Advanced File Validation",
-          description: "As a customer, I want the system to validate my uploaded ID to ensure it's legitimate and readable.",
-          acceptanceCriteria: "Given I upload an ID document, when the system processes it, then it should validate the document format, check for required fields (name, date of birth, ID number), verify image quality, and detect potential fraud indicators.",
+          title: "ID Document Validation and Quality Check",
+          description: "As a customer, I want the system to automatically validate my uploaded ID document to ensure it's legitimate, readable, and meets verification requirements.",
+          acceptanceCriteria: `**Given** I have uploaded an ID document
+**When** the system processes my upload
+**Then** it should validate the document and provide feedback
+
+**Acceptance Criteria:**
+- **Format Validation:** Verify document is a valid government-issued ID
+- **Required Fields:** Check for presence of name, date of birth, ID number, and expiration date
+- **Image Quality:** Ensure photo is clear, not blurry, and properly lit
+- **Document Integrity:** Detect if document appears tampered with or altered
+- **Fraud Detection:** Flag potential fake documents or suspicious patterns
+- **Real-time Feedback:** Show validation results within 10 seconds
+- **Clear Error Messages:** Explain what's wrong and how to fix it
+- **Retry Mechanism:** Allow customer to upload a new document if validation fails`,
           priority: 'High' as const,
           storyPoints: 8
         }];
@@ -126,9 +149,23 @@ export const BacklogRefinementSim: React.FC = () => {
           ...baseStory,
           id: `trial-${trialId}-story-1`,
           ticketNumber: `STORY-${trialId}001`,
-          title: "ID Verification with Fraud Detection",
-          description: "As a business, I want to automatically detect potentially fraudulent ID uploads to protect against identity theft and compliance violations.",
-          acceptanceCriteria: "Given a customer uploads an ID, when the system analyzes it, then it should check against known fraud patterns, verify document authenticity, cross-reference with existing accounts, and flag suspicious uploads for manual review while maintaining GDPR compliance.",
+          title: "Advanced Fraud Detection and Compliance Verification",
+          description: "As a business, I want to automatically detect potentially fraudulent ID uploads and ensure compliance with regulations to protect against identity theft and maintain legal compliance.",
+          acceptanceCriteria: `**Given** a customer uploads an ID document
+**When** the system performs advanced verification
+**Then** it should detect fraud and ensure compliance
+
+**Acceptance Criteria:**
+- **Fraud Detection:** Check against known fraud patterns and suspicious document characteristics
+- **Document Authenticity:** Verify document security features (watermarks, holograms, microprinting)
+- **Cross-Reference Check:** Compare against existing accounts to detect duplicate identities
+- **Compliance Verification:** Ensure document meets regulatory requirements (GDPR, KYC, AML)
+- **Risk Scoring:** Assign risk levels (Low, Medium, High) based on multiple factors
+- **Manual Review Queue:** Flag high-risk uploads for human verification
+- **Audit Trail:** Log all verification steps and decisions for compliance reporting
+- **Privacy Protection:** Ensure personal data is handled according to GDPR requirements
+- **Real-time Alerts:** Notify security team of suspicious activity immediately
+- **Customer Communication:** Provide appropriate feedback without revealing security measures`,
           priority: 'High' as const,
           storyPoints: 13
         }];

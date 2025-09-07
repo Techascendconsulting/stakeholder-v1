@@ -166,6 +166,10 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [audioStates, setAudioStates] = useState<Record<string, string>>({});
   
+  // Conversation queue to prevent team members from talking over each other
+  const [conversationQueue, setConversationQueue] = useState<string[]>([]);
+  const [isProcessingResponse, setIsProcessingResponse] = useState(false);
+  
   // Voice input state (reusing voice meeting patterns)
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -316,10 +320,36 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }
   };
 
-  // Add AI message with dynamic response
+  // Add AI message with dynamic response and conversation queue
   const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
+    console.log(`🎤 QUEUE: ${teamMember.name} requesting to speak`);
     console.log('📝 Adding AI message from:', teamMember.name);
     console.log('🔊 Global audio enabled:', globalAudioEnabled);
+    
+    // Add to conversation queue
+    setConversationQueue(prev => {
+      const newQueue = [...prev, teamMember.name];
+      console.log(`🎤 QUEUE: ${teamMember.name} added to queue. Queue: [${newQueue.join(', ')}]`);
+      return newQueue;
+    });
+    
+    // Wait for turn if someone else is speaking
+    let waitCount = 0;
+    while (currentSpeaker !== null && currentSpeaker.name !== teamMember.name) {
+      waitCount++;
+      console.log(`🎤 QUEUE: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaker?.name}`);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Safety break after 100 attempts (10 seconds)
+      if (waitCount > 100) {
+        console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long! Breaking wait loop.`);
+        break;
+      }
+    }
+    
+    // Start speaking
+    console.log(`🎤 QUEUE: ${teamMember.name} now taking turn to speak`);
+    setCurrentSpeaker(teamMember);
     
     const message: Message = {
       id: `msg_${Date.now()}_${Math.random()}`,
@@ -338,6 +368,13 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     // Play audio using voice meeting logic
     console.log('🎵 Attempting to play audio for:', teamMember.name);
     await playMessageAudio(message.id, text, teamMember, true);
+    
+    // Remove from queue and clear speaker when done
+    setTimeout(() => {
+      setConversationQueue(prev => prev.filter(name => name !== teamMember.name));
+      setCurrentSpeaker(null);
+      console.log(`🎤 QUEUE: ${teamMember.name} finished speaking`);
+    }, 3000); // Give time for audio to finish
   };
 
   // Handle meeting start
