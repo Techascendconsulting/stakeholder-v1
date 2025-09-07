@@ -163,9 +163,12 @@ const ScrumEssentialsView: React.FC = () => {
   };
 
   const markComplete = async () => {
-    if (!user) return;
+    if (!user || progress?.is_complete || isSaving) return;
 
     try {
+      setIsSaving(true);
+      
+      // Try database first
       const { error } = await supabase
         .from('learning_progress')
         .upsert({
@@ -176,11 +179,26 @@ const ScrumEssentialsView: React.FC = () => {
           completed_at: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (error) {
+        console.log('Database not available, using localStorage fallback');
+        // Fallback to localStorage if database fails
+        const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
+        localStorage.setItem(fallbackKey, 'true');
+        localStorage.setItem(`${fallbackKey}-date`, new Date().toISOString());
+        setProgress({ is_complete: true, completed_at: new Date().toISOString() });
+        return;
+      }
       
       setProgress({ is_complete: true, completed_at: new Date().toISOString() });
     } catch (error) {
-      console.error('Error marking section complete:', error);
+      console.log('Database error, using localStorage fallback');
+      // Fallback to localStorage
+      const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
+      localStorage.setItem(fallbackKey, 'true');
+      localStorage.setItem(`${fallbackKey}-date`, new Date().toISOString());
+      setProgress({ is_complete: true, completed_at: new Date().toISOString() });
+    } finally {
+      setIsSaving(false);
     }
   };
 
