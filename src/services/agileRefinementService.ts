@@ -72,6 +72,13 @@ class AgileRefinementService {
 
       // Get predefined team members
   getTeamMembers(): AgileTeamMemberContext[] {
+    console.log('🔊 TEAM MEMBERS DEBUG:', {
+      BOLA_VOICE_ID: import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA,
+      SARAH_VOICE_ID: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH,
+      SRIKANTH_VOICE_ID: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH,
+      LISA_VOICE_ID: import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA
+    });
+    
     return [
       {
         name: 'Sarah',
