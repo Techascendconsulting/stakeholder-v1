@@ -422,28 +422,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const startMeeting = async () => {
     setMeetingStarted(true);
     
-    // Move the first story to "Currently Discussing" when meeting starts
-    if (initialStories.length > 0) {
-      const firstStoryId = initialStories[0].id;
-      setKanbanColumns(prev => ({
-        ...prev,
-        'ready': {
-          ...prev.ready,
-          stories: prev.ready.stories.filter(id => id !== firstStoryId)
-        },
-        'discussing': {
-          ...prev.discussing,
-          stories: [...prev.discussing.stories, firstStoryId]
-        }
-      }));
-      
-      // Open the story for viewing
-      setSelectedStoryId(firstStoryId);
-      const firstStory = initialStories[0];
-      setEditingStory({ ...firstStory });
-      setIsEditingStory(true);
-      console.log('📋 Story moved to "Currently Discussing" and opened for viewing');
-    }
+    // Don't automatically move story or open it - let Scrum Master control the flow
+    console.log('📋 Meeting started - waiting for Scrum Master to begin');
     
     // Ensure audio is enabled for the meeting
     if (!globalAudioEnabled) {
@@ -454,8 +434,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     setTimeout(async () => {
       console.log('🎬 Starting refinement meeting...');
       
-      // First, Scrum Master opens the meeting
-      const greetingMessage = `Good morning everyone. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review today. Let's start with our Business Analyst presenting the first story.`;
+      // First, Scrum Master opens the meeting and asks BA to present
+      const greetingMessage = `Good morning everyone. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review today. Bola, could you please present the first story for us?`;
       await addAIMessage(
         teamMembers[0], // Sarah (Scrum Master)
         greetingMessage
@@ -475,6 +455,22 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         const cleanDescription = cleanMarkdownForTTS(currentStory.description);
         const cleanAcceptanceCriteria = cleanMarkdownForTTS(currentStory.acceptanceCriteria || '');
         
+        // Move story to "Currently Discussing" when BA starts presenting
+        const firstStoryId = initialStories[0].id;
+        setKanbanColumns(prev => ({
+          ...prev,
+          'ready': {
+            ...prev.ready,
+            stories: prev.ready.stories.filter(id => id !== firstStoryId)
+          },
+          'discussing': {
+            ...prev.discussing,
+            stories: [...prev.discussing.stories, firstStoryId]
+          }
+        }));
+        setSelectedStoryId(firstStoryId);
+        console.log('📋 Story moved to "Currently Discussing" as BA presents');
+
         const baPresentation = `Thank you Sarah. I'd like to present our first story for refinement today. 
 
 Story Title: ${cleanTitle}
@@ -608,8 +604,8 @@ I'd like to get your thoughts on the technical implementation and any questions 
         setTimeout(async () => {
           if (!isMeetingActive) return;
           
-          // Sarah moves the story to "Refined" and concludes the meeting
-          const sarahResponse2 = "Perfect! Story estimated at 5 points. Let me move this to our refined backlog. Great work everyone, this story is ready for sprint planning.";
+          // Sarah concludes the meeting and says she'll mark it as refined
+          const sarahResponse2 = "Perfect! Story estimated at 5 points. I'll mark this as refined and move it to our refined backlog. Great work everyone, this story is ready for sprint planning.";
           
           // Move story to "Refined" column
           if (initialStories.length > 0) {
