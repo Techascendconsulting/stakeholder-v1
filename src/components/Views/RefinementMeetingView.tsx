@@ -197,6 +197,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [isEditingStory, setIsEditingStory] = useState(false);
   const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
+  const [isViewingStory, setIsViewingStory] = useState(false); // For read-only viewing during BA presentation
   
   // Kanban columns state with drag-and-drop
   const [kanbanColumns, setKanbanColumns] = useState({
@@ -409,22 +410,22 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} now taking turn to speak`);
       setCurrentSpeaking(teamMember.name);
     
-      const message: Message = {
-        id: `msg_${Date.now()}_${Math.random()}`,
-        speaker: teamMember.name,
-        content: text,
-        timestamp: new Date().toISOString(),
-        role: teamMember.role,
-        stakeholderId: teamMember.name.toLowerCase()
-      };
+    const message: Message = {
+      id: `msg_${Date.now()}_${Math.random()}`,
+      speaker: teamMember.name,
+      content: text,
+      timestamp: new Date().toISOString(),
+      role: teamMember.role,
+      stakeholderId: teamMember.name.toLowerCase()
+    };
 
-      setTranscript(prev => {
-        console.log('📋 Adding message to transcript. Current length:', prev.length);
-        return [...prev, message];
-      });
-      
+    setTranscript(prev => {
+      console.log('📋 Adding message to transcript. Current length:', prev.length);
+      return [...prev, message];
+    });
+    
       // Play audio using voice meeting logic (clean markdown for TTS)
-      console.log('🎵 Attempting to play audio for:', teamMember.name);
+    console.log('🎵 Attempting to play audio for:', teamMember.name);
       const cleanText = cleanMarkdownForTTS(text);
       await playMessageAudio(message.id, cleanText, teamMember, true);
       
@@ -517,6 +518,12 @@ I'd like to get your thoughts on the technical implementation and any questions 
           responseStyle: 'Presents requirements clearly and answers questions'
         };
         
+        // Open the story for viewing when BA starts speaking
+        setEditingStory({ ...currentStory });
+        setIsEditingStory(true);
+        setIsViewingStory(true); // Mark as viewing mode (read-only)
+        console.log('📋 Story opened for viewing as BA starts presenting');
+        
         await addAIMessage(baMember, baPresentation);
         
         // Auto-scroll the story content as BA reads
@@ -556,7 +563,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (srikanth) {
             await addAIMessage(srikanth, srikanthResponse);
           }
-        }, 3000); // Wait for BA to finish
+        }, 2000); // Wait for BA to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -567,7 +574,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (baMember) {
             await addAIMessage(baMember, bolaResponse);
           }
-        }, 6000); // Wait for Srikanth to finish
+        }, 4000); // Wait for Srikanth to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -578,7 +585,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (lisa) {
             await addAIMessage(lisa, lisaResponse);
           }
-        }, 9000); // Wait for BA to finish
+        }, 6000); // Wait for BA to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -589,7 +596,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (srikanth) {
             await addAIMessage(srikanth, srikanthResponse2);
           }
-        }, 12000); // Wait for Lisa to finish
+        }, 8000); // Wait for Lisa to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -600,7 +607,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (tom) {
             await addAIMessage(tom, tomResponse);
           }
-        }, 15000); // Wait for Srikanth to finish
+        }, 10000); // Wait for Srikanth to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -611,7 +618,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (sarah) {
             await addAIMessage(sarah, sarahResponse);
           }
-        }, 18000); // Wait for Tom to finish
+        }, 12000); // Wait for Tom to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -622,7 +629,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (srikanth) {
             await addAIMessage(srikanth, srikanthResponse3);
           }
-        }, 21000); // Wait for Sarah to finish
+        }, 14000); // Wait for Sarah to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -651,7 +658,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (sarah) {
             await addAIMessage(sarah, sarahResponse2);
           }
-        }, 24000); // Wait for Srikanth to finish
+        }, 16000); // Wait for Srikanth to finish
         
         setTimeout(async () => {
           if (!isMeetingActive) return;
@@ -662,7 +669,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (baMember) {
             await addAIMessage(baMember, baFollowUp);
           }
-        }, 27000); // Wait for Sarah to finish
+        }, 18000); // Wait for Sarah to finish
         
       }, 3000); // Wait for Scrum Master to finish
       
@@ -1376,9 +1383,14 @@ I'd like to get your thoughts on the technical implementation and any questions 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900" ref={storyContentRef}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Edit Story</h2>
+              <h2 className="text-xl font-semibold">
+                {isViewingStory ? 'Story Details' : 'Edit Story'}
+              </h2>
               <button
-                onClick={() => setIsEditingStory(false)}
+                onClick={() => {
+                  setIsEditingStory(false);
+                  setIsViewingStory(false);
+                }}
                 className="p-2 hover:bg-gray-100 rounded"
               >
                 <X size={20} />
@@ -1393,8 +1405,9 @@ I'd like to get your thoughts on the technical implementation and any questions 
                   <input
                     type="text"
                     value={editingStory.title}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, title: e.target.value } : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => !isViewingStory && setEditingStory(prev => prev ? { ...prev, title: e.target.value } : null)}
+                    readOnly={isViewingStory}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isViewingStory ? 'bg-gray-50 cursor-default' : 'focus:ring-2 focus:ring-blue-500'}`}
                   />
                 </div>
 
@@ -1402,9 +1415,10 @@ I'd like to get your thoughts on the technical implementation and any questions 
                   <label className="block text-sm font-medium mb-1">Description</label>
                   <textarea
                     value={editingStory.description}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, description: e.target.value } : null)}
+                    onChange={(e) => !isViewingStory && setEditingStory(prev => prev ? { ...prev, description: e.target.value } : null)}
+                    readOnly={isViewingStory}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isViewingStory ? 'bg-gray-50 cursor-default' : 'focus:ring-2 focus:ring-blue-500'}`}
                   />
                 </div>
 

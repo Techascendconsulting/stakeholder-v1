@@ -170,10 +170,11 @@ export async function synthesizeToBlob(text: string, options?: { voiceId?: strin
       text,
       model_id: 'eleven_turbo_v2',  // Use faster turbo model
       voice_settings: { 
-        stability: 0.5,         // Reduced for faster generation
+        stability: 0.7,         // Higher stability for more natural speech
         similarity_boost: 0.8,  // Keep high for voice consistency
         style: 0.0,             // No style boost for natural speech
-        use_speaker_boost: false // Disable for faster generation
+        use_speaker_boost: true, // Enable for better voice quality
+        speaking_rate: 0.9      // Slightly slower speech rate for Bola
       }
     }
     
