@@ -82,6 +82,14 @@ class AgileRefinementService {
         responseStyle: 'Keeps meetings on track, asks about sprint feasibility'
       },
       {
+        name: 'Bola',
+        role: 'Business Analyst',
+        voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA || 'en-US-AriaNeural',
+        personality: 'Detail-oriented, user-focused, collaborative',
+        focusAreas: ['Requirements clarity', 'User experience', 'Business value', 'Acceptance criteria'],
+        responseStyle: 'Presents requirements clearly and answers stakeholder questions'
+      },
+      {
         name: 'Srikanth',
         role: 'Senior Developer',
         voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH || 'en-IN-PrabhatNeural',
@@ -188,6 +196,15 @@ Focus: Sprint readiness, story size, team delivery
 Examples:  
 - "This feels a bit large for one sprint — can we break it up?"  
 - "Are the devs confident we can estimate this?"`;
+
+      case 'Business Analyst':
+        return `• 👩‍💼 Bola – Business Analyst  
+Tone: Professional, detail-oriented  
+Focus: Requirements clarity, user experience, business value  
+Examples:  
+- "Let me clarify the acceptance criteria for this story"  
+- "What's the business impact if we don't support this feature?"  
+- "How does this align with our user journey?"`;
 
       case 'Senior Developer':
         return `• 👨‍💻 Srikanth – Senior Developer  

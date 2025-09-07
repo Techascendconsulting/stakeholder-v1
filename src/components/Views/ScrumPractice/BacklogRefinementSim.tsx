@@ -52,9 +52,9 @@ export const BacklogRefinementSim: React.FC = () => {
   const [trials, setTrials] = useState<RefinementTrial[]>([
     {
       id: 1,
-      title: "Basic ID Upload Story",
-      description: "Watch the AI BA refine a simple customer ID upload requirement with the development team.",
-      story: "As a customer, I want to upload my ID online so that I can complete my account verification.",
+      title: "Maintenance Request Attachments",
+      description: "Watch the AI BA refine a tenant maintenance request attachment feature with the development team.",
+      story: "As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently.",
       difficulty: 'Beginner',
       completed: false,
       locked: false
@@ -99,23 +99,21 @@ export const BacklogRefinementSim: React.FC = () => {
     };
 
     switch (trialId) {
-      case 1: // Basic ID Upload
+      case 1: // Maintenance Request Attachments
         return [{
           ...baseStory,
-          title: "Customer ID Upload for Account Verification",
-          description: "As a new customer, I want to upload a photo of my government-issued ID so that I can verify my identity and complete my account setup.",
-          acceptanceCriteria: `**Given** I am a new customer setting up my account
-**When** I reach the identity verification step
-**Then** I should be able to upload a photo of my government-issued ID
+          title: "Tenant can upload attachments to support maintenance request",
+          description: "Tenants should be able to upload one or more files (e.g. images) when submitting a maintenance request. The uploaded files should be stored with the request and accessible to the housing team for reference.",
+          acceptanceCriteria: `**User Story:**
+As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently.
 
 **Acceptance Criteria:**
-- Upload button is clearly visible and accessible
-- System accepts JPG, PNG, and PDF formats
-- Maximum file size is 5MB
-- Clear error messages for invalid formats or oversized files
-- Progress indicator shows upload status
-- Success confirmation when upload completes
-- Option to retake/retry if photo quality is poor`,
+1. Tenant should see an upload field labeled "Add attachment (optional)" on the maintenance request form.
+2. Tenant should be able to upload one or more files to support their request.
+3. Accepted file types should include JPG, PNG, and JPEG. If the tenant tries to upload a file in an unsupported format (e.g. .docx, .exe), an error message should be displayed: "Only JPG, PNG, and JPEG files are allowed."
+4. Maximum file size per upload should be 5 MB. If the file is larger than 5MB, an error message should be displayed: "File size must not exceed 5MB."
+5. Uploading a file should not be mandatory. The tenant should still be able to submit the request without attaching any files.
+6. If a file is uploaded, it should be stored with the rest of the request data and made visible to the maintenance team.`,
           priority: 'High' as const,
           storyPoints: 5
         }];

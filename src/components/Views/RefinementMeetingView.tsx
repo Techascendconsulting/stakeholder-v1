@@ -386,16 +386,47 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       setGlobalAudioEnabled(true);
     }
     
-    // Wait a bit for audio context to initialize, then start greeting
+    // Wait a bit for audio context to initialize, then start with BA presenting the story
     setTimeout(async () => {
-      console.log('🎬 Starting Scrum Master greeting...');
-      // Generate dynamic greeting using AI instead of hardcoded text
-      const greetingMessage = `We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review. Let's start by having our Business Analyst present the first story.`;
+      console.log('🎬 Starting refinement meeting...');
+      
+      // First, Scrum Master opens the meeting
+      const greetingMessage = `Good morning everyone. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review today. Let's start with our Business Analyst presenting the first story.`;
       await addAIMessage(
         teamMembers[0], // Sarah (Scrum Master)
         greetingMessage
       );
-    }, 1500); // Increased delay to ensure audio context is ready
+      
+      // Then BA presents the story
+      setTimeout(async () => {
+        const currentStory = initialStories[0];
+        const baPresentation = `Thank you Sarah. I'd like to present our first story for refinement today. 
+
+**Story Title:** ${currentStory.title}
+
+**User Story:** ${currentStory.description}
+
+**Acceptance Criteria:**
+${currentStory.acceptanceCriteria}
+
+This story is about allowing tenants to upload attachments when submitting maintenance requests. The key requirements are supporting JPG, PNG, and JPEG files with a 5MB size limit, and making the upload optional. 
+
+I'd like to get your thoughts on the technical implementation and any questions you might have about the requirements.`;
+        
+        // Find BA team member (assuming it's the user, but we need a BA team member)
+        const baMember = teamMembers.find(m => m.role === 'Business Analyst') || {
+          name: 'Business Analyst',
+          role: 'Business Analyst',
+          voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA || 'en-US-AriaNeural',
+          personality: 'Detail-oriented, user-focused',
+          focusAreas: ['Requirements clarity', 'User experience', 'Business value'],
+          responseStyle: 'Presents requirements clearly and answers questions'
+        };
+        
+        await addAIMessage(baMember, baPresentation);
+      }, 3000); // Wait for Scrum Master to finish
+      
+    }, 1500); // Initial delay to ensure audio context is ready
   };
 
   // Generate dynamic AI response (using voice-only meeting pattern)
