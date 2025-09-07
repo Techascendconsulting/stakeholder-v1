@@ -1,14 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, Edit3, Save, Trash2, Plus, GripVertical, FileText } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+// import { useAuth } from '../../contexts/AuthContext'; // Not needed for refinement simulation
 import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
-import { Message } from '../../types';
+// import { Message } from '../../types'; // Using custom interface for refinement meeting
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
+
+// Custom interface for refinement meeting messages
+interface MeetingMessage {
+  id: string;
+  speaker: string;
+  content: string;
+  timestamp: string;
+  role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester' | 'Business Analyst' | 'user';
+  stakeholderId: string;
+}
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 
 // Utility function to clean markdown formatting for TTS
@@ -99,7 +109,8 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
   isCurrentSpeaker, 
   isUser = false 
 }) => {
-  const { user } = useAuth();
+  // No auth needed for refinement simulation
+  const user = { full_name: 'You', id: 'user', email: 'user@example.com' };
   
   return (
     <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-40">
@@ -156,7 +167,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   onMeetingEnd,
   onClose
 }) => {
-  const { user } = useAuth();
+  // No auth needed for refinement simulation
+  const user = { full_name: 'You', id: 'user', email: 'user@example.com' };
   const { globalAudioEnabled, setGlobalAudioEnabled } = useVoice();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -165,7 +177,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   // Meeting state (reusing voice meeting patterns)
   const [stories, setStories] = useState<AgileTicket[]>(initialStories);
   const [meetingStartTime] = useState<number>(Date.now());
-  const [transcript, setTranscript] = useState<Message[]>([]);
+  const [transcript, setTranscript] = useState<MeetingMessage[]>([]);
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
@@ -414,13 +426,13 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       await new Promise(resolve => setTimeout(resolve, 50));
       
       // Create message - EXACT COPY
-      const message = {
+      const message: MeetingMessage = {
         id: `msg_${Date.now()}_${Math.random()}`,
         speaker: teamMember.name,
         content: text,
         timestamp: new Date().toISOString(),
         role: teamMember.role,
-        stakeholderId: teamMember.name.toLowerCase()
+        stakeholderId: teamMember.id
       };
 
       setTranscript(prev => {
@@ -847,12 +859,12 @@ ${cleanAcceptanceCriteria}`;
     stopCurrentAudio();
 
     // Add user message
-    const userMessage: Message = {
+    const userMessage: MeetingMessage = {
       id: `msg_${Date.now()}_${Math.random()}`,
       speaker: 'user',
       content: text,
       timestamp: new Date().toISOString(),
-      role: 'Business Analyst',
+      role: 'user',
       stakeholderId: 'user'
     };
 
