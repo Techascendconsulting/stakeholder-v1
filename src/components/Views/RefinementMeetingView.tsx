@@ -175,15 +175,13 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [transcript, transcriptPanelOpen]);
-  const [currentSpeaker, setCurrentSpeaker] = useState<any>(null);
+  // Use the same turn-taking system as voice-only meetings
+  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
+  const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [audioStates, setAudioStates] = useState<Record<string, string>>({});
-  
-  // Conversation queue to prevent team members from talking over each other
-  const [conversationQueue, setConversationQueue] = useState<string[]>([]);
-  const [isProcessingResponse, setIsProcessingResponse] = useState(false);
   const [isMeetingActive, setIsMeetingActive] = useState(true);
   
   // Ref for story content auto-scrolling
@@ -279,7 +277,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         return Promise.resolve();
       }
 
-      setCurrentSpeaker(teamMember);
+      setCurrentSpeaking(teamMember);
       setIsAudioPlaying(true);
 
       const voiceName = teamMember.voiceId;
@@ -307,7 +305,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setCurrentAudio(null);
             setPlayingMessageId(null);
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaker(null);
+            setCurrentSpeaking(null); // Clear current speaker
             setIsAudioPlaying(false);
             console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio naturally ended`);
             resolve();
@@ -319,7 +317,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setCurrentAudio(null);
             setPlayingMessageId(null);
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaker(null);
+            setCurrentSpeaking(null); // Clear current speaker
             setIsAudioPlaying(false);
             resolve();
           };
@@ -332,7 +330,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setCurrentAudio(null);
             setPlayingMessageId(null);
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaker(null);
+            setCurrentSpeaking(null);
             setIsAudioPlaying(false);
             resolve();
           });
@@ -343,18 +341,18 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         }
       } else {
         console.log('⚠️ ElevenLabs TTS not available, skipping audio playback');
-        setCurrentSpeaker(teamMember);
+        setCurrentSpeaking(teamMember);
         setIsAudioPlaying(false);
         // Still show visual feedback that someone is "speaking"
         setTimeout(() => {
-          setCurrentSpeaker(null);
+          setCurrentSpeaking(null);
           console.log(`📝 ${teamMember.name} finished speaking (text-only mode)`);
         }, 2000); // Show speaker for 2 seconds
         return Promise.resolve();
       }
     } catch (error) {
       console.error('Error in playMessageAudio:', error);
-      setCurrentSpeaker(null);
+      setCurrentSpeaking(null);
       setIsAudioPlaying(false);
       return Promise.resolve();
     }
@@ -366,14 +364,14 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
-      setCurrentSpeaker(null);
+      setCurrentSpeaking(null);
       setIsAudioPlaying(false);
       setPlayingMessageId(null);
       console.log('🛑 Audio stopped by user');
     }
   };
 
-  // Add AI message with dynamic response and conversation queue
+  // Add AI message with proper turn-taking system (same as voice-only meetings)
   const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
     // Check if meeting is still active
     if (!isMeetingActive) {
@@ -381,58 +379,64 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       return;
     }
 
-    console.log(`🎤 QUEUE: ${teamMember.name} requesting to speak`);
-    console.log('📝 Adding AI message from:', teamMember.name);
-    console.log('🔊 Global audio enabled:', globalAudioEnabled);
+    console.log(`🚀 QUEUE DEBUG: ${teamMember.name} starting addAIMessage`);
+    console.log(`🚀 QUEUE DEBUG: Current speaker before: ${currentSpeaking}`);
+    console.log(`🚀 QUEUE DEBUG: Current queue before: [${conversationQueue.join(', ')}]`);
     
-    // Add to conversation queue
-    setConversationQueue(prev => {
-      const newQueue = [...prev, teamMember.name];
-      console.log(`🎤 QUEUE: ${teamMember.name} added to queue. Queue: [${newQueue.join(', ')}]`);
-      return newQueue;
-    });
-    
-    // Wait for turn if someone else is speaking (but with shorter timeout)
-    let waitCount = 0;
-    while (currentSpeaker !== null && currentSpeaker.name !== teamMember.name && isMeetingActive) {
-      waitCount++;
-      console.log(`🎤 QUEUE: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaker?.name}`);
-      await new Promise(resolve => setTimeout(resolve, 100));
+    try {
+      // Add to conversation queue to prevent simultaneous speaking
+      setConversationQueue(prev => {
+        const newQueue = [...prev, teamMember.name];
+        console.log(`🚀 QUEUE DEBUG: ${teamMember.name} added to queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
       
-      // Safety break after 20 attempts (2 seconds) or if meeting is no longer active
-      if (waitCount > 20 || !isMeetingActive) {
-        console.log(`🚨 QUEUE: ${teamMember.name} breaking wait loop after ${waitCount} attempts. Proceeding anyway.`);
-        break;
+      // Wait for turn if someone else is speaking
+      let waitCount = 0;
+      while (currentSpeaking !== null && currentSpeaking !== teamMember.name) {
+        waitCount++;
+        console.log(`🚀 QUEUE DEBUG: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Safety break after 100 attempts (10 seconds)
+        if (waitCount > 100) {
+          console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long! Breaking wait loop.`);
+          break;
+        }
       }
-    }
+      
+      // Start speaking
+      console.log(`🚀 QUEUE DEBUG: ${teamMember.name} now taking turn to speak`);
+      setCurrentSpeaking(teamMember.name);
     
-    // Start speaking
-    console.log(`🎤 QUEUE: ${teamMember.name} now taking turn to speak`);
-    setCurrentSpeaker(teamMember);
-    
-    const message: Message = {
-      id: `msg_${Date.now()}_${Math.random()}`,
-      speaker: teamMember.name,
-      content: text,
-      timestamp: new Date().toISOString(),
-      role: teamMember.role,
-      stakeholderId: teamMember.name.toLowerCase()
-    };
+      const message: Message = {
+        id: `msg_${Date.now()}_${Math.random()}`,
+        speaker: teamMember.name,
+        content: text,
+        timestamp: new Date().toISOString(),
+        role: teamMember.role,
+        stakeholderId: teamMember.name.toLowerCase()
+      };
 
-    setTranscript(prev => {
-      console.log('📋 Adding message to transcript. Current length:', prev.length);
-      return [...prev, message];
-    });
-    
-    // Play audio using voice meeting logic (clean markdown for TTS)
-    console.log('🎵 Attempting to play audio for:', teamMember.name);
-    const cleanText = cleanMarkdownForTTS(text);
-    await playMessageAudio(message.id, cleanText, teamMember, true);
+      setTranscript(prev => {
+        console.log('📋 Adding message to transcript. Current length:', prev.length);
+        return [...prev, message];
+      });
+      
+      // Play audio using voice meeting logic (clean markdown for TTS)
+      console.log('🎵 Attempting to play audio for:', teamMember.name);
+      const cleanText = cleanMarkdownForTTS(text);
+      await playMessageAudio(message.id, cleanText, teamMember, true);
+      
+    } catch (error) {
+      console.error(`❌ Error in addAIMessage for ${teamMember.name}:`, error);
+      setCurrentSpeaking(null); // Clear current speaker on error
+    }
     
     // Remove from queue and clear speaker when done
     setTimeout(() => {
       setConversationQueue(prev => prev.filter(name => name !== teamMember.name));
-      setCurrentSpeaker(null);
+      setCurrentSpeaking(null);
       console.log(`🎤 QUEUE: ${teamMember.name} finished speaking`);
     }, 3000); // Give time for audio to finish
   };

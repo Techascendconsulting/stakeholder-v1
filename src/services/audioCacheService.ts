@@ -144,11 +144,11 @@ class AudioCacheService {
       },
       {
         speaker: 'Srikanth',
-        text: "Bola, quick question - are we supporting any specific file formats, or should we accept all common formats like JPG, PNG, PDF, MP4?"
+        text: "Bola, quick question - when you mentioned multiple file types, are we talking about users uploading multiple files at once, or just supporting different formats one at a time?"
       },
       {
         speaker: 'Bola',
-        text: "Yes, we should support common formats like JPG, PNG, PDF, MP4, and DOC files. The system should validate these formats and show a clear error message if someone tries to upload an unsupported file type."
+        text: "Good question Srikanth. Yes, users should be able to upload multiple files at once - up to 5 attachments per maintenance request. So a tenant could upload, for example, 3 photos of the issue, a PDF document with additional details, and a video showing the problem. This gives them flexibility to provide comprehensive evidence for their maintenance request."
       },
       {
         speaker: 'Lisa',
