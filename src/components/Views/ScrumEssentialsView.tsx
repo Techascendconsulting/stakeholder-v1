@@ -280,6 +280,13 @@ const ScrumEssentialsView: React.FC = () => {
       'How Requirements Evolve': <ArrowRight className="w-5 h-5 text-indigo-600" />,
       'How Much Is Enough?': <Lightbulb className="w-5 h-5 text-purple-600" />,
       'The BA\'s Real Job in Documentation': <CheckCircle className="w-5 h-5 text-indigo-600" />,
+      'Problem Exploration': <Target className="w-5 h-5 text-purple-600" />,
+      'Current State (As-Is)': <FileText className="w-5 h-5 text-indigo-600" />,
+      'Process Mapping': <BookOpen className="w-5 h-5 text-purple-600" />,
+      'Future State (To-Be)': <ArrowRight className="w-5 h-5 text-indigo-600" />,
+      'Solution Design (with UX/UI)': <Users className="w-5 h-5 text-purple-600" />,
+      'Refinement': <CheckSquare className="w-5 h-5 text-indigo-600" />,
+      'End-to-End Journey of a Requirement': <Zap className="w-5 h-5 text-purple-600" />,
     };
     
     return iconMap[header] || <BookOpen className="w-5 h-5 text-purple-600" />;
