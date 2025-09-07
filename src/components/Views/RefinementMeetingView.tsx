@@ -4,7 +4,7 @@ import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Squar
 import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
 // import { Message } from '../../types'; // Using custom interface for refinement meeting
-import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
+// import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS'; // Using browser TTS instead
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
@@ -256,18 +256,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     setIsMeetingActive(true);
     console.log('🎬 RefinementMeetingView mounted - meeting is active');
     
-    // Pre-generate audio for the refinement meeting
-    const preGenerateAudio = async () => {
-      try {
-        const { audioCacheService } = await import('../../services/audioCacheService');
-        await audioCacheService.preGenerateRefinementMeetingAudio();
-        console.log('🎵 AUDIO: Pre-generation completed');
-      } catch (error) {
-        console.warn('⚠️ AUDIO: Failed to pre-generate audio:', error);
-      }
-    };
-    
-    preGenerateAudio();
+    // No need to pre-generate audio - using browser TTS
+    console.log('🎵 AUDIO: Using browser TTS (no pre-generation needed)');
   }, []);
 
   // Voice Meeting Audio Control (reused from VoiceOnlyMeetingView)
@@ -295,9 +285,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
 
       const voiceName = teamMember.voiceId;
       console.log('🎵 Using voice:', voiceName, 'for team member:', teamMember.name);
-      console.log('🔧 ElevenLabs TTS Available:', elevenConfigured());
+      console.log('🔧 Using browser TTS (no API calls)');
       
-      if (elevenConfigured()) {
+      if (false) { // Disabled ElevenLabs, using browser TTS
           console.log('✅ Using ElevenLabs TTS for audio synthesis');
           
           // Add timeout to prevent hanging
@@ -362,12 +352,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
           return Promise.resolve();
         }
       } else {
-        console.log('⚠️ ElevenLabs TTS not available, skipping audio playback');
+        console.log('✅ Using browser TTS for audio synthesis');
+        await playBrowserTTS(text);
+        console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio completed`);
         setIsAudioPlaying(false);
-        // Still show visual feedback that someone is "speaking"
-        setTimeout(() => {
-          console.log(`📝 ${teamMember.name} finished speaking (text-only mode)`);
-        }, 2000); // Show speaker for 2 seconds
+        setPlayingMessageId(null);
+        setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
         return Promise.resolve();
       }
     } catch (error) {
