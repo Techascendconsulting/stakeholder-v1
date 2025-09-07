@@ -55,10 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { 
       id: 'welcome', 
       label: 'Welcome', 
-      icon: GraduationCap,
-      subItems: [
-        { id: 'get-started', label: 'Get Started', icon: Play, isNew: true }
-      ]
+      icon: GraduationCap
     },
     { 
       id: 'learn', 
