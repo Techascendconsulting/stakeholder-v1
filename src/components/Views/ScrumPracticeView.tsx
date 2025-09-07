@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, FileText, Users, Calendar, Clock, BarChart3, RotateCcw } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
+import BacklogRefinementSim from './ScrumPractice/BacklogRefinementSim';
 
 const sections = [
   {
@@ -13,7 +14,7 @@ const sections = [
     title: "Backlog Refinement",
     description: "Practice shaping vague ideas into actionable user stories with developers and stakeholders.",
     icon: Users,
-    onClick: () => console.log("Navigate to refinement")
+    onClick: () => setActiveView('backlog-refinement')
   },
   {
     title: "Sprint Planning",
@@ -43,6 +44,12 @@ const sections = [
 
 export const ScrumPracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
+  const [activeView, setActiveView] = useState<'main' | 'backlog-refinement'>('main');
+
+  // Show Backlog Refinement simulation if active
+  if (activeView === 'backlog-refinement') {
+    return <BacklogRefinementSim />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
