@@ -76,16 +76,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Initialize currentView from localStorage or default to welcome for new work experience approach
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
     console.log('🔍 INIT: AppContext initializing currentView...')
-    console.log('✅ INIT: Using new work experience approach - always starting with welcome page')
     
-    // Clear localStorage to ensure clean start for new approach
-    localStorage.removeItem('currentView')
-    console.log('🧹 INIT: Cleared localStorage currentView for new approach')
-    
-    return 'welcome'
-    
-    // Commented out localStorage logic for new approach
-    /*
     try {
       const savedView = localStorage.getItem('currentView')
       console.log('🔍 INIT: Found saved view in localStorage:', savedView)
@@ -157,7 +148,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('❌ INIT: Error loading saved view, defaulting to welcome:', error)
       return 'welcome'
     }
-    */
   })
 
   // Custom setCurrentView that handles localStorage automatically
