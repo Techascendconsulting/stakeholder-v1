@@ -385,13 +385,25 @@ const ScrumEssentialsView: React.FC = () => {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">{currentSection.title}</h1>
-                {progress?.is_complete && (
-                  <div className="flex items-center space-x-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                    <CheckCircle className="w-3 h-3" />
-                    <span>Completed</span>
-                  </div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <h1 className="text-2xl font-bold text-gray-900">{currentSection.title}</h1>
+                  {progress?.is_complete && (
+                    <div className="flex items-center space-x-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>Completed</span>
+                    </div>
+                  )}
+                </div>
+                {currentSectionId === 1 && (
+                  <button
+                    onClick={() => setCurrentView('agile-practice')}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
+                  >
+                    <Play className="w-4 h-4" />
+                    <span>Skip to Practice</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 )}
               </div>
               <p className="text-sm text-gray-600">
