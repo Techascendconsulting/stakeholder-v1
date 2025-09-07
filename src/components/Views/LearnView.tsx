@@ -16,7 +16,7 @@ const LearnView: React.FC = () => {
   const learningModules = [
     {
       id: 'core-concepts',
-      title: 'Being a BA',
+      title: 'BA Essentials',
       description: 'Learn the fundamental concepts and principles of Business Analysis',
       icon: BookOpen,
       color: 'from-blue-500 to-purple-600',

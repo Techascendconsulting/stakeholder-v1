@@ -371,7 +371,7 @@ const CoreConceptsView: React.FC = () => {
               <BookOpen className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Being a BA
+              BA Essentials
             </h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Explore the mindset, role, and environment of a Business Analyst. This section breaks down what BAs do, how they work, and why they matter.

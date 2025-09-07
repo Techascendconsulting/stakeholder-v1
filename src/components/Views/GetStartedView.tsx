@@ -469,7 +469,7 @@ const GetStartedView: React.FC = () => {
             icon: <GraduationCap className="w-8 h-8" />,
             color: "from-blue-500 to-cyan-600",
             gradient: "from-blue-50 to-cyan-50",
-            destination: "Being a BA",
+            destination: "BA Essentials",
             destinationDescription: "Start with core concepts and mindset",
             nextSteps: [
               "Learn what it means to be a Business Analyst",

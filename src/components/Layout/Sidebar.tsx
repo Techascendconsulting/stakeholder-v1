@@ -48,12 +48,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
 
   const menuItems = [
     { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: LayoutDashboard
+    },
+    { 
       id: 'welcome', 
       label: 'Welcome', 
       icon: GraduationCap,
       subItems: [
-        { id: 'get-started', label: 'Get Started', icon: Play, isNew: true },
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }
+        { id: 'get-started', label: 'Get Started', icon: Play, isNew: true }
       ]
     },
     { 
@@ -61,8 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'Learn', 
       icon: BookOpen,
       subItems: [
-        { id: 'core-concepts', label: 'Being a BA', icon: BookText },
-        { id: 'ba-fundamentals', label: 'BA Fundamentals', icon: GraduationCap },
+        { id: 'core-concepts', label: 'BA Essentials', icon: BookText },
         { id: 'process-mapper', label: 'Process Mapper', icon: MessageSquare },
         { id: 'agile-scrum', label: 'Agile & Scrum', icon: Zap }
       ]
