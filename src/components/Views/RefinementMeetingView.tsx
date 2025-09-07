@@ -390,8 +390,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Safety break after 100 attempts (10 seconds) - EXACT COPY
-        if (waitCount > 100) {
+        // Safety break after 200 attempts (20 seconds) - increased timeout
+        if (waitCount > 200) {
           console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long! Breaking wait loop.`);
           break;
         }
@@ -400,6 +400,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       // Start speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} now taking turn to speak`);
       setCurrentSpeaking(teamMember.name);
+      
+      // Small delay to ensure state update is processed
+      await new Promise(resolve => setTimeout(resolve, 50));
       
       // Create message - EXACT COPY
       const message = {
