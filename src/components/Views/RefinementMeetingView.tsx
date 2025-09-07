@@ -278,7 +278,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         return Promise.resolve();
       }
 
-      setCurrentSpeaking(teamMember);
+      setCurrentSpeaking(teamMember.name);
       setIsAudioPlaying(true);
 
       const voiceName = teamMember.voiceId;
@@ -306,9 +306,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
             setCurrentAudio(null);
             setPlayingMessageId(null);
             setAudioStates(prev => ({ ...prev, [messageId]: 'stopped' }));
-            setCurrentSpeaking(null); // Clear current speaker - CRITICAL for turn-taking
+            // Don't clear currentSpeaking here - the addAIMessage function handles it
             setIsAudioPlaying(false);
-            console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio naturally ended - cleared currentSpeaking`);
+            console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio naturally ended`);
             resolve();
           };
           
@@ -342,7 +342,7 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         }
       } else {
         console.log('⚠️ ElevenLabs TTS not available, skipping audio playback');
-        setCurrentSpeaking(teamMember);
+        setCurrentSpeaking(teamMember.name);
         setIsAudioPlaying(false);
         // Still show visual feedback that someone is "speaking"
         setTimeout(() => {
@@ -372,14 +372,8 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }
   };
 
-  // Add AI message with EXACT turn-taking system from voice-only meetings
+  // EXACT COPY of working processDynamicStakeholderResponse from VoiceOnlyMeetingView
   const addAIMessage = async (teamMember: AgileTeamMemberContext, text: string) => {
-    // Check if meeting is still active
-    if (!isMeetingActive) {
-      console.log(`🚫 Meeting inactive, skipping message from ${teamMember.name}`);
-      return;
-    }
-
     console.log(`🚀 QUEUE DEBUG: ${teamMember.name} starting addAIMessage`);
     console.log(`🚀 QUEUE DEBUG: Current speaker before: ${currentSpeaking}`);
     console.log(`🚀 QUEUE DEBUG: Current queue before: [${conversationQueue.join(', ')}]`);
@@ -409,36 +403,48 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       // Start speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} now taking turn to speak`);
       setCurrentSpeaking(teamMember.name);
-    
-    const message: Message = {
-      id: `msg_${Date.now()}_${Math.random()}`,
-      speaker: teamMember.name,
-      content: text,
-      timestamp: new Date().toISOString(),
-      role: teamMember.role,
-      stakeholderId: teamMember.name.toLowerCase()
-    };
+      
+      // Create message - EXACT COPY
+      const message = {
+        id: `msg_${Date.now()}_${Math.random()}`,
+        speaker: teamMember.name,
+        content: text,
+        timestamp: new Date().toISOString(),
+        role: teamMember.role,
+        stakeholderId: teamMember.name.toLowerCase()
+      };
 
-    setTranscript(prev => {
-      console.log('📋 Adding message to transcript. Current length:', prev.length);
-      return [...prev, message];
-    });
-    
-      // Play audio using voice meeting logic (clean markdown for TTS)
-    console.log('🎵 Attempting to play audio for:', teamMember.name);
+      setTranscript(prev => {
+        console.log('📋 Adding message to transcript. Current length:', prev.length);
+        return [...prev, message];
+      });
+      
+      // Play audio - EXACT COPY
+      console.log('🎵 Attempting to play audio for:', teamMember.name);
       const cleanText = cleanMarkdownForTTS(text);
       await playMessageAudio(message.id, cleanText, teamMember, true);
       
+      // Finish speaking - EXACT COPY
+      console.log(`🚀 QUEUE DEBUG: ${teamMember.name} finished speaking, clearing currentSpeaking`);
+      setCurrentSpeaking(null);
+      setConversationQueue(prev => {
+        const newQueue = prev.filter(name => name !== teamMember.name);
+        console.log(`🚀 QUEUE DEBUG: ${teamMember.name} removed from queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
+      
     } catch (error) {
-      console.error(`❌ Error in addAIMessage for ${teamMember.name}:`, error);
-      setCurrentSpeaking(null); // Clear current speaker on error
+      console.error(`🚨 QUEUE ERROR: Error in ${teamMember.name} response:`, error);
+      
+      // Clean up conversation state on error - EXACT COPY
+      console.log(`🚀 QUEUE DEBUG: ${teamMember.name} error cleanup - clearing currentSpeaking`);
+      setCurrentSpeaking(null);
+      setConversationQueue(prev => {
+        const newQueue = prev.filter(name => name !== teamMember.name);
+        console.log(`🚀 QUEUE DEBUG: ${teamMember.name} error cleanup - removed from queue. New queue: [${newQueue.join(', ')}]`);
+        return newQueue;
+      });
     }
-    
-    // Remove from queue when done (currentSpeaking cleared by audio completion)
-    setTimeout(() => {
-      setConversationQueue(prev => prev.filter(name => name !== teamMember.name));
-      console.log(`🎤 QUEUE: ${teamMember.name} removed from queue`);
-    }, 1000); // Short delay to remove from queue
   };
 
   // Handle meeting start
@@ -552,7 +558,8 @@ I'd like to get your thoughts on the technical implementation and any questions 
           }, 4000);
         }
         
-        // After BA presents, team members respond with realistic questions
+        // Let the turn-taking system handle the conversation naturally
+        // Just trigger the first response and let the queue system work
         setTimeout(async () => {
           if (!isMeetingActive) return;
           
@@ -562,18 +569,7 @@ I'd like to get your thoughts on the technical implementation and any questions 
           if (srikanth) {
             await addAIMessage(srikanth, srikanthResponse);
           }
-        }, 2000); // Wait for BA to finish
-        
-        setTimeout(async () => {
-          if (!isMeetingActive) return;
-          
-          // Bola (BA) answers the simple question
-          const bolaResponse = "Good question Srikanth. Let me clarify - we should allow up to 5 files per maintenance request. That should be enough for most cases where tenants need to show multiple angles of an issue.";
-          const baMember = teamMembers.find(m => m.role === 'Business Analyst');
-          if (baMember) {
-            await addAIMessage(baMember, bolaResponse);
-          }
-        }, 4000); // Wait for Srikanth to finish
+        }, 2000);
         
         setTimeout(async () => {
           if (!isMeetingActive) return;

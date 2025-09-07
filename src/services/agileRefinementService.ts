@@ -8,7 +8,7 @@ const openai = new OpenAI({
 
 export interface AgileTeamMemberContext {
   name: string;
-  role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester';
+  role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester' | 'Business Analyst';
   voiceId: string;
   personality: string;
   focusAreas: string[];
