@@ -222,7 +222,7 @@ const ScrumEssentialsView: React.FC = () => {
         
         return (
           <div key={index} className="mb-8">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-6 rounded-r-lg mb-4">
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500 p-6 rounded-r-lg mb-4">
               <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
                 {getSectionIcon(header)}
                 <span className="ml-3">{header}</span>
@@ -248,14 +248,26 @@ const ScrumEssentialsView: React.FC = () => {
 
   const getSectionIcon = (header: string) => {
     const iconMap: { [key: string]: React.ReactNode } = {
-      'The Product Owner': <Target className="w-5 h-5 text-blue-600" />,
-      'The Scrum Master': <Users className="w-5 h-5 text-green-600" />,
+      'The Product Owner': <Target className="w-5 h-5 text-purple-600" />,
+      'The Scrum Master': <Users className="w-5 h-5 text-indigo-600" />,
       'The Developers': <Zap className="w-5 h-5 text-purple-600" />,
-      'The Business Analyst': <FileText className="w-5 h-5 text-orange-600" />,
-      'Putting It All Together': <Lightbulb className="w-5 h-5 text-yellow-600" />,
+      'The Business Analyst': <FileText className="w-5 h-5 text-indigo-600" />,
+      'Putting It All Together': <Lightbulb className="w-5 h-5 text-purple-600" />,
+      'Backlog Refinement': <Target className="w-5 h-5 text-purple-600" />,
+      'Sprint Planning': <CheckSquare className="w-5 h-5 text-indigo-600" />,
+      'Daily Scrum': <Users className="w-5 h-5 text-purple-600" />,
+      'Sprint Review': <Star className="w-5 h-5 text-indigo-600" />,
+      'Sprint Retrospective': <Lightbulb className="w-5 h-5 text-purple-600" />,
+      'Bringing the Events Together': <ArrowRight className="w-5 h-5 text-indigo-600" />,
+      'The Product Backlog': <FileText className="w-5 h-5 text-purple-600" />,
+      'The Sprint Backlog': <Target className="w-5 h-5 text-indigo-600" />,
+      'The Increment': <CheckCircle className="w-5 h-5 text-purple-600" />,
+      'Definition of Ready': <CheckSquare className="w-5 h-5 text-indigo-600" />,
+      'Definition of Done': <CheckCircle className="w-5 h-5 text-purple-600" />,
+      'Bringing the Artefacts Together': <ArrowRight className="w-5 h-5 text-indigo-600" />,
     };
     
-    return iconMap[header] || <BookOpen className="w-5 h-5 text-gray-600" />;
+    return iconMap[header] || <BookOpen className="w-5 h-5 text-purple-600" />;
   };
 
   const renderTextContent = (text: string) => {
@@ -264,10 +276,10 @@ const ScrumEssentialsView: React.FC = () => {
         text.includes('**How you, the BA, fit with') ||
         text.includes('**Where you fit with')) {
       return (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
           <div className="flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-blue-800 prose prose-blue max-w-none">
+            <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+            <div className="text-purple-800 prose prose-purple max-w-none">
               <ReactMarkdown>{text}</ReactMarkdown>
             </div>
           </div>
@@ -287,7 +299,7 @@ const ScrumEssentialsView: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading section...</p>
         </div>
       </div>
@@ -340,7 +352,7 @@ const ScrumEssentialsView: React.FC = () => {
           <div className="mt-4">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-purple-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(currentSectionId / totalSections) * 100}%` }}
               ></div>
             </div>
@@ -411,7 +423,7 @@ const ScrumEssentialsView: React.FC = () => {
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 currentSectionId === totalSections
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-purple-600 hover:bg-purple-700 text-white'
               }`}
             >
               <span>Next</span>
