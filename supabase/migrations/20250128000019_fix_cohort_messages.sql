@@ -73,3 +73,4 @@ CREATE TRIGGER update_cohort_messages_updated_at
 ALTER PUBLICATION supabase_realtime ADD TABLE public.cohort_messages;
 
 
+

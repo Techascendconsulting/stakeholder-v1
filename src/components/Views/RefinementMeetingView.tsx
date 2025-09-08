@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Users, Clock, Volume2, Play, Pause, Square, Phone, PhoneOff, Settings, MoreVertical, ChevronDown, ChevronUp, X, Edit3, Save, Trash2, Plus, GripVertical, FileText } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Send, Volume2, Play, Square, PhoneOff, ChevronDown, X, GripVertical, FileText } from 'lucide-react';
 // import { useAuth } from '../../contexts/AuthContext'; // Not needed for refinement simulation
-import { useApp } from '../../contexts/AppContext';
 import { useVoice } from '../../contexts/VoiceContext';
 // import { Message } from '../../types'; // Using custom interface for refinement meeting
-import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { playPreGeneratedAudio, findPreGeneratedAudio, hasPreGeneratedAudio } from '../../services/preGeneratedAudioService';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
+import { getCoachingForSegment, shouldShowCoaching, CoachingPoint } from '../../services/refinementCoachingService';
+import CoachingOverlay from '../RefinementMeeting/CoachingOverlay';
+import MeetingControls from '../RefinementMeeting/MeetingControls';
 
 // Custom interface for refinement meeting messages
 interface MeetingMessage {
@@ -143,10 +145,34 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
           )}
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: getAvatarColor(participant.name).replace('bg-', '#').replace('-500', '') }}>
-          <span className="text-white text-lg font-bold">
-            {getInitials(participant.name)}
-          </span>
+        <div className="w-full h-full flex items-center justify-center relative">
+          {participant.avatarUrl ? (
+            <img
+              src={participant.avatarUrl}
+              alt={participant.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to initials if image fails to load
+                console.log('Avatar image failed to load:', participant.avatarUrl);
+                e.currentTarget.style.display = 'none';
+                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                if (nextElement) {
+                  nextElement.style.display = 'flex';
+                }
+              }}
+            />
+          ) : null}
+          <div 
+            className="w-full h-full flex items-center justify-center" 
+            style={{ 
+              backgroundColor: getAvatarColor(participant.name).replace('bg-', '#').replace('-500', ''),
+              display: participant.avatarUrl ? 'none' : 'flex'
+            }}
+          >
+            <span className="text-white text-lg font-bold">
+              {getInitials(participant.name)}
+            </span>
+          </div>
         </div>
       )}
       
@@ -192,10 +218,18 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
   const [conversationQueue, setConversationQueue] = useState<string[]>([]);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [storyPointsAgreed, setStoryPointsAgreed] = useState<{[storyId: string]: boolean}>({});
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [audioStates, setAudioStates] = useState<Record<string, string>>({});
   const [isMeetingActive, setIsMeetingActive] = useState(true);
+  
+  // Coaching system state
+  const [currentCoaching, setCurrentCoaching] = useState<CoachingPoint | null>(null);
+  const [isCoachingVisible, setIsCoachingVisible] = useState(false);
+  const [isMeetingPaused, setIsMeetingPaused] = useState(false);
+  const [hasCoachingAvailable, setHasCoachingAvailable] = useState(false);
+  const [coachingHistory, setCoachingHistory] = useState<CoachingPoint[]>([]);
   
   // Ref for story content auto-scrolling
   const storyContentRef = useRef<HTMLDivElement>(null);
@@ -211,6 +245,9 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
   const [isEditingStory, setIsEditingStory] = useState(false);
   const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
   const [isViewingStory, setIsViewingStory] = useState(false); // For read-only viewing during BA presentation
+  
+  // Ref to track meeting cancellation for more aggressive cleanup
+  const meetingCancelledRef = useRef(false);
   
   // Kanban columns state with drag-and-drop
   const [kanbanColumns, setKanbanColumns] = useState<{
@@ -235,14 +272,81 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }
   });
 
+  // Type-safe column access
+  const getColumn = (columnId: string) => {
+    return kanbanColumns[columnId as keyof typeof kanbanColumns];
+  };
+
+  const updateColumn = (columnId: string, updates: Partial<{ id: string; title: string; stories: string[] }>) => {
+    setKanbanColumns(prev => ({
+      ...prev,
+      [columnId]: { ...prev[columnId as keyof typeof prev], ...updates }
+    }));
+  };
+
   // AI Refinement Service
   const aiService = AgileRefinementService.getInstance();
   const teamMembers = aiService.getTeamMembers();
+
+  // Use Victor as BA for the password reset story in Trial 2
+  const displayTeamMembers = React.useMemo(() => {
+    const firstStory = initialStories?.[0];
+    if (firstStory && isPasswordResetStory(firstStory.title)) {
+      return teamMembers.map(m =>
+        m.role === 'Business Analyst'
+          ? { ...m, id: 'victor', name: 'Victor', voiceId: 'neMPCpWtBwWZhxEC8qpe', avatarUrl: '/images/avatars/victor-avatar.png' }
+          : m
+      );
+    }
+    return teamMembers;
+  }, [initialStories, teamMembers]);
+
+  // Helper: detect if current story is the Password Reset Confirmation Email (Trial 2)
+  function isPasswordResetStory(storyTitle?: string) {
+    if (!storyTitle) return false;
+    return storyTitle.toLowerCase().includes('password reset confirmation email');
+  }
+
+  // Helper: get BA for current story (Victor for Trial 2, otherwise Bola)
+  const getBusinessAnalystMember = (storyTitle?: string) => {
+    const defaultBA = teamMembers.find(m => m.role === 'Business Analyst') || {
+      id: 'bola',
+      name: 'Bola',
+      role: 'Business Analyst' as const,
+      voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA || 'en-US-AriaNeural',
+      personality: 'Detail-oriented, user-focused',
+      focusAreas: ['Requirements clarity', 'User experience', 'Business value'],
+      responseStyle: 'Presents requirements clearly and answers questions'
+    };
+    const currentStory = storyTitle || initialStories?.[0]?.title;
+    if (currentStory && isPasswordResetStory(currentStory)) {
+      return {
+        ...defaultBA,
+        id: 'victor',
+        name: 'Victor',
+        voiceId: 'neMPCpWtBwWZhxEC8qpe'
+      };
+    }
+    return defaultBA;
+  };
 
   // Auto-scroll messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcript]);
+
+  // Handle ESC key to close story modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isEditingStory) {
+        setIsEditingStory(false);
+        setIsViewingStory(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isEditingStory]);
 
   // Cleanup when component unmounts
   useEffect(() => {
@@ -422,6 +526,12 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     console.log(`🚀 QUEUE DEBUG: Current queue before: [${conversationQueue.join(', ')}]`);
     
     try {
+      // Check cancellation flag first
+      if (meetingCancelledRef.current) {
+        console.log(`🚫 Meeting cancelled, aborting addAIMessage for ${teamMember.name}`);
+        return;
+      }
+      
       // Add to conversation queue to prevent simultaneous speaking - EXACT COPY
       setConversationQueue(prev => {
         const newQueue = [...prev, teamMember.id];
@@ -431,13 +541,23 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       
       // Wait for turn if someone else is speaking - EXACT COPY
       let waitCount = 0;
-      while (currentSpeaking !== null && currentSpeaking !== teamMember.id) {
+      // Exit immediately if meeting ended or cancelled
+      if (!isMeetingActive || meetingCancelledRef.current) {
+        console.log(`🚫 Meeting inactive or cancelled, aborting queue wait for ${teamMember.name}`);
+        return;
+      }
+
+      while (currentSpeaking !== null && currentSpeaking !== teamMember.name) {
+        if (!isMeetingActive || meetingCancelledRef.current) {
+          console.log(`🚫 Meeting inactive or cancelled, aborting speak wait for ${teamMember.name}`);
+          return;
+        }
         waitCount++;
         console.log(`🚀 QUEUE DEBUG: ${teamMember.name} waiting (attempt ${waitCount}). Current speaker: ${currentSpeaking}`);
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Safety break after 200 attempts (20 seconds) - increased timeout
-        if (waitCount > 200) {
+        // Safety break after 20 attempts (2 seconds) to avoid long hangs
+        if (waitCount > 20) {
           console.error(`🚨 QUEUE ERROR: ${teamMember.name} waited too long! Breaking wait loop.`);
           break;
         }
@@ -445,34 +565,71 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       
       // Start speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} now taking turn to speak`);
-      setCurrentSpeaking(teamMember.id);
+      setCurrentSpeaking(teamMember.name);
       
       // Small delay to ensure state update is processed
       await new Promise(resolve => setTimeout(resolve, 50));
       
       // Create message - EXACT COPY
       const message: MeetingMessage = {
-        id: `msg_${Date.now()}_${Math.random()}`,
-        speaker: teamMember.name,
-        content: text,
-        timestamp: new Date().toISOString(),
-        role: teamMember.role,
+      id: `msg_${Date.now()}_${Math.random()}`,
+      speaker: teamMember.name,
+      content: text,
+      timestamp: new Date().toISOString(),
+      role: teamMember.role,
         stakeholderId: teamMember.id
-      };
+    };
 
-      setTranscript(prev => {
-        console.log('📋 Adding message to transcript. Current length:', prev.length);
-        return [...prev, message];
-      });
+    setTranscript(prev => {
+      console.log('📋 Adding message to transcript. Current length:', prev.length);
+      return [...prev, message];
+    });
+    
+    // Check for coaching points - show automatically but non-intrusively
+    // Extract trial ID from story ID (e.g., 'trial-1-story-1' -> 'trial-1')
+    const trialId = selectedStoryId ? selectedStoryId.split('-').slice(0, 2).join('-') : 'trial-1';
+    const coaching = getCoachingForSegment(audioId || '', trialId);
+    if (coaching && shouldShowCoaching(text, coaching, text)) {
+      setCoachingHistory(prev => [...prev, coaching]);
+      setCurrentCoaching(coaching);
+      setHasCoachingAvailable(true);
+      setIsCoachingVisible(true); // Show automatically
+      console.log('🎓 Coaching point shown:', coaching.title);
       
-      // Play audio - EXACT COPY
-      console.log('🎵 Attempting to play audio for:', teamMember.name);
+      // Auto-hide after 12 seconds to give more time to read
+      setTimeout(() => {
+        setIsCoachingVisible(false);
+      }, 12000);
+    }
+    
+      // Play audio - with immediate exit support on end
+    console.log('🎵 Attempting to play audio for:', teamMember.name);
       const cleanText = cleanMarkdownForTTS(text);
       
-      // For now, use ElevenLabs until pre-generated audio files are created
-      // TODO: Enable pre-generated audio once audio files are generated
-      console.log('🎵 Using ElevenLabs TTS (pre-generated audio not yet available)');
-      await playMessageAudio(message.id, cleanText, teamMember, true);
+      // Check for pre-generated audio first
+      if (audioId && hasPreGeneratedAudio(audioId)) {
+        console.log('✅ Using pre-generated audio:', audioId);
+        if (!isMeetingActive || meetingCancelledRef.current) {
+          console.log(`🚫 Meeting inactive or cancelled, skipping audio for ${teamMember.name}`);
+        } else {
+          try {
+            await playPreGeneratedAudio(audioId);
+            console.log('🎵 Pre-generated audio completed for:', audioId);
+          } catch (error) {
+            console.error('❌ Pre-generated audio failed, falling back to ElevenLabs:', error);
+            if (!meetingCancelledRef.current) {
+              await playMessageAudio(message.id, cleanText, teamMember, true);
+            }
+          }
+        }
+      } else {
+        console.log('🎵 Using ElevenLabs TTS (pre-generated audio not available for:', audioId);
+        if (!isMeetingActive || meetingCancelledRef.current) {
+          console.log(`🚫 Meeting inactive or cancelled, skipping audio for ${teamMember.name}`);
+        } else {
+          await playMessageAudio(message.id, cleanText, teamMember, true);
+        }
+      }
       
       // Finish speaking - EXACT COPY
       console.log(`🚀 QUEUE DEBUG: ${teamMember.name} finished speaking, clearing currentSpeaking`);
@@ -497,8 +654,92 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     }
   };
 
+  // Coaching control functions
+  const handlePauseMeeting = () => {
+    setIsMeetingPaused(true);
+    // Pause current audio if playing
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+    console.log('⏸️ Meeting paused for coaching reading');
+  };
+
+  const handleResumeMeeting = () => {
+    setIsMeetingPaused(false);
+    setIsCoachingVisible(false);
+    setCurrentCoaching(null);
+    // Resume audio if it was playing
+    if (currentAudio && currentAudio.paused) {
+      currentAudio.play();
+    }
+    console.log('▶️ Meeting resumed');
+  };
+
+  const handleCloseCoaching = () => {
+    setIsCoachingVisible(false);
+    setCurrentCoaching(null);
+  };
+
+  const handleShowCoaching = () => {
+    if (currentCoaching) {
+      setIsCoachingVisible(true);
+      console.log('🎓 Showing coaching:', currentCoaching.title);
+    }
+  };
+
+  const handleRestartMeeting = () => {
+    // Reset cancellation flag
+    meetingCancelledRef.current = false;
+    
+    // Reset all meeting state
+    setMeetingStarted(false);
+    setTranscript([]);
+    setCurrentSpeaking(null);
+    setConversationQueue([]);
+    setIsAudioPlaying(false);
+    setCurrentCoaching(null);
+    setIsCoachingVisible(false);
+    setIsMeetingPaused(false);
+    setHasCoachingAvailable(false);
+    
+    // Stop any playing audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+    
+    console.log('🔄 Meeting restarted');
+  };
+
+  const handleCloseMeeting = () => {
+    // Set cancellation flag immediately to stop all ongoing operations
+    meetingCancelledRef.current = true;
+    
+    // Clean up meeting state when user navigates away
+    setIsMeetingActive(false);
+    setMeetingStarted(false);
+    setCurrentSpeaking(null);
+    setConversationQueue([]);
+    setIsAudioPlaying(false);
+    setCurrentCoaching(null);
+    setIsCoachingVisible(false);
+    setIsMeetingPaused(false);
+    setHasCoachingAvailable(false);
+    
+    // Stop any playing audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+    
+    console.log('🚪 Meeting closed and cleaned up');
+    onClose();
+  };
+
   // Handle meeting start
   const startMeeting = async () => {
+    // Reset cancellation flag when starting a new meeting
+    meetingCancelledRef.current = false;
     setMeetingStarted(true);
     
     // Don't automatically move story or open it - let Scrum Master control the flow
@@ -513,21 +754,24 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
     console.log('🎬 Starting refinement meeting...');
     
     // First, Scrum Master opens the meeting and asks BA to present
-    const greetingMessage = `Good morning everyone. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review today. Bola, could you please present the first story for us?`;
-    await addAIMessage(
-      teamMembers[0], // Sarah (Scrum Master)
+    const currentStory = initialStories[0];
+    const baForStory = getBusinessAnalystMember(currentStory?.title);
+    console.log('🔍 DEBUG: Current story title:', currentStory?.title);
+    console.log('🔍 DEBUG: BA for story:', baForStory.name, baForStory.id);
+    console.log('🔍 DEBUG: Is password reset story?', isPasswordResetStory(currentStory?.title));
+    const greetingMessage = `Good morning everyone. We have ${initialStories.length} ${initialStories.length === 1 ? 'story' : 'stories'} to review today. ${baForStory.name}, could you please present the first story for us?`;
+      await addAIMessage(
+        teamMembers[0], // Sarah (Scrum Master)
       greetingMessage,
-      'sarah-opening'
+      isPasswordResetStory(currentStory?.title) ? 'sarah-opening-2' : 'sarah-opening'
     );
     
     // Then BA presents the story (only if meeting is still active)
-    if (!isMeetingActive) {
-      console.log('🚫 Meeting no longer active, skipping BA presentation');
+    if (!isMeetingActive || meetingCancelledRef.current) {
+      console.log('🚫 Meeting no longer active or cancelled, skipping BA presentation');
       return;
     }
 
-        const currentStory = initialStories[0];
-        
         // Clean markdown formatting from the story content
         const cleanTitle = cleanMarkdownForTTS(currentStory.title);
         const cleanDescription = cleanMarkdownForTTS(currentStory.description);
@@ -549,27 +793,20 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
         setSelectedStoryId(firstStoryId);
         console.log('📋 Story moved to "Currently Discussing" as BA presents');
 
-        const baPresentation = `Thank you Sarah. I'd like to present our first story for refinement today. 
+        // BA Presentation: do not inject a static user story line; read description (which may include a User Story section), then AC once
+        // Conversational BA presentation without field labels; read description (which embeds the user story) and AC once
+        const baPresentation = isPasswordResetStory(currentStory.title)
+          ? `Thanks Sarah. This one's about the password reset flow. Right now, customers see an on‑screen success but don't get a follow‑up email. We want to send a confirmation email after a successful reset so customers know their account was updated and can spot anything suspicious. The user story is: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot any suspicious activity.
 
-Story Title: ${cleanTitle}
+Here's what needs to be true:
+${cleanAcceptanceCriteria.replace(/contact support if it wasn't them\./g, 'contact support if it wasn\'t them.')}`
+          : `Thanks Sarah. Let me walk through this quickly. ${cleanDescription}
 
-Description: ${cleanDescription}
-
-User Story: As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently.
-
-Acceptance Criteria:
+Here’s what needs to be true:
 ${cleanAcceptanceCriteria}`;
         
         // Find BA team member (assuming it's the user, but we need a BA team member)
-        const baMember = teamMembers.find(m => m.role === 'Business Analyst') || {
-          id: 'bola',
-          name: 'Business Analyst',
-          role: 'Business Analyst',
-          voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA || 'en-US-AriaNeural',
-          personality: 'Detail-oriented, user-focused',
-          focusAreas: ['Requirements clarity', 'User experience', 'Business value'],
-          responseStyle: 'Presents requirements clearly and answers questions'
-        };
+        const baMember = getBusinessAnalystMember(currentStory.title);
         
         // Open the story for viewing when BA starts speaking
         setEditingStory({ ...currentStory });
@@ -577,7 +814,7 @@ ${cleanAcceptanceCriteria}`;
         setIsViewingStory(true); // Mark as viewing mode (read-only)
         console.log('📋 Story opened for viewing as BA starts presenting');
         
-        await addAIMessage(baMember, baPresentation, 'bola-presentation');
+        await addAIMessage(baMember, baPresentation, isPasswordResetStory(currentStory.title) ? 'victor-presentation-2' : 'bola-presentation');
         
         // Auto-scroll the story content as BA reads
         if (storyContentRef.current) {
@@ -606,92 +843,104 @@ ${cleanAcceptanceCriteria}`;
           }, 4000);
         }
         
-        // Let the turn-taking system handle the conversation naturally
-        // Remove setTimeout orchestration - let addAIMessage handle sequential flow
-        if (!isMeetingActive) return;
-        
-    // Add natural pauses between speakers
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Srikanth (Senior Developer) asks a simple clarification question to BA
-    const srikanthResponse = "Thanks Bola, that's clear. Just one quick question - when you say 'one or more files', is there a maximum number of files a tenant can upload per request?";
-    const srikanth = teamMembers.find(m => m.name === 'Srikanth');
-    if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse, 'srikanth-question');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Bola answers Srikanth's question
-    const baResponse = "Good question Srikanth. Yes, users should be able to upload multiple files at once - up to 5 attachments per maintenance request. So a tenant could upload, for example, 3 photos of the issue, a PDF document with additional details, and a video showing the problem. This gives them flexibility to provide comprehensive evidence for their maintenance request.";
-    const baMember2 = teamMembers.find(m => m.role === 'Business Analyst');
-    if (baMember2) {
-      await addAIMessage(baMember2, baResponse, 'bola-answer');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Srikanth asks about PDF in acceptance criteria
-    const srikanthResponse2 = "OK Bola, that's clear. it means you will need to include PDF in your acceptance criteria";
-    if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse2, 'srikanth-question-2');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Bola agrees to update acceptance criteria
-    const baResponse2 = "Good should Srikanth, I will update the acceptance criteria to include PDF, thanks for that";
-    if (baMember2) {
-      await addAIMessage(baMember2, baResponse2, 'bola-answer-2');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Lisa (Developer) discusses technical implementation with team
-    const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
-    const lisa = teamMembers.find(m => m.name === 'Lisa');
-    if (lisa) {
-      await addAIMessage(lisa, lisaResponse, 'lisa-technical');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Srikanth responds to Lisa's technical discussion
-    const srikanthResponse3 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
-    if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse3, 'srikanth-response');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Tom (QA Tester) discusses testing approach with team
-    const tomResponse = "From a testing perspective, we'll need to test all the edge cases - corrupted files, oversized files, wrong file types. I'll create test cases for the error messages to make sure they're user-friendly.";
-    const tom = teamMembers.find(m => m.name === 'Tom');
-    if (tom) {
-      await addAIMessage(tom, tomResponse, 'tom-testing');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Sarah (Scrum Master) facilitates and asks about sizing
-    const sarahResponse = "Great discussion team. Based on what I'm hearing, this feels like a solid 5-point story. Srikanth, as our senior developer, do you agree with that estimate?";
-    const sarah = teamMembers.find(m => m.name === 'Sarah');
-    if (sarah) {
-      await addAIMessage(sarah, sarahResponse, 'sarah-sizing');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Srikanth confirms the story point estimate
-    const srikanthResponse4 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
-    if (srikanth) {
-      await addAIMessage(srikanth, srikanthResponse4, 'srikanth-confirm');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Sarah concludes the meeting and says she'll mark it as refined
-    const sarahResponse2 = "Perfect! Story estimated at 5 points. I'll mark this as refined and move it to our refined backlog. Great work everyone, this story is ready for sprint planning.";
+        // Branch meeting flow based on story
+        // Let the turn-taking system handle the conversation naturally; no external orchestration
+        if (!isMeetingActive || meetingCancelledRef.current) return;
+
+        const srikanth = displayTeamMembers.find(m => m.name === 'Srikanth');
+        const lisa = displayTeamMembers.find(m => m.name === 'Lisa');
+        const tom = displayTeamMembers.find(m => m.name === 'Tom');
+        const sarah = displayTeamMembers.find(m => m.name === 'Sarah');
+        const baMember2 = getBusinessAnalystMember(currentStory.title);
+
+        if (isPasswordResetStory(currentStory.title)) {
+          // Trial 2: Password Reset Confirmation Email
+          await new Promise(r => setTimeout(r, 300));
+          if (srikanth) await addAIMessage(srikanth, "Just to check, Victor — this only triggers after a successful password change, right? Not after a failed attempt?", 'srikanth-check-2');
+
+          await new Promise(r => setTimeout(r, 250));
+          await addAIMessage(baMember2, "That’s right, only when the reset has been completed successfully.", 'victor-confirm-2');
+
+          await new Promise(r => setTimeout(r, 300));
+          if (lisa) await addAIMessage(lisa, "Okay. We can plug into our existing email service. We’ll just need a new template. Do we already have wording for that?", 'lisa-email-2');
+
+          // Brief typing indicator phase for Victor drafting template
+          console.log('⌨️ Victor is typing the email template...');
+          await new Promise(r => setTimeout(r, 400));
+          await addAIMessage(baMember2, "Yes — subject’s ‘Your Password Has Been Reset’, and the body confirms the change and asks customers to contact support if it wasn’t them.", 'victor-template-2');
+
+          await new Promise(r => setTimeout(r, 300));
+          if (tom) await addAIMessage(tom, "I’ll need to verify a few things: Email is only sent on successful reset. Subject and body match the template. No password data is exposed. Email goes to the registered address. Do we also need a log entry to show support that the email was sent?", 'tom-tests-2');
+
+          await new Promise(r => setTimeout(r, 250));
+          await addAIMessage(baMember2, "Yes, good point — a log entry should be created. Let’s add that as a note.", 'victor-log-2');
+
+          await new Promise(r => setTimeout(r, 300));
+          if (lisa) await addAIMessage(lisa, "If the email fails to send, should we retry or just log it?", 'lisa-retry-ask-2');
+
+          await new Promise(r => setTimeout(r, 250));
+          if (srikanth) await addAIMessage(srikanth, "Let’s retry once, then log. That keeps it consistent with our other emails.", 'srikanth-retry-2');
+
+          await new Promise(r => setTimeout(r, 400));
+          if (sarah) await addAIMessage(sarah, "Great, seems we’ve clarified the story. Let’s size it. Remember, effort not hours. Ready? 3…2…1 — show.", 'sarah-size-2');
+
+          await new Promise(r => setTimeout(r, 500));
+          if (srikanth) await addAIMessage(srikanth, "2 points.", 'srikanth-2pts-2');
+          await new Promise(r => setTimeout(r, 300));
+          if (lisa) await addAIMessage(lisa, "2 points as well.", 'lisa-2pts-2');
+          await new Promise(r => setTimeout(r, 300));
+          if (tom) await addAIMessage(tom, "2 points.", 'tom-2pts-2');
+
+          await new Promise(r => setTimeout(r, 700));
+          if (sarah) await addAIMessage(sarah, "Perfect, consensus at 2 points. This story is refined and ready for Sprint Planning.", 'sarah-conclude-2');
+          
+          // Mark story points as agreed for Trial 2
+          setStoryPointsAgreed(prev => ({ ...prev, [initialStories[0].id]: true }));
+        } else {
+          // Trial 1 (existing) flow
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const srikanthResponse = "Thanks Bola, that's clear. Just one quick question - when you say 'one or more files', is there a maximum number of files a tenant can upload per request?";
+          if (srikanth) await addAIMessage(srikanth, srikanthResponse, 'srikanth-question');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const baResponse = "Good question Srikanth. Yes, users should be able to upload multiple files at once - up to 5 attachments per maintenance request. So a tenant could upload, for example, 3 photos of the issue, a PDF document with additional details, and a video showing the problem. This gives them flexibility to provide comprehensive evidence for their maintenance request.";
+          await addAIMessage(baMember2, baResponse, 'bola-answer');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const srikanthResponse2 = "OK Bola, that's clear. it means you will need to include PDF in your acceptance criteria";
+          if (srikanth) await addAIMessage(srikanth, srikanthResponse2, 'srikanth-question-2');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const baResponse2 = "Good should Srikanth, I will update the acceptance criteria to include PDF, thanks for that";
+          await addAIMessage(baMember2, baResponse2, 'bola-answer-2');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const lisaResponse = "Got it, thanks Bola. Srikanth, for the technical implementation, I'm thinking we can reuse our existing file upload component. We'll need to add the file type validation and size checking on the frontend before upload.";
+          if (lisa) await addAIMessage(lisa, lisaResponse, 'lisa-technical');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const srikanthResponse3 = "Good point Lisa. For the backend, we can store these in our existing S3 bucket. We'll need to implement proper error handling for failed uploads and maybe add a retry mechanism. The 5MB limit should be fine for images.";
+          if (srikanth) await addAIMessage(srikanth, srikanthResponse3, 'srikanth-response');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const tomResponse = "From a testing perspective, we'll need to test all the edge cases - corrupted files, oversized files, wrong file types. I'll create test cases for the error messages to make sure they're user-friendly.";
+          if (tom) await addAIMessage(tom, tomResponse, 'tom-testing');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const sarahResponse = "Great discussion team. Based on what I'm hearing, this feels like a solid 5-point story. Srikanth, as our senior developer, do you agree with that estimate?";
+          if (sarah) await addAIMessage(sarah, sarahResponse, 'sarah-sizing');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const srikanthResponse4 = "Yes, I agree with 5 points. The file upload functionality is straightforward, and we can reuse existing components. The main work will be in the validation logic and error handling, but that's manageable.";
+          if (srikanth) await addAIMessage(srikanth, srikanthResponse4, 'srikanth-confirm');
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const sarahResponse2 = "Perfect! Story estimated at 5 points. I'll mark this as refined and move it to our refined backlog. Great work everyone, this story is ready for sprint planning.";
+          if (sarah) await addAIMessage(sarah, sarahResponse2, 'sarah-conclude');
+          
+          // Mark story points as agreed for Trial 1
+          setStoryPointsAgreed(prev => ({ ...prev, [initialStories[0].id]: true }));
+        }
     
     // Move story to "Refined" column
     if (initialStories.length > 0) {
@@ -710,25 +959,29 @@ ${cleanAcceptanceCriteria}`;
       console.log('📋 Story moved to "Refined"');
     }
     
+    // Conclude politely if this is the end
     if (sarah) {
-      await addAIMessage(sarah, sarahResponse2, 'sarah-conclude');
+      const goodbye = isPasswordResetStory(initialStories[0]?.title)
+        ? 'Thanks everyone, that wraps up this item. Great work – we’ll see you in Sprint Planning.'
+        : 'Great work team. That concludes refinement for this story.';
+      await addAIMessage(sarah, goodbye, 'sarah-goodbye');
     }
     
   };
 
   // Generate dynamic AI response (using voice-only meeting pattern)
   const generateAIResponse = async (userMessage: string) => {
-    // Check if meeting is still active
-    if (!isMeetingActive) {
-      console.log('🚫 Meeting no longer active, skipping AI response generation');
+    // Check if meeting is still active or cancelled
+    if (!isMeetingActive || meetingCancelledRef.current) {
+      console.log('🚫 Meeting no longer active or cancelled, skipping AI response generation');
       return;
     }
 
+    // Use the same dynamic AI service as voice-only meeting
+    const dynamicAIService = AIService.getInstance();
+    
     try {
       console.log('🤖 Generating dynamic AI response for:', userMessage);
-      
-      // Use the same dynamic AI service as voice-only meeting
-      const dynamicAIService = AIService.getInstance();
       
       // Convert team members to stakeholder format for AIService
       const availableTeamMembers = teamMembers.map(member => ({
@@ -737,11 +990,11 @@ ${cleanAcceptanceCriteria}`;
         department: 'Engineering',
         priorities: [`${member.role} responsibilities`, 'Story refinement', 'Quality delivery'],
         personality: member.personality || 'Professional and collaborative',
-        expertise: member.expertise || [member.role.toLowerCase(), 'agile', 'software development']
+        expertise: [member.role.toLowerCase(), 'agile', 'software development']
       }));
 
       // Detect who should respond (like voice-only meeting)
-      const mentionResult = await dynamicAIService.detectStakeholderMentions(userMessage, availableTeamMembers);
+      const mentionResult = await dynamicAIService.detectStakeholderMentions(userMessage, availableTeamMembers, 'refinement_discussion');
       
       let responder;
       if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
@@ -754,7 +1007,7 @@ ${cleanAcceptanceCriteria}`;
         
         // Context-based selection logic
         if (userMessage.toLowerCase().includes('test') || userMessage.toLowerCase().includes('quality')) {
-          responder = availableTeamMembers.find(m => m.role === 'Tester') || availableTeamMembers[2];
+          responder = availableTeamMembers.find(m => m.role === 'QA Tester') || availableTeamMembers[2];
         } else if (userMessage.toLowerCase().includes('technical') || userMessage.toLowerCase().includes('develop')) {
           responder = availableTeamMembers.find(m => m.role === 'Developer') || availableTeamMembers[1];
         } else if (userMessage.toLowerCase().includes('process') || userMessage.toLowerCase().includes('sprint')) {
@@ -789,8 +1042,7 @@ ${cleanAcceptanceCriteria}`;
         const response = await dynamicAIService.generateStakeholderResponse(
           userMessage,
           responder,
-          conversationContext,
-          'refinement_discussion'
+          conversationContext
         );
         
         // Find the corresponding team member for audio
@@ -809,7 +1061,7 @@ ${cleanAcceptanceCriteria}`;
           department: 'Engineering',
           priorities: ['Story refinement', 'Quality delivery'],
           personality: fallbackMember.personality || 'Professional',
-          expertise: fallbackMember.expertise || [fallbackMember.role.toLowerCase()]
+          expertise: [fallbackMember.role.toLowerCase()]
         },
         { project: { name: 'Story Refinement Session' } }
       );
@@ -880,7 +1132,7 @@ ${cleanAcceptanceCriteria}`;
       console.error('❌ Error transcribing audio:', error);
       // Show user-friendly error
       setUserInput(''); // Clear input on error
-      if (error.message?.includes('VITE_OPENAI_API_KEY')) {
+      if (error instanceof Error && error.message?.includes('VITE_OPENAI_API_KEY')) {
         console.error('💡 Hint: Add VITE_OPENAI_API_KEY to .env file for voice transcription');
       }
     } finally {
@@ -949,18 +1201,21 @@ ${cleanAcceptanceCriteria}`;
       const newColumns = { ...prev };
       
       // Remove from all columns
-      Object.keys(newColumns).forEach(columnId => {
+      (Object.keys(newColumns) as Array<keyof typeof newColumns>).forEach(columnId => {
         newColumns[columnId].stories = newColumns[columnId].stories.filter(id => id !== storyId);
       });
       
       // Add to target column
-      newColumns[targetColumnId].stories.push(storyId);
+      const targetColumn = newColumns[targetColumnId as keyof typeof newColumns];
+      if (targetColumn) {
+        targetColumn.stories.push(storyId);
+      }
       
       return newColumns;
     });
 
     // Update story status - Auto change to 'Refined' when moved to refined column
-    const statusMap = {
+    const statusMap: Record<string, string> = {
       'ready': 'Ready for Refinement',
       'discussing': 'Ready for Refinement', // Still in refinement
       'refined': 'Refined' // Auto change to Refined status
@@ -976,35 +1231,23 @@ ${cleanAcceptanceCriteria}`;
   // End meeting
   const handleEndMeeting = async () => {
     console.log('🔚 END MEETING BUTTON CLICKED!');
-    
+    // Immediately mark meeting inactive so all flows stop now
+    setIsMeetingActive(false);
+
     // Stop any current audio first
     stopCurrentAudio();
     
-    // Set meeting as inactive to stop any ongoing conversation
-    setIsMeetingActive(false);
-    
-    // Clear conversation queue
+    // Clear conversation queue and speaking state
     setConversationQueue([]);
     setCurrentSpeaking(null);
-    
-    try {
-      // Generate meeting summary
-      const summary = await aiService.generateRefinementSummary(transcript, stories);
-      
-      onMeetingEnd({
-        transcript,
-        summary,
-        refinedStories: stories.filter(s => kanbanColumns.refined.stories.includes(s.id)),
-        duration: Date.now() - meetingStartTime
-      });
-    } catch (error) {
-      console.error('Error ending meeting:', error);
+
+    // End immediately without waiting on AI summary generation
+    // (We can compute summary later in background if needed)
       onMeetingEnd({
         transcript,
         refinedStories: stories.filter(s => kanbanColumns.refined.stories.includes(s.id)),
         duration: Date.now() - meetingStartTime
       });
-    }
   };
 
   return (
@@ -1013,11 +1256,11 @@ ${cleanAcceptanceCriteria}`;
       <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
-            onClick={onClose}
+            onClick={handleCloseMeeting}
             className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ArrowLeft size={20} />
-            <span>Back to Agile Hub</span>
+            <span>Back to Backlog Refinement Simulation</span>
           </button>
           
           <div className="flex items-center space-x-3">
@@ -1037,12 +1280,12 @@ ${cleanAcceptanceCriteria}`;
           <div className="flex items-center space-x-2 text-green-400">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             <span className="text-sm">Browser TTS</span>
-          </div>
+            </div>
         </div>
 
         <div className="flex items-center space-x-3">
           <button
-            onClick={onClose}
+            onClick={handleCloseMeeting}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ArrowLeft size={20} />
@@ -1103,56 +1346,41 @@ ${cleanAcceptanceCriteria}`;
                           draggable
                           onDragStart={(e) => handleDragStart(e, storyId)}
                           onClick={() => openStoryEditor(story)}
-                          className={`p-2 rounded border cursor-pointer transition-all hover:shadow-sm bg-white h-20 flex flex-col ${
+                          className={`group p-3 rounded-xl border cursor-pointer transition-all bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
                             isSelected
-                              ? 'border-blue-500 shadow-sm ring-1 ring-blue-200'
-                              : 'border-gray-300 hover:border-gray-400'
+                              ? 'border-blue-500 ring-2 ring-blue-100'
+                              : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center space-x-1">
-                              <GripVertical size={12} className="text-gray-400" />
-                              <span className="font-medium text-blue-600 text-xs">
-                                {story.ticketNumber}
-                              </span>
+                          {/* Meta row */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium">
+                              <GripVertical size={12} className="text-gray-300 group-hover:text-gray-400" />
+                              <span>{story.ticketNumber}</span>
                             </div>
-                            <div className="flex items-center space-x-1">
-                              {story.storyPoints && (
-                                <span className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs font-medium">
-                                  {story.storyPoints}
+                            <div className="flex items-center gap-1.5">
+                              {story.storyPoints != null && storyPointsAgreed[story.id] && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+                                  {story.storyPoints} pts
                                 </span>
                               )}
-                              <span className={`px-1 py-0.5 rounded text-xs font-medium ${getPriorityColor(story.priority)}`}>
-                                {story.priority.charAt(0)}
-                              </span>
+                              <span className={`w-2 h-2 rounded-full ${
+                                story.priority === 'High' ? 'bg-red-500' : story.priority === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                              }`} title={`Priority: ${story.priority}`}></span>
                             </div>
                           </div>
                           
-                          <h4 className="font-medium text-gray-900 text-xs line-clamp-2 leading-tight mb-1 flex-1">
+                          {/* Title */}
+                          <h4 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 mb-1">
                             {story.title}
                           </h4>
                           
-                          <div className="h-3 mb-1">
+                          {/* Subtext */}
                             {story.description && (
-                              <p className="text-xs text-gray-500 line-clamp-1 leading-tight">
-                                {story.description.length > 40 
-                                  ? `${story.description.substring(0, 40)}...` 
-                                  : story.description
-                                }
+                            <p className="text-[11px] text-gray-500 line-clamp-2">
+                              {story.description}
                               </p>
                             )}
-                          </div>
-                          
-                          <div className="h-4 flex items-center">
-                            {story.refinementScore && (
-                              <div className="flex items-center space-x-1">
-                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                                <span className="text-xs text-green-600 font-medium">
-                                  {story.refinementScore.overall}/10
-                                </span>
-                              </div>
-                            )}
-                          </div>
                         </div>
                       );
                     })}
@@ -1172,54 +1400,43 @@ ${cleanAcceptanceCriteria}`;
           </div>
 
                     {/* Participant Video Grid (3 grids: 2+2+1 Layout) - Now Bigger */}
-          <div className="flex-1 p-6 space-y-6">
-            {/* First Grid - 2 participants */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* User */}
+          <div className="flex-1 p-6">
+            {/* Proper 2x3 grid layout for 6 participants */}
+            <div className="grid grid-cols-3 grid-rows-2 gap-4 h-full">
+              {/* Row 1: Sarah, Victor, Srikanth */}
+              <ParticipantCard
+                participant={displayTeamMembers.find(m => m.name === 'Sarah') || displayTeamMembers[0]}
+                isCurrentSpeaker={currentSpeaking === 'Sarah' || currentSpeaking === 'sarah'}
+                isUser={false}
+              />
+              <ParticipantCard
+                participant={displayTeamMembers.find(m => m.name === 'Victor') || displayTeamMembers.find(m => m.name === 'Bola') || displayTeamMembers[1]}
+                isCurrentSpeaker={currentSpeaking === 'Victor' || currentSpeaking === 'Bola' || currentSpeaking === 'victor' || currentSpeaking === 'bola'}
+                isUser={false}
+              />
+              <ParticipantCard
+                participant={displayTeamMembers.find(m => m.name === 'Srikanth') || displayTeamMembers[2]}
+                isCurrentSpeaker={currentSpeaking === 'Srikanth' || currentSpeaking === 'srikanth'}
+                isUser={false}
+              />
+              
+              {/* Row 2: Lisa, Tom, User */}
+              <ParticipantCard
+                participant={displayTeamMembers.find(m => m.name === 'Lisa') || displayTeamMembers[3]}
+                isCurrentSpeaker={currentSpeaking === 'Lisa' || currentSpeaking === 'lisa'}
+                isUser={false}
+              />
+              <ParticipantCard
+                participant={displayTeamMembers.find(m => m.name === 'Tom') || displayTeamMembers[4]}
+                isCurrentSpeaker={currentSpeaking === 'Tom' || currentSpeaking === 'tom'}
+                isUser={false}
+              />
               <ParticipantCard
                 participant={{ name: user?.full_name || 'You' }}
                 isCurrentSpeaker={false}
                 isUser={true}
               />
-              
-              {/* First AI Team Member */}
-              {teamMembers.slice(0, 1).map(member => (
-                <ParticipantCard
-                  key={member.name}
-                  participant={member}
-                  isCurrentSpeaker={currentSpeaking === member.name}
-                  isUser={false}
-                />
-              ))}
             </div>
-
-            {/* Second Grid - 2 participants */}
-            {teamMembers.length > 1 && (
-              <div className="grid grid-cols-2 gap-4">
-                {teamMembers.slice(1, 3).map(member => (
-                  <ParticipantCard
-                    key={member.name}
-                    participant={member}
-                    isCurrentSpeaker={currentSpeaking === member.name}
-                    isUser={false}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Third Grid - 1 participant centered */}
-            {teamMembers.length > 3 && (
-              <div className="flex justify-center">
-                <div className="w-1/2">
-                  <ParticipantCard
-                    key={teamMembers[3].name}
-                    participant={teamMembers[3]}
-                    isCurrentSpeaker={currentSpeaking === teamMembers[3].name}
-                    isUser={false}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -1385,7 +1602,7 @@ ${cleanAcceptanceCriteria}`;
                   </div>
                 ) : (
                   <>
-                    {transcript.map((message, index) => (
+                    {transcript.map((message) => (
                       <div key={message.id} className="flex space-x-2">
                         <div className="flex-shrink-0">
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
@@ -1427,12 +1644,32 @@ ${cleanAcceptanceCriteria}`;
 
       {/* Jira-Style Story Editor Modal */}
       {isEditingStory && editingStory && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900" ref={storyContentRef}>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            // Close modal when clicking outside the content area
+            if (e.target === e.currentTarget) {
+              setIsEditingStory(false);
+              setIsViewingStory(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900" 
+            ref={storyContentRef}
+            onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
+          >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">
-                {isViewingStory ? 'Story Details' : 'Edit Story'}
-              </h2>
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {isViewingStory ? 'Story Details' : 'Edit Story'}
+                </h2>
+                {isViewingStory && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Click outside or press ESC to close and access meeting controls
+                  </p>
+                )}
+              </div>
               <button
                 onClick={() => {
                   setIsEditingStory(false);
@@ -1520,18 +1757,20 @@ ${cleanAcceptanceCriteria}`;
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Story Points</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={editingStory.storyPoints || ''}
-                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, storyPoints: e.target.value ? parseInt(e.target.value) : undefined } : null)}
-                    placeholder="Enter story points"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+                {storyPointsAgreed[editingStory.id] && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Story Points</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={editingStory.storyPoints || ''}
+                      onChange={(e) => setEditingStory(prev => prev ? { ...prev, storyPoints: e.target.value ? parseInt(e.target.value) : undefined } : null)}
+                      placeholder="Enter story points"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Status</label>
@@ -1569,6 +1808,27 @@ ${cleanAcceptanceCriteria}`;
             </div>
           </div>
         </div>
+      )}
+
+      {/* Coaching Overlay */}
+      {currentCoaching && (
+        <CoachingOverlay
+          coaching={currentCoaching}
+          onClose={handleCloseCoaching}
+          isVisible={isCoachingVisible}
+        />
+      )}
+
+      {/* Meeting Controls */}
+      {meetingStarted && (
+        <MeetingControls
+          isPlaying={isAudioPlaying}
+          isPaused={isMeetingPaused}
+          onPlay={handleResumeMeeting}
+          onPause={handlePauseMeeting}
+          onRestart={handleRestartMeeting}
+          hasCoaching={hasCoachingAvailable}
+        />
       )}
     </div>
   );

@@ -1,0 +1,205 @@
+{
+  "generatedAt": "2025-09-08T19:12:37.302Z",
+  "totalFiles": 28,
+  "successful": 28,
+  "failed": 0,
+  "duration": "8.0 seconds",
+  "files": [
+    {
+      "id": "sarah-opening",
+      "speaker": "Sarah",
+      "voiceId": "MzqUf1HbJ8UmQ0wUsx2p",
+      "textLength": 110,
+      "outputPath": "sarah-opening.mp3"
+    },
+    {
+      "id": "sarah-opening-2",
+      "speaker": "Sarah",
+      "voiceId": "MzqUf1HbJ8UmQ0wUsx2p",
+      "textLength": 112,
+      "outputPath": "sarah-opening-2.mp3"
+    },
+    {
+      "id": "bola-presentation",
+      "speaker": "Bola",
+      "voiceId": "xeBpkkuzgxa0IwKt7NTP",
+      "textLength": 1323,
+      "outputPath": "bola-presentation.mp3"
+    },
+    {
+      "id": "srikanth-question",
+      "speaker": "Srikanth",
+      "voiceId": "wD6AxxDQzhi2E9kMbk9t",
+      "textLength": 154,
+      "outputPath": "srikanth-question.mp3"
+    },
+    {
+      "id": "bola-answer",
+      "speaker": "Bola",
+      "voiceId": "xeBpkkuzgxa0IwKt7NTP",
+      "textLength": 357,
+      "outputPath": "bola-answer.mp3"
+    },
+    {
+      "id": "srikanth-question-2",
+      "speaker": "Srikanth",
+      "voiceId": "wD6AxxDQzhi2E9kMbk9t",
+      "textLength": 88,
+      "outputPath": "srikanth-question-2.mp3"
+    },
+    {
+      "id": "bola-answer-2",
+      "speaker": "Bola",
+      "voiceId": "xeBpkkuzgxa0IwKt7NTP",
+      "textLength": 91,
+      "outputPath": "bola-answer-2.mp3"
+    },
+    {
+      "id": "lisa-technical",
+      "speaker": "Lisa",
+      "voiceId": "8N2ng9i2uiUWqstgmWlH",
+      "textLength": 218,
+      "outputPath": "lisa-technical.mp3"
+    },
+    {
+      "id": "srikanth-response",
+      "speaker": "Srikanth",
+      "voiceId": "wD6AxxDQzhi2E9kMbk9t",
+      "textLength": 218,
+      "outputPath": "srikanth-response.mp3"
+    },
+    {
+      "id": "tom-testing",
+      "speaker": "Tom",
+      "voiceId": "qqBeXuJvzxtQfbsW2f40",
+      "textLength": 201,
+      "outputPath": "tom-testing.mp3"
+    },
+    {
+      "id": "sarah-sizing",
+      "speaker": "Sarah",
+      "voiceId": "MzqUf1HbJ8UmQ0wUsx2p",
+      "textLength": 156,
+      "outputPath": "sarah-sizing.mp3"
+    },
+    {
+      "id": "srikanth-confirm",
+      "speaker": "Srikanth",
+      "voiceId": "wD6AxxDQzhi2E9kMbk9t",
+      "textLength": 204,
+      "outputPath": "srikanth-confirm.mp3"
+    },
+    {
+      "id": "sarah-conclude",
+      "speaker": "Sarah",
+      "voiceId": "MzqUf1HbJ8UmQ0wUsx2p",
+      "textLength": 161,
+      "outputPath": "sarah-conclude.mp3"
+    },
+    {
+      "id": "victor-presentation-2",
+      "speaker": "Victor",
+      "voiceId": "neMPCpWtBwWZhxEC8qpe",
+      "textLength": 1052,
+      "outputPath": "victor-presentation-2.mp3"
+    },
+    {
+      "id": "srikanth-check-2",
+      "speaker": "Srikanth",
+      "voiceId": "wD6AxxDQzhi2E9kMbk9t",
+      "textLength": 113,
+      "outputPath": "srikanth-check-2.mp3"
+    },
+    {
+      "id": "victor-confirm-2",
+      "speaker": "Victor",
+      "voiceId": "neMPCpWtBwWZhxEC8qpe",
+      "textLength": 66,
+      "outputPath": "victor-confirm-2.mp3"
+    },
+    {
+      "id": "lisa-email-2",
+      "speaker": "Lisa",
+      "voiceId": "8N2ng9i2uiUWqstgmWlH",
+      "textLength": 119,
+      "outputPath": "lisa-email-2.mp3"
+    },
+    {
+      "id": "victor-template-2",
+      "speaker": "Victor",
+      "voiceId": "neMPCpWtBwWZhxEC8qpe",
+      "textLength": 137,
+      "outputPath": "victor-template-2.mp3"
+    },
+    {
+      "id": "tom-tests-2",
+      "speaker": "Tom",
+      "voiceId": "qqBeXuJvzxtQfbsW2f40",
+      "textLength": 246,
+      "outputPath": "tom-tests-2.mp3"
+    },
+    {
+      "id": "victor-log-2",
+      "speaker": "Victor",
+      "voiceId": "neMPCpWtBwWZhxEC8qpe",
+      "textLength": 74,
+      "outputPath": "victor-log-2.mp3"
+    },
+    {
+      "id": "lisa-retry-ask-2",
+      "speaker": "Lisa",
+      "voiceId": "8N2ng9i2uiUWqstgmWlH",
+      "textLength": 59,
+      "outputPath": "lisa-retry-ask-2.mp3"
+    },
+    {
+      "id": "srikanth-retry-2",
+      "speaker": "Srikanth",
+      "voiceId": "wD6AxxDQzhi2E9kMbk9t",
+      "textLength": 75,
+      "outputPath": "srikanth-retry-2.mp3"
+    },
+    {
+      "id": "sarah-size-2",
+      "speaker": "Sarah",
+      "voiceId": "MzqUf1HbJ8UmQ0wUsx2p",
+      "textLength": 103,
+      "outputPath": "sarah-size-2.mp3"
+    },
+    {
+      "id": "srikanth-2pts-2",
+      "speaker": "Srikanth",
+      "voiceId": "wD6AxxDQzhi2E9kMbk9t",
+      "textLength": 9,
+      "outputPath": "srikanth-2pts-2.mp3"
+    },
+    {
+      "id": "lisa-2pts-2",
+      "speaker": "Lisa",
+      "voiceId": "8N2ng9i2uiUWqstgmWlH",
+      "textLength": 17,
+      "outputPath": "lisa-2pts-2.mp3"
+    },
+    {
+      "id": "tom-2pts-2",
+      "speaker": "Tom",
+      "voiceId": "qqBeXuJvzxtQfbsW2f40",
+      "textLength": 9,
+      "outputPath": "tom-2pts-2.mp3"
+    },
+    {
+      "id": "sarah-conclude-2",
+      "speaker": "Sarah",
+      "voiceId": "MzqUf1HbJ8UmQ0wUsx2p",
+      "textLength": 84,
+      "outputPath": "sarah-conclude-2.mp3"
+    },
+    {
+      "id": "sarah-goodbye",
+      "speaker": "Sarah",
+      "voiceId": "MzqUf1HbJ8UmQ0wUsx2p",
+      "textLength": 58,
+      "outputPath": "sarah-goodbye.mp3"
+    }
+  ]
+}

@@ -32,3 +32,4 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
   AND tc.table_name='cohort_messages';
 
 
+

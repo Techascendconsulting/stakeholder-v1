@@ -127,10 +127,11 @@ class AudioCacheService {
     console.log('🎬 AUDIO CACHE: Starting pre-generation of refinement meeting audio...');
     
     // Import the refinement service to get team members and responses
-    const { getTeamMembers } = await import('./agileRefinementService');
+    const AgileRefinementService = (await import('./agileRefinementService')).default;
     const { synthesizeToBlob } = await import('./elevenLabsTTS');
     
-    const teamMembers = getTeamMembers();
+    const aiService = AgileRefinementService.getInstance();
+    const teamMembers = aiService.getTeamMembers();
     
     // Define the standard refinement meeting responses
     const responses = [

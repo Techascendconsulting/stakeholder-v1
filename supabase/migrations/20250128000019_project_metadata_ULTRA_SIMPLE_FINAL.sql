@@ -79,3 +79,4 @@ FROM projects p;
 -- Grant access to the view
 GRANT SELECT ON project_progress_summary TO authenticated;
 
+

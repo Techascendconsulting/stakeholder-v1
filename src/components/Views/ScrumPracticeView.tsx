@@ -50,13 +50,13 @@ export const ScrumPracticeView: React.FC = () => {
 
   // Show Backlog Refinement simulation if active
   if (activeView === 'backlog-refinement') {
-    return <BacklogRefinementSim />;
+    return <BacklogRefinementSim onBack={() => setActiveView('main')} />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -67,8 +67,8 @@ export const ScrumPracticeView: React.FC = () => {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Scrum Practice</h1>
-                <p className="text-sm text-gray-600">Practice Scrum skills in realistic scenarios</p>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Scrum Practice</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Practice Scrum skills in realistic scenarios</p>
               </div>
             </div>
             
@@ -89,12 +89,12 @@ export const ScrumPracticeView: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid gap-6 md:grid-cols-2">
           {sections.map((section, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center space-x-3 mb-4">
                 <section.icon className="w-6 h-6 text-purple-600" />
-                <h2 className="text-xl font-semibold text-gray-900">{section.title}</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{section.title}</h2>
               </div>
-              <p className="text-gray-600 mb-4">{section.description}</p>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">{section.description}</p>
               <button
                 onClick={section.onClick}
                 className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-700 hover:from-purple-100 hover:to-indigo-100 hover:border-purple-300 rounded-lg font-medium transition-all duration-200"

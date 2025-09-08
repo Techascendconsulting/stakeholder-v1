@@ -136,3 +136,4 @@ export interface UpdateProjectTrainingSessionRequest {
   completed_at?: string;
 }
 
+

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Sparkles, User, ClipboardList, Play, CheckCircle, Lock, Eye } from 'lucide-react';
 import { useApp } from '../../../contexts/AppContext';
 import { RefinementMeetingView } from '../RefinementMeetingView';
+import { ErrorBoundary } from '../../ErrorBoundary';
 
 // AgileTicket interface (matching the one from RefinementMeetingView)
 interface AgileTicket {
@@ -41,8 +42,17 @@ interface RefinementTrial {
   locked: boolean;
 }
 
-export const BacklogRefinementSim: React.FC = () => {
+interface BacklogRefinementSimProps {
+  onBack?: () => void;
+}
+
+export const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) => {
   const { setCurrentView } = useApp();
+  
+  // Debug: Log when component mounts and when setCurrentView changes
+  useEffect(() => {
+    console.log('🔍 BacklogRefinementSim: Component mounted, setCurrentView function:', typeof setCurrentView);
+  }, [setCurrentView]);
   const [activeMeeting, setActiveMeeting] = useState<{
     trialId: number;
     stories: AgileTicket[];
@@ -61,12 +71,12 @@ export const BacklogRefinementSim: React.FC = () => {
     },
     {
       id: 2,
-      title: "Complex File Validation",
-      description: "Observe how the AI BA handles detailed questions about file formats, size limits, and error handling.",
-      story: "As a customer, I want to upload my ID online so that I can complete my account verification.",
+      title: "Password Reset Confirmation Email",
+      description: "Observe how the BA (Victor) clarifies behavior and template details for a password reset confirmation email.",
+      story: "As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot any suspicious activity.",
       difficulty: 'Intermediate',
       completed: false,
-      locked: true
+      locked: false
     },
     {
       id: 3,
@@ -75,7 +85,7 @@ export const BacklogRefinementSim: React.FC = () => {
       story: "As a customer, I want to upload my ID online so that I can complete my account verification.",
       difficulty: 'Advanced',
       completed: false,
-      locked: true
+      locked: false
     }
   ]);
 
@@ -90,6 +100,9 @@ export const BacklogRefinementSim: React.FC = () => {
       projectId: 'training-project',
       projectName: 'Customer Onboarding Training',
       type: 'Story' as const,
+      title: 'Default Story Title',
+      description: 'Default story description',
+      priority: 'Medium' as const,
       status: 'Ready for Refinement' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -103,7 +116,7 @@ export const BacklogRefinementSim: React.FC = () => {
         return [{
           ...baseStory,
           title: "Tenant can upload attachments to support maintenance request",
-          description: "Currently, tenants can only describe issues in text when submitting a maintenance request. This often leads to missing details and follow-up calls. Allowing them to upload photos or documents will give the housing team clearer context and speed up resolution.",
+          description: "Currently, tenants can only describe issues in text when submitting a maintenance request. This often leads to missing details and follow-up calls. Allowing them to upload photos or documents will give the housing team clearer context and speed up resolution.\n\nAs a tenant, I want to upload a photo or document related to my maintenance issue, so that the housing team has enough context to understand and resolve the problem more efficiently.",
           acceptanceCriteria: `**Acceptance Criteria:**
 1. Tenant should see an upload field labeled "Add attachment (optional)" on the maintenance request form.
 2. Tenant should be able to upload one or more files to support their request.
@@ -120,23 +133,38 @@ export const BacklogRefinementSim: React.FC = () => {
           ...baseStory,
           id: `trial-${trialId}-story-1`,
           ticketNumber: `STORY-${trialId}001`,
-          title: "ID Document Validation and Quality Check",
-          description: "As a customer, I want the system to automatically validate my uploaded ID document to ensure it's legitimate, readable, and meets verification requirements.",
-          acceptanceCriteria: `**Given** I have uploaded an ID document
-**When** the system processes my upload
-**Then** it should validate the document and provide feedback
+          title: "Password Reset Confirmation Email",
+          description: `Currently, after a password reset, customers receive on-screen confirmation but no follow-up email.
 
-**Acceptance Criteria:**
-- **Format Validation:** Verify document is a valid government-issued ID
-- **Required Fields:** Check for presence of name, date of birth, ID number, and expiration date
-- **Image Quality:** Ensure photo is clear, not blurry, and properly lit
-- **Document Integrity:** Detect if document appears tampered with or altered
-- **Fraud Detection:** Flag potential fake documents or suspicious patterns
-- **Real-time Feedback:** Show validation results within 10 seconds
-- **Clear Error Messages:** Explain what's wrong and how to fix it
-- **Retry Mechanism:** Allow customer to upload a new document if validation fails`,
+User Story
+
+As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot any suspicious activity.`,
+          acceptanceCriteria: `Acceptance Criteria
+
+1. A confirmation email is sent immediately after a successful password reset.
+2. The email is delivered to the registered account email address.
+3. The subject line reads: “Your Password Has Been Reset.”
+4. The email body confirms that the password change was successful.
+5. The email advises: “If you did not perform this action, please contact support immediately.”
+6. No part of the new password is included in the email.
+
+Email Template (Example)
+
+Subject: Your Password Has Been Reset
+
+Body:
+Hello [First Name],
+
+Your password was successfully changed on [Date, Time].
+
+If this was you, no further action is required.
+
+If you did not make this change, please contact our support team immediately to secure your account.
+
+Thank you,
+[Company Name] Security Team`,
           priority: 'High' as const,
-          storyPoints: 8
+          storyPoints: 2
         }];
       
       case 3: // Edge Cases & Business Rules
@@ -175,11 +203,42 @@ export const BacklogRefinementSim: React.FC = () => {
     const savedTrials = localStorage.getItem('refinement_trials_progress');
     if (savedTrials) {
       const parsedTrials = JSON.parse(savedTrials);
-      setTrials(parsedTrials);
+      // Migration: ensure all trials are unlocked and Trial 2 content updated
+      const migrated = (parsedTrials as RefinementTrial[]).map((t) => {
+        if (t.id === 2) {
+          return {
+            ...t,
+            title: "Password Reset Confirmation Email",
+            description: "Observe how the BA (Victor) clarifies behavior and template details for a password reset confirmation email.",
+            story: "As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot any suspicious activity.",
+            locked: false
+          } as RefinementTrial;
+        }
+        if (t.id === 1 || t.id === 3) {
+          return { ...t, locked: false } as RefinementTrial;
+        }
+        return { ...t, locked: false } as RefinementTrial;
+      });
+      setTrials(migrated);
       
-      const completed = parsedTrials.filter((trial: RefinementTrial) => trial.completed).length;
+      const completed = migrated.filter((trial: RefinementTrial) => trial.completed).length;
       setCompletedTrials(completed);
       setCanPractice(completed >= 3);
+    }
+
+    // Load active meeting state from localStorage
+    const savedActiveMeeting = localStorage.getItem('active_refinement_meeting');
+    if (savedActiveMeeting) {
+      try {
+        const parsedMeeting = JSON.parse(savedActiveMeeting);
+        // Only restore if the meeting data is valid
+        if (parsedMeeting.trialId && parsedMeeting.stories && Array.isArray(parsedMeeting.stories)) {
+          setActiveMeeting(parsedMeeting);
+        }
+      } catch (error) {
+        console.warn('Failed to restore active meeting state:', error);
+        localStorage.removeItem('active_refinement_meeting');
+      }
     }
   }, []);
 
@@ -191,6 +250,26 @@ export const BacklogRefinementSim: React.FC = () => {
     setCompletedTrials(completed);
     setCanPractice(completed >= 3);
   }, [trials]);
+
+  // Save active meeting state to localStorage
+  useEffect(() => {
+    if (activeMeeting) {
+      localStorage.setItem('active_refinement_meeting', JSON.stringify(activeMeeting));
+    } else {
+      localStorage.removeItem('active_refinement_meeting');
+    }
+  }, [activeMeeting]);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      // Clean up any active meeting state when component unmounts
+      if (activeMeeting) {
+        console.log('🧹 BacklogRefinementSim: Component unmounting, cleaning up active meeting');
+        localStorage.removeItem('active_refinement_meeting');
+      }
+    };
+  }, [activeMeeting]);
 
   const startTrial = (trialId: number) => {
     console.log('Starting refinement trial:', trialId);
@@ -235,7 +314,10 @@ export const BacklogRefinementSim: React.FC = () => {
   };
 
   const handleMeetingClose = () => {
+    console.log('🔄 BacklogRefinementSim: Meeting closed, cleaning up state');
     setActiveMeeting(null);
+    // Clear any meeting-related localStorage
+    localStorage.removeItem('active_refinement_meeting');
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -265,21 +347,30 @@ export const BacklogRefinementSim: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setCurrentView('agile-practice')}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={() => {
+                  console.log('🔙 Back button clicked, navigating to main Scrum Practice view');
+                  if (onBack) {
+                    onBack();
+                  } else {
+                    // Fallback to navigating to agile-practice
+                    setCurrentView('agile-practice');
+                  }
+                }}
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Backlog Refinement Simulation</h1>
-                <p className="text-sm text-gray-600">Learn by watching AI team members refine user stories</p>
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Refinement Practice</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Learn by watching AI team members refine user stories</p>
               </div>
             </div>
             
@@ -299,24 +390,24 @@ export const BacklogRefinementSim: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Progress Overview */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <Sparkles className="w-8 h-8 text-purple-600" />
-                <h2 className="text-2xl font-bold text-purple-900">Learning Progress</h2>
+                <h2 className="text-2xl font-bold text-purple-900 dark:text-purple-100">Learning Progress</h2>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-purple-600">{completedTrials}/3</div>
-                <div className="text-sm text-purple-700">Trials Completed</div>
+                <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{completedTrials}/3</div>
+                <div className="text-sm text-purple-700 dark:text-purple-300">Trials Completed</div>
               </div>
             </div>
-            <div className="w-full bg-purple-200 rounded-full h-3">
+            <div className="w-full bg-purple-200 dark:bg-purple-800 rounded-full h-3">
               <div 
                 className="bg-purple-600 h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(completedTrials / 3) * 100}%` }}
               ></div>
             </div>
-            <p className="text-purple-800 mt-4">
+            <p className="text-purple-800 dark:text-purple-200 mt-4">
               Complete 3 observation trials to unlock interactive practice mode where you'll lead refinement as the BA.
             </p>
           </div>
@@ -326,14 +417,14 @@ export const BacklogRefinementSim: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Observation Trials */}
           <div className="lg:col-span-2">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">Observation Trials</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Observation Trials</h3>
             <div className="space-y-4">
               {trials.map((trial) => (
-                <div key={trial.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div key={trial.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="text-lg font-semibold text-gray-900">{trial.title}</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{trial.title}</h4>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(trial.difficulty)}`}>
                           {trial.difficulty}
                         </span>
@@ -344,32 +435,22 @@ export const BacklogRefinementSim: React.FC = () => {
                           <Lock className="w-5 h-5 text-gray-400" />
                         )}
                       </div>
-                      <p className="text-gray-600 mb-3">{trial.description}</p>
-                      <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                        <p className="text-sm text-gray-700 font-medium mb-1">User Story:</p>
-                        <p className="text-sm text-gray-600 italic">"{trial.story}"</p>
+                      <p className="text-gray-600 dark:text-gray-300 mb-3">{trial.description}</p>
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 font-medium mb-1">User Story:</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 italic">"{trial.story}"</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
-                    {trial.locked ? (
-                      <button
-                        disabled
-                        className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
-                      >
-                        <Lock className="w-4 h-4" />
-                        <span>Complete previous trial</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => startTrial(trial.id)}
-                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-700 hover:from-purple-100 hover:to-indigo-100 hover:border-purple-300 rounded-lg font-medium transition-all duration-200"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>{trial.completed ? 'Watch Again' : 'Watch Simulation'}</span>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => startTrial(trial.id)}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-700 hover:from-purple-100 hover:to-indigo-100 hover:border-purple-300 rounded-lg font-medium transition-all duration-200"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>{trial.completed ? 'Watch Again' : 'Watch Simulation'}</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -378,15 +459,15 @@ export const BacklogRefinementSim: React.FC = () => {
 
           {/* Practice Section */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <User className="w-6 h-6 text-purple-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Interactive Practice</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Interactive Practice</h3>
               </div>
               
               {canPractice ? (
                 <div>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
                     Great! You've completed all observation trials. Now it's your turn to lead a refinement meeting as the BA.
                   </p>
                   <button
@@ -399,10 +480,10 @@ export const BacklogRefinementSim: React.FC = () => {
                 </div>
               ) : (
                 <div>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
                     Complete all 3 observation trials to unlock interactive practice mode.
                   </p>
-                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                  <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                     <Lock className="w-4 h-4" />
                     <span>Locked until {3 - completedTrials} more trials completed</span>
                   </div>
@@ -411,12 +492,12 @@ export const BacklogRefinementSim: React.FC = () => {
             </div>
 
             {/* Learning Resources */}
-            <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <ClipboardList className="w-6 h-6 text-purple-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Learning Resources</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Learning Resources</h3>
               </div>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Need a refresher? Review the backlog refinement fundamentals before starting.
               </p>
               <button
@@ -430,7 +511,8 @@ export const BacklogRefinementSim: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 };
 

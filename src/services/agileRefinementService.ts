@@ -14,6 +14,7 @@ export interface AgileTeamMemberContext {
   personality: string;
   focusAreas: string[];
   responseStyle: string;
+  avatarUrl?: string;
 }
 
 export interface RefinementContext {
@@ -88,7 +89,8 @@ class AgileRefinementService {
         voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH || 'en-GB-LibbyNeural',
         personality: 'Calm, steady, process-focused',
         focusAreas: ['Sprint readiness', 'Story size', 'Team delivery', 'Process adherence'],
-        responseStyle: 'Keeps meetings on track, asks about sprint feasibility'
+        responseStyle: 'Keeps meetings on track, asks about sprint feasibility',
+        avatarUrl: '/images/avatars/sarah-avatar.png'
       },
       {
         id: 'bola',
@@ -97,7 +99,8 @@ class AgileRefinementService {
         voiceId: 'xeBpkkuzgxa0IwKt7NTP', // Hardcoded to fix caching issue
         personality: 'Detail-oriented, user-focused, collaborative',
         focusAreas: ['Requirements clarity', 'User experience', 'Business value', 'Acceptance criteria'],
-        responseStyle: 'Presents requirements clearly and answers stakeholder questions'
+        responseStyle: 'Presents requirements clearly and answers stakeholder questions',
+        avatarUrl: '/images/avatars/bola-avatar.png'
       },
       {
         id: 'srikanth',
@@ -106,7 +109,8 @@ class AgileRefinementService {
         voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH || 'en-IN-PrabhatNeural',
         personality: 'Experienced, thoughtful, architecture-focused',
         focusAreas: ['Architecture', 'Backend logic', 'Delivery feasibility', 'Technical complexity'],
-        responseStyle: 'Raises technical concerns, suggests story breakdown'
+        responseStyle: 'Raises technical concerns, suggests story breakdown',
+        avatarUrl: '/images/avatars/srikanth-avatar.png'
       },
       {
         id: 'lisa',
@@ -115,7 +119,8 @@ class AgileRefinementService {
         voiceId: import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA || 'pl-PL-ZofiaNeural',
         personality: 'Fast-paced, technical, implementation-focused',
         focusAreas: ['Implementation clarity', 'Task breakdown', 'Integration points', 'API design'],
-        responseStyle: 'Asks about technical details and implementation flow'
+        responseStyle: 'Asks about technical details and implementation flow',
+        avatarUrl: '/images/avatars/lisa-avatar.png'
       },
       {
         id: 'tom',
@@ -124,7 +129,8 @@ class AgileRefinementService {
         voiceId: 'qqBeXuJvzxtQfbsW2f40',
         personality: 'Friendly but precise, quality-focused',
         focusAreas: ['Test coverage', 'Negative paths', 'Environment setup', 'Edge cases'],
-        responseStyle: 'Questions testability and error scenarios'
+        responseStyle: 'Questions testability and error scenarios',
+        avatarUrl: '/images/avatars/tom-avatar.png'
       }
     ];
   }

@@ -63,3 +63,4 @@ CREATE TRIGGER update_project_deliverables_updated_at
 -- Sample data will be inserted after user authentication is set up
 -- For now, we'll create the tables without sample data to avoid foreign key issues
 
+

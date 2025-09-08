@@ -21,6 +21,13 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     audioPath: '/audio/refinement/sarah-opening.mp3'
   },
   {
+    id: 'sarah-opening-2',
+    speaker: 'Sarah',
+    text: "Good morning everyone. We have 1 story to review today. Victor, would you like to present the story for us? I'll mark it as refined once we're done discussing it.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/refinement/sarah-opening-2.mp3'
+  },
+  {
     id: 'bola-presentation',
     speaker: 'Bola',
     text: "Thank you Sarah. I'd like to present our first story: 'Tenant can upload attachments to support maintenance request'. Currently, tenants can only describe issues in text when submitting a maintenance request. This often leads to missing details and follow-up calls. Allowing them to upload photos or documents will give the housing team clearer context and speed up resolution. The User Story says As a tenant, I want to upload a photo or document related to my maintenance issue, So that the housing team has enough context to understand and resolve the problem more efficiently. Acceptance Criteria: 1. As part of submitting a request, tenants should have the ability to upload attachments and this should be optional. 2. Tenant should be able to upload one or more files to support their request. 3. Accepted file types should include JPG, PNG, and JPEG. If the tenant tries to upload a file in an unsupported format (e.g. .docx, .exe), an error message should be displayed: 'Only JPG, PNG, and JPEG files are allowed.' 4. Maximum file size per upload should be 5 MB. If the file is larger than 5MB, an error message should be displayed: 'File size must not exceed 5MB.' 5. Uploading a file should not be mandatory. The tenant should still be able to submit the request without attaching any files. 6. If a file is uploaded, it should be stored with the rest of the request data and made visible to the maintenance team.",
@@ -97,6 +104,112 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
     audioPath: '/audio/refinement/sarah-conclude.mp3'
   },
+  // Trial 2: Password Reset Confirmation Email
+  {
+    id: 'victor-presentation-2',
+    speaker: 'Victor',
+    text: "Thanks Sarah. This one's about the password reset flow. Right now, customers see an on‑screen success but don't get a follow‑up email. We want to send a confirmation email after a successful reset so customers know their account was updated and can spot anything suspicious. The user story is: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot any suspicious activity. Here's what needs to be true: 1. After a successful password reset, an email confirmation should be sent to the user's registered email address. 2. The email should contain a clear subject line indicating the password was reset. 3. The email body should confirm the password change and provide contact information if the user didn't initiate the reset. 4. The email should be sent within 5 minutes of the successful password reset. 5. If the email fails to send, the system should retry once and log the attempt. 6. No sensitive password information should be included in the email.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/refinement/victor-presentation-2.mp3'
+  },
+  {
+    id: 'srikanth-check-2',
+    speaker: 'Srikanth',
+    text: "Just to check, Victor — this only triggers after a successful password change, right? Not after a failed attempt?",
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    audioPath: '/audio/refinement/srikanth-check-2.mp3'
+  },
+  {
+    id: 'victor-confirm-2',
+    speaker: 'Victor',
+    text: "That's right, only when the reset has been completed successfully.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/refinement/victor-confirm-2.mp3'
+  },
+  {
+    id: 'lisa-email-2',
+    speaker: 'Lisa',
+    text: "Okay. We can plug into our existing email service. We'll just need a new template. Do we already have wording for that?",
+    voiceId: '8N2ng9i2uiUWqstgmWlH',
+    audioPath: '/audio/refinement/lisa-email-2.mp3'
+  },
+  {
+    id: 'victor-template-2',
+    speaker: 'Victor',
+    text: "Yes — subject's 'Your Password Has Been Reset', and the body confirms the change and asks customers to contact support if it wasn't them.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/refinement/victor-template-2.mp3'
+  },
+  {
+    id: 'tom-tests-2',
+    speaker: 'Tom',
+    text: "I'll need to verify a few things: Email is only sent on successful reset. Subject and body match the template. No password data is exposed. Email goes to the registered address. Do we also need a log entry to show support that the email was sent?",
+    voiceId: 'qqBeXuJvzxtQfbsW2f40',
+    audioPath: '/audio/refinement/tom-tests-2.mp3'
+  },
+  {
+    id: 'victor-log-2',
+    speaker: 'Victor',
+    text: "Yes, good point — a log entry should be created. Let's add that as a note.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/refinement/victor-log-2.mp3'
+  },
+  {
+    id: 'lisa-retry-ask-2',
+    speaker: 'Lisa',
+    text: "If the email fails to send, should we retry or just log it?",
+    voiceId: '8N2ng9i2uiUWqstgmWlH',
+    audioPath: '/audio/refinement/lisa-retry-ask-2.mp3'
+  },
+  {
+    id: 'srikanth-retry-2',
+    speaker: 'Srikanth',
+    text: "Let's retry once, then log. That keeps it consistent with our other emails.",
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    audioPath: '/audio/refinement/srikanth-retry-2.mp3'
+  },
+  {
+    id: 'sarah-size-2',
+    speaker: 'Sarah',
+    text: "Great, seems we've clarified the story. Let's size it. Remember, effort not hours. Ready? 3…2…1 — show.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/refinement/sarah-size-2.mp3'
+  },
+  {
+    id: 'srikanth-2pts-2',
+    speaker: 'Srikanth',
+    text: "2 points.",
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    audioPath: '/audio/refinement/srikanth-2pts-2.mp3'
+  },
+  {
+    id: 'lisa-2pts-2',
+    speaker: 'Lisa',
+    text: "2 points as well.",
+    voiceId: '8N2ng9i2uiUWqstgmWlH',
+    audioPath: '/audio/refinement/lisa-2pts-2.mp3'
+  },
+  {
+    id: 'tom-2pts-2',
+    speaker: 'Tom',
+    text: "2 points.",
+    voiceId: 'qqBeXuJvzxtQfbsW2f40',
+    audioPath: '/audio/refinement/tom-2pts-2.mp3'
+  },
+  {
+    id: 'sarah-conclude-2',
+    speaker: 'Sarah',
+    text: "Perfect, consensus at 2 points. This story is refined and ready for Sprint Planning.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/refinement/sarah-conclude-2.mp3'
+  },
+  {
+    id: 'sarah-goodbye',
+    speaker: 'Sarah',
+    text: "Great work team. That concludes refinement for this story.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/refinement/sarah-goodbye.mp3'
+  }
 ];
 
 /**

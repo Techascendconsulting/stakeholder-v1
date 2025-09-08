@@ -49,3 +49,4 @@ CREATE POLICY "Users can update their own learning reflections" ON learning_refl
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_learning_progress_user_module ON learning_progress(user_id, module);
 CREATE INDEX IF NOT EXISTS idx_learning_reflections_user_module ON learning_reflections(user_id, module);
+

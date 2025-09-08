@@ -30,3 +30,4 @@ WHERE table_schema = 'public'
   AND table_name = 'cohort_messages';
 
 
+
