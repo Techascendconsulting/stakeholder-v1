@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { ArrowLeft, FileText, Users, Calendar, Clock, BarChart3, RotateCcw } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import BacklogRefinementSim from './ScrumPractice/BacklogRefinementSim';
+import SprintPlanningSim from './ScrumPractice/SprintPlanningSim';
 
-const getSections = (setActiveView: (view: 'main' | 'backlog-refinement') => void) => [
+const getSections = (setActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void) => [
   {
     title: "Requirement Documentation",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
@@ -20,7 +21,7 @@ const getSections = (setActiveView: (view: 'main' | 'backlog-refinement') => voi
     title: "Sprint Planning",
     description: "Explore how teams commit to work for the sprint using prioritised backlog items.",
     icon: Calendar,
-    onClick: () => console.log("Navigate to planning")
+    onClick: () => setActiveView('sprint-planning')
   },
   {
     title: "Daily Scrum",
@@ -44,13 +45,18 @@ const getSections = (setActiveView: (view: 'main' | 'backlog-refinement') => voi
 
 export const ScrumPracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
-  const [activeView, setActiveView] = useState<'main' | 'backlog-refinement'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'backlog-refinement' | 'sprint-planning'>('main');
 
   const sections = getSections(setActiveView);
 
   // Show Backlog Refinement simulation if active
   if (activeView === 'backlog-refinement') {
     return <BacklogRefinementSim onBack={() => setActiveView('main')} />;
+  }
+
+  // Show Sprint Planning simulation if active
+  if (activeView === 'sprint-planning') {
+    return <SprintPlanningSim onBack={() => setActiveView('main')} />;
   }
 
   return (
