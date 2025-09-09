@@ -306,7 +306,7 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div>
-                  <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Sprint Planning Practice</h1>
+                  <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">🎯 Sprint Planning Practice - FIXED</h1>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Learn how teams commit to work for the sprint using prioritised backlog items</p>
                 </div>
               </div>
