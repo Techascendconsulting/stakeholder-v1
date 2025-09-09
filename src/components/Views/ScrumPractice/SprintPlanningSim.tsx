@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Users, Clock, Target, CheckCircle, Lock, Eye, Play, Pause, Square } from 'lucide-react';
 import { useApp } from '../../../contexts/AppContext';
-import { SprintPlanningMeetingView } from '../SprintPlanningMeetingView';
+import SprintPlanningMeetingView from '../SprintPlanningMeetingView';
 import { ErrorBoundary } from '../../ErrorBoundary';
 
 // AgileTicket interface (matching the one from RefinementMeetingView)
@@ -31,6 +31,7 @@ interface SprintPlanningTrial {
 }
 
 export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
+  console.log('🎯 SprintPlanningSim component rendered');
   const { setCurrentView } = useApp();
   
   const [trials, setTrials] = useState<SprintPlanningTrial[]>([
@@ -195,8 +196,10 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
       <ErrorBoundary>
         <SprintPlanningMeetingView
           stories={activeMeeting.stories}
-          sprintGoal={activeMeeting.sprintGoal}
-          teamCapacity={activeMeeting.teamCapacity}
+          onMeetingEnd={(results) => {
+            console.log('Sprint Planning meeting ended:', results);
+            handleMeetingClose();
+          }}
           onClose={handleMeetingClose}
         />
       </ErrorBoundary>
