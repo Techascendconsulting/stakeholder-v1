@@ -77,7 +77,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
 export const ScrumPracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [activeView, setActiveView] = useState<'main' | 'backlog-refinement' | 'sprint-planning'>('main');
-  const [selectedTheme, setSelectedTheme] = useState<string>('from-purple-500 to-indigo-500');
+  const [selectedTheme, setSelectedTheme] = useState<string>('from-pink-500 to-purple-600');
   
   console.log('🎯 ScrumPracticeView rendered with activeView:', activeView);
 
