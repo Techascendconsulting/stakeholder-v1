@@ -135,10 +135,8 @@ export const ScrumPracticeView: React.FC = () => {
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-4 flex items-center justify-center space-x-3">
-              <span>🎪</span>
-              <span>Scrum Events a Business Analyst Should Learn to Take Part In</span>
-              <span>🎪</span>
+            <h1 className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-4">
+              Scrum Events a Business Analyst Should Learn to Take Part In
             </h1>
             <p className="text-lg text-purple-700 dark:text-purple-200 max-w-3xl mx-auto">
               Master the essential Scrum ceremonies and practices that every Business Analyst needs to know. 
