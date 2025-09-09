@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { ArrowLeft, FileText, Users, Calendar, Clock, BarChart3, RotateCcw } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import BacklogRefinementSim from './ScrumPractice/BacklogRefinementSim';
-import SprintPlanningSim from './ScrumPractice/SprintPlanningSim';
+import { SprintPlanningSim } from './ScrumPractice/SprintPlanningSim';
 
-const getSections = (setActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void) => [
+const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void) => [
   {
     title: "Requirement Documentation",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
@@ -15,13 +15,16 @@ const getSections = (setActiveView: (view: 'main' | 'backlog-refinement' | 'spri
     title: "Backlog Refinement",
     description: "Practice shaping vague ideas into actionable user stories with developers and stakeholders.",
     icon: Users,
-    onClick: () => setActiveView('backlog-refinement')
+    onClick: () => handleSetActiveView('backlog-refinement')
   },
   {
     title: "Sprint Planning",
     description: "Explore how teams commit to work for the sprint using prioritised backlog items.",
     icon: Calendar,
-    onClick: () => setActiveView('sprint-planning')
+    onClick: () => {
+      console.log('🎯 Sprint Planning button clicked, setting activeView to sprint-planning');
+      handleSetActiveView('sprint-planning');
+    }
   },
   {
     title: "Daily Scrum",
@@ -46,17 +49,25 @@ const getSections = (setActiveView: (view: 'main' | 'backlog-refinement' | 'spri
 export const ScrumPracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [activeView, setActiveView] = useState<'main' | 'backlog-refinement' | 'sprint-planning'>('main');
+  
+  console.log('🎯 ScrumPracticeView rendered with activeView:', activeView);
 
-  const sections = getSections(setActiveView);
+  const handleSetActiveView = (view: 'main' | 'backlog-refinement' | 'sprint-planning') => {
+    console.log('🎯 setActiveView called with:', view);
+    setActiveView(view);
+  };
+  
+  const sections = getSections(handleSetActiveView);
 
   // Show Backlog Refinement simulation if active
   if (activeView === 'backlog-refinement') {
-    return <BacklogRefinementSim onBack={() => setActiveView('main')} />;
+    return <BacklogRefinementSim onBack={() => handleSetActiveView('main')} />;
   }
 
   // Show Sprint Planning simulation if active
   if (activeView === 'sprint-planning') {
-    return <SprintPlanningSim onBack={() => setActiveView('main')} />;
+    console.log('🎯 Rendering SprintPlanningSim component');
+    return <SprintPlanningSim onBack={() => handleSetActiveView('main')} />;
   }
 
   return (

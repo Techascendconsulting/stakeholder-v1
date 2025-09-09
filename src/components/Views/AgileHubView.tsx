@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
 import { RefinementMeetingView } from './RefinementMeetingView';
-import { SprintPlanningMeetingView } from './SprintPlanningMeetingView';
+import SprintPlanningMeetingView from './SprintPlanningMeetingView';
 import { DatabaseService } from '../../lib/database';
 
 // Types

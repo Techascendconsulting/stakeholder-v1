@@ -1,17 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Mic, MicOff, Send, Volume2, Play, Square, PhoneOff, ChevronDown, X, GripVertical, FileText } from 'lucide-react';
-import { useVoice } from '../../contexts/VoiceContext';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Play, PhoneOff } from 'lucide-react';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 
 // Custom interface for sprint planning meeting messages
-interface MeetingMessage {
-  id: string;
-  speaker: string;
-  content: string;
-  timestamp: string;
-  role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester' | 'Business Analyst' | 'user';
-  stakeholderId: string;
-}
 
 // AgileTicket interface
 interface AgileTicket {
@@ -52,8 +43,6 @@ interface SprintPlanningMember {
 
 interface SprintPlanningMeetingViewProps {
   stories: AgileTicket[];
-  sprintGoal: string;
-  teamCapacity: number;
   onMeetingEnd: (results: any) => void;
   onClose: () => void;
 }
@@ -63,14 +52,6 @@ const getInitials = (name: string): string => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
-const getAvatarColor = (name: string): string => {
-  const colors = [
-    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500',
-    'bg-indigo-500', 'bg-yellow-500', 'bg-red-500', 'bg-teal-500'
-  ];
-  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return colors[hash % colors.length];
-};
 
 // Participant Card Component
 const ParticipantCard: React.FC<{
@@ -132,8 +113,6 @@ const ParticipantCard: React.FC<{
 
 const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
   stories,
-  sprintGoal,
-  teamCapacity,
   onMeetingEnd,
   onClose
 }) => {
@@ -186,23 +165,9 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
 
   // Basic state management
   const [meetingStarted, setMeetingStarted] = useState(false);
-  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
   const [productBacklog, setProductBacklog] = useState<AgileTicket[]>([]);
   const [sprintBacklog, setSprintBacklog] = useState<AgileTicket[]>([]);
 
-  // Helper functions for styling
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return 'bg-red-100 text-red-800';
-      case 'Medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -391,17 +356,17 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                     </div>
                   ) : (
                     <div className="overflow-hidden">
-                      {/* Jira-style table header */}
-                      <div className="bg-gray-50 border-b border-gray-200">
-                        <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
-                          <div className="col-span-1">KEY</div>
-                          <div className="col-span-2">SUMMARY</div>
-                          <div className="col-span-1">TYPE</div>
-                          <div className="col-span-1">STORY POINTS</div>
-                          <div className="col-span-1">PRIORITY</div>
-                          <div className="col-span-1">STATUS</div>
-                        </div>
+                    {/* Jira-style table header */}
+                    <div className="bg-gray-50 border-b border-gray-200">
+                      <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide min-h-[40px]">
+                        <div className="col-span-1">KEY</div>
+                        <div className="col-span-2">SUMMARY</div>
+                        <div className="col-span-1">TYPE</div>
+                        <div className="col-span-1">STORY POINTS</div>
+                        <div className="col-span-1">PRIORITY</div>
+                        <div className="col-span-1">STATUS</div>
                       </div>
+                    </div>
                       
                       {/* Jira-style table rows */}
                       <div className="divide-y divide-gray-100">
@@ -410,7 +375,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                             key={story.id}
                             draggable={meetingStarted}
                             onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                            className="grid grid-cols-6 gap-4 px-4 py-3 hover:bg-blue-50 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500"
+                            className="grid grid-cols-6 gap-4 px-4 py-2 hover:bg-blue-50 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500 min-h-[48px]"
                           >
                             {/* Key */}
                             <div className="col-span-1 flex items-center">
@@ -481,7 +446,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                 <div className="overflow-hidden">
                   {/* Jira-style table header */}
                   <div className="bg-gray-50 border-b border-gray-200">
-                    <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide min-h-[40px]">
                       <div className="col-span-1">KEY</div>
                       <div className="col-span-2">SUMMARY</div>
                       <div className="col-span-1">TYPE</div>
@@ -498,7 +463,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                         key={story.id}
                         draggable={meetingStarted}
                         onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                        className={`grid grid-cols-6 gap-4 px-4 py-3 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 ${
+                        className={`grid grid-cols-6 gap-4 px-4 py-2 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 min-h-[48px] ${
                           meetingStarted ? 'cursor-move hover:bg-blue-50' : 'cursor-pointer hover:bg-gray-50'
                         }`}
                       >
@@ -585,29 +550,29 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
               {/* Row 1: Sarah, Victor, Srikanth */}
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Sarah') || teamMembers[0]}
-                isCurrentSpeaker={currentSpeaking === 'Sarah' || currentSpeaking === 'sarah'}
+                             isCurrentSpeaker={false}
                 isUser={false}
               />
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Victor') || teamMembers[1]}
-                isCurrentSpeaker={currentSpeaking === 'Victor' || currentSpeaking === 'victor'}
+                isCurrentSpeaker={false}
                 isUser={false}
               />
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Srikanth') || teamMembers[2]}
-                isCurrentSpeaker={currentSpeaking === 'Srikanth' || currentSpeaking === 'srikanth'}
+                isCurrentSpeaker={false}
                 isUser={false}
               />
               
               {/* Row 2: Lisa, Tom, User */}
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Lisa') || teamMembers[3]}
-                isCurrentSpeaker={currentSpeaking === 'Lisa' || currentSpeaking === 'lisa'}
+                isCurrentSpeaker={false}
                 isUser={false}
               />
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Tom') || teamMembers[4]}
-                isCurrentSpeaker={currentSpeaking === 'Tom' || currentSpeaking === 'tom'}
+                isCurrentSpeaker={false}
                 isUser={false}
               />
               <ParticipantCard
@@ -652,7 +617,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
               disabled={!meetingStarted}
               className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
             >
-              <Send className="w-4 h-4 text-white" />
+              <Play className="w-4 h-4 text-white" />
             </button>
           </div>
         </div>
