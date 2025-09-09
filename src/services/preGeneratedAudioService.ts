@@ -212,11 +212,244 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
   }
 ];
 
+// Define all pre-generated audio files for the Sprint Planning meeting
+export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
+  // 1. Opening
+  {
+    id: 'sarah-opening',
+    speaker: 'Sarah',
+    text: "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-opening.mp3'
+  },
+  
+  // 2. Sprint Goal
+  {
+    id: 'victor-goal',
+    speaker: 'Victor',
+    text: "Thanks Sarah. The Sprint Goal I'd like to propose is: Strengthen account security and verification—send confirmation after password resets and deliver the basic ID upload step. We have three refined backlog items on top: the tenant maintenance attachments, the password reset confirmation email, and the ID upload verification feature.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/planning/victor-goal.mp3'
+  },
+  
+  // 3. Capacity Check
+  {
+    id: 'sarah-capacity',
+    speaker: 'Sarah',
+    text: "Great. Before we start pulling stories, let's quickly confirm capacity. Srikanth, how's the dev side looking this sprint?",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-capacity.mp3'
+  },
+  
+  // 4. Dev Capacity
+  {
+    id: 'srikanth-capacity',
+    speaker: 'Srikanth',
+    text: "On the dev side, we have our full team except for Lisa taking a day off. That means about 80% of our usual capacity. I'd say around 20 story points.",
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    audioPath: '/audio/planning/srikanth-capacity.mp3'
+  },
+  
+  // 5. Dev Capacity Input
+  {
+    id: 'lisa-capacity',
+    speaker: 'Lisa',
+    text: "Yes, that's about right. I think we can take 2 medium stories and one larger one if we slice it properly.",
+    voiceId: '8N2ng9i2uiUWqstgmWlH',
+    audioPath: '/audio/planning/lisa-capacity.mp3'
+  },
+  
+  // 6. QA Capacity
+  {
+    id: 'tom-capacity',
+    speaker: 'Tom',
+    text: "From QA, I can handle the full regression and story testing, but if we take on too much edge-case work, it may spill over.",
+    voiceId: 'qqBeXuJvzxtQfbsW2f40',
+    audioPath: '/audio/planning/tom-capacity.mp3'
+  },
+  
+  // 7. Transition to First Story
+  {
+    id: 'sarah-transition',
+    speaker: 'Sarah',
+    text: "Alright, let's look at the first item together.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-transition.mp3'
+  },
+  
+  // 8. Story 1: Attachments Recap
+  {
+    id: 'victor-attachments',
+    speaker: 'Victor',
+    text: "The first item is Tenant can upload attachments to support maintenance requests. The user story: As a tenant, I want to upload a photo or document related to my maintenance issue, so that the housing team has enough context to resolve the problem efficiently. It's already refined with file size and type rules.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/planning/victor-attachments.mp3'
+  },
+  
+  // 9. Attachments Feasibility
+  {
+    id: 'srikanth-attachments',
+    speaker: 'Srikanth',
+    text: "From dev, we can reuse our file upload component. Backend will go into S3, so this is straightforward.",
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    audioPath: '/audio/planning/srikanth-attachments.mp3'
+  },
+  
+  // 10. Attachments Test Scope
+  {
+    id: 'tom-attachments',
+    speaker: 'Tom',
+    text: "For QA, I'll cover oversized files, wrong formats, and multiple uploads. Should fit fine.",
+    voiceId: 'qqBeXuJvzxtQfbsW2f40',
+    audioPath: '/audio/planning/tom-attachments.mp3'
+  },
+  
+  // 11. Attachment Commitment
+  {
+    id: 'sarah-attachments',
+    speaker: 'Sarah',
+    text: "Great. Sounds like we're aligned. Let's commit this story to the sprint.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-attachments.mp3'
+  },
+  
+  // 12. Story 2: Password Reset Recap
+  {
+    id: 'victor-password',
+    speaker: 'Victor',
+    text: "Next is Password Reset Confirmation Email. User story: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot suspicious activity. This was sized at 2 points.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/planning/victor-password.mp3'
+  },
+  
+  // 13. Password Reset Effort
+  {
+    id: 'lisa-password',
+    speaker: 'Lisa',
+    text: "Very small effort. We just add a template to our existing email service.",
+    voiceId: '8N2ng9i2uiUWqstgmWlH',
+    audioPath: '/audio/planning/lisa-password.mp3'
+  },
+  
+  // 14. Password Reset Testing
+  {
+    id: 'tom-password',
+    speaker: 'Tom',
+    text: "Low test effort too. I just need to check subject, body, no password leakage, and logging.",
+    voiceId: 'qqBeXuJvzxtQfbsW2f40',
+    audioPath: '/audio/planning/tom-password.mp3'
+  },
+  
+  // 15. Password Reset Commitment
+  {
+    id: 'sarah-password',
+    speaker: 'Sarah',
+    text: "Excellent. Let's move this into the sprint backlog as well.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-password.mp3'
+  },
+  
+  // 16. Story 3: ID Upload Intro
+  {
+    id: 'victor-idupload',
+    speaker: 'Victor',
+    text: "The last one is ID Upload Verification. The user story: As a customer, I want to upload my ID online so that I can complete my account verification. This is more advanced — it involves fraud detection and business rules.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/planning/victor-idupload.mp3'
+  },
+  
+  // 17. ID Upload Concern
+  {
+    id: 'srikanth-idupload',
+    speaker: 'Srikanth',
+    text: "This could be too big for one sprint. Fraud checks and integrations are complex implementations for the sprint considering capacity and testing",
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    audioPath: '/audio/planning/srikanth-idupload.mp3'
+  },
+  
+  // 18. ID Upload Test Concern
+  {
+    id: 'tom-idupload',
+    speaker: 'Tom',
+    text: "True, Testing all fraud scenarios in one sprint isn't realistic. We risk rolling over.",
+    voiceId: 'qqBeXuJvzxtQfbsW2f40',
+    audioPath: '/audio/planning/tom-idupload.mp3'
+  },
+  
+  // 19. Suggestion to Slice
+  {
+    id: 'sarah-slice',
+    speaker: 'Sarah',
+    text: "Good point. Let's slice this. Maybe take only the basic upload form this sprint, and defer fraud detection rules.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-slice.mp3'
+  },
+  
+  // 20. Agreement to Slice
+  {
+    id: 'victor-slice',
+    speaker: 'Victor',
+    text: "Yes, that makes sense. Let's commit the base ID upload capability, Sarah please go ahead and add the story to the sprint backlog, I will amend the acceptance criteri, and create a follow-up story for fraud checks.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/planning/victor-slice.mp3'
+  },
+  
+  // 21. Feasibility of Slice
+  {
+    id: 'lisa-slice',
+    speaker: 'Lisa',
+    text: "That's much more manageable. We can do the form, validation, and storage within this sprint.",
+    voiceId: '8N2ng9i2uiUWqstgmWlH',
+    audioPath: '/audio/planning/lisa-slice.mp3'
+  },
+  
+  // 22. ID Upload Commitment
+  {
+    id: 'sarah-idcommit',
+    speaker: 'Sarah',
+    text: "Perfect. We'll commit the sliced version to this sprint.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-idcommit.mp3'
+  },
+  
+  // 23. Sprint Recap
+  {
+    id: 'sarah-recap',
+    speaker: 'Sarah',
+    text: "To recap: our Sprint Goal is to improve verification and account processes. We've committed three items — the attachment feature, the password reset confirmation email, and a sliced version of ID upload. Together, these fit our capacity and align with the goal.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-recap.mp3'
+  },
+  
+  // 24. Closing Acknowledgement
+  {
+    id: 'victor-close',
+    speaker: 'Victor',
+    text: "Thanks everyone. I'm confident this sprint will deliver real improvements for both customers and the housing team.",
+    voiceId: 'neMPCpWtBwWZhxEC8qpe',
+    audioPath: '/audio/planning/victor-close.mp3'
+  },
+  
+  // 25. Closing
+  {
+    id: 'sarah-close',
+    speaker: 'Sarah',
+    text: "Great collaboration. This sprint is now planned. Let's get ready to start tomorrow with confidence.",
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    audioPath: '/audio/planning/sarah-close.mp3'
+  }
+];
+
 /**
  * Play pre-generated audio file
  */
 export async function playPreGeneratedAudio(audioId: string): Promise<void> {
-  const audioFile = refinementAudioFiles.find(file => file.id === audioId);
+  // Try refinement audio first, then sprint planning audio
+  let audioFile = refinementAudioFiles.find(file => file.id === audioId);
+  
+  if (!audioFile) {
+    audioFile = sprintPlanningAudioFiles.find(file => file.id === audioId);
+  }
   
   if (!audioFile) {
     console.error(`❌ Pre-generated audio not found: ${audioId}`);
@@ -252,14 +485,28 @@ export async function playPreGeneratedAudio(audioId: string): Promise<void> {
  * Get pre-generated audio by speaker and text (for dynamic matching)
  */
 export function findPreGeneratedAudio(speaker: string, text: string): PreGeneratedAudio | null {
-  // Try exact text match first
+  // Try refinement audio first
   let audioFile = refinementAudioFiles.find(file => 
     file.speaker === speaker && file.text === text
   );
   
-  // If no exact match, try partial text match
+  // If no exact match in refinement, try sprint planning audio
+  if (!audioFile) {
+    audioFile = sprintPlanningAudioFiles.find(file => 
+      file.speaker === speaker && file.text === text
+    );
+  }
+  
+  // If no exact match, try partial text match in refinement
   if (!audioFile) {
     audioFile = refinementAudioFiles.find(file => 
+      file.speaker === speaker && text.includes(file.text.substring(0, 50))
+    );
+  }
+  
+  // If no partial match in refinement, try sprint planning audio
+  if (!audioFile) {
+    audioFile = sprintPlanningAudioFiles.find(file => 
       file.speaker === speaker && text.includes(file.text.substring(0, 50))
     );
   }
@@ -271,5 +518,6 @@ export function findPreGeneratedAudio(speaker: string, text: string): PreGenerat
  * Check if audio file exists
  */
 export function hasPreGeneratedAudio(audioId: string): boolean {
-  return refinementAudioFiles.some(file => file.id === audioId);
+  return refinementAudioFiles.some(file => file.id === audioId) || 
+         sprintPlanningAudioFiles.some(file => file.id === audioId);
 }

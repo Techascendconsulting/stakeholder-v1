@@ -23,41 +23,49 @@ const VOICE_IDS = {
 };
 
 // Sprint Planning Meeting Audio Segments
-// Based on the complete Sprint Planning script with drag-and-drop triggers
+// Complete 25-segment Sprint Planning script with drag-and-drop triggers
 const SPRINT_PLANNING_AUDIO_SEGMENTS = [
-  // Opening & Goal Setting
+  // 1. Opening
   {
     id: 'sarah-opening',
     speaker: 'Sarah',
-    text: "Welcome everyone. This is our Sprint Planning session. Our goal today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?",
-    dragAction: null
-  },
-  {
-    id: 'victor-goal',
-    speaker: 'Victor',
-    text: "Thanks Sarah. The Sprint Goal I'd like to propose is: Improve security and user experience by strengthening verification and account processes. We have three refined backlog items on top: the tenant maintenance attachments, the password reset confirmation email, and the ID upload verification feature.",
+    text: "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?",
     dragAction: null
   },
   
-  // Capacity Discussion
+  // 2. Sprint Goal
+  {
+    id: 'victor-goal',
+    speaker: 'Victor',
+    text: "Thanks Sarah. The Sprint Goal I'd like to propose is: Strengthen account security and verification—send confirmation after password resets and deliver the basic ID upload step. We have three refined backlog items on top: the tenant maintenance attachments, the password reset confirmation email, and the ID upload verification feature.",
+    dragAction: null
+  },
+  
+  // 3. Capacity Check
   {
     id: 'sarah-capacity',
     speaker: 'Sarah',
     text: "Great. Before we start pulling stories, let's quickly confirm capacity. Srikanth, how's the dev side looking this sprint?",
     dragAction: null
   },
+  
+  // 4. Dev Capacity
   {
     id: 'srikanth-capacity',
     speaker: 'Srikanth',
     text: "On the dev side, we have our full team except for Lisa taking a day off. That means about 80% of our usual capacity. I'd say around 20 story points.",
     dragAction: null
   },
+  
+  // 5. Dev Capacity Input
   {
     id: 'lisa-capacity',
     speaker: 'Lisa',
     text: "Yes, that's about right. I think we can take 2 medium stories and one larger one if we slice it properly.",
     dragAction: null
   },
+  
+  // 6. QA Capacity
   {
     id: 'tom-capacity',
     speaker: 'Tom',
@@ -65,121 +73,151 @@ const SPRINT_PLANNING_AUDIO_SEGMENTS = [
     dragAction: null
   },
   
-  // Story 1: Maintenance Attachments
+  // 7. Transition to First Story
   {
     id: 'sarah-transition',
     speaker: 'Sarah',
     text: "Alright, let's look at the first item together.",
-    dragAction: 'move-maintenance-to-discussing' // Sarah moves Maintenance Request Attachments to Currently Discussing
+    dragAction: 'move-maintenance-to-discussing'
   },
+  
+  // 8. Story 1: Attachments Recap
   {
     id: 'victor-attachments',
     speaker: 'Victor',
     text: "The first item is Tenant can upload attachments to support maintenance requests. The user story: As a tenant, I want to upload a photo or document related to my maintenance issue, so that the housing team has enough context to resolve the problem efficiently. It's already refined with file size and type rules.",
     dragAction: null
   },
+  
+  // 9. Attachments Feasibility
   {
     id: 'srikanth-attachments',
     speaker: 'Srikanth',
     text: "From dev, we can reuse our file upload component. Backend will go into S3, so this is straightforward.",
     dragAction: null
   },
+  
+  // 10. Attachments Test Scope
   {
     id: 'tom-attachments',
     speaker: 'Tom',
     text: "For QA, I'll cover oversized files, wrong formats, and multiple uploads. Should fit fine.",
     dragAction: null
   },
+  
+  // 11. Attachment Commitment
   {
     id: 'sarah-attachments',
     speaker: 'Sarah',
     text: "Great. Sounds like we're aligned. Let's commit this story to the sprint.",
-    dragAction: 'move-maintenance-to-sprint' // Sarah moves to Sprint Backlog
+    dragAction: 'move-maintenance-to-sprint'
   },
   
-  // Story 2: Password Reset
+  // 12. Story 2: Password Reset Recap
   {
     id: 'victor-password',
     speaker: 'Victor',
-    text: "Next is Password Reset Confirmation Email. User story: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot suspicious activity. This was sized at 3 points.",
-    dragAction: 'move-password-to-discussing' // Sarah moves Password Reset to Currently Discussing
+    text: "Next is Password Reset Confirmation Email. User story: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot suspicious activity. This was sized at 2 points.",
+    dragAction: 'move-password-to-discussing'
   },
+  
+  // 13. Password Reset Effort
   {
     id: 'lisa-password',
     speaker: 'Lisa',
     text: "Very small effort. We just add a template to our existing email service.",
     dragAction: null
   },
+  
+  // 14. Password Reset Testing
   {
     id: 'tom-password',
     speaker: 'Tom',
     text: "Low test effort too. I just need to check subject, body, no password leakage, and logging.",
     dragAction: null
   },
+  
+  // 15. Password Reset Commitment
   {
     id: 'sarah-password',
     speaker: 'Sarah',
     text: "Excellent. Let's move this into the sprint backlog as well.",
-    dragAction: 'move-password-to-sprint' // Sarah moves to Sprint Backlog
+    dragAction: 'move-password-to-sprint'
   },
   
-  // Story 3: ID Upload (with slicing)
+  // 16. Story 3: ID Upload Intro
   {
     id: 'victor-idupload',
     speaker: 'Victor',
     text: "The last one is ID Upload Verification. The user story: As a customer, I want to upload my ID online so that I can complete my account verification. This is more advanced — it involves fraud detection and business rules.",
-    dragAction: 'move-idupload-to-discussing' // Sarah moves ID Upload to Currently Discussing
+    dragAction: 'move-idupload-to-discussing'
   },
+  
+  // 17. ID Upload Concern
   {
     id: 'srikanth-idupload',
     speaker: 'Srikanth',
-    text: "This could be too big for one sprint. Fraud checks and integrations are complex.",
+    text: "This could be too big for one sprint. Fraud checks and integrations are complex implementations for the sprint considering capacity and testing",
     dragAction: null
   },
+  
+  // 18. ID Upload Test Concern
   {
     id: 'tom-idupload',
     speaker: 'Tom',
-    text: "Testing all fraud scenarios in one sprint isn't realistic. We risk rolling over.",
+    text: "True, Testing all fraud scenarios in one sprint isn't realistic. We risk rolling over.",
     dragAction: null
   },
+  
+  // 19. Suggestion to Slice
   {
     id: 'sarah-slice',
     speaker: 'Sarah',
     text: "Good point. Let's slice this. Maybe take only the basic upload form this sprint, and defer fraud detection rules.",
-    dragAction: 'slice-idupload' // Sarah slices the story
+    dragAction: 'slice-idupload'
   },
+  
+  // 20. Agreement to Slice
   {
     id: 'victor-slice',
     speaker: 'Victor',
-    text: "Yes, that makes sense. Let's commit the base ID upload capability now, and we'll create a follow-up story for fraud checks.",
+    text: "Yes, that makes sense. Let's commit the base ID upload capability, Sarah please go ahead and add the story to the sprint backlog, I will amend the acceptance criteri, and create a follow-up story for fraud checks.",
     dragAction: null
   },
+  
+  // 21. Feasibility of Slice
   {
     id: 'lisa-slice',
     speaker: 'Lisa',
     text: "That's much more manageable. We can do the form, validation, and storage within this sprint.",
     dragAction: null
   },
+  
+  // 22. ID Upload Commitment
   {
     id: 'sarah-idcommit',
     speaker: 'Sarah',
     text: "Perfect. We'll commit the sliced version to this sprint.",
-    dragAction: 'move-idupload-slice-to-sprint' // Sarah moves sliced version to Sprint Backlog
+    dragAction: 'move-idupload-slice-to-sprint'
   },
   
-  // Sprint Closing
+  // 23. Sprint Recap
   {
     id: 'sarah-recap',
     speaker: 'Sarah',
     text: "To recap: our Sprint Goal is to improve verification and account processes. We've committed three items — the attachment feature, the password reset confirmation email, and a sliced version of ID upload. Together, these fit our capacity and align with the goal.",
     dragAction: null
   },
+  
+  // 24. Closing Acknowledgement
   {
     id: 'victor-close',
     speaker: 'Victor',
     text: "Thanks everyone. I'm confident this sprint will deliver real improvements for both customers and the housing team.",
     dragAction: null
   },
+  
+  // 25. Closing
   {
     id: 'sarah-close',
     speaker: 'Sarah',
@@ -281,6 +319,10 @@ async function generateSprintPlanningAudio() {
   console.log('  5. victor-idupload → Move ID Upload to Currently Discussing');
   console.log('  6. sarah-slice → Slice ID Upload story');
   console.log('  7. sarah-idcommit → Move ID Upload (sliced) to Sprint Backlog');
+  console.log('');
+  console.log('🎯 Total segments: 25 audio files');
+  console.log('🎭 Participants: Sarah (SM), Victor (BA/PO), Srikanth (Tech Lead), Lisa (Dev), Tom (QA)');
+  console.log('📁 Output directory: public/audio/planning/');
 }
 
 // Run the generation
