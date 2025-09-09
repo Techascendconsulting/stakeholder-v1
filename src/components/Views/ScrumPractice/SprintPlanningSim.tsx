@@ -289,8 +289,8 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => {
@@ -306,18 +306,19 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Sprint Planning Practice</h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Learn how teams commit to work for the sprint using prioritised backlog items</p>
+                  <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Sprint Planning Practice</h1>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Learn how teams commit to work for the sprint using prioritised backlog items</p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setCurrentView('scrum-essentials')}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center space-x-2"
+                  className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center space-x-2 text-sm"
                 >
                   <Calendar className="w-4 h-4" />
-                  <span>Review Essentials</span>
+                  <span className="hidden sm:inline">Review Essentials</span>
+                  <span className="sm:hidden">Review</span>
                 </button>
               </div>
             </div>
@@ -325,7 +326,7 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Progress Overview */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -348,24 +349,24 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
             
             <div className="space-y-4">
               {trials.map((trial) => (
-                <div key={trial.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                  <div className="flex items-start justify-between mb-4">
+                <div key={trial.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{trial.title}</h4>
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{trial.title}</h4>
                         {trial.completed && <CheckCircle className="w-5 h-5 text-green-500" />}
                         {trial.locked && <Lock className="w-5 h-5 text-gray-400" />}
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 mb-3">{trial.description}</p>
+                      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-3">{trial.description}</p>
                       
-                      <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                           <Users className="w-4 h-4" />
                           <span>{trial.refinedStories.length} Stories</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Clock className="w-4 h-4" />
-                          <span>{trial.teamCapacity} Points Capacity</span>
+                          <span>{trial.teamCapacity} Points</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Target className="w-4 h-4" />
@@ -378,7 +379,7 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
                       <button
                         onClick={() => startTrial(trial.id)}
                         disabled={trial.locked}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
                           trial.locked
                             ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                             : 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300'
@@ -387,12 +388,13 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
                         {trial.locked ? (
                           <>
                             <Lock className="w-4 h-4" />
-                            <span>Locked</span>
+                            <span className="hidden sm:inline">Locked</span>
                           </>
                         ) : (
                           <>
                             <Eye className="w-4 h-4" />
-                            <span>Watch Planning</span>
+                            <span className="hidden sm:inline">Watch Planning</span>
+                            <span className="sm:hidden">Watch</span>
                           </>
                         )}
                       </button>
