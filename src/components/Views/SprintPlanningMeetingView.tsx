@@ -358,7 +358,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                     <div className="overflow-hidden">
                     {/* Jira-style table header */}
                     <div className="bg-gray-50 border-b border-gray-200">
-                      <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide min-h-[40px]">
+                      <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 uppercase tracking-wide h-8">
                         <div className="col-span-1">KEY</div>
                         <div className="col-span-2">SUMMARY</div>
                         <div className="col-span-1">TYPE</div>
@@ -375,7 +375,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                             key={story.id}
                             draggable={meetingStarted}
                             onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                            className="grid grid-cols-6 gap-4 px-4 py-2 hover:bg-blue-50 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500 min-h-[48px]"
+                            className="grid grid-cols-7 gap-4 px-4 py-1 hover:bg-blue-50 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500 h-10"
                           >
                             {/* Key */}
                             <div className="col-span-1 flex items-center">
@@ -451,7 +451,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                 <div className="overflow-hidden">
                   {/* Jira-style table header */}
                   <div className="bg-gray-50 border-b border-gray-200">
-                    <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide min-h-[40px]">
+                    <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 uppercase tracking-wide h-8">
                       <div className="col-span-1">KEY</div>
                       <div className="col-span-2">SUMMARY</div>
                       <div className="col-span-1">TYPE</div>
@@ -468,7 +468,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                         key={story.id}
                         draggable={meetingStarted}
                         onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                        className={`grid grid-cols-6 gap-4 px-4 py-2 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 min-h-[48px] ${
+                        className={`grid grid-cols-7 gap-4 px-4 py-1 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 h-10 ${
                           meetingStarted ? 'cursor-move hover:bg-blue-50' : 'cursor-pointer hover:bg-gray-50'
                         }`}
                       >
