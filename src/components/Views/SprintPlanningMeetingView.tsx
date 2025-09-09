@@ -397,8 +397,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           <div className="col-span-1">KEY</div>
                           <div className="col-span-2">SUMMARY</div>
                           <div className="col-span-1">TYPE</div>
-                          <div className="col-span-1">PRIORITY</div>
                           <div className="col-span-1">STORY POINTS</div>
+                          <div className="col-span-1">PRIORITY</div>
                           <div className="col-span-1">STATUS</div>
                         </div>
                       </div>
@@ -422,7 +422,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                               <div>
                                 <div className="text-sm font-medium text-gray-900 line-clamp-1">{story.title}</div>
                                 {story.description && (
-                                  <div className="text-xs text-gray-500 line-clamp-1 mt-1">{story.description}</div>
+                                  <div className="text-xs text-gray-500 line-clamp-2 mt-1">{story.description}</div>
                                 )}
                               </div>
                             </div>
@@ -431,17 +431,6 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                             <div className="col-span-1 flex items-center">
                               <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                                 Story
-                              </span>
-                            </div>
-                            
-                            {/* Priority */}
-                            <div className="col-span-1 flex items-center">
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
-                                story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-green-100 text-green-800'
-                              }`}>
-                                {story.priority}
                               </span>
                             </div>
                             
@@ -454,6 +443,17 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                               ) : (
                                 <span className="text-gray-400 text-sm">-</span>
                               )}
+                            </div>
+                            
+                            {/* Priority */}
+                            <div className="col-span-1 flex items-center">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
+                                story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-green-100 text-green-800'
+                              }`}>
+                                {story.priority}
+                              </span>
                             </div>
                             
                             {/* Status */}
@@ -485,8 +485,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                       <div className="col-span-1">KEY</div>
                       <div className="col-span-2">SUMMARY</div>
                       <div className="col-span-1">TYPE</div>
-                      <div className="col-span-1">PRIORITY</div>
                       <div className="col-span-1">STORY POINTS</div>
+                      <div className="col-span-1">PRIORITY</div>
                       <div className="col-span-1">STATUS</div>
                     </div>
                   </div>
@@ -521,7 +521,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           <div>
                             <div className="text-sm font-medium text-gray-900 line-clamp-1">{story.title}</div>
                             {story.description && (
-                              <div className="text-xs text-gray-500 line-clamp-1 mt-1">{story.description}</div>
+                              <div className="text-xs text-gray-500 line-clamp-2 mt-1">{story.description}</div>
                             )}
                           </div>
                         </div>
@@ -530,17 +530,6 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                         <div className="col-span-1 flex items-center">
                           <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                             Story
-                          </span>
-                        </div>
-                        
-                        {/* Priority */}
-                        <div className="col-span-1 flex items-center">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
-                            story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {story.priority}
                           </span>
                         </div>
                         
@@ -553,6 +542,17 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           ) : (
                             <span className="text-gray-400 text-sm">-</span>
                           )}
+                        </div>
+                        
+                        {/* Priority */}
+                        <div className="col-span-1 flex items-center">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
+                            story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {story.priority}
+                          </span>
                         </div>
                         
                         {/* Status */}
