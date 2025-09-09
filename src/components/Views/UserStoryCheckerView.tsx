@@ -1,78 +1,185 @@
 import React, { useState } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Lightbulb, FileText } from 'lucide-react';
 
+// ✅ User Story & AC Rules Engine - Universal Prompt System
+const STORY_QUALITY_RULES = [
+  {
+    name: "Role Clarity",
+    key: "roleClarity",
+    detect: (text) => /as a \w+|as an \w+|as the \w+/i.test(text),
+    prompt: "Who is the user? Start with 'As a [user type]'",
+    missingMessage: "Missing clear user role. Start with 'As a [user type]'"
+  },
+  {
+    name: "Action Clarity", 
+    key: "actionClarity",
+    detect: (text) => /i want to \w+|i need to \w+|i can \w+/i.test(text),
+    prompt: "What does the user want to do? Use 'I want to [action]'",
+    missingMessage: "Missing clear action. Use 'I want to [action]'"
+  },
+  {
+    name: "Outcome Clarity",
+    key: "outcomeClarity", 
+    detect: (text) => /so that|in order to|to enable|to allow/i.test(text),
+    prompt: "Why does the user want this? Use 'so that [benefit]'",
+    missingMessage: "Missing clear outcome. Use 'so that [benefit]'"
+  },
+  {
+    name: "Not Too Technical",
+    key: "notTooTechnical",
+    detect: (text) => !/api|database|sql|json|xml|rest|endpoint|microservice|kubernetes|docker|aws|azure/i.test(text.toLowerCase()),
+    prompt: "Is this written in business language, not technical jargon?",
+    missingMessage: "Too technical. Write in business language, not developer terms."
+  },
+  {
+    name: "Appropriate Scope",
+    key: "appropriateScope",
+    detect: (text) => text.length < 200 && !/and also|additionally|furthermore|moreover|also.*want/i.test(text),
+    prompt: "Does this focus on one specific outcome?",
+    missingMessage: "Scope too broad. Focus on one specific outcome per story."
+  }
+];
+
+const AC_COVERAGE_RULES = [
+  {
+    name: "Happy Path",
+    key: "happyPath",
+    detect: (text) => /success|complete|upload|submit|given.*when.*then|happy path|normal flow/i.test(text.toLowerCase()),
+    prompt: "What happens in the normal, successful scenario?",
+    missingMessage: "Missing happy path. Describe what happens when everything works correctly."
+  },
+  {
+    name: "Input/Trigger",
+    key: "inputTrigger",
+    detect: (text) => /when.*user|when.*click|when.*select|given.*when|trigger|input|action|button|click/i.test(text.toLowerCase()),
+    prompt: "What input or action starts the feature?",
+    missingMessage: "You haven't described what input or action starts the feature."
+  },
+  {
+    name: "Business Rules",
+    key: "businessRules",
+    detect: (text) => /must|only|should not|limit|allowed|validate|require|file type|size|format/i.test(text.toLowerCase()),
+    prompt: "Are there any rules or constraints the system must enforce?",
+    missingMessage: "No business rules detected. Add conditions like allowed file types or limits."
+  },
+  {
+    name: "Feedback",
+    key: "feedback",
+    detect: (text) => /success message|error message|see|receive|shown|confirmation|notification|display|show/i.test(text.toLowerCase()),
+    prompt: "What does the user see, hear, or receive after completing the action?",
+    missingMessage: "Missing user feedback. How does the user know it worked or failed?"
+  },
+  {
+    name: "Error Handling",
+    key: "errors",
+    detect: (text) => /error|fail|invalid|wrong|blocked|retry|exceed|oversize|timeout|exception/i.test(text.toLowerCase()),
+    prompt: "What happens when things go wrong — invalid input, failure, or edge cases?",
+    missingMessage: "No error handling described. What happens when something fails?"
+  },
+  {
+    name: "Non-Functionals",
+    key: "nonFunctionals",
+    detect: (text) => /speed|performance|mobile|load|responsive|secure|reliable|fast|quick|seconds|mb|kb/i.test(text.toLowerCase()),
+    prompt: "Should this work on mobile? Fast? Secure? Reliable?",
+    missingMessage: "No non-functional requirements included. Should it load fast or support mobile?"
+  },
+  {
+    name: "Separate Story?",
+    key: "separateStory",
+    detect: (text) => !/and.*(email|track|store|log)|multiple.*features|also.*want|additionally/i.test(text.toLowerCase()),
+    prompt: "Does this story try to do too much? Should it be split?",
+    missingMessage: "This story might combine multiple outcomes. Consider splitting."
+  }
+];
+
+interface RuleResult {
+  name: string;
+  key: string;
+  status: "✅" | "❌";
+  message: string | null;
+  prompt: string;
+}
+
 interface StoryQualityResult {
   roleClarity: boolean;
-  triggerAction: boolean;
-  outcomeResult: boolean;
-  acFormat: boolean;
+  actionClarity: boolean;
+  outcomeClarity: boolean;
   notTooTechnical: boolean;
-  businessRulesPresent: boolean;
-  scopeAppropriate: boolean;
+  appropriateScope: boolean;
+  hasAcceptanceCriteria: boolean;
 }
 
 interface ACCoverageResult {
   happyPath: boolean;
   inputTrigger: boolean;
-  errors: boolean;
-  feedback: boolean;
-  nonFunctionals: boolean;
   businessRules: boolean;
-  scope: boolean;
+  feedback: boolean;
+  errors: boolean;
+  nonFunctionals: boolean;
+  separateStory: boolean;
+}
+
+// Rule evaluation functions
+export function checkRule(text: string, rule: any): RuleResult {
+  const passed = rule.detect(text);
+  return {
+    name: rule.name,
+    key: rule.key,
+    status: passed ? "✅" : "❌",
+    message: passed ? null : rule.missingMessage,
+    prompt: rule.prompt
+  };
+}
+
+export function evaluateUserStory(rawText: string): RuleResult[] {
+  return STORY_QUALITY_RULES.map(rule => checkRule(rawText, rule));
+}
+
+export function evaluateAcceptanceCriteria(rawText: string): RuleResult[] {
+  return AC_COVERAGE_RULES.map(rule => checkRule(rawText, rule));
 }
 
 const UserStoryCheckerView: React.FC = () => {
   const [userStory, setUserStory] = useState('');
   const [acceptanceCriteria, setAcceptanceCriteria] = useState('');
   const [results, setResults] = useState<{
-    storyQuality: StoryQualityResult | null;
-    acCoverage: ACCoverageResult | null;
+    storyQuality: RuleResult[] | null;
+    acCoverage: RuleResult[] | null;
   }>({ storyQuality: null, acCoverage: null });
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const analyzeStoryQuality = (story: string, hasAC: boolean): StoryQualityResult => {
-    const lowerStory = story.toLowerCase();
+  const analyzeStoryQuality = (story: string, hasAC: boolean): RuleResult[] => {
+    const storyResults = evaluateUserStory(story);
     
-    return {
-      roleClarity: /as a \w+/i.test(story),
-      triggerAction: /i want to \w+/i.test(story),
-      outcomeResult: /so that/i.test(story),
-      acFormat: hasAC, // Now we know if AC is provided from separate input
-      notTooTechnical: !/api|database|sql|json|xml|rest|endpoint|microservice|kubernetes/i.test(lowerStory),
-      businessRulesPresent: /rule|policy|validation|limit|maximum|minimum|allowed|restricted/i.test(lowerStory),
-      scopeAppropriate: story.length < 200 && !/and also|additionally|furthermore|moreover/i.test(story)
+    // Add AC format rule
+    const acFormatRule: RuleResult = {
+      name: "Acceptance Criteria",
+      key: "hasAcceptanceCriteria",
+      status: hasAC ? "✅" : "❌",
+      message: hasAC ? null : "No acceptance criteria provided. Add detailed criteria to make the story testable.",
+      prompt: "Are there detailed acceptance criteria that define when this story is complete?"
     };
+    
+    return [...storyResults, acFormatRule];
   };
 
-  const analyzeACCoverage = (acText: string): ACCoverageResult => {
-    const lowerAC = acText.toLowerCase();
-    
+  const analyzeACCoverage = (acText: string): RuleResult[] => {
     console.log('🔍 AC Analysis - Input AC text:', acText);
     console.log('🔍 AC Analysis - AC length:', acText.length);
     
     if (!acText.trim()) {
       console.log('❌ No AC provided - returning all false');
-      return {
-        happyPath: false,
-        inputTrigger: false,
-        errors: false,
-        feedback: false,
-        nonFunctionals: false,
-        businessRules: false,
-        scope: false
-      };
+      // Return all rules as failed when no AC is provided
+      return AC_COVERAGE_RULES.map(rule => ({
+        name: rule.name,
+        key: rule.key,
+        status: "❌" as const,
+        message: "No acceptance criteria provided",
+        prompt: rule.prompt
+      }));
     }
     
-    // Analyze AC coverage based on the dedicated AC input
-    return {
-      happyPath: /success|complete|upload|submit|given.*when.*then|happy path/i.test(lowerAC),
-      inputTrigger: /when.*user|when.*click|when.*select|given.*when|trigger|input/i.test(lowerAC),
-      errors: /error|invalid|fail|reject|deny|exception|timeout|invalid|oversized/i.test(lowerAC),
-      feedback: /message|notification|confirm|success|feedback|display|show|user sees/i.test(lowerAC),
-      nonFunctionals: /size|time|performance|mobile|responsive|limit|mb|kb|seconds|load time/i.test(lowerAC),
-      businessRules: /rule|policy|validation|limit|maximum|minimum|allowed|restricted|file type/i.test(lowerAC),
-      scope: acText.length < 500 // AC can be longer than story
-    };
+    return evaluateAcceptanceCriteria(acText);
   };
 
   const handleCheckStory = () => {
@@ -96,23 +203,11 @@ const UserStoryCheckerView: React.FC = () => {
     setShowSuggestions(true);
   };
 
-  const getQualityScore = (quality: StoryQualityResult): number => {
-    const total = Object.keys(quality).length;
-    const passed = Object.values(quality).filter(Boolean).length;
+  const getScore = (rules: RuleResult[]): number => {
+    const total = rules.length;
+    const passed = rules.filter(rule => rule.status === "✅").length;
     return Math.round((passed / total) * 100);
   };
-
-  const getCoverageScore = (coverage: ACCoverageResult): number => {
-    const total = Object.keys(coverage).length;
-    const passed = Object.values(coverage).filter(Boolean).length;
-    return Math.round((passed / total) * 100);
-  };
-
-  const QualityIcon = ({ passed }: { passed: boolean }) => 
-    passed ? <CheckCircle className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />;
-
-  const CoverageIcon = ({ passed }: { passed: boolean }) => 
-    passed ? <CheckCircle className="w-5 h-5 text-green-500" /> : <AlertTriangle className="w-5 h-5 text-yellow-500" />;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -205,54 +300,46 @@ Error Cases:
             {/* Story Quality Panel */}
             {results.storyQuality && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 className="text-lg font-semibold mb-3 text-green-500 dark:text-green-400">
-                  🟩 User Story Quality Check
-                </h3>
-                <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                  <li className="flex items-center space-x-2">
-                    <span>{results.storyQuality.roleClarity ? '✅' : '❌'}</span>
-                    <span>Role is clear</span>
-                    <span className="text-gray-500 dark:text-gray-400">– e.g., "As a tenant"</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span>{results.storyQuality.triggerAction ? '✅' : '❌'}</span>
-                    <span>Action is clear</span>
-                    <span className="text-gray-500 dark:text-gray-400">– e.g., "upload a photo"</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span>{results.storyQuality.outcomeResult ? '✅' : '❌'}</span>
-                    <span>Outcome is clear</span>
-                    <span className="text-gray-500 dark:text-gray-400">– e.g., "so that the housing team…"</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span>{results.storyQuality.acFormat ? '✅' : '❌'}</span>
-                    <span>Acceptance Criteria is present</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span>{results.storyQuality.businessRulesPresent ? '✅' : '⚠️'}</span>
-                    <span>Business rule {results.storyQuality.businessRulesPresent ? 'is explicit' : 'could be more explicit'}</span>
-                    <span className="text-gray-500 dark:text-gray-400">(e.g., allowed file types)</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span>{results.acCoverage?.feedback ? '✅' : '❌'}</span>
-                    <span>{results.acCoverage?.feedback ? 'Feedback is defined' : 'No feedback defined'}</span>
-                    <span className="text-gray-500 dark:text-gray-400">(e.g., what the user sees after upload)</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span>{results.storyQuality.scopeAppropriate ? '✅' : '❌'}</span>
-                    <span>Scope is manageable</span>
-                    <span className="text-gray-500 dark:text-gray-400">– only one function is described</span>
-                  </li>
-                </ul>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-green-500 dark:text-green-400">
+                    🟩 User Story Quality Check
+                  </h3>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {getScore(results.storyQuality)}% Complete
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {results.storyQuality.map((rule, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+                      <span className="text-lg">{rule.status}</span>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 dark:text-white">{rule.name}</div>
+                        {rule.message && (
+                          <div className="text-sm text-red-600 dark:text-red-400 mt-1">
+                            {rule.message}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          💡 {rule.prompt}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* AC Coverage Panel */}
             {results.acCoverage && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 className="text-lg font-semibold mb-3 text-yellow-500 dark:text-yellow-400">
-                  🟨 Acceptance Criteria Coverage
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-yellow-500 dark:text-yellow-400">
+                    🟨 Acceptance Criteria Coverage
+                  </h3>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {getScore(results.acCoverage)}% Complete
+                  </span>
+                </div>
                 {!acceptanceCriteria.trim() && (
                   <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -260,80 +347,24 @@ Error Cases:
                     </p>
                   </div>
                 )}
-                <table className="w-full table-auto text-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="text-left px-3 py-2 border border-gray-200 dark:border-gray-600">Area</th>
-                      <th className="text-left px-3 py-2 border border-gray-200 dark:border-gray-600">Status</th>
-                      <th className="text-left px-3 py-2 border border-gray-200 dark:border-gray-600">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Happy Path</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
-                        {results.acCoverage.happyPath ? '✅' : '❌'}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                        {results.acCoverage.happyPath ? 'Click to upload file is covered' : 'Missing success scenario'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Input/Trigger</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
-                        {results.acCoverage.inputTrigger ? '✅' : '⚠️'}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                        {results.acCoverage.inputTrigger ? 'User action is defined' : 'Present but not deeply defined'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Business Rules</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
-                        {results.acCoverage.businessRules ? '✅' : '⚠️'}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                        {results.acCoverage.businessRules ? 'Rules are explicit' : 'File type implied, not validated'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Feedback</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
-                        {results.acCoverage.feedback ? '✅' : '❌'}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                        {results.acCoverage.feedback ? 'User feedback is defined' : 'No success or error feedback mentioned'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Errors</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
-                        {results.acCoverage.errors ? '✅' : '❌'}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                        {results.acCoverage.errors ? 'Error handling is covered' : 'Missing invalid file/oversize cases'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Non-functionals</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
-                        {results.acCoverage.nonFunctionals ? '✅' : '❌'}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                        {results.acCoverage.nonFunctionals ? 'Performance requirements defined' : 'No mention of performance/speed'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Separate Story</td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
-                        {results.acCoverage.scope ? '✅' : '❌'}
-                      </td>
-                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                        {results.acCoverage.scope ? 'Scoped correctly' : 'May need to be split into multiple stories'}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="space-y-3">
+                  {results.acCoverage.map((rule, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+                      <span className="text-lg">{rule.status}</span>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 dark:text-white">{rule.name}</div>
+                        {rule.message && (
+                          <div className="text-sm text-red-600 dark:text-red-400 mt-1">
+                            {rule.message}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          💡 {rule.prompt}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -346,41 +377,31 @@ Error Cases:
                 </h2>
                 
                 <div className="space-y-3">
-                  {!results.storyQuality.roleClarity && (
-                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                        💡 <strong>Role Clarity:</strong> Start with "As a [specific user type]" to clearly define who the story is for.
-                      </p>
-                    </div>
-                  )}
+                  {/* Show suggestions for failed story quality rules */}
+                  {results.storyQuality
+                    .filter(rule => rule.status === "❌")
+                    .map((rule, index) => (
+                      <div key={`story-${index}`} className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          💡 <strong>{rule.name}:</strong> {rule.message}
+                        </p>
+                      </div>
+                    ))}
                   
-                  {!results.acCoverage.errors && (
-                    <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                      <p className="text-sm text-orange-800 dark:text-orange-200">
-                        ⚠️ <strong>Error Handling:</strong> Consider what happens when things go wrong (file too large, invalid format, network issues).
-                      </p>
-                    </div>
-                  )}
-                  
-                  {!results.acCoverage.feedback && (
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <p className="text-sm text-blue-800 dark:text-blue-200">
-                        💬 <strong>User Feedback:</strong> Define what users see after successful/failed actions (success messages, error notifications).
-                      </p>
-                    </div>
-                  )}
-                  
-                  {!results.acCoverage.nonFunctionals && (
-                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                      <p className="text-sm text-purple-800 dark:text-purple-200">
-                        📱 <strong>Non-Functional:</strong> Consider performance, mobile experience, file size limits, and response times.
-                      </p>
-                    </div>
-                  )}
+                  {/* Show suggestions for failed AC coverage rules */}
+                  {results.acCoverage
+                    .filter(rule => rule.status === "❌")
+                    .map((rule, index) => (
+                      <div key={`ac-${index}`} className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                        <p className="text-sm text-orange-800 dark:text-orange-200">
+                          ⚠️ <strong>{rule.name}:</strong> {rule.message}
+                        </p>
+                      </div>
+                    ))}
                 </div>
                 
                 <button className="mt-4 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200">
-                  💡 Suggest Missing ACs
+                  💡 Generate Detailed ACs
                 </button>
               </div>
             )}
