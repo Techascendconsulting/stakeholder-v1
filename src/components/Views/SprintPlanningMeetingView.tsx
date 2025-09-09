@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Play, PhoneOff, GripVertical, FileText, ChevronDown, X } from 'lucide-react';
+import { ArrowLeft, Play, Pause, PhoneOff, GripVertical, FileText, ChevronDown, X } from 'lucide-react';
 import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { playPreGeneratedAudio, findPreGeneratedAudio, stopAllAudio } from '../../services/preGeneratedAudioService';
@@ -175,6 +175,7 @@ const teamMembers: SprintPlanningMember[] = [
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [isMeetingRunning, setIsMeetingRunning] = useState(false);
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
+  const [isMeetingPaused, setIsMeetingPaused] = useState(false);
   
   // Refs for meeting control
   const meetingCancelledRef = useRef(false);
@@ -393,6 +394,16 @@ const teamMembers: SprintPlanningMember[] = [
         break;
       }
       
+      // Wait if meeting is paused
+      while (isMeetingPaused && !meetingCancelledRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      if (meetingCancelledRef.current) {
+        console.log('🚫 Meeting cancelled during pause, stopping');
+        break;
+      }
+      
       const segment = sprintPlanningSegments[i];
       const teamMember = teamMembers.find(member => member.name === segment.speaker);
       
@@ -486,17 +497,38 @@ const teamMembers: SprintPlanningMember[] = [
     await runSprintPlanningMeeting();
   };
 
+  // Pause meeting
+  const handlePauseMeeting = () => {
+    setIsMeetingPaused(true);
+    // Pause current audio if playing
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+    console.log('⏸️ Sprint Planning meeting paused');
+  };
+
+  // Resume meeting
+  const handleResumeMeeting = () => {
+    setIsMeetingPaused(false);
+    // Resume audio if it was playing
+    if (currentAudio && currentAudio.paused) {
+      currentAudio.play();
+    }
+    console.log('▶️ Sprint Planning meeting resumed');
+  };
+
   // End meeting
   const handleEndMeeting = () => {
     // IMMEDIATELY stop all audio and reset meeting state
     meetingCancelledRef.current = true;
     stopCurrentAudio();
     setIsMeetingRunning(false);
+    setIsMeetingPaused(false);
     setCurrentSpeaking(null);
     setMeetingTranscript([]);
     setCurrentSegmentIndex(0);
     
-      onMeetingEnd({
+    onMeetingEnd({
       messages: [],
       meetingDuration: 0
     });
@@ -508,6 +540,7 @@ const teamMembers: SprintPlanningMember[] = [
     meetingCancelledRef.current = true;
     stopCurrentAudio();
     setIsMeetingRunning(false);
+    setIsMeetingPaused(false);
     setCurrentSpeaking(null);
     
     onClose();
@@ -841,6 +874,23 @@ const teamMembers: SprintPlanningMember[] = [
       {meetingStarted && (
         <div className="px-6 py-3 bg-gray-900 border-t border-gray-700">
           <div className="flex items-center space-x-2">
+            {/* Pause/Resume Button */}
+            <button
+              onClick={isMeetingPaused ? handleResumeMeeting : handlePauseMeeting}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                isMeetingPaused 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-orange-600 hover:bg-orange-700'
+              }`}
+              title={isMeetingPaused ? 'Resume Meeting' : 'Pause Meeting'}
+            >
+              {isMeetingPaused ? (
+                <Play className="w-4 h-4 text-white" />
+              ) : (
+                <Pause className="w-4 h-4 text-white" />
+              )}
+            </button>
+
             {/* End Meeting Button */}
             <button
               onClick={handleEndMeeting}
