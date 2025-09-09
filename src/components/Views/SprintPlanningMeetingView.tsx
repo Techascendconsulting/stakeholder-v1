@@ -597,15 +597,7 @@ const teamMembers: SprintPlanningMember[] = [
     <div className="fixed inset-0 bg-gray-900 text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
       <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={handleCloseMeeting}
-            className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <ArrowLeft size={20} />
-            <span>Back to Sprint Planning</span>
-          </button>
-          
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {meetingStarted ? (
               <>
@@ -615,25 +607,20 @@ const teamMembers: SprintPlanningMember[] = [
             ) : (
               <>
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="font-medium">Sprint Planning Meeting - Ready to Start</span>
+                <span className="font-medium">Sprint Planning Meeting</span>
               </>
             )}
           </div>
           
-          <div className="flex items-center space-x-2 text-green-400">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-sm">Audio Ready</span>
-            </div>
-        </div>
-
-        <div className="flex items-center space-x-3">
           <button
             onClick={handleCloseMeeting}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
+            className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ArrowLeft size={20} />
+            <span>Back to Sprint Planning</span>
           </button>
         </div>
+
       </div>
 
       {/* Main Meeting Area */}
