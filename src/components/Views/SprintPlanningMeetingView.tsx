@@ -699,12 +699,12 @@ const teamMembers: SprintPlanningMember[] = [
                     {/* Jira-style table header */}
                     <div className="bg-gray-50 border-b border-gray-200">
                       <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 uppercase tracking-wide h-8">
-                        <div className="col-span-1">KEY</div>
-                        <div className="col-span-2">SUMMARY</div>
-                        <div className="col-span-1">TYPE</div>
-                        <div className="col-span-1">STORY POINTS</div>
-                        <div className="col-span-1">PRIORITY</div>
-                        <div className="col-span-1">STATUS</div>
+                        <div className="col-span-1 font-bold">KEY</div>
+                        <div className="col-span-2 font-bold">SUMMARY</div>
+                        <div className="col-span-1 font-bold">TYPE</div>
+                        <div className="col-span-1 font-bold">STORY POINTS</div>
+                        <div className="col-span-1 font-bold">PRIORITY</div>
+                        <div className="col-span-1 font-bold">STATUS</div>
                             </div>
                           </div>
                       
@@ -789,12 +789,12 @@ const teamMembers: SprintPlanningMember[] = [
                   {/* Jira-style table header */}
                   <div className="bg-gray-50 border-b border-gray-200">
                     <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 uppercase tracking-wide h-8">
-                      <div className="col-span-1">KEY</div>
-                      <div className="col-span-2">SUMMARY</div>
-                      <div className="col-span-1">TYPE</div>
-                      <div className="col-span-1">STORY POINTS</div>
-                      <div className="col-span-1">PRIORITY</div>
-                      <div className="col-span-1">STATUS</div>
+                      <div className="col-span-1 font-bold">KEY</div>
+                      <div className="col-span-2 font-bold">SUMMARY</div>
+                      <div className="col-span-1 font-bold">TYPE</div>
+                      <div className="col-span-1 font-bold">STORY POINTS</div>
+                      <div className="col-span-1 font-bold">PRIORITY</div>
+                      <div className="col-span-1 font-bold">STATUS</div>
                         </div>
                       </div>
                   
