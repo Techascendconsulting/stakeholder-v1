@@ -31,7 +31,8 @@ interface SprintPlanningTrial {
 }
 
 export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
-  console.log('🎯 SprintPlanningSim component rendered');
+  console.log('🎯 SprintPlanningSim component rendered - DEBUG VERSION 2.0');
+  console.log('🔧 Layout fixes applied:', new Date().toISOString());
   const { setCurrentView } = useApp();
   
   const [trials, setTrials] = useState<SprintPlanningTrial[]>([
@@ -306,7 +307,7 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div>
-                  <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">🎯 Sprint Planning Practice - FIXED</h1>
+                  <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">🎯 Sprint Planning Practice - DEBUG 2.0</h1>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Learn how teams commit to work for the sprint using prioritised backlog items</p>
                 </div>
               </div>
@@ -327,6 +328,11 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* DEBUG BANNER */}
+          <div className="bg-red-500 text-white p-4 rounded-lg mb-4 text-center">
+            <strong>DEBUG MODE:</strong> Layout fixes applied at {new Date().toLocaleTimeString()}
+          </div>
+          
           {/* Progress Overview */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
