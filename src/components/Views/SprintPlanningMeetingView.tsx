@@ -176,6 +176,7 @@ const teamMembers: SprintPlanningMember[] = [
   const [isMeetingRunning, setIsMeetingRunning] = useState(false);
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
   const [isMeetingPaused, setIsMeetingPaused] = useState(false);
+  const [currentlyDiscussing, setCurrentlyDiscussing] = useState<string | null>(null);
   
   // Refs for meeting control
   const meetingCancelledRef = useRef(false);
@@ -190,15 +191,15 @@ const teamMembers: SprintPlanningMember[] = [
     { id: 'lisa-capacity', speaker: 'Lisa', text: "Yes, that's about right. I think we can take 2 medium stories and one larger one if we slice it properly.", dragAction: null },
     { id: 'tom-capacity', speaker: 'Tom', text: "From QA, I can handle the full regression and story testing, but if we take on too much edge-case work, it may spill over.", dragAction: null },
     { id: 'sarah-transition', speaker: 'Sarah', text: "Alright, let's look at the first item together.", dragAction: 'move-maintenance-to-discussing' },
-    { id: 'victor-attachments', speaker: 'Victor', text: "The first item is Tenant can upload attachments to support maintenance requests. The user story: As a tenant, I want to upload a photo or document related to my maintenance issue, so that the housing team has enough context to resolve the problem efficiently. It's already refined with file size and type rules.", dragAction: null },
+    { id: 'victor-attachments', speaker: 'Victor', text: "The first item is Tenant can upload attachments to support maintenance requests. The user story: As a tenant, I want to upload a photo or document related to my maintenance issue, so that the housing team has enough context to resolve the problem efficiently. It's already refined with file size and type rules.", dragAction: 'open-maintenance-story' },
     { id: 'srikanth-attachments', speaker: 'Srikanth', text: "From dev, we can reuse our file upload component. Backend will go into S3, so this is straightforward.", dragAction: null },
     { id: 'tom-attachments', speaker: 'Tom', text: "For QA, I'll cover oversized files, wrong formats, and multiple uploads. Should fit fine.", dragAction: null },
     { id: 'sarah-attachments', speaker: 'Sarah', text: "Great. Sounds like we're aligned. Let's commit this story to the sprint.", dragAction: 'move-maintenance-to-sprint' },
-    { id: 'victor-password', speaker: 'Victor', text: "Next is Password Reset Confirmation Email. User story: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot suspicious activity. This was sized at 2 points.", dragAction: 'move-password-to-discussing' },
+    { id: 'victor-password', speaker: 'Victor', text: "Next is Password Reset Confirmation Email. User story: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot suspicious activity. This was sized at 2 points.", dragAction: 'open-password-story' },
     { id: 'lisa-password', speaker: 'Lisa', text: "Very small effort. We just add a template to our existing email service.", dragAction: null },
     { id: 'tom-password', speaker: 'Tom', text: "Low test effort too. I just need to check subject, body, no password leakage, and logging.", dragAction: null },
     { id: 'sarah-password', speaker: 'Sarah', text: "Excellent. Let's move this into the sprint backlog as well.", dragAction: 'move-password-to-sprint' },
-    { id: 'victor-idupload', speaker: 'Victor', text: "The last one is ID Upload Verification. The user story: As a customer, I want to upload my ID online so that I can complete my account verification. This is more advanced — it involves fraud detection and business rules.", dragAction: 'move-idupload-to-discussing' },
+    { id: 'victor-idupload', speaker: 'Victor', text: "The last one is ID Upload Verification. The user story: As a customer, I want to upload my ID online so that I can complete my account verification. This is more advanced — it involves fraud detection and business rules.", dragAction: 'open-idupload-story' },
     { id: 'srikanth-idupload', speaker: 'Srikanth', text: "This could be too big for one sprint. Fraud checks and integrations are complex implementations for the sprint considering capacity and testing", dragAction: null },
     { id: 'tom-idupload', speaker: 'Tom', text: "True, Testing all fraud scenarios in one sprint isn't realistic. We risk rolling over.", dragAction: null },
     { id: 'sarah-slice', speaker: 'Sarah', text: "Good point. Let's slice this. Maybe take only the basic upload form this sprint, and defer fraud detection rules.", dragAction: 'slice-idupload' },
@@ -331,17 +332,33 @@ const teamMembers: SprintPlanningMember[] = [
     if (!dragAction) return;
 
     switch (dragAction) {
+      case 'open-maintenance-story':
+        // Open Maintenance Request Attachments story
+        setCurrentlyDiscussing('STORY-1001');
+        console.log('🎯 Drag action: Opened Maintenance Attachments story');
+        break;
+      case 'open-password-story':
+        // Open Password Reset story
+        setCurrentlyDiscussing('STORY-1002');
+        console.log('🎯 Drag action: Opened Password Reset story');
+        break;
+      case 'open-idupload-story':
+        // Open ID Upload story
+        setCurrentlyDiscussing('STORY-1003');
+        console.log('🎯 Drag action: Opened ID Upload story');
+        break;
       case 'move-maintenance-to-discussing':
         // Move Maintenance Request Attachments to currently discussing (visual highlight)
         console.log('🎯 Drag action: Move Maintenance Attachments to discussing');
         break;
       case 'move-maintenance-to-sprint':
-        // Move Maintenance Request Attachments to Sprint Backlog
+        // Move Maintenance Request Attachments to Sprint Backlog and close story
         const maintenanceStory = productBacklog.find(story => story.ticketNumber === 'STORY-1001');
         if (maintenanceStory) {
           setProductBacklog(prev => prev.filter(story => story.id !== maintenanceStory.id));
           setSprintBacklog(prev => [...prev, { ...maintenanceStory, status: 'To Do' }]);
-          console.log('🎯 Drag action: Moved Maintenance Attachments to Sprint Backlog');
+          setCurrentlyDiscussing(null); // Close the story
+          console.log('🎯 Drag action: Moved Maintenance Attachments to Sprint Backlog and closed story');
         }
         break;
       case 'move-password-to-discussing':
@@ -349,12 +366,13 @@ const teamMembers: SprintPlanningMember[] = [
         console.log('🎯 Drag action: Move Password Reset to discussing');
         break;
       case 'move-password-to-sprint':
-        // Move Password Reset to Sprint Backlog
+        // Move Password Reset to Sprint Backlog and close story
         const passwordStory = productBacklog.find(story => story.ticketNumber === 'STORY-1002');
         if (passwordStory) {
           setProductBacklog(prev => prev.filter(story => story.id !== passwordStory.id));
           setSprintBacklog(prev => [...prev, { ...passwordStory, status: 'To Do' }]);
-          console.log('🎯 Drag action: Moved Password Reset to Sprint Backlog');
+          setCurrentlyDiscussing(null); // Close the story
+          console.log('🎯 Drag action: Moved Password Reset to Sprint Backlog and closed story');
         }
         break;
       case 'move-idupload-to-discussing':
@@ -366,12 +384,13 @@ const teamMembers: SprintPlanningMember[] = [
         console.log('🎯 Drag action: Slicing ID Upload story');
         break;
       case 'move-idupload-slice-to-sprint':
-        // Move sliced ID Upload to Sprint Backlog
+        // Move sliced ID Upload to Sprint Backlog and close story
         const idUploadStory = productBacklog.find(story => story.ticketNumber === 'STORY-1003');
         if (idUploadStory) {
           setProductBacklog(prev => prev.filter(story => story.id !== idUploadStory.id));
           setSprintBacklog(prev => [...prev, { ...idUploadStory, status: 'To Do', title: 'ID Upload Verification (Basic Form)' }]);
-          console.log('🎯 Drag action: Moved sliced ID Upload to Sprint Backlog');
+          setCurrentlyDiscussing(null); // Close the story
+          console.log('🎯 Drag action: Moved sliced ID Upload to Sprint Backlog and closed story');
         }
         break;
     }
@@ -527,6 +546,7 @@ const teamMembers: SprintPlanningMember[] = [
     setCurrentSpeaking(null);
     setMeetingTranscript([]);
     setCurrentSegmentIndex(0);
+    setCurrentlyDiscussing(null);
     
     onMeetingEnd({
       messages: [],
@@ -542,6 +562,7 @@ const teamMembers: SprintPlanningMember[] = [
     setIsMeetingRunning(false);
     setIsMeetingPaused(false);
     setCurrentSpeaking(null);
+    setCurrentlyDiscussing(null);
     
     onClose();
   };
@@ -755,7 +776,11 @@ const teamMembers: SprintPlanningMember[] = [
                         key={story.id}
                                    draggable={meetingStarted}
                         onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                        className={`grid grid-cols-7 gap-4 px-4 py-1 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 h-10 ${
+                        className={`grid grid-cols-7 gap-4 px-4 py-1 transition-colors border-l-4 h-10 ${
+                          currentlyDiscussing === story.ticketNumber 
+                            ? 'border-l-green-500 bg-green-50' 
+                            : 'border-l-transparent hover:border-l-blue-500'
+                        } ${
                           meetingStarted ? 'cursor-move hover:bg-blue-50' : 'cursor-pointer hover:bg-gray-50'
                         }`}
                       >
