@@ -359,14 +359,9 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
             {/* Sprint Backlog Section - Top - Jira Style */}
             <div className="mb-6">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 px-4 py-3 border-b border-emerald-200">
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-emerald-800">Sprint Backlog</h3>
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm text-emerald-600">
-                        {sprintBacklog.length} stories committed
-                      </span>
-                    </div>
+                    <h3 className="font-semibold text-gray-800">Sprint Backlog ({sprintBacklog.length} stories)</h3>
                   </div>
                 </div>
                 
@@ -378,9 +373,19 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                   {sprintBacklog.length === 0 ? (
                     <div className="flex items-center justify-center h-32 text-gray-500">
                       <div className="text-center">
-                        <div className="text-4xl mb-2">🎯</div>
+                        <div className="grid grid-cols-3 gap-1 mb-4 w-8 h-8 mx-auto">
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded"></div>
+                        </div>
                         <p className="text-sm">
-                          {meetingStarted ? "Drag stories from the backlog below to commit them to this sprint" : "Ready for sprint planning"}
+                          Drag stories from Product Backlog to start building your sprint
                         </p>
                       </div>
                     </div>
@@ -388,15 +393,13 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                     <div className="overflow-hidden">
                       {/* Jira-style table header */}
                       <div className="bg-gray-50 border-b border-gray-200">
-                        <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
-                          <div className="col-span-1">Type</div>
-                          <div className="col-span-1">Key</div>
-                          <div className="col-span-4">Summary</div>
-                          <div className="col-span-1">Priority</div>
-                          <div className="col-span-1">Story Points</div>
-                          <div className="col-span-1">Status</div>
-                          <div className="col-span-1">Assignee</div>
-                          <div className="col-span-2">Sprint</div>
+                        <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                          <div className="col-span-1">KEY</div>
+                          <div className="col-span-2">SUMMARY</div>
+                          <div className="col-span-1">TYPE</div>
+                          <div className="col-span-1">PRIORITY</div>
+                          <div className="col-span-1">STORY POINTS</div>
+                          <div className="col-span-1">STATUS</div>
                         </div>
                       </div>
                       
@@ -407,22 +410,15 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                             key={story.id}
                             draggable={meetingStarted}
                             onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                            className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-blue-50 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500"
+                            className="grid grid-cols-6 gap-4 px-4 py-3 hover:bg-blue-50 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500"
                           >
-                            {/* Type */}
-                            <div className="col-span-1 flex items-center">
-                              <div className="w-4 h-4 bg-blue-100 rounded flex items-center justify-center">
-                                <span className="text-xs text-blue-600 font-bold">S</span>
-                              </div>
-                            </div>
-                            
                             {/* Key */}
                             <div className="col-span-1 flex items-center">
                               <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
                             </div>
                             
                             {/* Summary */}
-                            <div className="col-span-4 flex items-center">
+                            <div className="col-span-2 flex items-center">
                               <div>
                                 <div className="text-sm font-medium text-gray-900 line-clamp-1">{story.title}</div>
                                 {story.description && (
@@ -431,45 +427,40 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                               </div>
                             </div>
                             
+                            {/* Type */}
+                            <div className="col-span-1 flex items-center">
+                              <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                Story
+                              </span>
+                            </div>
+                            
                             {/* Priority */}
                             <div className="col-span-1 flex items-center">
-                              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                story.priority === 'High' ? 'bg-red-100 text-red-800' :
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
                                 story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                                 'bg-green-100 text-green-800'
                               }`}>
                                 {story.priority}
-                              </div>
+                              </span>
                             </div>
                             
                             {/* Story Points */}
                             <div className="col-span-1 flex items-center">
                               {story.storyPoints ? (
-                                <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                <span className="text-sm font-medium text-gray-900">
                                   {story.storyPoints}
                                 </span>
                               ) : (
-                                <span className="text-gray-400 text-xs">-</span>
+                                <span className="text-gray-400 text-sm">-</span>
                               )}
                             </div>
                             
                             {/* Status */}
                             <div className="col-span-1 flex items-center">
-                              <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                              <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
                                 To Do
                               </span>
-                            </div>
-                            
-                            {/* Assignee */}
-                            <div className="col-span-1 flex items-center">
-                              <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                                <span className="text-xs text-gray-600">-</span>
-                              </div>
-                            </div>
-                            
-                            {/* Sprint */}
-                            <div className="col-span-2 flex items-center">
-                              <span className="text-xs text-gray-600">Sprint 1</span>
                             </div>
                           </div>
                         ))}
@@ -483,22 +474,20 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
             {/* Product Backlog Section - Bottom - Jira Style */}
             <div className="flex-1">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-blue-200">
-                  <h3 className="font-semibold text-blue-800">Product Backlog</h3>
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-800">Product Backlog ({productBacklog.length} stories)</h3>
                 </div>
                 
                 <div className="overflow-hidden">
                   {/* Jira-style table header */}
                   <div className="bg-gray-50 border-b border-gray-200">
-                    <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
-                      <div className="col-span-1">Type</div>
-                      <div className="col-span-1">Key</div>
-                      <div className="col-span-4">Summary</div>
-                      <div className="col-span-1">Priority</div>
-                      <div className="col-span-1">Story Points</div>
-                      <div className="col-span-1">Status</div>
-                      <div className="col-span-1">Assignee</div>
-                      <div className="col-span-2">Sprint</div>
+                    <div className="grid grid-cols-6 gap-4 px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                      <div className="col-span-1">KEY</div>
+                      <div className="col-span-2">SUMMARY</div>
+                      <div className="col-span-1">TYPE</div>
+                      <div className="col-span-1">PRIORITY</div>
+                      <div className="col-span-1">STORY POINTS</div>
+                      <div className="col-span-1">STATUS</div>
                     </div>
                   </div>
                   
@@ -509,24 +498,26 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                         key={story.id}
                         draggable={meetingStarted}
                         onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                        className={`grid grid-cols-12 gap-4 px-4 py-3 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 ${
+                        className={`grid grid-cols-6 gap-4 px-4 py-3 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 ${
                           meetingStarted ? 'cursor-move hover:bg-blue-50' : 'cursor-pointer hover:bg-gray-50'
                         }`}
                       >
-                        {/* Type */}
+                        {/* Key */}
                         <div className="col-span-1 flex items-center">
-                          <div className="w-4 h-4 bg-blue-100 rounded flex items-center justify-center">
-                            <span className="text-xs text-blue-600 font-bold">S</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 flex items-center justify-center text-gray-400">
+                              <div className="flex flex-col gap-0.5">
+                                <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                                <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                                <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                              </div>
+                            </div>
+                            <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
                           </div>
                         </div>
                         
-                        {/* Key */}
-                        <div className="col-span-1 flex items-center">
-                          <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
-                        </div>
-                        
                         {/* Summary */}
-                        <div className="col-span-4 flex items-center">
+                        <div className="col-span-2 flex items-center">
                           <div>
                             <div className="text-sm font-medium text-gray-900 line-clamp-1">{story.title}</div>
                             {story.description && (
@@ -535,25 +526,32 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           </div>
                         </div>
                         
+                        {/* Type */}
+                        <div className="col-span-1 flex items-center">
+                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                            Story
+                          </span>
+                        </div>
+                        
                         {/* Priority */}
                         <div className="col-span-1 flex items-center">
-                          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            story.priority === 'High' ? 'bg-red-100 text-red-800' :
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
                             story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-green-100 text-green-800'
                           }`}>
                             {story.priority}
-                          </div>
+                          </span>
                         </div>
                         
                         {/* Story Points */}
                         <div className="col-span-1 flex items-center">
                           {story.storyPoints ? (
-                            <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                            <span className="text-sm font-medium text-gray-900">
                               {story.storyPoints}
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-xs">-</span>
+                            <span className="text-gray-400 text-sm">-</span>
                           )}
                         </div>
                         
@@ -562,18 +560,6 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(story.status)}`}>
                             {getStatusEmoji(story.status)} {story.status}
                           </span>
-                        </div>
-                        
-                        {/* Assignee */}
-                        <div className="col-span-1 flex items-center">
-                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                            <span className="text-xs text-gray-600">-</span>
-                          </div>
-                        </div>
-                        
-                        {/* Sprint */}
-                        <div className="col-span-2 flex items-center">
-                          <span className="text-xs text-gray-400">Backlog</span>
                         </div>
                       </div>
                     ))}
