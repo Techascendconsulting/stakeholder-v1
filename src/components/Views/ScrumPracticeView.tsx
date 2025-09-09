@@ -18,7 +18,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
   },
   {
     title: "Backlog Refinement",
-    description: "Practice shaping vague ideas into actionable user stories with developers and stakeholders.",
+    description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
     icon: Users,
     artwork: "🔍",
     color: "from-purple-500 to-pink-500",
