@@ -9,7 +9,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Requirement Documentation",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
     icon: FileText,
-    artwork: "📝",
+    artwork: "📋✨",
     color: "from-blue-500 to-cyan-500",
     onClick: () => {
       setSelectedTheme("from-blue-500 to-cyan-500");
@@ -20,7 +20,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Backlog Refinement",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
     icon: Users,
-    artwork: "🔍",
+    artwork: "🔍💡",
     color: "from-purple-500 to-pink-500",
     onClick: () => {
       setSelectedTheme("from-purple-500 to-pink-500");
@@ -31,7 +31,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Sprint Planning",
     description: "Explore how teams commit to work for the sprint using prioritised backlog items.",
     icon: Calendar,
-    artwork: "🎯",
+    artwork: "🎯📅",
     color: "from-green-500 to-emerald-500",
     onClick: () => {
       setSelectedTheme("from-green-500 to-emerald-500");
@@ -43,7 +43,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Daily Scrum",
     description: "Understand how teams stay aligned and surface blockers in 15-minute daily meetings.",
     icon: Clock,
-    artwork: "⚡",
+    artwork: "☀️👥",
     color: "from-orange-500 to-red-500",
     onClick: () => {
       setSelectedTheme("from-orange-500 to-red-500");
@@ -54,7 +54,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Sprint Review",
     description: "Learn how to present working increments and gather feedback from stakeholders.",
     icon: BarChart3,
-    artwork: "📊",
+    artwork: "🎉📈",
     color: "from-indigo-500 to-blue-500",
     onClick: () => {
       setSelectedTheme("from-indigo-500 to-blue-500");
@@ -65,7 +65,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Sprint Retrospective",
     description: "Reflect on team performance and discover how to improve collaboration and delivery.",
     icon: RotateCcw,
-    artwork: "🔄",
+    artwork: "🔄💭",
     color: "from-teal-500 to-cyan-500",
     onClick: () => {
       setSelectedTheme("from-teal-500 to-cyan-500");
@@ -132,13 +132,15 @@ export const ScrumPracticeView: React.FC = () => {
       </div>
 
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 py-12">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Scrum Events a Business Analyst Should Learn to Take Part In
+            <h1 className="text-4xl font-bold text-blue-900 dark:text-blue-100 mb-4 flex items-center justify-center space-x-3">
+              <span>🎪</span>
+              <span>Scrum Events a Business Analyst Should Learn to Take Part In</span>
+              <span>🎪</span>
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg text-blue-700 dark:text-blue-200 max-w-3xl mx-auto">
               Master the essential Scrum ceremonies and practices that every Business Analyst needs to know. 
               Practice in realistic scenarios with interactive simulations and hands-on exercises.
             </p>
@@ -151,10 +153,12 @@ export const ScrumPracticeView: React.FC = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {sections.map((section, index) => (
             <div key={index} className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-center">
-              {/* Centered Icon */}
+              {/* Centered Cartoon Icon */}
               <div className="mb-4 flex justify-center">
-                <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${section.color} flex items-center justify-center shadow-md`}>
-                  <section.icon className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center shadow-lg border-4 border-blue-200 dark:border-blue-700">
+                  <div className="text-4xl">
+                    {section.artwork}
+                  </div>
                 </div>
               </div>
               
