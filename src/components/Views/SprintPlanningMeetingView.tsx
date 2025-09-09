@@ -485,7 +485,16 @@ const teamMembers: SprintPlanningMember[] = [
 
   // End meeting
   const handleEndMeeting = () => {
-      onMeetingEnd({
+    // Stop all audio and reset meeting state
+    stopCurrentAudio();
+    meetingCancelledRef.current = true;
+    setIsMeetingActive(false);
+    setIsMeetingRunning(false);
+    setCurrentSpeaking(null);
+    setMeetingTranscript([]);
+    setCurrentSegmentIndex(0);
+    
+    onMeetingEnd({
       messages: [],
       meetingDuration: 0
     });
@@ -493,6 +502,13 @@ const teamMembers: SprintPlanningMember[] = [
 
   // Close meeting
   const handleCloseMeeting = () => {
+    // Stop all audio and reset meeting state
+    stopCurrentAudio();
+    meetingCancelledRef.current = true;
+    setIsMeetingActive(false);
+    setIsMeetingRunning(false);
+    setCurrentSpeaking(null);
+    
     onClose();
   };
 
