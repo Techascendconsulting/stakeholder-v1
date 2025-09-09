@@ -153,120 +153,128 @@ Acceptance Criteria:
             {/* Story Quality Panel */}
             {results.storyQuality && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                    <CheckCircle className="w-5 h-5 mr-2" />
-                    Story Quality Check
-                  </h2>
-                  <div className="text-2xl font-bold text-purple-600">
-                    {getQualityScore(results.storyQuality)}%
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <QualityIcon passed={results.storyQuality.roleClarity} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Clear role: "As a [user type]"
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <QualityIcon passed={results.storyQuality.triggerAction} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Clear action: "I want to [action]"
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <QualityIcon passed={results.storyQuality.outcomeResult} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Clear outcome: "so that [benefit]"
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <QualityIcon passed={results.storyQuality.acFormat} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Acceptance criteria format
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <QualityIcon passed={results.storyQuality.notTooTechnical} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Not too technical
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <QualityIcon passed={results.storyQuality.businessRulesPresent} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Business rules included
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <QualityIcon passed={results.storyQuality.scopeAppropriate} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Appropriate scope
-                    </span>
-                  </div>
-                </div>
+                <h3 className="text-lg font-semibold mb-3 text-green-500 dark:text-green-400">
+                  🟩 User Story Quality Check
+                </h3>
+                <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <li className="flex items-center space-x-2">
+                    <span>{results.storyQuality.roleClarity ? '✅' : '❌'}</span>
+                    <span>Role is clear</span>
+                    <span className="text-gray-500 dark:text-gray-400">– e.g., "As a tenant"</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span>{results.storyQuality.triggerAction ? '✅' : '❌'}</span>
+                    <span>Action is clear</span>
+                    <span className="text-gray-500 dark:text-gray-400">– e.g., "upload a photo"</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span>{results.storyQuality.outcomeResult ? '✅' : '❌'}</span>
+                    <span>Outcome is clear</span>
+                    <span className="text-gray-500 dark:text-gray-400">– e.g., "so that the housing team…"</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span>{results.storyQuality.acFormat ? '✅' : '❌'}</span>
+                    <span>Acceptance Criteria is present</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span>{results.storyQuality.businessRulesPresent ? '✅' : '⚠️'}</span>
+                    <span>Business rule {results.storyQuality.businessRulesPresent ? 'is explicit' : 'could be more explicit'}</span>
+                    <span className="text-gray-500 dark:text-gray-400">(e.g., allowed file types)</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span>{results.acCoverage?.feedback ? '✅' : '❌'}</span>
+                    <span>{results.acCoverage?.feedback ? 'Feedback is defined' : 'No feedback defined'}</span>
+                    <span className="text-gray-500 dark:text-gray-400">(e.g., what the user sees after upload)</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span>{results.storyQuality.scopeAppropriate ? '✅' : '❌'}</span>
+                    <span>Scope is manageable</span>
+                    <span className="text-gray-500 dark:text-gray-400">– only one function is described</span>
+                  </li>
+                </ul>
               </div>
             )}
 
             {/* AC Coverage Panel */}
             {results.acCoverage && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
-                    <AlertTriangle className="w-5 h-5 mr-2" />
-                    AC Completeness Scan
-                  </h2>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {getCoverageScore(results.acCoverage)}%
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <CoverageIcon passed={results.acCoverage.happyPath} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Happy Path
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CoverageIcon passed={results.acCoverage.inputTrigger} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Input/Trigger
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CoverageIcon passed={results.acCoverage.errors} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Error Handling
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CoverageIcon passed={results.acCoverage.feedback} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      User Feedback
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CoverageIcon passed={results.acCoverage.nonFunctionals} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Non-Functional Requirements
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CoverageIcon passed={results.acCoverage.businessRules} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Business Rules
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <CoverageIcon passed={results.acCoverage.scope} />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Scope
-                    </span>
-                  </div>
-                </div>
+                <h3 className="text-lg font-semibold mb-3 text-yellow-500 dark:text-yellow-400">
+                  🟨 Acceptance Criteria Coverage
+                </h3>
+                <table className="w-full table-auto text-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="text-left px-3 py-2 border border-gray-200 dark:border-gray-600">Area</th>
+                      <th className="text-left px-3 py-2 border border-gray-200 dark:border-gray-600">Status</th>
+                      <th className="text-left px-3 py-2 border border-gray-200 dark:border-gray-600">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Happy Path</td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
+                        {results.acCoverage.happyPath ? '✅' : '❌'}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        {results.acCoverage.happyPath ? 'Click to upload file is covered' : 'Missing success scenario'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Input/Trigger</td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
+                        {results.acCoverage.inputTrigger ? '✅' : '⚠️'}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        {results.acCoverage.inputTrigger ? 'User action is defined' : 'Present but not deeply defined'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Business Rules</td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
+                        {results.acCoverage.businessRules ? '✅' : '⚠️'}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        {results.acCoverage.businessRules ? 'Rules are explicit' : 'File type implied, not validated'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Feedback</td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
+                        {results.acCoverage.feedback ? '✅' : '❌'}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        {results.acCoverage.feedback ? 'User feedback is defined' : 'No success or error feedback mentioned'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Errors</td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
+                        {results.acCoverage.errors ? '✅' : '❌'}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        {results.acCoverage.errors ? 'Error handling is covered' : 'Missing invalid file/oversize cases'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Non-functionals</td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
+                        {results.acCoverage.nonFunctionals ? '✅' : '❌'}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        {results.acCoverage.nonFunctionals ? 'Performance requirements defined' : 'No mention of performance/speed'}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">Separate Story</td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600">
+                        {results.acCoverage.scope ? '✅' : '❌'}
+                      </td>
+                      <td className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                        {results.acCoverage.scope ? 'Scoped correctly' : 'May need to be split into multiple stories'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             )}
 
@@ -313,7 +321,7 @@ Acceptance Criteria:
                 </div>
                 
                 <button className="mt-4 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200">
-                  Generate Acceptance Criteria
+                  💡 Suggest Missing ACs
                 </button>
               </div>
             )}
