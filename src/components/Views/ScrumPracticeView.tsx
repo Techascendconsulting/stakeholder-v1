@@ -32,9 +32,9 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     description: "Explore how teams commit to work for the sprint using prioritised backlog items.",
     icon: Calendar,
     artwork: "🎯📅",
-    color: "from-green-500 to-emerald-500",
+    color: "from-pink-500 to-purple-500",
     onClick: () => {
-      setSelectedTheme("from-green-500 to-emerald-500");
+      setSelectedTheme("from-pink-500 to-purple-500");
       console.log('🎯 Sprint Planning button clicked, setting activeView to sprint-planning');
       handleSetActiveView('sprint-planning');
     }
