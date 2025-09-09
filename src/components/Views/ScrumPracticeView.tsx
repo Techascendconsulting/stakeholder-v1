@@ -132,15 +132,15 @@ export const ScrumPracticeView: React.FC = () => {
       </div>
 
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 py-12">
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-blue-900 dark:text-blue-100 mb-4 flex items-center justify-center space-x-3">
+            <h1 className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-4 flex items-center justify-center space-x-3">
               <span>🎪</span>
               <span>Scrum Events a Business Analyst Should Learn to Take Part In</span>
               <span>🎪</span>
             </h1>
-            <p className="text-lg text-blue-700 dark:text-blue-200 max-w-3xl mx-auto">
+            <p className="text-lg text-purple-700 dark:text-purple-200 max-w-3xl mx-auto">
               Master the essential Scrum ceremonies and practices that every Business Analyst needs to know. 
               Practice in realistic scenarios with interactive simulations and hands-on exercises.
             </p>
@@ -155,7 +155,7 @@ export const ScrumPracticeView: React.FC = () => {
             <div key={index} className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-center">
               {/* Centered Cartoon Icon */}
               <div className="mb-4 flex justify-center">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center shadow-lg border-4 border-blue-200 dark:border-blue-700">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 flex items-center justify-center shadow-lg border-4 border-purple-200 dark:border-purple-700">
                   <div className="text-4xl">
                     {section.artwork}
                   </div>
