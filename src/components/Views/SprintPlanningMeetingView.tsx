@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Play, PhoneOff, GripVertical } from 'lucide-react';
-import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Play, PhoneOff, GripVertical, FileText, ChevronDown, X } from 'lucide-react';
+import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
+import { playBrowserTTS } from '../../lib/browserTTS';
+import { playPreGeneratedAudio, findPreGeneratedAudio } from '../../services/preGeneratedAudioService';
 
 // Custom interface for sprint planning meeting messages
+interface MeetingMessage {
+  id: string;
+  speaker: string;
+  content: string;
+  timestamp: string;
+  role: 'Scrum Master' | 'Senior Developer' | 'Developer' | 'QA Tester' | 'Business Analyst' | 'user';
+  stakeholderId: string;
+}
 
 // AgileTicket interface
 interface AgileTicket {
@@ -47,21 +57,20 @@ interface SprintPlanningMeetingViewProps {
   onClose: () => void;
 }
 
+
+
 // Helper functions
 const getInitials = (name: string): string => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
 
-// Participant Card Component
 const ParticipantCard: React.FC<{
   participant: { name: string; avatarUrl?: string };
   isCurrentSpeaker: boolean;
   isUser: boolean;
 }> = ({ participant, isCurrentSpeaker, isUser }) => {
-  // Mock user for sprint planning simulation
-  const user = { full_name: 'You', id: 'user', email: 'user@example.com' };
-  
+
   return (
     <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-40">
       {/* Animated Speaking Ring */}
@@ -74,20 +83,12 @@ const ParticipantCard: React.FC<{
       {/* Video/Photo Content */}
       {isUser ? (
         <div className="w-full h-full flex items-center justify-center relative">
-          {getUserProfilePhoto(user?.id || '') ? (
-            <img
-              src={getUserProfilePhoto(user?.id || '') || ''}
-              alt={getUserDisplayName(user?.id || '', user?.email)}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
-                {getInitials(participant.name)}
-              </div>
-              <span className="text-white text-sm font-medium">{participant.name}</span>
+          <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
+            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
+              {getInitials(participant.name)}
             </div>
-          )}
+            <span className="text-white text-sm font-medium">{participant.name}</span>
+          </div>
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center relative">
@@ -116,30 +117,28 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
   onMeetingEnd,
   onClose
 }) => {
-  // Mock user for sprint planning simulation
-  const user = { full_name: 'You', id: 'user', email: 'user@example.com' };
   
   // Team members for sprint planning
-  const teamMembers: SprintPlanningMember[] = [
-    {
-      name: 'Sarah',
-      role: 'Scrum Master',
-      avatar: '👩‍💼',
+const teamMembers: SprintPlanningMember[] = [
+  {
+    name: 'Sarah',
+    role: 'Scrum Master',
+    avatar: '👩‍💼',
       isAI: true,
       voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
       avatarUrl: '/images/avatars/sarah-avatar.png'
-    },
-    {
+  },
+  {
       name: 'Victor',
-      role: 'Senior Developer',
-      avatar: '👨‍💻',
+    role: 'Senior Developer',
+    avatar: '👨‍💻',
       isAI: true,
       voiceId: 'xeBpkkuzgxa0IwKt7NTP',
       avatarUrl: '/images/avatars/victor-avatar.png'
-    },
-    {
+  },
+  {
       name: 'Srikanth',
-      role: 'Developer',
+    role: 'Developer',
       avatar: '👨‍💻',
       isAI: true,
       voiceId: 'wD6AxxDQzhi2E9kMbk9t',
@@ -152,11 +151,11 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
       isAI: true,
       voiceId: '8N2ng9i2uiUWqstgmWlH',
       avatarUrl: '/images/avatars/lisa-avatar.png'
-    },
-    {
-      name: 'Tom',
-      role: 'QA Tester',
-      avatar: '👨‍🔬',
+  },
+  {
+    name: 'Tom',
+    role: 'QA Tester',
+    avatar: '👨‍🔬',
       isAI: true,
       voiceId: 'qqBeXuJvzxtQfbsW2f40',
       avatarUrl: '/images/avatars/tom-avatar.png'
@@ -167,6 +166,48 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
   const [meetingStarted, setMeetingStarted] = useState(false);
   const [productBacklog, setProductBacklog] = useState<AgileTicket[]>([]);
   const [sprintBacklog, setSprintBacklog] = useState<AgileTicket[]>([]);
+
+  // Audio and meeting state management
+  const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [isMeetingActive] = useState(true);
+  const [meetingTranscript, setMeetingTranscript] = useState<MeetingMessage[]>([]);
+  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+  const [isMeetingRunning, setIsMeetingRunning] = useState(false);
+  const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
+  
+  // Refs for meeting control
+  const meetingCancelledRef = useRef(false);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
+
+  // Sprint Planning audio segments with drag actions
+  const sprintPlanningSegments = [
+    { id: 'sarah-opening', speaker: 'Sarah', text: "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?", dragAction: null },
+    { id: 'victor-goal', speaker: 'Victor', text: "Thanks Sarah. The Sprint Goal I'd like to propose is: Strengthen account security and verification—send confirmation after password resets and deliver the basic ID upload step. We have three refined backlog items on top: the tenant maintenance attachments, the password reset confirmation email, and the ID upload verification feature.", dragAction: null },
+    { id: 'sarah-capacity', speaker: 'Sarah', text: "Great. Before we start pulling stories, let's quickly confirm capacity. Srikanth, how's the dev side looking this sprint?", dragAction: null },
+    { id: 'srikanth-capacity', speaker: 'Srikanth', text: "On the dev side, we have our full team except for Lisa taking a day off. That means about 80% of our usual capacity. I'd say around 20 story points.", dragAction: null },
+    { id: 'lisa-capacity', speaker: 'Lisa', text: "Yes, that's about right. I think we can take 2 medium stories and one larger one if we slice it properly.", dragAction: null },
+    { id: 'tom-capacity', speaker: 'Tom', text: "From QA, I can handle the full regression and story testing, but if we take on too much edge-case work, it may spill over.", dragAction: null },
+    { id: 'sarah-transition', speaker: 'Sarah', text: "Alright, let's look at the first item together.", dragAction: 'move-maintenance-to-discussing' },
+    { id: 'victor-attachments', speaker: 'Victor', text: "The first item is Tenant can upload attachments to support maintenance requests. The user story: As a tenant, I want to upload a photo or document related to my maintenance issue, so that the housing team has enough context to resolve the problem efficiently. It's already refined with file size and type rules.", dragAction: null },
+    { id: 'srikanth-attachments', speaker: 'Srikanth', text: "From dev, we can reuse our file upload component. Backend will go into S3, so this is straightforward.", dragAction: null },
+    { id: 'tom-attachments', speaker: 'Tom', text: "For QA, I'll cover oversized files, wrong formats, and multiple uploads. Should fit fine.", dragAction: null },
+    { id: 'sarah-attachments', speaker: 'Sarah', text: "Great. Sounds like we're aligned. Let's commit this story to the sprint.", dragAction: 'move-maintenance-to-sprint' },
+    { id: 'victor-password', speaker: 'Victor', text: "Next is Password Reset Confirmation Email. User story: As a customer, I want to receive a confirmation email after resetting my password so that I know my account has been updated successfully and can spot suspicious activity. This was sized at 2 points.", dragAction: 'move-password-to-discussing' },
+    { id: 'lisa-password', speaker: 'Lisa', text: "Very small effort. We just add a template to our existing email service.", dragAction: null },
+    { id: 'tom-password', speaker: 'Tom', text: "Low test effort too. I just need to check subject, body, no password leakage, and logging.", dragAction: null },
+    { id: 'sarah-password', speaker: 'Sarah', text: "Excellent. Let's move this into the sprint backlog as well.", dragAction: 'move-password-to-sprint' },
+    { id: 'victor-idupload', speaker: 'Victor', text: "The last one is ID Upload Verification. The user story: As a customer, I want to upload my ID online so that I can complete my account verification. This is more advanced — it involves fraud detection and business rules.", dragAction: 'move-idupload-to-discussing' },
+    { id: 'srikanth-idupload', speaker: 'Srikanth', text: "This could be too big for one sprint. Fraud checks and integrations are complex implementations for the sprint considering capacity and testing", dragAction: null },
+    { id: 'tom-idupload', speaker: 'Tom', text: "True, Testing all fraud scenarios in one sprint isn't realistic. We risk rolling over.", dragAction: null },
+    { id: 'sarah-slice', speaker: 'Sarah', text: "Good point. Let's slice this. Maybe take only the basic upload form this sprint, and defer fraud detection rules.", dragAction: 'slice-idupload' },
+    { id: 'victor-slice', speaker: 'Victor', text: "Yes, that makes sense. Let's commit the base ID upload capability, Sarah please go ahead and add the story to the sprint backlog, I will amend the acceptance criteri, and create a follow-up story for fraud checks.", dragAction: null },
+    { id: 'lisa-slice', speaker: 'Lisa', text: "That's much more manageable. We can do the form, validation, and storage within this sprint.", dragAction: null },
+    { id: 'sarah-idcommit', speaker: 'Sarah', text: "Perfect. We'll commit the sliced version to this sprint.", dragAction: 'move-idupload-slice-to-sprint' },
+    { id: 'sarah-recap', speaker: 'Sarah', text: "To recap: our Sprint Goal is to improve verification and account processes. We've committed three items — the attachment feature, the password reset confirmation email, and a sliced version of ID upload. Together, these fit our capacity and align with the goal.", dragAction: null },
+    { id: 'victor-close', speaker: 'Victor', text: "Thanks everyone. I'm confident this sprint will deliver real improvements for both customers and the housing team.", dragAction: null },
+    { id: 'sarah-close', speaker: 'Sarah', text: "Great collaboration. This sprint is now planned. Let's get ready to start tomorrow with confidence.", dragAction: null }
+  ];
 
 
   const getStatusColor = (status: string) => {
@@ -195,6 +236,198 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
     }
   };
 
+  // Audio playback functions
+  const stopCurrentAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setCurrentAudio(null);
+    }
+    setCurrentSpeaking(null);
+  };
+
+  const playMessageAudio = async (text: string, teamMember: SprintPlanningMember, autoPlay: boolean = true): Promise<void> => {
+    if (!autoPlay) {
+      return Promise.resolve();
+    }
+
+    try {
+      stopCurrentAudio();
+      
+      if (!isMeetingActive || meetingCancelledRef.current) {
+        console.log(`🚫 Meeting inactive or cancelled, skipping audio for ${teamMember.name}`);
+        return Promise.resolve();
+      }
+
+      setCurrentSpeaking(teamMember.name);
+
+      const voiceName = teamMember.voiceId;
+      console.log('🎵 Using voice:', voiceName, 'for team member:', teamMember.name);
+      console.log('🔧 Checking for pre-generated audio...');
+      
+      // First, try to find pre-generated audio
+      const preGeneratedAudio = findPreGeneratedAudio(teamMember.name, text);
+      if (preGeneratedAudio) {
+        console.log('✅ Using pre-generated audio:', preGeneratedAudio.id);
+        try {
+          await playPreGeneratedAudio(preGeneratedAudio.id);
+          console.log(`🚀 AUDIO DEBUG: ${teamMember.name} pre-generated audio completed`);
+          setCurrentSpeaking(null);
+          return Promise.resolve();
+        } catch (error) {
+          console.error('❌ Pre-generated audio failed, falling back to ElevenLabs:', error);
+        }
+      }
+
+      // Fallback to ElevenLabs or Browser TTS
+      let audioElement: HTMLAudioElement | null = null;
+
+      if (elevenConfigured()) {
+        try {
+          console.log(`✅ Using ElevenLabs for team member: ${teamMember.name}`);
+          const audioBlob = await synthesizeToBlob(text, { stakeholderName: teamMember.name }).catch(() => null as any);
+          if (audioBlob) {
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioElement = new Audio(audioUrl);
+          } else {
+            console.warn('❌ ElevenLabs returned null, falling back to browser TTS');
+          }
+        } catch (err) {
+          console.warn('❌ ElevenLabs failed, falling back to browser TTS:', err);
+          audioElement = await playBrowserTTS(text) as unknown as HTMLAudioElement;
+        }
+      } else {
+        console.log(`⚠️ ElevenLabs not available, using browser TTS`);
+        audioElement = await playBrowserTTS(text) as unknown as HTMLAudioElement;
+      }
+
+      if (audioElement) {
+        setCurrentAudio(audioElement);
+        
+        audioElement.onended = () => {
+          console.log(`🚀 AUDIO DEBUG: ${teamMember.name} audio completed`);
+          setCurrentSpeaking(null);
+        };
+        
+        audioElement.onerror = (error) => {
+          console.error(`❌ Audio error for ${teamMember.name}:`, error);
+          setCurrentSpeaking(null);
+        };
+        
+        await audioElement.play();
+      }
+    } catch (error) {
+      console.error(`❌ Error playing audio for ${teamMember.name}:`, error);
+      setCurrentSpeaking(null);
+    }
+  };
+
+  // Execute drag action based on segment
+  const executeDragAction = (dragAction: string | null) => {
+    if (!dragAction) return;
+
+    switch (dragAction) {
+      case 'move-maintenance-to-discussing':
+        // Move Maintenance Request Attachments to currently discussing (visual highlight)
+        console.log('🎯 Drag action: Move Maintenance Attachments to discussing');
+        break;
+      case 'move-maintenance-to-sprint':
+        // Move Maintenance Request Attachments to Sprint Backlog
+        const maintenanceStory = productBacklog.find(story => story.ticketNumber === 'STORY-1001');
+        if (maintenanceStory) {
+          setProductBacklog(prev => prev.filter(story => story.id !== maintenanceStory.id));
+          setSprintBacklog(prev => [...prev, { ...maintenanceStory, status: 'To Do' }]);
+          console.log('🎯 Drag action: Moved Maintenance Attachments to Sprint Backlog');
+        }
+        break;
+      case 'move-password-to-discussing':
+        // Move Password Reset to currently discussing (visual highlight)
+        console.log('🎯 Drag action: Move Password Reset to discussing');
+        break;
+      case 'move-password-to-sprint':
+        // Move Password Reset to Sprint Backlog
+        const passwordStory = productBacklog.find(story => story.ticketNumber === 'STORY-1002');
+        if (passwordStory) {
+          setProductBacklog(prev => prev.filter(story => story.id !== passwordStory.id));
+          setSprintBacklog(prev => [...prev, { ...passwordStory, status: 'To Do' }]);
+          console.log('🎯 Drag action: Moved Password Reset to Sprint Backlog');
+        }
+        break;
+      case 'move-idupload-to-discussing':
+        // Move ID Upload to currently discussing (visual highlight)
+        console.log('🎯 Drag action: Move ID Upload to discussing');
+        break;
+      case 'slice-idupload':
+        // Slice the ID Upload story
+        console.log('🎯 Drag action: Slicing ID Upload story');
+        break;
+      case 'move-idupload-slice-to-sprint':
+        // Move sliced ID Upload to Sprint Backlog
+        const idUploadStory = productBacklog.find(story => story.ticketNumber === 'STORY-1003');
+        if (idUploadStory) {
+          setProductBacklog(prev => prev.filter(story => story.id !== idUploadStory.id));
+          setSprintBacklog(prev => [...prev, { ...idUploadStory, status: 'To Do', title: 'ID Upload Verification (Basic Form)' }]);
+          console.log('🎯 Drag action: Moved sliced ID Upload to Sprint Backlog');
+        }
+        break;
+    }
+  };
+
+  // Run the Sprint Planning meeting
+  const runSprintPlanningMeeting = async () => {
+    if (isMeetingRunning) return;
+    
+    setIsMeetingRunning(true);
+    setMeetingStarted(true);
+    setCurrentSegmentIndex(0);
+    setMeetingTranscript([]);
+    
+    console.log('🎬 Starting Sprint Planning meeting...');
+    
+    for (let i = 0; i < sprintPlanningSegments.length; i++) {
+      if (meetingCancelledRef.current || !isMeetingActive) {
+        console.log('🚫 Meeting cancelled or inactive, stopping');
+        break;
+      }
+      
+      const segment = sprintPlanningSegments[i];
+      const teamMember = teamMembers.find(member => member.name === segment.speaker);
+      
+      if (!teamMember) {
+        console.error(`❌ Team member not found: ${segment.speaker}`);
+        continue;
+      }
+      
+      setCurrentSegmentIndex(i);
+      
+      // Add message to transcript
+      const message: MeetingMessage = {
+        id: `segment-${i}`,
+        speaker: segment.speaker,
+        content: segment.text,
+        timestamp: new Date().toISOString(),
+        role: teamMember.role as any,
+        stakeholderId: teamMember.name.toLowerCase()
+      };
+      
+      setMeetingTranscript(prev => [...prev, message]);
+      
+      // Play audio
+      await playMessageAudio(segment.text, teamMember, true);
+      
+      // Execute drag action if present
+      if (segment.dragAction) {
+        executeDragAction(segment.dragAction);
+      }
+      
+      // Small delay between segments
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    console.log('🎉 Sprint Planning meeting completed!');
+    setIsMeetingRunning(false);
+  };
+
   // Initialize product backlog with refined stories at the top
   useEffect(() => {
     const refinedStories = stories.filter(story => story.status === 'Refined');
@@ -204,6 +437,13 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
     const sortedStories = [...refinedStories, ...otherStories];
     setProductBacklog(sortedStories);
   }, [stories]);
+
+  // Auto-scroll transcript to bottom
+  useEffect(() => {
+    if (transcriptEndRef.current && transcriptPanelOpen && meetingTranscript.length > 0) {
+      transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [meetingTranscript, currentSegmentIndex, transcriptPanelOpen]);
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, storyId: string) => {
@@ -226,7 +466,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
         setSprintBacklog(prev => [...prev, { ...story, status: 'To Do' }]);
         console.log(`📋 Story ${story.title} moved to sprint backlog`);
       }
-    } else {
+      } else {
       // Move from sprint backlog to product backlog
       const story = sprintBacklog.find(s => s.id === storyId);
       if (story) {
@@ -239,13 +479,13 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
 
   // Start meeting
   const startMeeting = async () => {
-    setMeetingStarted(true);
     console.log('🚀 Sprint Planning meeting started!');
+    await runSprintPlanningMeeting();
   };
 
   // End meeting
   const handleEndMeeting = () => {
-    onMeetingEnd({
+      onMeetingEnd({
       messages: [],
       meetingDuration: 0
     });
@@ -286,7 +526,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
           <div className="flex items-center space-x-2 text-green-400">
             <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             <span className="text-sm">Audio Ready</span>
-          </div>
+            </div>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -310,17 +550,17 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
               </h2>
               
               {/* Start Meeting Button */}
-              {!meetingStarted && (
-                <button
-                  onClick={startMeeting}
+                  {!meetingStarted && (
+                    <button
+                      onClick={startMeeting}
                   className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
-                >
-                  <Play size={20} />
+                    >
+                      <Play size={20} />
                   <span>Start Meeting</span>
-                </button>
-              )}
+                    </button>
+                  )}
             </div>
-            
+
             {/* Sprint Backlog Section - Top - Jira Style */}
             <div className="mb-4">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -365,8 +605,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                         <div className="col-span-1">STORY POINTS</div>
                         <div className="col-span-1">PRIORITY</div>
                         <div className="col-span-1">STATUS</div>
-                      </div>
-                    </div>
+                            </div>
+                          </div>
                       
                       {/* Jira-style table rows */}
                       <div className="divide-y divide-gray-100">
@@ -382,35 +622,35 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                               <div className="flex items-center gap-2">
                                 <div className="w-4 h-4 flex items-center justify-center text-gray-400 cursor-move">
                                   <GripVertical className="w-3 h-3" />
-                                </div>
+                                  </div>
                                 <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
-                              </div>
-                            </div>
-                            
+                          </div>
+                        </div>
+
                             {/* Summary */}
                             <div className="col-span-2 flex items-center">
                               <div className="truncate">
                                 <div className="text-sm font-medium text-gray-900 truncate">{story.title}</div>
-                              </div>
-                            </div>
-                            
+                          </div>
+                        </div>
+
                             {/* Type */}
                             <div className="col-span-1 flex items-center">
                               <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                                 Story
                               </span>
-                            </div>
-                            
+                        </div>
+
                             {/* Story Points */}
                             <div className="col-span-1 flex items-center">
                               {story.storyPoints ? (
                                 <span className="text-sm font-medium text-gray-900">
                                   {story.storyPoints}
-                                </span>
+                              </span>
                               ) : (
                                 <span className="text-gray-400 text-sm">-</span>
-                              )}
-                            </div>
+                                    )}
+                                  </div>
                             
                             {/* Priority */}
                             <div className="col-span-1 flex items-center">
@@ -419,32 +659,32 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                                 story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                                 'bg-green-100 text-green-800'
                               }`}>
-                                {story.priority}
-                              </span>
-                            </div>
+                                    {story.priority}
+                                  </span>
+                                  </div>
                             
                             {/* Status */}
                             <div className="col-span-1 flex items-center">
                               <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
                                 To Do
-                              </span>
-                            </div>
-                          </div>
+                                  </span>
+                    </div>
+                </div>
                         ))}
+              </div>
+                      </div>
+                  )}
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
+                    </div>
 
             {/* Product Backlog Section - Bottom - Jira Style */}
             <div className="flex-1">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                   <h3 className="font-semibold text-gray-800">Product Backlog ({productBacklog.length} stories)</h3>
-                </div>
-                
+                  </div>
+                  
                 <div className="overflow-hidden">
                   {/* Jira-style table header */}
                   <div className="bg-gray-50 border-b border-gray-200">
@@ -455,15 +695,15 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                       <div className="col-span-1">STORY POINTS</div>
                       <div className="col-span-1">PRIORITY</div>
                       <div className="col-span-1">STATUS</div>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
                   
                   {/* Jira-style table rows */}
                   <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
                     {productBacklog.map(story => (
                       <div
                         key={story.id}
-                        draggable={meetingStarted}
+                                   draggable={meetingStarted}
                         onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
                         className={`grid grid-cols-7 gap-4 px-4 py-1 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500 h-10 ${
                           meetingStarted ? 'cursor-move hover:bg-blue-50' : 'cursor-pointer hover:bg-gray-50'
@@ -474,10 +714,10 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 flex items-center justify-center text-gray-400 cursor-move">
                               <GripVertical className="w-3 h-3" />
-                            </div>
+                                         </div>
                             <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
-                          </div>
-                        </div>
+                                       </div>
+                                     </div>
                         
                         {/* Summary */}
                         <div className="col-span-2 flex items-center">
@@ -501,8 +741,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                             </span>
                           ) : (
                             <span className="text-gray-400 text-sm">-</span>
-                          )}
-                        </div>
+                                       )}
+                                     </div>
                         
                         {/* Priority */}
                         <div className="col-span-1 flex items-center">
@@ -511,16 +751,16 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                             story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-green-100 text-green-800'
                           }`}>
-                            {story.priority}
-                          </span>
-                        </div>
+                                       {story.priority}
+                                     </span>
+                                     </div>
                         
                         {/* Status */}
                         <div className="col-span-1 flex items-center">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(story.status)}`}>
+                                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(story.status)}`}>
                             {getStatusEmoji(story.status)} {story.status}
-                          </span>
-                        </div>
+                                       </span>
+                                     </div>
                       </div>
                     ))}
                   </div>
@@ -545,33 +785,33 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
               {/* Row 1: Sarah, Victor, Srikanth */}
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Sarah') || teamMembers[0]}
-                             isCurrentSpeaker={false}
+                isCurrentSpeaker={currentSpeaking === 'Sarah'}
                 isUser={false}
               />
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Victor') || teamMembers[1]}
-                isCurrentSpeaker={false}
+                isCurrentSpeaker={currentSpeaking === 'Victor'}
                 isUser={false}
               />
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Srikanth') || teamMembers[2]}
-                isCurrentSpeaker={false}
+                isCurrentSpeaker={currentSpeaking === 'Srikanth'}
                 isUser={false}
               />
               
               {/* Row 2: Lisa, Tom, User */}
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Lisa') || teamMembers[3]}
-                isCurrentSpeaker={false}
+                isCurrentSpeaker={currentSpeaking === 'Lisa'}
                 isUser={false}
               />
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Tom') || teamMembers[4]}
-                isCurrentSpeaker={false}
+                isCurrentSpeaker={currentSpeaking === 'Tom'}
                 isUser={false}
               />
               <ParticipantCard
-                participant={{ name: user?.email || 'You' }}
+                participant={{ name: 'You' }}
                 isCurrentSpeaker={false}
                 isUser={true}
               />
@@ -592,6 +832,19 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
             >
               <PhoneOff className="w-4 h-4 text-white" />
             </button>
+
+            {/* Transcript Toggle Button */}
+            <button
+              onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                transcriptPanelOpen
+                  ? 'bg-purple-600 hover:bg-purple-700'
+                  : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+              title={transcriptPanelOpen ? 'Hide Transcript' : 'Show Transcript'}
+            >
+              <FileText className="w-4 h-4 text-white" />
+            </button>
           </div>
         </div>
       )}
@@ -600,6 +853,85 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
       <div className="flex relative">
         {/* Left Side - Input Area */}
         <div className="flex-1 px-6 py-4 bg-gray-900 border-t border-gray-700 relative">
+          {/* Transcript Panel - slides up from input area */}
+          <div 
+            className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
+              transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
+            }`}
+          >
+            {/* Transcript Header */}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-purple-400" />
+                <h3 className="text-white font-medium text-sm">Transcript</h3>
+                <span className="text-gray-400 text-xs">({meetingTranscript.length})</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
+                  className="text-gray-400 hover:text-white transition-colors p-1"
+                  title={transcriptPanelOpen ? "Minimize transcript" : "Show transcript"}
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setMeetingTranscript([])}
+                  className="text-gray-400 hover:text-red-400 transition-colors p-1"
+                  title="Clear transcript"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* Transcript Content */}
+            <div className="overflow-y-auto p-3 space-y-2" style={{ height: '80px' }}>
+              {meetingTranscript.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <div className="text-center">
+                    <div className="w-6 h-6 mx-auto mb-1 opacity-50">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                    </div>
+                    <p className="text-xs">Transcript appears here</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {meetingTranscript.map((message) => (
+                    <div key={message.id} className="flex space-x-2">
+                      <div className="flex-shrink-0">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                          message.role === 'user' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-purple-600 text-white'
+                        }`}>
+                          {message.role === 'user' 
+                            ? 'U' 
+                            : message.speaker?.charAt(0) || 'A'
+                          }
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-1 mb-1">
+                          <span className="text-white font-medium text-xs">
+                            {message.role === 'user' ? 'You' : message.speaker}
+                          </span>
+                          <span className="text-gray-500 text-xs">
+                            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-gray-200 text-xs leading-relaxed">{message.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={transcriptEndRef} />
+                </>
+              )}
+            </div>
+          </div>
+
           <div className="flex space-x-3">
             <input
               type="text"
