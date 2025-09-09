@@ -1279,12 +1279,12 @@ ${cleanAcceptanceCriteria}`;
             {meetingStarted ? (
               <>
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="font-medium">Refinement Meeting - Live</span>
+                <span className="font-medium text-white">Refinement Meeting - Live</span>
               </>
             ) : (
               <>
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="font-medium">Refinement Meeting - Ready to Start</span>
+                <span className="font-medium text-white">Refinement Meeting - Ready to Start</span>
               </>
             )}
           </div>

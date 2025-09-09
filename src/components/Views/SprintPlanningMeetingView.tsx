@@ -573,7 +573,7 @@ const teamMembers: SprintPlanningMember[] = [
     setShowKanbanBoard(false);
     setShowEndMessage(false);
     
-    onMeetingEnd({
+      onMeetingEnd({
       messages: [],
       meetingDuration: 0
     });
@@ -597,26 +597,26 @@ const teamMembers: SprintPlanningMember[] = [
     <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
       <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
-        <button
+          <button
           onClick={handleCloseMeeting}
           className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-white"
-        >
-          <ArrowLeft size={20} />
+          >
+            <ArrowLeft size={20} />
           <span>Back</span>
-        </button>
-        
-        <div className="flex items-center space-x-3">
-          {meetingStarted ? (
-            <>
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="font-medium">Sprint Planning Meeting - Live</span>
-            </>
-          ) : (
-            <>
+          </button>
+          
+          <div className="flex items-center space-x-3">
+            {meetingStarted ? (
+              <>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+              <span className="font-medium text-white">Sprint Planning Meeting - Live</span>
+              </>
+            ) : (
+              <>
               <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-              <span className="font-medium">Sprint Planning Meeting</span>
-            </>
-          )}
+              <span className="font-medium text-white">Sprint Planning Meeting</span>
+              </>
+            )}
         </div>
       </div>
 
@@ -645,7 +645,7 @@ const teamMembers: SprintPlanningMember[] = [
 
               {/* Start Sprint Button - Only shown after meeting has started */}
                   {meetingStarted && (
-                    <button
+                      <button
                       onClick={() => {
                         console.log('🚀 Starting Sprint!');
                         // TODO: Implement sprint start functionality
@@ -653,10 +653,10 @@ const teamMembers: SprintPlanningMember[] = [
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg"
                     >
                       <Play size={20} />
-                  <span>Start Sprint</span>
-                    </button>
-                  )}
-            </div>
+                        <span>Start Sprint</span>
+                      </button>
+                    )}
+                      </div>
 
             {/* Sprint Backlog Section - Top - Jira Style */}
             <div className="mb-4">
@@ -735,8 +735,8 @@ const teamMembers: SprintPlanningMember[] = [
                             <div className="col-span-1 flex items-center">
                               <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                                 Story
-                              </span>
-                        </div>
+                                    </span>
+                                  </div>
 
                             {/* Story Points */}
                             <div className="col-span-1 flex items-center">
@@ -747,7 +747,7 @@ const teamMembers: SprintPlanningMember[] = [
                               ) : (
                                 <span className="text-gray-400 text-sm">-</span>
                                     )}
-                                  </div>
+                                    </div>
                             
                             {/* Priority */}
                             <div className="col-span-1 flex items-center">
@@ -757,7 +757,7 @@ const teamMembers: SprintPlanningMember[] = [
                                 'bg-green-100 text-green-800'
                               }`}>
                                     {story.priority}
-                                  </span>
+                                      </span>
                                   </div>
                             
                             {/* Status */}
@@ -765,15 +765,15 @@ const teamMembers: SprintPlanningMember[] = [
                               <span className="text-xs font-medium text-gray-700">
                                 {story.status}
                               </span>
-                            </div>
-                </div>
+                                </div>
+                          </div>
                         ))}
-              </div>
-                      </div>
+                        </div>
+                            </div>
                   )}
-                      </div>
-                    </div>
-                    </div>
+                          </div>
+                              </div>
+                            </div>
 
             {/* Product Backlog Section - Bottom - Jira Style */}
             <div className="flex-1">
@@ -792,9 +792,9 @@ const teamMembers: SprintPlanningMember[] = [
                       <div className="col-span-1 font-bold">STORY POINTS</div>
                       <div className="col-span-1 font-bold">PRIORITY</div>
                       <div className="col-span-1 font-bold">STATUS</div>
+                          </div>
                         </div>
-                      </div>
-                  
+
                   {/* Jira-style table rows */}
                   <div className="divide-y divide-gray-300 max-h-96 overflow-y-auto">
                     {productBacklog.map(story => (
@@ -820,17 +820,17 @@ const teamMembers: SprintPlanningMember[] = [
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 flex items-center justify-center text-gray-400 cursor-move">
                               <GripVertical className="w-3 h-3" />
-                                         </div>
+                            </div>
                             <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
-                                       </div>
-                                     </div>
+                          </div>
+                              </div>
                         
                         {/* Summary */}
                         <div className="col-span-2 flex items-center">
                           <div className="truncate">
                             <div className="text-sm font-medium text-gray-900 truncate">{story.title}</div>
+                            </div>
                           </div>
-                        </div>
                         
                         {/* Type */}
                         <div className="col-span-1 flex items-center">
@@ -838,17 +838,17 @@ const teamMembers: SprintPlanningMember[] = [
                             Story
                           </span>
                         </div>
-                        
+
                         {/* Story Points */}
                         <div className="col-span-1 flex items-center">
                           {story.storyPoints ? (
                             <span className="text-sm font-medium text-gray-900">
                               {story.storyPoints}
-                            </span>
+                              </span>
                           ) : (
                             <span className="text-gray-400 text-sm">-</span>
                                        )}
-                                     </div>
+                            </div>
                         
                         {/* Priority */}
                         <div className="col-span-1 flex items-center">
@@ -859,20 +859,20 @@ const teamMembers: SprintPlanningMember[] = [
                           }`}>
                                        {story.priority}
                                      </span>
-                                     </div>
+                          </div>
                         
                         {/* Status */}
                         <div className="col-span-1 flex items-center">
                           <span className="text-xs font-medium text-gray-700">
                             {story.status}
                           </span>
+                              </div>
+                            </div>
+                    ))}
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+                    </div>
               </>
             ) : (
               /* Kanban Board */
@@ -899,21 +899,21 @@ const teamMembers: SprintPlanningMember[] = [
                           <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
                               <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
-                              <div className="flex items-center space-x-1">
+                                    <div className="flex items-center space-x-1">
                                 <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
                                   {story.storyPoints || '?'}
-                                </div>
-                              </div>
-                            </div>
+                                      </div>
+                                    </div>
+                                  </div>
                             <div className="flex items-center justify-between text-xs text-gray-500">
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
                               <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-                            </div>
-                          </div>
+                                  </div>
+                                  </div>
                         ))}
-                      </div>
                     </div>
-                  </div>
+                </div>
+              </div>
 
                   {/* In Progress Column */}
                   <div className="flex-1 min-w-64">
@@ -929,14 +929,14 @@ const teamMembers: SprintPlanningMember[] = [
                               <div className="flex items-center space-x-1">
                                 <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
                                   {story.storyPoints || '?'}
-                                </div>
-                              </div>
-                            </div>
+                      </div>
+                    </div>
+                    </div>
                             <div className="flex items-center justify-between text-xs text-gray-500">
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
                               <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-                            </div>
-                          </div>
+                  </div>
+                        </div>
                         ))}
                       </div>
                     </div>
@@ -953,16 +953,16 @@ const teamMembers: SprintPlanningMember[] = [
                           <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
                               <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
-                              <div className="flex items-center space-x-1">
+                                       <div className="flex items-center space-x-1">
                                 <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
                                   {story.storyPoints || '?'}
-                                </div>
-                              </div>
-                            </div>
+                                         </div>
+                                       </div>
+                                     </div>
                             <div className="flex items-center justify-between text-xs text-gray-500">
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
                               <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-                            </div>
+                                     </div>
                           </div>
                         ))}
                       </div>
@@ -982,8 +982,8 @@ const teamMembers: SprintPlanningMember[] = [
                               <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
                               <div className="flex items-center space-x-1">
                                 <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
-                                  {story.storyPoints || '?'}
-                                </div>
+                                       {story.storyPoints || '?'}
+                                     </div>
                               </div>
                             </div>
                             <div className="flex items-center justify-between text-xs text-gray-500">
@@ -1007,11 +1007,11 @@ const teamMembers: SprintPlanningMember[] = [
                           <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
                               <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
-                              <div className="flex items-center space-x-1">
+                                     <div className="flex items-center space-x-1">
                                 <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
                                   {story.storyPoints || '?'}
-                                </div>
-                              </div>
+                                     </div>
+                      </div>
                             </div>
                             <div className="flex items-center justify-between text-xs text-gray-500">
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
@@ -1022,9 +1022,9 @@ const teamMembers: SprintPlanningMember[] = [
                       </div>
                     </div>
                 </div>
-              </div>
-            </div>
-          )}
+                  </div>
+                </div>
+              )}
 
           {/* End Message Overlay */}
           {showEndMessage && (
@@ -1035,7 +1035,7 @@ const teamMembers: SprintPlanningMember[] = [
                     <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                  </div>
+            </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">Sprint Planning Complete!</h3>
                   <p className="text-gray-600">
                     This is the end of the Sprint Planning meeting. The meeting will close automatically in a few seconds.
@@ -1047,7 +1047,7 @@ const teamMembers: SprintPlanningMember[] = [
               </div>
             </div>
           )}
-        </div>
+          </div>
         </div>
 
         {/* Right Side - Participants Panel */}
@@ -1094,7 +1094,7 @@ const teamMembers: SprintPlanningMember[] = [
                 participant={{ name: 'You' }}
                 isCurrentSpeaker={false}
                 isUser={true}
-              />
+                  />
                 </div>
           </div>
         </div>
