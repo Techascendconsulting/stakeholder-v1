@@ -765,10 +765,10 @@ const teamMembers: SprintPlanningMember[] = [
                             
                             {/* Status */}
                             <div className="col-span-1 flex items-center">
-                              <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
-                                To Do
-                                  </span>
-                    </div>
+                              <span className="text-xs font-medium text-gray-700">
+                                {story.status}
+                              </span>
+                            </div>
                 </div>
                         ))}
               </div>
@@ -866,10 +866,10 @@ const teamMembers: SprintPlanningMember[] = [
                         
                         {/* Status */}
                         <div className="col-span-1 flex items-center">
-                                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(story.status)}`}>
-                            {getStatusEmoji(story.status)} {story.status}
-                                       </span>
-                                     </div>
+                          <span className="text-xs font-medium text-gray-700">
+                            {story.status}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
