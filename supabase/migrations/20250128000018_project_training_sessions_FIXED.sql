@@ -55,3 +55,4 @@ CREATE TRIGGER update_project_training_sessions_updated_at
 -- For now, we'll create the tables without sample data to avoid foreign key issues
 
 
+

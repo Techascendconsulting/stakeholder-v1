@@ -74,3 +74,4 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.cohort_messages;
 
 
 
+

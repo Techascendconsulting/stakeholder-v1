@@ -208,3 +208,4 @@ export function shouldShowCoaching(currentText: string, coaching: CoachingPoint,
   // The audio ID matching is sufficient to determine if coaching should show
   return true;
 }
+

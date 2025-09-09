@@ -64,3 +64,4 @@ CREATE TRIGGER update_project_deliverables_updated_at
 -- For now, we'll create the tables without sample data to avoid foreign key issues
 
 
+

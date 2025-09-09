@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Play, Pause, PhoneOff, GripVertical, FileText, ChevronDown, X } from 'lucide-react';
+import { ArrowLeft, Play, Pause, PhoneOff, GripVertical, FileText, ChevronDown, X, Sun, Moon } from 'lucide-react';
 import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { playPreGeneratedAudio, findPreGeneratedAudio, stopAllAudio } from '../../services/preGeneratedAudioService';
@@ -187,6 +187,10 @@ const teamMembers: SprintPlanningMember[] = [
   const [currentlyDiscussing, setCurrentlyDiscussing] = useState<string | null>(null);
   const [showKanbanBoard, setShowKanbanBoard] = useState(false);
   const [showEndMessage, setShowEndMessage] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check if dark mode is already applied to the document
+    return document.documentElement.classList.contains('dark');
+  });
 
   // Coaching system state
   const [currentCoaching, setCurrentCoaching] = useState<CoachingPoint | null>(null);
@@ -229,16 +233,8 @@ const teamMembers: SprintPlanningMember[] = [
 
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Refined':
-        return 'bg-green-100 text-green-800';
-      case 'Ready for Refinement':
-        return 'bg-blue-100 text-blue-800';
-      case 'Draft':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    // Just return text color, no background
+    return 'text-gray-700 dark:text-white';
   };
 
   const getStatusEmoji = (status: string) => {
@@ -628,14 +624,28 @@ const teamMembers: SprintPlanningMember[] = [
     setIsCoachingVisible(false);
   };
 
+  const toggleTheme = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    
+    // Toggle the dark class on the document root
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    console.log('🎨 Theme toggled to:', newDarkMode ? 'dark' : 'light');
+  };
+
   return (
-    <div className="fixed inset-0 bg-gray-900 text-white flex flex-col z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
-      <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
             onClick={handleCloseMeeting}
-            className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-white"
+            className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-900 dark:text-white"
           >
             <ArrowLeft size={20} />
             <span>Back to Sprint Planning Simulation</span>
@@ -645,12 +655,12 @@ const teamMembers: SprintPlanningMember[] = [
             {meetingStarted ? (
               <>
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="font-medium text-white">Sprint Planning Meeting - Live</span>
+                <span className="font-medium text-gray-900 dark:text-white dark:text-white">Sprint Planning Meeting - Live</span>
               </>
             ) : (
               <>
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="font-medium text-white">Sprint Planning Meeting - Ready to Start</span>
+                <span className="font-medium text-gray-900 dark:text-white dark:text-white">Sprint Planning Meeting - Ready to Start</span>
               </>
             )}
           </div>
@@ -663,10 +673,11 @@ const teamMembers: SprintPlanningMember[] = [
 
         <div className="flex items-center space-x-3">
           <button
-            onClick={handleCloseMeeting}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
+            onClick={toggleTheme}
+            className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-900 dark:text-white"
           >
-            <ArrowLeft size={20} />
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
         </div>
       </div>
@@ -674,12 +685,12 @@ const teamMembers: SprintPlanningMember[] = [
       {/* Main Meeting Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Side - Sprint Board or Kanban Board */}
-        <div className="flex-1 bg-gray-50 text-gray-900 p-6 overflow-auto border-r border-gray-200">
+        <div className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white dark:text-white p-6 overflow-auto border-r border-gray-200 dark:border-gray-700">
           <div className="h-full flex flex-col">
             {!showKanbanBoard ? (
               <>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                     Sprint Board
                   </h2>
               
@@ -711,10 +722,10 @@ const teamMembers: SprintPlanningMember[] = [
 
             {/* Sprint Backlog Section - Top - Jira Style */}
             <div className="mb-4">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-800">Sprint Backlog ({sprintBacklog.length} stories)</h3>
+                    <h3 className="font-semibold text-gray-800 dark:text-white">Sprint Backlog ({sprintBacklog.length} stories)</h3>
                   </div>
                 </div>
                 
@@ -745,8 +756,8 @@ const teamMembers: SprintPlanningMember[] = [
                   ) : (
                     <div className="overflow-hidden">
                     {/* Jira-style table header */}
-                    <div className="bg-gray-50 border-b border-gray-200">
-                      <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 uppercase tracking-wide h-8">
+                    <div className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                      <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wide h-8">
                         <div className="col-span-1 font-bold">KEY</div>
                         <div className="col-span-2 font-bold">SUMMARY</div>
                         <div className="col-span-1 font-bold">TYPE</div>
@@ -763,7 +774,7 @@ const teamMembers: SprintPlanningMember[] = [
                             key={story.id}
                             draggable={meetingStarted}
                             onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
-                            className="grid grid-cols-7 gap-4 px-4 py-1 hover:bg-blue-50 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500 h-10"
+                            className="grid grid-cols-7 gap-4 px-4 py-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-move border-l-4 border-l-transparent hover:border-l-blue-500 h-10"
                           >
                             {/* Key */}
                             <div className="col-span-1 flex items-center">
@@ -778,13 +789,13 @@ const teamMembers: SprintPlanningMember[] = [
                             {/* Summary */}
                             <div className="col-span-2 flex items-center">
                               <div className="truncate">
-                                <div className="text-sm font-medium text-gray-900 truncate">{story.title}</div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{story.title}</div>
                           </div>
                         </div>
 
                             {/* Type */}
                             <div className="col-span-1 flex items-center">
-                              <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                              <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white rounded-full text-xs font-medium">
                                 Story
                                     </span>
                                   </div>
@@ -792,7 +803,7 @@ const teamMembers: SprintPlanningMember[] = [
                             {/* Story Points */}
                             <div className="col-span-1 flex items-center">
                               {story.storyPoints ? (
-                                <span className="text-sm font-medium text-gray-900">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
                                   {story.storyPoints}
                               </span>
                               ) : (
@@ -803,9 +814,9 @@ const teamMembers: SprintPlanningMember[] = [
                             {/* Priority */}
                             <div className="col-span-1 flex items-center">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
-                                story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-green-100 text-green-800'
+                                story.priority === 'High' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-white' :
+                                story.priority === 'Medium' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-white' :
+                                'bg-green-100 dark:bg-green-900 text-green-800 dark:text-white'
                               }`}>
                                     {story.priority}
                                       </span>
@@ -813,7 +824,7 @@ const teamMembers: SprintPlanningMember[] = [
                             
                             {/* Status */}
                             <div className="col-span-1 flex items-center">
-                              <span className="text-xs font-medium text-gray-700">
+                              <span className={`text-xs font-medium ${getStatusColor(story.status)}`}>
                                 {story.status}
                               </span>
                                 </div>
@@ -828,15 +839,15 @@ const teamMembers: SprintPlanningMember[] = [
 
             {/* Product Backlog Section - Bottom - Jira Style */}
             <div className="flex-1">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-800">Product Backlog ({productBacklog.length} stories)</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                  <h3 className="font-semibold text-gray-800 dark:text-white">Product Backlog ({productBacklog.length} stories)</h3>
                   </div>
                   
                 <div className="overflow-hidden">
                   {/* Jira-style table header */}
-                  <div className="bg-gray-50 border-b border-gray-200">
-                    <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 uppercase tracking-wide h-8">
+                  <div className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <div className="grid grid-cols-7 gap-4 px-4 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wide h-8">
                       <div className="col-span-1 font-bold">KEY</div>
                       <div className="col-span-2 font-bold">SUMMARY</div>
                       <div className="col-span-1 font-bold">TYPE</div>
@@ -855,10 +866,10 @@ const teamMembers: SprintPlanningMember[] = [
                         onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
                         className={`grid grid-cols-7 gap-4 px-4 py-1 transition-colors border-l-4 h-10 ${
                           currentlyDiscussing === story.ticketNumber 
-                            ? 'border-l-green-500 bg-green-50' 
+                            ? 'border-l-green-500 bg-green-50 dark:bg-green-900/20' 
                             : 'border-l-transparent hover:border-l-blue-500'
                         } ${
-                          meetingStarted ? 'cursor-move hover:bg-blue-50' : 'cursor-pointer hover:bg-gray-50'
+                          meetingStarted ? 'cursor-move hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                         onClick={() => {
                           console.log('🔍 Story clicked:', story.ticketNumber);
@@ -879,13 +890,13 @@ const teamMembers: SprintPlanningMember[] = [
                         {/* Summary */}
                         <div className="col-span-2 flex items-center">
                           <div className="truncate">
-                            <div className="text-sm font-medium text-gray-900 truncate">{story.title}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{story.title}</div>
                             </div>
                           </div>
                         
                         {/* Type */}
                         <div className="col-span-1 flex items-center">
-                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white rounded-full text-xs font-medium">
                             Story
                           </span>
                         </div>
@@ -893,7 +904,7 @@ const teamMembers: SprintPlanningMember[] = [
                         {/* Story Points */}
                         <div className="col-span-1 flex items-center">
                           {story.storyPoints ? (
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
                               {story.storyPoints}
                               </span>
                           ) : (
@@ -904,9 +915,9 @@ const teamMembers: SprintPlanningMember[] = [
                         {/* Priority */}
                         <div className="col-span-1 flex items-center">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            story.priority === 'High' ? 'bg-yellow-100 text-yellow-800' :
-                            story.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
+                            story.priority === 'High' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-white' :
+                            story.priority === 'Medium' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-white' :
+                            'bg-green-100 dark:bg-green-900 text-green-800 dark:text-white'
                           }`}>
                                        {story.priority}
                                      </span>
@@ -914,7 +925,7 @@ const teamMembers: SprintPlanningMember[] = [
                         
                         {/* Status */}
                         <div className="col-span-1 flex items-center">
-                          <span className="text-xs font-medium text-gray-700">
+                          <span className={`text-xs font-medium ${getStatusColor(story.status)}`}>
                             {story.status}
                           </span>
                               </div>
@@ -929,10 +940,10 @@ const teamMembers: SprintPlanningMember[] = [
               /* Kanban Board */
               <div className="h-full flex flex-col">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                     Sprint Kanban Board
                   </h2>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     Capacity: {sprintBacklog.reduce((total, story) => total + (story.storyPoints || 0), 0)}/20 points
                   </div>
                 </div>
@@ -941,24 +952,24 @@ const teamMembers: SprintPlanningMember[] = [
                 <div className="flex-1 flex gap-4 overflow-x-auto">
                   {/* To Do Column */}
                   <div className="flex-1 min-w-64">
-                    <div className="bg-white rounded-lg border border-gray-200 h-full">
-                      <div className="p-4 border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-800">To Do ({sprintBacklog.filter(story => story.status === 'To Do').length})</h3>
+                    <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">To Do ({sprintBacklog.filter(story => story.status === 'To Do').length})</h3>
                       </div>
                       <div className="p-4 space-y-3 min-h-96">
                         {sprintBacklog.filter(story => story.status === 'To Do').map(story => (
-                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                          <div key={story.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-500 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-tight">{story.title}</h4>
                                     <div className="flex items-center space-x-1">
-                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                <div className="w-6 h-6 bg-gray-200 dark:bg-gray-500 rounded-full flex items-center justify-center text-xs text-gray-600 dark:text-gray-300">
                                   {story.storyPoints || '?'}
                                       </div>
                                     </div>
                                   </div>
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
-                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 dark:bg-gray-400 rounded-full"></div>
                                   </div>
                                   </div>
                         ))}
@@ -968,24 +979,24 @@ const teamMembers: SprintPlanningMember[] = [
 
                   {/* In Progress Column */}
                   <div className="flex-1 min-w-64">
-                    <div className="bg-white rounded-lg border border-gray-200 h-full">
-                      <div className="p-4 border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-800">In Progress ({sprintBacklog.filter(story => story.status === 'In Progress').length})</h3>
+                    <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">In Progress ({sprintBacklog.filter(story => story.status === 'In Progress').length})</h3>
                       </div>
                       <div className="p-4 space-y-3 min-h-96">
                         {sprintBacklog.filter(story => story.status === 'In Progress').map(story => (
-                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                          <div key={story.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-500 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-tight">{story.title}</h4>
                               <div className="flex items-center space-x-1">
-                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                <div className="w-6 h-6 bg-gray-200 dark:bg-gray-500 rounded-full flex items-center justify-center text-xs text-gray-600 dark:text-gray-300">
                                   {story.storyPoints || '?'}
                       </div>
                     </div>
                     </div>
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
-                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 dark:bg-gray-400 rounded-full"></div>
                   </div>
                         </div>
                         ))}
@@ -995,24 +1006,24 @@ const teamMembers: SprintPlanningMember[] = [
 
                   {/* Testing Column */}
                   <div className="flex-1 min-w-64">
-                    <div className="bg-white rounded-lg border border-gray-200 h-full">
-                      <div className="p-4 border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-800">Testing ({sprintBacklog.filter(story => story.status === 'Testing').length})</h3>
+                    <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">Testing ({sprintBacklog.filter(story => story.status === 'Testing').length})</h3>
                       </div>
                       <div className="p-4 space-y-3 min-h-96">
                         {sprintBacklog.filter(story => story.status === 'Testing').map(story => (
-                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                          <div key={story.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-500 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-tight">{story.title}</h4>
                                        <div className="flex items-center space-x-1">
-                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                <div className="w-6 h-6 bg-gray-200 dark:bg-gray-500 rounded-full flex items-center justify-center text-xs text-gray-600 dark:text-gray-300">
                                   {story.storyPoints || '?'}
                                          </div>
                                        </div>
                                      </div>
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
-                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 dark:bg-gray-400 rounded-full"></div>
                                      </div>
                           </div>
                         ))}
@@ -1022,24 +1033,24 @@ const teamMembers: SprintPlanningMember[] = [
 
                   {/* UAT Column */}
                   <div className="flex-1 min-w-64">
-                    <div className="bg-white rounded-lg border border-gray-200 h-full">
-                      <div className="p-4 border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-800">UAT ({sprintBacklog.filter(story => story.status === 'UAT').length})</h3>
+                    <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">UAT ({sprintBacklog.filter(story => story.status === 'UAT').length})</h3>
                       </div>
                       <div className="p-4 space-y-3 min-h-96">
                         {sprintBacklog.filter(story => story.status === 'UAT').map(story => (
-                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                          <div key={story.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-500 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-tight">{story.title}</h4>
                               <div className="flex items-center space-x-1">
-                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                <div className="w-6 h-6 bg-gray-200 dark:bg-gray-500 rounded-full flex items-center justify-center text-xs text-gray-600 dark:text-gray-300">
                                        {story.storyPoints || '?'}
                                      </div>
                               </div>
                             </div>
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
-                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 dark:bg-gray-400 rounded-full"></div>
                             </div>
                           </div>
                         ))}
@@ -1049,24 +1060,24 @@ const teamMembers: SprintPlanningMember[] = [
 
                   {/* Done Column */}
                   <div className="flex-1 min-w-64">
-                    <div className="bg-white rounded-lg border border-gray-200 h-full">
-                      <div className="p-4 border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-800">Done ({sprintBacklog.filter(story => story.status === 'Done').length})</h3>
+                    <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">Done ({sprintBacklog.filter(story => story.status === 'Done').length})</h3>
                       </div>
                       <div className="p-4 space-y-3 min-h-96">
                         {sprintBacklog.filter(story => story.status === 'Done').map(story => (
-                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                          <div key={story.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-500 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-tight">{story.title}</h4>
                                      <div className="flex items-center space-x-1">
-                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                <div className="w-6 h-6 bg-gray-200 dark:bg-gray-500 rounded-full flex items-center justify-center text-xs text-gray-600 dark:text-gray-300">
                                   {story.storyPoints || '?'}
                                      </div>
                       </div>
                             </div>
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
-                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-white px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 dark:bg-gray-400 rounded-full"></div>
                             </div>
                           </div>
                         ))}
@@ -1087,7 +1098,7 @@ const teamMembers: SprintPlanningMember[] = [
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
             </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Sprint Planning Complete!</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Sprint Planning Complete!</h3>
                   <p className="text-gray-600">
                     This is the end of the Sprint Planning meeting. The meeting will close automatically in a few seconds.
                   </p>
@@ -1102,11 +1113,11 @@ const teamMembers: SprintPlanningMember[] = [
         </div>
 
         {/* Right Side - Participants Panel */}
-        <div className="w-96 bg-gray-900 border-l border-gray-700 flex flex-col overflow-hidden">
+        <div className="w-96 bg-gray-100 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
           {/* Participants Header */}
-          <div className="p-4 border-b border-gray-700">
-            <h3 className="font-medium text-white mb-2">Meeting Participants</h3>
-            <div className="text-sm text-gray-400">{teamMembers.length + 1} people in this meeting</div>
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Meeting Participants</h3>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{teamMembers.length + 1} people in this meeting</div>
           </div>
 
           {/* Participant Video Grid (3 grids: 2+2+1 Layout) */}
@@ -1153,7 +1164,7 @@ const teamMembers: SprintPlanningMember[] = [
 
       {/* Meeting Controls - Basic */}
       {meetingStarted && (
-        <div className="px-6 py-3 bg-gray-900 border-t border-gray-700">
+        <div className="px-6 py-3 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-2">
             {/* Pause/Resume Button */}
             <button

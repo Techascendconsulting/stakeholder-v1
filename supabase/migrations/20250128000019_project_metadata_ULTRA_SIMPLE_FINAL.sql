@@ -80,3 +80,4 @@ FROM projects p;
 GRANT SELECT ON project_progress_summary TO authenticated;
 
 
+

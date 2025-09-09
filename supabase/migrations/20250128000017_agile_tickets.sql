@@ -116,3 +116,4 @@ CREATE TRIGGER update_sprint_planning_sessions_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_sprint_planning_sessions_updated_at();
 
+
