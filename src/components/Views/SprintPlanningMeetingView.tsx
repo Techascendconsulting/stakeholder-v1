@@ -709,7 +709,7 @@ const teamMembers: SprintPlanningMember[] = [
                           </div>
                       
                       {/* Jira-style table rows */}
-                      <div className="divide-y divide-gray-100">
+                      <div className="divide-y divide-gray-300">
                         {sprintBacklog.map(story => (
                           <div
                             key={story.id}
@@ -799,7 +799,7 @@ const teamMembers: SprintPlanningMember[] = [
                       </div>
                   
                   {/* Jira-style table rows */}
-                  <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                  <div className="divide-y divide-gray-300 max-h-96 overflow-y-auto">
                     {productBacklog.map(story => (
                       <div
                         key={story.id}
