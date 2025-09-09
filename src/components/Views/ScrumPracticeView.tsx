@@ -11,9 +11,6 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: FileText,
     artwork: "📝",
     color: "from-blue-500 to-cyan-500",
-    badge: "REQUIREMENT",
-    duration: "20-30 min",
-    level: "Beginner",
     onClick: () => {
       setSelectedTheme("from-blue-500 to-cyan-500");
       console.log("Navigate to documentation");
@@ -25,9 +22,6 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: Users,
     artwork: "🔍",
     color: "from-purple-500 to-pink-500",
-    badge: "REFINEMENT",
-    duration: "25-35 min",
-    level: "Intermediate",
     onClick: () => {
       setSelectedTheme("from-purple-500 to-pink-500");
       handleSetActiveView('backlog-refinement');
@@ -39,9 +33,6 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: Calendar,
     artwork: "🎯",
     color: "from-green-500 to-emerald-500",
-    badge: "PLANNING",
-    duration: "30-45 min",
-    level: "Intermediate",
     onClick: () => {
       setSelectedTheme("from-green-500 to-emerald-500");
       console.log('🎯 Sprint Planning button clicked, setting activeView to sprint-planning');
@@ -54,9 +45,6 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: Clock,
     artwork: "⚡",
     color: "from-orange-500 to-red-500",
-    badge: "DAILY",
-    duration: "15-20 min",
-    level: "Beginner",
     onClick: () => {
       setSelectedTheme("from-orange-500 to-red-500");
       console.log("Navigate to daily");
@@ -68,9 +56,6 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: BarChart3,
     artwork: "📊",
     color: "from-indigo-500 to-blue-500",
-    badge: "REVIEW",
-    duration: "20-30 min",
-    level: "Intermediate",
     onClick: () => {
       setSelectedTheme("from-indigo-500 to-blue-500");
       console.log("Navigate to review");
@@ -82,9 +67,6 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: RotateCcw,
     artwork: "🔄",
     color: "from-teal-500 to-cyan-500",
-    badge: "RETROSPECTIVE",
-    duration: "25-35 min",
-    level: "Advanced",
     onClick: () => {
       setSelectedTheme("from-teal-500 to-cyan-500");
       console.log("Navigate to retrospective");
@@ -151,62 +133,24 @@ export const ScrumPracticeView: React.FC = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {sections.map((section, index) => (
-            <div key={index} className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 relative">
-              {/* Badge */}
-              <div className="absolute top-4 left-4">
-                <div className="bg-orange-500 text-white px-3 py-1 rounded-t-lg rounded-br-lg text-xs font-semibold shadow-sm">
-                  {section.badge}
-                </div>
-              </div>
-              
+            <div key={index} className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
               {/* Title */}
-              <div className="ml-20 mt-2 mb-4">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">{section.title}</h2>
+              <div className="mb-3">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight">{section.title}</h2>
               </div>
               
               {/* Description */}
-              <div className="mb-6">
-                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{section.description}</p>
-              </div>
-              
-              {/* Course Info */}
-              <div className="flex items-center space-x-4 mb-6 text-xs text-gray-500 dark:text-gray-400">
-                <div className="flex items-center space-x-1">
-                  <div className="w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                  <span>Interactive</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                  <span>Simulation</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{section.duration}</span>
-                </div>
-              </div>
-              
-              {/* Level Badge */}
               <div className="mb-4">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  section.level === 'Beginner' ? 'bg-green-100 text-green-800' :
-                  section.level === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {section.level}
-                </span>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{section.description}</p>
               </div>
               
               {/* Action Button */}
               <div className="flex justify-end">
                 <button
                   onClick={section.onClick}
-                  className={`inline-flex items-center px-4 py-2 bg-gradient-to-r ${selectedTheme} text-white rounded-lg hover:shadow-md transition-all duration-200 font-medium text-sm`}
+                  className={`inline-flex items-center px-3 py-2 bg-gradient-to-r ${selectedTheme} text-white rounded-md hover:shadow-md transition-all duration-200 font-medium text-sm`}
                 >
                   Learn more
                 </button>
