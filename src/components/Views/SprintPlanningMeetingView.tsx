@@ -78,7 +78,8 @@ const ParticipantCard: React.FC<{
   isCurrentSpeaker: boolean;
   isUser: boolean;
 }> = ({ participant, isCurrentSpeaker, isUser }) => {
-  const { user } = useVoice();
+  // Mock user for sprint planning simulation
+  const user = { full_name: 'You', id: 'user', email: 'user@example.com' };
   
   return (
     <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-40">
@@ -136,7 +137,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
   onMeetingEnd,
   onClose
 }) => {
-  const { user } = useVoice();
+  // Mock user for sprint planning simulation
+  const user = { full_name: 'You', id: 'user', email: 'user@example.com' };
   
   // Team members for sprint planning
   const teamMembers: SprintPlanningMember[] = [
@@ -185,6 +187,90 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
   // Basic state management
   const [meetingStarted, setMeetingStarted] = useState(false);
   const [currentSpeaking, setCurrentSpeaking] = useState<string | null>(null);
+  const [productBacklog, setProductBacklog] = useState<AgileTicket[]>([]);
+  const [sprintBacklog, setSprintBacklog] = useState<AgileTicket[]>([]);
+
+  // Helper functions for styling
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High':
+        return 'bg-red-100 text-red-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Refined':
+        return 'bg-green-100 text-green-800';
+      case 'Ready for Refinement':
+        return 'bg-blue-100 text-blue-800';
+      case 'Draft':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusEmoji = (status: string) => {
+    switch (status) {
+      case 'Refined':
+        return '✅';
+      case 'Ready for Refinement':
+        return '📋';
+      case 'Draft':
+        return '📝';
+      default:
+        return '📋';
+    }
+  };
+
+  // Initialize product backlog with refined stories at the top
+  useEffect(() => {
+    const refinedStories = stories.filter(story => story.status === 'Refined');
+    const otherStories = stories.filter(story => story.status !== 'Refined');
+    
+    // Ensure refined stories are at the top
+    const sortedStories = [...refinedStories, ...otherStories];
+    setProductBacklog(sortedStories);
+  }, [stories]);
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, storyId: string) => {
+    e.dataTransfer.setData('text/plain', storyId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, target: 'sprint' | 'backlog') => {
+    e.preventDefault();
+    const storyId = e.dataTransfer.getData('text/plain');
+    
+    if (target === 'sprint') {
+      // Move from product backlog to sprint backlog
+      const story = productBacklog.find(s => s.id === storyId);
+      if (story) {
+        setProductBacklog(prev => prev.filter(s => s.id !== storyId));
+        setSprintBacklog(prev => [...prev, { ...story, status: 'To Do' }]);
+        console.log(`📋 Story ${story.title} moved to sprint backlog`);
+      }
+    } else {
+      // Move from sprint backlog to product backlog
+      const story = sprintBacklog.find(s => s.id === storyId);
+      if (story) {
+        setSprintBacklog(prev => prev.filter(s => s.id !== storyId));
+        setProductBacklog(prev => [...prev, { ...story, status: 'Refined' }]);
+        console.log(`📋 Story ${story.title} moved back to product backlog`);
+      }
+    }
+  };
 
   // Start meeting
   const startMeeting = async () => {
@@ -270,12 +356,116 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
               )}
             </div>
             
-            {/* Placeholder content */}
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <div className="text-6xl mb-4">🎯</div>
-                <h3 className="text-xl font-semibold mb-2">Sprint Planning Board</h3>
-                <p className="text-sm">Sprint Backlog and Product Backlog will be displayed here</p>
+            {/* Sprint Backlog Section - Top */}
+            <div className="mb-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-gradient-to-r from-emerald-50 to-blue-50 px-4 py-3 border-b border-emerald-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-emerald-800">Sprint Backlog</h3>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-emerald-600">
+                        {sprintBacklog.length} stories committed
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div 
+                  className="min-h-[200px] p-4"
+                  onDragOver={meetingStarted ? handleDragOver : undefined}
+                  onDrop={meetingStarted ? (e) => handleDrop(e, 'sprint') : undefined}
+                >
+                  {sprintBacklog.length === 0 ? (
+                    <div className="flex items-center justify-center h-32 text-gray-500">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🎯</div>
+                        <p className="text-sm">
+                          {meetingStarted ? "Drag stories from the backlog below to commit them to this sprint" : "Ready for sprint planning"}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {sprintBacklog.map(story => (
+                        <div
+                          key={story.id}
+                          draggable={meetingStarted}
+                          onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
+                          className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all cursor-move hover:border-blue-300"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <GripVertical size={12} className="text-gray-400" />
+                              <span className="text-xs font-medium text-blue-600">{story.ticketNumber}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {story.storyPoints && (
+                                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">
+                                  {story.storyPoints} pts
+                                </span>
+                              )}
+                              <span className={`w-2 h-2 rounded-full ${
+                                story.priority === 'High' ? 'bg-red-500' : story.priority === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                              }`}></span>
+                            </div>
+                          </div>
+                          <h4 className="font-medium text-gray-900 text-sm mb-1">{story.title}</h4>
+                          {story.description && (
+                            <p className="text-xs text-gray-600 line-clamp-2">{story.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Product Backlog Section - Bottom */}
+            <div className="flex-1">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-blue-200">
+                  <h3 className="font-semibold text-blue-800">Product Backlog</h3>
+                </div>
+                
+                <div className="p-4">
+                  <div className="space-y-2">
+                    {productBacklog.map(story => (
+                      <div
+                        key={story.id}
+                        draggable={meetingStarted}
+                        onDragStart={meetingStarted ? (e) => handleDragStart(e, story.id) : undefined}
+                        className={`bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all ${
+                          meetingStarted ? 'cursor-move hover:border-blue-300' : 'cursor-pointer'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <GripVertical size={12} className="text-gray-400" />
+                            <span className="text-xs font-medium text-blue-600">{story.ticketNumber}</span>
+                            <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(story.status)}`}>
+                              {getStatusEmoji(story.status)} {story.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {story.storyPoints && (
+                              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">
+                                {story.storyPoints} pts
+                              </span>
+                            )}
+                            <span className={`w-2 h-2 rounded-full ${
+                              story.priority === 'High' ? 'bg-red-500' : story.priority === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                            }`}></span>
+                          </div>
+                        </div>
+                        <h4 className="font-medium text-gray-900 text-sm mb-1">{story.title}</h4>
+                        {story.description && (
+                          <p className="text-xs text-gray-600 line-clamp-2">{story.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
