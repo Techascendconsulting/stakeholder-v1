@@ -597,6 +597,14 @@ const teamMembers: SprintPlanningMember[] = [
     <div className="fixed inset-0 bg-gray-900 text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
       <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
+        <button
+          onClick={handleCloseMeeting}
+          className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Sprint Planning</span>
+        </button>
+        
         <div className="flex items-center space-x-3">
           {meetingStarted ? (
             <>
@@ -610,7 +618,6 @@ const teamMembers: SprintPlanningMember[] = [
             </>
           )}
         </div>
-
       </div>
 
       {/* Main Meeting Area */}
@@ -1047,16 +1054,7 @@ const teamMembers: SprintPlanningMember[] = [
         <div className="w-96 bg-gray-900 border-l border-gray-700 flex flex-col overflow-hidden">
           {/* Participants Header */}
           <div className="p-4 border-b border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-medium text-white">Meeting Participants</h3>
-              <button
-                onClick={handleCloseMeeting}
-                className="flex items-center space-x-2 px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-sm"
-              >
-                <ArrowLeft size={16} />
-                <span>Back</span>
-              </button>
-            </div>
+            <h3 className="font-medium text-white mb-2">Meeting Participants</h3>
             <div className="text-sm text-gray-400">{teamMembers.length + 1} people in this meeting</div>
           </div>
 
