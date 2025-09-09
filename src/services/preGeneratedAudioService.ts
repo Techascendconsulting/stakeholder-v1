@@ -220,7 +220,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     speaker: 'Sarah',
     text: "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?",
     voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
-    audioPath: '/audio/planning/sarah-opening-victor-1757429611667.mp3'
+    audioPath: '/audio/planning/sarah-opening.mp3'
   },
   
   // 2. Sprint Goal

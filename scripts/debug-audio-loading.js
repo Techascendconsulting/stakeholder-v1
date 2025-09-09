@@ -16,7 +16,7 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 // Voice ID for Sarah
 const SARAH_VOICE_ID = 'MzqUf1HbJ8UmQ0wUsx2p';
 
-// The correct text with "Victor" - making it very clear
+// The correct text with "Victor" - making it VERY clear
 const CORRECT_TEXT = "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?";
 
 // Output directory
@@ -30,6 +30,8 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 async function synthesizeText(text, voiceId, outputPath) {
   try {
     console.log(`🎤 Generating audio with text: "${text}"`);
+    console.log(`🎯 Looking for "Victor" in text: ${text.includes('Victor')}`);
+    console.log(`🎯 Looking for "Bola" in text: ${text.includes('Bola')}`);
     
     const response = await fetch(`${ELEVENLABS_API_URL}/${voiceId}`, {
       method: 'POST',
@@ -63,13 +65,13 @@ async function synthesizeText(text, voiceId, outputPath) {
   }
 }
 
-async function createNewSarahAudio() {
-  console.log('🎤 Creating NEW sarah-opening audio with correct "Victor" name...');
+async function createDebugAudio() {
+  console.log('🎤 Creating DEBUG audio file with "Victor" name...');
   console.log(`📝 Text: "${CORRECT_TEXT}"`);
   
-  // Create a completely new filename
+  // Create a completely new filename with DEBUG in the name
   const timestamp = Date.now();
-  const newFileName = `sarah-opening-victor-${timestamp}.mp3`;
+  const newFileName = `sarah-opening-DEBUG-victor-${timestamp}.mp3`;
   const outputPath = path.join(OUTPUT_DIR, newFileName);
   
   await synthesizeText(CORRECT_TEXT, SARAH_VOICE_ID, outputPath);
@@ -81,4 +83,4 @@ async function createNewSarahAudio() {
 }
 
 // Run the creation
-createNewSarahAudio().catch(console.error);
+createDebugAudio().catch(console.error);
