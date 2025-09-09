@@ -49,7 +49,11 @@ const UserStoryCheckerView: React.FC = () => {
     // Check if there are actual acceptance criteria sections
     const hasACSection = /acceptance criteria|given|when|then|ac:|criteria:/i.test(story);
     
+    console.log('🔍 AC Analysis - Input story:', story);
+    console.log('🔍 AC Analysis - Has AC section:', hasACSection);
+    
     if (!hasACSection) {
+      console.log('❌ No AC section found - returning all false');
       // If no AC section found, return all false
       return {
         happyPath: false,
@@ -80,8 +84,14 @@ const UserStoryCheckerView: React.FC = () => {
       return;
     }
 
+    console.log('🔍 Analyzing user input:', userStory);
+    console.log('📏 Input length:', userStory.length);
+    
     const storyQuality = analyzeStoryQuality(userStory);
     const acCoverage = analyzeACCoverage(userStory);
+    
+    console.log('📊 Story Quality Results:', storyQuality);
+    console.log('📊 AC Coverage Results:', acCoverage);
     
     setResults({ storyQuality, acCoverage });
     setShowSuggestions(true);
