@@ -3,6 +3,8 @@ import { ArrowLeft, Play, Pause, PhoneOff, GripVertical, FileText, ChevronDown, 
 import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
 import { playPreGeneratedAudio, findPreGeneratedAudio, stopAllAudio } from '../../services/preGeneratedAudioService';
+import { getCoachingForSegment, shouldShowCoaching, CoachingPoint } from '../../services/sprintPlanningCoachingService';
+import CoachingOverlay from '../RefinementMeeting/CoachingOverlay';
 
 // Custom interface for sprint planning meeting messages
 interface MeetingMessage {
@@ -185,6 +187,12 @@ const teamMembers: SprintPlanningMember[] = [
   const [currentlyDiscussing, setCurrentlyDiscussing] = useState<string | null>(null);
   const [showKanbanBoard, setShowKanbanBoard] = useState(false);
   const [showEndMessage, setShowEndMessage] = useState(false);
+
+  // Coaching system state
+  const [currentCoaching, setCurrentCoaching] = useState<CoachingPoint | null>(null);
+  const [isCoachingVisible, setIsCoachingVisible] = useState(false);
+  const [hasCoachingAvailable, setHasCoachingAvailable] = useState(false);
+  const [coachingHistory, setCoachingHistory] = useState<CoachingPoint[]>([]);
   
   // Refs for meeting control
   const meetingCancelledRef = useRef(false);
@@ -282,6 +290,23 @@ const teamMembers: SprintPlanningMember[] = [
       const preGeneratedAudio = findPreGeneratedAudio(teamMember.name, text);
       if (preGeneratedAudio) {
         console.log('✅ Using pre-generated audio:', preGeneratedAudio.id);
+        
+        // Check for coaching points - show automatically but non-intrusively
+        const audioId = preGeneratedAudio.id;
+        const coaching = getCoachingForSegment(audioId);
+        if (coaching && shouldShowCoaching(text, coaching, text)) {
+          setCoachingHistory(prev => [...prev, coaching]);
+          setCurrentCoaching(coaching);
+          setHasCoachingAvailable(true);
+          setIsCoachingVisible(true); // Show automatically
+          console.log('🎓 Coaching point shown:', coaching.title);
+          
+          // Auto-hide coaching after duration
+          setTimeout(() => {
+            setIsCoachingVisible(false);
+          }, 6000);
+        }
+        
         try {
           await playPreGeneratedAudio(preGeneratedAudio.id);
           console.log(`🚀 AUDIO DEBUG: ${teamMember.name} pre-generated audio completed`);
@@ -591,6 +616,16 @@ const teamMembers: SprintPlanningMember[] = [
     setShowKanbanBoard(false);
     
     onClose();
+  };
+
+  // Coaching control functions
+  const handleCloseCoaching = () => {
+    setIsCoachingVisible(false);
+    console.log('⏸️ Meeting paused for coaching reading');
+  };
+
+  const handleDismissCoaching = () => {
+    setIsCoachingVisible(false);
   };
 
   return (
@@ -1265,6 +1300,15 @@ const teamMembers: SprintPlanningMember[] = [
         {/* Right Side - Spacer to match participants panel width */}
         <div className="w-96"></div>
                   </div>
+
+      {/* Coaching Overlay */}
+      {currentCoaching && (
+        <CoachingOverlay
+          coaching={currentCoaching}
+          onClose={handleDismissCoaching}
+          isVisible={isCoachingVisible}
+        />
+      )}
     </div>
   );
 };
