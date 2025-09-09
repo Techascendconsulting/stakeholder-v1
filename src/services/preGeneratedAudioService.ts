@@ -17,14 +17,14 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-opening',
     speaker: 'Sarah',
     text: "Good morning everyone. We have 1 story to review today. Bola, would you like to present the story for us? I'll mark it as refined once we're done discussing it.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/refinement/sarah-opening.mp3'
   },
   {
     id: 'sarah-opening-2',
     speaker: 'Sarah',
     text: "Good morning everyone. We have 1 story to review today. Victor, would you like to present the story for us? I'll mark it as refined once we're done discussing it.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/refinement/sarah-opening-2.mp3'
   },
   {
@@ -87,7 +87,7 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-sizing',
     speaker: 'Sarah',
     text: "Great discussion everyone. This sounds like a solid story. What do you think about the story points? I'm thinking this could be a 5-pointer given the file handling complexity.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/refinement/sarah-sizing.mp3'
   },
   {
@@ -101,7 +101,7 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-conclude',
     speaker: 'Sarah',
     text: "Perfect! I'll mark this story as refined. Great work everyone. Bola, thanks for the clear presentation. The team has a good understanding of the requirements now.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/refinement/sarah-conclude.mp3'
   },
   // Trial 2: Password Reset Confirmation Email
@@ -172,7 +172,7 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-size-2',
     speaker: 'Sarah',
     text: "Great, seems we've clarified the story. Let's size it. Remember, effort not hours. Ready? 3…2…1 — show.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/refinement/sarah-size-2.mp3'
   },
   {
@@ -200,14 +200,14 @@ export const refinementAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-conclude-2',
     speaker: 'Sarah',
     text: "Perfect, consensus at 2 points. This story is refined and ready for Sprint Planning.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/refinement/sarah-conclude-2.mp3'
   },
   {
     id: 'sarah-goodbye',
     speaker: 'Sarah',
     text: "Great work team. That concludes refinement for this story.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/refinement/sarah-goodbye.mp3'
   }
 ];
@@ -219,7 +219,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-opening-planning',
     speaker: 'Sarah',
     text: "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-opening.mp3'
   },
   
@@ -237,7 +237,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-capacity',
     speaker: 'Sarah',
     text: "Great. Before we start pulling stories, let's quickly confirm capacity. Srikanth, how's the dev side looking this sprint?",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-capacity.mp3'
   },
   
@@ -273,7 +273,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-transition',
     speaker: 'Sarah',
     text: "Alright, let's look at the first item together.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-transition.mp3'
   },
   
@@ -309,7 +309,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-attachments',
     speaker: 'Sarah',
     text: "Great. Sounds like we're aligned. Let's commit this story to the sprint.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-attachments.mp3'
   },
   
@@ -345,7 +345,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-password',
     speaker: 'Sarah',
     text: "Excellent. Let's move this into the sprint backlog as well.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-password.mp3'
   },
   
@@ -381,7 +381,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-slice',
     speaker: 'Sarah',
     text: "Good point. Let's slice this. Maybe take only the basic upload form this sprint, and defer fraud detection rules.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-slice.mp3'
   },
   
@@ -408,7 +408,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-idcommit',
     speaker: 'Sarah',
     text: "Perfect. We'll commit the sliced version to this sprint.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-idcommit.mp3'
   },
   
@@ -417,7 +417,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-recap',
     speaker: 'Sarah',
     text: "To recap: our Sprint Goal is to improve verification and account processes. We've committed three items — the attachment feature, the password reset confirmation email, and a sliced version of ID upload. Together, these fit our capacity and align with the goal.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-recap.mp3'
   },
   
@@ -435,7 +435,7 @@ export const sprintPlanningAudioFiles: PreGeneratedAudio[] = [
     id: 'sarah-close',
     speaker: 'Sarah',
     text: "Great collaboration. This sprint is now planned. Let's get ready to start tomorrow with confidence.",
-    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
     audioPath: '/audio/planning/sarah-close.mp3'
   }
 ];

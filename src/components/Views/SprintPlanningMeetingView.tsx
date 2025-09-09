@@ -133,7 +133,7 @@ const teamMembers: SprintPlanningMember[] = [
     role: 'Scrum Master',
     avatar: '👩‍💼',
       isAI: true,
-      voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+      voiceId: 'vxO9F6g9yqYJ4RsWvMbc',
       avatarUrl: '/images/avatars/sarah-avatar.png'
   },
   {
