@@ -182,7 +182,7 @@ const teamMembers: SprintPlanningMember[] = [
 
   // Sprint Planning audio segments with drag actions
   const sprintPlanningSegments = [
-    { id: 'sarah-opening', speaker: 'Sarah', text: "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?", dragAction: null },
+    { id: 'sarah-opening-planning', speaker: 'Sarah', text: "Welcome everyone. This is our Sprint Planning session. Our aim today is to agree on a Sprint Goal and decide which backlog items we can commit to for the sprint. Victor, can you walk us through the Sprint Goal?", dragAction: null },
     { id: 'victor-goal', speaker: 'Victor', text: "Thanks Sarah. The Sprint Goal I'd like to propose is: Strengthen account security and verification—send confirmation after password resets and deliver the basic ID upload step. We have three refined backlog items on top: the tenant maintenance attachments, the password reset confirmation email, and the ID upload verification feature.", dragAction: null },
     { id: 'sarah-capacity', speaker: 'Sarah', text: "Great. Before we start pulling stories, let's quickly confirm capacity. Srikanth, how's the dev side looking this sprint?", dragAction: null },
     { id: 'srikanth-capacity', speaker: 'Srikanth', text: "On the dev side, we have our full team except for Lisa taking a day off. That means about 80% of our usual capacity. I'd say around 20 story points.", dragAction: null },
