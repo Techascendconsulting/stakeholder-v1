@@ -31,8 +31,7 @@ interface SprintPlanningTrial {
 }
 
 export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
-  console.log('🎯 SprintPlanningSim component rendered - DEBUG VERSION 2.0');
-  console.log('🔧 Layout fixes applied:', new Date().toISOString());
+  console.log('🎯 SprintPlanningSim component rendered');
   const { setCurrentView } = useApp();
   
   const [trials, setTrials] = useState<SprintPlanningTrial[]>([
@@ -287,145 +286,154 @@ export const SprintPlanningSim: React.FC<{ onBack?: () => void }> = ({ onBack })
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-blue-900/10">
+        {/* Modern Header */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-purple-200/50 dark:border-purple-700/50 shadow-sm">
+          <div className="max-w-6xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => {
-                    console.log('🔙 Back button clicked, navigating to main Scrum Practice view');
                     if (onBack) {
                       onBack();
                     } else {
                       setCurrentView('agile-practice');
                     }
                   }}
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-100 hover:bg-purple-100 dark:hover:bg-purple-900/20 rounded-lg transition-all duration-200"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div>
-                  <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">🎯 Sprint Planning Practice - DEBUG 2.0</h1>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Learn how teams commit to work for the sprint using prioritised backlog items</p>
+                  <h1 className="text-2xl font-bold text-purple-900 dark:text-purple-100">🎯 Sprint Planning Practice</h1>
+                  <p className="text-purple-600 dark:text-purple-300">Master the art of sprint commitment and capacity planning</p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setCurrentView('scrum-essentials')}
-                  className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center space-x-2 text-sm"
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span className="hidden sm:inline">Review Essentials</span>
-                  <span className="sm:hidden">Review</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setCurrentView('scrum-essentials')}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-medium flex items-center space-x-2 shadow-lg hover:shadow-xl"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Review Essentials</span>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* DEBUG BANNER */}
-          <div className="bg-red-500 text-white p-4 rounded-lg mb-4 text-center">
-            <strong>DEBUG MODE:</strong> Layout fixes applied at {new Date().toLocaleTimeString()}
-          </div>
-          
-          {/* Progress Overview */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <Target className="w-6 h-6 text-blue-600" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Learning Progress</h2>
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          {/* Progress Card */}
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-200/50 dark:border-purple-700/50 p-8 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Learning Journey</h2>
+                  <p className="text-gray-600 dark:text-gray-300">Complete sprint planning trials to master agile practices</p>
+                </div>
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                {trials.filter(t => t.completed).length}/{trials.length} Sprints Completed
+              <div className="text-right">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {trials.filter(t => t.completed).length}/{trials.length}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Sprints Completed</div>
               </div>
             </div>
-            <p className="text-gray-600 dark:text-gray-300">
-              Complete {trials.length} sprint planning trials to master the art of sprint commitment and capacity planning.
-            </p>
+            
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+              <div 
+                className="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${(trials.filter(t => t.completed).length / trials.length) * 100}%` }}
+              ></div>
+            </div>
           </div>
 
-          {/* Sprint Planning Trials */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sprint Planning Trials</h3>
-            
-            <div className="space-y-4">
-              {trials.map((trial) => (
-                <div key={trial.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{trial.title}</h4>
-                        {trial.completed && <CheckCircle className="w-5 h-5 text-green-500" />}
-                        {trial.locked && <Lock className="w-5 h-5 text-gray-400" />}
-                      </div>
-                      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-3">{trial.description}</p>
-                      
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center space-x-1">
-                          <Users className="w-4 h-4" />
-                          <span>{trial.refinedStories.length} Stories</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{trial.teamCapacity} Points</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Target className="w-4 h-4" />
-                          <span>{trial.difficulty}</span>
-                        </div>
-                      </div>
+          {/* Sprint Trials Grid */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {trials.map((trial) => (
+              <div key={trial.id} className="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-2xl shadow-lg border border-purple-200/50 dark:border-purple-700/50 p-6 hover:shadow-xl hover:scale-105 transition-all duration-300">
+                {/* Trial Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                        {trial.title}
+                      </h3>
+                      {trial.completed && <CheckCircle className="w-5 h-5 text-green-500" />}
+                      {trial.locked && <Lock className="w-5 h-5 text-gray-400" />}
                     </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => startTrial(trial.id)}
-                        disabled={trial.locked}
-                        className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
-                          trial.locked
-                            ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300'
-                        }`}
-                      >
-                        {trial.locked ? (
-                          <>
-                            <Lock className="w-4 h-4" />
-                            <span className="hidden sm:inline">Locked</span>
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="w-4 h-4" />
-                            <span className="hidden sm:inline">Watch Planning</span>
-                            <span className="sm:hidden">Watch</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                      {trial.description}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Trial Stats */}
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <Users className="w-4 h-4 text-purple-600 dark:text-purple-400 mx-auto mb-1" />
+                    <div className="text-sm font-semibold text-purple-700 dark:text-purple-300">{trial.refinedStories.length}</div>
+                    <div className="text-xs text-purple-600 dark:text-purple-400">Stories</div>
+                  </div>
+                  <div className="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                    <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mx-auto mb-1" />
+                    <div className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">{trial.teamCapacity}</div>
+                    <div className="text-xs text-indigo-600 dark:text-indigo-400">Points</div>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <Target className="w-4 h-4 text-blue-600 dark:text-blue-400 mx-auto mb-1" />
+                    <div className="text-sm font-semibold text-blue-700 dark:text-blue-300">{trial.difficulty}</div>
+                    <div className="text-xs text-blue-600 dark:text-blue-400">Level</div>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={() => startTrial(trial.id)}
+                  disabled={trial.locked}
+                  className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                    trial.locked
+                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-lg hover:shadow-xl transform hover:scale-105'
+                  }`}
+                >
+                  {trial.locked ? (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      <span>Locked</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      <span>Start Planning</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* Learning Resources */}
-          <div className="mt-8 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <Calendar className="w-6 h-6 text-purple-600" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Learning Resources</h3>
+          <div className="mt-8 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 dark:from-purple-500/20 dark:to-indigo-500/20 rounded-2xl p-8 border border-purple-200/50 dark:border-purple-700/50">
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Need a Refresher?</h3>
+                <p className="text-gray-600 dark:text-gray-300">Review the sprint planning fundamentals before starting</p>
+              </div>
             </div>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Need a refresher? Review the sprint planning fundamentals before starting.
-            </p>
             <button
               onClick={() => setCurrentView('scrum-essentials')}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-700 hover:from-purple-100 hover:to-indigo-100 hover:border-purple-300 rounded-lg font-medium transition-all duration-200"
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
             >
               <Calendar className="w-4 h-4" />
-              <span>Review Essentials</span>
+              <span>Review Scrum Essentials</span>
             </button>
           </div>
         </div>
