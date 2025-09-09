@@ -177,6 +177,7 @@ const teamMembers: SprintPlanningMember[] = [
   const [transcriptPanelOpen, setTranscriptPanelOpen] = useState(false);
   const [isMeetingPaused, setIsMeetingPaused] = useState(false);
   const [currentlyDiscussing, setCurrentlyDiscussing] = useState<string | null>(null);
+  const [showKanbanBoard, setShowKanbanBoard] = useState(false);
   
   // Refs for meeting control
   const meetingCancelledRef = useRef(false);
@@ -208,7 +209,7 @@ const teamMembers: SprintPlanningMember[] = [
     { id: 'sarah-idcommit', speaker: 'Sarah', text: "Perfect. We'll commit the sliced version to this sprint.", dragAction: 'move-idupload-slice-to-sprint' },
     { id: 'sarah-recap', speaker: 'Sarah', text: "To recap: our Sprint Goal is to improve verification and account processes. We've committed three items — the attachment feature, the password reset confirmation email, and a sliced version of ID upload. Together, these fit our capacity and align with the goal.", dragAction: null },
     { id: 'victor-close', speaker: 'Victor', text: "Thanks everyone. I'm confident this sprint will deliver real improvements for both customers and the housing team.", dragAction: null },
-    { id: 'sarah-close', speaker: 'Sarah', text: "Great collaboration. This sprint is now planned. Let's get ready to start tomorrow with confidence.", dragAction: null }
+    { id: 'sarah-close', speaker: 'Sarah', text: "Great collaboration. This sprint is now planned. Let's get ready to start tomorrow with confidence.", dragAction: 'show-kanban-board' }
   ];
 
 
@@ -396,6 +397,13 @@ const teamMembers: SprintPlanningMember[] = [
           console.log('🎯 Drag action: Moved sliced ID Upload to Sprint Backlog and closed story');
         }
         break;
+      case 'show-kanban-board':
+        // Show Kanban board and move all sprint backlog stories to "To Do" column
+        setShowKanbanBoard(true);
+        // Move all sprint backlog stories to "To Do" status (they're already in sprint backlog)
+        setSprintBacklog(prev => prev.map(story => ({ ...story, status: 'To Do' })));
+        console.log('🎯 Drag action: Showing Kanban board and moving all stories to To Do');
+        break;
     }
   };
 
@@ -550,6 +558,7 @@ const teamMembers: SprintPlanningMember[] = [
     setMeetingTranscript([]);
     setCurrentSegmentIndex(0);
     setCurrentlyDiscussing(null);
+    setShowKanbanBoard(false);
     
     onMeetingEnd({
       messages: [],
@@ -566,6 +575,7 @@ const teamMembers: SprintPlanningMember[] = [
     setIsMeetingPaused(false);
     setCurrentSpeaking(null);
     setCurrentlyDiscussing(null);
+    setShowKanbanBoard(false);
     
     onClose();
   };
@@ -615,13 +625,15 @@ const teamMembers: SprintPlanningMember[] = [
 
       {/* Main Meeting Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Side - Placeholder for Sprint Planning Board */}
+        {/* Left Side - Sprint Board or Kanban Board */}
         <div className="flex-1 bg-gray-50 text-gray-900 p-6 overflow-auto border-r border-gray-200">
           <div className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Sprint Board
-              </h2>
+            {!showKanbanBoard ? (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Sprint Board
+                  </h2>
               
               {/* Start Meeting Button */}
                   {!meetingStarted && (
@@ -864,6 +876,173 @@ const teamMembers: SprintPlanningMember[] = [
                 </div>
               </div>
             </div>
+              </>
+            ) : (
+              /* Kanban Board */
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Sprint Kanban Board
+                  </h2>
+                  <div className="text-sm text-gray-600">
+                    Capacity: {sprintBacklog.reduce((total, story) => total + (story.storyPoints || 0), 0)}/20 points
+                  </div>
+                </div>
+
+                {/* Kanban Columns */}
+                <div className="flex-1 flex gap-4 overflow-x-auto">
+                  {/* To Do Column */}
+                  <div className="flex-1 min-w-64">
+                    <div className="bg-white rounded-lg border border-gray-200 h-full">
+                      <div className="p-4 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-800">To Do ({sprintBacklog.filter(story => story.status === 'To Do').length})</h3>
+                      </div>
+                      <div className="p-4 space-y-3 min-h-96">
+                        {sprintBacklog.filter(story => story.status === 'To Do').map(story => (
+                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                  {story.storyPoints || '?'}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            </div>
+                          </div>
+                        ))}
+                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                          + Create
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* In Progress Column */}
+                  <div className="flex-1 min-w-64">
+                    <div className="bg-white rounded-lg border border-gray-200 h-full">
+                      <div className="p-4 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-800">In Progress ({sprintBacklog.filter(story => story.status === 'In Progress').length})</h3>
+                      </div>
+                      <div className="p-4 space-y-3 min-h-96">
+                        {sprintBacklog.filter(story => story.status === 'In Progress').map(story => (
+                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                  {story.storyPoints || '?'}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            </div>
+                          </div>
+                        ))}
+                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                          + Create
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Testing Column */}
+                  <div className="flex-1 min-w-64">
+                    <div className="bg-white rounded-lg border border-gray-200 h-full">
+                      <div className="p-4 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-800">Testing ({sprintBacklog.filter(story => story.status === 'Testing').length})</h3>
+                      </div>
+                      <div className="p-4 space-y-3 min-h-96">
+                        {sprintBacklog.filter(story => story.status === 'Testing').map(story => (
+                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                  {story.storyPoints || '?'}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            </div>
+                          </div>
+                        ))}
+                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                          + Create
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* UAT Column */}
+                  <div className="flex-1 min-w-64">
+                    <div className="bg-white rounded-lg border border-gray-200 h-full">
+                      <div className="p-4 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-800">UAT ({sprintBacklog.filter(story => story.status === 'UAT').length})</h3>
+                      </div>
+                      <div className="p-4 space-y-3 min-h-96">
+                        {sprintBacklog.filter(story => story.status === 'UAT').map(story => (
+                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                  {story.storyPoints || '?'}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            </div>
+                          </div>
+                        ))}
+                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                          + Create
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Done Column */}
+                  <div className="flex-1 min-w-64">
+                    <div className="bg-white rounded-lg border border-gray-200 h-full">
+                      <div className="p-4 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-800">Done ({sprintBacklog.filter(story => story.status === 'Done').length})</h3>
+                      </div>
+                      <div className="p-4 space-y-3 min-h-96">
+                        {sprintBacklog.filter(story => story.status === 'Done').map(story => (
+                          <div key={story.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-medium text-gray-900 text-sm leading-tight">{story.title}</h4>
+                              <div className="flex items-center space-x-1">
+                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-600">
+                                  {story.storyPoints || '?'}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{story.ticketNumber}</span>
+                              <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                            </div>
+                          </div>
+                        ))}
+                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                          + Create
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
