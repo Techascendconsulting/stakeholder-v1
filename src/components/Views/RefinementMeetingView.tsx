@@ -5,7 +5,7 @@ import { useVoice } from '../../contexts/VoiceContext';
 // import { Message } from '../../types'; // Using custom interface for refinement meeting
 import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
-import { playPreGeneratedAudio, findPreGeneratedAudio, hasPreGeneratedAudio } from '../../services/preGeneratedAudioService';
+import { playPreGeneratedAudio, findPreGeneratedAudio, hasPreGeneratedAudio, stopAllAudio } from '../../services/preGeneratedAudioService';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
 import AIService from '../../services/aiService';
 import AgileRefinementService, { AgileTeamMemberContext } from '../../services/agileRefinementService';
@@ -388,7 +388,17 @@ export const RefinementMeetingView: React.FC<RefinementMeetingViewProps> = ({
       return Promise.resolve();
     }
 
+    if (meetingCancelledRef.current) {
+      console.log(`🚫 Meeting cancelled, skipping audio for ${teamMember.name}`);
+      return Promise.resolve();
+    }
+
     try {
+      if (meetingCancelledRef.current) {
+        console.log(`🚫 Meeting cancelled, skipping audio for ${teamMember.name}`);
+        return Promise.resolve();
+      }
+
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
@@ -1231,11 +1241,13 @@ ${cleanAcceptanceCriteria}`;
   // End meeting
   const handleEndMeeting = async () => {
     console.log('🔚 END MEETING BUTTON CLICKED!');
-    // Immediately mark meeting inactive so all flows stop now
+    // IMMEDIATELY stop all audio and reset meeting state
+    meetingCancelledRef.current = true;
     setIsMeetingActive(false);
 
     // Stop any current audio first
     stopCurrentAudio();
+    stopAllAudio();
     
     // Clear conversation queue and speaking state
     setConversationQueue([]);
