@@ -254,8 +254,8 @@ const teamMembers: SprintPlanningMember[] = [
     try {
       stopCurrentAudio();
       
-      if (!isMeetingActive || meetingCancelledRef.current) {
-        console.log(`🚫 Meeting inactive or cancelled, skipping audio for ${teamMember.name}`);
+      if (meetingCancelledRef.current) {
+        console.log(`🚫 Meeting cancelled, skipping audio for ${teamMember.name}`);
         return Promise.resolve();
       }
 
@@ -385,8 +385,8 @@ const teamMembers: SprintPlanningMember[] = [
     console.log('🎬 Starting Sprint Planning meeting...');
     
     for (let i = 0; i < sprintPlanningSegments.length; i++) {
-      if (meetingCancelledRef.current || !isMeetingActive) {
-        console.log('🚫 Meeting cancelled or inactive, stopping');
+      if (meetingCancelledRef.current) {
+        console.log('🚫 Meeting cancelled, stopping');
         break;
       }
       
@@ -488,7 +488,6 @@ const teamMembers: SprintPlanningMember[] = [
     // Stop all audio and reset meeting state
     stopCurrentAudio();
     meetingCancelledRef.current = true;
-    setIsMeetingActive(false);
     setIsMeetingRunning(false);
     setCurrentSpeaking(null);
     setMeetingTranscript([]);
@@ -505,7 +504,6 @@ const teamMembers: SprintPlanningMember[] = [
     // Stop all audio and reset meeting state
     stopCurrentAudio();
     meetingCancelledRef.current = true;
-    setIsMeetingActive(false);
     setIsMeetingRunning(false);
     setCurrentSpeaking(null);
     
