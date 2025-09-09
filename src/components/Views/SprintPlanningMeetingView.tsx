@@ -72,7 +72,7 @@ const ParticipantCard: React.FC<{
 }> = ({ participant, isCurrentSpeaker, isUser }) => {
 
   return (
-    <div className="relative bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-750 transition-colors border border-gray-700 w-full h-40">
+    <div className="relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden group hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border border-gray-200 dark:border-gray-700 w-full h-40">
       {/* Animated Speaking Ring */}
       {isCurrentSpeaker && (
         <div className="absolute inset-0 rounded-xl border-4 border-green-400 animate-pulse z-10">
@@ -83,7 +83,7 @@ const ParticipantCard: React.FC<{
       {/* Video/Photo Content */}
       {isUser ? (
         <div className="w-full h-full flex items-center justify-center relative">
-          <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600">
+          <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-purple-500 to-pink-500">
             <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
               {getInitials(participant.name)}
             </div>
@@ -105,7 +105,7 @@ const ParticipantCard: React.FC<{
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-blue-500 to-purple-600">
+            <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-purple-500 to-pink-500">
               <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
                 {getInitials(participant.name)}
               </div>
@@ -594,12 +594,12 @@ const teamMembers: SprintPlanningMember[] = [
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 text-white flex flex-col z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
-      <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
         <button
           onClick={handleCloseMeeting}
-          className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+          className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-gray-900 dark:text-white"
         >
           <ArrowLeft size={20} />
           <span>Back</span>
@@ -636,7 +636,7 @@ const teamMembers: SprintPlanningMember[] = [
                   {!meetingStarted && (
                     <button
                       onClick={startMeeting}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg"
                     >
                       <Play size={20} />
                   <span>Start Meeting</span>
@@ -650,7 +650,7 @@ const teamMembers: SprintPlanningMember[] = [
                         console.log('🚀 Starting Sprint!');
                         // TODO: Implement sprint start functionality
                       }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg"
                     >
                       <Play size={20} />
                   <span>Start Sprint</span>
