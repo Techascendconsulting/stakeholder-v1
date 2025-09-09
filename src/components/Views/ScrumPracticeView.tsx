@@ -4,14 +4,17 @@ import { useApp } from '../../contexts/AppContext';
 import BacklogRefinementSim from './ScrumPractice/BacklogRefinementSim';
 import { SprintPlanningSim } from './ScrumPractice/SprintPlanningSim';
 
-const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void) => [
+const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void, setSelectedTheme: (theme: string) => void) => [
   {
     title: "Requirement Documentation",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
     icon: FileText,
     artwork: "📝",
     color: "from-blue-500 to-cyan-500",
-    onClick: () => console.log("Navigate to documentation")
+    onClick: () => {
+      setSelectedTheme("from-blue-500 to-cyan-500");
+      console.log("Navigate to documentation");
+    }
   },
   {
     title: "Backlog Refinement",
@@ -19,7 +22,10 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: Users,
     artwork: "🔍",
     color: "from-purple-500 to-pink-500",
-    onClick: () => handleSetActiveView('backlog-refinement')
+    onClick: () => {
+      setSelectedTheme("from-purple-500 to-pink-500");
+      handleSetActiveView('backlog-refinement');
+    }
   },
   {
     title: "Sprint Planning",
@@ -28,6 +34,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     artwork: "🎯",
     color: "from-green-500 to-emerald-500",
     onClick: () => {
+      setSelectedTheme("from-green-500 to-emerald-500");
       console.log('🎯 Sprint Planning button clicked, setting activeView to sprint-planning');
       handleSetActiveView('sprint-planning');
     }
@@ -38,7 +45,10 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: Clock,
     artwork: "⚡",
     color: "from-orange-500 to-red-500",
-    onClick: () => console.log("Navigate to daily")
+    onClick: () => {
+      setSelectedTheme("from-orange-500 to-red-500");
+      console.log("Navigate to daily");
+    }
   },
   {
     title: "Sprint Review",
@@ -46,7 +56,10 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: BarChart3,
     artwork: "📊",
     color: "from-indigo-500 to-blue-500",
-    onClick: () => console.log("Navigate to review")
+    onClick: () => {
+      setSelectedTheme("from-indigo-500 to-blue-500");
+      console.log("Navigate to review");
+    }
   },
   {
     title: "Sprint Retrospective",
@@ -54,13 +67,17 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     icon: RotateCcw,
     artwork: "🔄",
     color: "from-teal-500 to-cyan-500",
-    onClick: () => console.log("Navigate to retrospective")
+    onClick: () => {
+      setSelectedTheme("from-teal-500 to-cyan-500");
+      console.log("Navigate to retrospective");
+    }
   }
 ];
 
 export const ScrumPracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [activeView, setActiveView] = useState<'main' | 'backlog-refinement' | 'sprint-planning'>('main');
+  const [selectedTheme, setSelectedTheme] = useState<string>('from-blue-500 to-cyan-500');
   
   console.log('🎯 ScrumPracticeView rendered with activeView:', activeView);
 
@@ -69,7 +86,7 @@ export const ScrumPracticeView: React.FC = () => {
     setActiveView(view);
   };
   
-  const sections = getSections(handleSetActiveView);
+  const sections = getSections(handleSetActiveView, setSelectedTheme);
 
   // Show Backlog Refinement simulation if active
   if (activeView === 'backlog-refinement') {
@@ -134,10 +151,10 @@ export const ScrumPracticeView: React.FC = () => {
               
               <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm leading-relaxed">{section.description}</p>
               
-              <button
-                onClick={section.onClick}
-                className={`w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r ${section.color} text-white rounded-lg hover:shadow-md transition-all duration-200 font-medium text-sm transform group-hover:scale-105`}
-              >
+             <button
+               onClick={section.onClick}
+               className={`w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r ${selectedTheme} text-white rounded-lg hover:shadow-md transition-all duration-200 font-medium text-sm transform group-hover:scale-105`}
+             >
                 <span>Go to {section.title}</span>
                 <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
               </button>
