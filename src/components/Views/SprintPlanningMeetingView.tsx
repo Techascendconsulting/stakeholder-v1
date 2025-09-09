@@ -921,9 +921,6 @@ const teamMembers: SprintPlanningMember[] = [
                             </div>
                           </div>
                         ))}
-                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
-                          + Create
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -951,9 +948,6 @@ const teamMembers: SprintPlanningMember[] = [
                             </div>
                           </div>
                         ))}
-                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
-                          + Create
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -981,9 +975,6 @@ const teamMembers: SprintPlanningMember[] = [
                             </div>
                           </div>
                         ))}
-                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
-                          + Create
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -1011,9 +1002,6 @@ const teamMembers: SprintPlanningMember[] = [
                             </div>
                           </div>
                         ))}
-                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
-                          + Create
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -1041,9 +1029,6 @@ const teamMembers: SprintPlanningMember[] = [
                             </div>
                           </div>
                         ))}
-                        <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
-                          + Create
-                        </button>
                       </div>
                     </div>
                 </div>
