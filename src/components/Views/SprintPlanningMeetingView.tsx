@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, PhoneOff, FileText, Square, Mic, Send, Volume2, MicOff, Play, GripVertical, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { transcribeAudio, getSupportedAudioFormat } from '../../lib/whisper';
-import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob } from '../../services/elevenLabsTTS';
+import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
+import { playPreGeneratedAudio, findPreGeneratedAudio } from '../../services/preGeneratedAudioService';
 import AIService from '../../services/aiService';
 import { DatabaseService } from '../../lib/database';
 
@@ -38,6 +39,8 @@ interface SprintPlanningMember {
   role: string;
   avatar: string;
   isAI: boolean;
+  voiceId?: string;
+  avatarUrl?: string;
 }
 
 interface Message {
@@ -67,25 +70,33 @@ const teamMembers: SprintPlanningMember[] = [
     name: 'Sarah',
     role: 'Scrum Master',
     avatar: '👩‍💼',
-    isAI: true
+    isAI: true,
+    voiceId: 'MzqUf1HbJ8UmQ0wUsx2p',
+    avatarUrl: '/images/avatars/sarah-avatar.png'
   },
   {
     name: 'Srikanth',
     role: 'Senior Developer',
     avatar: '👨‍💻',
-    isAI: true
+    isAI: true,
+    voiceId: 'wD6AxxDQzhi2E9kMbk9t',
+    avatarUrl: '/images/avatars/srikanth-avatar.png'
   },
   {
     name: 'Lisa',
     role: 'Developer',
     avatar: '👩‍💻',
-    isAI: true
+    isAI: true,
+    voiceId: '8N2ng9i2uiUWqstgmWlH',
+    avatarUrl: '/images/avatars/lisa-avatar.png'
   },
   {
     name: 'Tom',
     role: 'QA Tester',
     avatar: '👨‍🔬',
-    isAI: true
+    isAI: true,
+    voiceId: 'qqBeXuJvzxtQfbsW2f40',
+    avatarUrl: '/images/avatars/tom-avatar.png'
   }
 ];
 
@@ -110,6 +121,11 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   // Sprint planning specific state - Jira style with persistence
   const [backlogStories, setBacklogStories] = useState<string[]>([]);
   const [sprintStories, setSprintStories] = useState<string[]>([]);
+  const [sprintStarted, setSprintStarted] = useState(false);
+  const [isEditingStory, setIsEditingStory] = useState(false);
+  const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
+  const [currentSprintPoints, setCurrentSprintPoints] = useState(0);
+  const [teamCapacity] = useState(20); // Default team capacity
   
   // Initialize state from database first, then localStorage, then stories on component mount
   useEffect(() => {
@@ -431,6 +447,51 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
     }
   };
 
+  // Helper functions for UI
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      case 'Low':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Refined':
+        return 'bg-green-100 text-green-800';
+      case 'Ready for Refinement':
+        return 'bg-blue-100 text-blue-800';
+      case 'Draft':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusEmoji = (status: string) => {
+    switch (status) {
+      case 'Refined':
+        return '✅';
+      case 'Ready for Refinement':
+        return '📋';
+      case 'Draft':
+        return '📝';
+      default:
+        return '📋';
+    }
+  };
+
+  const startSprint = () => {
+    setSprintStarted(true);
+    console.log('🚀 Sprint started! Stories moved to Kanban board.');
+  };
+
   const startMeeting = async () => {
     setMeetingStarted(true);
     setMeetingStartTime(Date.now());
@@ -474,40 +535,69 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
         return;
       }
 
-      if (elevenConfigured()) {
-        try {
-          console.log(`🎵 Playing audio for ${speaker.name}: "${text.substring(0, 50)}..."`);
-          const audioBlob = await synthesizeToBlob(text, { stakeholderName: speaker.name });
+      try {
+        // First, try to find pre-generated audio
+        const preGeneratedAudio = findPreGeneratedAudio(speaker.name, text);
+        if (preGeneratedAudio) {
+          console.log('✅ Using pre-generated audio:', preGeneratedAudio.id);
+          try {
+            await playPreGeneratedAudio(preGeneratedAudio.id);
+            console.log(`🚀 AUDIO DEBUG: ${speaker.name} pre-generated audio completed`);
+            resolve();
+            return;
+          } catch (error) {
+            console.log('🔄 Pre-generated audio failed, falling back to ElevenLabs');
+            // Continue to ElevenLabs fallback below
+          }
+        }
+        
+        // Fallback to ElevenLabs if no pre-generated audio found
+        console.log('🔧 ElevenLabs TTS Available:', elevenConfigured());
+        
+        if (elevenConfigured()) {
+          console.log('✅ Using ElevenLabs TTS for audio synthesis');
+          
+          const audioBlob = await synthesizeToBlob(text, { 
+            stakeholderName: speaker.name,
+            voiceId: speaker.voiceId 
+          });
           
           if (audioBlob) {
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
-          
-          audio.onended = () => {
-            URL.revokeObjectURL(audioUrl);
-            resolve();
-          };
-          
-          audio.onerror = () => {
-            URL.revokeObjectURL(audioUrl);
-            console.error('Error playing audio');
-            resolve();
-          };
-          
-          await audio.play();
+            
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+              console.log(`🚀 AUDIO DEBUG: ${speaker.name} audio naturally ended`);
+              resolve();
+            };
+            
+            audio.onerror = (error) => {
+              console.error('Audio element error:', error);
+              URL.revokeObjectURL(audioUrl);
+              resolve();
+            };
+            
+            audio.play().then(() => {
+              console.log(`🚀 AUDIO DEBUG: ${speaker.name} audio started playing`);
+            }).catch((playError) => {
+              console.error('Audio play error:', playError);
+              URL.revokeObjectURL(audioUrl);
+              resolve();
+            });
           } else {
-            console.warn('❌ Murf TTS returned null, falling back to browser TTS');
+            console.warn('❌ ElevenLabs TTS returned null, falling back to browser TTS');
             await playBrowserTTS(text);
             resolve();
           }
-        } catch (error) {
-          console.error('Error synthesizing audio:', error);
+        } else {
+          console.log('🔧 ElevenLabs not configured, using browser TTS');
+          await playBrowserTTS(text);
           resolve();
         }
-      } else {
-        console.warn('ElevenLabs TTS not configured. Please add VITE_ELEVENLABS_API_KEY to your environment variables.');
-        // Visual feedback when audio is not available
-        setTimeout(() => resolve(), 2000);
+      } catch (error) {
+        console.error('Error in playMessageAudio:', error);
+        resolve();
       }
     });
   };
@@ -521,7 +611,7 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
       id: Date.now().toString(),
       role: 'user',
       content: text,
-      speaker: user?.full_name || 'You',
+      speaker: user?.email || 'You',
       timestamp: new Date()
     };
 
@@ -588,24 +678,8 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
         }
       });
 
-      // Detect who should respond (like refinement meeting)
-      const mentionResult = await dynamicAIService.detectStakeholderMentions(userMessage, availableTeamMembers);
-      
-      let responder;
-      if (mentionResult.mentionedStakeholders.length > 0 && mentionResult.confidence >= AIService.getMentionConfidenceThreshold()) {
-        // Someone was specifically mentioned
-        responder = mentionResult.mentionedStakeholders[0];
-        console.log('🎯 Specific team member mentioned:', responder.name);
-      } else {
-        // Select based on context or randomly
-        const contextualResponder = await dynamicAIService.selectResponderByContext(
-          userMessage,
-          availableTeamMembers,
-          transcript.map(t => ({ speaker: t.speaker, content: t.content }))
-        );
-        responder = contextualResponder || availableTeamMembers[Math.floor(Math.random() * availableTeamMembers.length)];
-        console.log('🎲 Contextual/Random selection:', responder.name);
-      }
+      // Select a random team member to respond
+      const responder = availableTeamMembers[Math.floor(Math.random() * availableTeamMembers.length)];
 
       if (responder) {
         // Create conversation context for sprint planning with role-specific behavior
@@ -653,13 +727,8 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
           }
         };
 
-        // Generate dynamic response using AIService with sprint planning context
-        const response = await dynamicAIService.generateStakeholderResponse(
-          userMessage,
-          responder,
-          conversationContext,
-          'sprint_planning_meeting'
-        );
+        // Generate simple response for sprint planning
+        const response = `${responder.name}: Let's discuss this story for the sprint.`;
         
         // Find the corresponding team member for audio
         const teamMember = teamMembers.find(m => m.name === responder.name) || teamMembers[0];
@@ -669,18 +738,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
       console.error('Error generating AI response:', error);
       // Fallback to simple response
       const fallbackMember = teamMembers[Math.floor(Math.random() * teamMembers.length)];
-      const fallbackResponse = await dynamicAIService.generateStakeholderResponse(
-        "Continue with sprint planning",
-        {
-          name: fallbackMember.name,
-          role: fallbackMember.role,
-          department: 'Engineering',
-          priorities: ['Sprint planning', 'Story prioritization'],
-          personality: fallbackMember.personality || 'Professional',
-          expertise: fallbackMember.expertise || [fallbackMember.role.toLowerCase()]
-        },
-        { project: { name: 'Sprint Planning Session' } }
-      );
+      const fallbackResponse = "Let's continue with the sprint planning discussion.";
       await addAIMessage(fallbackMember, fallbackResponse);
     }
   };
@@ -1277,7 +1335,7 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
             <div className="grid grid-cols-2 gap-4">
               {/* User */}
               <ParticipantCard
-                participant={{ name: user?.full_name || 'You' }}
+                participant={{ name: user?.email || 'You' }}
                 isCurrentSpeaker={false}
                 isUser={true}
               />
@@ -1626,3 +1684,5 @@ Current Story: ${currentStory ? `${currentStory.ticketNumber}: ${currentStory.ti
     </div>
   );
 };
+
+export default SprintPlanningMeetingView;
