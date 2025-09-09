@@ -389,11 +389,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                             
                             {/* Summary */}
                             <div className="col-span-2 flex items-center">
-                              <div>
-                                <div className="text-sm font-medium text-gray-900 line-clamp-1">{story.title}</div>
-                                {story.description && (
-                                  <div className="text-xs text-gray-500 line-clamp-2 mt-1">{story.description}</div>
-                                )}
+                              <div className="truncate">
+                                <div className="text-sm font-medium text-gray-900 truncate">{story.title}</div>
                               </div>
                             </div>
                             
@@ -484,11 +481,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                         
                         {/* Summary */}
                         <div className="col-span-2 flex items-center">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 line-clamp-1">{story.title}</div>
-                            {story.description && (
-                              <div className="text-xs text-gray-500 line-clamp-2 mt-1">{story.description}</div>
-                            )}
+                          <div className="truncate">
+                            <div className="text-sm font-medium text-gray-900 truncate">{story.title}</div>
                           </div>
                         </div>
                         
