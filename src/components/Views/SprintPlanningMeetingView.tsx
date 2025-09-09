@@ -130,24 +130,24 @@ const teamMembers: SprintPlanningMember[] = [
   },
   {
       name: 'Victor',
-    role: 'Senior Developer',
-    avatar: '👨‍💻',
+    role: 'Business Analyst',
+    avatar: '👨‍💼',
       isAI: true,
-      voiceId: 'xeBpkkuzgxa0IwKt7NTP',
+      voiceId: 'neMPCpWtBwWZhxEC8qpe',
       avatarUrl: '/images/avatars/victor-avatar.png'
   },
   {
-      name: 'Srikanth',
+    name: 'Srikanth',
     role: 'Developer',
-      avatar: '👨‍💻',
+    avatar: '👨‍💻',
       isAI: true,
       voiceId: 'wD6AxxDQzhi2E9kMbk9t',
       avatarUrl: '/images/avatars/srikanth-avatar.png'
-    },
-    {
-      name: 'Lisa',
-      role: 'Business Analyst',
-      avatar: '👩‍💼',
+  },
+  {
+    name: 'Lisa',
+    role: 'Developer',
+    avatar: '👩‍💻',
       isAI: true,
       voiceId: '8N2ng9i2uiUWqstgmWlH',
       avatarUrl: '/images/avatars/lisa-avatar.png'
@@ -496,7 +496,7 @@ const teamMembers: SprintPlanningMember[] = [
     setMeetingTranscript([]);
     setCurrentSegmentIndex(0);
     
-    onMeetingEnd({
+      onMeetingEnd({
       messages: [],
       meetingDuration: 0
     });
@@ -805,23 +805,23 @@ const teamMembers: SprintPlanningMember[] = [
                 isCurrentSpeaker={currentSpeaking === 'Sarah'}
                 isUser={false}
               />
-              <ParticipantCard
+                <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Victor') || teamMembers[1]}
                 isCurrentSpeaker={currentSpeaking === 'Victor'}
-                isUser={false}
-              />
-              <ParticipantCard
+                  isUser={false}
+                />
+                  <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Srikanth') || teamMembers[2]}
                 isCurrentSpeaker={currentSpeaking === 'Srikanth'}
-                isUser={false}
-              />
-              
+                    isUser={false}
+                  />
+
               {/* Row 2: Lisa, Tom, User */}
-              <ParticipantCard
+                  <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Lisa') || teamMembers[3]}
                 isCurrentSpeaker={currentSpeaking === 'Lisa'}
-                isUser={false}
-              />
+                    isUser={false}
+                  />
               <ParticipantCard
                 participant={teamMembers.find(m => m.name === 'Tom') || teamMembers[4]}
                 isCurrentSpeaker={currentSpeaking === 'Tom'}
@@ -832,7 +832,7 @@ const teamMembers: SprintPlanningMember[] = [
                 isCurrentSpeaker={false}
                 isUser={true}
               />
-            </div>
+                </div>
           </div>
         </div>
       </div>
@@ -871,84 +871,84 @@ const teamMembers: SprintPlanningMember[] = [
         {/* Left Side - Input Area */}
         <div className="flex-1 px-6 py-4 bg-gray-900 border-t border-gray-700 relative">
           {/* Transcript Panel - slides up from input area */}
-          <div 
-            className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
-              transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
-            }`}
-          >
-            {/* Transcript Header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600">
-              <div className="flex items-center space-x-2">
+            <div 
+              className={`absolute bottom-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-600 transition-all duration-300 ease-in-out overflow-hidden ${
+                transcriptPanelOpen ? 'max-h-32' : 'max-h-0'
+              }`}
+            >
+              {/* Transcript Header */}
+              <div className="flex items-center justify-between px-4 py-2 border-b border-gray-600">
+                <div className="flex items-center space-x-2">
                 <FileText className="w-4 h-4 text-purple-400" />
                 <h3 className="text-white font-medium text-sm">Transcript</h3>
                 <span className="text-gray-400 text-xs">({meetingTranscript.length})</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <button
-                  onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
-                  className="text-gray-400 hover:text-white transition-colors p-1"
-                  title={transcriptPanelOpen ? "Minimize transcript" : "Show transcript"}
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setMeetingTranscript([])}
-                  className="text-gray-400 hover:text-red-400 transition-colors p-1"
-                  title="Clear transcript"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-
-            {/* Transcript Content */}
-            <div className="overflow-y-auto p-3 space-y-2" style={{ height: '80px' }}>
-              {meetingTranscript.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <div className="text-center">
-                    <div className="w-6 h-6 mx-auto mb-1 opacity-50">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                      </svg>
-                    </div>
-                    <p className="text-xs">Transcript appears here</p>
-                  </div>
                 </div>
-              ) : (
-                <>
-                  {meetingTranscript.map((message) => (
-                    <div key={message.id} className="flex space-x-2">
-                      <div className="flex-shrink-0">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                          message.role === 'user' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-purple-600 text-white'
-                        }`}>
-                          {message.role === 'user' 
-                            ? 'U' 
-                            : message.speaker?.charAt(0) || 'A'
-                          }
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-1 mb-1">
-                          <span className="text-white font-medium text-xs">
-                            {message.role === 'user' ? 'You' : message.speaker}
-                          </span>
-                          <span className="text-gray-500 text-xs">
-                            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-gray-200 text-xs leading-relaxed">{message.content}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={transcriptEndRef} />
-                </>
-              )}
-            </div>
-          </div>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => setTranscriptPanelOpen(!transcriptPanelOpen)}
+                    className="text-gray-400 hover:text-white transition-colors p-1"
+                    title={transcriptPanelOpen ? "Minimize transcript" : "Show transcript"}
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  <button
+                  onClick={() => setMeetingTranscript([])}
+                    className="text-gray-400 hover:text-red-400 transition-colors p-1"
+                    title="Clear transcript"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
 
+              {/* Transcript Content */}
+              <div className="overflow-y-auto p-3 space-y-2" style={{ height: '80px' }}>
+              {meetingTranscript.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-gray-400">
+                    <div className="text-center">
+                      <div className="w-6 h-6 mx-auto mb-1 opacity-50">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                      </div>
+                      <p className="text-xs">Transcript appears here</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                  {meetingTranscript.map((message) => (
+                      <div key={message.id} className="flex space-x-2">
+                        <div className="flex-shrink-0">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                            message.role === 'user' 
+                              ? 'bg-blue-600 text-white' 
+                            : 'bg-purple-600 text-white'
+                          }`}>
+                            {message.role === 'user' 
+                              ? 'U' 
+                              : message.speaker?.charAt(0) || 'A'
+                            }
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-1 mb-1">
+                            <span className="text-white font-medium text-xs">
+                              {message.role === 'user' ? 'You' : message.speaker}
+                            </span>
+                            <span className="text-gray-500 text-xs">
+                              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-gray-200 text-xs leading-relaxed">{message.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={transcriptEndRef} />
+                  </>
+                )}
+              </div>
+        </div>
+        
           <div className="flex space-x-3">
             <input
               type="text"
@@ -957,18 +957,18 @@ const teamMembers: SprintPlanningMember[] = [
               className="flex-1 bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 placeholder-gray-400 disabled:opacity-50"
             />
             
-            <button
+              <button
               disabled={!meetingStarted}
               className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors"
-            >
+              >
               <Play className="w-4 h-4 text-white" />
-            </button>
-          </div>
-        </div>
+              </button>
+                  </div>
+                </div>
 
         {/* Right Side - Spacer to match participants panel width */}
         <div className="w-96"></div>
-      </div>
+                  </div>
     </div>
   );
 };
