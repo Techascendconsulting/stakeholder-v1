@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Play, PhoneOff } from 'lucide-react';
+import { ArrowLeft, Play, PhoneOff, GripVertical } from 'lucide-react';
 import { getUserProfilePhoto, getUserDisplayName } from '../../utils/profileUtils';
 
 // Custom interface for sprint planning meeting messages
@@ -349,7 +349,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           <div className="w-2 h-2 bg-gray-300 rounded"></div>
                           <div className="w-2 h-2 bg-gray-300 rounded"></div>
                         </div>
-                        <p className="text-sm">
+                        <p className="text-sm text-gray-500">
                           Drag stories from Product Backlog to start building your sprint
                         </p>
                       </div>
@@ -379,7 +379,12 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                           >
                             {/* Key */}
                             <div className="col-span-1 flex items-center">
-                              <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 flex items-center justify-center text-gray-400 cursor-move">
+                                  <GripVertical className="w-3 h-3" />
+                                </div>
+                                <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
+                              </div>
                             </div>
                             
                             {/* Summary */}
@@ -470,12 +475,8 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                         {/* Key */}
                         <div className="col-span-1 flex items-center">
                           <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 flex items-center justify-center text-gray-400">
-                              <div className="flex flex-col gap-0.5">
-                                <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                                <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                                <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                              </div>
+                            <div className="w-4 h-4 flex items-center justify-center text-gray-400 cursor-move">
+                              <GripVertical className="w-3 h-3" />
                             </div>
                             <span className="text-sm font-medium text-blue-600">{story.ticketNumber}</span>
                           </div>
