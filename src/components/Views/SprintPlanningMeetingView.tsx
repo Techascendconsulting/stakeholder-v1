@@ -620,7 +620,7 @@ const teamMembers: SprintPlanningMember[] = [
           <div className="h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                Sprint Planning Board
+                Sprint Board
               </h2>
               
               {/* Start Meeting Button */}
@@ -631,6 +631,20 @@ const teamMembers: SprintPlanningMember[] = [
                     >
                       <Play size={20} />
                   <span>Start Meeting</span>
+                    </button>
+                  )}
+
+              {/* Start Sprint Button - Only shown after meeting has started */}
+                  {meetingStarted && (
+                    <button
+                      onClick={() => {
+                        console.log('🚀 Starting Sprint!');
+                        // TODO: Implement sprint start functionality
+                      }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 shadow-lg"
+                    >
+                      <Play size={20} />
+                  <span>Start Sprint</span>
                     </button>
                   )}
             </div>
