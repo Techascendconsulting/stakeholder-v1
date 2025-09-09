@@ -136,11 +136,11 @@ export const ScrumPracticeView: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Many Different Ways to Learn About Scrum
+              Scrum Events a Business Analyst Should Learn to Take Part In
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Practice Scrum skills in realistic scenarios with interactive simulations, 
-              hands-on exercises, and real-world examples that help you master the art of agile development.
+              Master the essential Scrum ceremonies and practices that every Business Analyst needs to know. 
+              Practice in realistic scenarios with interactive simulations and hands-on exercises.
             </p>
           </div>
         </div>
