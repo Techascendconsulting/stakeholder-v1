@@ -335,17 +335,20 @@ const teamMembers: SprintPlanningMember[] = [
       case 'open-maintenance-story':
         // Open Maintenance Request Attachments story
         setCurrentlyDiscussing('STORY-1001');
-        console.log('🎯 Drag action: Opened Maintenance Attachments story');
+        console.log('🎯 Drag action: Opened Maintenance Attachments story (STORY-1001)');
+        console.log('🎯 Currently discussing set to:', 'STORY-1001');
         break;
       case 'open-password-story':
         // Open Password Reset story
         setCurrentlyDiscussing('STORY-1002');
-        console.log('🎯 Drag action: Opened Password Reset story');
+        console.log('🎯 Drag action: Opened Password Reset story (STORY-1002)');
+        console.log('🎯 Currently discussing set to:', 'STORY-1002');
         break;
       case 'open-idupload-story':
         // Open ID Upload story
         setCurrentlyDiscussing('STORY-1003');
-        console.log('🎯 Drag action: Opened ID Upload story');
+        console.log('🎯 Drag action: Opened ID Upload story (STORY-1003)');
+        console.log('🎯 Currently discussing set to:', 'STORY-1003');
         break;
       case 'move-maintenance-to-discussing':
         // Move Maintenance Request Attachments to currently discussing (visual highlight)
@@ -783,6 +786,11 @@ const teamMembers: SprintPlanningMember[] = [
                         } ${
                           meetingStarted ? 'cursor-move hover:bg-blue-50' : 'cursor-pointer hover:bg-gray-50'
                         }`}
+                        onClick={() => {
+                          console.log('🔍 Story clicked:', story.ticketNumber);
+                          console.log('🔍 Currently discussing:', currentlyDiscussing);
+                          console.log('🔍 Match:', currentlyDiscussing === story.ticketNumber);
+                        }}
                       >
                         {/* Key */}
                         <div className="col-span-1 flex items-center">
