@@ -459,14 +459,21 @@ export async function playPreGeneratedAudio(audioId: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const audio = new Audio(audioFile.audioPath);
     
+    // Track this audio element globally
+    trackAudioElement(audio);
+    
     audio.onended = () => {
       console.log(`🎵 Pre-generated audio completed: ${audioId}`);
+      // Remove from tracking when completed
+      activeAudioElements = activeAudioElements.filter(a => a !== audio);
       resolve();
     };
     
     audio.onerror = (error) => {
       console.error(`❌ Pre-generated audio error for ${audioId}:`, error);
       console.log(`🔄 Falling back to ElevenLabs for ${audioId}`);
+      // Remove from tracking on error
+      activeAudioElements = activeAudioElements.filter(a => a !== audio);
       // Reject so the calling code knows to fall back to ElevenLabs
       reject(new Error(`Pre-generated audio failed: ${audioId}`));
     };
@@ -475,6 +482,8 @@ export async function playPreGeneratedAudio(audioId: string): Promise<void> {
     audio.play().catch((playError) => {
       console.error(`❌ Audio play failed for ${audioId}:`, playError);
       console.log(`🔄 Falling back to ElevenLabs for ${audioId}`);
+      // Remove from tracking on play error
+      activeAudioElements = activeAudioElements.filter(a => a !== audio);
       // Reject so the calling code knows to fall back to ElevenLabs
       reject(new Error(`Audio play failed: ${audioId}`));
     });
@@ -522,12 +531,30 @@ export function hasPreGeneratedAudio(audioId: string): boolean {
          sprintPlanningAudioFiles.some(file => file.id === audioId);
 }
 
+// Global audio tracking
+let activeAudioElements: HTMLAudioElement[] = [];
+
 // Global function to stop all audio
 export function stopAllAudio(): void {
+  // Stop tracked audio elements
+  activeAudioElements.forEach(audio => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+  
+  // Stop any other audio elements on the page
   const audioElements = document.querySelectorAll('audio');
   audioElements.forEach(audio => {
     audio.pause();
     audio.currentTime = 0;
   });
+  
+  // Clear the tracking array
+  activeAudioElements = [];
   console.log('🔇 Stopped all audio elements');
+}
+
+// Function to track audio elements
+export function trackAudioElement(audio: HTMLAudioElement): void {
+  activeAudioElements.push(audio);
 }

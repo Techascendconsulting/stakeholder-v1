@@ -488,9 +488,9 @@ const teamMembers: SprintPlanningMember[] = [
 
   // End meeting
   const handleEndMeeting = () => {
-    // Stop all audio and reset meeting state
-    stopCurrentAudio();
+    // IMMEDIATELY stop all audio and reset meeting state
     meetingCancelledRef.current = true;
+    stopCurrentAudio();
     setIsMeetingRunning(false);
     setCurrentSpeaking(null);
     setMeetingTranscript([]);
@@ -504,9 +504,9 @@ const teamMembers: SprintPlanningMember[] = [
 
   // Close meeting
   const handleCloseMeeting = () => {
-    // Stop all audio and reset meeting state
-    stopCurrentAudio();
+    // IMMEDIATELY stop all audio and reset meeting state
     meetingCancelledRef.current = true;
+    stopCurrentAudio();
     setIsMeetingRunning(false);
     setCurrentSpeaking(null);
     
