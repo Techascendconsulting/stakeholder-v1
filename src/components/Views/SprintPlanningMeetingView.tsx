@@ -439,49 +439,6 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
   };
 
   // Helper functions for UI
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      case 'Medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'Low':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Refined':
-        return 'bg-green-100 text-green-800';
-      case 'Ready for Refinement':
-        return 'bg-blue-100 text-blue-800';
-      case 'Draft':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusEmoji = (status: string) => {
-    switch (status) {
-      case 'Refined':
-        return '✅';
-      case 'Ready for Refinement':
-        return '📋';
-      case 'Draft':
-        return '📝';
-      default:
-        return '📋';
-    }
-  };
-
-  const startSprint = () => {
-    setSprintStarted(true);
-    console.log('🚀 Sprint started! Stories moved to Kanban board.');
-  };
 
   const startMeeting = async () => {
     setMeetingStarted(true);
