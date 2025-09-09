@@ -36,23 +36,40 @@ const UserStoryCheckerView: React.FC = () => {
       roleClarity: /as a \w+/i.test(story),
       triggerAction: /i want to \w+/i.test(story),
       outcomeResult: /so that/i.test(story),
-      acFormat: /given|when|then|acceptance criteria/i.test(story),
-      notTooTechnical: !/api|database|sql|json|xml|rest|endpoint/i.test(lowerStory),
-      businessRulesPresent: /rule|policy|validation|limit|maximum|minimum/i.test(lowerStory),
-      scopeAppropriate: story.length < 200 && !/and also|additionally|furthermore/i.test(story)
+      acFormat: /acceptance criteria|given.*when.*then|ac:|criteria:/i.test(story),
+      notTooTechnical: !/api|database|sql|json|xml|rest|endpoint|microservice|kubernetes/i.test(lowerStory),
+      businessRulesPresent: /rule|policy|validation|limit|maximum|minimum|allowed|restricted/i.test(lowerStory),
+      scopeAppropriate: story.length < 200 && !/and also|additionally|furthermore|moreover/i.test(story)
     };
   };
 
   const analyzeACCoverage = (story: string): ACCoverageResult => {
     const lowerStory = story.toLowerCase();
     
+    // Check if there are actual acceptance criteria sections
+    const hasACSection = /acceptance criteria|given|when|then|ac:|criteria:/i.test(story);
+    
+    if (!hasACSection) {
+      // If no AC section found, return all false
+      return {
+        happyPath: false,
+        inputTrigger: false,
+        errors: false,
+        feedback: false,
+        nonFunctionals: false,
+        businessRules: false,
+        scope: false
+      };
+    }
+    
+    // Only analyze AC coverage if AC section exists
     return {
-      happyPath: /success|complete|upload|submit/i.test(lowerStory),
-      inputTrigger: /when|if|user|click|select/i.test(lowerStory),
-      errors: /error|invalid|fail|reject|deny/i.test(lowerStory),
-      feedback: /message|notification|confirm|success|feedback/i.test(lowerStory),
-      nonFunctionals: /size|time|performance|mobile|responsive/i.test(lowerStory),
-      businessRules: /rule|policy|validation|limit|maximum|minimum/i.test(lowerStory),
+      happyPath: /success|complete|upload|submit|given.*when.*then/i.test(lowerStory),
+      inputTrigger: /when.*user|when.*click|when.*select|given.*when/i.test(lowerStory),
+      errors: /error|invalid|fail|reject|deny|exception|timeout/i.test(lowerStory),
+      feedback: /message|notification|confirm|success|feedback|display|show/i.test(lowerStory),
+      nonFunctionals: /size|time|performance|mobile|responsive|limit|mb|kb|seconds/i.test(lowerStory),
+      businessRules: /rule|policy|validation|limit|maximum|minimum|allowed|restricted/i.test(lowerStory),
       scope: story.length < 200
     };
   };
@@ -201,6 +218,14 @@ Acceptance Criteria:
                 <h3 className="text-lg font-semibold mb-3 text-yellow-500 dark:text-yellow-400">
                   🟨 Acceptance Criteria Coverage
                 </h3>
+                {!results.acCoverage.happyPath && !results.acCoverage.inputTrigger && !results.acCoverage.errors && 
+                 !results.acCoverage.feedback && !results.acCoverage.nonFunctionals && !results.acCoverage.businessRules && (
+                  <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      ⚠️ <strong>No Acceptance Criteria Found:</strong> Your story doesn't appear to have explicit acceptance criteria. Consider adding a section with "Given/When/Then" scenarios or "Acceptance Criteria:" list.
+                    </p>
+                  </div>
+                )}
                 <table className="w-full table-auto text-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
