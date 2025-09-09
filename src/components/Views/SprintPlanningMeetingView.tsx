@@ -210,21 +210,12 @@ export const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps>
 
   
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
-  const [isEditingStory, setIsEditingStory] = useState(false);
   
   // Inline editing states
   const [editingField, setEditingField] = useState<{storyId: string, field: 'priority' | 'status' | 'storyPoints'} | null>(null);
   const [tempValue, setTempValue] = useState<string>('');
   
   // Sprint execution state
-  const [sprintStarted, setSprintStarted] = useState(() => {
-    try {
-      return localStorage.getItem('sprint_started') === 'true';
-    } catch {
-      return false;
-    }
-  });
-  const [editingStory, setEditingStory] = useState<AgileTicket | null>(null);
 
   // Refs for audio recording
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
