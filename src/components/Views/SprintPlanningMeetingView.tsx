@@ -596,10 +596,10 @@ const teamMembers: SprintPlanningMember[] = [
   return (
     <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+      <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
         <button
           onClick={handleCloseMeeting}
-          className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-gray-900 dark:text-white"
+          className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-white"
         >
           <ArrowLeft size={20} />
           <span>Back</span>
