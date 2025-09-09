@@ -131,28 +131,50 @@ export const ScrumPracticeView: React.FC = () => {
         </div>
       </div>
 
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Many Different Ways to Learn About Scrum
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Practice Scrum skills in realistic scenarios with interactive simulations, 
+              hands-on exercises, and real-world examples that help you master the art of agile development.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {sections.map((section, index) => (
-            <div key={index} className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
+            <div key={index} className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 text-center">
+              {/* Centered Icon */}
+              <div className="mb-4 flex justify-center">
+                <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${section.color} flex items-center justify-center shadow-md`}>
+                  <section.icon className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              
               {/* Title */}
               <div className="mb-3">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight">{section.title}</h2>
               </div>
               
               {/* Description */}
-              <div className="mb-4">
+              <div className="mb-6">
                 <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{section.description}</p>
               </div>
               
               {/* Action Button */}
-              <div className="flex justify-end">
+              <div className="flex justify-center">
                 <button
                   onClick={section.onClick}
-                  className={`inline-flex items-center px-3 py-2 bg-gradient-to-r ${selectedTheme} text-white rounded-md hover:shadow-md transition-all duration-200 font-medium text-sm`}
+                  className={`inline-flex items-center px-4 py-2 bg-gradient-to-r ${selectedTheme} text-white rounded-md hover:shadow-md transition-all duration-200 font-medium text-sm`}
                 >
-                  Learn more
+                  Learn more →
                 </button>
               </div>
             </div>
