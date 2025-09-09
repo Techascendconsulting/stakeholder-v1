@@ -93,11 +93,17 @@ const ParticipantCard: React.FC<{
       ) : (
         <div className="w-full h-full flex items-center justify-center relative">
           {participant.avatarUrl ? (
-            <img
-              src={participant.avatarUrl}
-              alt={participant.name}
-              className="w-full h-full object-cover"
-            />
+            <>
+              <img
+                src={participant.avatarUrl}
+                alt={participant.name}
+                className="w-full h-full object-cover"
+              />
+              {/* Name overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-sm font-medium py-1 px-2 text-center">
+                {participant.name}
+              </div>
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-blue-500 to-purple-600">
               <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-2">
