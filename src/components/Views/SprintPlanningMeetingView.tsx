@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Play, PhoneOff, GripVertical, FileText, ChevronDown, X } from 'lucide-react';
 import { isConfigured as elevenConfigured, synthesizeToBlob } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS';
-import { playPreGeneratedAudio, findPreGeneratedAudio } from '../../services/preGeneratedAudioService';
+import { playPreGeneratedAudio, findPreGeneratedAudio, stopAllAudio } from '../../services/preGeneratedAudioService';
 
 // Custom interface for sprint planning meeting messages
 interface MeetingMessage {
@@ -244,6 +244,9 @@ const teamMembers: SprintPlanningMember[] = [
       setCurrentAudio(null);
     }
     setCurrentSpeaking(null);
+    
+    // Stop all audio elements globally
+    stopAllAudio();
   };
 
   const playMessageAudio = async (text: string, teamMember: SprintPlanningMember, autoPlay: boolean = true): Promise<void> => {

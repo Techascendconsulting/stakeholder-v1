@@ -521,3 +521,13 @@ export function hasPreGeneratedAudio(audioId: string): boolean {
   return refinementAudioFiles.some(file => file.id === audioId) || 
          sprintPlanningAudioFiles.some(file => file.id === audioId);
 }
+
+// Global function to stop all audio
+export function stopAllAudio(): void {
+  const audioElements = document.querySelectorAll('audio');
+  audioElements.forEach(audio => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+  console.log('🔇 Stopped all audio elements');
+}
