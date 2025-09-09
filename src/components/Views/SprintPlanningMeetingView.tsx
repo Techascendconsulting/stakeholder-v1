@@ -562,20 +562,28 @@ const teamMembers: SprintPlanningMember[] = [
 
   // Pause meeting
   const handlePauseMeeting = () => {
+    console.log('⏸️ Pause button clicked, current state:', isMeetingPaused);
     setIsMeetingPaused(true);
     // Pause current audio if playing
     if (currentAudio) {
+      console.log('⏸️ Pausing current audio');
       currentAudio.pause();
+    } else {
+      console.log('⏸️ No current audio to pause');
     }
     console.log('⏸️ Sprint Planning meeting paused');
   };
 
   // Resume meeting
   const handleResumeMeeting = () => {
+    console.log('▶️ Resume button clicked, current state:', isMeetingPaused);
     setIsMeetingPaused(false);
     // Resume audio if it was playing
     if (currentAudio && currentAudio.paused) {
+      console.log('▶️ Resuming current audio');
       currentAudio.play();
+    } else {
+      console.log('▶️ No paused audio to resume');
     }
     console.log('▶️ Sprint Planning meeting resumed');
   };
@@ -648,27 +656,9 @@ const teamMembers: SprintPlanningMember[] = [
             className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-900 dark:text-white"
           >
             <ArrowLeft size={20} />
-            <span>Back to Sprint Planning Simulation</span>
+            <span>Back</span>
           </button>
           
-          <div className="flex items-center space-x-3">
-            {meetingStarted ? (
-              <>
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="font-medium text-gray-900 dark:text-white dark:text-white">Sprint Planning Meeting - Live</span>
-              </>
-            ) : (
-              <>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="font-medium text-gray-900 dark:text-white dark:text-white">Sprint Planning Meeting - Ready to Start</span>
-              </>
-            )}
-          </div>
-          
-          <div className="flex items-center space-x-2 text-green-400">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-sm">Browser TTS</span>
-          </div>
         </div>
 
         <div className="flex items-center space-x-3">

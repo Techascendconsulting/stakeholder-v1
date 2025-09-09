@@ -169,9 +169,9 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
               display: participant.avatarUrl ? 'none' : 'flex'
             }}
           >
-            <span className="text-white text-lg font-bold">
-              {getInitials(participant.name)}
-            </span>
+          <span className="text-white text-lg font-bold">
+            {getInitials(participant.name)}
+          </span>
           </div>
         </div>
       )}
@@ -986,9 +986,9 @@ ${cleanAcceptanceCriteria}`;
       console.log('🚫 Meeting no longer active or cancelled, skipping AI response generation');
       return;
     }
-
-    // Use the same dynamic AI service as voice-only meeting
-    const dynamicAIService = AIService.getInstance();
+      
+      // Use the same dynamic AI service as voice-only meeting
+      const dynamicAIService = AIService.getInstance();
     
     try {
       console.log('🤖 Generating dynamic AI response for:', userMessage);
@@ -1421,23 +1421,23 @@ ${cleanAcceptanceCriteria}`;
                 isCurrentSpeaker={currentSpeaking === 'Sarah' || currentSpeaking === 'sarah'}
                 isUser={false}
               />
-              <ParticipantCard
+                <ParticipantCard
                 participant={displayTeamMembers.find(m => m.name === 'Victor') || displayTeamMembers.find(m => m.name === 'Bola') || displayTeamMembers[1]}
                 isCurrentSpeaker={currentSpeaking === 'Victor' || currentSpeaking === 'Bola' || currentSpeaking === 'victor' || currentSpeaking === 'bola'}
-                isUser={false}
-              />
-              <ParticipantCard
+                  isUser={false}
+                />
+                  <ParticipantCard
                 participant={displayTeamMembers.find(m => m.name === 'Srikanth') || displayTeamMembers[2]}
                 isCurrentSpeaker={currentSpeaking === 'Srikanth' || currentSpeaking === 'srikanth'}
-                isUser={false}
-              />
-              
+                    isUser={false}
+                  />
+
               {/* Row 2: Lisa, Tom, User */}
-              <ParticipantCard
+                  <ParticipantCard
                 participant={displayTeamMembers.find(m => m.name === 'Lisa') || displayTeamMembers[3]}
                 isCurrentSpeaker={currentSpeaking === 'Lisa' || currentSpeaking === 'lisa'}
-                isUser={false}
-              />
+                    isUser={false}
+                  />
               <ParticipantCard
                 participant={displayTeamMembers.find(m => m.name === 'Tom') || displayTeamMembers[4]}
                 isCurrentSpeaker={currentSpeaking === 'Tom' || currentSpeaking === 'tom'}
@@ -1448,7 +1448,7 @@ ${cleanAcceptanceCriteria}`;
                 isCurrentSpeaker={false}
                 isUser={true}
               />
-            </div>
+                </div>
           </div>
         </div>
       </div>
@@ -1770,18 +1770,18 @@ ${cleanAcceptanceCriteria}`;
                 </div>
 
                 {storyPointsAgreed[editingStory.id] && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Story Points</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={editingStory.storyPoints || ''}
-                      onChange={(e) => setEditingStory(prev => prev ? { ...prev, storyPoints: e.target.value ? parseInt(e.target.value) : undefined } : null)}
-                      placeholder="Enter story points"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Story Points</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={editingStory.storyPoints || ''}
+                    onChange={(e) => setEditingStory(prev => prev ? { ...prev, storyPoints: e.target.value ? parseInt(e.target.value) : undefined } : null)}
+                    placeholder="Enter story points"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
                 )}
 
                 <div>

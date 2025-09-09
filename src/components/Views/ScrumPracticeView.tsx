@@ -4,7 +4,7 @@ import { useApp } from '../../contexts/AppContext';
 import BacklogRefinementSim from './ScrumPractice/BacklogRefinementSim';
 import { SprintPlanningSim } from './ScrumPractice/SprintPlanningSim';
 
-const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void, setSelectedTheme: (theme: string) => void) => [
+const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void, setSelectedTheme: (theme: string) => void, setCurrentView: (view: string) => void) => [
   {
     title: "Requirement Documentation",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
@@ -13,7 +13,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     color: "from-blue-500 to-cyan-500",
     onClick: () => {
       setSelectedTheme("from-blue-500 to-cyan-500");
-      console.log("Navigate to documentation");
+      setCurrentView('user-story-checker');
     }
   },
   {
@@ -86,7 +86,7 @@ export const ScrumPracticeView: React.FC = () => {
     setActiveView(view);
   };
   
-  const sections = getSections(handleSetActiveView, setSelectedTheme);
+  const sections = getSections(handleSetActiveView, setSelectedTheme, setCurrentView);
 
   // Show Backlog Refinement simulation if active
   if (activeView === 'backlog-refinement') {
