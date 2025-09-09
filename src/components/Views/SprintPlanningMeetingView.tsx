@@ -178,6 +178,7 @@ const teamMembers: SprintPlanningMember[] = [
   const [isMeetingPaused, setIsMeetingPaused] = useState(false);
   const [currentlyDiscussing, setCurrentlyDiscussing] = useState<string | null>(null);
   const [showKanbanBoard, setShowKanbanBoard] = useState(false);
+  const [showEndMessage, setShowEndMessage] = useState(false);
   
   // Refs for meeting control
   const meetingCancelledRef = useRef(false);
@@ -403,6 +404,11 @@ const teamMembers: SprintPlanningMember[] = [
         // Move all sprint backlog stories to "To Do" status (they're already in sprint backlog)
         setSprintBacklog(prev => prev.map(story => ({ ...story, status: 'To Do' })));
         console.log('🎯 Drag action: Showing Kanban board and moving all stories to To Do');
+        // Show end message and auto-close after 7 seconds
+        setShowEndMessage(true);
+        setTimeout(() => {
+          handleEndMeeting();
+        }, 7000);
         break;
     }
   };
@@ -559,6 +565,7 @@ const teamMembers: SprintPlanningMember[] = [
     setCurrentSegmentIndex(0);
     setCurrentlyDiscussing(null);
     setShowKanbanBoard(false);
+    setShowEndMessage(false);
     
     onMeetingEnd({
       messages: [],
@@ -1039,11 +1046,33 @@ const teamMembers: SprintPlanningMember[] = [
                         </button>
                       </div>
                     </div>
-                  </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* End Message Overlay */}
+          {showEndMessage && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-8 max-w-md mx-4 text-center shadow-xl">
+                <div className="mb-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Sprint Planning Complete!</h3>
+                  <p className="text-gray-600">
+                    This is the end of the Sprint Planning meeting. The meeting will close automatically in a few seconds.
+                  </p>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-green-600 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         </div>
 
         {/* Right Side - Participants Panel */}
