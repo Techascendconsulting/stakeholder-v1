@@ -1263,7 +1263,7 @@ ${cleanAcceptanceCriteria}`;
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-gray-900 text-white flex flex-col z-50 overflow-hidden">
       {/* Header with Navigation - Dark mode like voice meetings */}
       <div className="bg-black border-b border-gray-700 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
