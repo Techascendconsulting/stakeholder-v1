@@ -602,7 +602,7 @@ const teamMembers: SprintPlanningMember[] = [
           className="flex items-center space-x-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
         >
           <ArrowLeft size={20} />
-          <span>Back to Sprint Planning</span>
+          <span>Back</span>
         </button>
         
         <div className="flex items-center space-x-3">
