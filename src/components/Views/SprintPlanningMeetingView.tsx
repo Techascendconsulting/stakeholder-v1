@@ -322,7 +322,7 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
             </div>
             
             {/* Sprint Backlog Section - Top - Jira Style */}
-            <div className="mb-6">
+            <div className="mb-4">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                   <div className="flex items-center justify-between">
@@ -331,12 +331,12 @@ const SprintPlanningMeetingView: React.FC<SprintPlanningMeetingViewProps> = ({
                 </div>
                 
                 <div 
-                  className="min-h-[200px]"
+                  className="min-h-[120px]"
                   onDragOver={meetingStarted ? handleDragOver : undefined}
                   onDrop={meetingStarted ? (e) => handleDrop(e, 'sprint') : undefined}
                 >
                   {sprintBacklog.length === 0 ? (
-                    <div className="flex items-center justify-center h-32 text-gray-500">
+                    <div className="flex items-center justify-center h-20 text-gray-500">
                       <div className="text-center">
                         <div className="grid grid-cols-3 gap-1 mb-4 w-8 h-8 mx-auto">
                           <div className="w-2 h-2 bg-gray-300 rounded"></div>
