@@ -9,7 +9,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Requirement Documentation",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
     icon: FileText,
-    artwork: "📋✨",
+    artwork: "📝💎",
     color: "from-blue-500 to-cyan-500",
     onClick: () => {
       setSelectedTheme("from-blue-500 to-cyan-500");
@@ -20,7 +20,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Backlog Refinement",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
     icon: Users,
-    artwork: "🔍💡",
+    artwork: "🔬⚡",
     color: "from-purple-500 to-pink-500",
     onClick: () => {
       setSelectedTheme("from-purple-500 to-pink-500");
@@ -31,7 +31,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Sprint Planning",
     description: "Explore how teams commit to work for the sprint using prioritised backlog items.",
     icon: Calendar,
-    artwork: "🎯📅",
+    artwork: "🎯🚀",
     color: "from-pink-500 to-purple-500",
     onClick: () => {
       setSelectedTheme("from-pink-500 to-purple-500");
@@ -43,7 +43,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Daily Scrum",
     description: "Understand how teams stay aligned and surface blockers in 15-minute daily meetings.",
     icon: Clock,
-    artwork: "☀️👥",
+    artwork: "⚡👥",
     color: "from-orange-500 to-red-500",
     onClick: () => {
       setSelectedTheme("from-orange-500 to-red-500");
@@ -54,7 +54,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Sprint Review",
     description: "Learn how to present working increments and gather feedback from stakeholders.",
     icon: BarChart3,
-    artwork: "🎉📈",
+    artwork: "🎊📊",
     color: "from-indigo-500 to-blue-500",
     onClick: () => {
       setSelectedTheme("from-indigo-500 to-blue-500");
@@ -65,7 +65,7 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
     title: "Sprint Retrospective",
     description: "Reflect on team performance and discover how to improve collaboration and delivery.",
     icon: RotateCcw,
-    artwork: "🔄💭",
+    artwork: "🔄🧠",
     color: "from-teal-500 to-cyan-500",
     onClick: () => {
       setSelectedTheme("from-teal-500 to-cyan-500");
