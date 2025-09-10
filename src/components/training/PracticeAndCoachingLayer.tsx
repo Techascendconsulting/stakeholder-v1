@@ -199,6 +199,11 @@ export default function PracticeAndCoachingLayer() {
                   onChange={(e) => handleInputChange(e.target.value)}
                   className="w-full min-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                 />
+                {!acInputs[stepIndex].trim() && (
+                  <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                    ⚠️ Please enter an acceptance criterion to continue to the next step.
+                  </p>
+                )}
               </div>
 
               {/* Check Button */}
@@ -235,9 +240,19 @@ export default function PracticeAndCoachingLayer() {
                   </button>
                   
                   <button
-                    onClick={() => setStepIndex(prev => Math.min(prev + 1, coachingSteps.length - 1))}
-                    disabled={stepIndex === coachingSteps.length - 1}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => {
+                      if (!acInputs[stepIndex].trim()) {
+                        alert('Please enter an acceptance criterion before moving to the next step.');
+                        return;
+                      }
+                      setStepIndex(prev => Math.min(prev + 1, coachingSteps.length - 1));
+                    }}
+                    disabled={stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()}
+                    className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
+                      stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()
+                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                    }`}
                   >
                     Next Tip →
                   </button>
