@@ -152,6 +152,21 @@ export default function PracticeAndCoachingLayer() {
       ) : (
         /* Step 1-7: Coaching Steps */
         <>
+          {/* Static Scenario and User Story Section */}
+          <div className="space-y-4 mb-6">
+            {/* Scenario */}
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
+              <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Scenario:</h2>
+              <p className="font-medium text-gray-900 dark:text-white">{scenario}</p>
+            </div>
+
+            {/* User Story */}
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+              <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Your User Story:</h2>
+              <p className="font-medium text-gray-900 dark:text-white">{userStory}</p>
+            </div>
+          </div>
+
           {/* Progress Indicator */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
@@ -262,12 +277,17 @@ export default function PracticeAndCoachingLayer() {
 
           {/* Summary */}
           <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-              💡 Quick Reference
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Use these 7 steps as a checklist when writing acceptance criteria. Each step ensures your criteria are complete, testable, and user-focused.
-            </p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Your Progress:</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Completed Steps:</span>
+                <p className="font-medium text-gray-900 dark:text-white">{acInputs.filter(ac => ac.trim()).length} / {coachingSteps.length}</p>
+              </div>
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Current Step:</span>
+                <p className="font-medium text-gray-900 dark:text-white">{coachingSteps[stepIndex].title}</p>
+              </div>
+            </div>
           </div>
         </>
       )}
