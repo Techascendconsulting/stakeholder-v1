@@ -163,7 +163,15 @@ export default function PracticeAndCoachingLayer() {
             {/* User Story */}
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
               <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Your User Story:</h2>
-              <p className="font-medium text-gray-900 dark:text-white">{userStory}</p>
+              <textarea
+                value={userStory}
+                onChange={(e) => setUserStory(e.target.value)}
+                className="w-full min-h-[80px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                placeholder="e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                You can edit your user story as you learn more about writing acceptance criteria
+              </p>
             </div>
           </div>
 
