@@ -250,7 +250,7 @@ export default function PracticeAndCoachingLayer() {
                     disabled={stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()}
                     className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
                       stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()
-                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-50'
                         : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
                     }`}
                   >
