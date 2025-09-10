@@ -242,15 +242,14 @@ export default function PracticeAndCoachingLayer() {
                   <button
                     onClick={() => {
                       if (!acInputs[stepIndex].trim()) {
-                        alert('Please enter an acceptance criterion before moving to the next step.');
-                        return;
+                        return; // Don't show alert, just return early
                       }
                       setStepIndex(prev => Math.min(prev + 1, coachingSteps.length - 1));
                     }}
                     disabled={stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()}
                     className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
                       stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()
-                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-50'
+                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                         : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
                     }`}
                   >
