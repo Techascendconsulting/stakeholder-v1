@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getRandomScenario, Scenario } from '../../data/scenarios';
+import { validateAcceptanceCriterion, ValidationResult } from '../../utils/useCoachingValidation';
 
 interface CoachingStep {
   title: string;
@@ -65,6 +66,8 @@ export default function PracticeAndCoachingLayer() {
   const [feedbacks, setFeedbacks] = useState<string[]>(Array(coachingSteps.length).fill(''));
   const [userStory, setUserStory] = useState('');
   const [currentScenario, setCurrentScenario] = useState<Scenario | null>(null);
+  const [userStoryValidation, setUserStoryValidation] = useState<ValidationResult | null>(null);
+  const [acValidation, setAcValidation] = useState<ValidationResult | null>(null);
 
   // Load a random scenario on component mount
   useEffect(() => {
@@ -75,6 +78,37 @@ export default function PracticeAndCoachingLayer() {
     const newInputs = [...acInputs];
     newInputs[stepIndex] = value;
     setAcInputs(newInputs);
+    
+    // Validate the AC input in real-time
+    if (value.trim() && currentScenario) {
+      const scenarioKeywords = currentScenario.tags || [];
+      const validation = validateAcceptanceCriterion(value, scenarioKeywords, userStory);
+      setAcValidation(validation);
+    } else {
+      setAcValidation(null);
+    }
+  };
+
+  const handleUserStoryChange = (value: string) => {
+    setUserStory(value);
+    
+    // Validate user story structure in real-time
+    if (value.trim()) {
+      const roleMatch = /as a[n]?\s+\w+/i.test(value);
+      const actionMatch = /i want to\s+[a-z ]+/i.test(value);
+      const outcomeMatch = /so that\s+[a-z ]+/i.test(value);
+      
+      if (!roleMatch || !actionMatch || !outcomeMatch) {
+        setUserStoryValidation({
+          type: 'missingRoleActionOutcome',
+          message: 'The user story seems incomplete — check if it includes a role, what they want, and why.'
+        });
+      } else {
+        setUserStoryValidation({ type: 'success' });
+      }
+    } else {
+      setUserStoryValidation(null);
+    }
   };
 
 
@@ -93,6 +127,8 @@ export default function PracticeAndCoachingLayer() {
     setStepIndex(0);
     setAcInputs(Array(coachingSteps.length).fill(''));
     setFeedbacks(Array(coachingSteps.length).fill(''));
+    setUserStoryValidation(null);
+    setAcValidation(null);
   };
 
   const handleCheck = () => {
@@ -162,12 +198,31 @@ export default function PracticeAndCoachingLayer() {
           <textarea
             placeholder={currentScenario?.sampleUserStory || "e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"}
             value={userStory}
-            onChange={(e) => setUserStory(e.target.value)}
-            className="w-full min-h-[80px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+            onChange={(e) => handleUserStoryChange(e.target.value)}
+            className={`w-full min-h-[80px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none ${
+              userStoryValidation?.type === 'success' 
+                ? 'border-green-500 focus:ring-green-500' 
+                : userStoryValidation?.type === 'missingRoleActionOutcome'
+                ? 'border-orange-500 focus:ring-orange-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-purple-500'
+            }`}
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
             Write your user story following the format: "As a [role], I want [action] so that [benefit]"
           </p>
+          {userStoryValidation && (
+            <div className={`mt-2 p-2 rounded-md text-sm ${
+              userStoryValidation.type === 'success'
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+                : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800'
+            }`}>
+              {userStoryValidation.type === 'success' ? (
+                <span>✅ {userStoryValidation.type === 'success' ? 'Great! Your user story has all required parts.' : ''}</span>
+              ) : (
+                <span>⚠️ {userStoryValidation.message}</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -216,12 +271,31 @@ export default function PracticeAndCoachingLayer() {
               placeholder="Type your Acceptance Criterion for this rule..."
               value={acInputs[stepIndex]}
               onChange={(e) => handleInputChange(e.target.value)}
-              className="w-full min-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+              className={`w-full min-h-[120px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none ${
+                acValidation?.type === 'success' 
+                  ? 'border-green-500 focus:ring-green-500' 
+                  : acValidation && acValidation.type !== 'success'
+                  ? 'border-orange-500 focus:ring-orange-500'
+                  : 'border-gray-300 dark:border-gray-600 focus:ring-purple-500'
+              }`}
             />
             {!acInputs[stepIndex].trim() && (
               <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
                 ⚠️ Please enter an acceptance criterion to continue to the next step.
               </p>
+            )}
+            {acValidation && acInputs[stepIndex].trim() && (
+              <div className={`mt-2 p-2 rounded-md text-sm ${
+                acValidation.type === 'success'
+                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+                  : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800'
+              }`}>
+                {acValidation.type === 'success' ? (
+                  <span>✅ Great! This acceptance criterion looks good.</span>
+                ) : (
+                  <span>⚠️ {acValidation.message}</span>
+                )}
+              </div>
             )}
           </div>
 
