@@ -196,7 +196,7 @@ export default function PracticeAndCoachingLayer() {
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
           <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Your User Story:</h2>
           <textarea
-            placeholder={currentScenario?.sampleUserStory || "e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"}
+            placeholder=""
             value={userStory}
             onChange={(e) => handleUserStoryChange(e.target.value)}
             className={`w-full min-h-[80px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none ${
