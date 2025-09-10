@@ -20,7 +20,7 @@ export default function TrainingUI() {
       </div>
 
       <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
-        {view === "teaching" ? <TeachingLayer /> : <PracticeAndCoachingLayer />}
+        {view === "teaching" ? <TeachingLayer onStartPractice={() => setView("practice")} /> : <PracticeAndCoachingLayer />}
       </div>
     </div>
   );
