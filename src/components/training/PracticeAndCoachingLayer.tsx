@@ -11,7 +11,7 @@ interface CoachingStep {
 
 const coachingSteps: CoachingStep[] = [
   {
-    title: '1. Check User Story Structure (Role, Want, Why)',
+    title: '1. User Story Structure Check',
     question: 'Does your user story have a clear role, what they want, and why?',
     tip: 'A good user story follows the format: "As a [role], I want [action/goal] so that [benefit/outcome]". Check that you have all three parts clearly defined.',
     expectedKeywords: ['as a', 'i want', 'so that', 'role', 'benefit'],
@@ -132,31 +132,56 @@ export default function PracticeAndCoachingLayer() {
   };
 
   const handleCheck = () => {
-    if (!userStory.trim()) {
-      alert('Please enter a user story first before checking your acceptance criteria.');
-      return;
-    }
-    
-    const input = acInputs[stepIndex].toLowerCase();
-    const storyText = userStory.toLowerCase();
-    const keywords = coachingSteps[stepIndex].expectedKeywords;
-    
-    // Check if the AC input contains relevant keywords from the user's story
-    const storyKeywords = storyText.split(/\s+/).filter(word => word.length > 3);
-    const hasStoryConnection = storyKeywords.some(word => input.includes(word));
-    const hasExpectedKeywords = keywords.some(kw => input.includes(kw));
-    
-    const newFeedbacks = [...feedbacks];
-    if (hasStoryConnection && hasExpectedKeywords) {
-      newFeedbacks[stepIndex] = '✔️ Excellent! Your acceptance criterion clearly connects to your user story.';
-    } else if (hasStoryConnection) {
-      newFeedbacks[stepIndex] = '⚠️ Good connection to your story, but consider adding more specific details.';
-    } else if (hasExpectedKeywords) {
-      newFeedbacks[stepIndex] = '⚠️ Good structure, but make sure it relates to your specific user story.';
+    if (stepIndex === 0) {
+      // Step 1: Check user story structure
+      if (!userStory.trim()) {
+        alert('Please enter a user story first.');
+        return;
+      }
+      
+      const roleMatch = /as a[n]?\s+\w+/i.test(userStory);
+      const actionMatch = /i want to\s+[a-z ]+/i.test(userStory);
+      const outcomeMatch = /so that\s+[a-z ]+/i.test(userStory);
+      
+      const newFeedbacks = [...feedbacks];
+      if (roleMatch && actionMatch && outcomeMatch) {
+        newFeedbacks[stepIndex] = '✔️ Excellent! Your user story has all required parts: role, action, and benefit.';
+      } else {
+        const missing = [];
+        if (!roleMatch) missing.push('role (As a...)');
+        if (!actionMatch) missing.push('action (I want to...)');
+        if (!outcomeMatch) missing.push('benefit (so that...)');
+        newFeedbacks[stepIndex] = `⚠️ Your user story is missing: ${missing.join(', ')}. Please add the missing parts.`;
+      }
+      setFeedbacks(newFeedbacks);
     } else {
-      newFeedbacks[stepIndex] = '⚠️ Try to better connect this to your user story and include more specific details.';
+      // Steps 2-8: Check acceptance criteria
+      if (!userStory.trim()) {
+        alert('Please enter a user story first before checking your acceptance criteria.');
+        return;
+      }
+      
+      const input = acInputs[stepIndex].toLowerCase();
+      const storyText = userStory.toLowerCase();
+      const keywords = coachingSteps[stepIndex].expectedKeywords;
+      
+      // Check if the AC input contains relevant keywords from the user's story
+      const storyKeywords = storyText.split(/\s+/).filter(word => word.length > 3);
+      const hasStoryConnection = storyKeywords.some(word => input.includes(word));
+      const hasExpectedKeywords = keywords.some(kw => input.includes(kw));
+      
+      const newFeedbacks = [...feedbacks];
+      if (hasStoryConnection && hasExpectedKeywords) {
+        newFeedbacks[stepIndex] = '✔️ Excellent! Your acceptance criterion clearly connects to your user story.';
+      } else if (hasStoryConnection) {
+        newFeedbacks[stepIndex] = '⚠️ Good connection to your story, but consider adding more specific details.';
+      } else if (hasExpectedKeywords) {
+        newFeedbacks[stepIndex] = '⚠️ Good structure, but make sure it relates to your specific user story.';
+      } else {
+        newFeedbacks[stepIndex] = '⚠️ Try to better connect this to your user story and include more specific details.';
+      }
+      setFeedbacks(newFeedbacks);
     }
-    setFeedbacks(newFeedbacks);
   };
 
   return (
@@ -264,36 +289,58 @@ export default function PracticeAndCoachingLayer() {
 
           {/* Input Area */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Your Acceptance Criterion for this rule:
-            </label>
-            <textarea
-              placeholder="Type your Acceptance Criterion for this rule..."
-              value={acInputs[stepIndex]}
-              onChange={(e) => handleInputChange(e.target.value)}
-              className={`w-full min-h-[120px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none ${
-                acValidation?.type === 'success' 
-                  ? 'border-green-500 focus:ring-green-500' 
-                  : acValidation && acValidation.type !== 'success'
-                  ? 'border-orange-500 focus:ring-orange-500'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-purple-500'
-              }`}
-            />
-            {!acInputs[stepIndex].trim() && (
-              <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
-                ⚠️ Please enter an acceptance criterion to continue to the next step.
-              </p>
-            )}
-            {acValidation && acInputs[stepIndex].trim() && (
-              <div className={`mt-2 p-2 rounded-md text-sm ${
-                acValidation.type === 'success'
-                  ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
-                  : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800'
-              }`}>
-                {acValidation.type === 'success' ? (
-                  <span>✅ Great! This acceptance criterion looks good.</span>
-                ) : (
-                  <span>⚠️ {acValidation.message}</span>
+            {stepIndex === 0 ? (
+              // Step 1: User Story Structure Check
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Your User Story (already entered above):
+                </label>
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {userStory || "No user story entered yet. Please enter your user story in the section above."}
+                  </p>
+                </div>
+                {!userStory.trim() && (
+                  <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                    ⚠️ Please enter a user story above to check its structure.
+                  </p>
+                )}
+              </div>
+            ) : (
+              // Steps 2-8: Acceptance Criteria Input
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Your Acceptance Criterion for this rule:
+                </label>
+                <textarea
+                  placeholder="Type your Acceptance Criterion for this rule..."
+                  value={acInputs[stepIndex]}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  className={`w-full min-h-[120px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none ${
+                    acValidation?.type === 'success' 
+                      ? 'border-green-500 focus:ring-green-500' 
+                      : acValidation && acValidation.type !== 'success'
+                      ? 'border-orange-500 focus:ring-orange-500'
+                      : 'border-gray-300 dark:border-gray-600 focus:ring-purple-500'
+                  }`}
+                />
+                {!acInputs[stepIndex].trim() && (
+                  <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                    ⚠️ Please enter an acceptance criterion to continue to the next step.
+                  </p>
+                )}
+                {acValidation && acInputs[stepIndex].trim() && (
+                  <div className={`mt-2 p-2 rounded-md text-sm ${
+                    acValidation.type === 'success'
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+                      : 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800'
+                  }`}>
+                    {acValidation.type === 'success' ? (
+                      <span>✅ Great! This acceptance criterion looks good.</span>
+                    ) : (
+                      <span>⚠️ {acValidation.message}</span>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -304,7 +351,7 @@ export default function PracticeAndCoachingLayer() {
             onClick={handleCheck}
             className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium"
           >
-            Check My Input
+            {stepIndex === 0 ? 'Check User Story' : 'Check My Input'}
           </button>
 
           {/* Feedback */}
@@ -334,14 +381,26 @@ export default function PracticeAndCoachingLayer() {
               
               <button
                 onClick={() => {
-                  if (!acInputs[stepIndex].trim()) {
-                    return; // Don't show alert, just return early
+                  if (stepIndex === 0) {
+                    // Step 1: Check if user story is entered
+                    if (!userStory.trim()) {
+                      return;
+                    }
+                  } else {
+                    // Steps 2-8: Check if AC is entered
+                    if (!acInputs[stepIndex].trim()) {
+                      return;
+                    }
                   }
                   setStepIndex(prev => Math.min(prev + 1, coachingSteps.length - 1));
                 }}
-                disabled={stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()}
+                disabled={
+                  stepIndex === coachingSteps.length - 1 || 
+                  (stepIndex === 0 ? !userStory.trim() : !acInputs[stepIndex].trim())
+                }
                 className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
-                  stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()
+                  stepIndex === coachingSteps.length - 1 || 
+                  (stepIndex === 0 ? !userStory.trim() : !acInputs[stepIndex].trim())
                     ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
                 }`}
