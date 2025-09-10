@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getRandomScenario, Scenario } from '../../data/scenarios';
 import { validateAcceptanceCriterion, ValidationResult } from '../../utils/useCoachingValidation';
+import { checkUserStoryGPT } from '../../utils/validateUserStory';
+import { checkAcceptanceCriteriaGPT } from '../../utils/validateAcceptanceCriteria';
 
 interface CoachingStep {
   title: string;
@@ -68,6 +70,8 @@ export default function PracticeAndCoachingLayer() {
   const [currentScenario, setCurrentScenario] = useState<Scenario | null>(null);
   const [userStoryValidation, setUserStoryValidation] = useState<ValidationResult | null>(null);
   const [acValidation, setAcValidation] = useState<ValidationResult | null>(null);
+  const [aiValidationLoading, setAiValidationLoading] = useState(false);
+  const [aiValidationResults, setAiValidationResults] = useState<any[]>([]);
 
   // Load a random scenario on component mount
   useEffect(() => {
@@ -131,56 +135,110 @@ export default function PracticeAndCoachingLayer() {
     setAcValidation(null);
   };
 
-  const handleCheck = () => {
+  const handleCheck = async () => {
     if (stepIndex === 0) {
-      // Step 1: Check user story structure
+      // Step 1: Check user story structure with AI
       if (!userStory.trim()) {
         alert('Please enter a user story first.');
         return;
       }
       
-      const roleMatch = /as a[n]?\s+\w+/i.test(userStory);
-      const actionMatch = /i want to\s+[a-z ]+/i.test(userStory);
-      const outcomeMatch = /so that\s+[a-z ]+/i.test(userStory);
-      
-      const newFeedbacks = [...feedbacks];
-      if (roleMatch && actionMatch && outcomeMatch) {
-        newFeedbacks[stepIndex] = '✔️ Excellent! Your user story has all required parts: role, action, and benefit.';
-      } else {
-        const missing = [];
-        if (!roleMatch) missing.push('role (As a...)');
-        if (!actionMatch) missing.push('action (I want to...)');
-        if (!outcomeMatch) missing.push('benefit (so that...)');
-        newFeedbacks[stepIndex] = `⚠️ Your user story is missing: ${missing.join(', ')}. Please add the missing parts.`;
+      setAiValidationLoading(true);
+      try {
+        const aiResults = await checkUserStoryGPT(userStory);
+        if (aiResults) {
+          setAiValidationResults(aiResults);
+          const passedRules = aiResults.filter((rule: any) => rule.status === '✅').length;
+          const totalRules = aiResults.length;
+          
+          const newFeedbacks = [...feedbacks];
+          if (passedRules === totalRules) {
+            newFeedbacks[stepIndex] = `✔️ Excellent! Your user story passed all ${totalRules} quality checks.`;
+          } else {
+            newFeedbacks[stepIndex] = `⚠️ Your user story passed ${passedRules}/${totalRules} quality checks. See detailed feedback below.`;
+          }
+          setFeedbacks(newFeedbacks);
+        } else {
+          // Fallback to basic validation
+          const roleMatch = /as a[n]?\s+\w+/i.test(userStory);
+          const actionMatch = /i want to\s+[a-z ]+/i.test(userStory);
+          const outcomeMatch = /so that\s+[a-z ]+/i.test(userStory);
+          
+          const newFeedbacks = [...feedbacks];
+          if (roleMatch && actionMatch && outcomeMatch) {
+            newFeedbacks[stepIndex] = '✔️ Excellent! Your user story has all required parts: role, action, and benefit.';
+          } else {
+            const missing = [];
+            if (!roleMatch) missing.push('role (As a...)');
+            if (!actionMatch) missing.push('action (I want to...)');
+            if (!outcomeMatch) missing.push('benefit (so that...)');
+            newFeedbacks[stepIndex] = `⚠️ Your user story is missing: ${missing.join(', ')}. Please add the missing parts.`;
+          }
+          setFeedbacks(newFeedbacks);
+        }
+      } catch (error) {
+        console.error('AI validation error:', error);
+        // Fallback to basic validation
+        const newFeedbacks = [...feedbacks];
+        newFeedbacks[stepIndex] = '⚠️ AI validation unavailable. Using basic validation.';
+        setFeedbacks(newFeedbacks);
+      } finally {
+        setAiValidationLoading(false);
       }
-      setFeedbacks(newFeedbacks);
     } else {
-      // Steps 2-8: Check acceptance criteria
+      // Steps 2-8: Check acceptance criteria with AI
       if (!userStory.trim()) {
         alert('Please enter a user story first before checking your acceptance criteria.');
         return;
       }
       
-      const input = acInputs[stepIndex].toLowerCase();
-      const storyText = userStory.toLowerCase();
-      const keywords = coachingSteps[stepIndex].expectedKeywords;
-      
-      // Check if the AC input contains relevant keywords from the user's story
-      const storyKeywords = storyText.split(/\s+/).filter(word => word.length > 3);
-      const hasStoryConnection = storyKeywords.some(word => input.includes(word));
-      const hasExpectedKeywords = keywords.some(kw => input.includes(kw));
-      
-      const newFeedbacks = [...feedbacks];
-      if (hasStoryConnection && hasExpectedKeywords) {
-        newFeedbacks[stepIndex] = '✔️ Excellent! Your acceptance criterion clearly connects to your user story.';
-      } else if (hasStoryConnection) {
-        newFeedbacks[stepIndex] = '⚠️ Good connection to your story, but consider adding more specific details.';
-      } else if (hasExpectedKeywords) {
-        newFeedbacks[stepIndex] = '⚠️ Good structure, but make sure it relates to your specific user story.';
-      } else {
-        newFeedbacks[stepIndex] = '⚠️ Try to better connect this to your user story and include more specific details.';
+      setAiValidationLoading(true);
+      try {
+        const acList = acInputs.filter(ac => ac.trim());
+        const aiResults = await checkAcceptanceCriteriaGPT(userStory, acList);
+        if (aiResults) {
+          setAiValidationResults(aiResults);
+          const passedRules = aiResults.filter((rule: any) => rule.status === '✅').length;
+          const totalRules = aiResults.length;
+          
+          const newFeedbacks = [...feedbacks];
+          if (passedRules === totalRules) {
+            newFeedbacks[stepIndex] = `✔️ Excellent! Your acceptance criteria passed all ${totalRules} quality checks.`;
+          } else {
+            newFeedbacks[stepIndex] = `⚠️ Your acceptance criteria passed ${passedRules}/${totalRules} quality checks. See detailed feedback below.`;
+          }
+          setFeedbacks(newFeedbacks);
+        } else {
+          // Fallback to basic validation
+          const input = acInputs[stepIndex].toLowerCase();
+          const storyText = userStory.toLowerCase();
+          const keywords = coachingSteps[stepIndex].expectedKeywords;
+          
+          const storyKeywords = storyText.split(/\s+/).filter(word => word.length > 3);
+          const hasStoryConnection = storyKeywords.some(word => input.includes(word));
+          const hasExpectedKeywords = keywords.some(kw => input.includes(kw));
+          
+          const newFeedbacks = [...feedbacks];
+          if (hasStoryConnection && hasExpectedKeywords) {
+            newFeedbacks[stepIndex] = '✔️ Excellent! Your acceptance criterion clearly connects to your user story.';
+          } else if (hasStoryConnection) {
+            newFeedbacks[stepIndex] = '⚠️ Good connection to your story, but consider adding more specific details.';
+          } else if (hasExpectedKeywords) {
+            newFeedbacks[stepIndex] = '⚠️ Good structure, but make sure it relates to your specific user story.';
+          } else {
+            newFeedbacks[stepIndex] = '⚠️ Try to better connect this to your user story and include more specific details.';
+          }
+          setFeedbacks(newFeedbacks);
+        }
+      } catch (error) {
+        console.error('AI validation error:', error);
+        // Fallback to basic validation
+        const newFeedbacks = [...feedbacks];
+        newFeedbacks[stepIndex] = '⚠️ AI validation unavailable. Using basic validation.';
+        setFeedbacks(newFeedbacks);
+      } finally {
+        setAiValidationLoading(false);
       }
-      setFeedbacks(newFeedbacks);
     }
   };
 
@@ -349,15 +407,47 @@ export default function PracticeAndCoachingLayer() {
           {/* Check Button */}
           <button
             onClick={handleCheck}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium"
+            disabled={aiValidationLoading}
+            className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
+              aiValidationLoading
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+            }`}
           >
-            {stepIndex === 0 ? 'Check User Story' : 'Check My Input'}
+            {aiValidationLoading ? '🤖 AI Analyzing...' : (stepIndex === 0 ? 'Check User Story' : 'Check My Input')}
           </button>
 
           {/* Feedback */}
           {feedbacks[stepIndex] && (
             <div className="text-sm mt-2 p-3 bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600">
               <p className="text-gray-800 dark:text-gray-200">{feedbacks[stepIndex]}</p>
+            </div>
+          )}
+
+          {/* AI Validation Results */}
+          {aiValidationResults.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">🤖 AI Quality Analysis:</h4>
+              <div className="space-y-2">
+                {aiValidationResults.map((result: any, index: number) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-md border text-sm ${
+                      result.status === '✅'
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                        : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="text-lg">{result.status}</span>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{result.rule}</p>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1">{result.explanation}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
