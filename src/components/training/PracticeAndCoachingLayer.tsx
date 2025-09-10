@@ -10,52 +10,52 @@ interface CoachingStep {
 
 const coachingSteps: CoachingStep[] = [
   {
-    title: '1. Match the User Goal (The "what")',
-    question: 'What does the user want to do?',
-    tip: 'Start by clearly reflecting the user\'s action. If the user wants to upload a document, there must be an AC about uploading a document.',
-    expectedKeywords: ['upload', 'document', 'action', 'goal'],
+    title: '1. Check User Story Structure (Role, Want, Why)',
+    question: 'Does your user story have a clear role, what they want, and why?',
+    tip: 'A good user story follows the format: "As a [role], I want [action/goal] so that [benefit/outcome]". Check that you have all three parts clearly defined.',
+    expectedKeywords: ['as a', 'i want', 'so that', 'role', 'benefit'],
   },
   {
-    title: '2. Trigger (The "when")',
+    title: '2. Match the User Goal (The "what")',
+    question: 'What does the user want to do?',
+    tip: 'Start by clearly reflecting the user\'s action from the story. If the user wants to upload a document, there must be an AC about uploading a document.',
+    expectedKeywords: ['upload', 'document', 'action', 'goal', 'want'],
+  },
+  {
+    title: '3. Trigger (The "when")',
     question: 'When or under what condition does this happen?',
     tip: 'Mention what event, screen, or action triggers the feature. E.g., "After clicking Submit..."',
     expectedKeywords: ['after', 'when', 'click', 'submit', 'trigger'],
   },
   {
-    title: '3. Rules (What\'s allowed, restricted, required)',
+    title: '4. Rules (What\'s allowed, restricted, required)',
     question: 'Are there any rules the feature must follow?',
     tip: 'Think of file types, required fields, time limits, or business rules. E.g., "Only JPG, PNG, or JPEG files are allowed."',
     expectedKeywords: ['only', 'must', 'required', 'allowed', 'restricted'],
   },
   {
-    title: '4. Feedback (What the user sees after success)',
+    title: '5. Feedback (What the user sees after success)',
     question: 'What should the user see if it works?',
     tip: 'Think of confirmation messages, visual feedback, changes on screen, or what happens next.',
     expectedKeywords: ['see', 'message', 'confirmation', 'success', 'feedback'],
   },
   {
-    title: '5. Error Handling (What happens if it fails)',
+    title: '6. Error Handling (What happens if it fails)',
     question: 'What happens if something goes wrong?',
     tip: 'Describe failure scenarios (e.g., large file, invalid input) and how the system responds (error messages, etc).',
     expectedKeywords: ['error', 'fail', 'invalid', 'wrong', 'handling'],
   },
   {
-    title: '6. Non-Functional Constraints (Performance, device, time, etc)',
+    title: '7. Non-Functional Constraints (Performance, device, time, etc)',
     question: 'Does anything affect speed, devices, or limits?',
     tip: 'Mention timeouts, loading time, file size limits, mobile constraints, etc.',
     expectedKeywords: ['time', 'speed', 'limit', 'size', 'performance', 'mobile'],
   },
   {
-    title: '7. Proof Sent (Confirmation that output was sent/shared)',
+    title: '8. Proof Sent (Confirmation that output was sent/shared)',
     question: 'What exactly gets sent or shared?',
     tip: 'E.g., "The email includes the document name, user reference, and date submitted." Helpful for audit trails or confirmations.',
     expectedKeywords: ['email', 'sent', 'includes', 'reference', 'proof', 'confirmation'],
-  },
-  {
-    title: '8. Story Size Check (Optional Final Check)',
-    question: 'Does this story try to do too much?',
-    tip: 'Split stories with unrelated outcomes (e.g., email + payment + SMS) into separate ones. Each AC set should support one clear user goal.',
-    expectedKeywords: ['split', 'separate', 'multiple', 'unrelated', 'bundling'],
   }
 ];
 
