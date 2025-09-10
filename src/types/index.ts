@@ -56,7 +56,8 @@ export type AppView =
   | 'structured-training'
   | 'pre-brief'
   | 'live-training-meeting'
-  | 'post-brief';
+  | 'post-brief'
+  | 'user-story-checker';
 
 // Re-export specific types for convenience
 export type {
