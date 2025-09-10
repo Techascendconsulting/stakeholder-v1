@@ -192,90 +192,88 @@ export default function PracticeAndCoachingLayer() {
       {/* Coaching Card */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
         <div className="space-y-4 p-6">
-              {/* Step Header */}
-              <div>
-                <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                  {coachingSteps[stepIndex].title}
-                </h3>
-                <p className="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                  Q: {coachingSteps[stepIndex].question}
-                </p>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    <strong>Tip:</strong> {coachingSteps[stepIndex].tip}
-                  </p>
-                </div>
-              </div>
+          {/* Step Header */}
+          <div>
+            <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+              {coachingSteps[stepIndex].title}
+            </h3>
+            <p className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+              Q: {coachingSteps[stepIndex].question}
+            </p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                <strong>Tip:</strong> {coachingSteps[stepIndex].tip}
+              </p>
+            </div>
+          </div>
 
-              {/* Input Area */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Your Acceptance Criterion for this rule:
-                </label>
-                <textarea
-                  placeholder="Type your Acceptance Criterion for this rule..."
-                  value={acInputs[stepIndex]}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="w-full min-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                />
-                {!acInputs[stepIndex].trim() && (
-                  <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
-                    ⚠️ Please enter an acceptance criterion to continue to the next step.
-                  </p>
-                )}
-              </div>
+          {/* Input Area */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Your Acceptance Criterion for this rule:
+            </label>
+            <textarea
+              placeholder="Type your Acceptance Criterion for this rule..."
+              value={acInputs[stepIndex]}
+              onChange={(e) => handleInputChange(e.target.value)}
+              className="w-full min-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+            />
+            {!acInputs[stepIndex].trim() && (
+              <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                ⚠️ Please enter an acceptance criterion to continue to the next step.
+              </p>
+            )}
+          </div>
 
-              {/* Check Button */}
+          {/* Check Button */}
+          <button
+            onClick={handleCheck}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium"
+          >
+            Check My Input
+          </button>
+
+          {/* Feedback */}
+          {feedbacks[stepIndex] && (
+            <div className="text-sm mt-2 p-3 bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600">
+              <p className="text-gray-800 dark:text-gray-200">{feedbacks[stepIndex]}</p>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => setStepIndex(prev => Math.max(prev - 1, 0))}
+              disabled={stepIndex === 0}
+              className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              ← Previous
+            </button>
+            
+            <div className="flex space-x-2">
               <button
-                onClick={handleCheck}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium"
+                onClick={handleResetStep}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                Check My Input
+                Reset Step
               </button>
-
-              {/* Feedback */}
-              {feedbacks[stepIndex] && (
-                <div className="text-sm mt-2 p-3 bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600">
-                  <p className="text-gray-800 dark:text-gray-200">{feedbacks[stepIndex]}</p>
-                </div>
-              )}
-
-              {/* Navigation */}
-              <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => setStepIndex(prev => Math.max(prev - 1, 0))}
-                  disabled={stepIndex === 0}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  ← Previous
-                </button>
-                
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleResetStep}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Reset Step
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      if (!acInputs[stepIndex].trim()) {
-                        return; // Don't show alert, just return early
-                      }
-                      setStepIndex(prev => Math.min(prev + 1, coachingSteps.length - 1));
-                    }}
-                    disabled={stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()}
-                    className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
-                      stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()
-                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
-                    }`}
-                  >
-                    Next Tip →
-                  </button>
-                </div>
-              </div>
+              
+              <button
+                onClick={() => {
+                  if (!acInputs[stepIndex].trim()) {
+                    return; // Don't show alert, just return early
+                  }
+                  setStepIndex(prev => Math.min(prev + 1, coachingSteps.length - 1));
+                }}
+                disabled={stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()}
+                className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
+                  stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()
+                    ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                }`}
+              >
+                Next Tip →
+              </button>
             </div>
           </div>
         </div>
