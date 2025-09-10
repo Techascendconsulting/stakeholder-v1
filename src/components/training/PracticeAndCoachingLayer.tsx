@@ -136,6 +136,7 @@ export default function PracticeAndCoachingLayer() {
   };
 
   const handleCheck = async () => {
+    console.log('Button clicked!', { stepIndex, userStory: userStory.trim() });
     if (stepIndex === 0) {
       // Step 1: Check user story structure with AI
       if (!userStory.trim()) {
@@ -405,17 +406,35 @@ export default function PracticeAndCoachingLayer() {
           </div>
 
           {/* Check Button */}
-          <button
-            onClick={handleCheck}
-            disabled={aiValidationLoading}
-            className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
-              aiValidationLoading
-                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
-            }`}
-          >
-            {aiValidationLoading ? '🤖 AI Analyzing...' : (stepIndex === 0 ? 'Check User Story' : 'Check My Input')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('Button click event fired');
+                handleCheck();
+              }}
+              disabled={aiValidationLoading}
+              className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
+                aiValidationLoading
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+              }`}
+              style={{ pointerEvents: aiValidationLoading ? 'none' : 'auto' }}
+            >
+              {aiValidationLoading ? '🤖 AI Analyzing...' : (stepIndex === 0 ? 'Check User Story' : 'Check My Input')}
+            </button>
+            
+            {/* Debug button */}
+            <button
+              onClick={() => {
+                console.log('Debug button clicked!');
+                alert('Debug button works!');
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm"
+            >
+              Debug
+            </button>
+          </div>
 
           {/* Feedback */}
           {feedbacks[stepIndex] && (
