@@ -17,6 +17,12 @@ export function isUserStoryStructureValid(text: string) {
 
 // GPT-powered validation of user story quality
 export async function checkUserStoryGPT(userStory: string) {
+  // Check if API key is available
+  if (!import.meta.env.VITE_OPENAI_KEY) {
+    console.warn('OpenAI API key not found. Using fallback validation.');
+    return null;
+  }
+
   const prompt = `
 You are an expert Business Analyst coach.
 
@@ -43,16 +49,25 @@ User Story:
 "${userStory}"
 `;
 
-  const res = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.2
-  });
-
-  const content = res.choices[0].message.content;
   try {
-    return JSON.parse(content || '');
-  } catch {
+    const res = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.2
+    });
+
+    const content = res.choices[0].message.content;
+    console.log('AI Response:', content);
+    
+    try {
+      const parsed = JSON.parse(content || '');
+      return parsed;
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      return null;
+    }
+  } catch (error) {
+    console.error('OpenAI API error:', error);
     return null;
   }
 }

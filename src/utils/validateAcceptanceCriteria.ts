@@ -25,6 +25,12 @@ export function isValidText(text: string) {
 
 // ✅ Step 2: GPT-assisted analysis
 export async function checkAcceptanceCriteriaGPT(userStory: string, acList: string[]) {
+  // Check if API key is available
+  if (!import.meta.env.VITE_OPENAI_KEY) {
+    console.warn('OpenAI API key not found. Using fallback validation.');
+    return null;
+  }
+
   const prompt = `
 You are a Business Analyst trainer. Review the following user story and its acceptance criteria based on these 8 rules:
 
@@ -54,17 +60,25 @@ Acceptance Criteria:
 ${acList.map((ac, i) => `${i + 1}. ${ac}`).join('\n')}
 `;
 
-  const res = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.3
-  });
-
-  const content = res.choices[0].message.content;
   try {
-    const parsed = JSON.parse(content || '');
-    return parsed;
-  } catch {
+    const res = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3
+    });
+
+    const content = res.choices[0].message.content;
+    console.log('AI Response:', content);
+    
+    try {
+      const parsed = JSON.parse(content || '');
+      return parsed;
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      return null;
+    }
+  } catch (error) {
+    console.error('OpenAI API error:', error);
     return null;
   }
 }
