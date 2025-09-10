@@ -9,243 +9,231 @@ export interface Scenario {
 }
 
 export const scenarios: Scenario[] = [
-  // 📦 Product / Service Features
+  // 🏠 Housing / Tenant Management
+  {
+    id: 'blurry-id-photos',
+    category: 'Housing / Tenant Management',
+    title: 'Blurry ID Photo Validation',
+    description: 'You met your compliance manager, Marie, who said tenants often upload ID photos that are blurry or expired. She wants to reduce the number of invalid submissions to help the fraud review team respond faster.',
+    sampleUserStory: 'As a tenant, I want to upload clear, valid ID photos so that my identity verification is processed quickly and accurately.',
+    difficulty: 'Intermediate',
+    tags: ['id-validation', 'photo-quality', 'fraud-prevention', 'compliance']
+  },
+  {
+    id: 'refund-receipts',
+    category: 'Finance / Billing',
+    title: 'Refund Receipt System',
+    description: 'You\'re in a kickoff call with the Finance Lead. They explained that every time a refund is processed, tenants get no receipt — which leads to multiple support tickets. They want proof of refund emailed immediately after submission.',
+    sampleUserStory: 'As a tenant, I want to receive an email receipt when my refund is processed so that I have proof of the transaction and don\'t need to contact support.',
+    difficulty: 'Beginner',
+    tags: ['refunds', 'receipts', 'email', 'support-reduction']
+  },
+  {
+    id: 'noise-complaint-tracking',
+    category: 'Housing / Tenant Management',
+    title: 'Noise Complaint Tracking',
+    description: 'You just spoke with the customer service team. They mentioned tenants keep submitting complaints about noisy neighbours, but there\'s no way to track which ones are in progress or resolved. They want more visibility.',
+    sampleUserStory: 'As a tenant, I want to track the status of my noise complaints so that I can see if they are being investigated and when they might be resolved.',
+    difficulty: 'Intermediate',
+    tags: ['complaints', 'tracking', 'status', 'visibility']
+  },
+  {
+    id: 'maintenance-photos',
+    category: 'Housing / Tenant Management',
+    title: 'Maintenance Issue Photos',
+    description: 'You met with James from the Maintenance Team. He said engineers are showing up to properties with no idea what tools to bring. Sometimes they arrive and can\'t do the job. He wants tenants to describe the issue better and attach photos.',
+    sampleUserStory: 'As a tenant, I want to describe my maintenance issue and attach photos so that the engineer arrives with the right tools and can complete the job in one visit.',
+    difficulty: 'Intermediate',
+    tags: ['maintenance', 'photos', 'descriptions', 'efficiency']
+  },
+  {
+    id: 'appointment-reminders',
+    category: 'Housing / Tenant Management',
+    title: 'Appointment Text Reminders',
+    description: 'In your weekly sync, the Housing Officer told you many appointments are missed because tenants don\'t know what time the engineer will arrive. She wants a text reminder system with time slots confirmed the night before.',
+    sampleUserStory: 'As a tenant, I want to receive text reminders with confirmed time slots the night before my appointment so that I don\'t miss the engineer\'s visit.',
+    difficulty: 'Beginner',
+    tags: ['appointments', 'reminders', 'sms', 'scheduling']
+  },
   {
     id: 'subscription-pause',
     category: 'Product / Service Features',
-    title: 'Subscription Pause',
-    description: 'Customers want the ability to pause their subscription for up to 3 months without losing access to their data.',
-    sampleUserStory: 'As a customer, I want to pause my subscription for up to 3 months so that I can maintain access to my data during temporary breaks.',
-    difficulty: 'Intermediate',
-    tags: ['subscription', 'data-access', 'temporary-pause']
-  },
-  {
-    id: 'digital-receipts',
-    category: 'Product / Service Features',
-    title: 'Digital Receipts',
-    description: 'Retail customers are requesting email receipts instead of paper ones after in-store purchases.',
-    sampleUserStory: 'As a retail customer, I want to receive email receipts instead of paper ones so that I can keep digital records and reduce paper waste.',
-    difficulty: 'Beginner',
-    tags: ['receipts', 'email', 'sustainability', 'digital']
-  },
-  {
-    id: 'otp-verification',
-    category: 'Product / Service Features',
-    title: 'One-Time Password (OTP)',
-    description: 'To reduce fraud, the system should require OTP verification before account changes.',
-    sampleUserStory: 'As a user, I want OTP verification before making account changes so that my account remains secure from unauthorized access.',
-    difficulty: 'Intermediate',
-    tags: ['security', 'otp', 'verification', 'fraud-prevention']
-  },
-  {
-    id: 'add-to-wishlist',
-    category: 'Product / Service Features',
-    title: 'Add to Wishlist',
-    description: 'Users want to save products they\'re interested in to a wishlist for future purchase.',
-    sampleUserStory: 'As a customer, I want to save products to a wishlist so that I can easily find and purchase them later.',
-    difficulty: 'Beginner',
-    tags: ['wishlist', 'products', 'save', 'future-purchase']
-  },
-  {
-    id: 'delivery-instructions',
-    category: 'Product / Service Features',
-    title: 'Delivery Instructions',
-    description: 'Customers want to provide specific delivery instructions (e.g., "leave with neighbour").',
-    sampleUserStory: 'As a customer, I want to provide specific delivery instructions so that my packages are delivered according to my preferences.',
-    difficulty: 'Beginner',
-    tags: ['delivery', 'instructions', 'customization', 'logistics']
-  },
-
-  // 🏠 Housing / Tenant Management
-  {
-    id: 'rent-payment-reminder',
-    category: 'Housing / Tenant Management',
-    title: 'Rent Payment Reminder',
-    description: 'Tenants often forget their rent date. The housing provider wants to send automatic reminders 3 days before.',
-    sampleUserStory: 'As a tenant, I want to receive automatic rent payment reminders 3 days before my due date so that I never miss a payment.',
-    difficulty: 'Beginner',
-    tags: ['rent', 'reminders', 'automation', 'payments']
-  },
-  {
-    id: 'request-property-repair',
-    category: 'Housing / Tenant Management',
-    title: 'Request Property Repair',
-    description: 'Tenants want to request repairs through a self-service portal, with options to attach photos and select urgency.',
-    sampleUserStory: 'As a tenant, I want to request property repairs through a self-service portal so that I can quickly report issues with photos and urgency levels.',
-    difficulty: 'Intermediate',
-    tags: ['repairs', 'self-service', 'photos', 'urgency', 'portal']
-  },
-  {
-    id: 'add-occupant',
-    category: 'Housing / Tenant Management',
-    title: 'Add Occupant',
-    description: 'Some tenants need to add family members or new residents to their housing agreement.',
-    sampleUserStory: 'As a tenant, I want to add family members or new residents to my housing agreement so that they are officially recognized as occupants.',
-    difficulty: 'Intermediate',
-    tags: ['occupants', 'family', 'agreement', 'residents']
-  },
-  {
-    id: 'report-anti-social-behaviour',
-    category: 'Housing / Tenant Management',
-    title: 'Report Anti-Social Behaviour',
-    description: 'Tenants need a secure way to report noise complaints or anti-social behaviour anonymously.',
-    sampleUserStory: 'As a tenant, I want to report anti-social behaviour anonymously so that I can address issues without fear of retaliation.',
+    title: 'Service Pause Feature',
+    description: 'Your Product Owner asked you to explore options for pausing subscription-based services, like cleaning or waste collection. Currently, tenants can only cancel, and there\'s no way to suspend a service when they\'re away for holiday.',
+    sampleUserStory: 'As a tenant, I want to pause my subscription services when I\'m away on holiday so that I can resume them when I return without losing my subscription.',
     difficulty: 'Complex',
-    tags: ['reporting', 'anonymous', 'anti-social', 'security', 'complaints']
+    tags: ['subscription', 'pause', 'holiday', 'services']
   },
   {
-    id: 'proof-of-address-letter',
+    id: 'clear-acceptance-criteria',
+    category: 'Development / QA',
+    title: 'Clear Acceptance Criteria',
+    description: 'You sat in a retrospective where the Dev Team mentioned getting unclear requests with missing edge cases. They want more specific acceptance criteria — including what should happen when something fails or errors out.',
+    sampleUserStory: 'As a developer, I want clear acceptance criteria with error handling scenarios so that I can build features that handle all edge cases properly.',
+    difficulty: 'Complex',
+    tags: ['acceptance-criteria', 'error-handling', 'edge-cases', 'development']
+  },
+  {
+    id: 'change-address-journey',
     category: 'Housing / Tenant Management',
-    title: 'Proof of Address Letter',
-    description: 'Tenants want to download a letter confirming their address for use in visa or school applications.',
-    sampleUserStory: 'As a tenant, I want to download a proof of address letter so that I can use it for visa or school applications.',
+    title: 'Change of Address Journey',
+    description: 'You interviewed the Contact Centre manager. He said when tenants submit change-of-address requests, they often forget to update their emergency contact, which leads to issues. He wants to make it part of the same journey.',
+    sampleUserStory: 'As a tenant, I want to update my address and emergency contact in the same process so that all my contact information stays current.',
+    difficulty: 'Intermediate',
+    tags: ['address-change', 'emergency-contact', 'contact-info', 'journey']
+  },
+  {
+    id: 'accessibility-screen-readers',
+    category: 'Accessibility / Compliance',
+    title: 'Screen Reader Accessibility',
+    description: 'You received a complaint from the Accessibility Champion. She said blind users can\'t complete the tenancy termination form because the radio buttons aren\'t labeled for screen readers. This needs to be fixed.',
+    sampleUserStory: 'As a blind user, I want radio buttons to be properly labeled for screen readers so that I can complete the tenancy termination form independently.',
+    difficulty: 'Intermediate',
+    tags: ['accessibility', 'screen-readers', 'forms', 'compliance']
+  },
+  {
+    id: 'data-archiving',
+    category: 'Data Governance / Compliance',
+    title: 'Data Archiving System',
+    description: 'During a data governance session, the Lead Analyst pointed out that tenants can still see past records even after they\'ve been marked as closed. The system should archive them properly to comply with data retention rules.',
+    sampleUserStory: 'As a tenant, I want my closed records to be properly archived so that the system complies with data retention policies and my privacy is protected.',
+    difficulty: 'Complex',
+    tags: ['data-archiving', 'retention', 'compliance', 'privacy']
+  },
+  {
+    id: 'terms-version-control',
+    category: 'Legal / Compliance',
+    title: 'Terms Version Control',
+    description: 'You met your legal advisor, who mentioned a recent audit flagged that tenants weren\'t being shown updated terms before signing a lease renewal. She wants the system to always show the latest version of terms before they can proceed.',
+    sampleUserStory: 'As a tenant, I want to see the latest version of terms before signing my lease renewal so that I\'m always agreeing to the most current legal terms.',
+    difficulty: 'Intermediate',
+    tags: ['terms', 'version-control', 'legal', 'compliance']
+  },
+  {
+    id: 'mandatory-field-clarity',
+    category: 'Development / UX',
+    title: 'Mandatory Field Clarity',
+    description: 'You had a chat with Lisa from Dev, who said they need more clarity on which fields are mandatory in forms. Stakeholders just say "collect user info" but never specify rules, and this leads to guesswork and rework during QA.',
+    sampleUserStory: 'As a developer, I want clear specifications about which form fields are mandatory so that I can build forms correctly without guesswork.',
     difficulty: 'Beginner',
-    tags: ['proof-of-address', 'download', 'letter', 'applications']
+    tags: ['forms', 'mandatory-fields', 'validation', 'specifications']
   },
-
-  // 🏥 Healthcare / Wellbeing
   {
-    id: 'book-gp-appointment',
-    category: 'Healthcare / Wellbeing',
-    title: 'Book a GP Appointment',
-    description: 'Patients should be able to book appointments online and choose between in-person or phone.',
-    sampleUserStory: 'As a patient, I want to book GP appointments online so that I can choose between in-person or phone consultations at my convenience.',
+    id: 'mobile-critical-issues',
+    category: 'Mobile / Accessibility',
+    title: 'Mobile Critical Issues',
+    description: 'You were looped into a post-incident meeting where a tenant couldn\'t report a gas leak online because the form wasn\'t mobile-friendly. The operations team wants critical issues like gas or electrical to always work across devices.',
+    sampleUserStory: 'As a tenant, I want to report critical issues like gas leaks on my mobile device so that I can report emergencies quickly from anywhere.',
     difficulty: 'Intermediate',
-    tags: ['appointments', 'booking', 'gp', 'online', 'consultation']
+    tags: ['mobile', 'critical-issues', 'emergency', 'responsive']
   },
   {
-    id: 'prescription-refill',
-    category: 'Healthcare / Wellbeing',
-    title: 'Prescription Refill',
-    description: 'Users should be able to reorder previously prescribed medication without starting a new consultation.',
-    sampleUserStory: 'As a patient, I want to reorder previously prescribed medication so that I can continue my treatment without a new consultation.',
+    id: 'holiday-booking-restrictions',
+    category: 'Scheduling / Business Rules',
+    title: 'Holiday Booking Restrictions',
+    description: 'Tom from QA mentioned that the feature for rescheduling appointments doesn\'t check for public holidays, which causes failed bookings. He wants a rule that restricts bookings to working days only.',
+    sampleUserStory: 'As a tenant, I want the system to prevent me from booking appointments on public holidays so that my appointments are always scheduled for valid working days.',
     difficulty: 'Intermediate',
-    tags: ['prescription', 'refill', 'medication', 'reorder']
+    tags: ['scheduling', 'holidays', 'business-rules', 'validation']
   },
   {
-    id: 'mental-health-checkin',
-    category: 'Healthcare / Wellbeing',
-    title: 'Mental Health Check-In',
-    description: 'Users can self-check their mental health weekly and get automated signposting based on answers.',
-    sampleUserStory: 'As a user, I want to complete weekly mental health check-ins so that I can receive automated signposting and support based on my responses.',
-    difficulty: 'Complex',
-    tags: ['mental-health', 'check-in', 'signposting', 'automated', 'wellbeing']
-  },
-
-  // 🧾 Finance / Billing / Accounts
-  {
-    id: 'split-bill-feature',
-    category: 'Finance / Billing / Accounts',
-    title: 'Split Bill Feature',
-    description: 'Users want to split bills with friends directly in the app and track who has paid.',
-    sampleUserStory: 'As a user, I want to split bills with friends in the app so that I can track who has paid and manage shared expenses easily.',
-    difficulty: 'Complex',
-    tags: ['split-bill', 'friends', 'tracking', 'payments', 'shared-expenses']
-  },
-  {
-    id: 'update-bank-details',
-    category: 'Finance / Billing / Accounts',
-    title: 'Update Bank Details',
-    description: 'Staff should be able to update their payment details before payday and get confirmation of change.',
-    sampleUserStory: 'As a staff member, I want to update my bank details before payday so that I can ensure my salary is paid to the correct account.',
-    difficulty: 'Intermediate',
-    tags: ['bank-details', 'payment', 'payday', 'confirmation', 'staff']
-  },
-  {
-    id: 'late-payment-fee-warning',
-    category: 'Finance / Billing / Accounts',
-    title: 'Late Payment Fee Warning',
-    description: 'Customers should be warned before a late payment fee is applied.',
-    sampleUserStory: 'As a customer, I want to be warned before a late payment fee is applied so that I can make the payment on time and avoid additional charges.',
+    id: 'colorblind-accessibility',
+    category: 'Accessibility / UX',
+    title: 'Colorblind Accessibility',
+    description: 'In your catch-up with the Accessibility Officer, she flagged that color-coded alerts (like green for success) don\'t work for colorblind users. She wants the system to include icon labels or text alternatives.',
+    sampleUserStory: 'As a colorblind user, I want alerts to include icons or text labels in addition to colors so that I can understand the status of my actions.',
     difficulty: 'Beginner',
-    tags: ['late-payment', 'warning', 'fees', 'notification']
+    tags: ['accessibility', 'colorblind', 'alerts', 'icons']
   },
   {
-    id: 'cancel-direct-debit',
-    category: 'Finance / Billing / Accounts',
-    title: 'Cancel Direct Debit',
-    description: 'Users should be able to cancel a direct debit without calling support, and see when it takes effect.',
-    sampleUserStory: 'As a user, I want to cancel a direct debit without calling support so that I can manage my payments independently and see when the cancellation takes effect.',
+    id: 'complaint-processing-times',
+    category: 'Customer Service / Transparency',
+    title: 'Complaint Processing Times',
+    description: 'You spoke to the Community Manager, who said tenants are always confused about how long it takes to process a complaint. She wants estimated processing times shown clearly after submission, with status tracking updates.',
+    sampleUserStory: 'As a tenant, I want to see estimated processing times and status updates for my complaints so that I know what to expect and when to follow up.',
     difficulty: 'Intermediate',
-    tags: ['direct-debit', 'cancel', 'self-service', 'support']
-  },
-
-  // 📲 Admin / Profile / Settings
-  {
-    id: 'change-phone-number',
-    category: 'Admin / Profile / Settings',
-    title: 'Change Phone Number',
-    description: 'Users should be able to update their phone number and verify it with an OTP.',
-    sampleUserStory: 'As a user, I want to update my phone number and verify it with OTP so that I can keep my contact information current and secure.',
-    difficulty: 'Intermediate',
-    tags: ['phone-number', 'update', 'otp', 'verification', 'profile']
+    tags: ['complaints', 'processing-times', 'status-tracking', 'transparency']
   },
   {
-    id: 'delete-account',
-    category: 'Admin / Profile / Settings',
-    title: 'Delete Account',
-    description: 'Users want to delete their account and receive confirmation that all data will be removed.',
-    sampleUserStory: 'As a user, I want to delete my account so that I can remove all my personal data and receive confirmation that the deletion is complete.',
+    id: 'partial-payment-logic',
+    category: 'Finance / Business Logic',
+    title: 'Partial Payment Business Logic',
+    description: 'Srikanth (Tech Lead) told you the new payment system doesn\'t support partial payments, but stakeholders keep requesting it. He wants the story to specify business logic for when and how a partial payment is allowed.',
+    sampleUserStory: 'As a tenant, I want to make partial payments when allowed by business rules so that I can manage my finances more flexibly.',
     difficulty: 'Complex',
-    tags: ['delete-account', 'data-removal', 'confirmation', 'privacy']
+    tags: ['payments', 'partial-payments', 'business-logic', 'finance']
   },
   {
-    id: 'notification-preferences',
-    category: 'Admin / Profile / Settings',
-    title: 'Notification Preferences',
-    description: 'Customers want to choose which types of notifications they receive (email, SMS, push).',
-    sampleUserStory: 'As a customer, I want to choose which types of notifications I receive so that I can control my communication preferences and avoid notification overload.',
+    id: 'chatbot-payment-cancellation',
+    category: 'Customer Service / Chatbot',
+    title: 'Chatbot Payment Cancellation',
+    description: 'You reviewed live chat logs and noticed many users try to cancel their rent payments through the chatbot — which it doesn\'t support. The team wants to explore whether chatbot flows should redirect users to proper channels.',
+    sampleUserStory: 'As a tenant, I want the chatbot to either help me cancel my rent payment or redirect me to the right channel so that I can complete my request efficiently.',
+    difficulty: 'Intermediate',
+    tags: ['chatbot', 'payments', 'cancellation', 'routing']
+  },
+  {
+    id: 'fraud-id-flagging',
+    category: 'Security / Fraud Prevention',
+    title: 'Fraud ID Flagging',
+    description: 'You joined a workshop with the fraud team. They want a new flow that flags if the same tenant uploads different IDs in short succession — a signal of potential misuse. They want the rule clearly outlined in the story.',
+    sampleUserStory: 'As a fraud analyst, I want the system to flag when the same tenant uploads different IDs in short succession so that I can investigate potential misuse.',
+    difficulty: 'Complex',
+    tags: ['fraud', 'id-verification', 'flagging', 'security']
+  },
+  {
+    id: 'contractor-invoice-reminders',
+    category: 'Procurement / Automation',
+    title: 'Contractor Invoice Reminders',
+    description: 'Your stakeholder in Procurement wants contractors to receive automatic reminders to upload invoices before the 20th of each month. Currently, it\'s all manual and often late. The rule must support recurring triggers.',
+    sampleUserStory: 'As a contractor, I want to receive automatic reminders to upload my invoices before the 20th so that I never miss the deadline and get paid on time.',
+    difficulty: 'Intermediate',
+    tags: ['invoices', 'reminders', 'automation', 'procurement']
+  },
+  {
+    id: 'income-change-documents',
+    category: 'Housing Benefits / Documentation',
+    title: 'Income Change Documentation',
+    description: 'You met with the Housing Benefits Officer, who said when tenants report income changes, they often miss adding supporting documents. She wants the journey to include clear prompts for what\'s needed, with upload validations.',
+    sampleUserStory: 'As a tenant, I want clear prompts about what documents I need to upload when reporting income changes so that my application is complete and processed quickly.',
+    difficulty: 'Intermediate',
+    tags: ['income-changes', 'documents', 'validation', 'benefits']
+  },
+  {
+    id: 'pdf-download-journey',
+    category: 'Accessibility / User Experience',
+    title: 'PDF Download for Elderly Users',
+    description: 'In a feedback session, the Tenant Advisory Board said many elderly users struggle with the step-by-step journey. They want a "Download All Steps as PDF" option so they can read it offline with their caregiver.',
+    sampleUserStory: 'As an elderly tenant, I want to download all the steps as a PDF so that I can read through the process offline with my caregiver at my own pace.',
     difficulty: 'Beginner',
-    tags: ['notifications', 'preferences', 'email', 'sms', 'push']
+    tags: ['pdf', 'accessibility', 'elderly-users', 'offline']
   },
-
-  // 🚀 Projects / Workflows / Approvals
   {
-    id: 'leave-request-workflow',
-    category: 'Projects / Workflows / Approvals',
-    title: 'Leave Request Workflow',
-    description: 'Staff want to request annual leave, see their remaining allowance, and view approval status.',
-    sampleUserStory: 'As a staff member, I want to request annual leave so that I can see my remaining allowance and track the approval status of my requests.',
+    id: 'inactive-account-verification',
+    category: 'Account Management / Security',
+    title: 'Inactive Account Re-verification',
+    description: 'During a planning session, the PO asked for a quick win: flag accounts that have been inactive for 6 months and show a prompt to re-verify contact info. You need to think about how to define inactivity and what to display.',
+    sampleUserStory: 'As a tenant with an inactive account, I want to be prompted to re-verify my contact information so that my account stays secure and up-to-date.',
     difficulty: 'Intermediate',
-    tags: ['leave-request', 'annual-leave', 'allowance', 'approval', 'workflow']
+    tags: ['inactive-accounts', 'verification', 'security', 'contact-info']
   },
   {
-    id: 'document-upload-application',
-    category: 'Projects / Workflows / Approvals',
-    title: 'Document Upload in Application',
-    description: 'Applicants should be able to upload supporting documents (e.g. ID) in their application process.',
-    sampleUserStory: 'As an applicant, I want to upload supporting documents during my application so that I can provide all required information in one place.',
-    difficulty: 'Intermediate',
-    tags: ['document-upload', 'application', 'supporting-documents', 'id']
-  },
-  {
-    id: 'manager-approval-flow',
-    category: 'Projects / Workflows / Approvals',
-    title: 'Manager Approval Flow',
-    description: 'A request should only progress to HR after a line manager approves it.',
-    sampleUserStory: 'As a line manager, I want to approve requests before they go to HR so that I can ensure proper authorization and workflow control.',
+    id: 'new-device-alerts',
+    category: 'Security / Notifications',
+    title: 'New Device Security Alerts',
+    description: 'A stakeholder in IT Security mentioned that password reset attempts from new devices should trigger an alert. You need to capture what counts as a "new device" and how the alert will be sent — email, SMS, or both.',
+    sampleUserStory: 'As a tenant, I want to be alerted when someone tries to reset my password from a new device so that I can take action if it\'s not me.',
     difficulty: 'Complex',
-    tags: ['approval-flow', 'manager', 'hr', 'workflow', 'authorization']
-  },
-
-  // 📈 Reporting / Tracking / Status
-  {
-    id: 'track-order-status',
-    category: 'Reporting / Tracking / Status',
-    title: 'Track Order Status',
-    description: 'Customers want to track the status of their order in real time and receive updates.',
-    sampleUserStory: 'As a customer, I want to track my order status in real time so that I can stay informed about delivery progress and receive timely updates.',
-    difficulty: 'Intermediate',
-    tags: ['order-tracking', 'real-time', 'status', 'updates', 'delivery']
+    tags: ['security', 'new-device', 'alerts', 'password-reset']
   },
   {
-    id: 'view-usage-report',
-    category: 'Reporting / Tracking / Status',
-    title: 'View Usage Report',
-    description: 'Users want to see a summary of their account usage for the past 12 months, with download options.',
-    sampleUserStory: 'As a user, I want to view my account usage summary for the past 12 months so that I can understand my usage patterns and download reports for my records.',
+    id: 'complaint-metrics-display',
+    category: 'Reporting / Frontline Visibility',
+    title: 'Complaint Metrics for Housing Officers',
+    description: 'You met a senior stakeholder who said their priority is to surface metrics from the last 3 complaints per tenant, so housing officers see context at a glance. The request is not to build analytics, but to improve frontline visibility.',
+    sampleUserStory: 'As a housing officer, I want to see the last 3 complaints for each tenant so that I have context about their history when I interact with them.',
     difficulty: 'Intermediate',
-    tags: ['usage-report', 'summary', '12-months', 'download', 'analytics']
+    tags: ['metrics', 'complaints', 'context', 'frontline-visibility']
   }
 ];
 
