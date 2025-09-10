@@ -42,7 +42,7 @@ import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
 import DiagramCreationView from '../Views/DiagramCreationView';
 import { AgilePracticeView } from '../Views/AgilePracticeView';
 import ProcessMapperView from '../Views/ProcessMapperView';
-import UserStoryBuilderView from '../Views/UserStoryBuilderView';
+import TrainingUI from '../Views/TrainingUI';
 
 
 const MainLayout: React.FC = () => {
@@ -160,7 +160,7 @@ const MainLayout: React.FC = () => {
       case 'project-deliverables':
         return <ProjectDeliverablesView />;
             case 'user-story-checker':
-              return <UserStoryBuilderView />;
+              return <TrainingUI />;
       default:
         return <ProjectsView />;
     }
