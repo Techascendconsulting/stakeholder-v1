@@ -64,7 +64,6 @@ export default function PracticeAndCoachingLayer() {
   const [acInputs, setAcInputs] = useState<string[]>(Array(coachingSteps.length).fill(''));
   const [feedbacks, setFeedbacks] = useState<string[]>(Array(coachingSteps.length).fill(''));
   const [userStory, setUserStory] = useState('');
-  const [coachingStarted, setCoachingStarted] = useState(false);
   const [currentScenario, setCurrentScenario] = useState<Scenario | null>(null);
 
   // Load a random scenario on component mount
@@ -78,14 +77,6 @@ export default function PracticeAndCoachingLayer() {
     setAcInputs(newInputs);
   };
 
-  const handleStartCoaching = () => {
-    if (!userStory.trim()) {
-      alert('Please enter a user story before starting coaching.');
-      return;
-    }
-    setCoachingStarted(true);
-    setStepIndex(0);
-  };
 
   const handleResetStep = () => {
     const newInputs = [...acInputs];
@@ -99,7 +90,6 @@ export default function PracticeAndCoachingLayer() {
   const handleNewScenario = () => {
     setCurrentScenario(getRandomScenario());
     setUserStory('');
-    setCoachingStarted(false);
     setStepIndex(0);
     setAcInputs(Array(coachingSteps.length).fill(''));
     setFeedbacks(Array(coachingSteps.length).fill(''));
@@ -135,133 +125,73 @@ export default function PracticeAndCoachingLayer() {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Step 0: Setup */}
-      {!coachingStarted ? (
-        <>
-          {/* Scenario */}
-          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
-            <div className="flex justify-between items-start mb-2">
-              <h2 className="text-sm text-gray-500 dark:text-gray-400">Scenario:</h2>
-              <button
-                onClick={handleNewScenario}
-                className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition-colors"
-              >
-                🎲 New Scenario
-              </button>
-            </div>
-            {currentScenario ? (
-              <>
-                <div className="mb-2">
-                  <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
-                    {currentScenario.category}
-                  </span>
-                  <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-full">
-                    {currentScenario.difficulty}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{currentScenario.title}</h3>
-                <p className="font-medium text-gray-900 dark:text-white">{currentScenario.description}</p>
-              </>
-            ) : (
-              <p className="font-medium text-gray-900 dark:text-white">Loading scenario...</p>
-            )}
-          </div>
-          
-          {/* User Story Input */}
-          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-            <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Write Your User Story:</h2>
-            <textarea
-              placeholder={currentScenario?.sampleUserStory || "e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"}
-              value={userStory}
-              onChange={(e) => setUserStory(e.target.value)}
-              className="w-full min-h-[100px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Write your user story following the format: "As a [role], I want [action] so that [benefit]"
-            </p>
-          </div>
-
-          {/* Start Coaching Button */}
-          <div className="text-center">
+      {/* Static Scenario and User Story Section */}
+      <div className="space-y-4 mb-6">
+        {/* Scenario */}
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
+          <div className="flex justify-between items-start mb-2">
+            <h2 className="text-sm text-gray-500 dark:text-gray-400">Scenario:</h2>
             <button
-              onClick={handleStartCoaching}
-              disabled={!userStory.trim()}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleNewScenario}
+              className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition-colors"
             >
-              ▶ Start Coaching
+              🎲 New Scenario
             </button>
           </div>
-        </>
-      ) : (
-        /* Step 1-7: Coaching Steps */
-        <>
-          {/* Static Scenario and User Story Section */}
-          <div className="space-y-4 mb-6">
-            {/* Scenario */}
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
-              <div className="flex justify-between items-start mb-2">
-                <h2 className="text-sm text-gray-500 dark:text-gray-400">Scenario:</h2>
-                <button
-                  onClick={handleNewScenario}
-                  className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition-colors"
-                >
-                  🎲 New Scenario
-                </button>
+          {currentScenario ? (
+            <>
+              <div className="mb-2">
+                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
+                  {currentScenario.category}
+                </span>
+                <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-full">
+                  {currentScenario.difficulty}
+                </span>
               </div>
-              {currentScenario ? (
-                <>
-                  <div className="mb-2">
-                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
-                      {currentScenario.category}
-                    </span>
-                    <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-full">
-                      {currentScenario.difficulty}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{currentScenario.title}</h3>
-                  <p className="font-medium text-gray-900 dark:text-white">{currentScenario.description}</p>
-                </>
-              ) : (
-                <p className="font-medium text-gray-900 dark:text-white">Loading scenario...</p>
-              )}
-            </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{currentScenario.title}</h3>
+              <p className="font-medium text-gray-900 dark:text-white">{currentScenario.description}</p>
+            </>
+          ) : (
+            <p className="font-medium text-gray-900 dark:text-white">Loading scenario...</p>
+          )}
+        </div>
 
-            {/* User Story */}
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-              <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Your User Story:</h2>
-              <textarea
-                value={userStory}
-                onChange={(e) => setUserStory(e.target.value)}
-                className="w-full min-h-[80px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                placeholder="e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                You can edit your user story as you learn more about writing acceptance criteria
-              </p>
-            </div>
-          </div>
+        {/* User Story */}
+        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+          <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Your User Story:</h2>
+          <textarea
+            placeholder={currentScenario?.sampleUserStory || "e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"}
+            value={userStory}
+            onChange={(e) => setUserStory(e.target.value)}
+            className="w-full min-h-[80px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Write your user story following the format: "As a [role], I want [action] so that [benefit]"
+          </p>
+        </div>
+      </div>
 
-          {/* Progress Indicator */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Step {stepIndex + 1} of {coachingSteps.length}
-              </span>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {Math.round(((stepIndex + 1) / coachingSteps.length) * 100)}% Complete
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((stepIndex + 1) / coachingSteps.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
+      {/* Progress Indicator */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            Step {stepIndex + 1} of {coachingSteps.length}
+          </span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">
+            {Math.round(((stepIndex + 1) / coachingSteps.length) * 100)}% Complete
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div 
+            className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${((stepIndex + 1) / coachingSteps.length) * 100}%` }}
+          ></div>
+        </div>
+      </div>
 
-          {/* Coaching Card */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
-            <div className="space-y-4 p-6">
+      {/* Coaching Card */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
+        <div className="space-y-4 p-6">
               {/* Step Header */}
               <div>
                 <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">
@@ -348,23 +278,23 @@ export default function PracticeAndCoachingLayer() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Summary */}
-          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Your Progress:</h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Completed Steps:</span>
-                <p className="font-medium text-gray-900 dark:text-white">{acInputs.filter(ac => ac.trim()).length} / {coachingSteps.length}</p>
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Current Step:</span>
-                <p className="font-medium text-gray-900 dark:text-white">{coachingSteps[stepIndex].title}</p>
-              </div>
-            </div>
+      {/* Summary */}
+      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Your Progress:</h3>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <span className="text-gray-600 dark:text-gray-400">Completed Steps:</span>
+            <p className="font-medium text-gray-900 dark:text-white">{acInputs.filter(ac => ac.trim()).length} / {coachingSteps.length}</p>
           </div>
-        </>
-      )}
+          <div>
+            <span className="text-gray-600 dark:text-gray-400">Current Step:</span>
+            <p className="font-medium text-gray-900 dark:text-white">{coachingSteps[stepIndex].title}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
