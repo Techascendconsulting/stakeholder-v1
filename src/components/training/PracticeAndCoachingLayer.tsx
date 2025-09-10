@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getRandomScenario, Scenario } from '@/data/scenarios';
 
 interface CoachingStep {
   title: string;
@@ -64,8 +65,12 @@ export default function PracticeAndCoachingLayer() {
   const [feedbacks, setFeedbacks] = useState<string[]>(Array(coachingSteps.length).fill(''));
   const [userStory, setUserStory] = useState('');
   const [coachingStarted, setCoachingStarted] = useState(false);
+  const [currentScenario, setCurrentScenario] = useState<Scenario | null>(null);
 
-  const scenario = "You are working on a tenant portal. Tenants need to upload photos or documents when reporting a maintenance issue, so the housing team can assess and respond effectively.";
+  // Load a random scenario on component mount
+  useEffect(() => {
+    setCurrentScenario(getRandomScenario());
+  }, []);
 
   const handleInputChange = (value: string) => {
     const newInputs = [...acInputs];
@@ -89,6 +94,15 @@ export default function PracticeAndCoachingLayer() {
     const newFeedbacks = [...feedbacks];
     newFeedbacks[stepIndex] = '';
     setFeedbacks(newFeedbacks);
+  };
+
+  const handleNewScenario = () => {
+    setCurrentScenario(getRandomScenario());
+    setUserStory('');
+    setCoachingStarted(false);
+    setStepIndex(0);
+    setAcInputs(Array(coachingSteps.length).fill(''));
+    setFeedbacks(Array(coachingSteps.length).fill(''));
   };
 
   const handleCheck = () => {
@@ -126,15 +140,38 @@ export default function PracticeAndCoachingLayer() {
         <>
           {/* Scenario */}
           <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
-            <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Scenario:</h2>
-            <p className="font-medium text-gray-900 dark:text-white">{scenario}</p>
+            <div className="flex justify-between items-start mb-2">
+              <h2 className="text-sm text-gray-500 dark:text-gray-400">Scenario:</h2>
+              <button
+                onClick={handleNewScenario}
+                className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition-colors"
+              >
+                🎲 New Scenario
+              </button>
+            </div>
+            {currentScenario ? (
+              <>
+                <div className="mb-2">
+                  <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
+                    {currentScenario.category}
+                  </span>
+                  <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-full">
+                    {currentScenario.difficulty}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{currentScenario.title}</h3>
+                <p className="font-medium text-gray-900 dark:text-white">{currentScenario.description}</p>
+              </>
+            ) : (
+              <p className="font-medium text-gray-900 dark:text-white">Loading scenario...</p>
+            )}
           </div>
           
           {/* User Story Input */}
           <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
             <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Write Your User Story:</h2>
             <textarea
-              placeholder="e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"
+              placeholder={currentScenario?.sampleUserStory || "e.g., As a tenant, I want to upload a document so that the housing team can resolve my issue"}
               value={userStory}
               onChange={(e) => setUserStory(e.target.value)}
               className="w-full min-h-[100px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
@@ -162,8 +199,31 @@ export default function PracticeAndCoachingLayer() {
           <div className="space-y-4 mb-6">
             {/* Scenario */}
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
-              <h2 className="text-sm text-gray-500 dark:text-gray-400 mb-2">Scenario:</h2>
-              <p className="font-medium text-gray-900 dark:text-white">{scenario}</p>
+              <div className="flex justify-between items-start mb-2">
+                <h2 className="text-sm text-gray-500 dark:text-gray-400">Scenario:</h2>
+                <button
+                  onClick={handleNewScenario}
+                  className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition-colors"
+                >
+                  🎲 New Scenario
+                </button>
+              </div>
+              {currentScenario ? (
+                <>
+                  <div className="mb-2">
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
+                      {currentScenario.category}
+                    </span>
+                    <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded-full">
+                      {currentScenario.difficulty}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{currentScenario.title}</h3>
+                  <p className="font-medium text-gray-900 dark:text-white">{currentScenario.description}</p>
+                </>
+              ) : (
+                <p className="font-medium text-gray-900 dark:text-white">Loading scenario...</p>
+              )}
             </div>
 
             {/* User Story */}
