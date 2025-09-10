@@ -16,7 +16,7 @@ export function validateAcceptanceCriterion(
   if (!cleaned || /^(e{3,}|[a-z]{1,2} ?)+$/i.test(cleaned) || cleaned.includes('test')) {
     return {
       type: 'gibberish',
-      message: "Hmm, this doesn't look like a real input. Want to try writing it properly?",
+      message: "Hmm, this doesn\'t look like a real input. Want to try writing it properly?",
     };
   }
 
@@ -40,7 +40,7 @@ export function validateAcceptanceCriterion(
   if (!hasRelevantKeyword) {
     return {
       type: 'unrelated',
-      message: 'This doesn't seem related to the user story or scenario. Want to review the context?',
+      message: 'This doesn\'t seem related to the user story or scenario. Want to review the context?',
     };
   }
 
@@ -52,7 +52,7 @@ export function validateAcceptanceCriterion(
   if (!roleMatch || !actionMatch || !outcomeMatch) {
     return {
       type: 'missingRoleActionOutcome',
-      message: 'The user story seems incomplete — check if it includes a role, what they want, and why.',
+      message: 'The user story seems incomplete - check if it includes a role, what they want, and why.',
     };
   }
 
