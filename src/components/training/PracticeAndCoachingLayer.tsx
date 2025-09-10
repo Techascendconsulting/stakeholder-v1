@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getRandomScenario, Scenario } from '@/data/scenarios';
+import { getRandomScenario, Scenario } from '../../data/scenarios';
 
 interface CoachingStep {
   title: string;
