@@ -1,9 +1,14 @@
 // utils/validateAcceptanceCriteria.ts
 import { OpenAI } from 'openai';
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_KEY
-});
+// Initialize OpenAI client only when needed
+function getOpenAIClient() {
+  const apiKey = import.meta.env.VITE_OPENAI_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+}
 
 // 8 rules baseline
 const rules = [
@@ -25,8 +30,8 @@ export function isValidText(text: string) {
 
 // ✅ Step 2: GPT-assisted analysis
 export async function checkAcceptanceCriteriaGPT(userStory: string, acList: string[]) {
-  // Check if API key is available
-  if (!import.meta.env.VITE_OPENAI_KEY) {
+  const openai = getOpenAIClient();
+  if (!openai) {
     console.warn('OpenAI API key not found. Using fallback validation.');
     return null;
   }

@@ -1,9 +1,14 @@
 // utils/validateUserStory.ts
 import { OpenAI } from 'openai';
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_KEY
-});
+// Initialize OpenAI client only when needed
+function getOpenAIClient() {
+  const apiKey = import.meta.env.VITE_OPENAI_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+}
 
 // Local structural check (optional before GPT)
 export function isUserStoryStructureValid(text: string) {
@@ -17,8 +22,8 @@ export function isUserStoryStructureValid(text: string) {
 
 // GPT-powered validation of user story quality
 export async function checkUserStoryGPT(userStory: string) {
-  // Check if API key is available
-  if (!import.meta.env.VITE_OPENAI_KEY) {
+  const openai = getOpenAIClient();
+  if (!openai) {
     console.warn('OpenAI API key not found. Using fallback validation.');
     return null;
   }
