@@ -1,55 +1,61 @@
-import { useState } from "react";
-import TeachingLayer from "../training/TeachingLayer";
-import PracticeAndCoachingLayer from "../training/PracticeAndCoachingLayer";
-import StoryAndCriteriaChecker from "../training/StoryAndCriteriaChecker";
+import React, { useState } from 'react';
+import UserStoryChecker from './UserStoryChecker';
+import AcceptanceCriteriaChecker from './AcceptanceCriteriaChecker';
 
-export default function TrainingUI() {
-  const [view, setView] = useState<"teaching" | "practice" | "checker">("teaching");
+type CheckerMode = 'user-story' | 'acceptance-criteria' | 'both';
+
+export default function StoryAndCriteriaChecker() {
+  const [mode, setMode] = useState<CheckerMode>('user-story');
 
   return (
     <div className="w-full h-full px-6 py-4 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {view === "teaching" ? "Learn User Stories" : view === "practice" ? "Practice & Get Feedback" : "Story & Criteria Checker"}
+          User Story & Acceptance Criteria Checker
         </h1>
         <div className="flex space-x-2">
           <button
-            onClick={() => setView("teaching")}
+            onClick={() => setMode('user-story')}
             className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
-              view === "teaching"
+              mode === 'user-story'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
-            Teaching
+            User Story
           </button>
           <button
-            onClick={() => setView("practice")}
+            onClick={() => setMode('acceptance-criteria')}
             className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
-              view === "practice"
+              mode === 'acceptance-criteria'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
-            Practice
+            Acceptance Criteria
           </button>
           <button
-            onClick={() => setView("checker")}
+            onClick={() => setMode('both')}
             className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
-              view === "checker"
+              mode === 'both'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
-            Checker
+            Both
           </button>
         </div>
       </div>
 
       <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
-        {view === "teaching" && <TeachingLayer onStartPractice={() => setView("practice")} />}
-        {view === "practice" && <PracticeAndCoachingLayer />}
-        {view === "checker" && <StoryAndCriteriaChecker />}
+        {mode === 'user-story' && <UserStoryChecker />}
+        {mode === 'acceptance-criteria' && <AcceptanceCriteriaChecker />}
+        {mode === 'both' && (
+          <div className="space-y-8">
+            <UserStoryChecker />
+            <AcceptanceCriteriaChecker />
+          </div>
+        )}
       </div>
     </div>
   );
