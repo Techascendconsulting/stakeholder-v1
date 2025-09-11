@@ -4,6 +4,7 @@ import { AppProvider } from './contexts/AppContext'
 import { VoiceProvider } from './contexts/VoiceContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import LandingPage from './components/LandingPage'
+import { StakeholderBotProvider } from './context/StakeholderBotContext'
 import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
 import { AlertCircle } from 'lucide-react'
@@ -145,7 +146,9 @@ function App() {
               <AppProvider>
                 <OnboardingProvider>
                   <MeetingSetupProvider>
-                    <AppContent />
+                    <StakeholderBotProvider>
+                      <AppContent />
+                    </StakeholderBotProvider>
                   </MeetingSetupProvider>
                 </OnboardingProvider>
               </AppProvider>

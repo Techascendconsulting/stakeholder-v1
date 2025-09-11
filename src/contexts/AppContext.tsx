@@ -93,6 +93,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'agile-scrum',
         'scrum-essentials',
         'agile-practice',
+        'user-story-checker',
         'my-meetings',
         'voice-meeting',
         'settings',

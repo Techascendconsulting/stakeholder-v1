@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 interface UserStoryRule {
@@ -26,8 +26,43 @@ const basicChecklist: UserStoryRule[] = [
 ];
 
 export default function UserStoryChecker() {
-  const [story, setStory] = useState("");
-  const [showHints, setShowHints] = useState(false);
+  // Initialize state from localStorage or defaults
+  const [story, setStory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user_story_checker_story');
+      return saved || "";
+    } catch (error) {
+      console.log('Error loading user story from localStorage:', error);
+      return "";
+    }
+  });
+
+  const [showHints, setShowHints] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user_story_checker_showHints');
+      return saved === 'true';
+    } catch (error) {
+      console.log('Error loading showHints from localStorage:', error);
+      return false;
+    }
+  });
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('user_story_checker_story', story);
+    } catch (error) {
+      console.log('Error saving user story to localStorage:', error);
+    }
+  }, [story]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('user_story_checker_showHints', showHints.toString());
+    } catch (error) {
+      console.log('Error saving showHints to localStorage:', error);
+    }
+  }, [showHints]);
 
   const checks = basicChecklist.map(({ rule, check, hint }) => {
     const passed = check(story);
@@ -82,3 +117,4 @@ export default function UserStoryChecker() {
     </div>
   );
 }
+

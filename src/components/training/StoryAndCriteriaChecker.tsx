@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserStoryChecker from './UserStoryChecker';
 import AcceptanceCriteriaChecker from './AcceptanceCriteriaChecker';
 
 type CheckerMode = 'user-story' | 'acceptance-criteria' | 'both';
 
 export default function StoryAndCriteriaChecker() {
-  const [mode, setMode] = useState<CheckerMode>('user-story');
+  // Initialize mode from localStorage or default to user-story
+  const [mode, setMode] = useState<CheckerMode>(() => {
+    try {
+      const saved = localStorage.getItem('story_checker_mode');
+      if (saved && ['user-story', 'acceptance-criteria', 'both'].includes(saved)) {
+        return saved as CheckerMode;
+      }
+    } catch (error) {
+      console.log('Error loading story checker mode from localStorage:', error);
+    }
+    return 'user-story';
+  });
+
+  // Save mode to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('story_checker_mode', mode);
+    } catch (error) {
+      console.log('Error saving story checker mode to localStorage:', error);
+    }
+  }, [mode]);
 
   return (
     <div className="w-full h-full px-6 py-4 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
@@ -60,3 +80,4 @@ export default function StoryAndCriteriaChecker() {
     </div>
   );
 }
+

@@ -7,15 +7,19 @@ function getOpenAIClient() {
   if (!apiKey) {
     return null;
   }
-  return new OpenAI({ apiKey });
+  return new OpenAI({ 
+    apiKey,
+    dangerouslyAllowBrowser: true // Required for browser environment
+  });
 }
 
 // Local structural check (optional before GPT)
 export function isUserStoryStructureValid(text: string) {
+  const lowerText = text.toLowerCase();
   return (
-    text.includes('As a') &&
-    text.includes('I want') &&
-    text.includes('so that') &&
+    lowerText.includes('as a') &&
+    lowerText.includes('i want') &&
+    lowerText.includes('so that') &&
     text.length > 30
   );
 }
@@ -65,10 +69,20 @@ User Story:
     console.log('AI Response:', content);
     
     try {
-      const parsed = JSON.parse(content || '');
+      // Remove markdown code blocks if present
+      let jsonContent = content || '';
+      if (jsonContent.includes('```json')) {
+        jsonContent = jsonContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      }
+      if (jsonContent.includes('```')) {
+        jsonContent = jsonContent.replace(/```\n?/g, '');
+      }
+      
+      const parsed = JSON.parse(jsonContent.trim());
       return parsed;
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
+      console.error('Raw content:', content);
       return null;
     }
   } catch (error) {
