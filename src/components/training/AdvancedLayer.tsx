@@ -210,7 +210,7 @@ export default function AdvancedLayer() {
       } catch (error) {
         console.log('Error saving acInputs to localStorage:', error);
       }
-    }, 1000); // 1 second debounce for localStorage saves
+    }, 2000); // 2 second debounce for localStorage saves
 
     return () => clearTimeout(timeoutId);
   }, [acInputs]);
@@ -265,7 +265,7 @@ export default function AdvancedLayer() {
 
     const timeoutId = setTimeout(() => {
       saveToServer(true); // Auto-save
-    }, 5000); // Increased to 5 second delay to reduce server calls
+    }, 10000); // Increased to 10 second delay to reduce server calls
 
     return () => clearTimeout(timeoutId);
   }, [userStory, acInputs, stepIndex, feedbacks, aiValidationResults, showPractice]);
@@ -282,42 +282,18 @@ export default function AdvancedLayer() {
     newInputs[stepIndex] = value;
     setAcInputs(newInputs);
     
-    // Debounce validation to prevent performance issues with large pastes
-    if (validationTimeoutRef.current) {
-      clearTimeout(validationTimeoutRef.current);
-    }
-    validationTimeoutRef.current = setTimeout(() => {
-      if (value.trim() && currentScenario) {
-        const scenarioKeywords = currentScenario.tags || [];
-        const validation = validateAcceptanceCriterion(value, scenarioKeywords, userStory);
-        setAcValidation(validation);
-      } else {
-        setAcValidation(null);
-      }
-    }, 300); // 300ms debounce
+    // Disable real-time validation completely to prevent performance issues
+    // Validation will only happen when user clicks "Check My Input"
+    setAcValidation(null);
   };
 
   const handleUserStoryChange = (value: string) => {
     setUserStory(value);
     try { setCurrentUserStory(value); } catch {}
     
-    // Validate user story structure in real-time
-    if (value.trim()) {
-      const roleMatch = /as a[n]?\s+\w+/i.test(value);
-      const actionMatch = /i want\s+[a-z ]+/i.test(value);
-      const outcomeMatch = /so that\s+[a-z ]+/i.test(value);
-      
-      if (!roleMatch || !actionMatch || !outcomeMatch) {
-        setUserStoryValidation({
-          type: 'missingRoleActionOutcome',
-          message: 'The user story seems incomplete — check if it includes a role, what they want, and why.'
-        });
-      } else {
-        setUserStoryValidation({ type: 'success' });
-      }
-    } else {
-      setUserStoryValidation(null);
-    }
+    // Disable real-time validation to prevent performance issues
+    // Validation will only happen when user clicks "Check My Input"
+    setUserStoryValidation(null);
   };
 
   const handleResetStep = () => {

@@ -237,7 +237,7 @@ export default function PracticeAndCoachingLayer() {
       } catch (error) {
         console.log('Error saving acInputs to localStorage:', error);
       }
-    }, 1000); // 1 second debounce for localStorage saves
+    }, 2000); // 2 second debounce for localStorage saves
 
     return () => clearTimeout(timeoutId);
   }, [acInputs]);
@@ -313,7 +313,7 @@ export default function PracticeAndCoachingLayer() {
 
     const timeoutId = setTimeout(() => {
       saveToServer(true); // Auto-save
-    }, 5000); // Increased to 5 second delay to reduce server calls
+    }, 10000); // Increased to 10 second delay to reduce server calls
 
     return () => clearTimeout(timeoutId);
   }, [userStory, acInputs, stepIndex, feedbacks, aiValidationResults, feedbackApplied]);
@@ -338,7 +338,7 @@ export default function PracticeAndCoachingLayer() {
           setShowAdvancedExplainer(true);
         }
       }
-    }, 1000); // 1 second debounce for trigger detection
+    }, 2000); // 2 second debounce for trigger detection
 
     return () => clearTimeout(timeoutId);
   }, [userStory, acInputs, userHasSeenAdvancedCoach, isAdvancedMode]);
@@ -356,19 +356,9 @@ export default function PracticeAndCoachingLayer() {
     newFeedbackApplied[stepIndex] = false;
     setFeedbackApplied(newFeedbackApplied);
     
-    // Debounce validation to prevent performance issues with large pastes
-    if (validationTimeoutRef.current) {
-      clearTimeout(validationTimeoutRef.current);
-    }
-    validationTimeoutRef.current = setTimeout(() => {
-      if (value.trim() && currentScenario) {
-        const scenarioKeywords = currentScenario.tags || [];
-        const validation = validateAcceptanceCriterion(value, scenarioKeywords, userStory);
-        setAcValidation(validation);
-      } else {
-        setAcValidation(null);
-      }
-    }, 300); // 300ms debounce
+    // Disable real-time validation completely to prevent performance issues
+    // Validation will only happen when user clicks "Check My Input"
+    setAcValidation(null);
   };
 
   const handleUserStoryChange = (value: string) => {
@@ -383,23 +373,9 @@ export default function PracticeAndCoachingLayer() {
     newFeedbackApplied[0] = false; // User story is step 0
     setFeedbackApplied(newFeedbackApplied);
     
-    // Validate user story structure in real-time
-    if (value.trim()) {
-      const roleMatch = /as a[n]?\s+\w+/i.test(value);
-      const actionMatch = /i want\s+[a-z ]+/i.test(value);
-      const outcomeMatch = /so that\s+[a-z ]+/i.test(value);
-      
-      if (!roleMatch || !actionMatch || !outcomeMatch) {
-        setUserStoryValidation({
-          type: 'missingRoleActionOutcome',
-          message: 'The user story seems incomplete — check if it includes a role, what they want, and why.'
-        });
-      } else {
-        setUserStoryValidation({ type: 'success' });
-      }
-    } else {
-      setUserStoryValidation(null);
-    }
+    // Disable real-time validation to prevent performance issues
+    // Validation will only happen when user clicks "Check My Input"
+    setUserStoryValidation(null);
   };
 
   // Advanced coaching handlers
