@@ -527,16 +527,17 @@ export default function AdvancedLayer() {
           userStory
         );
         
-        if (aiResults && aiResults.length > 0) {
-          setAiValidationResults(aiResults);
-          const passedRules = aiResults.filter((rule: any) => rule.status === '✅').length;
-          const totalRules = aiResults.length;
+        if (aiResults) {
+          // checkSpecificStepGPT returns a single object, not an array
+          setAiValidationResults([aiResults]);
           
           const newFeedbacks = [...feedbacks];
-          if (passedRules === totalRules) {
-            newFeedbacks[stepIndex] = `✔️ Excellent! Your acceptance criterion passed all ${totalRules} quality checks for this step.`;
+          if (aiResults.status === '✅') {
+            newFeedbacks[stepIndex] = `✔️ Excellent! Your acceptance criterion properly addresses the ${currentStep.title} requirements.`;
+          } else if (aiResults.status === '⚠️') {
+            newFeedbacks[stepIndex] = `⚠️ Your acceptance criterion partially addresses the ${currentStep.title} requirements. See detailed feedback below.`;
           } else {
-            newFeedbacks[stepIndex] = `⚠️ Your acceptance criterion passed ${passedRules}/${totalRules} quality checks. See detailed feedback below.`;
+            newFeedbacks[stepIndex] = `❌ Your acceptance criterion needs improvement for the ${currentStep.title} step. See detailed feedback below.`;
           }
           setFeedbacks(newFeedbacks);
         } else {
@@ -842,11 +843,11 @@ export default function AdvancedLayer() {
                         <div className="flex items-start gap-2 mb-2">
                           <span className="text-lg">{result.status}</span>
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {result.rule}
+                            {coachingSteps[stepIndex]?.title || 'Acceptance Criteria'}
                           </span>
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                          {result.feedback}
+                          {result.explanation}
                         </p>
                         {result.suggestion && (
                           <p className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">

@@ -3,7 +3,7 @@ import { OpenAI } from 'openai';
 
 // Initialize OpenAI client only when needed
 function getOpenAIClient() {
-  const apiKey = import.meta.env.VITE_OPENAI_KEY;
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   if (!apiKey) {
     return null;
   }
