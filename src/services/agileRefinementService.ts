@@ -264,7 +264,7 @@ Examples:
       'QA Tester': 'testing and quality assurance'
     };
     
-    const context = roleContext[role] || 'this story';
+    const context = roleContext[role as keyof typeof roleContext] || 'this story';
     // Let OpenAI generate contextual questions instead of hardcoded responses
     return '';
   }
@@ -320,7 +320,7 @@ Examples:
     progressCallback?: (progress: number) => void
   ): Promise<any> {
     try {
-      const transcript = messages.map(m => `${m.speaker}: ${m.content}`).join('\n');
+      const transcript = messages.map(m => `${m.user_id}: ${m.body || ''}`).join('\n');
       
       const summaryPrompt = `Generate a professional refinement meeting summary.
 

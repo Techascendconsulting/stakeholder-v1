@@ -477,7 +477,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           department: stakeholder.department,
           priorities: stakeholder.priorities || [],
           personality: stakeholder.personality || 'professional',
-          expertise: stakeholder.expertise || []
+          expertise: Array.isArray(stakeholder.expertise) ? stakeholder.expertise : (stakeholder.expertise ? [stakeholder.expertise] : [])
         };
 
         // Add a small delay between responses to make them feel more natural
@@ -1127,7 +1127,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           ref={dynamicPanelRef}
           projectName={selectedProject?.name || ''}
           conversationHistory={messages}
-          sessionStage={session.stage}
+          sessionStage={session?.stage || 'pre_brief'}
           onAcknowledgementStateChange={handleAcknowledgementStateChange}
           onSuggestedRewrite={handleSuggestedRewrite}
           onSessionComplete={handleEndMeeting}
@@ -1198,7 +1198,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
               <div>
                 <h4 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">Covered Areas</h4>
                 <ul className="space-y-1">
-                  {feedback?.coverageAnalysis?.covered?.map((area, index) => (
+                  {feedback?.coverageAnalysis?.covered?.map((area: any, index: any) => (
                     <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-2">
                       <CheckCircle className="w-3 h-3 text-green-600" />
                       <span>{area}</span>
@@ -1211,7 +1211,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
                 <div>
                   <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Missed Areas</h4>
                   <ul className="space-y-1">
-                    {feedback.coverageAnalysis.missed.map((area, index) => (
+                    {feedback.coverageAnalysis.missed.map((area: any, index: any) => (
                       <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-2">
                         <AlertCircle className="w-3 h-3 text-red-600" />
                         <span>{area}</span>
@@ -1226,7 +1226,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
       )}
 
       {/* Next Time Scripts */}
-      {feedback && feedback?.nextTimeScripts?.length > 0 && (
+      {feedback && feedback?.nextTimeScripts && feedback.nextTimeScripts.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Next Time Scripts</h3>
           <ul className="space-y-2">

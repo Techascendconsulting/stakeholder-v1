@@ -97,7 +97,7 @@ export default defineConfig({
 
             // Extract scenario context from chat if not provided
             const extractedContext = scenarioContext || 
-              chat.find((m) => m.content && m.content.includes('scenario:'))?.content ||
+              chat.find((m: any) => m.content && m.content.includes('scenario:'))?.content ||
               'General user story discussion';
 
             // Build system prompt based on current step and scenario
@@ -121,7 +121,7 @@ Current step: ${stepName || 'user story development'}.
             // Map chat history into OpenAI format
             const messages = [
               { role: "system", content: systemPrompt },
-              ...chat.map((m) => ({
+              ...chat.map((m: any) => ({
                 role: m.role === "user" ? "user" : "assistant",
                 content: m.content,
               })),

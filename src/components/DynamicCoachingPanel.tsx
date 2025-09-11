@@ -266,6 +266,9 @@ const DynamicCoachingPanel = React.forwardRef<{ onUserSubmitted: (messageId: str
         if (nextQuestionNumber === 20) {
           // Force wrap-up question for the final question
           const wrapUpAnalysis = {
+            insights: ["Conversation completed successfully"],
+            painPoints: ["Key pain points identified during conversation"],
+            blockers: ["Potential blockers discussed"],
             nextQuestion: "Looking ahead, what changes would make the biggest difference for your team's success?",
             reasoning: "This wrap-up question helps summarize key insights and identify priority areas for improvement.",
             technique: "Summary & Prioritization"
