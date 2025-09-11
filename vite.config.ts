@@ -90,6 +90,90 @@ export default defineConfig({
           }
         });
 
+        // Stakeholder reply endpoint
+        app.post('/api/stakeholder-reply', async (req, res) => {
+          try {
+            const { storyId, chat, scenarioContext, currentStep, stepName, stepDescription, stakeholder } = req.body;
+
+            // Extract scenario context from chat if not provided
+            const extractedContext = scenarioContext || 
+              chat.find((m) => m.content && m.content.includes('scenario:'))?.content ||
+              'General user story discussion';
+
+            // Build system prompt based on current step and scenario
+            const stepContext = currentStep !== undefined ? 
+              `Current step: ${stepName || `Step ${currentStep + 1}`} - ${stepDescription || 'user story development'}. ` : '';
+
+            const stakeholderContext = stakeholder 
+              ? `You are ${stakeholder.name}, a ${stakeholder.role}. Your focus is on ${stakeholder.focus}. ${stakeholder.responseStyle}`
+              : 'You are a knowledgeable stakeholder being asked about acceptance criteria for a user story.';
+
+            const systemPrompt = `
+${stakeholderContext}
+Answer directly and concisely. Keep responses under 2 sentences. Be specific and actionable.
+If unclear, ask for clarification instead of guessing.
+
+${stepContext}Scenario context: ${extractedContext}
+
+Current step: ${stepName || 'user story development'}.
+            `;
+
+            // Map chat history into OpenAI format
+            const messages = [
+              { role: "system", content: systemPrompt },
+              ...chat.map((m) => ({
+                role: m.role === "user" ? "user" : "assistant",
+                content: m.content,
+              })),
+            ];
+
+            // Try to get API key from either source
+            const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+
+            let stakeholderReply;
+
+            if (apiKey) {
+              // Call OpenAI if available
+              const client = new OpenAI({ apiKey: apiKey });
+              const completion = await client.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages,
+                temperature: 0.6,
+                max_tokens: 80, // Keep responses very concise
+              });
+
+              stakeholderReply = completion.choices[0].message?.content || "I'm not sure, can you clarify?";
+            } else {
+              // Fallback responses when OpenAI is not available
+              const fallbackResponses = [
+                "I need more detail about the specific requirements.",
+                "Consider the business implications of this approach.",
+                "How does this affect our current process?",
+                "This must meet our business needs.",
+                "Validate this with business requirements.",
+                "What are the expected outcomes?",
+                "Consider the user experience implications.",
+                "How does this align with business objectives?"
+              ];
+              
+              stakeholderReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+            }
+
+            res.json({
+              content: stakeholderReply,
+              storyId,
+              timestamp: new Date().toISOString()
+            });
+
+          } catch (error: any) {
+            console.error("Stakeholder reply error:", error);
+            res.status(500).json({ 
+              error: error.message,
+              fallback: "I'm here to help. What would you like to know about this scenario?"
+            });
+          }
+        });
+
         vite.middlewares.use(app);
       }
     }

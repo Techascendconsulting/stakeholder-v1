@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Scenario } from '../../data/scenarios';
 import { scenariosNew } from '../../data/scenarios_new';
 import { validateAcceptanceCriterion, ValidationResult } from '../../utils/useCoachingValidation';
@@ -69,7 +69,9 @@ const coachingSteps: CoachingStep[] = [
 ];
 
 export default function AdvancedLayer() {
-  const { setCurrentUserStory, setCurrentStep } = useStakeholderBot();
+  // StakeholderBot context
+  const { setCurrentUserStory, setCurrentStep, setBotCurrentScenario } = useStakeholderBot();
+  
   // Track whether user is in intro or practice mode
   const [showPractice, setShowPractice] = useState(() => {
     try {
@@ -142,6 +144,18 @@ export default function AdvancedLayer() {
   const [isLoadingFromServer, setIsLoadingFromServer] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   
+  // Timeout ref for debouncing validation
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   // Advanced scenarios (IDs 26-35)
   const [currentScenario, setCurrentScenario] = useState<Scenario | null>(() => {
     try {
@@ -187,17 +201,18 @@ export default function AdvancedLayer() {
     }
   }, [stepIndex]);
 
-  // Sync current step with StakeholderBot context
-  useEffect(() => {
-    try { setCurrentStep(stepIndex); } catch {}
-  }, [stepIndex, setCurrentStep]);
 
+  // Debounced localStorage save for acInputs to prevent performance issues
   useEffect(() => {
-    try {
-      localStorage.setItem('advanced_coaching_acInputs', JSON.stringify(acInputs));
-    } catch (error) {
-      console.log('Error saving acInputs to localStorage:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem('advanced_coaching_acInputs', JSON.stringify(acInputs));
+      } catch (error) {
+        console.log('Error saving acInputs to localStorage:', error);
+      }
+    }, 1000); // 1 second debounce for localStorage saves
+
+    return () => clearTimeout(timeoutId);
   }, [acInputs]);
 
   useEffect(() => {
@@ -215,7 +230,17 @@ export default function AdvancedLayer() {
       console.log('Error saving userStory to localStorage:', error);
     }
     try { setCurrentUserStory(userStory); } catch {}
-  }, [userStory]);
+  }, [userStory, setCurrentUserStory]);
+
+  // Sync current step with StakeholderBot context
+  useEffect(() => {
+    try { setCurrentStep(stepIndex); } catch {}
+  }, [stepIndex, setCurrentStep]);
+
+  // Sync current scenario with StakeholderBot context
+  useEffect(() => {
+    try { setBotCurrentScenario(currentScenario); } catch {}
+  }, [currentScenario, setBotCurrentScenario]);
 
   useEffect(() => {
     try {
@@ -240,7 +265,7 @@ export default function AdvancedLayer() {
 
     const timeoutId = setTimeout(() => {
       saveToServer(true); // Auto-save
-    }, 2000); // 2 second delay
+    }, 5000); // Increased to 5 second delay to reduce server calls
 
     return () => clearTimeout(timeoutId);
   }, [userStory, acInputs, stepIndex, feedbacks, aiValidationResults, showPractice]);
@@ -257,14 +282,19 @@ export default function AdvancedLayer() {
     newInputs[stepIndex] = value;
     setAcInputs(newInputs);
     
-    // Validate the AC input in real-time
-    if (value.trim() && currentScenario) {
-      const scenarioKeywords = currentScenario.tags || [];
-      const validation = validateAcceptanceCriterion(value, scenarioKeywords, userStory);
-      setAcValidation(validation);
-    } else {
-      setAcValidation(null);
+    // Debounce validation to prevent performance issues with large pastes
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
     }
+    validationTimeoutRef.current = setTimeout(() => {
+      if (value.trim() && currentScenario) {
+        const scenarioKeywords = currentScenario.tags || [];
+        const validation = validateAcceptanceCriterion(value, scenarioKeywords, userStory);
+        setAcValidation(validation);
+      } else {
+        setAcValidation(null);
+      }
+    }, 300); // 300ms debounce
   };
 
   const handleUserStoryChange = (value: string) => {
@@ -860,6 +890,8 @@ export default function AdvancedLayer() {
           </div>
         </div>
       </div>
+      <StakeholderBotLauncher />
+      <StakeholderBotPanel />
     </div>
   );
 }

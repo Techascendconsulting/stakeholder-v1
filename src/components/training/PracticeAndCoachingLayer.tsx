@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Scenario } from '../../data/scenarios';
 import { scenariosNew } from '../../data/scenarios_new';
 import { validateAcceptanceCriterion, ValidationResult } from '../../utils/useCoachingValidation';
@@ -82,7 +82,7 @@ const getRandomPracticeScenario = (): Scenario => {
 };
 
 export default function PracticeAndCoachingLayer() {
-  const { setCurrentUserStory, setCurrentStep } = useStakeholderBot();
+  const { setCurrentUserStory, setCurrentStep, setBotCurrentScenario } = useStakeholderBot();
   // Initialize state from localStorage or defaults
   const [stepIndex, setStepIndex] = useState(() => {
     try {
@@ -139,6 +139,18 @@ export default function PracticeAndCoachingLayer() {
       return '';
     }
   });
+
+  // Timeout ref for debouncing validation
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const [currentScenario, setCurrentScenario] = useState<Scenario | null>(() => {
     try {
@@ -217,12 +229,17 @@ export default function PracticeAndCoachingLayer() {
     }
   }, [stepIndex]);
 
+  // Debounced localStorage save for acInputs to prevent performance issues
   useEffect(() => {
-    try {
-      localStorage.setItem('practice_coaching_acInputs', JSON.stringify(acInputs));
-    } catch (error) {
-      console.log('Error saving acInputs to localStorage:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem('practice_coaching_acInputs', JSON.stringify(acInputs));
+      } catch (error) {
+        console.log('Error saving acInputs to localStorage:', error);
+      }
+    }, 1000); // 1 second debounce for localStorage saves
+
+    return () => clearTimeout(timeoutId);
   }, [acInputs]);
 
   useEffect(() => {
@@ -254,6 +271,11 @@ export default function PracticeAndCoachingLayer() {
   useEffect(() => {
     try { setCurrentStep(stepIndex); } catch {}
   }, [stepIndex, setCurrentStep]);
+
+  // Sync current scenario with StakeholderBot context
+  useEffect(() => {
+    try { setBotCurrentScenario(currentScenario); } catch {}
+  }, [currentScenario, setBotCurrentScenario]);
 
   useEffect(() => {
     try {
@@ -291,7 +313,7 @@ export default function PracticeAndCoachingLayer() {
 
     const timeoutId = setTimeout(() => {
       saveToServer(true); // Auto-save
-    }, 2000); // 2 second delay
+    }, 5000); // Increased to 5 second delay to reduce server calls
 
     return () => clearTimeout(timeoutId);
   }, [userStory, acInputs, stepIndex, feedbacks, aiValidationResults, feedbackApplied]);
@@ -303,18 +325,22 @@ export default function PracticeAndCoachingLayer() {
     }
   }, [stepIndex]);
 
-  // Detect advanced triggers when user story or AC inputs change
+  // Detect advanced triggers when user story or AC inputs change (debounced)
   useEffect(() => {
-    const combinedInput = userStory + ' ' + acInputs.join(' ');
-    if (combinedInput.trim().length > 0) {
-      const triggers = getAdvancedTriggersFound(combinedInput);
-      setAdvancedTriggersFound(triggers);
-      
-      // Show advanced explainer if triggers found and user hasn't seen it
-      if (triggers.length > 0 && !userHasSeenAdvancedCoach && !isAdvancedMode) {
-        setShowAdvancedExplainer(true);
+    const timeoutId = setTimeout(() => {
+      const combinedInput = userStory + ' ' + acInputs.join(' ');
+      if (combinedInput.trim().length > 0) {
+        const triggers = getAdvancedTriggersFound(combinedInput);
+        setAdvancedTriggersFound(triggers);
+        
+        // Show advanced explainer if triggers found and user hasn't seen it
+        if (triggers.length > 0 && !userHasSeenAdvancedCoach && !isAdvancedMode) {
+          setShowAdvancedExplainer(true);
+        }
       }
-    }
+    }, 1000); // 1 second debounce for trigger detection
+
+    return () => clearTimeout(timeoutId);
   }, [userStory, acInputs, userHasSeenAdvancedCoach, isAdvancedMode]);
 
   const handleInputChange = (value: string) => {
@@ -330,14 +356,19 @@ export default function PracticeAndCoachingLayer() {
     newFeedbackApplied[stepIndex] = false;
     setFeedbackApplied(newFeedbackApplied);
     
-    // Validate the AC input in real-time
-    if (value.trim() && currentScenario) {
-      const scenarioKeywords = currentScenario.tags || [];
-      const validation = validateAcceptanceCriterion(value, scenarioKeywords, userStory);
-      setAcValidation(validation);
-    } else {
-      setAcValidation(null);
+    // Debounce validation to prevent performance issues with large pastes
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
     }
+    validationTimeoutRef.current = setTimeout(() => {
+      if (value.trim() && currentScenario) {
+        const scenarioKeywords = currentScenario.tags || [];
+        const validation = validateAcceptanceCriterion(value, scenarioKeywords, userStory);
+        setAcValidation(validation);
+      } else {
+        setAcValidation(null);
+      }
+    }, 300); // 300ms debounce
   };
 
   const handleUserStoryChange = (value: string) => {

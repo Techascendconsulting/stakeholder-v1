@@ -56,3 +56,4 @@ create trigger update_advanced_user_story_attempts_updated_at
   execute function update_advanced_attempts_updated_at();
 
 
+

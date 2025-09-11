@@ -60,3 +60,4 @@ CREATE TRIGGER update_project_training_sessions_updated_at
 
 
 
+

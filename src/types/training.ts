@@ -34,6 +34,10 @@ export interface TrainingFeedback {
   specificFeedback: string;
   recommendations: string[];
   timestamp: Date;
+  passed?: boolean;
+  coverageAnalysis?: any;
+  techniqueAnalysis?: any;
+  nextTimeScripts?: string[];
 }
 
 export interface CoachingCard {

@@ -124,3 +124,4 @@ The Practice + Coaching Layer now includes full persistence using Supabase, allo
 This persistence system ensures learners never lose their work and can focus on learning rather than worrying about losing progress!
 
 
+
