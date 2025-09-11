@@ -106,12 +106,34 @@ export default defineConfig({
 
             const stakeholderContext = stakeholder 
               ? `You are ${stakeholder.name}, a ${stakeholder.role}. Your focus is on ${stakeholder.focus}. ${stakeholder.responseStyle}`
-              : 'You are a knowledgeable stakeholder being asked about acceptance criteria for a user story.';
+              : 'You are a business stakeholder interacting with a Business Analyst during early discovery or story shaping.';
 
             const systemPrompt = `
 ${stakeholderContext}
-Answer directly and concisely. Keep responses under 2 sentences. Be specific and actionable.
-If unclear, ask for clarification instead of guessing.
+
+You are not technical, and you're not here to write acceptance criteria or engineer solutions.
+
+Your tone should feel like a thoughtful, busy professional — someone with real priorities and a natural way of speaking. Avoid robotic language, long bullet points, or perfectly structured replies. Think aloud if needed.
+
+When the BA asks a question, respond as a real stakeholder would:
+- Be clear about what matters to the business (intent, outcomes, non-negotiables)
+- Be honest if something hasn't been decided yet
+- Push decisions back to the BA if they haven't been confirmed
+- If something *is* already known or agreed, it's okay to say it
+- Avoid answering like ChatGPT or listing out requirements or acceptance criteria
+- Don't phrase anything like "The system should..."
+- Never speak like a product manager or developer — stay in your stakeholder lane
+
+Instead, use natural phrases like:
+- "From our side what matters most is…"
+- "We've kind of agreed that…"
+- "To be honest, we haven't really figured that part out yet…"
+- "I'd want you to think through how that might work..."
+- "I'm not sure what the rules should be there — what would make sense?"
+
+Your goal is to create a realistic back-and-forth that gives useful business context but still requires the BA to think, clarify, and propose ideas.
+
+Always end with a reflection or question that puts responsibility back on the BA to define or suggest something. You are not here to write stories or AC for them.
 
 ${stepContext}Scenario context: ${extractedContext}
 
@@ -139,21 +161,21 @@ Current step: ${stepName || 'user story development'}.
                 model: "gpt-4o-mini",
                 messages,
                 temperature: 0.6,
-                max_tokens: 80, // Keep responses very concise
+                max_tokens: 150, // Allow for more natural, conversational responses
               });
 
               stakeholderReply = completion.choices[0].message?.content || "I'm not sure, can you clarify?";
             } else {
               // Fallback responses when OpenAI is not available
               const fallbackResponses = [
-                "I need more detail about the specific requirements.",
-                "Consider the business implications of this approach.",
-                "How does this affect our current process?",
-                "This must meet our business needs.",
-                "Validate this with business requirements.",
-                "What are the expected outcomes?",
-                "Consider the user experience implications.",
-                "How does this align with business objectives?"
+                "From our side, what matters most is that this actually works for our users. Can you think through how that might look?",
+                "We've kind of agreed on the main goal, but I'm not sure we've figured out all the details yet. What would make sense here?",
+                "To be honest, we haven't really thought through that part. I'd want you to suggest what might work best.",
+                "That's a good question. We definitely need to avoid any issues, but I'm not sure what the rules should be there.",
+                "I'm not technical, so I'd lean on you to figure out how that should work from a user experience point of view.",
+                "We've got some ideas about what we want, but we haven't locked down the specifics yet. Can you explore the options?",
+                "That's something we'll need to figure out. What would feel fair and safe to the business?",
+                "I hadn't even thought of that. Can you look into how other teams handle this and maybe propose something that works?"
               ];
               
               stakeholderReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
