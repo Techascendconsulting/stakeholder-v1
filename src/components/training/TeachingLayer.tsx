@@ -25,16 +25,16 @@ A user story is a short, simple promise of value from the user's perspective. It
     title: 'What Is a User Story?',
     content: `A user story is a small chunk of work that delivers something meaningful to the user. In Agile, it represents a slice of value that a developer can build and a tester can verify. In Waterfall, stories often sit below larger functional requirements as detailed tasks or testable behaviours.
 
-The classic format is:
+**The classic format is:**
 
 As a [type of user]
 I want to [do something]
 So that [I get a benefit]
 
-Example (Agile eCommerce project)
+**Example (Agile eCommerce project)**
 As a returning shopper, I want to reuse my saved address so I can check out faster without retyping it.
 
-Example (Waterfall HR system project)
+**Example (Waterfall HR system project)**
 As an HR admin, I want to export payroll data to Excel so I can process monthly salaries.`,
     icon: <Users className="w-6 h-6" />,
     color: 'text-green-600',
@@ -44,33 +44,33 @@ As an HR admin, I want to export payroll data to Excel so I can process monthly 
     title: 'INVEST: The 6 Criteria for a Strong User Story',
     content: `A well-written story passes the INVEST test. This checklist helps ensure that your story is worth writing and delivering. These aren't just abstract principles; they are what make stories actually buildable and testable in the real world.
 
-Let's break them down with examples:
+**Let's break them down with examples:**
 
-I = Independent
+**I = Independent**
 The story can be delivered on its own without relying on other stories.
 Instead of: "As a customer, I want to track my order so I can know its status" (which depends on having order history first)
 Try: "As a customer, I want to view my recent order confirmation so I can keep a record of what I purchased."
 
-N = Negotiable
+**N = Negotiable**
 It isn't set in stone. The story is a conversation starter, not a fixed contract.
 Example: A BA might write the story, but developers can suggest whether it's better to use a banner or a modal for an alert.
 
-V = Valuable
+**V = Valuable**
 The user or business gets a visible benefit.
 If the story is only for code cleanup or API changes with no user impact, it might be a task, not a user story.
 Good: "As a tenant, I want to download my rent receipts so I can track my payments."
 
-E = Estimable
+**E = Estimable**
 The team can size it because the scope is clear.
 If devs say, "We can't estimate this yet," the story may be missing rules, formats, or decisions.
 Fix: Add acceptance criteria or stakeholder clarifications.
 
-S = Small
+**S = Small**
 It fits within a sprint. If the AC looks like a full spec, split it.
 Big: "As a user, I want a full dashboard with analytics, trends, downloads, sharing, and email alerts."
 Small slice: "As a user, I want to see my daily usage in a line chart so I can track activity trends."
 
-T = Testable
+**T = Testable**
 You can verify it through clear outcomes.
 Weak: "The system should be fast."
 Better: "After clicking 'Submit', I receive a confirmation within 5 seconds."
@@ -84,20 +84,20 @@ You can use INVEST to review each story before putting it into Jira, or even to 
     title: 'How It Fits in Agile and Scrum',
     content: `In Agile (especially Scrum), user stories live on the Product Backlog. During Refinement, they are discussed and shaped. During Sprint Planning, developers commit to delivering them. And during the Sprint Review, they demo the story to prove it's done.
 
-The Business Analyst helps:
+**The Business Analyst helps:**
 • Shape the story to be testable and small enough to deliver
 • Clarify the purpose of the story
 • Write or support the creation of acceptance criteria
 • Ensure the story aligns with business needs and sprint goals
 
-How It Fits in Waterfall
+**How It Fits in Waterfall**
 In a Waterfall environment, you may not use the word "user story", but you will still:
 • Capture what users want to do (scenarios or functional requirements)
 • Break requirements down into testable conditions
 • Ensure each requirement delivers a specific business outcome
 • You can still apply user story thinking to break up long documents into manageable, verifiable chunks.
 
-Where Does Jira Come In?
+**Where Does Jira Come In?**
 In most companies using Agile, user stories are written directly in Jira. Each Jira story includes:
 • The story title and description (your "As a..., I want..., so that..." format)
 • Acceptance criteria (how we know it's done)
@@ -105,7 +105,7 @@ In most companies using Agile, user stories are written directly in Jira. Each J
 • Story points (to estimate complexity)
 • Status (To Do, In Progress, In Review, Done, etc.)
 
-BAs often:
+**BAs often:**
 • Draft stories and review them with the team
 • Add attachments (flows, mockups, requirements docs)
 • Link stories to Epics and Features
@@ -120,16 +120,16 @@ BAs often:
 
 Think of AC like the referee's rulebook. They help developers know what to build and testers know what to verify.
 
-Format:
+**Format:**
 AC are usually written as simple, user-facing behaviours:
 • If I do X, I see Y
 • If input is invalid, I get an error message
 • When I complete the process, I receive confirmation
 
-Example:
+**Example:**
 Story: As a tenant, I want to upload a photo when reporting an issue so the housing team can understand the problem.
 
-Acceptance Criteria:
+**Acceptance Criteria:**
 • I can upload one or more image files (.jpg, .png)
 • If the file is too large (over 5MB), I see an error message
 • Upload is optional; I can still submit without a photo
@@ -140,31 +140,31 @@ Acceptance Criteria:
   },
   {
     title: 'More Worked Examples',
-    content: `Example 1: Healthcare Portal (Doctor Appointments)
+    content: `**Example 1: Healthcare Portal (Doctor Appointments)**
 
 Story: As a patient, I want to book an appointment with my GP online so I don't have to call the clinic.
 
-Acceptance Criteria:
+**Acceptance Criteria:**
 • I can view available slots for the selected GP
 • I can choose a date and time and receive confirmation
 • If no slots are available, I see an appropriate message
 • I can cancel or reschedule from the booking summary
 • If I double-book, I receive a warning and cannot proceed
 
-Why it matters: This prevents unnecessary calls, reduces wait time, and improves user experience. Each AC ties directly to real-world frustrations.
+**Why it matters:** This prevents unnecessary calls, reduces wait time, and improves user experience. Each AC ties directly to real-world frustrations.
 
-Example 2: Banking App (Mobile Notifications)
+**Example 2: Banking App (Mobile Notifications)**
 
 Story: As a customer, I want to receive a push notification after each transaction so I can monitor my account activity in real time.
 
-Acceptance Criteria:
+**Acceptance Criteria:**
 • After any debit or credit, I receive a push notification within 10 seconds
 • The notification includes the amount, merchant name, and remaining balance
 • If notifications are disabled in settings, none are sent
 • If network is offline, the notification is sent when back online
 • If multiple transactions occur at once, I receive a summary alert
 
-Why it matters: These ACs make sure the feature is reliable, timely, and respects user preferences — all while being testable.`,
+**Why it matters:** These ACs make sure the feature is reliable, timely, and respects user preferences — all while being testable.`,
     icon: <Lightbulb className="w-6 h-6" />,
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
@@ -215,9 +215,13 @@ export default function TeachingLayer({ onStartPractice }: TeachingLayerProps) {
               
               {/* Content */}
               <div className="prose prose-gray dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed text-base">
-                  {step.content}
-                </p>
+                <div 
+                  className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed text-base"
+                  dangerouslySetInnerHTML={{
+                    __html: step.content
+                      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-white">$1</strong>')
+                  }}
+                />
               </div>
             </div>
           </div>
