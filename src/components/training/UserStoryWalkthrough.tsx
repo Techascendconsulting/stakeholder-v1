@@ -312,7 +312,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
             className="flex items-center space-x-2 px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mx-auto"
           >
             <ArrowRight className="w-4 h-4 rotate-180" />
-            <span>Back to Learning</span>
+            <span>Back to Training Pods</span>
           </button>
         </div>
       </div>

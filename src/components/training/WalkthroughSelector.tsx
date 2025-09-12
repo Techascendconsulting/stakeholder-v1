@@ -65,7 +65,7 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
   }
 
   if (selectedWalkthrough === 'acceptance-criteria') {
-    return <AcceptanceCriteriaWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} />;
+    return <AcceptanceCriteriaWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} scenarioId={currentPod || undefined} />;
   }
 
   // Render the selector

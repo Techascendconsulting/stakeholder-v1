@@ -4,6 +4,7 @@ import { CheckCircle, ArrowRight, RotateCcw, FileText, Eye, Target, AlertCircle,
 interface AcceptanceCriteriaWalkthroughProps {
   onStartPractice: () => void;
   onBack: () => void;
+  scenarioId?: string;
 }
 
 interface Rule {
@@ -22,7 +23,246 @@ interface Rule {
   }[];
 }
 
-const rules: Rule[] = [
+const getRulesForScenario = (scenarioId?: string): Rule[] => {
+  if (scenarioId === 'shopping-checkout') {
+    return [
+      {
+        id: 1,
+        title: "Make It User-Observable",
+        description: "AC should describe what the user sees, hears, or does — not what the system does. Avoid \"The system should...\". Focus on user-facing outcomes.",
+        icon: <Eye className="w-6 h-6" />,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+        scenario: "You are building a payment failure handling system. When a payment fails, users need clear guidance.",
+        options: [
+          {
+            value: "A",
+            text: "The system logs the failed transaction to the backend.",
+            correct: false,
+            explanation: "It explains backend logic, not what the user sees."
+          },
+          {
+            value: "B",
+            text: "I see a clear message that says \"Payment failed. Please check your card details or try again.\"",
+            correct: true,
+            explanation: "It clearly describes what the user sees and what happens."
+          },
+          {
+            value: "C",
+            text: "Retry logic is implemented using a fallback payment service.",
+            correct: false,
+            explanation: "This is technical implementation, not user-facing behavior."
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Clear Outcome",
+        description: "Each AC should have a specific, measurable outcome. Avoid vague terms like \"should work\" or \"properly\". Be concrete about what success looks like.",
+        icon: <Target className="w-6 h-6" />,
+        color: 'text-green-600',
+        bgColor: 'bg-green-50 dark:bg-green-900/20',
+        scenario: "Payment failure handling needs to guide users to next steps.",
+        options: [
+          {
+            value: "A",
+            text: "A message is displayed and user is given retry option",
+            correct: true,
+            explanation: "Clear outcome: user sees message and can retry."
+          },
+          {
+            value: "B",
+            text: "System flags the payment attempt",
+            correct: false,
+            explanation: "System behavior, not user outcome."
+          },
+          {
+            value: "C",
+            text: "Payment gateway sends response code",
+            correct: false,
+            explanation: "Technical detail, not user-facing outcome."
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "One Expectation Per AC",
+        description: "Each AC should test one thing. If you find yourself using \"and\" or listing multiple conditions, split it into separate ACs.",
+        icon: <AlertCircle className="w-6 h-6" />,
+        color: 'text-orange-600',
+        bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+        scenario: "Payment failure handling should be focused and clear.",
+        options: [
+          {
+            value: "A",
+            text: "Show error message, send confirmation email, log the issue",
+            correct: false,
+            explanation: "Multiple actions in one AC - should be split."
+          },
+          {
+            value: "B",
+            text: "I see a single error message if payment fails",
+            correct: true,
+            explanation: "One clear expectation: user sees error message."
+          },
+          {
+            value: "C",
+            text: "Payment error is handled quickly and professionally",
+            correct: false,
+            explanation: "Too vague - what does 'quickly and professionally' mean?"
+          }
+        ]
+      },
+      {
+        id: 4,
+        title: "Edge Cases",
+        description: "Consider what happens in unusual situations. What if the user has no internet? What if they enter invalid data? What if the system is slow?",
+        icon: <Lightbulb className="w-6 h-6" />,
+        color: 'text-purple-600',
+        bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+        scenario: "Payment failures can happen for various reasons - network issues, card problems, etc.",
+        options: [
+          {
+            value: "A",
+            text: "If the card expires during checkout, I am told to update it",
+            correct: true,
+            explanation: "Specific edge case with clear user guidance."
+          },
+          {
+            value: "B",
+            text: "Use a payment fallback if latency is detected",
+            correct: false,
+            explanation: "System behavior, not user-facing edge case handling."
+          },
+          {
+            value: "C",
+            text: "Gateway returns 504",
+            correct: false,
+            explanation: "Technical error code, not user experience."
+          }
+        ]
+      },
+      {
+        id: 5,
+        title: "Error Handling",
+        description: "What happens when things go wrong? Users should never be left confused or stuck. Always provide a path forward.",
+        icon: <AlertCircle className="w-6 h-6" />,
+        color: 'text-red-600',
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+        scenario: "When payment fails, users need clear guidance on what to do next.",
+        options: [
+          {
+            value: "A",
+            text: "If payment fails, I am told why and offered another option",
+            correct: true,
+            explanation: "Clear error handling with guidance and alternatives."
+          },
+          {
+            value: "B",
+            text: "Payment fails, user restarts",
+            correct: false,
+            explanation: "No explanation or guidance - leaves user confused."
+          },
+          {
+            value: "C",
+            text: "Send alert to support",
+            correct: false,
+            explanation: "System action, not user-facing error handling."
+          }
+        ]
+      },
+      {
+        id: 6,
+        title: "Acceptance Criteria Format",
+        description: "Use \"If... then...\" or \"When... I...\" format. Start with the condition, then describe the expected outcome. Make it readable for non-technical stakeholders.",
+        icon: <FileText className="w-6 h-6" />,
+        color: 'text-indigo-600',
+        bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+        scenario: "Payment failure messages should follow clear format patterns.",
+        options: [
+          {
+            value: "A",
+            text: "If my payment fails, I see an error with next steps",
+            correct: true,
+            explanation: "Proper 'If... I...' format with clear outcome."
+          },
+          {
+            value: "B",
+            text: "Payment outcome is determined based on token validation",
+            correct: false,
+            explanation: "Technical language, not user-focused format."
+          },
+          {
+            value: "C",
+            text: "Failover logic triggers within 2 seconds",
+            correct: false,
+            explanation: "System behavior, not user-facing format."
+          }
+        ]
+      },
+      {
+        id: 7,
+        title: "Business Rule Inclusion",
+        description: "Include relevant business rules and constraints. What are the limits? What's not allowed? What are the business policies?",
+        icon: <Users className="w-6 h-6" />,
+        color: 'text-teal-600',
+        bgColor: 'bg-teal-50 dark:bg-teal-900/20',
+        scenario: "Payment retry attempts should follow business rules.",
+        options: [
+          {
+            value: "A",
+            text: "I can retry payment up to 3 times before being redirected",
+            correct: true,
+            explanation: "Clear business rule with specific limit and outcome."
+          },
+          {
+            value: "B",
+            text: "Users must be redirected after failure",
+            correct: false,
+            explanation: "Too vague - when? how many attempts?"
+          },
+          {
+            value: "C",
+            text: "The system limits retries",
+            correct: false,
+            explanation: "System behavior, not user-facing business rule."
+          }
+        ]
+      },
+      {
+        id: 8,
+        title: "Testable",
+        description: "Can a tester verify this without asking a developer? Can they see it, click it, or experience it? Avoid ACs that require code inspection.",
+        icon: <CheckCircle className="w-6 h-6" />,
+        color: 'text-emerald-600',
+        bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+        scenario: "Payment failure handling should be easily testable by QA.",
+        options: [
+          {
+            value: "A",
+            text: "I see a message and a \"Retry Payment\" button if payment fails",
+            correct: true,
+            explanation: "Easily testable - tester can see message and button."
+          },
+          {
+            value: "B",
+            text: "Backend triggers new API call",
+            correct: false,
+            explanation: "Requires backend access or code inspection."
+          },
+          {
+            value: "C",
+            text: "Payment fails and logs are captured",
+            correct: false,
+            explanation: "Requires log access, not user-facing testable behavior."
+          }
+        ]
+      }
+    ];
+  }
+
+  // Default childcare voucher scenario
+  return [
   {
     id: 1,
     title: "Make It User-Observable",
@@ -257,11 +497,12 @@ const rules: Rule[] = [
   }
 ];
 
-export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack }: AcceptanceCriteriaWalkthroughProps) {
+export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack, scenarioId }: AcceptanceCriteriaWalkthroughProps) {
   const [currentRule, setCurrentRule] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [showExplanation, setShowExplanation] = useState(false);
 
+  const rules = getRulesForScenario(scenarioId);
   const progress = ((currentRule + 1) / rules.length) * 100;
 
   const handleSelect = (value: string) => {
@@ -358,7 +599,7 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack 
             className="flex items-center space-x-2 px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mx-auto"
           >
             <ArrowRight className="w-4 h-4 rotate-180" />
-            <span>Back to Learning</span>
+            <span>Back to Training Pods</span>
           </button>
         </div>
       </div>
@@ -379,6 +620,23 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack 
           Master the 8 rules of writing clear, testable acceptance criteria
         </p>
       </div>
+
+      {/* Scenario Context */}
+      {scenarioId && (
+        <div className="mb-8">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
+              📋 Scenario Context:
+            </h3>
+            <p className="text-blue-800 dark:text-blue-200 text-sm">
+              {scenarioId === 'shopping-checkout' 
+                ? 'A shopper using mobile data tries to pay at checkout but the payment fails. They want to know why and what to do next.'
+                : 'Parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature.'
+              }
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Progress Bar */}
       <div className="mb-8">
