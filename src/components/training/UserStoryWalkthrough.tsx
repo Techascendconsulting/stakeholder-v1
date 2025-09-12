@@ -18,6 +18,85 @@ interface Step {
 }
 
 const getStepsForScenario = (scenarioId?: string): Step[] => {
+  if (scenarioId === 'student-homework') {
+    return [
+      {
+        key: 'user',
+        question: 'Who is this feature for?',
+        tip: 'Choose the most accurate user role for this scenario.',
+        options: [
+          'A parent applying for a childcare voucher',
+          'A returning student using a school laptop',
+          'A shopper using mobile data',
+          'A teacher submitting attendance',
+          'A visitor browsing public content'
+        ],
+        correct: 'A returning student using a school laptop',
+        explanation: 'The story focuses on the student\'s experience with uploading homework files.',
+        incorrectExplanations: {
+          'A parent applying for a childcare voucher': 'Not relevant to this upload scenario - different user and context.',
+          'A shopper using mobile data': 'Wrong context - this is about homework submission, not shopping.',
+          'A teacher submitting attendance': 'Wrong user - this is about student homework upload, not teacher tasks.',
+          'A visitor browsing public content': 'Not relevant - this is about authenticated student file upload.'
+        }
+      },
+      {
+        key: 'action',
+        question: 'What does this user want?',
+        tip: 'Pick the most relevant need for this role.',
+        options: [
+          'Upload homework files from their device',
+          'Check their internet speed',
+          'Register a new account',
+          'Leave teacher feedback'
+        ],
+        correct: 'Upload homework files from their device',
+        explanation: 'The user needs to submit work. Uploading files is the right focus for this scenario.',
+        incorrectExplanations: {
+          'Check their internet speed': 'Not the main need - this is about file submission, not connectivity.',
+          'Register a new account': 'Wrong action - they\'re already a returning student, not registering.',
+          'Leave teacher feedback': 'Not relevant to the homework upload scenario.'
+        }
+      },
+      {
+        key: 'benefit',
+        question: 'Why do they want it?',
+        tip: 'Pick the most relevant benefit or reason.',
+        options: [
+          'To check the upload folder',
+          'So they can meet the assignment deadline',
+          'To access internal Wi-Fi',
+          'To complete their profile'
+        ],
+        correct: 'So they can meet the assignment deadline',
+        explanation: 'The user uploads to meet deadlines, not to browse folders or access systems.',
+        incorrectExplanations: {
+          'To check the upload folder': 'Not the main driver - they want to submit, not browse.',
+          'To access internal Wi-Fi': 'Wrong benefit - this is about homework submission, not network access.',
+          'To complete their profile': 'Not relevant to the homework upload scenario.'
+        }
+      },
+      {
+        key: 'story',
+        question: 'Draft the User Story',
+        tip: 'Now assemble this into a proper user story format.',
+        options: [],
+        correct: 'As a returning student, I want to upload my homework, so I can meet the assignment deadline.',
+        explanation: 'This follows the proper format: As a [role], I want [action], so that [benefit].',
+        incorrectExplanations: {}
+      },
+      {
+        key: 'invest',
+        question: 'INVEST Check',
+        tip: 'Review your story against the INVEST criteria.',
+        options: [],
+        correct: 'Independent: ❌ Upload depends on multiple file system features\nNegotiable: ✅ Upload method can be refined\nValuable: ✅ Clear benefit to user\nEstimable: ✅ Upload work is sized and well known\nSmall: ✅ Fits in one sprint\nTestable: ✅ QA can test upload with various files',
+        explanation: 'Your story passes most INVEST criteria. The dependency issue can be addressed by ensuring file system features are ready.',
+        incorrectExplanations: {}
+      }
+    ];
+  }
+
   if (scenarioId === 'shopping-checkout') {
     return [
       {
@@ -343,6 +422,8 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
         <p className="text-blue-800 dark:text-blue-200">
           {scenarioId === 'shopping-checkout' 
             ? 'You\'re working on a shopping platform. A customer on mobile data tries to complete a checkout, but payment fails. They want a clear message explaining the failure and guidance on what to do next.'
+            : scenarioId === 'student-homework'
+            ? 'A returning student using a school laptop needs to upload a document to submit their homework. They\'re struggling with file types and unclear upload messages.'
             : 'The Childcare Services team says parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature so users can pause and come back later.'
           }
         </p>

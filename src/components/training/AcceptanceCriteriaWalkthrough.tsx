@@ -24,6 +24,243 @@ interface Rule {
 }
 
 const getRulesForScenario = (scenarioId?: string): Rule[] => {
+  if (scenarioId === 'student-homework') {
+    return [
+      {
+        id: 1,
+        title: "Make It User-Observable",
+        description: "AC should describe what the user sees, hears, or does — not what the system does. Avoid \"The system should...\". Focus on user-facing outcomes.",
+        icon: <Eye className="w-6 h-6" />,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+        scenario: "You are building a homework upload system. Students need clear feedback on file uploads.",
+        options: [
+          {
+            value: "A",
+            text: "System checks MIME type",
+            correct: false,
+            explanation: "It explains backend logic, not what the user sees."
+          },
+          {
+            value: "B",
+            text: "I see a message: \"Only PDF or DOC files allowed\"",
+            correct: true,
+            explanation: "It clearly describes what the user sees and what happens."
+          },
+          {
+            value: "C",
+            text: "Backend validates file content type",
+            correct: false,
+            explanation: "This is technical implementation, not user-facing behavior."
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Clear Outcome",
+        description: "Each AC should have a specific, measurable outcome. Avoid vague terms like \"should work\" or \"properly\". Be concrete about what success looks like.",
+        icon: <Target className="w-6 h-6" />,
+        color: 'text-green-600',
+        bgColor: 'bg-green-50 dark:bg-green-900/20',
+        scenario: "Homework upload needs to provide clear success feedback.",
+        options: [
+          {
+            value: "A",
+            text: "Upload triggers file validation",
+            correct: false,
+            explanation: "System behavior, not user outcome."
+          },
+          {
+            value: "B",
+            text: "I get a message when my upload is successful",
+            correct: true,
+            explanation: "Clear outcome: user sees success message."
+          },
+          {
+            value: "C",
+            text: "Files are saved in storage layer",
+            correct: false,
+            explanation: "Technical detail, not user-facing outcome."
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "One Expectation Per AC",
+        description: "Each AC should test one thing. If you find yourself using \"and\" or listing multiple conditions, split it into separate ACs.",
+        icon: <AlertCircle className="w-6 h-6" />,
+        color: 'text-orange-600',
+        bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+        scenario: "File upload validation should be focused and clear.",
+        options: [
+          {
+            value: "A",
+            text: "File size, format, and name are all checked",
+            correct: false,
+            explanation: "Multiple validations in one AC - should be split."
+          },
+          {
+            value: "B",
+            text: "If my file is too big, I see \"File must be under 5MB\"",
+            correct: true,
+            explanation: "One clear expectation: user sees file size error."
+          },
+          {
+            value: "C",
+            text: "All validations run before final upload",
+            correct: false,
+            explanation: "Too vague - what validations? what happens?"
+          }
+        ]
+      },
+      {
+        id: 4,
+        title: "Edge Cases",
+        description: "Consider what happens in unusual situations. What if the user has no internet? What if they enter invalid data? What if the system is slow?",
+        icon: <Lightbulb className="w-6 h-6" />,
+        color: 'text-purple-600',
+        bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+        scenario: "File uploads can fail for various reasons - network issues, server problems, etc.",
+        options: [
+          {
+            value: "A",
+            text: "Uploads fail silently",
+            correct: false,
+            explanation: "No user guidance - leaves student confused."
+          },
+          {
+            value: "B",
+            text: "If I lose connection during upload, I see \"Check your internet and try again.\"",
+            correct: true,
+            explanation: "Specific edge case with clear user guidance."
+          },
+          {
+            value: "C",
+            text: "Errors logged in admin panel",
+            correct: false,
+            explanation: "System behavior, not user-facing edge case handling."
+          }
+        ]
+      },
+      {
+        id: 5,
+        title: "Error Handling",
+        description: "What happens when things go wrong? Users should never be left confused or stuck. Always provide a path forward.",
+        icon: <AlertCircle className="w-6 h-6" />,
+        color: 'text-red-600',
+        bgColor: 'bg-red-50 dark:bg-red-900/20',
+        scenario: "When file upload fails, students need clear guidance on what to do next.",
+        options: [
+          {
+            value: "A",
+            text: "File validation fails",
+            correct: false,
+            explanation: "No explanation or guidance - leaves user confused."
+          },
+          {
+            value: "B",
+            text: "I see a red message if my file isn't accepted",
+            correct: true,
+            explanation: "Clear error handling with visual feedback."
+          },
+          {
+            value: "C",
+            text: "Invalid files go to quarantine",
+            correct: false,
+            explanation: "System action, not user-facing error handling."
+          }
+        ]
+      },
+      {
+        id: 6,
+        title: "Acceptance Criteria Format",
+        description: "Use \"If... then...\" or \"When... I...\" format. Start with the condition, then describe the expected outcome. Make it readable for non-technical stakeholders.",
+        icon: <FileText className="w-6 h-6" />,
+        color: 'text-indigo-600',
+        bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+        scenario: "File upload error messages should follow clear format patterns.",
+        options: [
+          {
+            value: "A",
+            text: "Only allow valid MIME types",
+            correct: false,
+            explanation: "Technical language, not user-focused format."
+          },
+          {
+            value: "B",
+            text: "If I upload a wrong file type, I'm told which types are allowed",
+            correct: true,
+            explanation: "Proper 'If... I...' format with clear outcome."
+          },
+          {
+            value: "C",
+            text: "Check extensions on all files",
+            correct: false,
+            explanation: "System behavior, not user-facing format."
+          }
+        ]
+      },
+      {
+        id: 7,
+        title: "Business Rule Inclusion",
+        description: "Include relevant business rules and constraints. What are the limits? What's not allowed? What are the business policies?",
+        icon: <Users className="w-6 h-6" />,
+        color: 'text-teal-600',
+        bgColor: 'bg-teal-50 dark:bg-teal-900/20',
+        scenario: "Homework submission should follow academic policies.",
+        options: [
+          {
+            value: "A",
+            text: "Uploads are stored in SharePoint",
+            correct: false,
+            explanation: "Technical implementation, not business rule."
+          },
+          {
+            value: "B",
+            text: "Only one file can be submitted per homework assignment",
+            correct: true,
+            explanation: "Clear business rule with specific policy."
+          },
+          {
+            value: "C",
+            text: "Student metadata is tracked",
+            correct: false,
+            explanation: "System behavior, not user-facing business rule."
+          }
+        ]
+      },
+      {
+        id: 8,
+        title: "Testable",
+        description: "Can a tester verify this without asking a developer? Can they see it, click it, or experience it? Avoid ACs that require code inspection.",
+        icon: <CheckCircle className="w-6 h-6" />,
+        color: 'text-emerald-600',
+        bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+        scenario: "Homework upload should be easily testable by QA.",
+        options: [
+          {
+            value: "A",
+            text: "Uploaded files pass virus scan",
+            correct: false,
+            explanation: "Requires backend access or system inspection."
+          },
+          {
+            value: "B",
+            text: "I can upload a .doc file and see it marked as \"submitted\"",
+            correct: true,
+            explanation: "Easily testable - tester can see file upload and status."
+          },
+          {
+            value: "C",
+            text: "File data is routed to secure vault",
+            correct: false,
+            explanation: "Requires backend access, not user-facing testable behavior."
+          }
+        ]
+      }
+    ];
+  }
+
   if (scenarioId === 'shopping-checkout') {
     return [
       {
@@ -632,6 +869,8 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
             <p className="text-blue-800 dark:text-blue-200 text-sm">
               {scenarioId === 'shopping-checkout' 
                 ? 'A shopper using mobile data tries to pay at checkout but the payment fails. They want to know why and what to do next.'
+                : scenarioId === 'student-homework'
+                ? 'A returning student using a school laptop needs to upload a document to submit their homework. They\'re struggling with file types and unclear upload messages.'
                 : 'Parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature.'
               }
             </p>

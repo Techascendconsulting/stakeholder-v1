@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, CheckSquare, ArrowRight, BookOpen, Target, Users, Home, Building } from 'lucide-react';
+import { FileText, CheckSquare, ArrowRight, BookOpen, Target, Users, Home, Building, GraduationCap } from 'lucide-react';
 import UserStoryWalkthrough from './UserStoryWalkthrough';
 import AcceptanceCriteriaWalkthrough from './AcceptanceCriteriaWalkthrough';
 
@@ -42,6 +42,17 @@ const trainingPods: TrainingPod[] = [
     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     difficulty: 'Intermediate',
     tag: 'Scenario 2'
+  },
+  {
+    id: 'student-homework',
+    title: 'Returning Student Uploading Homework',
+    description: 'Help students successfully upload their homework files with clear guidance on file types and upload process.',
+    scenario: 'A returning student using a school laptop needs to upload a document to submit their homework. They\'re struggling with file types and unclear upload messages.',
+    icon: <GraduationCap className="w-8 h-8" />,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    difficulty: 'Beginner',
+    tag: 'Scenario 3'
   }
 ];
 
