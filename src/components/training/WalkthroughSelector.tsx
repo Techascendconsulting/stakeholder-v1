@@ -31,6 +31,17 @@ const trainingPods: TrainingPod[] = [
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     difficulty: 'Beginner',
     tag: 'Scenario 1'
+  },
+  {
+    id: 'shopping-checkout',
+    title: 'Shopping Checkout – Payment Failure',
+    description: 'Help shoppers understand why their payment failed and guide them to complete their purchase.',
+    scenario: 'A shopper using mobile data tries to pay at checkout but the payment fails. They want to know why and what to do next.',
+    icon: <Target className="w-8 h-8" />,
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+    difficulty: 'Intermediate',
+    tag: 'Scenario 2'
   }
 ];
 
@@ -50,7 +61,7 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
 
   // If a walkthrough is selected, render it
   if (selectedWalkthrough === 'user-story') {
-    return <UserStoryWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} />;
+    return <UserStoryWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} scenarioId={currentPod || undefined} />;
   }
 
   if (selectedWalkthrough === 'acceptance-criteria') {

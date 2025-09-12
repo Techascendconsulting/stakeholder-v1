@@ -4,6 +4,7 @@ import { CheckCircle, ArrowRight, RotateCcw, FileText, User, Target, Lightbulb, 
 interface UserStoryWalkthroughProps {
   onStartPractice: () => void;
   onBack: () => void;
+  scenarioId?: string;
 }
 
 interface Step {
@@ -16,64 +17,126 @@ interface Step {
   incorrectExplanations: Record<string, string>;
 }
 
-const steps: Step[] = [
-  {
-    key: 'user',
-    question: 'Who is this for?',
-    tip: 'Choose the most specific user role that makes this story valuable.',
-    options: [
-      'A user',
-      'A parent applying for a childcare voucher',
-      'A first-time visitor',
-      'A system admin'
-    ],
-    correct: 'A parent applying for a childcare voucher',
-    explanation: 'This identifies a specific user in the scenario — not just "anyone." It shows the person with the real need and helps the team understand the human at the center of the story.',
-    incorrectExplanations: {
-      'A user': 'Too vague. Could be anyone. Doesn\'t help teams build empathy or focus on outcomes.',
-      'A first-time visitor': 'Possible, but doesn\'t directly match the voucher context in the scenario.',
-      'A system admin': 'They aren\'t the ones filling out the form. Wrong audience.'
-    }
-  },
-  {
-    key: 'action',
-    question: 'What does this user want to do?',
-    tip: 'Think about the action they\'re trying to take, based on the issue.',
-    options: [
-      'Fill out the form',
-      'Access the childcare voucher system',
-      'Save their progress on a form',
-      'Submit their final application'
-    ],
-    correct: 'Save their progress on a form',
-    explanation: 'This matches the problem in the scenario: parents are abandoning the form mid-way. They\'re not failing to start or submit — they\'re dropping off in the middle. Saving progress solves that pain.',
-    incorrectExplanations: {
-      'Fill out the form': 'Too broad. Doesn\'t zero in on the problem (losing progress).',
-      'Access the childcare voucher system': 'Not the issue. They\'ve already accessed it.',
-      'Submit their final application': 'Important, but not what was raised in this case.'
-    }
-  },
-  {
-    key: 'goal',
-    question: 'Why does this matter?',
-    tip: 'What\'s the benefit of letting them do this? What pain does it solve?',
-    options: [
-      'So the form can be saved on the server',
-      'So they don\'t lose their place if they leave halfway',
-      'So the system doesn\'t get overloaded',
-      'So they can avoid customer service'
-    ],
-    correct: 'So they don\'t lose their place if they leave halfway',
-    explanation: 'It clearly explains the benefit to the user. They can pause and return later — no rework, no frustration. This connects to real user value, not system function.',
-    incorrectExplanations: {
-      'So the form can be saved on the server': 'That\'s how it works, not why it matters to the user. Implementation detail.',
-      'So the system doesn\'t get overloaded': 'Unrelated to the user\'s goal.',
-      'So they can avoid customer service': 'Might be a side effect, but not the user\'s main intent.'
-    }
+const getStepsForScenario = (scenarioId?: string): Step[] => {
+  if (scenarioId === 'shopping-checkout') {
+    return [
+      {
+        key: 'user',
+        question: 'Who is this feature for?',
+        tip: 'Choose the most appropriate user based on the scenario.',
+        options: [
+          'A shopper using mobile data',
+          'A finance manager',
+          'A new seller onboarding',
+          'A warehouse staff member'
+        ],
+        correct: 'A shopper using mobile data',
+        explanation: 'The shopper is the one experiencing the failure. They are the primary user affected by this issue.',
+        incorrectExplanations: {
+          'A finance manager': 'Not relevant to this scenario - they don\'t experience payment failures at checkout.',
+          'A new seller onboarding': 'Wrong user - this is about customer checkout, not seller setup.',
+          'A warehouse staff member': 'Not involved in the payment process - irrelevant to this scenario.'
+        }
+      },
+      {
+        key: 'action',
+        question: 'What do they want to do?',
+        tip: 'What is the key goal the user wants to achieve?',
+        options: [
+          'Complete the checkout successfully',
+          'Know why their payment failed and what to do',
+          'Get a refund',
+          'Track their order'
+        ],
+        correct: 'Know why their payment failed and what to do',
+        explanation: 'The user has already failed to pay. They now want clarity and next steps to resolve the issue.',
+        incorrectExplanations: {
+          'Complete the checkout successfully': 'This is no longer the goal at this stage - the payment has already failed.',
+          'Get a refund': 'Too early - they haven\'t completed a purchase yet.',
+          'Track their order': 'Not relevant - they haven\'t successfully placed an order.'
+        }
+      },
+      {
+        key: 'goal',
+        question: 'Why do they want it?',
+        tip: 'What value does the user get from this?',
+        options: [
+          'So they don\'t get charged twice',
+          'So they can fix the issue and try again',
+          'So they can report the issue to customer service',
+          'So they can leave the site'
+        ],
+        correct: 'So they can fix the issue and try again',
+        explanation: 'The user is trying to continue the transaction and needs guidance to complete their purchase.',
+        incorrectExplanations: {
+          'So they don\'t get charged twice': 'This is a concern, but not the primary motivation for understanding the failure.',
+          'So they can report the issue to customer service': 'Reporting is not their first intention - they still want to complete the payment.',
+          'So they can leave the site': 'Leaving is not their goal - they want to complete their purchase.'
+        }
+      }
+    ];
   }
-];
 
-export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserStoryWalkthroughProps) {
+  // Default childcare voucher scenario
+  return [
+    {
+      key: 'user',
+      question: 'Who is this for?',
+      tip: 'Choose the most specific user role that makes this story valuable.',
+      options: [
+        'A user',
+        'A parent applying for a childcare voucher',
+        'A first-time visitor',
+        'A system admin'
+      ],
+      correct: 'A parent applying for a childcare voucher',
+      explanation: 'This identifies a specific user in the scenario — not just "anyone." It shows the person with the real need and helps the team understand the human at the center of the story.',
+      incorrectExplanations: {
+        'A user': 'Too vague. Could be anyone. Doesn\'t help teams build empathy or focus on outcomes.',
+        'A first-time visitor': 'Possible, but doesn\'t directly match the voucher context in the scenario.',
+        'A system admin': 'They aren\'t the ones filling out the form. Wrong audience.'
+      }
+    },
+    {
+      key: 'action',
+      question: 'What does this user want to do?',
+      tip: 'Think about the action they\'re trying to take, based on the issue.',
+      options: [
+        'Fill out the form',
+        'Access the childcare voucher system',
+        'Save their progress on a form',
+        'Submit their final application'
+      ],
+      correct: 'Save their progress on a form',
+      explanation: 'This matches the problem in the scenario: parents are abandoning the form mid-way. They\'re not failing to start or submit — they\'re dropping off in the middle. Saving progress solves that pain.',
+      incorrectExplanations: {
+        'Fill out the form': 'Too broad. Doesn\'t zero in on the problem (losing progress).',
+        'Access the childcare voucher system': 'Not the issue. They\'ve already accessed it.',
+        'Submit their final application': 'Important, but not what was raised in this case.'
+      }
+    },
+    {
+      key: 'goal',
+      question: 'Why does this matter?',
+      tip: 'What\'s the benefit of letting them do this? What pain does it solve?',
+      options: [
+        'So the form can be saved on the server',
+        'So they don\'t lose their place if they leave halfway',
+        'So the system doesn\'t get overloaded',
+        'So they can avoid customer service'
+      ],
+      correct: 'So they don\'t lose their place if they leave halfway',
+      explanation: 'It clearly explains the benefit to the user. They can pause and return later — no rework, no frustration. This connects to real user value, not system function.',
+      incorrectExplanations: {
+        'So the form can be saved on the server': 'That\'s how it works, not why it matters to the user. Implementation detail.',
+        'So the system doesn\'t get overloaded': 'Unrelated to the user\'s goal.',
+        'So they can avoid customer service': 'Might be a side effect, but not the user\'s main intent.'
+      }
+    }
+  ];
+};
+
+export default function UserStoryWalkthrough({ onStartPractice, onBack, scenarioId }: UserStoryWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -81,6 +144,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
   const [editableStory, setEditableStory] = useState("");
   const [investChecks, setInvestChecks] = useState<boolean[]>([true, true, true, true, true, true]);
 
+  const steps = getStepsForScenario(scenarioId);
   const progress = ((currentStep + 1) / 5) * 100;
 
   const handleSelect = (option: string) => {
@@ -277,7 +341,10 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
         <h2 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-3">🧪 Scenario:</h2>
         <p className="text-blue-800 dark:text-blue-200">
-          The Childcare Services team says parents often abandon the voucher application form midway because it's too long and they don't always have the right documents. They want a "Save Progress" feature so users can pause and come back later.
+          {scenarioId === 'shopping-checkout' 
+            ? 'You\'re working on a shopping platform. A customer on mobile data tries to complete a checkout, but payment fails. They want a clear message explaining the failure and guidance on what to do next.'
+            : 'The Childcare Services team says parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature so users can pause and come back later.'
+          }
         </p>
       </div>
 
