@@ -500,238 +500,238 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
 
   // Default childcare voucher scenario
   return [
-  {
-    id: 1,
-    title: "Make It User-Observable",
-    description: "AC should describe what the user sees, hears, or does — not what the system does. Avoid \"The system should...\". Focus on user-facing outcomes.",
-    icon: <Eye className="w-6 h-6" />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-    scenario: "You are building a checkout form. Users must enter a valid UK postcode before continuing.",
-    options: [
-      {
-        value: "A",
-        text: "The system should validate UK postcodes against the database and reject bad entries.",
-        correct: false,
-        explanation: "It explains backend logic, not what the user sees."
-      },
-      {
-        value: "B",
-        text: "If the postcode is invalid, I am told \"Enter a valid UK postcode\" and I cannot continue.",
-        correct: true,
-        explanation: "It clearly describes what the user sees and what happens."
-      },
-      {
-        value: "C",
-        text: "Validate all postcode fields before submission.",
-        correct: false,
-        explanation: "It lacks user-observable behavior and wording."
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "One Behavior Per Line",
-    description: "Split out actions like edit/delete into separate lines. Each AC should test one specific behavior.",
-    icon: <Target className="w-6 h-6" />,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
-    scenario: "Users can manage their saved addresses in their profile. They need to edit or delete addresses.",
-    options: [
-      {
-        value: "A",
-        text: "I can edit or delete my saved addresses from my profile page.",
-        correct: false,
-        explanation: "This combines two different behaviors into one AC. Should be split."
-      },
-      {
-        value: "B",
-        text: "I can edit my saved addresses by clicking the edit button next to each address.",
-        correct: true,
-        explanation: "Focuses on one specific behavior - editing addresses."
-      },
-      {
-        value: "C",
-        text: "I can manage my address information.",
-        correct: false,
-        explanation: "Too vague. 'Manage' could mean many different things."
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: "Lead with Happy Path",
-    description: "What happens when things go right? Start with the successful scenario before covering errors.",
-    icon: <CheckCircle className="w-6 h-6" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-    scenario: "Users are uploading a profile photo. The system needs to handle both successful uploads and errors.",
-    options: [
-      {
-        value: "A",
-        text: "If the file is too large, I see an error message and cannot upload.",
-        correct: false,
-        explanation: "Starts with the error case instead of the happy path."
-      },
-      {
-        value: "B",
-        text: "When I select a valid image file, I see a preview and can confirm the upload.",
-        correct: true,
-        explanation: "Leads with the successful scenario - what happens when it works."
-      },
-      {
-        value: "C",
-        text: "The system processes image uploads and handles errors appropriately.",
-        correct: false,
-        explanation: "Too vague and doesn't focus on user experience."
-      }
-    ]
-  },
-  {
-    id: 4,
-    title: "Make Rules Explicit",
-    description: "Be specific with formats, numbers, messages. Avoid vague terms like 'appropriate' or 'reasonable'.",
-    icon: <AlertCircle className="w-6 h-6" />,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-    scenario: "Users need to enter their phone number during registration. The system should validate the format.",
-    options: [
-      {
-        value: "A",
-        text: "I must enter a valid phone number in the correct format.",
-        correct: false,
-        explanation: "What is 'correct format'? Too vague - needs specific details."
-      },
-      {
-        value: "B",
-        text: "I must enter a UK phone number starting with 07, followed by 9 digits (e.g., 07123456789).",
-        correct: true,
-        explanation: "Specific format, example, and clear requirements."
-      },
-      {
-        value: "C",
-        text: "The system validates phone numbers appropriately.",
-        correct: false,
-        explanation: "Uses vague language like 'appropriately' - not testable."
-      }
-    ]
-  },
-  {
-    id: 5,
-    title: "Include Error & Recovery",
-    description: "Not just \"show error\" — what happens next? How does the user recover from the error?",
-    icon: <Lightbulb className="w-6 h-6" />,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
-    scenario: "Users are trying to log in but enter the wrong password. The system needs to handle this gracefully.",
-    options: [
-      {
-        value: "A",
-        text: "If I enter the wrong password, I see an error message.",
-        correct: false,
-        explanation: "Shows the error but doesn't explain how to recover from it."
-      },
-      {
-        value: "B",
-        text: "If I enter the wrong password, I see \"Incorrect password\" and can try again or reset it.",
-        correct: true,
-        explanation: "Shows the error AND provides clear recovery options."
-      },
-      {
-        value: "C",
-        text: "The system handles login errors properly.",
-        correct: false,
-        explanation: "Too vague - doesn't specify what the user experiences."
-      }
-    ]
-  },
-  {
-    id: 6,
-    title: "Cover Edge Cases",
-    description: "Low data, missing fields, double clicks, bad networks. Think about what could go wrong.",
-    icon: <Users className="w-6 h-6" />,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
-    scenario: "Users are submitting a form on a mobile device with poor network connection.",
-    options: [
-      {
-        value: "A",
-        text: "When I submit the form, it processes my request.",
-        correct: false,
-        explanation: "Doesn't consider what happens with poor network - the edge case."
-      },
-      {
-        value: "B",
-        text: "If my connection is lost while submitting, I see \"Connection lost\" and can retry when back online.",
-        correct: true,
-        explanation: "Specifically addresses the edge case of poor network connectivity."
-      },
-      {
-        value: "C",
-        text: "The form submission works reliably.",
-        correct: false,
-        explanation: "Assumes everything works perfectly - doesn't cover edge cases."
-      }
-    ]
-  },
-  {
-    id: 7,
-    title: "Measurable Outcomes",
-    description: "Can QA verify it with a stopwatch, eyes, or count? Make it objectively testable.",
-    icon: <Zap className="w-6 h-6" />,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
-    scenario: "Users expect the app to load quickly. The system needs to meet performance expectations.",
-    options: [
-      {
-        value: "A",
-        text: "The app loads quickly and feels responsive.",
-        correct: false,
-        explanation: "'Quickly' and 'responsive' are subjective - not measurable."
-      },
-      {
-        value: "B",
-        text: "The app loads within 3 seconds on a 3G connection.",
-        correct: true,
-        explanation: "Specific, measurable criteria that QA can test with a stopwatch."
-      },
-      {
-        value: "C",
-        text: "The system performs well under normal conditions.",
-        correct: false,
-        explanation: "'Well' and 'normal' are vague - not objectively testable."
-      }
-    ]
-  },
-  {
-    id: 8,
-    title: "Visibility & Notifications",
-    description: "Who sees what and when? Be clear about who gets notified and how.",
-    icon: <Bell className="w-6 h-6" />,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-50 dark:bg-pink-900/20',
-    scenario: "A user submits a support ticket. The system needs to notify the right people.",
-    options: [
-      {
-        value: "A",
-        text: "The system sends notifications to the support team.",
-        correct: false,
-        explanation: "Doesn't specify what the user sees or when they get confirmation."
-      },
-      {
-        value: "B",
-        text: "After submitting, I see \"Ticket #1234 created\" and receive an email confirmation. The support team is notified.",
-        correct: true,
-        explanation: "Clear about who sees what: user gets confirmation, team gets notified."
-      },
-      {
-        value: "C",
-        text: "Notifications are sent to relevant parties.",
-        correct: false,
-        explanation: "Too vague - who are 'relevant parties' and what do they see?"
-      }
-    ]
-  }
+    {
+      id: 1,
+      title: "User-Observable",
+      description: "AC must describe what the user sees or does, not what the backend does.",
+      icon: <Eye className="w-6 h-6" />,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      scenario: "You are building a form save feature. Users need to know their progress is being saved.",
+      options: [
+        {
+          value: "A",
+          text: "The system checks local storage",
+          correct: false,
+          explanation: "This is backend logic"
+        },
+        {
+          value: "B",
+          text: "I see a message saying \"Progress saved\" after 5 seconds of inactivity",
+          correct: true,
+          explanation: "This is what the parent experiences"
+        },
+        {
+          value: "C",
+          text: "Backend writes state to cache",
+          correct: false,
+          explanation: "Tech stuff — not visible to Amaka"
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Clear Outcome",
+      description: "We must know when something worked.",
+      icon: <Target className="w-6 h-6" />,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      scenario: "Form saving needs to provide clear success feedback.",
+      options: [
+        {
+          value: "A",
+          text: "Saving is automatic",
+          correct: false,
+          explanation: "Vague. Did it work? How would we know?"
+        },
+        {
+          value: "B",
+          text: "I see \"Progress saved successfully\" once changes are stored",
+          correct: true,
+          explanation: "User gets confirmation"
+        },
+        {
+          value: "C",
+          text: "Save triggers silently",
+          correct: false,
+          explanation: "No way for user to confirm"
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "One Expectation per AC",
+      description: "Keep it focused — no multi-part ACs.",
+      icon: <AlertCircle className="w-6 h-6" />,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+      scenario: "Form progress saving should be focused and clear.",
+      options: [
+        {
+          value: "A",
+          text: "Auto-save works and browser restores and no errors",
+          correct: false,
+          explanation: "Too many things in one"
+        },
+        {
+          value: "B",
+          text: "If I close the browser and reopen, my form continues from where I stopped",
+          correct: true,
+          explanation: "One clear outcome"
+        },
+        {
+          value: "C",
+          text: "The user gets no errors and progress is retained and UI updates",
+          correct: false,
+          explanation: "This is 3 expectations jammed together"
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Handle Edge Cases",
+      description: "What happens in a real failure?",
+      icon: <Lightbulb className="w-6 h-6" />,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      scenario: "Form saving can fail for various reasons - network issues, server problems, etc.",
+      options: [
+        {
+          value: "A",
+          text: "Save fails quietly",
+          correct: false,
+          explanation: "No feedback — confusing"
+        },
+        {
+          value: "B",
+          text: "If my internet disconnects during save, I see: \"We couldn't save your progress. Try again.\"",
+          correct: true,
+          explanation: "Honest, helpful"
+        },
+        {
+          value: "C",
+          text: "Save retries 3 times before failing",
+          correct: false,
+          explanation: "Internal logic — doesn't tell user what's happening"
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Error Handling",
+      description: "Always tell the user what's wrong — clearly.",
+      icon: <AlertCircle className="w-6 h-6" />,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50 dark:bg-red-900/20',
+      scenario: "When form saving fails, users need clear guidance on what to do next.",
+      options: [
+        {
+          value: "A",
+          text: "Save fails",
+          correct: false,
+          explanation: "No clarity"
+        },
+        {
+          value: "B",
+          text: "I see a red banner if the save fails, with steps to retry",
+          correct: true,
+          explanation: "Human-centered, visual, supportive"
+        },
+        {
+          value: "C",
+          text: "Log error in console",
+          correct: false,
+          explanation: "Invisible to the user"
+        }
+      ]
+    },
+    {
+      id: 6,
+      title: "AC Format",
+      description: "AC should follow the IF → THEN structure where possible.",
+      icon: <FileText className="w-6 h-6" />,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+      scenario: "Form saving should follow clear format patterns.",
+      options: [
+        {
+          value: "A",
+          text: "Saves occur regularly",
+          correct: false,
+          explanation: "No condition defined"
+        },
+        {
+          value: "B",
+          text: "If I stop typing for 30 seconds, the system saves automatically and shows \"Progress saved.\"",
+          correct: true,
+          explanation: "Clear trigger, clear output"
+        },
+        {
+          value: "C",
+          text: "The system knows when to save",
+          correct: false,
+          explanation: "Vague, untestable"
+        }
+      ]
+    },
+    {
+      id: 7,
+      title: "Business Rule Inclusion",
+      description: "Capture specific policy.",
+      icon: <Users className="w-6 h-6" />,
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-50 dark:bg-teal-900/20',
+      scenario: "Form saving should follow business policies.",
+      options: [
+        {
+          value: "A",
+          text: "System tracks multiple sessions",
+          correct: false,
+          explanation: "Not user-facing"
+        },
+        {
+          value: "B",
+          text: "Only one form can be active per parent per child",
+          correct: true,
+          explanation: "Clear rule from policy"
+        },
+        {
+          value: "C",
+          text: "Forms stored under unique tokens",
+          correct: false,
+          explanation: "Implementation detail"
+        }
+      ]
+    },
+    {
+      id: 8,
+      title: "Testable",
+      description: "Can QA test it? Can a dev confirm it works?",
+      icon: <CheckCircle className="w-6 h-6" />,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+      scenario: "Form saving should be easily testable by QA.",
+      options: [
+        {
+          value: "A",
+          text: "Save logic triggers event",
+          correct: false,
+          explanation: "Not testable from user perspective"
+        },
+        {
+          value: "B",
+          text: "I reopen the form and my previously entered data is still there",
+          correct: true,
+          explanation: "Simple test case"
+        },
+        {
+          value: "C",
+          text: "System flags save success",
+          correct: false,
+          explanation: "Too backend-focused"
+        }
+      ]
+    }
   ];
 };
 
@@ -871,7 +871,7 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
                 ? 'A shopper using mobile data tries to pay at checkout but the payment fails. They want to know why and what to do next.'
                 : scenarioId === 'student-homework'
                 ? 'A returning student using a school laptop needs to upload a document to submit their homework. They\'re struggling with file types and unclear upload messages.'
-                : 'Parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature.'
+                : 'Meet Amaka. She\'s a single mother living in South London. She\'s finally found a government program that offers childcare vouchers — and she needs to apply online. The form is long. She\'s tired. Halfway through, her toddler spills juice on her laptop. She refreshes — and loses everything. The site had no save feature. No warning. No progress bar. Just silence. She has to start again from scratch. This is frustrating — and it\'s a real problem. Now you\'re the BA tasked with helping fix this experience.'
               }
             </p>
           </div>

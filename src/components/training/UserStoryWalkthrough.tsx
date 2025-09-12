@@ -160,57 +160,79 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
   return [
     {
       key: 'user',
-      question: 'Who is this for?',
-      tip: 'Choose the most specific user role that makes this story valuable.',
+      question: 'Who is this feature for?',
+      tip: 'Pick the most appropriate user role.',
       options: [
-        'A user',
+        'A returning student on a school laptop',
+        'A shopper using mobile data',
         'A parent applying for a childcare voucher',
         'A first-time visitor',
-        'A system admin'
+        'A tenant paying rent'
       ],
       correct: 'A parent applying for a childcare voucher',
-      explanation: 'This identifies a specific user in the scenario — not just "anyone." It shows the person with the real need and helps the team understand the human at the center of the story.',
+      explanation: 'The main person using this feature is the parent applying for a voucher.',
       incorrectExplanations: {
-        'A user': 'Too vague. Could be anyone. Doesn\'t help teams build empathy or focus on outcomes.',
-        'A first-time visitor': 'Possible, but doesn\'t directly match the voucher context in the scenario.',
-        'A system admin': 'They aren\'t the ones filling out the form. Wrong audience.'
+        'A returning student on a school laptop': 'Wrong context - this is about childcare vouchers, not student homework.',
+        'A shopper using mobile data': 'Wrong context - this is about government voucher applications, not shopping.',
+        'A first-time visitor': 'Too vague - doesn\'t capture the specific user with the real need.',
+        'A tenant paying rent': 'Wrong context - this is about childcare vouchers, not rent payments.'
       }
     },
     {
       key: 'action',
-      question: 'What does this user want to do?',
-      tip: 'Think about the action they\'re trying to take, based on the issue.',
+      question: 'What does the user want?',
+      tip: 'Choose the real need.',
       options: [
-        'Fill out the form',
-        'Access the childcare voucher system',
-        'Save their progress on a form',
-        'Submit their final application'
+        'Save their place in a form',
+        'Check voucher status',
+        'Save progress while completing a form',
+        'Get faster approval',
+        'Print the form'
       ],
-      correct: 'Save their progress on a form',
-      explanation: 'This matches the problem in the scenario: parents are abandoning the form mid-way. They\'re not failing to start or submit — they\'re dropping off in the middle. Saving progress solves that pain.',
+      correct: 'Save progress while completing a form',
+      explanation: 'The real need is to save progress. This stops the frustration if something goes wrong.',
       incorrectExplanations: {
-        'Fill out the form': 'Too broad. Doesn\'t zero in on the problem (losing progress).',
-        'Access the childcare voucher system': 'Not the issue. They\'ve already accessed it.',
-        'Submit their final application': 'Important, but not what was raised in this case.'
+        'Save their place in a form': 'Close, but not as specific as "save progress while completing".',
+        'Check voucher status': 'Wrong action - this is about the application process, not checking status.',
+        'Get faster approval': 'Wrong action - this is about the application process, not approval speed.',
+        'Print the form': 'Wrong action - this is about saving progress, not printing.'
       }
     },
     {
-      key: 'goal',
-      question: 'Why does this matter?',
-      tip: 'What\'s the benefit of letting them do this? What pain does it solve?',
+      key: 'benefit',
+      question: 'Why do they want it?',
+      tip: 'What is the real-world benefit?',
       options: [
-        'So the form can be saved on the server',
-        'So they don\'t lose their place if they leave halfway',
-        'So the system doesn\'t get overloaded',
-        'So they can avoid customer service'
+        'So they don\'t lose everything if they close the tab',
+        'So they get a voucher',
+        'So they can apply for multiple children',
+        'So they can print later'
       ],
-      correct: 'So they don\'t lose their place if they leave halfway',
-      explanation: 'It clearly explains the benefit to the user. They can pause and return later — no rework, no frustration. This connects to real user value, not system function.',
+      correct: 'So they don\'t lose everything if they close the tab',
+      explanation: 'Yes: They want to avoid losing their work unexpectedly. That\'s the pain point you\'re solving.',
       incorrectExplanations: {
-        'So the form can be saved on the server': 'That\'s how it works, not why it matters to the user. Implementation detail.',
-        'So the system doesn\'t get overloaded': 'Unrelated to the user\'s goal.',
-        'So they can avoid customer service': 'Might be a side effect, but not the user\'s main intent.'
+        'So they get a voucher': 'That\'s the end goal, but not the immediate benefit of saving progress.',
+        'So they can apply for multiple children': 'Wrong benefit - this is about saving progress, not multiple applications.',
+        'So they can print later': 'Wrong benefit - this is about saving progress, not printing.'
       }
+    },
+    {
+      key: 'story',
+      question: 'Write the user story',
+      tip: 'Let them tweak it, but keep the core structure. Remind them: no "how" — just the who, what, and why.',
+      options: [],
+      correct: 'As a parent applying for a childcare voucher, I want to save my progress while completing the form, So I don\'t lose everything if I have to close the browser.',
+      explanation: 'This follows the proper format: As a [role], I want [action], so that [benefit].',
+      incorrectExplanations: {}
+    },
+    {
+      key: 'invest',
+      question: 'INVEST Check',
+      tip: 'Review your story against the INVEST criteria.',
+      options: [],
+      correct: 'Independent: ✅ Saving progress can be built without the full application system changing\nNegotiable: ✅ The dev team can choose auto-save, manual button, etc.\nValuable: ✅ The parent avoids loss and frustration\nEstimable: ✅ Clear scope — saving progress is well-understood\nSmall: ✅ Can be done in a sprint\nTestable: ✅ QA can simulate browser crash and confirm progress is saved',
+      explanation: 'Well done — your story passes INVEST. Let\'s make it buildable.',
+      incorrectExplanations: {}
     }
   ];
 };
@@ -424,7 +446,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
             ? 'You\'re working on a shopping platform. A customer on mobile data tries to complete a checkout, but payment fails. They want a clear message explaining the failure and guidance on what to do next.'
             : scenarioId === 'student-homework'
             ? 'A returning student using a school laptop needs to upload a document to submit their homework. They\'re struggling with file types and unclear upload messages.'
-            : 'The Childcare Services team says parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature so users can pause and come back later.'
+            : 'Meet Amaka. She\'s a single mother living in South London. She\'s finally found a government program that offers childcare vouchers — and she needs to apply online. The form is long. She\'s tired. Halfway through, her toddler spills juice on her laptop. She refreshes — and loses everything. The site had no save feature. No warning. No progress bar. Just silence. She has to start again from scratch. This is frustrating — and it\'s a real problem. Now you\'re the BA tasked with helping fix this experience.'
           }
         </p>
       </div>
