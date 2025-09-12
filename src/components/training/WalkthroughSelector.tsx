@@ -96,59 +96,73 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
       </div>
 
       {/* Training Pods Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {trainingPods.map((pod) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        {trainingPods.map((pod, index) => (
           <div
             key={pod.id}
-            className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col justify-between"
+            className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-700 hover:scale-105"
           >
-            {/* Pod Header */}
-            <div className="mb-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className={`w-12 h-12 ${pod.bgColor} rounded-xl flex items-center justify-center ${pod.color} shadow-md`}>
+            {/* Gradient Background */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${
+              index === 0 ? 'from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20' :
+              index === 1 ? 'from-purple-50 via-pink-50 to-rose-50 dark:from-purple-900/20 dark:via-pink-900/20 dark:to-rose-900/20' :
+              'from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-900/20 dark:via-amber-900/20 dark:to-yellow-900/20'
+            } opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+            
+            {/* Content */}
+            <div className="relative p-8">
+              {/* Header with Icon and Badges */}
+              <div className="flex items-start justify-between mb-6">
+                <div className={`w-16 h-16 ${pod.bgColor} rounded-2xl flex items-center justify-center ${pod.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                   {pod.icon}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                      {pod.tag}
-                    </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      pod.difficulty === 'Beginner' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300'
-                    }`}>
-                      {pod.difficulty}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {pod.title}
-                  </h3>
+                <div className="flex flex-col gap-2">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md">
+                    {pod.tag}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    pod.difficulty === 'Beginner' 
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                      : 'bg-gradient-to-r from-orange-500 to-amber-600 text-white'
+                  } shadow-md`}>
+                    {pod.difficulty}
+                  </span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {pod.description}
-              </p>
+
+              {/* Title and Description */}
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+                  {pod.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {pod.description}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleSelectWalkthrough(pod.id, 'user-story')}
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  <FileEdit className="w-5 h-5" />
+                  Write the User Story
+                </button>
+
+                <button
+                  onClick={() => handleSelectWalkthrough(pod.id, 'acceptance-criteria')}
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  <BookOpenCheck className="w-5 h-5" />
+                  Match the Acceptance Criteria
+                </button>
+              </div>
             </div>
 
-            {/* Training Options */}
-            <div className="flex items-center justify-between gap-3 mt-4">
-              <button
-                onClick={() => handleSelectWalkthrough(pod.id, 'user-story')}
-                className="flex items-center justify-center gap-2 text-sm font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg transition-all"
-              >
-                <FileEdit className="w-4 h-4" />
-                Write the User Story
-              </button>
-
-              <button
-                onClick={() => handleSelectWalkthrough(pod.id, 'acceptance-criteria')}
-                className="flex items-center justify-center gap-2 text-sm font-medium bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg transition-all"
-              >
-                <BookOpenCheck className="w-4 h-4" />
-                Match the Acceptance Criteria
-              </button>
-            </div>
+            {/* Decorative Elements */}
+            <div className="absolute top-4 right-4 w-20 h-20 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="absolute bottom-4 left-4 w-16 h-16 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-lg group-hover:scale-125 transition-transform duration-500" />
           </div>
         ))}
       </div>
