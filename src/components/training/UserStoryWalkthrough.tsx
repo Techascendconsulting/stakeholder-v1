@@ -105,57 +105,75 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
     return [
       {
         key: 'user',
-        question: 'Who is this feature for?',
-        tip: 'Choose the most appropriate user based on the scenario.',
+        question: 'Who is the feature for?',
+        tip: 'Choose the most specific, relevant user role.',
         options: [
-          'A shopper using mobile data',
-          'A finance manager',
-          'A new seller onboarding',
-          'A warehouse staff member'
+          'A user',
+          'A tenant paying rent online',
+          'A property manager',
+          'A developer working on the system'
         ],
-        correct: 'A shopper using mobile data',
-        explanation: 'The shopper is the one experiencing the failure. They are the primary user affected by this issue.',
+        correct: 'A tenant paying rent online',
+        explanation: 'This story is about the rent-paying experience, not managing the portal or building the backend.',
         incorrectExplanations: {
-          'A finance manager': 'Not relevant to this scenario - they don\'t experience payment failures at checkout.',
-          'A new seller onboarding': 'Wrong user - this is about customer checkout, not seller setup.',
-          'A warehouse staff member': 'Not involved in the payment process - irrelevant to this scenario.'
+          'A user': '"User" is too generic. It tells the team nothing about the needs, context, or pain points.',
+          'A property manager': 'This story is about the rent-paying experience, not managing the portal.',
+          'A developer working on the system': 'This story is about the rent-paying experience, not building the backend.'
         }
       },
       {
         key: 'action',
-        question: 'What do they want to do?',
-        tip: 'What is the key goal the user wants to achieve?',
+        question: 'What action do they want to perform right now?',
+        tip: 'What\'s the specific thing they\'re trying to do in this sprint?',
         options: [
-          'Complete the checkout successfully',
-          'Know why their payment failed and what to do',
-          'Get a refund',
-          'Track their order'
+          'Manage tenancy accounts',
+          'Pay rent using an online portal',
+          'Access system logs',
+          'Improve data security'
         ],
-        correct: 'Know why their payment failed and what to do',
-        explanation: 'The user has already failed to pay. They now want clarity and next steps to resolve the issue.',
+        correct: 'Pay rent using an online portal',
+        explanation: 'This is the specific action the tenant is trying to perform.',
         incorrectExplanations: {
-          'Complete the checkout successfully': 'This is no longer the goal at this stage - the payment has already failed.',
-          'Get a refund': 'Too early - they haven\'t completed a purchase yet.',
-          'Track their order': 'Not relevant - they haven\'t successfully placed an order.'
+          'Manage tenancy accounts': 'That\'s the landlord\'s goal, not the tenant\'s.',
+          'Access system logs': 'That\'s not what the user sees — it\'s a backend concern.',
+          'Improve data security': 'That\'s not what the user sees — it\'s a backend concern.'
         }
       },
       {
         key: 'goal',
-        question: 'Why do they want it?',
-        tip: 'What value does the user get from this?',
+        question: 'Why is this action important to the user right now?',
+        tip: 'What pain or outcome makes this story valuable?',
         options: [
-          'So they don\'t get charged twice',
-          'So they can fix the issue and try again',
-          'So they can report the issue to customer service',
-          'So they can leave the site'
+          'So they can stop calling support when unsure if payment went through',
+          'So the system can log all activity',
+          'So compliance can check payment data',
+          'So their internet connection is stable'
         ],
-        correct: 'So they can fix the issue and try again',
-        explanation: 'The user is trying to continue the transaction and needs guidance to complete their purchase.',
+        correct: 'So they can stop calling support when unsure if payment went through',
+        explanation: 'The problem isn\'t the user\'s internet — it\'s feedback clarity.',
         incorrectExplanations: {
-          'So they don\'t get charged twice': 'This is a concern, but not the primary motivation for understanding the failure.',
-          'So they can report the issue to customer service': 'Reporting is not their first intention - they still want to complete the payment.',
-          'So they can leave the site': 'Leaving is not their goal - they want to complete their purchase.'
+          'So the system can log all activity': 'These help the business, not the tenant.',
+          'So compliance can check payment data': 'These help the business, not the tenant.',
+          'So their internet connection is stable': 'The problem isn\'t the user\'s internet — it\'s feedback clarity.'
         }
+      },
+      {
+        key: 'story',
+        question: 'Write the user story',
+        tip: 'Let them tweak it, but keep the core structure. Remind them: no "how" — just the who, what, and why.',
+        options: [],
+        correct: 'As a tenant paying rent online, I want to receive instant confirmation after submitting payment, so I can be sure my rent was received and avoid calling support.',
+        explanation: 'This follows the proper format: As a [role], I want [action], so that [benefit].',
+        incorrectExplanations: {}
+      },
+      {
+        key: 'invest',
+        question: 'INVEST Check',
+        tip: 'Review your story against the INVEST criteria.',
+        options: [],
+        correct: 'Independent: ✅ Can ship without relying on other features\nNegotiable: ✅ Refinement will shape how confirmation is shown\nValuable: ✅ Reduces confusion, saves tenants time\nEstimable: ✅ Developers can size this\nSmall: ✅ One clear goal, not overloaded\nTestable: ✅ QA can test confirmation message, payment state, etc.',
+        explanation: 'Your story passes all INVEST criteria. It\'s well-structured and ready for development.',
+        incorrectExplanations: {}
       }
     ];
   }
@@ -447,7 +465,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
         <h2 className="text-lg font-bold text-blue-900 dark:text-blue-200 mb-3">🧪 Scenario:</h2>
         <p className="text-blue-800 dark:text-blue-200">
           {scenarioId === 'shopping-checkout' 
-            ? 'You\'re working on a shopping platform. A customer on mobile data tries to complete a checkout, but payment fails. They want a clear message explaining the failure and guidance on what to do next.'
+            ? 'You\'re working on a rent payment portal. Your stakeholder (the Property Ops Lead) tells you: "Tenants are paying online but sometimes the page freezes and they don\'t know if payment went through. They also want an option to see payment history clearly." This sounds simple. But clarity lives in the details. Don\'t just jump into writing "As a user, I want to pay rent online." That\'s vague, weak, and it puts the thinking burden on developers. Instead, shape a clear story that reflects: Who exactly is using the feature (be specific), What they want to do now, Why it matters at that moment.'
             : scenarioId === 'student-homework'
             ? 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.'
             : 'Meet Amaka. She\'s a single mother living in South London. She\'s finally found a government program that offers childcare vouchers — and she needs to apply online. The form is long. She\'s tired. Halfway through, her toddler spills juice on her laptop. She refreshes — and loses everything. The site had no save feature. No warning. No progress bar. Just silence. She has to start again from scratch. This is frustrating — and it\'s a real problem. Now you\'re the BA tasked with helping fix this experience.'

@@ -265,37 +265,37 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
     return [
       {
         id: 1,
-        title: "Make It User-Observable",
-        description: "AC should describe what the user sees, hears, or does — not what the system does. Avoid \"The system should...\". Focus on user-facing outcomes.",
+        title: "User-Observable",
+        description: "Which AC line is correct?",
         icon: <Eye className="w-6 h-6" />,
         color: 'text-blue-600',
         bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-        scenario: "You are building a payment failure handling system. When a payment fails, users need clear guidance.",
+        scenario: "You are building a rent payment confirmation feature.",
         options: [
           {
             value: "A",
-            text: "The system logs the failed transaction to the backend.",
+            text: "The system updates the payment database in real-time.",
             correct: false,
-            explanation: "It explains backend logic, not what the user sees."
+            explanation: "System-side behavior, not observable by the tenant"
           },
           {
             value: "B",
-            text: "I see a clear message that says \"Payment failed. Please check your card details or try again.\"",
+            text: "After I pay, I see \"Your rent was received. Confirmation ID: 124A.\"",
             correct: true,
-            explanation: "It clearly describes what the user sees and what happens."
+            explanation: "This shows what the user sees"
           },
           {
             value: "C",
-            text: "Retry logic is implemented using a fallback payment service.",
+            text: "Back-end logs timestamp of successful payment.",
             correct: false,
-            explanation: "This is technical implementation, not user-facing behavior."
+            explanation: "System-side behavior, not observable by the tenant"
           }
         ]
       },
       {
         id: 2,
-        title: "Clear Outcome",
-        description: "Each AC should have a specific, measurable outcome. Avoid vague terms like \"should work\" or \"properly\". Be concrete about what success looks like.",
+        title: "One Behaviour Per Line",
+        description: "Which line follows this rule?",
         icon: <Target className="w-6 h-6" />,
         color: 'text-green-600',
         bgColor: 'bg-green-50 dark:bg-green-900/20',
@@ -303,28 +303,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "A message is displayed and user is given retry option",
-            correct: true,
-            explanation: "Clear outcome: user sees message and can retry."
+            text: "Show confirmation and email the receipt.",
+            correct: false,
+            explanation: "Multiple behaviors = harder to test"
           },
           {
             value: "B",
-            text: "System flags the payment attempt",
-            correct: false,
-            explanation: "System behavior, not user outcome."
+            text: "After I pay, I see \"Payment received.\"",
+            correct: true,
+            explanation: "One action only"
           },
           {
             value: "C",
-            text: "Payment gateway sends response code",
+            text: "Display confirmation, log payment, and notify landlord.",
             correct: false,
-            explanation: "Technical detail, not user-facing outcome."
+            explanation: "Multiple behaviors = harder to test"
           }
         ]
       },
       {
         id: 3,
-        title: "One Expectation Per AC",
-        description: "Each AC should test one thing. If you find yourself using \"and\" or listing multiple conditions, split it into separate ACs.",
+        title: "Lead With the Happy Path",
+        description: "Which AC line starts with a success state?",
         icon: <AlertCircle className="w-6 h-6" />,
         color: 'text-orange-600',
         bgColor: 'bg-orange-50 dark:bg-orange-900/20',
@@ -332,28 +332,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "Show error message, send confirmation email, log the issue",
+            text: "If payment fails, show error.",
             correct: false,
-            explanation: "Multiple actions in one AC - should be split."
+            explanation: "Starts with failure, not success"
           },
           {
             value: "B",
-            text: "I see a single error message if payment fails",
+            text: "After I pay rent, I see confirmation message with timestamp.",
             correct: true,
-            explanation: "One clear expectation: user sees error message."
+            explanation: "Start with success, then list exceptions"
           },
           {
             value: "C",
-            text: "Payment error is handled quickly and professionally",
+            text: "Error message for timeouts is shown first.",
             correct: false,
-            explanation: "Too vague - what does 'quickly and professionally' mean?"
+            explanation: "Starts with error, not success"
           }
         ]
       },
       {
         id: 4,
-        title: "Edge Cases",
-        description: "Consider what happens in unusual situations. What if the user has no internet? What if they enter invalid data? What if the system is slow?",
+        title: "Make Rules Explicit",
+        description: "Which has clear criteria?",
         icon: <Lightbulb className="w-6 h-6" />,
         color: 'text-purple-600',
         bgColor: 'bg-purple-50 dark:bg-purple-900/20',
@@ -361,28 +361,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "If the card expires during checkout, I am told to update it",
-            correct: true,
-            explanation: "Specific edge case with clear user guidance."
+            text: "The tenant sees confirmation.",
+            correct: false,
+            explanation: "Too vague - what confirmation?"
           },
           {
             value: "B",
-            text: "Use a payment fallback if latency is detected",
-            correct: false,
-            explanation: "System behavior, not user-facing edge case handling."
+            text: "After payment, I see \"Payment of £500 received on 28th Sep, 10:02am.\"",
+            correct: true,
+            explanation: "Shows amount, date, time. All explicit"
           },
           {
             value: "C",
-            text: "Gateway returns 504",
+            text: "After payment, a message is shown.",
             correct: false,
-            explanation: "Technical error code, not user experience."
+            explanation: "Too vague - what message?"
           }
         ]
       },
       {
         id: 5,
-        title: "Error Handling",
-        description: "What happens when things go wrong? Users should never be left confused or stuck. Always provide a path forward.",
+        title: "Include Error and Recovery",
+        description: "Which line includes recovery?",
         icon: <AlertCircle className="w-6 h-6" />,
         color: 'text-red-600',
         bgColor: 'bg-red-50 dark:bg-red-900/20',
@@ -390,28 +390,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "If payment fails, I am told why and offered another option",
-            correct: true,
-            explanation: "Clear error handling with guidance and alternatives."
+            text: "If payment fails, I am told \"Payment failed.\"",
+            correct: false,
+            explanation: "No guidance on what to do next"
           },
           {
             value: "B",
-            text: "Payment fails, user restarts",
-            correct: false,
-            explanation: "No explanation or guidance - leaves user confused."
+            text: "If payment fails, I am told \"Payment failed. Try again or contact support.\"",
+            correct: true,
+            explanation: "Not just the error, but what to do next"
           },
           {
             value: "C",
-            text: "Send alert to support",
+            text: "Payment fails.",
             correct: false,
-            explanation: "System action, not user-facing error handling."
+            explanation: "No explanation or guidance"
           }
         ]
       },
       {
         id: 6,
-        title: "Acceptance Criteria Format",
-        description: "Use \"If... then...\" or \"When... I...\" format. Start with the condition, then describe the expected outcome. Make it readable for non-technical stakeholders.",
+        title: "Predictable Edge Cases",
+        description: "Which handles low-data issues?",
         icon: <FileText className="w-6 h-6" />,
         color: 'text-indigo-600',
         bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
@@ -419,28 +419,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "If my payment fails, I see an error with next steps",
-            correct: true,
-            explanation: "Proper 'If... I...' format with clear outcome."
+            text: "After payment, I get confirmation.",
+            correct: false,
+            explanation: "Doesn't handle network issues"
           },
           {
             value: "B",
-            text: "Payment outcome is determined based on token validation",
-            correct: false,
-            explanation: "Technical language, not user-focused format."
+            text: "If network drops after payment, I am told \"Still processing, check status in history.\"",
+            correct: true,
+            explanation: "Covers real-world problem of network failure"
           },
           {
             value: "C",
-            text: "Failover logic triggers within 2 seconds",
+            text: "If I click Submit twice, payment logs both times.",
             correct: false,
-            explanation: "System behavior, not user-facing format."
+            explanation: "Doesn't handle network issues"
           }
         ]
       },
       {
         id: 7,
-        title: "Business Rule Inclusion",
-        description: "Include relevant business rules and constraints. What are the limits? What's not allowed? What are the business policies?",
+        title: "Make Pass/Fail Measurable",
+        description: "Which line is measurable?",
         icon: <Users className="w-6 h-6" />,
         color: 'text-teal-600',
         bgColor: 'bg-teal-50 dark:bg-teal-900/20',
@@ -448,28 +448,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "I can retry payment up to 3 times before being redirected",
+            text: "After payment, confirmation shows within 10 seconds.",
             correct: true,
-            explanation: "Clear business rule with specific limit and outcome."
+            explanation: "Has a timeframe. QA can measure"
           },
           {
             value: "B",
-            text: "Users must be redirected after failure",
+            text: "After payment, I see success.",
             correct: false,
-            explanation: "Too vague - when? how many attempts?"
+            explanation: "Too vague - what is success?"
           },
           {
             value: "C",
-            text: "The system limits retries",
+            text: "Confirmation is timely.",
             correct: false,
-            explanation: "System behavior, not user-facing business rule."
+            explanation: "Too vague - what is timely?"
           }
         ]
       },
       {
         id: 8,
-        title: "Testable",
-        description: "Can a tester verify this without asking a developer? Can they see it, click it, or experience it? Avoid ACs that require code inspection.",
+        title: "State Visibility & Notifications",
+        description: "Which one is complete?",
         icon: <CheckCircle className="w-6 h-6" />,
         color: 'text-emerald-600',
         bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
@@ -477,21 +477,21 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "I see a message and a \"Retry Payment\" button if payment fails",
-            correct: true,
-            explanation: "Easily testable - tester can see message and button."
+            text: "I see a confirmation screen.",
+            correct: false,
+            explanation: "Only covers visibility, not notifications"
           },
           {
             value: "B",
-            text: "Backend triggers new API call",
-            correct: false,
-            explanation: "Requires backend access or code inspection."
+            text: "After payment, I see confirmation on screen and get a receipt email.",
+            correct: true,
+            explanation: "Covers both visibility and messaging"
           },
           {
             value: "C",
-            text: "Payment fails and logs are captured",
+            text: "Email is sent.",
             correct: false,
-            explanation: "Requires log access, not user-facing testable behavior."
+            explanation: "Only covers notifications, not visibility"
           }
         ]
       }
@@ -868,7 +868,7 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
             </h3>
             <p className="text-blue-800 dark:text-blue-200 text-sm">
               {scenarioId === 'shopping-checkout' 
-                ? 'A shopper using mobile data tries to pay at checkout but the payment fails. They want to know why and what to do next.'
+                ? 'You\'re working on a rent payment portal. Your stakeholder (the Property Ops Lead) tells you: "Tenants are paying online but sometimes the page freezes and they don\'t know if payment went through. They also want an option to see payment history clearly." This sounds simple. But clarity lives in the details. Don\'t just jump into writing "As a user, I want to pay rent online." That\'s vague, weak, and it puts the thinking burden on developers. Instead, shape a clear story that reflects: Who exactly is using the feature (be specific), What they want to do now, Why it matters at that moment.'
                 : scenarioId === 'student-homework'
                 ? 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.'
                 : 'Meet Amaka. She\'s a single mother living in South London. She\'s finally found a government program that offers childcare vouchers — and she needs to apply online. The form is long. She\'s tired. Halfway through, her toddler spills juice on her laptop. She refreshes — and loses everything. The site had no save feature. No warning. No progress bar. Just silence. She has to start again from scratch. This is frustrating — and it\'s a real problem. Now you\'re the BA tasked with helping fix this experience.'
