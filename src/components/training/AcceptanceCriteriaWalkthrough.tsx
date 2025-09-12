@@ -495,7 +495,8 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
       }
     ]
   }
-];
+  ];
+};
 
 export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack, scenarioId }: AcceptanceCriteriaWalkthroughProps) {
   const [currentRule, setCurrentRule] = useState(0);
