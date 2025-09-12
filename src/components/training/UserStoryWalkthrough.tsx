@@ -282,9 +282,6 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
                     {answers[step.key] === option && <div className="w-2 h-2 bg-white rounded-full m-0.5" />}
                   </div>
                   <span className="text-gray-900 dark:text-white">{option}</span>
-                  {option === step.correct && (
-                    <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
-                  )}
                 </div>
               </button>
             ))}
