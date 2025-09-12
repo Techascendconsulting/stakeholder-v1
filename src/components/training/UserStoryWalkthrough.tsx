@@ -12,54 +12,72 @@ interface Step {
   tip: string;
   options: string[];
   correct: string;
+  explanation: string;
+  incorrectExplanations: Record<string, string>;
 }
 
 const steps: Step[] = [
   {
     key: 'user',
-    question: 'Who is this feature for?',
-    tip: 'Choose the person this feature is solving a problem for right now. Be specific — "user" is too vague.',
+    question: 'Who is this for?',
+    tip: 'Choose the most specific user role that makes this story valuable.',
     options: [
-      'A tenant paying rent online',
-      'A shopper using mobile data',
+      'A user',
       'A parent applying for a childcare voucher',
-      'A student submitting homework',
-      'A first-time visitor browsing services'
+      'A first-time visitor',
+      'A system admin'
     ],
-    correct: 'A parent applying for a childcare voucher'
+    correct: 'A parent applying for a childcare voucher',
+    explanation: 'This identifies a specific user in the scenario — not just "anyone." It shows the person with the real need and helps the team understand the human at the center of the story.',
+    incorrectExplanations: {
+      'A user': 'Too vague. Could be anyone. Doesn\'t help teams build empathy or focus on outcomes.',
+      'A first-time visitor': 'Possible, but doesn\'t directly match the voucher context in the scenario.',
+      'A system admin': 'They aren\'t the ones filling out the form. Wrong audience.'
+    }
   },
   {
     key: 'action',
-    question: 'What do they want to do?',
-    tip: 'Zoom into the immediate task they\'re struggling with — not the whole journey.',
+    question: 'What does this user want to do?',
+    tip: 'Think about the action they\'re trying to take, based on the issue.',
     options: [
-      'Submit a complaint',
-      'Upload multiple files at once',
+      'Fill out the form',
+      'Access the childcare voucher system',
       'Save their progress on a form',
-      'Apply for a voucher',
-      'Share the form with a partner'
+      'Submit their final application'
     ],
-    correct: 'Save their progress on a form'
+    correct: 'Save their progress on a form',
+    explanation: 'This matches the problem in the scenario: parents are abandoning the form mid-way. They\'re not failing to start or submit — they\'re dropping off in the middle. Saving progress solves that pain.',
+    incorrectExplanations: {
+      'Fill out the form': 'Too broad. Doesn\'t zero in on the problem (losing progress).',
+      'Access the childcare voucher system': 'Not the issue. They\'ve already accessed it.',
+      'Submit their final application': 'Important, but not what was raised in this case.'
+    }
   },
   {
     key: 'goal',
-    question: 'Why do they need it?',
-    tip: 'What\'s the problem we\'re solving? This is the "so I can" part of the story.',
+    question: 'Why does this matter?',
+    tip: 'What\'s the benefit of letting them do this? What pain does it solve?',
     options: [
-      'So they can print the form',
-      'So they don\'t lose their place or data if they leave halfway',
-      'So they can apply for more than one child',
-      'So they can get faster support',
-      'So they can avoid retyping their address'
+      'So the form can be saved on the server',
+      'So they don\'t lose their place if they leave halfway',
+      'So the system doesn\'t get overloaded',
+      'So they can avoid customer service'
     ],
-    correct: 'So they don\'t lose their place or data if they leave halfway'
+    correct: 'So they don\'t lose their place if they leave halfway',
+    explanation: 'It clearly explains the benefit to the user. They can pause and return later — no rework, no frustration. This connects to real user value, not system function.',
+    incorrectExplanations: {
+      'So the form can be saved on the server': 'That\'s how it works, not why it matters to the user. Implementation detail.',
+      'So the system doesn\'t get overloaded': 'Unrelated to the user\'s goal.',
+      'So they can avoid customer service': 'Might be a side effect, but not the user\'s main intent.'
+    }
   }
 ];
 
 export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserStoryWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [editableStory, setEditableStory] = useState("");
   const [investChecks, setInvestChecks] = useState<boolean[]>([true, true, true, true, true, true]);
 
@@ -68,18 +86,16 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
   const handleSelect = (option: string) => {
     const step = steps[currentStep];
     const key = step.key;
-    const isCorrect = option === step.correct;
     
     setAnswers({ ...answers, [key]: option });
+    setSelectedOption(option);
+    setShowExplanation(true);
+  };
 
-    if (!isCorrect) {
-      setFeedback("That's not quite right. Read the tip below to try again.");
-    } else {
-      setFeedback(null);
-      setTimeout(() => {
-        setCurrentStep((prev) => prev + 1);
-      }, 500);
-    }
+  const handleNext = () => {
+    setCurrentStep((prev) => prev + 1);
+    setSelectedOption(null);
+    setShowExplanation(false);
   };
 
   const generateUserStory = () => {
@@ -90,9 +106,9 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
     // Clean up the text for better grammar
     const user = answers.user.replace(/^A /, '').toLowerCase();
     const action = answers.action.toLowerCase();
-    const goal = answers.goal.toLowerCase().replace(/^so they can /, '').replace(/^so /, '');
+    const goal = answers.goal.toLowerCase().replace(/^so they don't /, 'not ').replace(/^so /, '');
     
-    return `As a ${user}, I want to ${action}, so I can ${goal}.`;
+    return `As a ${user}, I want to ${action}, so that I ${goal}.`;
   };
 
   const handleInvestCheck = (index: number) => {
@@ -104,7 +120,8 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
   const resetWalkthrough = () => {
     setCurrentStep(0);
     setAnswers({});
-    setFeedback(null);
+    setSelectedOption(null);
+    setShowExplanation(false);
     setEditableStory("");
     setInvestChecks([true, true, true, true, true, true]);
   };
@@ -197,6 +214,19 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
           </div>
         </div>
 
+        {/* Reflection Box */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-8">
+          <div className="text-center">
+            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">
+              You've written a strong story that passes INVEST
+            </h3>
+            <p className="text-green-700 dark:text-green-300 text-sm mb-4">
+              Want to improve it further? Click Edit above or move to Acceptance Criteria next.
+            </p>
+          </div>
+        </div>
+
         {/* Final Actions */}
         <div className="text-center space-y-4">
           <div className="flex justify-center space-x-4">
@@ -276,31 +306,74 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
               <button
                 key={option}
                 onClick={() => handleSelect(option)}
+                disabled={showExplanation}
                 className={`p-4 text-left rounded-lg border-2 transition-all duration-200 ${
-                  answers[step.key] === option
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  selectedOption === option
+                    ? option === step.correct
+                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      : 'border-red-500 bg-red-50 dark:bg-red-900/20'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
+                } ${showExplanation ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
               >
                 <div className="flex items-center space-x-3">
                   <div className={`w-4 h-4 rounded-full border-2 ${
-                    answers[step.key] === option
-                      ? 'border-blue-500 bg-blue-500'
+                    selectedOption === option
+                      ? option === step.correct
+                        ? 'border-green-500 bg-green-500'
+                        : 'border-red-500 bg-red-500'
                       : 'border-gray-300 dark:border-gray-600'
                   }`}>
-                    {answers[step.key] === option && <div className="w-2 h-2 bg-white rounded-full m-0.5" />}
+                    {selectedOption === option && <div className="w-2 h-2 bg-white rounded-full m-0.5" />}
                   </div>
                   <span className="text-gray-900 dark:text-white">{option}</span>
+                  {selectedOption === option && (
+                    <span className={`ml-auto text-sm font-semibold ${
+                      option === step.correct ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {option === step.correct ? '✅' : '❌'}
+                    </span>
+                  )}
                 </div>
               </button>
             ))}
           </div>
           
-          {feedback && (
-            <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <div className="flex items-start space-x-2">
-                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                <p className="text-red-800 dark:text-red-200 text-sm font-medium">{feedback}</p>
+          {showExplanation && selectedOption && (
+            <div className="mt-6 space-y-4">
+              {selectedOption === step.correct ? (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-green-800 dark:text-green-200 font-semibold mb-2">🟢 Why this is right:</p>
+                      <p className="text-green-700 dark:text-green-300 text-sm">{step.explanation}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-red-800 dark:text-red-200 font-semibold mb-2">🔴 Why this is wrong:</p>
+                      <p className="text-red-700 dark:text-red-300 text-sm">{step.incorrectExplanations[selectedOption]}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="flex items-start space-x-2">
+                  <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-blue-800 dark:text-blue-200 font-semibold mb-2">✅ Takeaway:</p>
+                    <p className="text-blue-700 dark:text-blue-300 text-sm">
+                      {currentStep === 0 && "Always anchor your story in a real role. \"User\" is a placeholder, not a person."}
+                      {currentStep === 1 && "Focus on one core intent per story. This makes delivery clearer and testing easier."}
+                      {currentStep === 2 && "Your \"why\" should speak in human language, not tech terms."}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -317,13 +390,35 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
           <span>Back to Learning</span>
         </button>
 
-        <button
-          onClick={resetWalkthrough}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span>Reset</span>
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={resetWalkthrough}
+            className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset</span>
+          </button>
+
+          {showExplanation && currentStep < steps.length - 1 && (
+            <button
+              onClick={handleNext}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <span>Next Step</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+
+          {showExplanation && currentStep === steps.length - 1 && (
+            <button
+              onClick={handleNext}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <span>See My Story</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
