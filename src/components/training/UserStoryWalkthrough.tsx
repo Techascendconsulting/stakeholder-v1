@@ -23,65 +23,69 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
       {
         key: 'user',
         question: 'Who is this feature for?',
-        tip: 'Choose the most accurate user role for this scenario.',
+        tip: 'Pick the most appropriate user role for this scenario.',
         options: [
-          'A parent applying for a childcare voucher',
-          'A returning student using a school laptop',
-          'A shopper using mobile data',
-          'A teacher submitting attendance',
-          'A visitor browsing public content'
+          'A tenant paying rent online',
+          'A parent applying for childcare',
+          'A teacher checking submissions',
+          'A student uploading homework',
+          'A librarian editing reading lists'
         ],
-        correct: 'A returning student using a school laptop',
-        explanation: 'The story focuses on the student\'s experience with uploading homework files.',
+        correct: 'A student uploading homework',
+        explanation: 'This feature supports the student who is uploading homework.',
         incorrectExplanations: {
-          'A parent applying for a childcare voucher': 'Not relevant to this upload scenario - different user and context.',
-          'A shopper using mobile data': 'Wrong context - this is about homework submission, not shopping.',
-          'A teacher submitting attendance': 'Wrong user - this is about student homework upload, not teacher tasks.',
-          'A visitor browsing public content': 'Not relevant - this is about authenticated student file upload.'
+          'A tenant paying rent online': 'Wrong context - this is about homework submission, not rent payments.',
+          'A parent applying for childcare': 'Wrong context - this is about student homework, not parent applications.',
+          'A teacher checking submissions': 'Wrong user - this is about student upload, not teacher review.',
+          'A librarian editing reading lists': 'Wrong context - this is about homework submission, not library management.'
         }
       },
       {
         key: 'action',
-        question: 'What does this user want?',
-        tip: 'Pick the most relevant need for this role.',
+        question: 'What does the user want?',
+        tip: 'Choose the real need.',
         options: [
-          'Upload homework files from their device',
-          'Check their internet speed',
-          'Register a new account',
-          'Leave teacher feedback'
+          'Submit work late',
+          'Send files by email',
+          'Get clear, real-time feedback during the upload',
+          'Skip validation',
+          'See the upload date'
         ],
-        correct: 'Upload homework files from their device',
-        explanation: 'The user needs to submit work. Uploading files is the right focus for this scenario.',
+        correct: 'Get clear, real-time feedback during the upload',
+        explanation: 'Yes: The main need is to know when something fails and why. Students need instant clarity.',
         incorrectExplanations: {
-          'Check their internet speed': 'Not the main need - this is about file submission, not connectivity.',
-          'Register a new account': 'Wrong action - they\'re already a returning student, not registering.',
-          'Leave teacher feedback': 'Not relevant to the homework upload scenario.'
+          'Submit work late': 'Wrong action - this is about getting feedback, not late submission.',
+          'Send files by email': 'Wrong action - this is about platform upload, not email.',
+          'Skip validation': 'Wrong action - this is about getting feedback, not avoiding validation.',
+          'See the upload date': 'Wrong action - this is about upload feedback, not date display.'
         }
       },
       {
         key: 'benefit',
         question: 'Why do they want it?',
-        tip: 'Pick the most relevant benefit or reason.',
+        tip: 'What is the real-world benefit?',
         options: [
-          'To check the upload folder',
-          'So they can meet the assignment deadline',
-          'To access internal Wi-Fi',
-          'To complete their profile'
+          'To avoid penalties',
+          'To trick the system',
+          'To ask the teacher for more time',
+          'So they know if they need to fix the file and re-upload before the deadline',
+          'To notify classmates'
         ],
-        correct: 'So they can meet the assignment deadline',
-        explanation: 'The user uploads to meet deadlines, not to browse folders or access systems.',
+        correct: 'So they know if they need to fix the file and re-upload before the deadline',
+        explanation: 'Absolutely: Students need time to react and re-submit, not be left in the dark.',
         incorrectExplanations: {
-          'To check the upload folder': 'Not the main driver - they want to submit, not browse.',
-          'To access internal Wi-Fi': 'Wrong benefit - this is about homework submission, not network access.',
-          'To complete their profile': 'Not relevant to the homework upload scenario.'
+          'To avoid penalties': 'That\'s a consequence, not the main benefit of getting feedback.',
+          'To trick the system': 'Wrong benefit - this is about legitimate feedback, not gaming the system.',
+          'To ask the teacher for more time': 'Wrong benefit - this is about fixing files, not requesting extensions.',
+          'To notify classmates': 'Wrong benefit - this is about personal upload feedback, not communication.'
         }
       },
       {
         key: 'story',
-        question: 'Draft the User Story',
-        tip: 'Now assemble this into a proper user story format.',
+        question: 'Write the user story',
+        tip: 'Let them tweak it, but keep the core structure. Remind them: no "how" — just the who, what, and why.',
         options: [],
-        correct: 'As a returning student, I want to upload my homework, so I can meet the assignment deadline.',
+        correct: 'As a student uploading homework, I want clear feedback if my file is invalid, So I can fix it and submit before the deadline.',
         explanation: 'This follows the proper format: As a [role], I want [action], so that [benefit].',
         incorrectExplanations: {}
       },
@@ -90,8 +94,8 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         question: 'INVEST Check',
         tip: 'Review your story against the INVEST criteria.',
         options: [],
-        correct: 'Independent: ❌ Upload depends on multiple file system features\nNegotiable: ✅ Upload method can be refined\nValuable: ✅ Clear benefit to user\nEstimable: ✅ Upload work is sized and well known\nSmall: ✅ Fits in one sprint\nTestable: ✅ QA can test upload with various files',
-        explanation: 'Your story passes most INVEST criteria. The dependency issue can be addressed by ensuring file system features are ready.',
+        correct: 'Independent: ✅ Can be delivered separately from other features\nNegotiable: ✅ Dev can choose toast, modal, banner, etc.\nValuable: ✅ Prevents unfair penalties for students\nEstimable: ✅ Simple scope: show file errors\nSmall: ✅ Fits in sprint\nTestable: ✅ QA can upload invalid files and check for feedback',
+        explanation: 'Well done — your story passes INVEST. Let\'s make it buildable.',
         incorrectExplanations: {}
       }
     ];
@@ -445,7 +449,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
           {scenarioId === 'shopping-checkout' 
             ? 'You\'re working on a shopping platform. A customer on mobile data tries to complete a checkout, but payment fails. They want a clear message explaining the failure and guidance on what to do next.'
             : scenarioId === 'student-homework'
-            ? 'A returning student using a school laptop needs to upload a document to submit their homework. They\'re struggling with file types and unclear upload messages.'
+            ? 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.'
             : 'Meet Amaka. She\'s a single mother living in South London. She\'s finally found a government program that offers childcare vouchers — and she needs to apply online. The form is long. She\'s tired. Halfway through, her toddler spills juice on her laptop. She refreshes — and loses everything. The site had no save feature. No warning. No progress bar. Just silence. She has to start again from scratch. This is frustrating — and it\'s a real problem. Now you\'re the BA tasked with helping fix this experience.'
           }
         </p>

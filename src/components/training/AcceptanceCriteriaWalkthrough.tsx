@@ -28,8 +28,8 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
     return [
       {
         id: 1,
-        title: "Make It User-Observable",
-        description: "AC should describe what the user sees, hears, or does — not what the system does. Avoid \"The system should...\". Focus on user-facing outcomes.",
+        title: "User-Observable",
+        description: "Does it describe what the student sees or does?",
         icon: <Eye className="w-6 h-6" />,
         color: 'text-blue-600',
         bgColor: 'bg-blue-50 dark:bg-blue-900/20',
@@ -39,26 +39,26 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
             value: "A",
             text: "System checks MIME type",
             correct: false,
-            explanation: "It explains backend logic, not what the user sees."
+            explanation: "System behavior, not user-facing"
           },
           {
             value: "B",
             text: "I see a message: \"Only PDF or DOC files allowed\"",
             correct: true,
-            explanation: "It clearly describes what the user sees and what happens."
+            explanation: "Only the second option shows what the student sees"
           },
           {
             value: "C",
             text: "Backend validates file content type",
             correct: false,
-            explanation: "This is technical implementation, not user-facing behavior."
+            explanation: "Technical implementation, not user-facing"
           }
         ]
       },
       {
         id: 2,
         title: "Clear Outcome",
-        description: "Each AC should have a specific, measurable outcome. Avoid vague terms like \"should work\" or \"properly\". Be concrete about what success looks like.",
+        description: "We must know when something worked.",
         icon: <Target className="w-6 h-6" />,
         color: 'text-green-600',
         bgColor: 'bg-green-50 dark:bg-green-900/20',
@@ -66,28 +66,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "Upload triggers file validation",
+            text: "File rejected",
             correct: false,
-            explanation: "System behavior, not user outcome."
+            explanation: "Vague. Did it work? How would we know?"
           },
           {
             value: "B",
-            text: "I get a message when my upload is successful",
+            text: "A red banner appears saying \"Upload failed: Only PDF or DOC allowed\"",
             correct: true,
-            explanation: "Clear outcome: user sees success message."
+            explanation: "Outcome should be clear and specific"
           },
           {
             value: "C",
-            text: "Files are saved in storage layer",
+            text: "Try again later",
             correct: false,
-            explanation: "Technical detail, not user-facing outcome."
+            explanation: "No clarity on what went wrong"
           }
         ]
       },
       {
         id: 3,
         title: "One Expectation Per AC",
-        description: "Each AC should test one thing. If you find yourself using \"and\" or listing multiple conditions, split it into separate ACs.",
+        description: "Keep it focused — no multi-part ACs.",
         icon: <AlertCircle className="w-6 h-6" />,
         color: 'text-orange-600',
         bgColor: 'bg-orange-50 dark:bg-orange-900/20',
@@ -95,28 +95,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "File size, format, and name are all checked",
+            text: "File must be valid and named correctly and under 5MB",
             correct: false,
-            explanation: "Multiple validations in one AC - should be split."
+            explanation: "Multiple validations in one AC - should be split"
           },
           {
             value: "B",
-            text: "If my file is too big, I see \"File must be under 5MB\"",
+            text: "If the file type is unsupported, I see an error message",
             correct: true,
-            explanation: "One clear expectation: user sees file size error."
+            explanation: "Each AC should have one condition and one result"
           },
           {
             value: "C",
-            text: "All validations run before final upload",
+            text: "Validation occurs and upload resumes if successful",
             correct: false,
-            explanation: "Too vague - what validations? what happens?"
+            explanation: "Too many things in one AC"
           }
         ]
       },
       {
         id: 4,
         title: "Edge Cases",
-        description: "Consider what happens in unusual situations. What if the user has no internet? What if they enter invalid data? What if the system is slow?",
+        description: "What happens in unusual situations?",
         icon: <Lightbulb className="w-6 h-6" />,
         color: 'text-purple-600',
         bgColor: 'bg-purple-50 dark:bg-purple-900/20',
@@ -124,28 +124,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "Uploads fail silently",
+            text: "System ignores unsupported files",
             correct: false,
-            explanation: "No user guidance - leaves student confused."
+            explanation: "No user guidance - leaves student confused"
           },
           {
             value: "B",
-            text: "If I lose connection during upload, I see \"Check your internet and try again.\"",
+            text: "If I upload an image, I am told: \"Images are not accepted. Please upload a document.\"",
             correct: true,
-            explanation: "Specific edge case with clear user guidance."
+            explanation: "Edge case handled clearly"
           },
           {
             value: "C",
-            text: "Errors logged in admin panel",
+            text: "Files silently fail",
             correct: false,
-            explanation: "System behavior, not user-facing edge case handling."
+            explanation: "No feedback - confusing"
           }
         ]
       },
       {
         id: 5,
         title: "Error Handling",
-        description: "What happens when things go wrong? Users should never be left confused or stuck. Always provide a path forward.",
+        description: "Always tell the user what's wrong — clearly.",
         icon: <AlertCircle className="w-6 h-6" />,
         color: 'text-red-600',
         bgColor: 'bg-red-50 dark:bg-red-900/20',
@@ -153,28 +153,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "File validation fails",
+            text: "File size check runs silently",
             correct: false,
-            explanation: "No explanation or guidance - leaves user confused."
+            explanation: "No explanation or guidance - leaves user confused"
           },
           {
             value: "B",
-            text: "I see a red message if my file isn't accepted",
+            text: "I see an alert if my file is too large: \"Max size: 5MB\"",
             correct: true,
-            explanation: "Clear error handling with visual feedback."
+            explanation: "Always explain the error visibly"
           },
           {
             value: "C",
-            text: "Invalid files go to quarantine",
+            text: "Submission fails without explanation",
             correct: false,
-            explanation: "System action, not user-facing error handling."
+            explanation: "No clarity on what went wrong"
           }
         ]
       },
       {
         id: 6,
-        title: "Acceptance Criteria Format",
-        description: "Use \"If... then...\" or \"When... I...\" format. Start with the condition, then describe the expected outcome. Make it readable for non-technical stakeholders.",
+        title: "IF/THEN Format",
+        description: "AC should follow the IF → THEN structure where possible.",
         icon: <FileText className="w-6 h-6" />,
         color: 'text-indigo-600',
         bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
@@ -182,28 +182,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "Only allow valid MIME types",
+            text: "Large files not accepted",
             correct: false,
-            explanation: "Technical language, not user-focused format."
+            explanation: "No condition defined"
           },
           {
             value: "B",
-            text: "If I upload a wrong file type, I'm told which types are allowed",
+            text: "If I upload a file over 5MB, I see: \"File too large. Max 5MB.\"",
             correct: true,
-            explanation: "Proper 'If... I...' format with clear outcome."
+            explanation: "IF/THEN makes logic clear for QA"
           },
           {
             value: "C",
-            text: "Check extensions on all files",
+            text: "Upload rejected",
             correct: false,
-            explanation: "System behavior, not user-facing format."
+            explanation: "Vague, untestable"
           }
         ]
       },
       {
         id: 7,
-        title: "Business Rule Inclusion",
-        description: "Include relevant business rules and constraints. What are the limits? What's not allowed? What are the business policies?",
+        title: "Business Rules",
+        description: "Capture specific policy.",
         icon: <Users className="w-6 h-6" />,
         color: 'text-teal-600',
         bgColor: 'bg-teal-50 dark:bg-teal-900/20',
@@ -211,28 +211,28 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "Uploads are stored in SharePoint",
+            text: "System accepts common file types",
             correct: false,
-            explanation: "Technical implementation, not business rule."
+            explanation: "Too vague - what are 'common' types?"
           },
           {
             value: "B",
-            text: "Only one file can be submitted per homework assignment",
+            text: "Only PDF or DOC files under 5MB are accepted for homework uploads",
             correct: true,
-            explanation: "Clear business rule with specific policy."
+            explanation: "Clear, defined rule the system must enforce"
           },
           {
             value: "C",
-            text: "Student metadata is tracked",
+            text: "Uploads must follow school policy",
             correct: false,
-            explanation: "System behavior, not user-facing business rule."
+            explanation: "Too vague - what policy?"
           }
         ]
       },
       {
         id: 8,
         title: "Testable",
-        description: "Can a tester verify this without asking a developer? Can they see it, click it, or experience it? Avoid ACs that require code inspection.",
+        description: "Can QA test it? Can a dev confirm it works?",
         icon: <CheckCircle className="w-6 h-6" />,
         color: 'text-emerald-600',
         bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
@@ -240,21 +240,21 @@ const getRulesForScenario = (scenarioId?: string): Rule[] => {
         options: [
           {
             value: "A",
-            text: "Uploaded files pass virus scan",
+            text: "System logs message",
             correct: false,
-            explanation: "Requires backend access or system inspection."
+            explanation: "Requires backend access, not user-facing"
           },
           {
             value: "B",
-            text: "I can upload a .doc file and see it marked as \"submitted\"",
+            text: "QA uploads wrong file and sees error",
             correct: true,
-            explanation: "Easily testable - tester can see file upload and status."
+            explanation: "Always from the user's point of view"
           },
           {
             value: "C",
-            text: "File data is routed to secure vault",
+            text: "Upload returns false",
             correct: false,
-            explanation: "Requires backend access, not user-facing testable behavior."
+            explanation: "Too backend-focused"
           }
         ]
       }
@@ -870,7 +870,7 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
               {scenarioId === 'shopping-checkout' 
                 ? 'A shopper using mobile data tries to pay at checkout but the payment fails. They want to know why and what to do next.'
                 : scenarioId === 'student-homework'
-                ? 'A returning student using a school laptop needs to upload a document to submit their homework. They\'re struggling with file types and unclear upload messages.'
+                ? 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.'
                 : 'Meet Amaka. She\'s a single mother living in South London. She\'s finally found a government program that offers childcare vouchers — and she needs to apply online. The form is long. She\'s tired. Halfway through, her toddler spills juice on her laptop. She refreshes — and loses everything. The site had no save feature. No warning. No progress bar. Just silence. She has to start again from scratch. This is frustrating — and it\'s a real problem. Now you\'re the BA tasked with helping fix this experience.'
               }
             </p>
