@@ -185,9 +185,19 @@ export default function TeachingLayer({ onStartPractice }: TeachingLayerProps) {
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
           User Stories Training
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
           Master the art of writing user stories and acceptance criteria that actually get built
         </p>
+        
+        {/* Hero Image */}
+        <div className="max-w-4xl mx-auto">
+          <img 
+            src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop&auto=format&q=80" 
+            alt="Agile team working on user stories" 
+            className="w-full h-64 object-cover rounded-2xl shadow-lg"
+          />
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">Agile team collaborating on user stories and acceptance criteria</p>
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -215,6 +225,30 @@ export default function TeachingLayer({ onStartPractice }: TeachingLayerProps) {
               
               {/* Content */}
               <div className="prose prose-gray dark:prose-invert max-w-none">
+                {/* Add Scrum.org-style images for Agile and Scrum section */}
+                {index === 3 && (
+                  <div className="mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <img 
+                          src="https://images.pexels.com/photos/4623478/pexels-photo-4623478.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop" 
+                          alt="Scrum team planning session" 
+                          className="w-full h-48 object-cover rounded-lg shadow-md"
+                        />
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">Scrum Team Planning Session</p>
+                      </div>
+                      <div>
+                        <img 
+                          src="https://images.pexels.com/photos/1181615/pexels-photo-1181615.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop" 
+                          alt="Jira dashboard interface" 
+                          className="w-full h-48 object-cover rounded-lg shadow-md"
+                        />
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">User Story Decomposition</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div 
                   className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed text-base"
                   dangerouslySetInnerHTML={{
