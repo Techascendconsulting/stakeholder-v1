@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import TeachingLayer from "../training/TeachingLayer";
-import WalkthroughLayer from "../training/WalkthroughLayer";
+import WalkthroughSelector from "../training/WalkthroughSelector";
 import PracticeAndCoachingLayer from "../training/PracticeAndCoachingLayer";
 import AdvancedLayer from "../training/AdvancedLayer";
 import StoryAndCriteriaChecker from "../training/StoryAndCriteriaChecker";
@@ -96,7 +96,7 @@ export default function TrainingUI() {
 
         <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
           {view === "teaching" && <TeachingLayer onStartPractice={() => setView("walkthrough")} />}
-          {view === "walkthrough" && <WalkthroughLayer onStartPractice={() => setView("practice")} onBack={() => setView("teaching")} />}
+          {view === "walkthrough" && <WalkthroughSelector onStartPractice={() => setView("practice")} onBack={() => setView("teaching")} />}
           {view === "practice" && <PracticeAndCoachingLayer />}
           {view === "advanced" && <AdvancedLayer />}
           {view === "checker" && <StoryAndCriteriaChecker />}
