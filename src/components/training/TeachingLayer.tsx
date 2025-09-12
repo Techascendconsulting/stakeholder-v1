@@ -1,8 +1,12 @@
 import React from 'react';
+import { BookOpen, Target, Users, CheckCircle, Lightbulb, ArrowRight, Star, Zap, Award, FileText } from 'lucide-react';
 
 interface TeachingStep {
   title: string;
   content: string;
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
 }
 
 const teachingSteps: TeachingStep[] = [
@@ -12,7 +16,10 @@ const teachingSteps: TeachingStep[] = [
 
 When you walk into sprint planning and someone asks, "What exactly are we building?" your story should speak for itself. It should describe value clearly, for one person, in one moment — and it should never need a follow-up meeting to explain.
 
-A user story is a short, simple promise of value from the user's perspective. It's not a spec, not a task list, and definitely not a design. It's a clear expression of who wants what, and why. As a Business Analyst, writing user stories well is how you make sure what gets delivered is aligned to the need. And it's how you keep Agile projects flowing.`
+A user story is a short, simple promise of value from the user's perspective. It's not a spec, not a task list, and definitely not a design. It's a clear expression of who wants what, and why. As a Business Analyst, writing user stories well is how you make sure what gets delivered is aligned to the need. And it's how you keep Agile projects flowing.`,
+    icon: <BookOpen className="w-6 h-6" />,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/20'
   },
   {
     title: 'What Is a User Story?',
@@ -28,7 +35,10 @@ Example (Agile eCommerce project)
 As a returning shopper, I want to reuse my saved address so I can check out faster without retyping it.
 
 Example (Waterfall HR system project)
-As an HR admin, I want to export payroll data to Excel so I can process monthly salaries.`
+As an HR admin, I want to export payroll data to Excel so I can process monthly salaries.`,
+    icon: <Users className="w-6 h-6" />,
+    color: 'text-green-600',
+    bgColor: 'bg-green-50 dark:bg-green-900/20'
   },
   {
     title: 'INVEST: The 6 Criteria for a Strong User Story',
@@ -65,7 +75,10 @@ You can verify it through clear outcomes.
 Weak: "The system should be fast."
 Better: "After clicking 'Submit', I receive a confirmation within 5 seconds."
 
-You can use INVEST to review each story before putting it into Jira, or even to improve stories written by someone else. If any part of INVEST fails, clarify with the stakeholder or split the story.`
+You can use INVEST to review each story before putting it into Jira, or even to improve stories written by someone else. If any part of INVEST fails, clarify with the stakeholder or split the story.`,
+    icon: <Target className="w-6 h-6" />,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50 dark:bg-purple-900/20'
   },
   {
     title: 'How It Fits in Agile and Scrum',
@@ -96,7 +109,10 @@ BAs often:
 • Draft stories and review them with the team
 • Add attachments (flows, mockups, requirements docs)
 • Link stories to Epics and Features
-• Ensure all acceptance criteria are visible and agreed`
+• Ensure all acceptance criteria are visible and agreed`,
+    icon: <Zap className="w-6 h-6" />,
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-50 dark:bg-orange-900/20'
   },
   {
     title: 'What Are Acceptance Criteria?',
@@ -117,7 +133,10 @@ Acceptance Criteria:
 • I can upload one or more image files (.jpg, .png)
 • If the file is too large (over 5MB), I see an error message
 • Upload is optional; I can still submit without a photo
-• After upload, the image preview is shown on the form`
+• After upload, the image preview is shown on the form`,
+    icon: <CheckCircle className="w-6 h-6" />,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20'
   },
   {
     title: 'More Worked Examples',
@@ -145,7 +164,10 @@ Acceptance Criteria:
 • If network is offline, the notification is sent when back online
 • If multiple transactions occur at once, I receive a summary alert
 
-Why it matters: These ACs make sure the feature is reliable, timely, and respects user preferences — all while being testable.`
+Why it matters: These ACs make sure the feature is reliable, timely, and respects user preferences — all while being testable.`,
+    icon: <Lightbulb className="w-6 h-6" />,
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20'
   }
 ];
 
@@ -156,29 +178,71 @@ interface TeachingLayerProps {
 export default function TeachingLayer({ onStartPractice }: TeachingLayerProps) {
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">
-        📚 User Stories Training
-      </h1>
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
+          <BookOpen className="w-8 h-8 text-white" />
+        </div>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+          User Stories Training
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Master the art of writing user stories and acceptance criteria that actually get built
+        </p>
+      </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {teachingSteps.map((step, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 transition hover:shadow-xl hover:scale-[1.02] duration-200"
+            className="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] overflow-hidden"
           >
-            <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">{step.title}</h2>
-            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">{step.content}</p>
+            {/* Gradient overlay */}
+            <div className={`absolute inset-0 ${step.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+            
+            <div className="relative p-8">
+              {/* Header with icon */}
+              <div className="flex items-start space-x-4 mb-6">
+                <div className={`flex-shrink-0 w-12 h-12 ${step.bgColor} rounded-xl flex items-center justify-center ${step.color} shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                  {step.icon}
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-gray-800 dark:group-hover:text-gray-100 transition-colors">
+                    {step.title}
+                  </h2>
+                  <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="prose prose-gray dark:prose-invert max-w-none">
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed text-base">
+                  {step.content}
+                </p>
+              </div>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-12 text-center">
-        <button 
-          onClick={onStartPractice}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
-        >
-          Start Practice →
-        </button>
+      <div className="mt-16 text-center">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mx-auto mb-4 shadow-lg">
+            <ArrowRight className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Ready to Practice?
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            Apply what you've learned with interactive scenarios and get real-time feedback from AI stakeholders.
+          </p>
+          <button 
+            onClick={onStartPractice}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-10 py-4 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 mx-auto"
+          >
+            <span>Start Practice</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   );
