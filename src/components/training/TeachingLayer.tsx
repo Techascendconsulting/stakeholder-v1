@@ -234,7 +234,7 @@ export default function TeachingLayer({ onStartPractice }: TeachingLayerProps) {
             <ArrowRight className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Ready to Practice?
+            Ready for Walkthrough?
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
             Apply what you've learned with interactive scenarios and get real-time feedback from AI stakeholders.
@@ -243,7 +243,7 @@ export default function TeachingLayer({ onStartPractice }: TeachingLayerProps) {
             onClick={onStartPractice}
             className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-10 py-4 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 mx-auto"
           >
-            <span>Start Practice</span>
+            <span>Start Walkthrough</span>
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>
