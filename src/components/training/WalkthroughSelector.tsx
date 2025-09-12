@@ -26,7 +26,7 @@ const trainingPods: TrainingPod[] = [
     title: 'Childcare Voucher Application',
     description: 'Parents want to save their progress midway through a long application form.',
     scenario: 'Parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature.',
-    icon: <Building className="w-8 h-8" />,
+    icon: <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face&auto=format&q=80" alt="Parent character" className="w-12 h-12 rounded-full object-cover" />,
     color: 'text-blue-600',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     difficulty: 'Beginner',
@@ -37,7 +37,7 @@ const trainingPods: TrainingPod[] = [
     title: 'Student Uploading Homework',
     description: 'Students need clearer feedback when their file uploads fail.',
     scenario: 'Meet Daniel. Daniel is 15, in Year 11, and he just finished his homework at 10:47 p.m. He logs into his school portal to upload it — but nothing happens. He tries again. Still nothing. Finally, he sees the upload failed — but it didn\'t say why. He doesn\'t know if the file type was wrong, if it was too big, or if the system just broke. Now it\'s 11:02 p.m. The deadline has passed. The teacher will think he didn\'t try. He\'s frustrated. He did the work. The system failed him. You\'re the Business Analyst for the school platform. Your job is to make sure this never happens again.',
-    icon: <GraduationCap className="w-8 h-8" />,
+    icon: <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face&auto=format&q=80" alt="Student character" className="w-12 h-12 rounded-full object-cover" />,
     color: 'text-purple-600',
     bgColor: 'bg-purple-50 dark:bg-purple-900/20',
     difficulty: 'Beginner',
@@ -48,7 +48,7 @@ const trainingPods: TrainingPod[] = [
     title: 'Tenant Paying Rent Online',
     description: 'Tenants want instant confirmation that their rent payment went through.',
     scenario: 'You\'re working on a rent payment portal. Your stakeholder (the Property Ops Lead) tells you: "Tenants are paying online but sometimes the page freezes and they don\'t know if payment went through. They also want an option to see payment history clearly." This sounds simple. But clarity lives in the details. Don\'t just jump into writing "As a user, I want to pay rent online." That\'s vague, weak, and it puts the thinking burden on developers. Instead, shape a clear story that reflects: Who exactly is using the feature (be specific), What they want to do now, Why it matters at that moment.',
-    icon: <Building className="w-8 h-8" />,
+    icon: <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face&auto=format&q=80" alt="Tenant character" className="w-12 h-12 rounded-full object-cover" />,
     color: 'text-orange-600',
     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     difficulty: 'Intermediate',
@@ -111,9 +111,9 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
             
             {/* Content */}
             <div className="relative p-6">
-              {/* Header with Icon and Badges */}
+              {/* Header with Character and Badges */}
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 ${pod.bgColor} rounded-xl flex items-center justify-center ${pod.color} shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                <div className="w-12 h-12 rounded-full overflow-hidden shadow-md group-hover:scale-110 transition-transform duration-300 ring-2 ring-white dark:ring-gray-700">
                   {pod.icon}
                 </div>
                 <div className="flex flex-col gap-1.5">
