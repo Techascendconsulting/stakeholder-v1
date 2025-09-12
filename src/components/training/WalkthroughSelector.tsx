@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Smartphone, ArrowRight, BookOpen, Target, Users, CheckSquare } from 'lucide-react';
+import { FileText, CheckSquare, ArrowRight, BookOpen, Target, Users, Home, Building } from 'lucide-react';
 import UserStoryWalkthrough from './UserStoryWalkthrough';
 import AcceptanceCriteriaWalkthrough from './AcceptanceCriteriaWalkthrough';
 
@@ -8,49 +8,44 @@ interface WalkthroughSelectorProps {
   onBack: () => void;
 }
 
-interface WalkthroughOption {
+interface TrainingPod {
   id: string;
   title: string;
   description: string;
+  scenario: string;
   icon: React.ReactNode;
   color: string;
   bgColor: string;
   difficulty: string;
-  focus: string;
+  tag: string;
 }
 
-const walkthroughOptions: WalkthroughOption[] = [
+const trainingPods: TrainingPod[] = [
   {
-    id: 'user-story',
-    title: 'Write a Real User Story in 5 Steps',
-    description: 'Master the fundamentals of user story writing with a clear, step-by-step approach. Perfect for beginners or as a refresher.',
-    icon: <FileText className="w-8 h-8" />,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    id: 'childcare-voucher',
+    title: 'Childcare Voucher Application',
+    description: 'Help parents save their progress on a long application form so they don\'t lose their work.',
+    scenario: 'Parents often abandon the voucher application form midway because it\'s too long and they don\'t always have the right documents. They want a "Save Progress" feature.',
+    icon: <Building className="w-8 h-8" />,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     difficulty: 'Beginner',
-    focus: 'Core Story Writing'
-  },
-  {
-    id: 'acceptance-criteria',
-    title: 'Master Acceptance Criteria Rules',
-    description: 'Learn the 8 essential rules for writing clear, testable acceptance criteria. Practice with real scenarios and get detailed feedback.',
-    icon: <CheckSquare className="w-8 h-8" />,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
-    difficulty: 'Intermediate',
-    focus: 'AC Rules & Testing'
+    tag: 'Scenario 1'
   }
 ];
 
 export default function WalkthroughSelector({ onStartPractice, onBack }: WalkthroughSelectorProps) {
   const [selectedWalkthrough, setSelectedWalkthrough] = useState<string | null>(null);
+  const [currentPod, setCurrentPod] = useState<string | null>(null);
 
-  const handleSelectWalkthrough = (id: string) => {
-    setSelectedWalkthrough(id);
+  const handleSelectWalkthrough = (podId: string, walkthroughType: string) => {
+    setCurrentPod(podId);
+    setSelectedWalkthrough(walkthroughType);
   };
 
   const handleBackToSelector = () => {
     setSelectedWalkthrough(null);
+    setCurrentPod(null);
   };
 
   // If a walkthrough is selected, render it
@@ -71,72 +66,107 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
           <BookOpen className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Choose Your Walkthrough
+          Training Pods
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Select a guided walkthrough to practice writing user stories. Each walkthrough focuses on different scenarios and skill levels.
+          Choose a scenario to practice both user story writing and acceptance criteria. Each pod provides end-to-end learning with one real-world example.
         </p>
       </div>
 
-      {/* Walkthrough Options */}
-      <div className="grid md:grid-cols-2 gap-8 mb-12">
-        {walkthroughOptions.map((option) => (
+      {/* Training Pods */}
+      <div className="space-y-8 mb-12">
+        {trainingPods.map((pod) => (
           <div
-            key={option.id}
-            onClick={() => handleSelectWalkthrough(option.id)}
-            className="group cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            key={pod.id}
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden"
           >
-            {/* Icon and Header */}
-            <div className="flex items-start space-x-4 mb-6">
-              <div className={`w-16 h-16 ${option.bgColor} rounded-2xl flex items-center justify-center ${option.color} shadow-md group-hover:shadow-lg transition-shadow`}>
-                {option.icon}
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                  {option.title}
-                </h3>
-                <div className="flex items-center space-x-4 mb-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    option.difficulty === 'Beginner' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                  }`}>
-                    {option.difficulty}
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                    {option.focus}
-                  </span>
+            {/* Pod Header */}
+            <div className="p-8 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-start space-x-4 mb-4">
+                <div className={`w-16 h-16 ${pod.bgColor} rounded-2xl flex items-center justify-center ${pod.color} shadow-md`}>
+                  {pod.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {pod.title}
+                    </h3>
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                      {pod.tag}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      pod.difficulty === 'Beginner' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300'
+                    }`}>
+                      {pod.difficulty}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+                    {pod.description}
+                  </p>
                 </div>
               </div>
-            </div>
-
-            {/* Description */}
-            <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-              {option.description}
-            </p>
-
-            {/* Features */}
-            <div className="space-y-2 mb-6">
-              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                <Target className="w-4 h-4" />
-                <span>5 guided steps</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                <Users className="w-4 h-4" />
-                <span>Real-world scenarios</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                <FileText className="w-4 h-4" />
-                <span>INVEST criteria check</span>
+              
+              {/* Scenario Context */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">📋 Scenario Context:</h4>
+                <p className="text-blue-800 dark:text-blue-200 text-sm">
+                  {pod.scenario}
+                </p>
               </div>
             </div>
 
-            {/* CTA */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Click to start walkthrough
-              </span>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+            {/* Training Options */}
+            <div className="p-8">
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Choose your training focus:
+              </h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* User Story Training */}
+                <button
+                  onClick={() => handleSelectWalkthrough(pod.id, 'user-story')}
+                  className="group p-6 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-200 hover:shadow-lg"
+                >
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center text-purple-600 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <h5 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                      Write the User Story
+                    </h5>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Master the fundamentals of user story writing with step-by-step guidance and INVEST validation.
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">5 guided steps</span>
+                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+                  </div>
+                </button>
+
+                {/* Acceptance Criteria Training */}
+                <button
+                  onClick={() => handleSelectWalkthrough(pod.id, 'acceptance-criteria')}
+                  className="group p-6 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 hover:shadow-lg"
+                >
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center text-green-600 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors">
+                      <CheckSquare className="w-5 h-5" />
+                    </div>
+                    <h5 className="font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                      Practice the Acceptance Criteria
+                    </h5>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Learn the 8 essential rules for writing clear, testable acceptance criteria with real examples.
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">8 rule cards</span>
+                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         ))}
