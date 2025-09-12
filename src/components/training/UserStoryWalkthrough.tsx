@@ -61,7 +61,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
   const [editableStory, setEditableStory] = useState("");
-  const [investChecks, setInvestChecks] = useState<boolean[]>([false, false, false, false, false, false]);
+  const [investChecks, setInvestChecks] = useState<boolean[]>([true, true, true, true, true, true]);
 
   const progress = ((currentStep + 1) / 5) * 100;
 
@@ -83,7 +83,16 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
   };
 
   const generateUserStory = () => {
-    return `As a ${answers.user}, I want to ${answers.action.toLowerCase()}, so I can ${answers.goal.toLowerCase()}.`;
+    if (!answers.user || !answers.action || !answers.goal) {
+      return "Complete all steps to generate your user story.";
+    }
+    
+    // Clean up the text for better grammar
+    const user = answers.user.replace(/^A /, '').toLowerCase();
+    const action = answers.action.toLowerCase();
+    const goal = answers.goal.toLowerCase().replace(/^so they can /, '').replace(/^so /, '');
+    
+    return `As a ${user}, I want to ${action}, so I can ${goal}.`;
   };
 
   const handleInvestCheck = (index: number) => {
@@ -97,7 +106,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack }: UserSt
     setAnswers({});
     setFeedback(null);
     setEditableStory("");
-    setInvestChecks([false, false, false, false, false, false]);
+    setInvestChecks([true, true, true, true, true, true]);
   };
 
   const investCriteria = [
