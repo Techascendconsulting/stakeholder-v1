@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FileText, Smartphone, ArrowRight, BookOpen, Target, Users } from 'lucide-react';
+import { FileText, Smartphone, ArrowRight, BookOpen, Target, Users, CheckSquare } from 'lucide-react';
 import UserStoryWalkthrough from './UserStoryWalkthrough';
+import AcceptanceCriteriaWalkthrough from './AcceptanceCriteriaWalkthrough';
 
 interface WalkthroughSelectorProps {
   onStartPractice: () => void;
@@ -20,7 +21,7 @@ interface WalkthroughOption {
 
 const walkthroughOptions: WalkthroughOption[] = [
   {
-    id: 'basic',
+    id: 'user-story',
     title: 'Write a Real User Story in 5 Steps',
     description: 'Master the fundamentals of user story writing with a clear, step-by-step approach. Perfect for beginners or as a refresher.',
     icon: <FileText className="w-8 h-8" />,
@@ -30,14 +31,14 @@ const walkthroughOptions: WalkthroughOption[] = [
     focus: 'Core Story Writing'
   },
   {
-    id: 'mobile',
-    title: 'Handle Unreliable Mobile Users',
-    description: 'Tackle real-world mobile scenarios with poor network conditions. Learn to write stories that account for edge cases and error recovery.',
-    icon: <Smartphone className="w-8 h-8" />,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    id: 'acceptance-criteria',
+    title: 'Master Acceptance Criteria Rules',
+    description: 'Learn the 8 essential rules for writing clear, testable acceptance criteria. Practice with real scenarios and get detailed feedback.',
+    icon: <CheckSquare className="w-8 h-8" />,
+    color: 'text-green-600',
+    bgColor: 'bg-green-50 dark:bg-green-900/20',
     difficulty: 'Intermediate',
-    focus: 'Mobile & Edge Cases'
+    focus: 'AC Rules & Testing'
   }
 ];
 
@@ -53,12 +54,12 @@ export default function WalkthroughSelector({ onStartPractice, onBack }: Walkthr
   };
 
   // If a walkthrough is selected, render it
-  if (selectedWalkthrough === 'basic') {
+  if (selectedWalkthrough === 'user-story') {
     return <UserStoryWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} />;
   }
 
-  if (selectedWalkthrough === 'mobile') {
-    return <UserStoryWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} />;
+  if (selectedWalkthrough === 'acceptance-criteria') {
+    return <AcceptanceCriteriaWalkthrough onStartPractice={onStartPractice} onBack={handleBackToSelector} />;
   }
 
   // Render the selector
