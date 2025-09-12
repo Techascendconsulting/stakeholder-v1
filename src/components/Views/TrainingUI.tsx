@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import TeachingLayer from "../training/TeachingLayer";
+import WalkthroughLayer from "../training/WalkthroughLayer";
 import PracticeAndCoachingLayer from "../training/PracticeAndCoachingLayer";
 import AdvancedLayer from "../training/AdvancedLayer";
 import StoryAndCriteriaChecker from "../training/StoryAndCriteriaChecker";
@@ -7,11 +8,11 @@ import { StakeholderBotProvider } from "../../context/StakeholderBotContext";
 
 export default function TrainingUI() {
   // Initialize view from localStorage or default to teaching
-  const [view, setView] = useState<"teaching" | "practice" | "advanced" | "checker">(() => {
+  const [view, setView] = useState<"teaching" | "walkthrough" | "practice" | "advanced" | "checker">(() => {
     try {
       const savedView = localStorage.getItem('trainingUI_view');
-      if (savedView && ['teaching', 'practice', 'advanced', 'checker'].includes(savedView)) {
-        return savedView as "teaching" | "practice" | "advanced" | "checker";
+      if (savedView && ['teaching', 'walkthrough', 'practice', 'advanced', 'checker'].includes(savedView)) {
+        return savedView as "teaching" | "walkthrough" | "practice" | "advanced" | "checker";
       }
     } catch (error) {
       console.log('Error loading training UI view from localStorage:', error);
@@ -34,6 +35,7 @@ export default function TrainingUI() {
         <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   {view === "teaching" ? "Learn User Stories" : 
+                   view === "walkthrough" ? "User Story Walkthrough" :
                    view === "practice" ? "Practice & Get Feedback" : 
                    view === "advanced" ? "Advanced Practice" : 
                    "Story & Criteria Checker"}
@@ -48,6 +50,16 @@ export default function TrainingUI() {
               }`}
             >
               Teaching
+            </button>
+            <button
+              onClick={() => setView("walkthrough")}
+              className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
+                view === "walkthrough"
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+              }`}
+            >
+              Walkthrough
             </button>
             <button
               onClick={() => setView("practice")}
@@ -83,7 +95,8 @@ export default function TrainingUI() {
         </div>
 
         <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
-          {view === "teaching" && <TeachingLayer onStartPractice={() => setView("practice")} />}
+          {view === "teaching" && <TeachingLayer onStartPractice={() => setView("walkthrough")} />}
+          {view === "walkthrough" && <WalkthroughLayer onStartPractice={() => setView("practice")} onBack={() => setView("teaching")} />}
           {view === "practice" && <PracticeAndCoachingLayer />}
           {view === "advanced" && <AdvancedLayer />}
           {view === "checker" && <StoryAndCriteriaChecker />}
