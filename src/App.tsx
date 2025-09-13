@@ -10,6 +10,7 @@ import MainLayout from './components/Layout/MainLayout'
 import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
 import { OnboardingProvider } from './contexts/OnboardingContext'
+import GlobalWatermark from './components/GlobalWatermark'
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
@@ -148,6 +149,7 @@ function App() {
                   <MeetingSetupProvider>
                     <StakeholderBotProvider>
                       <AppContent />
+                      <GlobalWatermark />
                     </StakeholderBotProvider>
                   </MeetingSetupProvider>
                 </OnboardingProvider>
