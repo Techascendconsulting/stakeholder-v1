@@ -1,31 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import {
-  LayoutDashboard,
   FolderOpen,
-  MessageSquare,
   BookOpen,
-  BookText,
-  FileText,
-  Plus,
-  User,
   Settings,
   LogOut,
-  GraduationCap,
-  ChevronUp,
-  ChevronDown,
-  Menu,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Sun,
   Moon,
-  Calendar,
-  Workflow,
-  Zap,
   Target,
-  Play,
-  BarChart3,
-  Award,
-  Map
+  Home,
+  LayoutDashboard,
+  Plus,
+  Workflow,
+  Calendar,
+  Zap,
+  FileText,
+  BarChart3
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -36,13 +29,23 @@ interface SidebarProps {
   className?: string;
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<any>;
+  subItems?: {
+    id: string;
+    label: string;
+    icon: React.ComponentType<any>;
+  }[];
+}
+
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
   const { user, signOut } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
 
 
@@ -50,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { 
       id: 'welcome', 
       label: 'Welcome', 
-      icon: GraduationCap
+      icon: Home
     },
     { 
       id: 'dashboard', 
@@ -60,45 +63,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { 
       id: 'learn', 
       label: 'Learn', 
-      icon: BookOpen,
-      subItems: [
-        { id: 'core-concepts', label: 'BA Essentials', icon: BookText },
-        { id: 'process-mapper', label: 'Process Mapper', icon: MessageSquare },
-        { id: 'scrum-essentials', label: 'Scrum Essentials', icon: Zap }
-      ]
+      icon: BookOpen
     },
     { 
       id: 'practice', 
       label: 'Practice', 
       icon: Target,
       subItems: [
-        { id: 'training-hub', label: 'Project Practice', icon: Target },
+        { id: 'project-workspace', label: 'Project Practice', icon: Target },
         { id: 'agile-practice', label: 'Scrum Practice', icon: Zap },
         { id: 'training-deliverables', label: 'Practice Deliverables', icon: FileText },
         { id: 'progress-tracking', label: 'Progress Tracking', icon: BarChart3 }
       ]
     },
     { 
-      id: 'project-experience', 
-      label: 'Project Experience', 
-      icon: FolderOpen,
-      subItems: [
-        { id: 'project-workspace', label: 'Project Workspace', icon: FolderOpen },
-        { id: 'agile-hub', label: 'Agile Hub', icon: Workflow },
-        { id: 'meeting-history', label: 'Meeting History', icon: Calendar },
-        { id: 'project-deliverables', label: 'Project Deliverables', icon: Map },
-        { id: 'deliverables', label: 'My Deliverables', icon: FileText },
-        { id: 'portfolio', label: 'Portfolio', icon: BookText, isNew: true }
-      ]
+      id: 'project',
+      label: 'Project', 
+      icon: FolderOpen
     },
     { 
-      id: 'custom-projects', 
-      label: 'Custom Projects', 
-      icon: Plus,
-      subItems: [
-        { id: 'create-project', label: 'Create Your Own Project', icon: Plus }
-      ]
-    },
+      id: 'create-project',
+      label: 'Create Project', 
+      icon: Plus
+    }
   ];
 
   const handleSignOut = async () => {
@@ -127,14 +114,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Auto-expand the section that contains the active sub-item
-  useEffect(() => {
-    // Find which section (if any) contains the currentView
-    const section = menuItems.find((item: any) => item.subItems && item.subItems.some((s: any) => s.id === (currentView as any)));
-    if (section && !expandedSections[section.id]) {
-      setExpandedSections((prev) => ({ ...prev, [section.id]: true }));
-    }
-  }, [currentView]);
 
   return (
     <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 text-white ${isCollapsed ? 'w-20' : 'w-64'} h-screen flex flex-col shadow-lg transition-all duration-300 overflow-hidden ${className}`}>
@@ -144,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shadow-sm">
-                <GraduationCap className="w-6 h-6 text-white" />
+                <Target className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white">BA WorkXP Platform</h1>
@@ -156,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           {isCollapsed && (
             <div className="w-full flex flex-col items-center">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-sm mb-3">
-                <GraduationCap className="w-8 h-8 text-white" />
+                <Target className="w-8 h-8 text-white" />
               </div>
               <button
                 onClick={toggleSidebar}
@@ -214,18 +193,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id || (item.subItems && item.subItems.some(subItem => currentView === subItem.id));
-            const isExpanded = !!expandedSections[item.id as keyof typeof expandedSections];
 
             return (
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => {
                     if (item.subItems) {
-                      setExpandedSections((prev) => ({ ...prev, [item.id]: !prev[item.id] }));
+                      // For main sections, navigate to first sub-item
+                      setCurrentView(item.subItems[0].id as any);
                     } else {
                       setCurrentView(item.id as any);
                     }
-                    console.debug('[Sidebar] sectionClick', { id: item.id, hasSubItems: !!item.subItems });
+                    console.debug('[Sidebar] sectionClick', { id: item.id });
                   }}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-4' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
@@ -233,28 +212,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
                   }`}
                   title={isCollapsed ? item.label : ''}
-                  aria-expanded={item.subItems ? isExpanded : undefined}
                 >
                   <Icon size={isCollapsed ? 28 : 20} className={isActive ? 'text-white' : 'text-purple-200'} />
                   {!isCollapsed && (
-                    <div className="flex items-center justify-between w-full">
-                      <span>{item.label}</span>
-                      <div className="flex items-center space-x-2">
-                        {(item as any).isNew && (
-                          <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
-                            NEW
-                          </span>
-                        )}
-                        {item.subItems && (
-                          isExpanded ? <ChevronUp size={16} className="text-purple-200" /> : <ChevronDown size={16} className="text-purple-200" />
-                        )}
-                      </div>
-                    </div>
+                    <span>{item.label}</span>
                   )}
                 </button>
 
                 {/* Sub-items for expanded mode */}
-                {!isCollapsed && item.subItems && isExpanded && (
+                {!isCollapsed && item.subItems && (
                   <ul className="ml-8 mt-1 space-y-1">
                     {item.subItems.map((subItem) => {
                       const SubIcon = subItem.icon;

@@ -8,7 +8,6 @@ import ProjectsView from '../Views/ProjectsView';
 import MeetingView from '../Views/MeetingView';
 import { VoiceOnlyMeetingView } from '../Views/VoiceOnlyMeetingView';
 import { MyMeetingsView } from '../Views/MyMeetingsView';
-import { MeetingHistoryView } from '../Views/MeetingHistoryView';
 import { MeetingSummaryView } from '../Views/MeetingSummaryView';
 import { MeetingDetailsView } from '../Views/MeetingDetailsView';
 import { RawTranscriptView } from '../Views/RawTranscriptView';
@@ -28,21 +27,22 @@ import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
 // Training Hub Views
 import TrainingHubView from '../Views/TrainingHubView';
+import PracticeHubCardsView from '../Views/PracticeHubCardsView';
 import TrainingPracticeView from '../Views/TrainingPracticeView';
 import TrainingAssessView from '../Views/TrainingAssessView';
 import TrainingFeedbackView from '../Views/TrainingFeedbackView';
 import TrainingDashboardView from '../Views/TrainingDashboardView';
 import TrainingDeliverablesView from '../Views/TrainingDeliverablesView';
 import ProjectDeliverablesView from '../Views/ProjectDeliverablesView';
-import LearnView from '../Views/LearnView';
 import WelcomeView from '../Views/WelcomeView';
 import GetStartedView from '../Views/GetStartedView';
-import ProcessMapper from '../ProcessMapper';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
 import DiagramCreationView from '../Views/DiagramCreationView';
-import { AgilePracticeView } from '../Views/AgilePracticeView';
 import ProcessMapperView from '../Views/ProcessMapperView';
 import TrainingUI from '../Views/TrainingUI';
+import PracticeLandingView from '../Views/PracticeLandingView';
+import LearnLandingView from '../Views/LearnLandingView';
+import ProjectLandingView from '../Views/ProjectLandingView';
 
 
 const MainLayout: React.FC = () => {
@@ -70,9 +70,11 @@ const MainLayout: React.FC = () => {
       case 'dashboard':
         return <Dashboard />;
       case 'learn':
-        return <LearnView />;
+        return <LearnLandingView />;
       case 'practice':
-        return <TrainingHubView />;
+        return <PracticeLandingView />;
+      case 'project':
+        return <ProjectLandingView />;
 
       case 'core-concepts':
         return <CoreConceptsView />;
@@ -129,8 +131,6 @@ const MainLayout: React.FC = () => {
         return <CustomProjectView />;
       case 'custom-stakeholders':
         return <CustomStakeholdersView />;
-      case 'agile-hub':
-        return <AgileHubView />;
       case 'elevenlabs-meeting':
         return <ElevenLabsMultiAgentMeeting />;
       case 'individual-agent-meeting':
@@ -140,6 +140,10 @@ const MainLayout: React.FC = () => {
       // Training Hub Views
       case 'training-hub':
         return <TrainingHubView />;
+      case 'training-hub-project-selection':
+        return <TrainingHubView startingStep="project-selection" />;
+      case 'practice-hub-cards':
+        return <PracticeHubCardsView />;
       case 'agile-practice':
         return <ScrumPracticeView />; // TODO: Create this view for training scenarios
       case 'training-practice':

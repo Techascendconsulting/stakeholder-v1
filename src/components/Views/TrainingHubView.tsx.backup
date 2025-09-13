@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { TrainingService } from '../../services/trainingService';
 import { TrainingStage } from '../../types/training';
 import { Project } from '../../types';
@@ -21,16 +22,21 @@ import {
   ChevronRight,
   Clock,
   Award,
-  Search
+  Search,
+  Map,
+  FileText,
+  Users2,
+  BarChart3
 } from 'lucide-react';
 import { mockProjects } from '../../data/mockData';
 
 const TrainingHubView: React.FC = () => {
   const { setCurrentView, selectedProject: appSelectedProject, setSelectedProject: setAppSelectedProject } = useApp();
+  const { onboardingData } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<'intro' | 'project-selection' | 'training-hub'>('intro');
   const [selectedStage, setSelectedStage] = useState<TrainingStage | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [activeTab, setActiveTab] = useState<'learn' | 'meeting-prep' | 'practice' | 'feedback'>('learn');
+  const [activeTab, setActiveTab] = useState<'learn' | 'meeting-prep' | 'practice' | 'feedback' | 'deliverables'>('learn');
   const [showLearnContent, setShowLearnContent] = useState(false);
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
 
@@ -122,6 +128,12 @@ const TrainingHubView: React.FC = () => {
       icon: BookOpen
     },
     {
+      id: 'as_is_mapping',
+      name: 'As-Is Process Map',
+      description: 'Document current end-to-end flow to feed the backlog',
+      icon: Map
+    },
+    {
       id: 'to_be',
       name: 'To-Be Process',
       description: 'Design future state solutions',
@@ -162,6 +174,12 @@ const TrainingHubView: React.FC = () => {
       return;
     }
     
+    // Special handling for as_is_mapping stage - redirect to deliverables
+    if (selectedStage === 'as_is_mapping') {
+      setCurrentView('training-deliverables');
+      return;
+    }
+    
     try {
       console.log('Starting practice session...');
       const session = await trainingService.startSession(selectedStage, projectToUse.id, 'practice', []);
@@ -184,6 +202,12 @@ const TrainingHubView: React.FC = () => {
   const handleStartAssess = async () => {
     const projectToUse = appSelectedProject || selectedProject;
     if (selectedStage && projectToUse) {
+      // Special handling for as_is_mapping stage - redirect to deliverables
+      if (selectedStage === 'as_is_mapping') {
+        setCurrentView('training-deliverables');
+        return;
+      }
+      
       try {
         const session = await trainingService.startSession(selectedStage, projectToUse.id, 'assess', []);
         sessionStorage.setItem('trainingConfig', JSON.stringify({
@@ -251,112 +275,29 @@ const TrainingHubView: React.FC = () => {
           "\"What data do you track or wish you could track?\""
         ]
       },
-      to_be: {
-        objective: "In this meeting, you're acting as a Business Analyst who wants to design future state solutions.",
-        description: "Your stakeholder will share their vision for improvements. Your job is to help them articulate clear requirements, define success criteria, and plan the implementation approach.",
+      as_is_mapping: {
+        objective: "You've gathered stakeholder insights. Now it's time to map the current process visually to expose bottlenecks and feed your backlog.",
+        description: "Your job is to create a clear, visual representation of the current process flow that stakeholders can validate and that will inform your improvement recommendations.",
         successCriteria: [
-          "What the ideal future state should look like",
-          "What specific improvements would make the biggest difference",
-          "How success will be measured and tracked",
-          "What constraints and limitations need to be considered",
-          "What the implementation plan and timeline should be"
+          "Start and finish triggers clearly defined",
+          "All actors and systems mapped with swimlanes",
+          "Normal path and key variations documented",
+          "Inputs/outputs and business rules captured",
+          "Pain points and current metrics annotated"
         ],
         mustCoverAreas: [
-          { area: "Future State", description: "\"What would an ideal process look like to you?\"" },
-          { area: "Improvements", description: "\"What specific improvements would make the biggest difference?\"" },
-          { area: "Requirements", description: "\"What capabilities do you need?\"" },
-          { area: "Success Criteria", description: "\"How would you measure success for this improvement?\"" },
-          { area: "Implementation Plan", description: "\"What would be the best way to implement these changes?\"" }
+          { area: "Process Boundaries", description: "\"What triggers this process to start? What proves it's done?\"" },
+          { area: "Actors & Systems", description: "\"Who does what, using which tools?\"" },
+          { area: "Flow & Handoffs", description: "\"What's the normal path? Where do variations occur?\"" },
+          { area: "Data & Rules", description: "\"What documents/data flow through? What rules apply?\"" },
+          { area: "Pain Points", description: "\"Where does it slow down or fail? What are the current metrics?\"" }
         ],
         exampleQuestions: [
-          "\"What would an ideal process look like to you?\"",
-          "\"What specific improvements would make the biggest difference?\"",
-          "\"How would you measure success for this improvement?\"",
-          "\"What limitations should we keep in mind?\"",
-          "\"What would be the best way to implement these changes?\""
-        ]
-      },
-      solution_design: {
-        objective: "In this meeting, you're acting as a Business Analyst who wants to define technical requirements and implementation details.",
-        description: "Your stakeholder will describe their technical needs and constraints. Your job is to gather detailed technical requirements, understand integration needs, and plan the implementation approach.",
-        successCriteria: [
-          "What technical capabilities and features are needed",
-          "How the solution should integrate with existing systems",
-          "What data models and architecture are required",
-          "What integration points and APIs are needed",
-          "What the deployment and rollout strategy should be"
-        ],
-        mustCoverAreas: [
-          { area: "Technical Requirements", description: "\"What technical capabilities do you need?\"" },
-          { area: "Architecture", description: "\"How should this be designed and structured?\"" },
-          { area: "Data Models", description: "\"What data will this solution need to handle?\"" },
-          { area: "Integration Points", description: "\"How should this integrate with your existing systems?\"" },
-          { area: "Deployment Plan", description: "\"How should we roll this out to minimize disruption?\"" }
-        ],
-        exampleQuestions: [
-          "\"What technical capabilities do you need?\"",
-          "\"How should this integrate with your existing systems?\"",
-          "\"What data will this solution need to handle?\"",
-          "\"How should users interact with this solution?\"",
-          "\"How should we roll this out to minimize disruption?\""
-        ]
-      }
-    };
-    
-    return content[stageId as keyof typeof content] || content.problem_exploration;
-  };
-
-  // Get meeting prep content based on selected stage
-  const getMeetingPrepContent = (stageId: string) => {
-    const content = {
-      problem_exploration: {
-        objective: "In this meeting, you're acting as a Business Analyst who wants to understand what's broken in the current process.",
-        description: "Your stakeholder may describe frustrations, delays, inefficiencies, or unclear handoffs. Your job is to help them open up, dig deeper, and clarify what's really going wrong — without jumping to solutions.",
-        successCriteria: [
-          "What problems exist in the current process",
-          "Where those problems show up (which stages, teams, systems)",
-          "Who is impacted — and how",
-          "What's already been tried (and whether it worked)",
-          "What success might look like to this stakeholder"
-        ],
-        mustCoverAreas: [
-          { area: "Pain Points", description: "\"What's frustrating or inefficient?\"" },
-          { area: "Blockers", description: "\"What slows things down or causes delays?\"" },
-          { area: "Handoffs", description: "\"Where do things fall apart between teams?\"" },
-          { area: "Constraints", description: "\"What's limiting your ability to improve this?\"" },
-          { area: "Customer Impact", description: "\"How do these problems affect customer experience?\"" }
-        ],
-        exampleQuestions: [
-          "\"What would you say are the biggest pain points in the current process?\"",
-          "\"Where do handoffs between teams usually go wrong?\"",
-          "\"What have you or the team tried to fix this already?\"",
-          "\"Is there anything outside your control that makes this harder?\"",
-          "\"How do these issues affect the customer — or your team?\""
-        ]
-      },
-      as_is: {
-        objective: "In this meeting, you're acting as a Business Analyst who wants to understand the current processes and systems in detail.",
-        description: "Your stakeholder will describe their current workflows, tools, and systems. Your job is to map out the existing landscape and identify gaps, inefficiencies, and opportunities for improvement.",
-        successCriteria: [
-          "What the current process looks like step by step",
-          "Which systems and tools are currently being used",
-          "Where inefficiencies and bottlenecks exist",
-          "Who is involved in each step of the process",
-          "What data and information flows through the system"
-        ],
-        mustCoverAreas: [
-          { area: "Current Process", description: "\"Can you walk me through the current process?\"" },
-          { area: "Pain Points", description: "\"What's frustrating or inefficient?\"" },
-          { area: "Inefficiencies", description: "\"Where do things slow down or get stuck?\"" },
-          { area: "Stakeholder Roles", description: "\"Who else is involved in this process?\"" },
-          { area: "System Gaps", description: "\"What systems do you currently use?\"" }
-        ],
-        exampleQuestions: [
-          "\"Can you walk me through the current process step by step?\"",
-          "\"What systems do you currently use?\"",
-          "\"Where do things typically break down?\"",
-          "\"Who else is involved in this process?\"",
-          "\"What data do you track or wish you could track?\""
+          "\"Can you walk me through one recent example from start to finish?\"",
+          "\"What happens when this step can't be completed normally?\"",
+          "\"Who else touches this before it moves to the next step?\"",
+          "\"What information do you need to complete this step?\"",
+          "\"How do you know when this step is done correctly?\""
         ]
       },
       to_be: {
@@ -427,7 +368,7 @@ const TrainingHubView: React.FC = () => {
       sessionStorage.removeItem('trainingMessages');
       sessionStorage.removeItem('trainingMeetingTime');
       sessionStorage.removeItem('trainingMeetingActive');
-      setCurrentView('dashboard');
+      setCurrentView('practice');
     }
   };
 
@@ -439,17 +380,17 @@ const TrainingHubView: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setCurrentView('dashboard')}
+              onClick={() => setCurrentView('practice')}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
-                Training Hub
+                Practice Hub
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Master stakeholder conversations through guided practice
+                Step Into Practice - Where theory becomes lived experience
               </p>
             </div>
           </div>
@@ -460,50 +401,129 @@ const TrainingHubView: React.FC = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
-            <MessageSquare className="w-12 h-12 text-white" />
+            <Target className="w-12 h-12 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-            Asking the Right Questions as a Business Analyst
+            Step Into Practice
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Now that you understand the theory, it's time to practice the most critical skill: 
-            conducting meaningful conversations with business stakeholders to drive real change.
-          </p>
+          <div className="text-lg text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed space-y-4">
+            <p>
+              You've spent time learning the theory. Now it's time to bring it all together and experience what it feels like to work as a Business Analyst on a real project.
+            </p>
+            <p>
+              At the heart of this role is one skill above all others: <strong>asking the right questions</strong>. The ability to lead conversations, uncover problems, and guide stakeholders toward clarity is what separates an average BA from a great one.
+            </p>
+            <p>
+              That's exactly what you'll practice here. You'll engage with realistic AI stakeholders who think and respond like real business people — sometimes clear, sometimes vague, sometimes challenging. Just like in real life.
+            </p>
+            <p>
+              But you won't be thrown in without support. You'll follow a guided journey: first, choose a project to work on. Then learn proven questioning patterns. Next, practice those conversations live with coaching along the way. Finally, assess your progress with feedback that shows you exactly where you're growing and what to improve next.
+            </p>
+            <p>
+              Every step builds your confidence. Every conversation sharpens your skills. And over time, you'll see measurable progress — from your first hesitant questions to confident dialogue that feels natural and effective.
+            </p>
+            <p className="text-purple-600 dark:text-purple-400 font-semibold">
+              This is where theory turns into lived experience. This is where you practice being the BA you want to become.
+            </p>
+          </div>
         </div>
 
-        {/* Value Proposition Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-8 shadow-lg text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-white" />
+        {/* Practice Hub Cards */}
+        <div className="space-y-6 mb-16">
+          {/* Card 1: Stakeholder Conversations */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex gap-6">
+              {/* Thumbnail */}
+              <div className="relative w-48 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="absolute top-3 left-3">
+                  <span className="bg-white/90 text-gray-800 text-xs font-medium px-2 py-1 rounded-md">Practice Scenarios</span>
+                </div>
+                <div className="relative z-10">
+                  <Users className="w-12 h-12 text-white" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <MessageSquare className="w-3 h-3 text-blue-600" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Real Stakeholder Conversations
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                  Practice with realistic AI stakeholders who respond like real business people. Learn to navigate complex organizational dynamics and build confidence in your questioning skills.
+                </p>
+                <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                  Interactive • 15-30 min sessions • Real-time feedback
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Real Stakeholder Conversations</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Practice with realistic AI stakeholders who respond like real business people, 
-              not robots. Learn to navigate complex organizational dynamics.
-            </p>
           </div>
 
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-8 shadow-lg text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Lightbulb className="w-8 h-8 text-white" />
+          {/* Card 2: Guided Learning Journey */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex gap-6">
+              {/* Thumbnail */}
+              <div className="relative w-48 h-32 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="absolute top-3 left-3">
+                  <span className="bg-white/90 text-gray-800 text-xs font-medium px-2 py-1 rounded-md">Practice Scenarios</span>
+                </div>
+                <div className="relative z-10">
+                  <Lightbulb className="w-12 h-12 text-white" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <Target className="w-3 h-3 text-emerald-600" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-teal-500/20"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Guided Learning Journey
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                  Follow a structured approach: Learn proven questioning patterns, practice with live coaching, and assess your skills. Build confidence step by step with expert guidance.
+                </p>
+                <div className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                  Step-by-step • Expert coaching • Skill assessments
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Guided Learning Journey</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Follow a structured approach: Learn the patterns, Practice with coaching, 
-              and Assess your skills. Build confidence step by step.
-            </p>
           </div>
 
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-8 shadow-lg text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <TrendingUp className="w-8 h-8 text-white" />
+          {/* Card 3: Progress Tracking */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex gap-6">
+              {/* Thumbnail */}
+              <div className="relative w-48 h-32 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="absolute top-3 left-3">
+                  <span className="bg-white/90 text-gray-800 text-xs font-medium px-2 py-1 rounded-md">Practice Scenarios</span>
+                </div>
+                <div className="relative z-10">
+                  <TrendingUp className="w-12 h-12 text-white" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <Award className="w-3 h-3 text-purple-600" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-500/20"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Measurable Progress
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                  Track your improvement with detailed feedback and progress metrics. See exactly where you're growing and what to focus on next with comprehensive analytics.
+                </p>
+                <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                  Analytics • Detailed feedback • Progress tracking
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Measurable Progress</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Track your improvement with detailed feedback, scoring, and personalized 
-              recommendations. Know exactly what to focus on next.
-            </p>
           </div>
         </div>
 
@@ -659,7 +679,7 @@ const TrainingHubView: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {project.relevantStakeholders?.length || 0} stakeholders
+                          3 stakeholders
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Available for meetings</p>
                       </div>
@@ -712,14 +732,22 @@ const TrainingHubView: React.FC = () => {
             </button>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
-                Training Hub
+                Practice
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {selectedProject?.name} • Master stakeholder conversations
+                {selectedProject?.name} • Apply your knowledge in real scenarios
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setCurrentView('training-deliverables')}
+              className="px-4 py-2 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200/50 dark:border-purple-700/50 hover:from-purple-100 hover:to-blue-100 dark:hover:from-purple-900/30 dark:hover:to-blue-900/30 transition-all duration-200"
+            >
+              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                Practice Deliverables
+              </span>
+            </button>
             <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200/50 dark:border-green-700/50">
               <span className="text-sm font-medium text-green-700 dark:text-green-300">
                 Credits: {credits?.practiceCredits} Practice • {credits?.assessCredits} Assess
@@ -799,16 +827,16 @@ const TrainingHubView: React.FC = () => {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Step {activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : 4} of 4
+                    Step {activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : activeTab === 'feedback' ? 4 : 5} of 5
                   </span>
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {activeTab === 'learn' ? 'LEARN' : activeTab === 'meeting-prep' ? 'MEETING PREP' : activeTab === 'practice' ? 'PRACTICE' : 'FEEDBACK'}
+                    {activeTab === 'learn' ? 'LEARN' : activeTab === 'meeting-prep' ? 'MEETING PREP' : activeTab === 'practice' ? 'PRACTICE' : activeTab === 'feedback' ? 'FEEDBACK' : 'DELIVERABLES'}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : 4) / 4 * 100}%` }}
+                    style={{ width: `${(activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : activeTab === 'feedback' ? 4 : 5) / 5 * 100}%` }}
                   ></div>
                 </div>
               </div>
@@ -867,6 +895,19 @@ const TrainingHubView: React.FC = () => {
                     <span>FEEDBACK</span>
                   </div>
                 </button>
+                <button
+                  onClick={() => setActiveTab('deliverables')}
+                  className={`flex-1 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
+                    activeTab === 'deliverables'
+                      ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <FileText className="w-4 h-4" />
+                    <span>DELIVERABLES</span>
+                  </div>
+                </button>
               </div>
 
               {/* Navigation Buttons */}
@@ -876,6 +917,7 @@ const TrainingHubView: React.FC = () => {
                     if (activeTab === 'meeting-prep') setActiveTab('learn');
                     else if (activeTab === 'practice') setActiveTab('meeting-prep');
                     else if (activeTab === 'feedback') setActiveTab('practice');
+                    else if (activeTab === 'deliverables') setActiveTab('feedback');
                   }}
                   disabled={activeTab === 'learn'}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -893,8 +935,9 @@ const TrainingHubView: React.FC = () => {
                     if (activeTab === 'learn') setActiveTab('meeting-prep');
                     else if (activeTab === 'meeting-prep') setActiveTab('practice');
                     else if (activeTab === 'practice') setActiveTab('feedback');
+                    else if (activeTab === 'feedback') setActiveTab('deliverables');
                   }}
-                  disabled={activeTab === 'feedback'}
+                  disabled={activeTab === 'deliverables'}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                     activeTab === 'feedback'
                       ? 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
@@ -1123,7 +1166,7 @@ const TrainingHubView: React.FC = () => {
                       <span>Time & Credit Reminder</span>
                     </h4>
                     <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                      <p>• You'll have up to 15 turns in this meeting</p>
+                      <p>• You'll have up to 20 turns in this meeting</p>
                       <p>• You can use nudges or hints if stuck</p>
                       <p>• You'll get detailed feedback after the meeting — including what you missed</p>
                     </div>
@@ -1238,6 +1281,50 @@ const TrainingHubView: React.FC = () => {
                     <Target className="w-4 h-4" />
                     <span>Start Assessment</span>
                   </button>
+                </div>
+              )}
+
+              {activeTab === 'deliverables' && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Training Deliverables
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    Create and manage your portfolio of BA work from training sessions.
+                  </p>
+                  <div className="flex items-center justify-center space-x-4 mb-6">
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Map className="w-4 h-4" />
+                      <span>Process Maps</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <FileText className="w-4 h-4" />
+                      <span>Meeting Notes</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Target className="w-4 h-4" />
+                      <span>User Stories</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center space-x-4">
+                    <button
+                      onClick={() => setCurrentView('training-deliverables')}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>Training Deliverables</span>
+                    </button>
+                    <button
+                      onClick={() => setCurrentView('project-deliverables')}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                    >
+                      <Map className="w-4 h-4" />
+                      <span>Project Deliverables</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

@@ -36,7 +36,7 @@ const ProjectView: React.FC<{ projectId: string }> = ({ projectId }) => {
   };
 
   const handleBack = () => {
-    setCurrentView('projects');
+    setCurrentView('project');
   };
 
   return (

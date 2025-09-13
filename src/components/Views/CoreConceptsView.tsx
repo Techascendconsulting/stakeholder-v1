@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useApp } from '../../contexts/AppContext';
 import { 
   User, 
   Building2, 
@@ -15,7 +16,6 @@ import {
   Play,
   Clock
 } from 'lucide-react';
-import { useApp } from '../../contexts/AppContext';
 
 interface ConceptCard {
   id: number;
@@ -368,15 +368,26 @@ const CoreConceptsView: React.FC = () => {
         <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-float" style={{animationDelay: '-4s'}}></div>
         
         <div className="relative max-w-7xl mx-auto px-6 py-16">
+          {/* Back Button */}
+          <div className="absolute top-6 left-6">
+            <button
+              onClick={() => setCurrentView('learn')}
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200 group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Back to Learn
+            </button>
+          </div>
+          
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm mb-6 animate-float">
               <BookOpen className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              BA Essentials
+              Business Analyst Fundamentals
             </h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
-              Explore the mindset, role, and environment of a Business Analyst. This section breaks down what BAs do, how they work, and why they matter.
+              Master the essential concepts and skills needed to excel as a Business Analyst
             </p>
           </div>
         </div>
@@ -444,18 +455,10 @@ const CoreConceptsView: React.FC = () => {
       {/* Footer */}
       <div className="border-t border-gray-200 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="text-center space-y-4">
+          <div className="text-center">
             <p className="text-gray-600">
               Complete all concepts to build a comprehensive understanding of Business Analysis
             </p>
-            <button
-              onClick={() => setCurrentView('training-hub')}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <Play className="w-5 h-5" />
-              <span>Start Project Practice</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </div>

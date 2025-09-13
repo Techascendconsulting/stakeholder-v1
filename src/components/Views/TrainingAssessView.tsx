@@ -647,10 +647,10 @@ Good luck!`,
       {/* Action Buttons */}
       <div className="flex justify-center space-x-4">
         <button
-          onClick={handleBack}
+          onClick={() => setCurrentView('practice')}
           className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
         >
-          Back to Training Hub
+          Back to Practice Hub
         </button>
         {!feedback?.passed && studyPack && (
           <button

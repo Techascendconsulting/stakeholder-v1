@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { BookOpen, Play, ChevronDown, ChevronUp, Target, MessageSquare, Award, ArrowRight, Users, Brain, Zap, CheckCircle, Star, TrendingUp, Globe } from 'lucide-react'
+import { BookOpen, Play, ChevronDown, ChevronUp, Target, MessageSquare, Award, ArrowRight, Users, Brain, Zap, CheckCircle, Star, TrendingUp, Globe, Mic } from 'lucide-react'
 
 const GuidedPracticeHub: React.FC = () => {
   const { setCurrentView } = useApp()
@@ -47,6 +47,33 @@ const GuidedPracticeHub: React.FC = () => {
             <span className="text-sm">Skip to Projects</span>
             <ArrowRight className="w-4 h-4" />
           </button>
+        </div>
+
+        {/* Meeting Mode Selection Cards */}
+        <div className="absolute top-6 left-6 z-10">
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setCurrentView('meeting')}
+              className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-white/30"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span className="text-sm">Text Chat</span>
+            </button>
+            <button
+              onClick={() => setCurrentView('voice-only-meeting')}
+              className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-white/30"
+            >
+              <Mic className="w-4 h-4" />
+              <span className="text-sm">Voice Only</span>
+            </button>
+            <button
+              onClick={() => setCurrentView('individual-agent-meeting')}
+              className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-white/30"
+            >
+              <Users className="w-4 h-4" />
+              <span className="text-sm">Individual Agents</span>
+            </button>
+          </div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-12">

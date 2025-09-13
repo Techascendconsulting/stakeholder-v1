@@ -24,14 +24,16 @@ import {
   Award,
   Search,
   Map,
-  FileText
+  FileText,
+  Users2,
+  BarChart3
 } from 'lucide-react';
 import { mockProjects } from '../../data/mockData';
 
-const TrainingHubView: React.FC = () => {
+const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' | 'training-hub' }> = ({ startingStep = 'intro' }) => {
   const { setCurrentView, selectedProject: appSelectedProject, setSelectedProject: setAppSelectedProject } = useApp();
   const { onboardingData } = useOnboarding();
-  const [currentStep, setCurrentStep] = useState<'intro' | 'project-selection' | 'training-hub'>('intro');
+  const [currentStep, setCurrentStep] = useState<'intro' | 'project-selection' | 'training-hub'>(startingStep);
   const [selectedStage, setSelectedStage] = useState<TrainingStage | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [activeTab, setActiveTab] = useState<'learn' | 'meeting-prep' | 'practice' | 'feedback' | 'deliverables'>('learn');
@@ -146,7 +148,7 @@ const TrainingHubView: React.FC = () => {
   ];
 
   const handleStartLearning = () => {
-    setCurrentStep('project-selection');
+    setCurrentView('practice-hub-cards');
   };
 
   const handleProjectSelect = (project: Project) => {
@@ -355,7 +357,12 @@ const TrainingHubView: React.FC = () => {
 
   const handleBack = () => {
     if (currentStep === 'project-selection') {
-      setCurrentStep('intro');
+      // If we started directly at project-selection, go back to GuidedPracticeHub
+      if (startingStep === 'project-selection') {
+        setCurrentView('project-workspace');
+      } else {
+        setCurrentStep('intro');
+      }
     } else if (currentStep === 'training-hub') {
       setCurrentStep('project-selection');
     } else {
@@ -366,7 +373,7 @@ const TrainingHubView: React.FC = () => {
       sessionStorage.removeItem('trainingMessages');
       sessionStorage.removeItem('trainingMeetingTime');
       sessionStorage.removeItem('trainingMeetingActive');
-      setCurrentView('dashboard');
+      setCurrentView('practice');
     }
   };
 
@@ -378,17 +385,17 @@ const TrainingHubView: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setCurrentView('dashboard')}
+              onClick={() => setCurrentView('practice')}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
-                Training Hub
+                Practice Hub
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Master stakeholder conversations through guided practice
+                Step Into Practice - Where theory becomes lived experience
               </p>
             </div>
           </div>
@@ -399,59 +406,139 @@ const TrainingHubView: React.FC = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
-            <MessageSquare className="w-12 h-12 text-white" />
+            <Target className="w-12 h-12 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-            {onboardingData?.experience_level === 'new' 
-              ? 'Practice Stakeholder Conversations' 
-              : 'Asking the Right Questions as a Business Analyst'
-            }
+            Step Into Practice
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            {onboardingData?.experience_level === 'new' 
-              ? 'Ready to put your BA knowledge into action? Practice the most critical skill: conducting meaningful conversations with business stakeholders to drive real change.'
-              : 'Now that you understand the theory, it\'s time to practice the most critical skill: conducting meaningful conversations with business stakeholders to drive real change.'
-            }
-          </p>
+          <div className="text-lg text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed space-y-4">
+            <p>
+              You've spent time learning the theory. Now it's time to bring it all together and experience what it feels like to work as a Business Analyst on a real project.
+            </p>
+            <p>
+              At the heart of this role is one skill above all others: <strong>asking the right questions</strong>. The ability to lead conversations, uncover problems, and guide stakeholders toward clarity is what separates an average BA from a great one.
+            </p>
+            <p>
+              That's exactly what you'll practice here. You'll engage with realistic AI stakeholders who think and respond like real business people — sometimes clear, sometimes vague, sometimes challenging. Just like in real life.
+            </p>
+            <p>
+              But you won't be thrown in without support. You'll follow a guided journey: first, choose a project to work on. Then learn proven questioning patterns. Next, practice those conversations live with coaching along the way. Finally, assess your progress with feedback that shows you exactly where you're growing and what to improve next.
+            </p>
+            <p>
+              Every step builds your confidence. Every conversation sharpens your skills. And over time, you'll see measurable progress — from your first hesitant questions to confident dialogue that feels natural and effective.
+            </p>
+            <p className="text-purple-600 dark:text-purple-400 font-semibold">
+              This is where theory turns into lived experience. This is where you practice being the BA you want to become.
+            </p>
+            
+            {/* Start Your Learning Journey Button */}
+            <div className="mt-8">
+              <button
+                onClick={() => setCurrentView('practice-hub-cards')}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
+                Start Your Learning Journey
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Value Proposition Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-8 shadow-lg text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-white" />
+        {/* Practice Hub Cards */}
+        <div className="space-y-6 mb-16">
+          {/* Card 1: Stakeholder Conversations */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex gap-6">
+              {/* Thumbnail */}
+              <div className="relative w-48 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="absolute top-3 left-3">
+                  <span className="bg-white/90 text-gray-800 text-xs font-medium px-2 py-1 rounded-md">Practice Scenarios</span>
+                </div>
+                <div className="relative z-10">
+                  <Users className="w-12 h-12 text-white" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <MessageSquare className="w-3 h-3 text-blue-600" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Real Stakeholder Conversations
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                  Practice with realistic AI stakeholders who respond like real business people. Learn to navigate complex organizational dynamics and build confidence in your questioning skills.
+                </p>
+                <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                  Interactive • 15-30 min sessions • Real-time feedback
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Real Stakeholder Conversations</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              {onboardingData?.experience_level === 'new' 
-                ? 'Practice with realistic AI stakeholders who respond like real business people. Apply what you\'ve learned in a safe environment.'
-                : 'Practice with realistic AI stakeholders who respond like real business people, not robots. Learn to navigate complex organizational dynamics.'
-              }
-            </p>
           </div>
 
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-8 shadow-lg text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Lightbulb className="w-8 h-8 text-white" />
+          {/* Card 2: Guided Learning Journey */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex gap-6">
+              {/* Thumbnail */}
+              <div className="relative w-48 h-32 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="absolute top-3 left-3">
+                  <span className="bg-white/90 text-gray-800 text-xs font-medium px-2 py-1 rounded-md">Practice Scenarios</span>
+                </div>
+                <div className="relative z-10">
+                  <Lightbulb className="w-12 h-12 text-white" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <Target className="w-3 h-3 text-emerald-600" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-teal-500/20"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Guided Learning Journey
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                  Follow a structured approach: Learn proven questioning patterns, practice with live coaching, and assess your skills. Build confidence step by step with expert guidance.
+                </p>
+                <div className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                  Step-by-step • Expert coaching • Skill assessments
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Guided Learning Journey</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              {onboardingData?.experience_level === 'new' 
-                ? 'Follow a structured approach: Learn the patterns, Practice with coaching, and Assess your skills. Perfect for applying your BA fundamentals.'
-                : 'Follow a structured approach: Learn the patterns, Practice with coaching, and Assess your skills. Build confidence step by step.'
-              }
-            </p>
           </div>
 
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-8 shadow-lg text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <TrendingUp className="w-8 h-8 text-white" />
+          {/* Card 3: Progress Tracking */}
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex gap-6">
+              {/* Thumbnail */}
+              <div className="relative w-48 h-32 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="absolute top-3 left-3">
+                  <span className="bg-white/90 text-gray-800 text-xs font-medium px-2 py-1 rounded-md">Practice Scenarios</span>
+                </div>
+                <div className="relative z-10">
+                  <TrendingUp className="w-12 h-12 text-white" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                    <Award className="w-3 h-3 text-purple-600" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-500/20"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Measurable Progress
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                  Track your improvement with detailed feedback and progress metrics. See exactly where you're growing and what to focus on next with comprehensive analytics.
+                </p>
+                <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                  Analytics • Detailed feedback • Progress tracking
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Measurable Progress</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Track your improvement with detailed feedback, scoring, and personalized 
-              recommendations. Know exactly what to focus on next.
-            </p>
           </div>
         </div>
 

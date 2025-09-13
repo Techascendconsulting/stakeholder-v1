@@ -105,9 +105,11 @@ export const ScrumPracticeView: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Scrum Practice</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Practice Scrum skills in realistic scenarios</p>
+            <div className="flex items-center space-x-4">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Scrum Practice</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Practice Scrum skills in realistic scenarios</p>
+              </div>
             </div>
             
             <div className="flex items-center space-x-3">

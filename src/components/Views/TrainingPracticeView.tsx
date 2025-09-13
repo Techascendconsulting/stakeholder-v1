@@ -663,7 +663,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
     sessionStorage.removeItem('trainingMessages');
     sessionStorage.removeItem('trainingMeetingTime');
     sessionStorage.removeItem('trainingMeetingActive');
-    setCurrentView('training-hub');
+    setCurrentView('project-workspace');
   };
 
   const formatTime = (seconds: number) => {
@@ -1243,10 +1243,10 @@ Remember to start with a professional greeting and introduce yourself. Then focu
       {/* Action Buttons */}
       <div className="flex justify-center space-x-4">
         <button
-          onClick={handleBack}
+          onClick={() => setCurrentView('practice')}
           className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
         >
-          Back to Training Hub
+          Back to Practice Hub
         </button>
         <button
           onClick={() => setCurrentView('training-assess')}
