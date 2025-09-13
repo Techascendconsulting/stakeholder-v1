@@ -35,6 +35,7 @@ import TrainingDashboardView from '../Views/TrainingDashboardView';
 import TrainingDeliverablesView from '../Views/TrainingDeliverablesView';
 import ProjectDeliverablesView from '../Views/ProjectDeliverablesView';
 import WelcomeView from '../Views/WelcomeView';
+import PracticeView from '../Views/PracticeView';
 import GetStartedView from '../Views/GetStartedView';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
 import DiagramCreationView from '../Views/DiagramCreationView';
@@ -72,7 +73,7 @@ const MainLayout: React.FC = () => {
       case 'learn':
         return <LearnLandingView />;
       case 'practice':
-        return <PracticeLandingView />;
+        return <PracticeView />;
       case 'project':
         return <ProjectLandingView />;
 

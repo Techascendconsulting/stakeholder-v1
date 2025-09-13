@@ -33,7 +33,7 @@ const ProjectLandingView: React.FC = () => {
 
   const projectCategories: ProjectCategory[] = [
     {
-      id: 'project-workspace',
+      id: 'projects',
       title: 'Project Workspace',
       description: 'Manage your active projects and collaborate with stakeholders',
       icon: FolderOpen,
@@ -47,10 +47,10 @@ const ProjectLandingView: React.FC = () => {
         'Document Collaboration'
       ],
       actionText: 'Open Workspace',
-      viewId: 'project-workspace'
+      viewId: 'projects'
     },
     {
-      id: 'agile-hub',
+      id: 'agile-scrum',
       title: 'Agile Hub',
       description: 'Conduct Agile ceremonies and manage your Scrum activities',
       icon: Workflow,
@@ -64,7 +64,7 @@ const ProjectLandingView: React.FC = () => {
         'Backlog Management'
       ],
       actionText: 'Enter Agile Hub',
-      viewId: 'agile-hub'
+      viewId: 'agile-scrum'
     },
     {
       id: 'meeting-history',

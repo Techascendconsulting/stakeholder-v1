@@ -23,7 +23,7 @@ const GuidedPracticeHub: React.FC = () => {
   }, [])
 
   const handleStartPracticing = () => {
-    setCurrentView('projects')
+    setCurrentView('training-hub-project-selection')
   }
 
   const tabs = [
@@ -38,16 +38,6 @@ const GuidedPracticeHub: React.FC = () => {
       <div className="relative bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
         
-        {/* Skip to Projects Button - Top Right */}
-        <div className="absolute top-6 right-6 z-10">
-          <button
-            onClick={handleStartPracticing}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-white/20"
-          >
-            <span className="text-sm">Skip to Projects</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
 
         {/* Meeting Mode Selection Cards */}
         <div className="absolute top-6 left-6 z-10">
@@ -442,15 +432,15 @@ const GuidedPracticeHub: React.FC = () => {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center mt-8">
-                      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-xl">
-              <h3 className="text-2xl font-bold mb-3">Ready to Start Practicing?</h3>
-              <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
+        {/* Practice Projects CTA */}
+        <div className="text-center mt-12">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+            <h3 className="text-2xl font-bold mb-3">Ready to Start Practicing?</h3>
+            <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
               Choose from our library of realistic projects and begin developing your stakeholder conversation skills today.
             </p>
             <button
-              onClick={handleStartPracticing}
+              onClick={() => setCurrentView('training-hub-project-selection')}
               className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg hover:shadow-xl"
             >
               <span>Explore Projects and Start Practising</span>
@@ -458,6 +448,7 @@ const GuidedPracticeHub: React.FC = () => {
             </button>
           </div>
         </div>
+
       </div>
     </div>
   )

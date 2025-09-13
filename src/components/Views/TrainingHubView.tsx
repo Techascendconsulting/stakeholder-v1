@@ -151,10 +151,31 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
     setCurrentView('practice-hub-cards');
   };
 
-  const handleProjectSelect = (project: Project) => {
+  const handleProjectSelect = async (project: Project) => {
     setSelectedProject(project);
     setAppSelectedProject(project); // Also update AppContext
-    setCurrentStep('training-hub');
+    
+    // Set default stage to problem_exploration and go directly to practice
+    const defaultStage = 'problem_exploration';
+    setSelectedStage(defaultStage);
+    
+    try {
+      console.log('Starting practice session with default stage...');
+      const session = await trainingService.startSession(defaultStage, project.id, 'practice', []);
+      console.log('Session created:', session);
+      
+      sessionStorage.setItem('trainingConfig', JSON.stringify({
+        sessionId: session.id,
+        stage: defaultStage,
+        projectId: project.id
+      }));
+      
+      console.log('Navigating to training-practice');
+      setCurrentView('training-practice');
+    } catch (error) {
+      console.error('Error starting practice session:', error);
+      alert('Failed to start practice session. Please try again.');
+    }
   };
 
   const handleStartPractice = async () => {
@@ -775,43 +796,73 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
       <div className="max-w-7xl mx-auto px-8 py-8">
         {/* Stage Selection Cards */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center space-x-3">
-            <Target className="w-6 h-6 text-blue-600" />
-            <span>Select Training Stage</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {stages.map((stage) => (
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Choose Your Practice Focus
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Select which aspect of stakeholder conversations you'd like to practice. Each stage focuses on different skills and scenarios.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {stages.map((stage, index) => (
               <button
                 key={stage.id}
                 onClick={() => setSelectedStage(stage.id)}
-                className={`p-6 rounded-xl text-left transition-all duration-200 hover:shadow-lg ${
+                className={`p-8 rounded-2xl text-left transition-all duration-300 hover:shadow-xl hover:scale-105 ${
                   selectedStage === stage.id
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-xl transform scale-105'
-                    : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-800 shadow-md'
+                    ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-2xl transform scale-105'
+                    : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-800 shadow-lg'
                 }`}
               >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className={`p-2 rounded-lg ${
+                <div className="flex items-start space-x-4 mb-4">
+                  <div className={`p-3 rounded-xl ${
                     selectedStage === stage.id
                       ? 'bg-white/20 text-white'
                       : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                   }`}>
-                    <stage.icon className="w-5 h-5" />
+                    <stage.icon className="w-6 h-6" />
                   </div>
-                  <div className={`font-semibold ${
-                    selectedStage === stage.id ? 'text-white' : 'text-gray-900 dark:text-white'
-                  }`}>
-                    {stage.name}
+                  <div className="flex-1">
+                    <div className={`text-xl font-bold mb-2 ${
+                      selectedStage === stage.id ? 'text-white' : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {stage.name}
+                    </div>
+                    <div className={`text-sm font-medium mb-3 ${
+                      selectedStage === stage.id ? 'text-blue-100' : 'text-blue-600 dark:text-blue-400'
+                    }`}>
+                      Step {index + 1} of {stages.length}
+                    </div>
                   </div>
                 </div>
-                <p className={`text-sm ${
+                <p className={`text-base leading-relaxed ${
                   selectedStage === stage.id ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400'
                 }`}>
                   {stage.description}
                 </p>
+                {selectedStage === stage.id && (
+                  <div className="mt-4 flex items-center space-x-2 text-blue-100">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">Selected - Ready to practice!</span>
+                  </div>
+                )}
               </button>
             ))}
           </div>
+          
+          {selectedStage && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={handleStartPractice}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-3 mx-auto"
+              >
+                <span>Start Practicing {stages.find(s => s.id === selectedStage)?.name}</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Training Content */}
@@ -838,89 +889,24 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
                  </button>
               </div>
 
-              {/* Progress Indicator */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Step {activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : activeTab === 'feedback' ? 4 : 5} of 5
-                  </span>
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {activeTab === 'learn' ? 'LEARN' : activeTab === 'meeting-prep' ? 'MEETING PREP' : activeTab === 'practice' ? 'PRACTICE' : activeTab === 'feedback' ? 'FEEDBACK' : 'DELIVERABLES'}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(activeTab === 'learn' ? 1 : activeTab === 'meeting-prep' ? 2 : activeTab === 'practice' ? 3 : activeTab === 'feedback' ? 4 : 5) / 5 * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Tab Navigation */}
-              <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              {/* Simple Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={() => setActiveTab('learn')}
-                  className={`flex-1 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
-                    activeTab === 'learn'
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
+                  className="flex-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 px-6 py-4 rounded-xl font-semibold transition-all duration-200 hover:shadow-md"
                 >
-                  <div className="flex items-center justify-center space-x-2">
-                    <BookOpen className="w-4 h-4" />
-                    <span>LEARN</span>
+                  <div className="flex items-center justify-center space-x-3">
+                    <BookOpen className="w-5 h-5" />
+                    <span>Learn About This Stage</span>
                   </div>
                 </button>
                 <button
-                  onClick={() => setActiveTab('meeting-prep')}
-                  className={`flex-1 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
-                    activeTab === 'meeting-prep'
-                      ? 'bg-white dark:bg-gray-800 text-orange-600 dark:text-orange-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
+                  onClick={handleStartPractice}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
-                  <div className="flex items-center justify-center space-x-2">
-                    <Target className="w-4 h-4" />
-                    <span>MEETING PREP</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('practice')}
-                  className={`flex-1 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
-                    activeTab === 'practice'
-                      ? 'bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <Play className="w-4 h-4" />
-                    <span>PRACTICE</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('feedback')}
-                  className={`flex-1 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
-                    activeTab === 'feedback'
-                      ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <TrendingUp className="w-4 h-4" />
-                    <span>FEEDBACK</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('deliverables')}
-                  className={`flex-1 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
-                    activeTab === 'deliverables'
-                      ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <FileText className="w-4 h-4" />
-                    <span>DELIVERABLES</span>
+                  <div className="flex items-center justify-center space-x-3">
+                    <Play className="w-5 h-5" />
+                    <span>Start Practicing Now</span>
                   </div>
                 </button>
               </div>
