@@ -14,31 +14,18 @@ import {
   Home,
   LayoutDashboard,
   Plus,
-  Workflow,
-  Calendar,
-  Zap,
-  FileText,
-  BarChart3
+  Heart
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { UserAvatar } from '../Common/UserAvatar';
+import SidebarAudioPlayer from './SidebarAudioPlayer';
 
 interface SidebarProps {
   className?: string;
 }
 
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: React.ComponentType<any>;
-  subItems?: {
-    id: string;
-    label: string;
-    icon: React.ComponentType<any>;
-  }[];
-}
 
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
@@ -69,6 +56,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       id: 'practice', 
       label: 'Practice', 
       icon: Target
+    },
+    { 
+      id: 'motivation', 
+      label: 'Motivation', 
+      icon: Heart
     },
     { 
       id: 'project',
@@ -186,18 +178,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentView === item.id || (item.subItems && item.subItems.some(subItem => currentView === subItem.id));
+            const isActive = currentView === item.id;
 
             return (
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => {
-                    if (item.subItems) {
-                      // For main sections, navigate to first sub-item
-                      setCurrentView(item.subItems[0].id as any);
-                    } else {
-                      setCurrentView(item.id as any);
-                    }
+                    setCurrentView(item.id as any);
                     console.debug('[Sidebar] sectionClick', { id: item.id });
                   }}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-4' : 'space-x-3 px-3 py-2.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
@@ -213,31 +200,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                   )}
                 </button>
 
-                {/* Sub-items for expanded mode */}
-                {!isCollapsed && item.subItems && (
-                  <ul className="ml-8 mt-1 space-y-1">
-                    {item.subItems.map((subItem) => {
-                      const SubIcon = subItem.icon;
-                      const isSubActive = currentView === subItem.id;
-                      
-                      return (
-                        <li key={subItem.id}>
-                          <button
-                            onClick={() => setCurrentView(subItem.id as any)}
-                            className={`w-full flex items-center space-x-2 px-3 py-2 rounded-md text-left transition-all duration-200 text-xs font-medium ${
-                              isSubActive
-                                ? 'bg-white/15 text-white'
-                                : 'text-purple-200 hover:bg-white/5 hover:text-white'
-                            }`}
-                          >
-                            <SubIcon size={16} className={isSubActive ? 'text-white' : 'text-purple-300'} />
-                            <span>{subItem.label}</span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
 
                 {/* Tooltip for collapsed mode */}
                 {isCollapsed && (
@@ -251,6 +213,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           })}
         </ul>
       </nav>
+
+      {/* Audio Player */}
+      <div className="px-3">
+        <SidebarAudioPlayer />
+      </div>
 
       {/* User Section with Profile */}
       <div className="p-3 border-t border-purple-500/30">

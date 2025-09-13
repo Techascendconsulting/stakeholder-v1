@@ -10,6 +10,7 @@ const VOICE_ID_SRIKANTH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SRIKANTH as s
 const VOICE_ID_BOLA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_BOLA as string | undefined
 const VOICE_ID_SARAH = import.meta.env.VITE_ELEVENLABS_VOICE_ID_SARAH as string | undefined
 const VOICE_ID_LISA = import.meta.env.VITE_ELEVENLABS_VOICE_ID_LISA as string | undefined
+const VOICE_ID_FEMALEMOTIVATION = import.meta.env.VITE_ELEVENLABS_VOICE_ID_FEMALEMOTIVATION as string | undefined
 const ENABLE_ELEVENLABS = String(import.meta.env.VITE_ENABLE_ELEVENLABS || '').toLowerCase() === 'true'
 
 // Audio cache for frequently used phrases (in-memory fallback)
@@ -92,6 +93,9 @@ export function resolveVoiceId(stakeholderName: string = '', explicitVoiceId?: s
   } else if (key === 'lisa' && VOICE_ID_LISA) {
     resolvedVoiceId = VOICE_ID_LISA
     console.log(`🎤 VOICE RESOLUTION: Lisa -> ${resolvedVoiceId}`)
+  } else if (key === 'femalemotivation' && VOICE_ID_FEMALEMOTIVATION) {
+    resolvedVoiceId = VOICE_ID_FEMALEMOTIVATION
+    console.log(`🎤 VOICE RESOLUTION: Female Motivation -> ${resolvedVoiceId}`)
   } else {
     resolvedVoiceId = DEFAULT_VOICE_ID
     console.log(`🎤 VOICE RESOLUTION: No specific match, using DEFAULT -> ${resolvedVoiceId}`)

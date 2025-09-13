@@ -6,6 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import LandingPage from './components/LandingPage'
 import LoginSignup from './components/LoginSignup'
 import MainLayout from './components/Layout/MainLayout'
+import GlobalAudioPlayer, { SimpleAudioPlayer } from './components/Layout/GlobalAudioPlayer'
 import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
 
@@ -136,9 +137,14 @@ function App() {
           <AuthProvider>
             <VoiceProvider>
               <AppProvider>
-                <MeetingSetupProvider>
-                  <AppContent />
-                </MeetingSetupProvider>
+                <OnboardingProvider>
+                  <MeetingSetupProvider>
+                    <StakeholderBotProvider>
+                      <AppContent />
+                      <SimpleAudioPlayer />
+                    </StakeholderBotProvider>
+                  </MeetingSetupProvider>
+                </OnboardingProvider>
               </AppProvider>
             </VoiceProvider>
           </AuthProvider>
