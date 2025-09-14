@@ -225,7 +225,7 @@ class DeviceLockService {
   /**
    * Lock the user's account
    */
-  private async lockAccount(userId: string): Promise<void> {
+  async lockAccount(userId: string): Promise<void> {
     const { error } = await supabase
       .from('user_profiles')
       .update({ locked: true })

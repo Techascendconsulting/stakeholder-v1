@@ -278,14 +278,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Only clear if we had a logged-in user before and now we're explicitly logged out
     if (prevUser.current && user === null) {
       console.log('👋 USER_EFFECT: Actual logout detected, clearing all saved state')
-      localStorage.removeItem('currentView')
-      localStorage.removeItem('selectedProject')
-      localStorage.removeItem('selectedStakeholders')
-      localStorage.removeItem('customProject')
-      setCurrentViewState('dashboard')
-      setSelectedProjectState(null)
-      setSelectedStakeholdersState([])
-      setCustomProjectState(null)
+      
+      // Check if this is a device lock error (don't redirect to dashboard)
+      const deviceLockError = localStorage.getItem('deviceLockError')
+      if (deviceLockError) {
+        console.log('🔐 USER_EFFECT: Device lock error detected, staying on login page')
+        // Don't remove deviceLockError here - let LoginSignup component handle it
+        // Force view to welcome (which will show login form) to show error
+        setCurrentViewState('welcome')
+        localStorage.setItem('currentView', 'welcome')
+        // Store device lock error flag to show login form immediately
+        localStorage.setItem('showLoginForm', 'true')
+        setSelectedProjectState(null)
+        setSelectedStakeholdersState([])
+        setCustomProjectState(null)
+      } else {
+        console.log('👋 USER_EFFECT: Normal logout, redirecting to dashboard')
+        localStorage.removeItem('currentView')
+        localStorage.removeItem('selectedProject')
+        localStorage.removeItem('selectedStakeholders')
+        localStorage.removeItem('customProject')
+        setCurrentViewState('dashboard')
+        setSelectedProjectState(null)
+        setSelectedStakeholdersState([])
+        setCustomProjectState(null)
+      }
     } else if (user) {
       console.log('✅ USER_EFFECT: User is logged in, preserving current state')
       console.log('✅ USER_EFFECT: Current view:', currentView)

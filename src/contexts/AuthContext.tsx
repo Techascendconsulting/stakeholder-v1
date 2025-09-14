@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
 import { deviceLockService, DeviceLockResult } from '../services/deviceLockService'
@@ -26,6 +26,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const deviceCheckInterval = useRef<NodeJS.Timeout | null>(null)
+  const lastDeviceId = useRef<string | null>(null)
+  const deviceLockFailed = useRef<boolean>(false)
 
   useEffect(() => {
     // Get initial session
@@ -124,7 +127,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (!deviceLockResult.success) {
           // Device lock failed, sign out the user but don't wait for it
           console.log('🔐 AUTH - Device lock failed, signing out user')
+          
+          // Set flag to prevent continuous monitoring
+          deviceLockFailed.current = true
+          
+          // Store device lock error for AppContext to detect
+          localStorage.setItem('deviceLockError', JSON.stringify(deviceLockResult))
+          
           supabase.auth.signOut() // Don't await this to avoid blocking
+          
+          // Clear the session locally to prevent redirect
+          setSession(null)
+          setUser(null)
           
           return { 
             error: new Error(deviceLockResult.message),
@@ -133,6 +147,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         
         console.log('🔐 AUTH - Device lock successful')
+        // Reset device lock failed flag on successful login
+        deviceLockFailed.current = false
         return { error: null, deviceLockResult }
       }
 
@@ -174,6 +190,77 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(null)
     }
   }
+
+  // Continuous device lock monitoring
+  useEffect(() => {
+    if (!user) {
+      // Clear interval if no user
+      if (deviceCheckInterval.current) {
+        console.log('🔐 AUTH - Clearing device monitoring interval (no user)')
+        clearInterval(deviceCheckInterval.current)
+        deviceCheckInterval.current = null
+      }
+      // Reset device lock failed flag when user is logged out
+      deviceLockFailed.current = false
+      return
+    }
+
+    // Don't start monitoring if device lock just failed
+    if (deviceLockFailed.current) {
+      console.log('🔐 AUTH - Skipping device monitoring (device lock just failed)')
+      return
+    }
+
+    // Start continuous device lock monitoring
+    const startDeviceMonitoring = async () => {
+      // Get initial device ID
+      const initialDeviceId = await deviceLockService.getDeviceId()
+      lastDeviceId.current = initialDeviceId
+      
+      console.log('🔐 AUTH - Starting continuous device lock monitoring, initial device ID:', initialDeviceId)
+      
+      // Check every 5 seconds
+      deviceCheckInterval.current = setInterval(async () => {
+        try {
+          const currentDeviceId = await deviceLockService.getDeviceId()
+          
+          // Check if device ID has changed (different browser/incognito)
+          if (currentDeviceId && lastDeviceId.current && currentDeviceId !== lastDeviceId.current) {
+            console.log('🔐 AUTH - Device ID changed! Locking account immediately')
+            console.log('🔐 AUTH - Previous device:', lastDeviceId.current)
+            console.log('🔐 AUTH - Current device:', currentDeviceId)
+            
+            // Lock the account immediately
+            await deviceLockService.lockAccount(user.id)
+            
+            // Sign out the user
+            await signOut()
+            
+            // Show alert
+            alert('Your account has been locked due to device switching. Please contact support.')
+            
+            return
+          }
+          
+          // Update last known device ID
+          lastDeviceId.current = currentDeviceId
+          
+        } catch (error) {
+          console.error('🔐 AUTH - Device monitoring error:', error)
+        }
+      }, 5000) // Check every 5 seconds
+    }
+
+    startDeviceMonitoring()
+
+    // Cleanup on unmount or user change
+    return () => {
+      if (deviceCheckInterval.current) {
+        clearInterval(deviceCheckInterval.current)
+        deviceCheckInterval.current = null
+      }
+    }
+  }, [user])
 
   const value = {
     user,

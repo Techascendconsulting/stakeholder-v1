@@ -42,6 +42,13 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     setIsVisible(true)
     
+    // Check if we should show login form due to device lock error
+    const showLoginForm = localStorage.getItem('showLoginForm')
+    if (showLoginForm === 'true') {
+      setShowAuth(true)
+      localStorage.removeItem('showLoginForm')
+    }
+    
     // Auto-rotate testimonials
     const interval = setInterval(() => {
       setCurrentTestimonial(prev => (prev + 1) % testimonials.length)

@@ -205,12 +205,18 @@ const AdminUserManagement: React.FC = () => {
       }
 
       // Log the action
-      await adminService.logActivity(
-        user?.id || '',
-        'unlock_account',
-        userId,
-        { email, action: 'account_unlocked' }
-      );
+      console.log('🔍 Logging unlock account action...');
+      try {
+        await adminService.logActivity(
+          user?.id || '',
+          'unlock_account',
+          userId,
+          { email, action: 'account_unlocked' }
+        );
+        console.log('✅ Activity logged successfully');
+      } catch (logError) {
+        console.error('❌ Failed to log activity:', logError);
+      }
       
       // Refresh users
       loadUsers();
@@ -242,12 +248,18 @@ const AdminUserManagement: React.FC = () => {
       }
 
       // Log the action
-      await adminService.logActivity(
-        user?.id || '',
-        'clear_device_binding',
-        userId,
-        { email, action: 'device_binding_cleared' }
-      );
+      console.log('🔍 Logging clear device binding action...');
+      try {
+        await adminService.logActivity(
+          user?.id || '',
+          'clear_device_binding',
+          userId,
+          { email, action: 'device_binding_cleared' }
+        );
+        console.log('✅ Activity logged successfully');
+      } catch (logError) {
+        console.error('❌ Failed to log activity:', logError);
+      }
       
       // Refresh users
       loadUsers();

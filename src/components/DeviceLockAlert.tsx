@@ -77,3 +77,4 @@ const DeviceLockAlert: React.FC<DeviceLockAlertProps> = ({
 };
 
 export default DeviceLockAlert;
+

@@ -268,18 +268,48 @@ export class AdminService {
     details: Record<string, any> = {}
   ): Promise<void> {
     try {
-      await supabase
+      // Get device ID from device lock service
+      const deviceId = await this.getDeviceId();
+      
+      // Include device ID in details for now (until we add device_id column)
+      const enhancedDetails = {
+        ...details,
+        device_id: deviceId
+      };
+      
+      const { error } = await supabase
         .from('admin_activity_logs')
         .insert({
           admin_user_id: adminUserId,
           action,
           target_user_id: targetUserId,
-          details,
+          details: enhancedDetails,
           ip_address: await this.getClientIP(),
           user_agent: navigator.userAgent
         });
+        
+      if (error) {
+        console.error('Error inserting activity log:', error);
+        throw error;
+      }
+      
+      console.log('✅ Activity logged successfully:', { action, targetUserId, deviceId });
     } catch (error) {
       console.error('Error logging admin activity:', error);
+    }
+  }
+
+  /**
+   * Get device ID from device lock service
+   */
+  private async getDeviceId(): Promise<string | null> {
+    try {
+      // Import device lock service dynamically to avoid circular imports
+      const { deviceLockService } = await import('./deviceLockService');
+      return await deviceLockService.getDeviceId();
+    } catch (error) {
+      console.error('Error getting device ID:', error);
+      return null;
     }
   }
 
