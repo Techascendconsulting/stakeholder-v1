@@ -451,7 +451,10 @@ const AdminUserManagement: React.FC = () => {
           User Management
         </h2>
         <button
-          onClick={loadUsers}
+          onClick={() => {
+            console.log('Refresh button clicked');
+            loadUsers();
+          }}
           disabled={loading}
           className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
@@ -503,7 +506,7 @@ const AdminUserManagement: React.FC = () => {
                 <React.Fragment key={targetUser.id}>
                   <tr className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
                     targetUser.id === user?.id 
-                      ? 'bg-gray-100 dark:bg-gray-600 border-l-4 border-gray-500' 
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500' 
                       : ''
                   }`}>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -740,7 +743,9 @@ const AdminUserManagement: React.FC = () => {
                       })()}
                       
                       {/* Student Actions (for all admin levels) */}
-                      {!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin && (
+                      {!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin && (() => {
+                        const isCurrentUser = targetUser.id === user?.id;
+                        return (
                         // Student user actions
                         <>
                           {targetUser.locked && (
@@ -765,29 +770,6 @@ const AdminUserManagement: React.FC = () => {
                             </button>
                           )}
                           
-                          {!isCurrentUser && (
-                            <button
-                              onClick={() => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false)}
-                              className={`inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
-                                targetUser.blocked 
-                                  ? 'bg-green-600 hover:bg-green-700' 
-                                  : 'bg-red-600 hover:bg-red-700'
-                              }`}
-                              title={targetUser.blocked ? "Unblock User" : "Block User"}
-                            >
-                              {targetUser.blocked ? (
-                                <>
-                                  <UserCheck className="h-3 w-3 mr-1" />
-                                  Unblock
-                                </>
-                              ) : (
-                                <>
-                                  <UserX className="h-3 w-3 mr-1" />
-                                  Block
-                                </>
-                              )}
-                            </button>
-                          )}
                           
                           {!targetUser.locked && !targetUser.registered_device && !targetUser.blocked && (
                             <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-md dark:bg-gray-700 dark:text-gray-400">
@@ -798,7 +780,8 @@ const AdminUserManagement: React.FC = () => {
                             </span>
                           )}
                         </>
-                      )}
+                        );
+                      })()}
                       
                     </div>
                   </td>
