@@ -201,7 +201,8 @@ Current step: ${stepName || 'user story development'}.
     }
   ],
   server: {
-    port: 3001
+    port: 5173,
+    strictPort: true
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
