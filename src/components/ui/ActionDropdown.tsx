@@ -22,6 +22,7 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -94,7 +95,12 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-56 origin-top-right bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in-0 zoom-in-95 duration-200">
+        <div 
+          className="absolute right-0 z-50 mt-2 w-56 origin-top-right bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          style={{ 
+            zIndex: 9999 
+          }}
+        >
           <div className="py-1">
             {actions.map((action, index) => (
               <button
@@ -102,7 +108,7 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
                 onClick={() => handleActionClick(action)}
                 disabled={action.disabled}
                 className={`
-                  w-full flex items-center px-4 py-2.5 text-sm transition-colors duration-150
+                  w-full flex items-center px-3 py-1.5 text-sm transition-colors duration-150
                   ${getVariantStyles(action.variant)}
                   ${action.disabled 
                     ? 'opacity-50 cursor-not-allowed' 
@@ -112,7 +118,7 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
                 `}
               >
                 {action.icon && (
-                  <span className="mr-3 flex-shrink-0">
+                  <span className="mr-2 flex-shrink-0">
                     {action.icon}
                   </span>
                 )}
@@ -127,3 +133,4 @@ const ActionDropdown: React.FC<ActionDropdownProps> = ({
 };
 
 export default ActionDropdown;
+

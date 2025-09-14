@@ -185,40 +185,36 @@ const AdminUserManagement: React.FC = () => {
   };
 
   const handleUnlockUser = async (userId: string, email: string) => {
-    if (!confirm(`Are you sure you want to unlock ${email}?`)) {
+    if (!confirm(`Are you sure you want to unlock ${email}? This will allow them to log in but they will still need to use their registered device.`)) {
       return;
     }
 
     try {
       setLoading(true);
-      // Use the database function to unlock the user
-      const { data, error } = await supabase.rpc('unlock_user_account', {
-        user_uuid: userId
-      });
       
+      // Only unlock the account, keep device lock active
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ locked: false })
+        .eq('user_id', userId);
+
       if (error) {
         console.error('Error unlocking user:', error);
         alert(`Failed to unlock ${email}: ${error.message}`);
         return;
       }
+
+      // Log the action
+      await adminService.logActivity(
+        user?.id || '',
+        'unlock_account',
+        userId,
+        { email, action: 'account_unlocked' }
+      );
       
-      const success = data;
-      
-      if (success) {
-        // Log the action
-        await adminService.logActivity(
-          user?.id || '',
-          'unlock_account',
-          userId,
-          { email, action: 'account_unlocked' }
-        );
-        
-        // Refresh users
-        loadUsers();
-        alert(`Account unlocked successfully for ${email}`);
-      } else {
-        alert('Failed to unlock account');
-      }
+      // Refresh users
+      loadUsers();
+      alert(`Account unlocked successfully for ${email}. They can now log in but must use their registered device.`);
     } catch (error) {
       console.error('Error unlocking account:', error);
       alert('Error unlocking account');
@@ -471,14 +467,6 @@ const AdminUserManagement: React.FC = () => {
     const isCurrentUser = targetUser.id === currentUserId;
     const actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode, variant?: string}> = [];
     
-    console.log('🔧 BUILD_ACTIONS: Building actions for user:', targetUser.email);
-    console.log('🔧 BUILD_ACTIONS: User roles:', {
-      is_admin: targetUser.is_admin,
-      is_senior_admin: targetUser.is_senior_admin,
-      is_super_admin: targetUser.is_super_admin,
-      locked: targetUser.locked,
-      registered_device: targetUser.registered_device
-    });
 
     // Super Admin can manage everyone except themselves
     if (currentUserRole.is_super_admin && !isCurrentUser) {
@@ -596,9 +584,6 @@ const AdminUserManagement: React.FC = () => {
         });
       }
     }
-
-    console.log('🔧 BUILD_ACTIONS: Final actions array:', actions.length, 'actions');
-    console.log('🔧 BUILD_ACTIONS: Actions:', actions.map(a => a.label));
     
     return actions;
   };
