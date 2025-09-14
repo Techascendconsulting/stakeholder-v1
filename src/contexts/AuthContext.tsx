@@ -375,8 +375,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     };
 
-    // Check admin status first
-    checkIfAdmin().then((isAdmin) => {
+    // Check admin status first - make it synchronous to prevent race conditions
+    const startMonitoringIfNotAdmin = async () => {
+      const isAdmin = await checkIfAdmin();
       if (isAdmin) {
         // Admin users get NO monitoring (device lock bypassed)
         console.log('🔐 AUTH - Admin user detected, no monitoring needed');
@@ -386,7 +387,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Non-admin users get device monitoring only
       console.log('🔐 AUTH - Starting device monitoring for student user');
       startDeviceMonitoring();
-    });
+    };
+
+    startMonitoringIfNotAdmin();
 
     // Start continuous device lock monitoring
     const startDeviceMonitoring = async () => {
@@ -399,6 +402,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Check every 5 seconds
       deviceCheckInterval.current = setInterval(async () => {
         try {
+          // Double-check admin status before any device lock action
+          const isAdmin = await checkIfAdmin();
+          if (isAdmin) {
+            console.log('🔐 AUTH - Admin user detected during monitoring, stopping device monitoring');
+            if (deviceCheckInterval.current) {
+              clearInterval(deviceCheckInterval.current);
+              deviceCheckInterval.current = null;
+            }
+            return;
+          }
+
           const currentDeviceId = await deviceLockService.getDeviceId()
           
           // Check if device ID has changed (different browser/incognito)
