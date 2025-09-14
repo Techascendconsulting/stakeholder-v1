@@ -12,7 +12,8 @@ import {
   AlertCircle,
   CheckCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  MoreVertical
 } from 'lucide-react';
 import { useAdmin } from '../contexts/AdminContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -53,6 +54,7 @@ const AdminUserManagement: React.FC = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'senior_admin' | 'super_admin'>('admin');
+  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -60,6 +62,21 @@ const AdminUserManagement: React.FC = () => {
       loadCurrentUserRole();
     }
   }, [hasPermission]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.dropdown-container')) {
+        setOpenDropdowns(new Set());
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const loadCurrentUserRole = async () => {
     if (!user?.id) return;
@@ -461,6 +478,202 @@ const AdminUserManagement: React.FC = () => {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
+  // Helper function to toggle dropdown
+  const toggleDropdown = (userId: string) => {
+    const newOpenDropdowns = new Set(openDropdowns);
+    if (newOpenDropdowns.has(userId)) {
+      newOpenDropdowns.delete(userId);
+    } else {
+      newOpenDropdowns.add(userId);
+    }
+    setOpenDropdowns(newOpenDropdowns);
+  };
+
+  // Helper function to close dropdown
+  const closeDropdown = (userId: string) => {
+    const newOpenDropdowns = new Set(openDropdowns);
+    newOpenDropdowns.delete(userId);
+    setOpenDropdowns(newOpenDropdowns);
+  };
+
+  // Helper function to build actions array for a user
+  const buildUserActions = (targetUser: User) => {
+    const currentUserId = user?.id;
+    const isCurrentUser = targetUser.id === currentUserId;
+    const actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode}> = [];
+
+    // Super Admin can manage everyone except themselves
+    if (currentUserRole.is_super_admin && !isCurrentUser) {
+      if (!targetUser.is_super_admin) {
+        actions.push({
+          label: 'Make Super Admin',
+          onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'super_admin'),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors',
+          icon: <Shield className="h-3 w-3 mr-1" />
+        });
+      }
+      
+      if (!targetUser.is_senior_admin && !targetUser.is_super_admin) {
+        actions.push({
+          label: 'Make Senior Admin',
+          onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'senior_admin'),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors',
+          icon: <Shield className="h-3 w-3 mr-1" />
+        });
+      }
+      
+      if (!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
+        actions.push({
+          label: 'Make Admin',
+          onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'admin'),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors',
+          icon: <Shield className="h-3 w-3 mr-1" />
+        });
+      }
+      
+      if (targetUser.is_admin || targetUser.is_senior_admin || targetUser.is_super_admin) {
+        actions.push({
+          label: 'Remove Admin',
+          onClick: () => handleRemoveAdminRole(targetUser.id, targetUser.email),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors',
+          icon: <UserX className="h-3 w-3 mr-1" />
+        });
+      }
+      
+      if (!isCurrentUser) {
+        actions.push({
+          label: targetUser.blocked ? 'Unblock' : 'Block',
+          onClick: () => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false),
+          className: `inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
+            targetUser.blocked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+          }`,
+          icon: targetUser.blocked ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />
+        });
+      }
+    }
+    
+    // Senior Admin can manage Regular Admins and Students
+    else if (currentUserRole.is_senior_admin && !isCurrentUser && !targetUser.is_super_admin && !targetUser.is_senior_admin) {
+      if (!targetUser.is_admin) {
+        actions.push({
+          label: 'Make Admin',
+          onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'admin'),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors',
+          icon: <Shield className="h-3 w-3 mr-1" />
+        });
+      }
+      
+      if (targetUser.is_admin) {
+        actions.push({
+          label: 'Remove Admin',
+          onClick: () => handleRemoveAdminRole(targetUser.id, targetUser.email),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors',
+          icon: <UserX className="h-3 w-3 mr-1" />
+        });
+      }
+      
+      if (!isCurrentUser) {
+        actions.push({
+          label: targetUser.blocked ? 'Unblock' : 'Block',
+          onClick: () => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false),
+          className: `inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
+            targetUser.blocked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+          }`,
+          icon: targetUser.blocked ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />
+        });
+      }
+    }
+    
+    // Regular Admin can only manage Students
+    else if (currentUserRole.is_admin && !isCurrentUser && !targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
+      actions.push({
+        label: targetUser.blocked ? 'Unblock' : 'Block',
+        onClick: () => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false),
+        className: `inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
+          targetUser.blocked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+        }`,
+        icon: targetUser.blocked ? <UserCheck className="h-3 w-3 mr-1" /> : <UserX className="h-3 w-3 mr-1" />
+      });
+    }
+    
+    // Student actions (for all admin levels)
+    if (!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
+      if (targetUser.locked) {
+        actions.push({
+          label: 'Unlock',
+          onClick: () => handleUnlockUser(targetUser.id, targetUser.email),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors',
+          icon: <Unlock className="h-3 w-3 mr-1" />
+        });
+      }
+      
+      if (targetUser.registered_device) {
+        actions.push({
+          label: 'Clear Device',
+          onClick: () => handleClearDevice(targetUser.id, targetUser.email),
+          className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors',
+          icon: <Lock className="h-3 w-3 mr-1" />
+        });
+      }
+    }
+
+    return actions;
+  };
+
+  // Helper function to render action buttons or dropdown
+  const renderActions = (actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode}>, userId: string) => {
+    if (actions.length <= 3) {
+      // Show individual buttons
+      return (
+        <div className="flex flex-wrap gap-2">
+          {actions.map((action, index) => (
+            <button
+              key={index}
+              onClick={action.onClick}
+              className={action.className}
+            >
+              {action.icon}
+              {action.label}
+            </button>
+          ))}
+        </div>
+      );
+    } else {
+      // Show dropdown
+      return (
+        <div className="relative dropdown-container">
+          <button
+            onClick={() => toggleDropdown(userId)}
+            className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            <MoreVertical className="h-3 w-3 mr-1" />
+            Actions
+          </button>
+          
+          {openDropdowns.has(userId) && (
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+              <div className="py-1">
+                {actions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      action.onClick();
+                      closeDropdown(userId);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                  >
+                    {action.icon}
+                    <span className="ml-2">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+  };
+
   const getStatusBadge = (user: User) => {
     if (user.blocked) {
       return (
@@ -650,174 +863,10 @@ const AdminUserManagement: React.FC = () => {
                         )}
                       </button>
                       
-                      {/* Action Buttons - Based on Three-Tier Hierarchy */}
+                      {/* Action Buttons - Smart Dropdown Logic */}
                       {(() => {
                         const currentUserId = user?.id;
                         const isCurrentUser = targetUser.id === currentUserId;
-                        
-                        // Super Admin can manage everyone except themselves
-                        if (currentUserRole.is_super_admin && !isCurrentUser) {
-                          return (
-                            <>
-                              {/* Role Assignment Buttons */}
-                              {!targetUser.is_super_admin && (
-                                <button
-                                  onClick={() => handleAssignRole(targetUser.id, targetUser.email, 'super_admin')}
-                                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-                                  title="Promote to Super Admin"
-                                >
-                                  <Shield className="h-3 w-3 mr-1" />
-                                  Make Super Admin
-                                </button>
-                              )}
-                              
-                              {!targetUser.is_senior_admin && !targetUser.is_super_admin && (
-                                <button
-                                  onClick={() => handleAssignRole(targetUser.id, targetUser.email, 'senior_admin')}
-                                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
-                                  title="Promote to Senior Admin"
-                                >
-                                  <Shield className="h-3 w-3 mr-1" />
-                                  Make Senior Admin
-                                </button>
-                              )}
-                              
-                              {!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin && (
-                                <button
-                                  onClick={() => handleAssignRole(targetUser.id, targetUser.email, 'admin')}
-                                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors"
-                                  title="Promote to Regular Admin"
-                                >
-                                  <Shield className="h-3 w-3 mr-1" />
-                                  Make Admin
-                                </button>
-                              )}
-                              
-                              {/* Remove Admin Role */}
-                              {(targetUser.is_admin || targetUser.is_senior_admin || targetUser.is_super_admin) && (
-                                <button
-                                  onClick={() => handleRemoveAdminRole(targetUser.id, targetUser.email)}
-                                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-                                  title="Remove Admin Role"
-                                >
-                                  <UserX className="h-3 w-3 mr-1" />
-                                  Remove Admin
-                                </button>
-                              )}
-                              
-                              {/* Block/Unblock - Don't show for current user */}
-                              {!isCurrentUser && (
-                                <button
-                                  onClick={() => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false)}
-                                  className={`inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
-                                    targetUser.blocked 
-                                      ? 'bg-green-600 hover:bg-green-700' 
-                                      : 'bg-red-600 hover:bg-red-700'
-                                  }`}
-                                  title={targetUser.blocked ? "Unblock User" : "Block User"}
-                                >
-                                  {targetUser.blocked ? (
-                                    <>
-                                      <UserCheck className="h-3 w-3 mr-1" />
-                                      Unblock
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserX className="h-3 w-3 mr-1" />
-                                      Block
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                            </>
-                          );
-                        }
-                        
-                        // Senior Admin can manage Regular Admins and Students
-                        if (currentUserRole.is_senior_admin && !isCurrentUser && !targetUser.is_super_admin && !targetUser.is_senior_admin) {
-                          return (
-                            <>
-                              {/* Promote to Regular Admin */}
-                              {!targetUser.is_admin && (
-                                <button
-                                  onClick={() => handleAssignRole(targetUser.id, targetUser.email, 'admin')}
-                                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors"
-                                  title="Promote to Regular Admin"
-                                >
-                                  <Shield className="h-3 w-3 mr-1" />
-                                  Make Admin
-                                </button>
-                              )}
-                              
-                              {/* Remove Admin Role */}
-                              {targetUser.is_admin && (
-                                <button
-                                  onClick={() => handleRemoveAdminRole(targetUser.id, targetUser.email)}
-                                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-                                  title="Remove Admin Role"
-                                >
-                                  <UserX className="h-3 w-3 mr-1" />
-                                  Remove Admin
-                                </button>
-                              )}
-                              
-                              {/* Block/Unblock - Don't show for current user */}
-                              {!isCurrentUser && (
-                                <button
-                                  onClick={() => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false)}
-                                  className={`inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
-                                    targetUser.blocked 
-                                      ? 'bg-green-600 hover:bg-green-700' 
-                                      : 'bg-red-600 hover:bg-red-700'
-                                  }`}
-                                  title={targetUser.blocked ? "Unblock User" : "Block User"}
-                                >
-                                  {targetUser.blocked ? (
-                                    <>
-                                      <UserCheck className="h-3 w-3 mr-1" />
-                                      Unblock
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UserX className="h-3 w-3 mr-1" />
-                                      Block
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                            </>
-                          );
-                        }
-                        
-                        // Regular Admin can only manage Students
-                        if (currentUserRole.is_admin && !isCurrentUser && !targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
-                          return (
-                            <>
-                              {/* Block/Unblock Students */}
-                              <button
-                                onClick={() => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false)}
-                                className={`inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
-                                  targetUser.blocked 
-                                    ? 'bg-green-600 hover:bg-green-700' 
-                                    : 'bg-red-600 hover:bg-red-700'
-                                }`}
-                                title={targetUser.blocked ? "Unblock User" : "Block User"}
-                              >
-                                {targetUser.blocked ? (
-                                  <>
-                                    <UserCheck className="h-3 w-3 mr-1" />
-                                    Unblock
-                                  </>
-                                ) : (
-                                  <>
-                                    <UserX className="h-3 w-3 mr-1" />
-                                    Block
-                                  </>
-                                )}
-                              </button>
-                            </>
-                          );
-                        }
                         
                         // Show status for users that can't be managed
                         if (isCurrentUser || 
@@ -835,48 +884,9 @@ const AdminUserManagement: React.FC = () => {
                           );
                         }
                         
-                        return null;
-                      })()}
-                      
-                      {/* Student Actions (for all admin levels) */}
-                      {!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin && (() => {
-                        const isCurrentUser = targetUser.id === user?.id;
-                        return (
-                        // Student user actions
-                        <>
-                          {targetUser.locked && (
-                            <button
-                              onClick={() => handleUnlockUser(targetUser.id, targetUser.email)}
-                              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
-                              title="Unlock Account"
-                            >
-                              <Unlock className="h-3 w-3 mr-1" />
-                              Unlock
-                            </button>
-                          )}
-                          
-                          {targetUser.registered_device && (
-                            <button
-                              onClick={() => handleClearDeviceBinding(targetUser.id, targetUser.email)}
-                              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors"
-                              title="Clear Device Binding"
-                            >
-                              <EyeOff className="h-3 w-3 mr-1" />
-                              Clear Device
-                            </button>
-                          )}
-                          
-                          
-                          {!targetUser.locked && !targetUser.registered_device && !targetUser.blocked && (
-                            <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-md dark:bg-gray-700 dark:text-gray-400">
-                              <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              Active
-                            </span>
-                          )}
-                        </>
-                        );
+                        // Build actions array and render with smart dropdown logic
+                        const actions = buildUserActions(targetUser);
+                        return renderActions(actions, targetUser.id);
                       })()}
                       
                     </div>
