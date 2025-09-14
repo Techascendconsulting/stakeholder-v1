@@ -307,8 +307,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Set default view for admin users on initial load
   useEffect(() => {
-    if (user && isAdmin && currentView === 'welcome') {
-      console.log('🔐 ADMIN_INIT: Admin user detected on welcome page, redirecting to admin panel')
+    if (user && isAdmin && (currentView === 'welcome' || currentView === 'dashboard')) {
+      console.log('🔐 ADMIN_INIT: Admin user detected, redirecting to admin panel')
       setCurrentViewState('admin')
       localStorage.setItem('currentView', 'admin')
     }
