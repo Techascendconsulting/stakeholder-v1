@@ -64,6 +64,32 @@ const AdminUserManagement: React.FC = () => {
     }
   }, [hasPermission]);
 
+  // Refresh data when component becomes visible (e.g., when admin switches tabs)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && hasPermission('user_management')) {
+        console.log('🔄 AdminUserManagement - Page became visible, refreshing user data');
+        await loadUsers();
+      }
+    };
+
+    // Listen for custom refresh event from AdminDashboard
+    const handleCustomRefresh = async () => {
+      if (hasPermission('user_management')) {
+        console.log('🔄 AdminUserManagement - Custom refresh event received, refreshing user data');
+        await loadUsers();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('adminUserManagementRefresh', handleCustomRefresh);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('adminUserManagementRefresh', handleCustomRefresh);
+    };
+  }, [hasPermission]);
+
 
   const loadCurrentUserRole = async () => {
     if (!user?.id) return;

@@ -48,6 +48,15 @@ const AdminDashboard: React.FC = () => {
     }
   }, [activeTab]);
 
+  // Refresh user data when switching to users tab
+  useEffect(() => {
+    if (activeTab === 'users' && hasPermission('user_management')) {
+      // Trigger refresh of AdminUserManagement component
+      // We'll use a custom event to communicate between components
+      window.dispatchEvent(new CustomEvent('adminUserManagementRefresh'));
+    }
+  }, [activeTab]);
+
   const loadAdminData = async () => {
     setLoading(true);
     try {
