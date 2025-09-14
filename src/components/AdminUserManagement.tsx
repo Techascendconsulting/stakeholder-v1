@@ -506,7 +506,7 @@ const AdminUserManagement: React.FC = () => {
     if (currentUserRole.is_super_admin && !isCurrentUser) {
       if (!targetUser.is_super_admin) {
         actions.push({
-          label: 'Make Super Admin',
+          label: 'Promote to Super Admin',
           onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'super_admin'),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors',
           icon: <Shield className="h-3 w-3 mr-1" />
@@ -515,7 +515,7 @@ const AdminUserManagement: React.FC = () => {
       
       if (!targetUser.is_senior_admin && !targetUser.is_super_admin) {
         actions.push({
-          label: 'Make Senior Admin',
+          label: 'Promote to Senior Admin',
           onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'senior_admin'),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors',
           icon: <Shield className="h-3 w-3 mr-1" />
@@ -524,7 +524,7 @@ const AdminUserManagement: React.FC = () => {
       
       if (!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
         actions.push({
-          label: 'Make Admin',
+          label: 'Promote to Admin',
           onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'admin'),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors',
           icon: <Shield className="h-3 w-3 mr-1" />
@@ -533,7 +533,7 @@ const AdminUserManagement: React.FC = () => {
       
       if (targetUser.is_admin || targetUser.is_senior_admin || targetUser.is_super_admin) {
         actions.push({
-          label: 'Remove Admin',
+          label: 'Remove Admin Role',
           onClick: () => handleRemoveAdminRole(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors',
           icon: <UserX className="h-3 w-3 mr-1" />
@@ -542,7 +542,7 @@ const AdminUserManagement: React.FC = () => {
       
       if (!isCurrentUser) {
         actions.push({
-          label: targetUser.blocked ? 'Unblock' : 'Block',
+          label: targetUser.blocked ? 'Unblock User' : 'Block User',
           onClick: () => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false),
           className: `inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
             targetUser.blocked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
@@ -556,7 +556,7 @@ const AdminUserManagement: React.FC = () => {
     else if (currentUserRole.is_senior_admin && !isCurrentUser && !targetUser.is_super_admin && !targetUser.is_senior_admin) {
       if (!targetUser.is_admin) {
         actions.push({
-          label: 'Make Admin',
+          label: 'Promote to Admin',
           onClick: () => handleAssignRole(targetUser.id, targetUser.email, 'admin'),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors',
           icon: <Shield className="h-3 w-3 mr-1" />
@@ -565,7 +565,7 @@ const AdminUserManagement: React.FC = () => {
       
       if (targetUser.is_admin) {
         actions.push({
-          label: 'Remove Admin',
+          label: 'Remove Admin Role',
           onClick: () => handleRemoveAdminRole(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors',
           icon: <UserX className="h-3 w-3 mr-1" />
@@ -574,7 +574,7 @@ const AdminUserManagement: React.FC = () => {
       
       if (!isCurrentUser) {
         actions.push({
-          label: targetUser.blocked ? 'Unblock' : 'Block',
+          label: targetUser.blocked ? 'Unblock User' : 'Block User',
           onClick: () => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false),
           className: `inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
             targetUser.blocked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
@@ -587,7 +587,7 @@ const AdminUserManagement: React.FC = () => {
     // Regular Admin can only manage Students
     else if (currentUserRole.is_admin && !isCurrentUser && !targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
       actions.push({
-        label: targetUser.blocked ? 'Unblock' : 'Block',
+        label: targetUser.blocked ? 'Unblock User' : 'Block User',
         onClick: () => handleBlockUser(targetUser.id, targetUser.email, targetUser.blocked || false),
         className: `inline-flex items-center px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors ${
           targetUser.blocked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
@@ -600,7 +600,7 @@ const AdminUserManagement: React.FC = () => {
     if (!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
       if (targetUser.locked) {
         actions.push({
-          label: 'Unlock',
+          label: 'Unlock Account',
           onClick: () => handleUnlockUser(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors',
           icon: <Unlock className="h-3 w-3 mr-1" />
@@ -609,10 +609,10 @@ const AdminUserManagement: React.FC = () => {
       
       if (targetUser.registered_device) {
         actions.push({
-          label: 'Clear Device',
-          onClick: () => handleClearDevice(targetUser.id, targetUser.email),
+          label: 'Reset Device',
+          onClick: () => handleClearDeviceBinding(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors',
-          icon: <Lock className="h-3 w-3 mr-1" />
+          icon: <EyeOff className="h-3 w-3 mr-1" />
         });
       }
     }
