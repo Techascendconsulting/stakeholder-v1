@@ -116,6 +116,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       })
       
       if (error) {
+        console.error('🔐 AUTH - Sign in failed:', error.message)
+        
+        // Log failed sign-in attempt
+        try {
+          // Try to find the user ID first
+          const { data: userData } = await supabase
+            .from('auth.users')
+            .select('id')
+            .eq('email', email)
+            .single();
+          
+          if (userData?.id) {
+            const deviceId = await deviceLockService.getDeviceId()
+            await userActivityService.logSignInFailure(
+              userData.id,
+              error.message,
+              deviceId || undefined
+            );
+          } else {
+            // Log with email as identifier if user not found
+            await userActivityService.logActivity(
+              'unknown-user',
+              'sign_in_failed',
+              {
+                deviceId: await deviceLockService.getDeviceId(),
+                email: email,
+                failureReason: error.message,
+                success: false
+              }
+            );
+          }
+        } catch (logError) {
+          console.error('🔐 AUTH - Failed to log sign-in failure:', logError);
+        }
+        
         return { error }
       }
 
@@ -169,6 +204,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       return { error: null }
     } catch (error) {
+      // Log unexpected errors during sign-in
+      try {
+        await userActivityService.logActivity(
+          'unknown-user',
+          'sign_in_error',
+          {
+            deviceId: await deviceLockService.getDeviceId(),
+            email: email,
+            failureReason: (error as Error).message,
+            success: false
+          }
+        );
+      } catch (logError) {
+        console.error('🔐 AUTH - Failed to log sign-in error:', logError);
+      }
+      
       return { error: error as Error }
     }
   }
