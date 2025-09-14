@@ -76,19 +76,21 @@ class DeviceLockService {
       try {
         const { data: adminCheck, error: adminError } = await supabase
           .from('user_profiles')
-          .select('is_admin')
+          .select('is_admin, is_super_admin, is_senior_admin')
           .eq('user_id', userId)
-          .eq('is_admin', true)
           .single();
         
         if (adminCheck && !adminError) {
-          console.log('🔐 DEVICE LOCK - Admin user detected, bypassing device lock entirely');
-          return {
-            success: true,
-            locked: false,
-            message: 'Admin access granted - device lock bypassed.',
-            deviceId: await this.getDeviceId()
-          };
+          const isAdmin = adminCheck.is_admin || adminCheck.is_super_admin || adminCheck.is_senior_admin;
+          if (isAdmin) {
+            console.log('🔐 DEVICE LOCK - Admin user detected, bypassing device lock entirely');
+            return {
+              success: true,
+              locked: false,
+              message: 'Admin access granted - device lock bypassed.',
+              deviceId: await this.getDeviceId()
+            };
+          }
         }
       } catch (adminCheckError) {
         console.log('🔐 DEVICE LOCK - Admin check failed, proceeding with device lock');
@@ -226,6 +228,25 @@ class DeviceLockService {
    * Lock the user's account
    */
   async lockAccount(userId: string): Promise<void> {
+    // Check if user is admin before locking
+    try {
+      const { data: adminCheck, error: adminError } = await supabase
+        .from('user_profiles')
+        .select('is_admin, is_super_admin, is_senior_admin')
+        .eq('user_id', userId)
+        .single();
+      
+      if (adminCheck && !adminError) {
+        const isAdmin = adminCheck.is_admin || adminCheck.is_super_admin || adminCheck.is_senior_admin;
+        if (isAdmin) {
+          console.log('🔐 DEVICE LOCK - Cannot lock admin account, skipping lock operation');
+          return;
+        }
+      }
+    } catch (adminCheckError) {
+      console.log('🔐 DEVICE LOCK - Admin check failed during lock, proceeding with lock');
+    }
+
     const { error } = await supabase
       .from('user_profiles')
       .update({ locked: true })

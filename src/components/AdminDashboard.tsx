@@ -17,14 +17,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { adminService, UserAdminRole, AdminActivityLog } from '../services/adminService';
 import { deviceLockService } from '../services/deviceLockService';
 import { supabase } from '../lib/supabase';
+import { userActivityService, RecentActivityLog } from '../services/userActivityService';
 import AdminUserManagement from './AdminUserManagement';
 
 const AdminDashboard: React.FC = () => {
   const { isAdmin, isLoading, hasPermission } = useAdmin();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics' | 'activity'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics' | 'activity' | 'user-activity'>('overview');
   const [adminUsers, setAdminUsers] = useState<UserAdminRole[]>([]);
   const [activityLogs, setActivityLogs] = useState<AdminActivityLog[]>([]);
+  const [userActivityLogs, setUserActivityLogs] = useState<RecentActivityLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [systemStats, setSystemStats] = useState({
     totalUsers: 0,
@@ -39,9 +41,9 @@ const AdminDashboard: React.FC = () => {
     }
   }, [isAdmin]);
 
-  // Refresh activity logs when switching to activity tab
+  // Refresh activity logs when switching to activity tabs
   useEffect(() => {
-    if (activeTab === 'activity' && hasPermission('audit_logs')) {
+    if ((activeTab === 'activity' || activeTab === 'user-activity') && hasPermission('audit_logs')) {
       loadActivityLogs();
     }
   }, [activeTab]);
@@ -73,6 +75,10 @@ const AdminDashboard: React.FC = () => {
       if (hasPermission('audit_logs')) {
         const logs = await adminService.getActivityLogs(20);
         setActivityLogs(logs);
+        
+        // Also load user activity logs
+        const userLogs = await userActivityService.getRecentActivityLogs(20);
+        setUserActivityLogs(userLogs);
       }
     } catch (error) {
       console.error('Error loading activity logs:', error);
@@ -165,7 +171,8 @@ const AdminDashboard: React.FC = () => {
     { id: 'overview', label: 'Overview', icon: BarChart3, permission: null },
     { id: 'users', label: 'User Management', icon: Users, permission: 'user_management' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, permission: 'analytics' },
-    { id: 'activity', label: 'Activity Logs', icon: Activity, permission: 'audit_logs' }
+    { id: 'activity', label: 'Admin Activity', icon: Activity, permission: 'audit_logs' },
+    { id: 'user-activity', label: 'User Activity', icon: Clock, permission: 'audit_logs' }
   ].filter(tab => !tab.permission || hasPermission(tab.permission as keyof any));
 
   return (
@@ -325,6 +332,73 @@ const AdminDashboard: React.FC = () => {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-500 font-mono">
                           {log.details?.device_id || 'Unknown Device'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'user-activity' && hasPermission('audit_logs') && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+              User Activity Logs
+            </h2>
+            
+            <div className="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg">
+              {userActivityLogs.length === 0 ? (
+                <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg text-center">
+                  <p className="text-gray-600 dark:text-gray-400">No user activity logs found</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                    User activity logs will appear here when users sign in and use the system
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Table Header */}
+                  <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                    <div className="grid grid-cols-6 gap-4 px-4 py-3">
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">User</div>
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Activity</div>
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</div>
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Device ID</div>
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Time</div>
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">IP Address</div>
+                    </div>
+                  </div>
+                  
+                  {/* Table Rows */}
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {userActivityLogs.map((log) => (
+                      <div key={log.id} className="grid grid-cols-6 gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {log.user_email}
+                        </div>
+                        <div>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {log.activity_type.replace(/_/g, ' ').toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            log.success 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {log.success ? 'SUCCESS' : 'FAILED'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500 font-mono">
+                          {log.device_id ? log.device_id.substring(0, 20) + '...' : 'Unknown'}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500">
+                          {new Date(log.created_at).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500">
+                          {log.ip_address || 'Unknown'}
                         </div>
                       </div>
                     ))}

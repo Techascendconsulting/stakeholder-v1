@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, ReactNod
 import { supabase } from '../lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
 import { deviceLockService, DeviceLockResult } from '../services/deviceLockService'
+import { userActivityService } from '../services/userActivityService'
 
 interface AuthContextType {
   user: User | null
@@ -29,6 +30,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const deviceCheckInterval = useRef<NodeJS.Timeout | null>(null)
   const lastDeviceId = useRef<string | null>(null)
   const deviceLockFailed = useRef<boolean>(false)
+  const activityLogInterval = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     // Get initial session
@@ -131,6 +133,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // Set flag to prevent continuous monitoring
           deviceLockFailed.current = true
           
+          // Log device lock failure
+          const deviceId = await deviceLockService.getDeviceId()
+          await userActivityService.logDeviceLockFailure(
+            data.user.id, 
+            deviceId || 'unknown', 
+            deviceLockResult.message
+          )
+          
           // Store device lock error for AppContext to detect
           localStorage.setItem('deviceLockError', JSON.stringify(deviceLockResult))
           
@@ -149,6 +159,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('🔐 AUTH - Device lock successful')
         // Reset device lock failed flag on successful login
         deviceLockFailed.current = false
+        
+        // Log successful sign-in
+        const deviceId = await deviceLockService.getDeviceId()
+        await userActivityService.logSignIn(data.user.id, deviceId || undefined, data.session?.access_token)
+        
         return { error: null, deviceLockResult }
       }
 
@@ -181,6 +196,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signOut = async () => {
     try {
       console.log('🔐 AUTH - Attempting signout...')
+      
+      // Log sign-out before actually signing out
+      if (user) {
+        await userActivityService.logSignOut(user.id, session?.access_token)
+      }
+      
       await supabase.auth.signOut()
       console.log('🔐 AUTH - Signout successful')
     } catch (error) {
@@ -194,11 +215,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Continuous device lock monitoring
   useEffect(() => {
     if (!user) {
-      // Clear interval if no user
+      // Clear intervals if no user
       if (deviceCheckInterval.current) {
         console.log('🔐 AUTH - Clearing device monitoring interval (no user)')
         clearInterval(deviceCheckInterval.current)
         deviceCheckInterval.current = null
+      }
+      if (activityLogInterval.current) {
+        console.log('🔐 AUTH - Clearing activity tracking interval (no user)')
+        clearInterval(activityLogInterval.current)
+        activityLogInterval.current = null
       }
       // Reset device lock failed flag when user is logged out
       deviceLockFailed.current = false
@@ -210,6 +236,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('🔐 AUTH - Skipping device monitoring (device lock just failed)')
       return
     }
+
+    // Check if user is admin - admins should NOT be monitored for device lock
+    const checkIfAdmin = async () => {
+      try {
+        const { data: profile, error } = await supabase
+          .from('user_profiles')
+          .select('is_admin, is_super_admin, is_senior_admin')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('🔐 AUTH - Error checking admin status:', error);
+          return false;
+        }
+
+        const isAdmin = profile?.is_admin || profile?.is_super_admin || profile?.is_senior_admin;
+        if (isAdmin) {
+          console.log('🔐 AUTH - Admin user detected, skipping device lock monitoring entirely');
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('🔐 AUTH - Error checking admin status:', error);
+        return false;
+      }
+    };
+
+    // Check admin status first
+    checkIfAdmin().then((isAdmin) => {
+      if (isAdmin) {
+        // Admin users only get activity tracking, NO device lock monitoring
+        console.log('🔐 AUTH - Starting activity tracking for admin user (no device monitoring)');
+        startActivityTracking();
+        return;
+      }
+      
+      // Non-admin users get both device monitoring and activity tracking
+      console.log('🔐 AUTH - Starting device monitoring and activity tracking for student user');
+      startDeviceMonitoring();
+      startActivityTracking();
+    });
 
     // Start continuous device lock monitoring
     const startDeviceMonitoring = async () => {
@@ -229,6 +296,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.log('🔐 AUTH - Device ID changed! Locking account immediately')
             console.log('🔐 AUTH - Previous device:', lastDeviceId.current)
             console.log('🔐 AUTH - Current device:', currentDeviceId)
+            
+            // Log device switching attempt
+            await userActivityService.logDeviceLockFailure(
+              user.id,
+              currentDeviceId,
+              'Device switching detected during session'
+            )
             
             // Lock the account immediately
             await deviceLockService.lockAccount(user.id)
@@ -251,13 +325,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }, 5000) // Check every 5 seconds
     }
 
-    startDeviceMonitoring()
+    // Start last active tracking
+    const startActivityTracking = () => {
+      console.log('🔐 AUTH - Starting last active tracking')
+      
+      // Log last active every 30 seconds
+      activityLogInterval.current = setInterval(async () => {
+        try {
+          await userActivityService.logLastActive(user.id, session?.access_token)
+        } catch (error) {
+          console.error('🔐 AUTH - Activity tracking error:', error)
+        }
+      }, 30000) // Log every 30 seconds
+    }
 
     // Cleanup on unmount or user change
     return () => {
       if (deviceCheckInterval.current) {
         clearInterval(deviceCheckInterval.current)
         deviceCheckInterval.current = null
+      }
+      if (activityLogInterval.current) {
+        clearInterval(activityLogInterval.current)
+        activityLogInterval.current = null
       }
     }
   }, [user])
