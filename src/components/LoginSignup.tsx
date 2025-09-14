@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { subscriptionService } from '../lib/subscription'
+import { DeviceLockResult } from '../services/deviceLockService'
+import DeviceLockAlert from './DeviceLockAlert'
 
 const LoginSignup: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin')
@@ -16,8 +18,24 @@ const LoginSignup: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [success, setSuccess] = useState('')
+  const [deviceLockResult, setDeviceLockResult] = useState<DeviceLockResult | null>(null)
 
   const { signIn, signUp } = useAuth()
+
+  // Check for device lock error from localStorage on component mount
+  useEffect(() => {
+    const storedError = localStorage.getItem('deviceLockError')
+    if (storedError) {
+      try {
+        const deviceLockResult = JSON.parse(storedError)
+        setDeviceLockResult(deviceLockResult)
+        localStorage.removeItem('deviceLockError') // Clear after showing
+      } catch (error) {
+        console.error('Error parsing device lock error:', error)
+        localStorage.removeItem('deviceLockError')
+      }
+    }
+  }, [])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -68,11 +86,15 @@ const LoginSignup: React.FC = () => {
 
     setLoading(true)
     setSuccess('')
+    setDeviceLockResult(null)
 
     try {
-      const { error } = await signIn(formData.email, formData.password)
+      const { error, deviceLockResult } = await signIn(formData.email, formData.password)
       if (error) {
         setErrors({ general: error.message })
+        if (deviceLockResult) {
+          setDeviceLockResult(deviceLockResult)
+        }
       }
     } catch (err) {
       setErrors({ general: 'An unexpected error occurred' })
@@ -425,6 +447,15 @@ const LoginSignup: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Device Lock Alert */}
+      {deviceLockResult && (
+        <DeviceLockAlert
+          message={deviceLockResult.message}
+          isLocked={deviceLockResult.locked}
+          onClose={() => setDeviceLockResult(null)}
+        />
+      )}
     </div>
   )
 }

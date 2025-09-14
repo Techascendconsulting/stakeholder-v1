@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
+import { deviceLockService, DeviceLockResult } from '../services/deviceLockService'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; deviceLockResult?: DeviceLockResult }>
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
 }
@@ -37,8 +38,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.error('🔐 AUTH - Error getting session:', error)
         } else {
           console.log('🔐 AUTH - Initial session:', session ? 'Found' : 'None')
-          setSession(session)
-          setUser(session?.user ?? null)
+          
+          // If user is logged in, check device lock
+          if (session?.user) {
+            console.log('🔐 AUTH - Checking device lock for existing session')
+            const deviceLockResult = await deviceLockService.checkDeviceLock(session.user.id)
+            
+            if (!deviceLockResult.success) {
+              console.log('🔐 AUTH - Device lock failed for existing session, signing out')
+              // Sign out but don't wait for it to complete
+              supabase.auth.signOut()
+              setSession(null)
+              setUser(null)
+              
+              // Store device lock error for display on login page
+              localStorage.setItem('deviceLockError', JSON.stringify(deviceLockResult))
+            } else {
+              console.log('🔐 AUTH - Device lock successful for existing session')
+              setSession(session)
+              setUser(session.user)
+            }
+          } else {
+            setSession(session)
+            setUser(session?.user ?? null)
+          }
         }
       } catch (error) {
         console.error('🔐 AUTH - Error in getInitialSession:', error)
@@ -91,6 +114,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return { error }
       }
 
+      // If login successful, check device lock
+      if (data.user) {
+        console.log('🔐 AUTH - Checking device lock for user:', data.user.id)
+        const deviceLockResult = await deviceLockService.checkDeviceLock(data.user.id)
+        
+        console.log('🔐 AUTH - Device lock result:', deviceLockResult)
+        
+        if (!deviceLockResult.success) {
+          // Device lock failed, sign out the user but don't wait for it
+          console.log('🔐 AUTH - Device lock failed, signing out user')
+          supabase.auth.signOut() // Don't await this to avoid blocking
+          
+          return { 
+            error: new Error(deviceLockResult.message),
+            deviceLockResult 
+          }
+        }
+        
+        console.log('🔐 AUTH - Device lock successful')
+        return { error: null, deviceLockResult }
+      }
+
       return { error: null }
     } catch (error) {
       return { error: error as Error }
@@ -119,9 +164,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signOut = async () => {
     try {
+      console.log('🔐 AUTH - Attempting signout...')
       await supabase.auth.signOut()
+      console.log('🔐 AUTH - Signout successful')
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('🔐 AUTH - Signout failed, clearing session locally:', error)
+      // If signout fails, clear the session locally
+      setSession(null)
+      setUser(null)
     }
   }
 
