@@ -95,42 +95,78 @@ const AdminUserManagement: React.FC = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      // Get all users with their profiles
-      // Get user profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('user_profiles')
-        .select(`
-          user_id,
-          display_name,
-          created_at,
-          locked,
-          registered_device,
-          is_admin
-        `)
-        .order('created_at', { ascending: false });
-
-      if (profilesError) {
-        console.error('Error loading user profiles:', profilesError);
-        return;
-      }
-
-      // Get user data with emails using database functions
+      // Try to get user data with emails using database functions first
       const { data: userData, error: userDataError } = await supabase
         .rpc('get_user_details_with_emails');
       
       if (userDataError) {
-        console.error('Error loading user data:', userDataError);
-        // Fallback to basic profiles data
-        const formattedUsers = profiles?.map(item => ({
-          id: item.user_id,
-          email: `user_${item.user_id.substring(0, 8)}@unknown.com`,
-          display_name: item.display_name || 'No name',
-          created_at: item.created_at,
-          last_sign_in_at: null,
-          locked: item.locked,
-          registered_device: item.registered_device,
-          is_admin: item.is_admin
-        })) || [];
+        console.error('Error loading user data with emails:', userDataError);
+        console.log('Falling back to manual join...');
+        
+        // Fallback: Get user profiles and auth users separately
+        const { data: profiles, error: profilesError } = await supabase
+          .from('user_profiles')
+          .select(`
+            user_id,
+            display_name,
+            created_at,
+            locked,
+            registered_device,
+            is_admin,
+            is_super_admin,
+            is_senior_admin,
+            blocked
+          `)
+          .order('created_at', { ascending: false });
+
+        if (profilesError) {
+          console.error('Error loading user profiles:', profilesError);
+          return;
+        }
+
+        // Get auth users data
+        const { data: authUsers, error: authError } = await supabase
+          .from('auth.users')
+          .select('id, email, last_sign_in_at')
+          .in('id', profiles?.map(p => p.user_id) || []);
+
+        if (authError) {
+          console.error('Error loading auth users:', authError);
+          // Use profiles without emails
+          const formattedUsers = profiles?.map(item => ({
+            id: item.user_id,
+            email: `user_${item.user_id.substring(0, 8)}@unknown.com`,
+            display_name: item.display_name || 'No name',
+            created_at: item.created_at,
+            last_sign_in_at: null,
+            locked: item.locked,
+            registered_device: item.registered_device,
+            is_admin: item.is_admin,
+            is_super_admin: item.is_super_admin,
+            is_senior_admin: item.is_senior_admin,
+            blocked: item.blocked
+          })) || [];
+          setUsers(formattedUsers);
+          return;
+        }
+
+        // Join profiles with auth users
+        const formattedUsers = profiles?.map(profile => {
+          const authUser = authUsers?.find(au => au.id === profile.user_id);
+          return {
+            id: profile.user_id,
+            email: authUser?.email || `user_${profile.user_id.substring(0, 8)}@unknown.com`,
+            display_name: profile.display_name || 'No name',
+            created_at: profile.created_at,
+            last_sign_in_at: authUser?.last_sign_in_at || null,
+            locked: profile.locked,
+            registered_device: profile.registered_device,
+            is_admin: profile.is_admin,
+            is_super_admin: profile.is_super_admin,
+            is_senior_admin: profile.is_senior_admin,
+            blocked: profile.blocked
+          };
+        }) || [];
         setUsers(formattedUsers);
         return;
       }

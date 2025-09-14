@@ -54,10 +54,22 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       console.log('🔐 ADMIN - Checking admin status for user:', user.id);
       
-      const roles = await adminService.getUserAdminRoles(user.id);
-      console.log('🔐 ADMIN - User admin roles:', roles);
+      // Get user details with admin roles from the database function
+      const { data: userData, error: userError } = await supabase
+        .rpc('get_user_details_with_emails')
+        .eq('id', user.id)
+        .single();
       
-      const isAdminUser = roles.length > 0;
+      if (userError) {
+        console.error('🔐 ADMIN - Error getting user details:', userError);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('🔐 ADMIN - User details:', userData);
+      
+      const isAdminUser = userData?.is_admin || userData?.is_super_admin || userData?.is_senior_admin;
+      const roles = []; // We'll use the direct flags instead of the old role system
       console.log('🔐 ADMIN - Is admin user:', isAdminUser);
       
       setIsAdmin(isAdminUser);
