@@ -18,6 +18,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { useAuth } from '../contexts/AuthContext';
 import { adminService } from '../services/adminService';
 import { deviceLockService } from '../services/deviceLockService';
+import { adminInviteService } from '../services/adminInviteService';
 import { supabase } from '../lib/supabase';
 
 interface User {
@@ -47,6 +48,11 @@ const AdminUserManagement: React.FC = () => {
     is_senior_admin: boolean;
     is_admin: boolean;
   }>({ is_super_admin: false, is_senior_admin: false, is_admin: false });
+  
+  // Admin invite states
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'senior_admin' | 'super_admin'>('admin');
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -372,6 +378,48 @@ const AdminUserManagement: React.FC = () => {
     }
   };
 
+  const handleInviteAdmin = async () => {
+    if (!inviteEmail || !inviteRole) {
+      alert('Please enter email and select role');
+      return;
+    }
+
+    if (!user?.id) {
+      alert('User not authenticated');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Create the invitation
+      const token = await adminInviteService.createInvite(
+        { email: inviteEmail, role: inviteRole },
+        user.id
+      );
+
+      // Send invitation email (placeholder)
+      await adminInviteService.sendInviteEmail(inviteEmail, inviteRole, token);
+
+      // Log the action
+      await adminService.logActivity(
+        user.id,
+        'invite_admin',
+        null,
+        { email: inviteEmail, role: inviteRole, action: 'admin_invited' }
+      );
+
+      alert(`Admin invitation sent to ${inviteEmail}`);
+      setShowInviteModal(false);
+      setInviteEmail('');
+      setInviteRole('admin');
+    } catch (error) {
+      console.error('Error inviting admin:', error);
+      alert('Failed to send admin invitation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
@@ -450,17 +498,29 @@ const AdminUserManagement: React.FC = () => {
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
           User Management
         </h2>
-        <button
-          onClick={() => {
-            console.log('Refresh button clicked');
-            loadUsers();
-          }}
-          disabled={loading}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-        >
-          <Users className="h-4 w-4" />
-          <span>{loading ? 'Loading...' : 'Refresh'}</span>
-        </button>
+        <div className="flex space-x-3">
+          {/* Invite Admin Button - Only for Super Admin and Senior Admin */}
+          {(currentUserRole.is_super_admin || currentUserRole.is_senior_admin) && (
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              <Mail className="h-4 w-4" />
+              <span>Invite Admin</span>
+            </button>
+          )}
+          <button
+            onClick={() => {
+              console.log('Refresh button clicked');
+              loadUsers();
+            }}
+            disabled={loading}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            <Users className="h-4 w-4" />
+            <span>{loading ? 'Loading...' : 'Refresh'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -853,6 +913,70 @@ const AdminUserManagement: React.FC = () => {
         </div>
       </div>
 
+      {/* Invite Admin Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Invite Admin
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Admin Role
+                </label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as 'admin' | 'senior_admin' | 'super_admin')}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  {currentUserRole.is_super_admin && (
+                    <option value="super_admin">Super Admin</option>
+                  )}
+                  {(currentUserRole.is_super_admin || currentUserRole.is_senior_admin) && (
+                    <option value="senior_admin">Senior Admin</option>
+                  )}
+                  <option value="admin">Regular Admin</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowInviteModal(false);
+                  setInviteEmail('');
+                  setInviteRole('admin');
+                }}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleInviteAdmin}
+                disabled={loading || !inviteEmail}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : 'Send Invitation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
