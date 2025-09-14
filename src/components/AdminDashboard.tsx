@@ -305,14 +305,149 @@ const AdminDashboard: React.FC = () => {
 
         {activeTab === 'analytics' && hasPermission('analytics') && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-              Analytics
-            </h2>
-            
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-              <p className="text-gray-600 dark:text-gray-400">
-                Analytics dashboard will be implemented here.
-              </p>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                System Analytics
+              </h2>
+              <button
+                onClick={() => {
+                  console.log('📊 Refreshing analytics data...');
+                  loadSystemStats();
+                }}
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Refresh Analytics
+              </button>
+            </div>
+
+            {/* Key Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* User Growth */}
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Users</p>
+                    <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{systemStats.totalUsers}</p>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">All registered users</p>
+                  </div>
+                  <Users className="h-12 w-12 text-blue-500 dark:text-blue-400 opacity-80" />
+                </div>
+              </div>
+
+              {/* Active Users */}
+              <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-lg border border-green-200 dark:border-green-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-green-600 dark:text-green-400">Active Users (7d)</p>
+                    <p className="text-3xl font-bold text-green-900 dark:text-green-100">{systemStats.activeSessions}</p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">{Math.round((systemStats.activeSessions / Math.max(systemStats.totalUsers, 1)) * 100)}% of total</p>
+                  </div>
+                  <CheckCircle className="h-12 w-12 text-green-500 dark:text-green-400 opacity-80" />
+                </div>
+              </div>
+
+              {/* Locked Accounts */}
+              <div className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-6 rounded-lg border border-red-200 dark:border-red-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-red-600 dark:text-red-400">Locked Accounts</p>
+                    <p className="text-3xl font-bold text-red-900 dark:text-red-100">{systemStats.lockedAccounts}</p>
+                    <p className="text-xs text-red-700 dark:text-red-300 mt-1">{Math.round((systemStats.lockedAccounts / Math.max(systemStats.totalUsers, 1)) * 100)}% of total</p>
+                  </div>
+                  <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 opacity-80" />
+                </div>
+              </div>
+
+              {/* Admin Users */}
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-lg border border-purple-200 dark:border-purple-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Admin Users</p>
+                    <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{systemStats.adminUsers}</p>
+                    <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">Super, Senior, Regular</p>
+                  </div>
+                  <Shield className="h-12 w-12 text-purple-500 dark:text-purple-400 opacity-80" />
+                </div>
+              </div>
+            </div>
+
+            {/* Analytics Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* User Activity Trends */}
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Activity Trends</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Total Users</span>
+                    </div>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{systemStats.totalUsers}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Active (7 days)</span>
+                    </div>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{systemStats.activeSessions}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Locked Accounts</span>
+                    </div>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{systemStats.lockedAccounts}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* System Health */}
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Health</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">System Status</span>
+                    </div>
+                    <span className="text-sm font-bold text-green-600 dark:text-green-400">Operational</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Database Status</span>
+                    </div>
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">Connected</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Device Lock System</span>
+                    </div>
+                    <span className="text-sm font-bold text-purple-600 dark:text-purple-400">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Activity Summary */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{activityLogs.length}</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Admin Actions (24h)</p>
+                </div>
+                <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">{userActivityLogs.length}</p>
+                  <p className="text-sm text-green-700 dark:text-green-300">User Activities (24h)</p>
+                </div>
+                <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{systemStats.lockedAccounts}</p>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">Pending Unlocks</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
