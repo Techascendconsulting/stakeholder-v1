@@ -108,11 +108,30 @@ const AdminDashboard: React.FC = () => {
       const lockedAccounts = users.filter(u => u.locked).length;
       const adminUsers = users.filter(u => u.is_admin || u.is_senior_admin || u.is_super_admin).length;
       
-      // For active sessions, we'll use a simple approximation
-      // In a real system, you'd track actual sessions
+      // For active sessions, we'll use a more accurate calculation
+      // Consider users active if they logged in within the last 7 days
+      // This gives a more realistic view of recent activity
       const activeSessions = users.filter(u => u.last_sign_in_at && 
-        new Date(u.last_sign_in_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+        new Date(u.last_sign_in_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
       ).length;
+
+      // Debug logging for active sessions
+      console.log('📊 System Stats Calculation:');
+      console.log(`- Total users: ${totalUsers}`);
+      console.log(`- Locked accounts: ${lockedAccounts}`);
+      console.log(`- Admin users: ${adminUsers}`);
+      console.log(`- Active sessions (last 7 days): ${activeSessions}`);
+      
+      // Log individual user activity for debugging
+      users.forEach(user => {
+        if (user.last_sign_in_at) {
+          const lastSignIn = new Date(user.last_sign_in_at);
+          const daysSinceLogin = Math.floor((Date.now() - lastSignIn.getTime()) / (24 * 60 * 60 * 1000));
+          console.log(`- ${user.email}: Last login ${daysSinceLogin} days ago (${lastSignIn.toLocaleDateString()})`);
+        } else {
+          console.log(`- ${user.email}: Never logged in`);
+        }
+      });
 
       setSystemStats({
         totalUsers,
