@@ -834,17 +834,25 @@ const AdminUserManagement: React.FC = () => {
                         const isCurrentUser = targetUser.id === currentUserId;
                         
                         // Show status for users that can't be managed
-                        if (isCurrentUser || 
-                            (targetUser.is_super_admin && !currentUserRole.is_super_admin) ||
+                        if (isCurrentUser) {
+                          return (
+                            <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-100 rounded-md dark:bg-blue-900 dark:text-blue-200">
+                              <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              You
+                            </span>
+                          );
+                        }
+                        
+                        if ((targetUser.is_super_admin && !currentUserRole.is_super_admin) ||
                             (targetUser.is_senior_admin && !currentUserRole.is_super_admin)) {
                           return (
                             <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-md dark:bg-gray-700 dark:text-gray-400">
                               <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                               </svg>
-                              {isCurrentUser ? 'Your Account' : 
-                               targetUser.is_super_admin ? 'Super Admin' :
-                               targetUser.is_senior_admin ? 'Senior Admin' : 'No Actions'}
+                              {targetUser.is_super_admin ? 'Super Admin' : 'Senior Admin'}
                             </span>
                           );
                         }
