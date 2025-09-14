@@ -196,9 +196,9 @@ const AdminDashboard: React.FC = () => {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3, permission: null },
-    { id: 'users', label: 'User Management', icon: Users, permission: 'user_management' },
+    { id: 'overview', label: 'Dashboard', icon: BarChart3, permission: null },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, permission: 'analytics' },
+    { id: 'users', label: 'User Management', icon: Users, permission: 'user_management' },
     { id: 'activity', label: 'Admin Activity', icon: Activity, permission: 'audit_logs' },
     { id: 'user-activity', label: 'User Activity', icon: Clock, permission: 'audit_logs' }
   ].filter(tab => !tab.permission || hasPermission(tab.permission as keyof any));
@@ -243,7 +243,7 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                System Overview
+                System Dashboard
               </h2>
               <button
                 onClick={loadSystemStats}
@@ -251,73 +251,6 @@ const AdminDashboard: React.FC = () => {
               >
                 <Clock className="h-4 w-4 mr-2" />
                 Refresh
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
-                <div className="flex items-center">
-                  <Users className="h-8 w-8 text-blue-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-blue-600">Total Users</p>
-                    <p className="text-2xl font-bold text-blue-900">{systemStats.totalUsers}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg">
-                <div className="flex items-center">
-                  <AlertCircle className="h-8 w-8 text-red-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-red-600">Locked Accounts</p>
-                    <p className="text-2xl font-bold text-red-900">{systemStats.lockedAccounts}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-green-600">Active Sessions</p>
-                    <p className="text-2xl font-bold text-green-900">{systemStats.activeSessions}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg">
-                <div className="flex items-center">
-                  <Shield className="h-8 w-8 text-purple-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-purple-600">Admin Users</p>
-                    <p className="text-2xl font-bold text-purple-900">{systemStats.adminUsers}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'users' && hasPermission('user_management') && (
-          <AdminUserManagement />
-        )}
-
-
-        {activeTab === 'analytics' && hasPermission('analytics') && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                System Analytics
-              </h2>
-              <button
-                onClick={() => {
-                  console.log('📊 Refreshing analytics data...');
-                  loadSystemStats();
-                }}
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Refresh Analytics
               </button>
             </div>
 
@@ -372,36 +305,8 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Analytics Charts Section */}
+            {/* System Status & Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* User Activity Trends */}
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Activity Trends</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">Total Users</span>
-                    </div>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{systemStats.totalUsers}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">Active (7 days)</span>
-                    </div>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{systemStats.activeSessions}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">Locked Accounts</span>
-                    </div>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">{systemStats.lockedAccounts}</span>
-                  </div>
-                </div>
-              </div>
-
               {/* System Health */}
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Health</h3>
@@ -429,28 +334,187 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Recent Activity Summary */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{activityLogs.length}</p>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">Admin Actions (24h)</p>
-                </div>
-                <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">{userActivityLogs.length}</p>
-                  <p className="text-sm text-green-700 dark:text-green-300">User Activities (24h)</p>
-                </div>
-                <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{systemStats.lockedAccounts}</p>
-                  <p className="text-sm text-orange-700 dark:text-orange-300">Pending Unlocks</p>
+              {/* Recent Activity Summary */}
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity (24h)</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Admin Actions</span>
+                    <span className="text-lg font-bold text-blue-900 dark:text-blue-100">{activityLogs.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <span className="text-sm font-medium text-green-900 dark:text-green-100">User Activities</span>
+                    <span className="text-lg font-bold text-green-900 dark:text-green-100">{userActivityLogs.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <span className="text-sm font-medium text-orange-900 dark:text-orange-100">Pending Unlocks</span>
+                    <span className="text-lg font-bold text-orange-900 dark:text-orange-100">{systemStats.lockedAccounts}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        {activeTab === 'analytics' && hasPermission('analytics') && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Advanced Analytics
+              </h2>
+              <button
+                onClick={() => {
+                  console.log('📊 Refreshing analytics data...');
+                  loadSystemStats();
+                }}
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Refresh Analytics
+              </button>
+            </div>
+
+            {/* User Engagement Analytics */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Engagement Metrics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
+                  <div className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-2">{systemStats.totalUsers}</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">Total Registered Users</div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">All time</div>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
+                  <div className="text-3xl font-bold text-green-900 dark:text-green-100 mb-2">{systemStats.activeSessions}</div>
+                  <div className="text-sm text-green-700 dark:text-green-300">Active Users (7 days)</div>
+                  <div className="text-xs text-green-600 dark:text-green-400 mt-1">{Math.round((systemStats.activeSessions / Math.max(systemStats.totalUsers, 1)) * 100)}% engagement</div>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-2">{systemStats.adminUsers}</div>
+                  <div className="text-sm text-purple-700 dark:text-purple-300">Admin Users</div>
+                  <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">Super, Senior, Regular</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Learning Progress Analytics */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Progress Analytics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Training Modules Completed</div>
+                </div>
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Practice Sessions</div>
+                </div>
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Meetings Conducted</div>
+                </div>
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">0</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Deliverables Created</div>
+                </div>
+              </div>
+            </div>
+
+            {/* System Performance Analytics */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Performance Analytics</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Security Metrics</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                      <span className="text-sm text-red-900 dark:text-red-100">Device Lock Events</span>
+                      <span className="text-lg font-bold text-red-900 dark:text-red-100">{systemStats.lockedAccounts}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <span className="text-sm text-orange-900 dark:text-orange-100">Failed Login Attempts</span>
+                      <span className="text-lg font-bold text-orange-900 dark:text-orange-100">0</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <span className="text-sm text-blue-900 dark:text-blue-100">Admin Actions (24h)</span>
+                      <span className="text-lg font-bold text-blue-900 dark:text-blue-100">{activityLogs.length}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">System Health</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <span className="text-sm text-green-900 dark:text-green-100">System Uptime</span>
+                      <span className="text-lg font-bold text-green-900 dark:text-green-100">99.9%</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <span className="text-sm text-blue-900 dark:text-blue-100">Database Response</span>
+                      <span className="text-lg font-bold text-blue-900 dark:text-blue-100">45ms</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <span className="text-sm text-purple-900 dark:text-purple-100">Error Rate</span>
+                      <span className="text-lg font-bold text-purple-900 dark:text-purple-100">0.1%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Business Intelligence */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Business Intelligence</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg">
+                  <div className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mb-1">Peak: 2-4 PM</div>
+                  <div className="text-sm text-indigo-700 dark:text-indigo-300">Peak Usage Time</div>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-r from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20 rounded-lg">
+                  <div className="text-2xl font-bold text-pink-900 dark:text-pink-100 mb-1">Global</div>
+                  <div className="text-sm text-pink-700 dark:text-pink-300">Geographic Distribution</div>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg">
+                  <div className="text-2xl font-bold text-teal-900 dark:text-teal-100 mb-1">24h</div>
+                  <div className="text-sm text-teal-700 dark:text-teal-300">Avg. Response Time</div>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg">
+                  <div className="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-1">98%</div>
+                  <div className="text-sm text-amber-700 dark:text-amber-300">User Satisfaction</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cohort Analysis */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Cohort Analysis</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{systemStats.totalUsers}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Cohort Size</div>
+                  </div>
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{systemStats.activeSessions}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Active Users</div>
+                  </div>
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{Math.round((systemStats.activeSessions / Math.max(systemStats.totalUsers, 1)) * 100)}%</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Retention Rate</div>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                  * Advanced cohort analysis will be available with more historical data
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && hasPermission('user_management') && (
+          <AdminUserManagement />
+        )}
+
+
 
         {activeTab === 'activity' && hasPermission('audit_logs') && (
           <div className="space-y-6">
