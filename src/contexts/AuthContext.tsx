@@ -162,16 +162,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.log('🔐 AUTH - Checking device lock for user:', data.user.id)
         
         // Check if this is a device reset scenario (no device binding + account locked)
+        // BUT ONLY for non-admin users
         const { data: userProfile } = await supabase
           .from('user_profiles')
-          .select('registered_device, locked')
+          .select('registered_device, locked, is_admin, is_super_admin, is_senior_admin')
           .eq('user_id', data.user.id)
           .single();
         
-        const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked;
+        const isAdmin = userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin;
+        const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked && !isAdmin;
         
         if (isDeviceResetScenario) {
-          console.log('🔐 AUTH - Device reset scenario detected, auto-unlocking account');
+          console.log('🔐 AUTH - Device reset scenario detected for student, auto-unlocking account');
           
           // Step 3: Auto-unlock account (System Action)
           const { error: unlockError } = await supabase
@@ -196,6 +198,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               }
             );
           }
+        } else if (isAdmin) {
+          console.log('🔐 AUTH - Admin user detected, skipping device reset auto-unlock');
         }
         
         const deviceLockResult = await deviceLockService.checkDeviceLock(data.user.id)
@@ -241,15 +245,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await userActivityService.logSignIn(data.user.id, deviceId || undefined, data.session?.access_token)
         
         // Check if device registration is needed (after device reset scenario)
+        // BUT ONLY for non-admin users
         const { data: finalUserProfile } = await supabase
           .from('user_profiles')
-          .select('registered_device')
+          .select('registered_device, is_admin, is_super_admin, is_senior_admin')
           .eq('user_id', data.user.id)
           .single();
         
-        if (!finalUserProfile?.registered_device) {
-          console.log('🔐 AUTH - No device registered, showing registration prompt');
+        const isAdmin = finalUserProfile?.is_admin || finalUserProfile?.is_super_admin || finalUserProfile?.is_senior_admin;
+        
+        if (!finalUserProfile?.registered_device && !isAdmin) {
+          console.log('🔐 AUTH - No device registered for student user, showing registration prompt');
           setShowDeviceRegistration(true);
+        } else if (isAdmin) {
+          console.log('🔐 AUTH - Admin user detected, skipping device registration prompt');
         }
         
         return { error: null, deviceLockResult }
