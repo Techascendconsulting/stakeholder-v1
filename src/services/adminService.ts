@@ -318,8 +318,9 @@ export class AdminService {
    */
   private async getClientIP(): Promise<string | null> {
     try {
-      // This is a simplified approach - in production you'd get this from your backend
-      return 'unknown';
+      // Return null instead of 'unknown' to avoid IP address format errors
+      // In production, this would get the actual client IP from your backend
+      return null;
     } catch {
       return null;
     }

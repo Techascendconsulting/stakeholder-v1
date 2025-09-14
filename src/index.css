@@ -2,6 +2,168 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dark Purple Theme Variables */
+:root {
+  --purple-50: #faf5ff;
+  --purple-100: #f3e8ff;
+  --purple-200: #e9d5ff;
+  --purple-300: #d8b4fe;
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;
+  --purple-600: #9333ea;
+  --purple-700: #7c3aed;
+  --purple-800: #6b21a8;
+  --purple-900: #581c87;
+  --purple-950: #3b0764;
+}
+
+/* Dark Purple Theme for Dark Mode */
+.dark {
+  --bg-primary: #1e1b2e;      /* Dark purple background */
+  --bg-secondary: #2d1b69;    /* Slightly lighter purple */
+  --bg-tertiary: #3b2a6b;     /* Card backgrounds */
+  --text-primary: #f8fafc;    /* Light text */
+  --text-secondary: #e2e8f0;  /* Secondary text */
+  --accent-primary: #a855f7;  /* Purple accent */
+  --accent-secondary: #c084fc; /* Light purple accent */
+}
+
+/* Apply dark purple theme to body and root */
+.dark body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark {
+  background-color: var(--bg-primary);
+}
+
+/* Admin-specific dark purple styling */
+.admin-dark-purple {
+  --admin-bg-primary: #1a1625;    /* Even darker purple for admin */
+  --admin-bg-secondary: #2d1b69;  /* Purple cards */
+  --admin-accent: #a855f7;        /* Admin purple accent */
+}
+
+/* Apply to the root element */
+.admin-dark-purple.dark {
+  background-color: var(--admin-bg-primary) !important;
+}
+
+/* Apply to all child elements */
+.admin-dark-purple.dark * {
+  --tw-bg-opacity: 1;
+}
+
+.admin-dark-purple.dark .bg-white {
+  background-color: var(--admin-bg-secondary) !important;
+}
+
+.admin-dark-purple.dark .bg-gray-800 {
+  background-color: var(--admin-bg-secondary) !important;
+}
+
+.admin-dark-purple.dark .bg-gray-900 {
+  background-color: var(--admin-bg-primary) !important;
+}
+
+.admin-dark-purple.dark .bg-gray-700 {
+  background-color: var(--admin-bg-secondary) !important;
+  opacity: 0.8;
+}
+
+.admin-dark-purple.dark .bg-gray-50 {
+  background-color: var(--admin-bg-primary) !important;
+}
+
+.admin-dark-purple.dark .border-gray-700 {
+  border-color: var(--admin-accent) !important;
+  opacity: 0.3;
+}
+
+.admin-dark-purple.dark .border-gray-600 {
+  border-color: var(--admin-accent) !important;
+  opacity: 0.2;
+}
+
+.admin-dark-purple.dark .border-gray-200 {
+  border-color: var(--admin-accent) !important;
+  opacity: 0.2;
+}
+
+/* Purple accent overrides for admin */
+.admin-dark-purple.dark .text-gray-600 {
+  color: var(--admin-accent) !important;
+}
+
+.admin-dark-purple.dark .text-gray-500 {
+  color: #c084fc !important; /* Light purple for secondary text */
+}
+
+.admin-dark-purple.dark .text-gray-400 {
+  color: #c084fc !important; /* Light purple for secondary text */
+}
+
+.admin-dark-purple.dark .bg-purple-600 {
+  background-color: var(--admin-accent) !important;
+}
+
+.admin-dark-purple.dark .border-purple-600 {
+  border-color: var(--admin-accent) !important;
+}
+
+/* Admin sidebar purple accents */
+.admin-dark-purple.dark .bg-gray-100 {
+  background-color: #3b2a6b !important;
+}
+
+.admin-dark-purple.dark .hover\\:bg-gray-200:hover {
+  background-color: #4c3a7b !important;
+}
+
+.admin-dark-purple.dark .hover\\:bg-gray-600:hover {
+  background-color: #4c3a7b !important;
+}
+
+.admin-dark-purple.dark .hover\\:bg-gray-700:hover {
+  background-color: #4c3a7b !important;
+}
+
+/* Force purple theme on main elements */
+.admin-dark-purple.dark main {
+  background-color: var(--admin-bg-primary) !important;
+}
+
+.admin-dark-purple.dark aside {
+  background-color: var(--admin-bg-primary) !important;
+}
+
+/* More aggressive purple overrides */
+.admin-dark-purple.dark div[class*="bg-gray"] {
+  background-color: var(--admin-bg-secondary) !important;
+}
+
+.admin-dark-purple.dark div[class*="bg-white"] {
+  background-color: var(--admin-bg-secondary) !important;
+}
+
+/* Test with a very obvious purple background */
+.admin-dark-purple.dark {
+  background: linear-gradient(135deg, #1a1625 0%, #2d1b69 100%) !important;
+}
+
+.admin-dark-purple.dark * {
+  background-color: inherit !important;
+}
+
+.admin-dark-purple.dark .bg-gray-50 {
+  background-color: var(--admin-bg-primary) !important;
+}
+
+.admin-dark-purple.dark .bg-gray-100 {
+  background-color: var(--admin-bg-secondary) !important;
+}
+
 /* Custom styles for emoji picker */
 .epr-emoji-category-label {
   @apply text-gray-700 dark:text-gray-300 !important;

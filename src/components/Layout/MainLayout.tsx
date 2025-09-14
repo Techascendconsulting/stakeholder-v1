@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
+import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard';
 import CoreConceptsView from '../Views/CoreConceptsView';
 import GuidedPracticeHub from '../Views/GuidedPracticeHub';
@@ -49,6 +50,10 @@ import AdminDashboard from '../AdminDashboard';
 
 const MainLayout: React.FC = () => {
   const { currentView, setCurrentView, isLoading, selectedProject } = useApp();
+  const { isAdmin } = useAdmin();
+
+  // Debug admin status
+  console.log('🎨 ADMIN THEME: isAdmin =', isAdmin, 'currentView =', currentView);
 
   if (isLoading) {
     return (
@@ -177,7 +182,13 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-gray-50 dark:bg-gray-900">
+    <div className={`flex h-screen w-full bg-gray-50 dark:bg-gray-900 ${isAdmin ? 'admin-dark-purple' : ''}`}>
+      {/* Debug indicator for admin theme */}
+      {isAdmin && (
+        <div className="fixed top-4 right-4 z-50 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+          Admin Purple Theme Active
+        </div>
+      )}
       <Sidebar />
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
         {renderView()}

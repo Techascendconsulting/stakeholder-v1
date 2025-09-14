@@ -1,83 +1,89 @@
-import React from 'react'
-import { useGlobalAudio } from '../../hooks/useGlobalAudio'
-import { useApp } from '../../contexts/AppContext'
-import { Pause, Play, Square, Music } from 'lucide-react'
+import React from 'react';
+import { Play, Pause, Square, Music, Headphones } from 'lucide-react';
+import { useGlobalAudio } from '../../hooks/useGlobalAudio';
 
 const SidebarAudioPlayer: React.FC = () => {
-  const { activeTrack, isPlaying, currentTitle, playTrack, pauseTrack, stopTrack } = useGlobalAudio()
-  const { currentView } = useApp()
+  const { activeTrack, isPlaying, playTrack, pauseTrack, stopTrack } = useGlobalAudio();
 
-  // Meeting views where audio should auto-pause
-  const meetingViews = ['stakeholders', 'training-practice', 'voice-practice', 'individual-agents']
-
-  // Auto-pause when entering meetings
-  React.useEffect(() => {
-    if (isPlaying && meetingViews.includes(currentView)) {
-      pauseTrack()
-    }
-  }, [currentView, isPlaying, pauseTrack])
-
-  const handleStop = () => {
-    stopTrack()
+  // Don't show if no track is active
+  if (!activeTrack) {
+    return null;
   }
 
-  if (!activeTrack) return null
+  const handlePlayPause = () => {
+    if (isPlaying) {
+      pauseTrack();
+    } else {
+      // Resume the current track
+      playTrack(activeTrack.src || '', activeTrack.title || '');
+    }
+  };
+
+  const handleStop = () => {
+    stopTrack();
+  };
+
+  // Determine track type for icon
+  const isMotivationTrack = activeTrack.title?.toLowerCase().includes('talk') || 
+                           activeTrack.title?.toLowerCase().includes('motivation') ||
+                           activeTrack.title?.toLowerCase().includes('overwhelm');
+  
+  const TrackIcon = isMotivationTrack ? Headphones : Music;
 
   return (
-    <div className="mt-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20">
+    <div className="w-full bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="flex items-center space-x-3">
-        {/* Music Icon */}
+        {/* Track Icon */}
         <div className="flex-shrink-0">
-          <Music className="w-5 h-5 text-purple-200" />
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <TrackIcon className="w-4 h-4 text-white" />
+          </div>
         </div>
-        
+
         {/* Track Info */}
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-white truncate">
-            {currentTitle}
+          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+            {activeTrack.title}
           </p>
-          <p className="text-xs text-purple-200">
-            {isPlaying ? 'Playing' : 'Paused'}
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {isMotivationTrack ? 'Motivation Talk' : 'Background Music'}
           </p>
         </div>
-        
+
         {/* Controls */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <button
-            onClick={isPlaying ? pauseTrack : () => playTrack(activeTrack, currentTitle)}
-            className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-200"
+            onClick={handlePlayPause}
+            className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             title={isPlaying ? 'Pause' : 'Play'}
           >
             {isPlaying ? (
-              <Pause className="w-3 h-3" />
+              <Pause className="w-3 h-3 text-gray-700 dark:text-gray-300" />
             ) : (
-              <Play className="w-3 h-3 ml-0.5" />
+              <Play className="w-3 h-3 text-gray-700 dark:text-gray-300" />
             )}
           </button>
           
           <button
             onClick={handleStop}
-            className="p-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-200 transition-all duration-200"
+            className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             title="Stop"
           >
-            <Square className="w-3 h-3" />
+            <Square className="w-3 h-3 text-gray-700 dark:text-gray-300" />
           </button>
         </div>
       </div>
-      
-      {/* Visual Beat Indicator */}
+
+      {/* Progress indicator (visual only) */}
       {isPlaying && (
-        <div className="mt-2 flex justify-center space-x-1">
-          <div className="w-1 h-2 bg-purple-300 rounded-full animate-pulse"></div>
-          <div className="w-1 h-3 bg-purple-300 rounded-full animate-pulse" style={{animationDelay: '0.1s'}}></div>
-          <div className="w-1 h-2 bg-purple-300 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-          <div className="w-1 h-4 bg-purple-300 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
-          <div className="w-1 h-2 bg-purple-300 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+        <div className="mt-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-1 rounded-full animate-pulse"></div>
+          </div>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default SidebarAudioPlayer
-
+export default SidebarAudioPlayer;

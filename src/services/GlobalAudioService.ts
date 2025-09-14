@@ -128,7 +128,10 @@ class GlobalAudioService {
 
   getState() {
     return {
-      activeTrack: this.activeTrack,
+      activeTrack: this.activeTrack ? {
+        title: this.currentTitle,
+        src: this.audio?.src || ''
+      } : null,
       isPlaying: this.isPlaying,
       currentTitle: this.currentTitle
     }
@@ -137,3 +140,4 @@ class GlobalAudioService {
 
 // Create a singleton instance
 export const globalAudioService = new GlobalAudioService()
+

@@ -26,3 +26,4 @@ export const useGlobalAudio = () => {
   console.log('🎵 useGlobalAudio: Returning state:', result)
   return result
 }
+

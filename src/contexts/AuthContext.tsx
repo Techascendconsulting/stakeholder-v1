@@ -48,24 +48,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
           console.log('🔐 AUTH - Initial session:', session ? 'Found' : 'None')
           
-          // If user is logged in, check device lock
+          // If user is logged in, restore session WITHOUT device lock check
+          // SECURITY APPROACH:
+          // - Session restoration: Trust existing sessions (less aggressive)
+          // - New logins: Full device lock check (maintains 1-device security)
+          // - Continuous monitoring: Real-time device switching detection
           if (session?.user) {
-            console.log('🔐 AUTH - Checking device lock for existing session')
-            const deviceLockResult = await deviceLockService.checkDeviceLock(session.user.id)
+            console.log('🔐 AUTH - Restoring existing session (no device lock check on restoration)')
+            setSession(session)
+            setUser(session.user)
             
-            if (!deviceLockResult.success) {
-              console.log('🔐 AUTH - Device lock failed for existing session, signing out')
-              // Sign out but don't wait for it to complete
-              supabase.auth.signOut()
-              setSession(null)
-              setUser(null)
-              
-              // Store device lock error for display on login page
-              localStorage.setItem('deviceLockError', JSON.stringify(deviceLockResult))
-            } else {
-              console.log('🔐 AUTH - Device lock successful for existing session')
-              setSession(session)
-              setUser(session.user)
+            // Log successful session restoration
+            try {
+              await userActivityService.logActivity(
+                session.user.id,
+                'session_restored',
+                'Session restored on page refresh',
+                true
+              )
+            } catch (logError) {
+              console.log('Failed to log session restoration:', logError)
             }
           } else {
             setSession(session)
