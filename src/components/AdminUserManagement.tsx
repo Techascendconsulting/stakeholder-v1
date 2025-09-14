@@ -469,7 +469,16 @@ const AdminUserManagement: React.FC = () => {
   const buildUserActions = (targetUser: User) => {
     const currentUserId = user?.id;
     const isCurrentUser = targetUser.id === currentUserId;
-    const actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode}> = [];
+    const actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode, variant?: string}> = [];
+    
+    console.log('🔧 BUILD_ACTIONS: Building actions for user:', targetUser.email);
+    console.log('🔧 BUILD_ACTIONS: User roles:', {
+      is_admin: targetUser.is_admin,
+      is_senior_admin: targetUser.is_senior_admin,
+      is_super_admin: targetUser.is_super_admin,
+      locked: targetUser.locked,
+      registered_device: targetUser.registered_device
+    });
 
     // Super Admin can manage everyone except themselves
     if (currentUserRole.is_super_admin && !isCurrentUser) {
@@ -565,7 +574,7 @@ const AdminUserManagement: React.FC = () => {
       });
     }
     
-    // Student actions (for all admin levels)
+    // Student actions (for all admin levels) - add these for any student user
     if (!targetUser.is_admin && !targetUser.is_senior_admin && !targetUser.is_super_admin) {
       if (targetUser.locked) {
         actions.push({
@@ -588,6 +597,9 @@ const AdminUserManagement: React.FC = () => {
       }
     }
 
+    console.log('🔧 BUILD_ACTIONS: Final actions array:', actions.length, 'actions');
+    console.log('🔧 BUILD_ACTIONS: Actions:', actions.map(a => a.label));
+    
     return actions;
   };
 
