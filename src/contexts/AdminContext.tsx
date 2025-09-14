@@ -76,23 +76,15 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       setIsAdmin(isAdminUser);
       setAdminRoles(roles);
       
-      // Calculate combined permissions from all roles
+      // Calculate combined permissions based on admin level
       const combinedPermissions: AdminPermissions = {
-        user_management: false,
-        device_unlock: false,
-        system_settings: false,
-        analytics: false,
-        admin_management: false,
-        audit_logs: false
+        user_management: isAdminUser,
+        device_unlock: isAdminUser,
+        system_settings: userData?.is_super_admin || false,
+        analytics: isAdminUser,
+        admin_management: userData?.is_super_admin || userData?.is_senior_admin || false,
+        audit_logs: isAdminUser
       };
-
-      roles.forEach(role => {
-        Object.keys(role.permissions).forEach(permission => {
-          if (role.permissions[permission as keyof AdminPermissions]) {
-            combinedPermissions[permission as keyof AdminPermissions] = true;
-          }
-        });
-      });
 
       setPermissions(combinedPermissions);
       console.log('🔐 ADMIN - Combined permissions:', combinedPermissions);
