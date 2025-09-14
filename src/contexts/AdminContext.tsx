@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { adminService, AdminRole, AdminPermissions } from '../services/adminService';
+import { supabase } from '../lib/supabase';
 
 interface AdminContextType {
   isAdmin: boolean;
