@@ -15,6 +15,7 @@ import {
   EyeOff,
   MoreVertical
 } from 'lucide-react';
+import ActionDropdown from './ui/ActionDropdown';
 import { useAdmin } from '../contexts/AdminContext';
 import { useAuth } from '../contexts/AuthContext';
 import { adminService } from '../services/adminService';
@@ -54,7 +55,6 @@ const AdminUserManagement: React.FC = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'senior_admin' | 'super_admin'>('admin');
-  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (hasPermission('user_management')) {
@@ -63,20 +63,6 @@ const AdminUserManagement: React.FC = () => {
     }
   }, [hasPermission]);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.dropdown-container')) {
-        setOpenDropdowns(new Set());
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const loadCurrentUserRole = async () => {
     if (!user?.id) return;
@@ -478,23 +464,6 @@ const AdminUserManagement: React.FC = () => {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
-  // Helper function to toggle dropdown
-  const toggleDropdown = (userId: string) => {
-    const newOpenDropdowns = new Set(openDropdowns);
-    if (newOpenDropdowns.has(userId)) {
-      newOpenDropdowns.delete(userId);
-    } else {
-      newOpenDropdowns.add(userId);
-    }
-    setOpenDropdowns(newOpenDropdowns);
-  };
-
-  // Helper function to close dropdown
-  const closeDropdown = (userId: string) => {
-    const newOpenDropdowns = new Set(openDropdowns);
-    newOpenDropdowns.delete(userId);
-    setOpenDropdowns(newOpenDropdowns);
-  };
 
   // Helper function to build actions array for a user
   const buildUserActions = (targetUser: User) => {
@@ -603,7 +572,8 @@ const AdminUserManagement: React.FC = () => {
           label: 'Unlock Account',
           onClick: () => handleUnlockUser(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors',
-          icon: <Unlock className="h-3 w-3 mr-1" />
+          icon: <Unlock className="h-3 w-3 mr-1" />,
+          variant: 'success'
         });
       }
       
@@ -612,7 +582,8 @@ const AdminUserManagement: React.FC = () => {
           label: 'Reset Device',
           onClick: () => handleClearDeviceBinding(targetUser.id, targetUser.email),
           className: 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 transition-colors',
-          icon: <EyeOff className="h-3 w-3 mr-1" />
+          icon: <EyeOff className="h-3 w-3 mr-1" />,
+          variant: 'warning'
         });
       }
     }
@@ -621,7 +592,7 @@ const AdminUserManagement: React.FC = () => {
   };
 
   // Helper function to render action buttons or dropdown
-  const renderActions = (actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode}>, userId: string) => {
+  const renderActions = (actions: Array<{label: string, onClick: () => void, className: string, icon: React.ReactNode, variant?: string}>, userId: string) => {
     if (actions.length <= 3) {
       // Show individual buttons
       return (
@@ -639,37 +610,19 @@ const AdminUserManagement: React.FC = () => {
         </div>
       );
     } else {
-      // Show dropdown
+      // Show modern dropdown
+      const dropdownActions = actions.map(action => ({
+        label: action.label,
+        onClick: action.onClick,
+        icon: action.icon,
+        variant: action.variant || 'default'
+      }));
+
       return (
-        <div className="relative dropdown-container">
-          <button
-            onClick={() => toggleDropdown(userId)}
-            className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
-          >
-            <MoreVertical className="h-3 w-3 mr-1" />
-            Actions
-          </button>
-          
-          {openDropdowns.has(userId) && (
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
-              <div className="py-1">
-                {actions.map((action, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      action.onClick();
-                      closeDropdown(userId);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                  >
-                    {action.icon}
-                    <span className="ml-2">{action.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <ActionDropdown 
+          actions={dropdownActions}
+          triggerLabel="Actions"
+        />
       );
     }
   };
