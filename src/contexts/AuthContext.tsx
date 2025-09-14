@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const deviceCheckInterval = useRef<NodeJS.Timeout | null>(null)
   const lastDeviceId = useRef<string | null>(null)
   const deviceLockFailed = useRef<boolean>(false)
+  const deviceRegistrationCompleted = useRef<boolean>(false)
 
   useEffect(() => {
     // Get initial session
@@ -257,8 +258,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (!finalUserProfile?.registered_device && !isAdminForRegistration) {
           console.log('🔐 AUTH - No device registered for student user, showing registration prompt');
           setShowDeviceRegistration(true);
+          // Don't start monitoring until device registration is complete
+          deviceRegistrationCompleted.current = false;
         } else if (isAdminForRegistration) {
           console.log('🔐 AUTH - Admin user detected, skipping device registration prompt');
+          // Admin users can start monitoring immediately (but won't due to admin check)
+          deviceRegistrationCompleted.current = true;
+        } else {
+          // User has registered device, can start monitoring
+          deviceRegistrationCompleted.current = true;
         }
         
         return { error: null, deviceLockResult }
@@ -327,6 +335,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const completeDeviceRegistration = () => {
     setShowDeviceRegistration(false)
+    deviceRegistrationCompleted.current = true
+    
+    // Now start device monitoring since registration is complete
+    console.log('🔐 AUTH - Device registration completed, starting monitoring')
+    
+    // Check if user is admin before starting monitoring
+    const startMonitoringAfterRegistration = async () => {
+      const isAdmin = await checkIfAdmin();
+      if (!isAdmin) {
+        console.log('🔐 AUTH - Starting device monitoring after registration');
+        startDeviceMonitoring();
+      } else {
+        console.log('🔐 AUTH - Admin user, no monitoring needed after registration');
+      }
+    };
+    
+    startMonitoringAfterRegistration();
   }
 
   // Continuous device lock monitoring
@@ -340,6 +365,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       // Reset device lock failed flag when user is logged out
       deviceLockFailed.current = false
+      deviceRegistrationCompleted.current = false
       return
     }
 
@@ -384,9 +410,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
       
-      // Non-admin users get device monitoring only
-      console.log('🔐 AUTH - Starting device monitoring for student user');
-      startDeviceMonitoring();
+      // For non-admin users, only start monitoring if device registration is complete
+      if (deviceRegistrationCompleted.current) {
+        console.log('🔐 AUTH - Starting device monitoring for student user (device registration complete)');
+        startDeviceMonitoring();
+      } else {
+        console.log('🔐 AUTH - Device registration pending, monitoring will start after registration');
+      }
     };
 
     startMonitoringIfNotAdmin();
