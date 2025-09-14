@@ -142,22 +142,8 @@ class UserActivityService {
     });
   }
 
-  /**
-   * Log last active time (for session tracking)
-   */
-  async logLastActive(
-    userId: string,
-    sessionId?: string
-  ): Promise<string | null> {
-    return this.logActivity(userId, 'last_active', {
-      sessionId,
-      success: true,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        page_url: window.location.href
-      }
-    });
-  }
+  // Note: Removed logLastActive to reduce log volume
+  // Last login date is sufficient for "last active" information
 
   /**
    * Log device lock failure

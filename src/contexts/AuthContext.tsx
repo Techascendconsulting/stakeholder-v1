@@ -34,7 +34,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const deviceCheckInterval = useRef<NodeJS.Timeout | null>(null)
   const lastDeviceId = useRef<string | null>(null)
   const deviceLockFailed = useRef<boolean>(false)
-  const activityLogInterval = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     // Get initial session
@@ -330,11 +329,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         clearInterval(deviceCheckInterval.current)
         deviceCheckInterval.current = null
       }
-      if (activityLogInterval.current) {
-        console.log('🔐 AUTH - Clearing activity tracking interval (no user)')
-        clearInterval(activityLogInterval.current)
-        activityLogInterval.current = null
-      }
       // Reset device lock failed flag when user is logged out
       deviceLockFailed.current = false
       return
@@ -375,16 +369,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Check admin status first
     checkIfAdmin().then((isAdmin) => {
       if (isAdmin) {
-        // Admin users only get activity tracking, NO device lock monitoring
-        console.log('🔐 AUTH - Starting activity tracking for admin user (no device monitoring)');
-        startActivityTracking();
+        // Admin users get NO monitoring (device lock bypassed)
+        console.log('🔐 AUTH - Admin user detected, no monitoring needed');
         return;
       }
       
-      // Non-admin users get both device monitoring and activity tracking
-      console.log('🔐 AUTH - Starting device monitoring and activity tracking for student user');
+      // Non-admin users get device monitoring only
+      console.log('🔐 AUTH - Starting device monitoring for student user');
       startDeviceMonitoring();
-      startActivityTracking();
     });
 
     // Start continuous device lock monitoring
@@ -434,29 +426,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }, 5000) // Check every 5 seconds
     }
 
-    // Start last active tracking
-    const startActivityTracking = () => {
-      console.log('🔐 AUTH - Starting last active tracking')
-      
-      // Log last active every 30 seconds
-      activityLogInterval.current = setInterval(async () => {
-        try {
-          await userActivityService.logLastActive(user.id, session?.access_token)
-        } catch (error) {
-          console.error('🔐 AUTH - Activity tracking error:', error)
-        }
-      }, 30000) // Log every 30 seconds
-    }
+    // Note: Removed last active tracking to reduce log volume
+    // Last login date is sufficient for "last active" information
 
     // Cleanup on unmount or user change
     return () => {
       if (deviceCheckInterval.current) {
         clearInterval(deviceCheckInterval.current)
         deviceCheckInterval.current = null
-      }
-      if (activityLogInterval.current) {
-        clearInterval(activityLogInterval.current)
-        activityLogInterval.current = null
       }
     }
   }, [user])
