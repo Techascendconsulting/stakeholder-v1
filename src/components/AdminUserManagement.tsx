@@ -20,6 +20,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { useAuth } from '../contexts/AuthContext';
 import { adminService } from '../services/adminService';
 import { deviceLockService } from '../services/deviceLockService';
+import { emailService } from '../services/emailService';
 import { adminInviteService } from '../services/adminInviteService';
 import { supabase } from '../lib/supabase';
 
@@ -230,14 +231,14 @@ const AdminUserManagement: React.FC = () => {
   };
 
   const handleClearDeviceBinding = async (userId: string, email: string) => {
-    if (!confirm(`Are you sure you want to clear device binding for ${email}? They will need to register a new device on next login.`)) {
+    if (!confirm(`Are you sure you want to reset the device access for ${email}? They will receive an email notification and need to login to register their new device.`)) {
       return;
     }
 
     try {
       setLoading(true);
       
-      // Clear the registered device
+      // Clear the registered device (Step 1: Admin Action)
       const { error } = await supabase
         .from('user_profiles')
         .update({ registered_device: null })
@@ -247,6 +248,14 @@ const AdminUserManagement: React.FC = () => {
         throw error;
       }
 
+      // Send email notification to student (Step 1: Email Notification)
+      console.log('📧 Sending device reset notification to:', email);
+      const emailSent = await emailService.sendDeviceResetNotification(email);
+      
+      if (!emailSent) {
+        console.warn('⚠️ Failed to send email notification, but device binding was cleared');
+      }
+
       // Log the action
       console.log('🔍 Logging clear device binding action...');
       try {
@@ -254,7 +263,11 @@ const AdminUserManagement: React.FC = () => {
           user?.id || '',
           'clear_device_binding',
           userId,
-          { email, action: 'device_binding_cleared' }
+          { 
+            email, 
+            action: 'device_binding_cleared',
+            email_notification_sent: emailSent
+          }
         );
         console.log('✅ Activity logged successfully');
       } catch (logError) {
@@ -263,7 +276,12 @@ const AdminUserManagement: React.FC = () => {
       
       // Refresh users
       loadUsers();
-      alert(`Device binding cleared for ${email}`);
+      
+      const message = emailSent 
+        ? `Device access reset for ${email}. They have been notified via email and can login to register their new device.`
+        : `Device access reset for ${email}. Please notify them manually as the email notification failed.`;
+      
+      alert(message);
     } catch (error) {
       console.error('Error clearing device binding:', error);
       alert('Error clearing device binding');

@@ -3,14 +3,17 @@ import { supabase } from '../lib/supabase'
 import { User, Session } from '@supabase/supabase-js'
 import { deviceLockService, DeviceLockResult } from '../services/deviceLockService'
 import { userActivityService } from '../services/userActivityService'
+import DeviceRegistrationPrompt from '../components/DeviceRegistrationPrompt'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
+  showDeviceRegistration: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null; deviceLockResult?: DeviceLockResult }>
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
+  completeDeviceRegistration: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,6 +30,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showDeviceRegistration, setShowDeviceRegistration] = useState(false)
   const deviceCheckInterval = useRef<NodeJS.Timeout | null>(null)
   const lastDeviceId = useRef<string | null>(null)
   const deviceLockFailed = useRef<boolean>(false)
@@ -157,6 +161,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // If login successful, check device lock
       if (data.user) {
         console.log('🔐 AUTH - Checking device lock for user:', data.user.id)
+        
+        // Check if this is a device reset scenario (no device binding + account locked)
+        const { data: userProfile } = await supabase
+          .from('user_profiles')
+          .select('registered_device, locked')
+          .eq('user_id', data.user.id)
+          .single();
+        
+        const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked;
+        
+        if (isDeviceResetScenario) {
+          console.log('🔐 AUTH - Device reset scenario detected, auto-unlocking account');
+          
+          // Step 3: Auto-unlock account (System Action)
+          const { error: unlockError } = await supabase
+            .from('user_profiles')
+            .update({ locked: false })
+            .eq('user_id', data.user.id);
+          
+          if (unlockError) {
+            console.error('🔐 AUTH - Failed to auto-unlock account:', unlockError);
+          } else {
+            console.log('🔐 AUTH - Account auto-unlocked successfully');
+            
+            // Log the auto-unlock action
+            await userActivityService.logActivity(
+              data.user.id,
+              'auto_unlock_after_device_reset',
+              {
+                deviceId: await deviceLockService.getDeviceId(),
+                sessionId: data.session?.access_token,
+                success: true,
+                metadata: { auto_unlock: true, device_reset_flow: true }
+              }
+            );
+          }
+        }
+        
         const deviceLockResult = await deviceLockService.checkDeviceLock(data.user.id)
         
         console.log('🔐 AUTH - Device lock result:', deviceLockResult)
@@ -198,6 +240,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Log successful sign-in
         const deviceId = await deviceLockService.getDeviceId()
         await userActivityService.logSignIn(data.user.id, deviceId || undefined, data.session?.access_token)
+        
+        // Check if device registration is needed (after device reset scenario)
+        const { data: finalUserProfile } = await supabase
+          .from('user_profiles')
+          .select('registered_device')
+          .eq('user_id', data.user.id)
+          .single();
+        
+        if (!finalUserProfile?.registered_device) {
+          console.log('🔐 AUTH - No device registered, showing registration prompt');
+          setShowDeviceRegistration(true);
+        }
         
         return { error: null, deviceLockResult }
       }
@@ -261,6 +315,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setSession(null)
       setUser(null)
     }
+  }
+
+  const completeDeviceRegistration = () => {
+    setShowDeviceRegistration(false)
   }
 
   // Continuous device lock monitoring
@@ -407,10 +465,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     user,
     session,
     loading,
+    showDeviceRegistration,
     signIn,
     signUp,
-    signOut
+    signOut,
+    completeDeviceRegistration
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {showDeviceRegistration && user && (
+        <DeviceRegistrationPrompt
+          userId={user.id}
+          onComplete={completeDeviceRegistration}
+        />
+      )}
+    </AuthContext.Provider>
+  )
 }
