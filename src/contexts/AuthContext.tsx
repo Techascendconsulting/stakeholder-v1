@@ -169,8 +169,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .eq('user_id', data.user.id)
           .single();
         
-        const isAdmin = userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin;
-        const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked && !isAdmin;
+        const isAdminUser = userProfile?.is_admin || userProfile?.is_super_admin || userProfile?.is_senior_admin;
+        const isDeviceResetScenario = !userProfile?.registered_device && userProfile?.locked && !isAdminUser;
         
         if (isDeviceResetScenario) {
           console.log('🔐 AUTH - Device reset scenario detected for student, auto-unlocking account');
@@ -198,7 +198,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               }
             );
           }
-        } else if (isAdmin) {
+        } else if (isAdminUser) {
           console.log('🔐 AUTH - Admin user detected, skipping device reset auto-unlock');
         }
         
@@ -252,12 +252,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .eq('user_id', data.user.id)
           .single();
         
-        const isAdmin = finalUserProfile?.is_admin || finalUserProfile?.is_super_admin || finalUserProfile?.is_senior_admin;
+        const isAdminForRegistration = finalUserProfile?.is_admin || finalUserProfile?.is_super_admin || finalUserProfile?.is_senior_admin;
         
-        if (!finalUserProfile?.registered_device && !isAdmin) {
+        if (!finalUserProfile?.registered_device && !isAdminForRegistration) {
           console.log('🔐 AUTH - No device registered for student user, showing registration prompt');
           setShowDeviceRegistration(true);
-        } else if (isAdmin) {
+        } else if (isAdminForRegistration) {
           console.log('🔐 AUTH - Admin user detected, skipping device registration prompt');
         }
         
