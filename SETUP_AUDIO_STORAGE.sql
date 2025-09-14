@@ -31,3 +31,5 @@ FOR DELETE USING (bucket_id = 'motivation-audio');
 -- Test the bucket
 SELECT '✅ Audio storage bucket created successfully!' as status;
 SELECT name, public, file_size_limit, allowed_mime_types FROM storage.buckets WHERE id = 'motivation-audio';
+SELECT name, public, file_size_limit, allowed_mime_types FROM storage.buckets WHERE id = 'motivation-audio';
+

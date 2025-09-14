@@ -1,6 +1,22 @@
 import React from 'react'
+import { useApp } from '../contexts/AppContext'
+import { useAuth } from '../contexts/AuthContext'
+import { useAdmin } from '../contexts/AdminContext'
 
 const GlobalWatermark: React.FC = () => {
+  const { currentView } = useApp()
+  const { user } = useAuth()
+  const { isAdmin } = useAdmin()
+
+  // Don't show watermark on:
+  // - Login/signup pages (when user is not logged in)
+  // - Admin pages
+  // - Welcome page (landing page)
+  const shouldShowWatermark = user && !isAdmin && currentView !== 'welcome'
+
+  if (!shouldShowWatermark) {
+    return null
+  }
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       {/* Repeating diagonal background lines */}

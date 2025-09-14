@@ -1,5 +1,6 @@
 import React from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AdminProvider } from './contexts/AdminContext'
 import { AppProvider } from './contexts/AppContext'
 import { VoiceProvider } from './contexts/VoiceContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -143,18 +144,20 @@ function App() {
       <ErrorBoundary>
         <ThemeProvider>
           <AuthProvider>
-            <VoiceProvider>
-              <AppProvider>
-                <OnboardingProvider>
-                  <MeetingSetupProvider>
-                    <StakeholderBotProvider>
-                      <AppContent />
-                      <GlobalWatermark />
-                    </StakeholderBotProvider>
-                  </MeetingSetupProvider>
-                </OnboardingProvider>
-              </AppProvider>
-            </VoiceProvider>
+            <AdminProvider>
+              <VoiceProvider>
+                <AppProvider>
+                  <OnboardingProvider>
+                    <MeetingSetupProvider>
+                      <StakeholderBotProvider>
+                        <AppContent />
+                        <GlobalWatermark />
+                      </StakeholderBotProvider>
+                    </MeetingSetupProvider>
+                  </OnboardingProvider>
+                </AppProvider>
+              </VoiceProvider>
+            </AdminProvider>
           </AuthProvider>
         </ThemeProvider>
       </ErrorBoundary>

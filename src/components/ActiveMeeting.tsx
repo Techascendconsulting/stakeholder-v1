@@ -334,4 +334,3 @@ export default function ActiveMeeting({ projectName, stakeholders, selectedStage
       </div>
     </div>
   );
-}

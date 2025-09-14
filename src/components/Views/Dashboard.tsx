@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, MessageSquare, FileText, Clock, Award, Target, Calendar, ChevronRight, Play, FolderOpen, Eye, ArrowRight, Lightbulb, Zap, BookOpen, RefreshCw, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import { Users, MessageSquare, FileText, Clock, Award, Target, Calendar, ChevronRight, Play, FolderOpen, ArrowRight, Lightbulb, Zap, BookOpen, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useAdmin } from '../../contexts/AdminContext';
 import { DatabaseService, DatabaseProgress, DatabaseMeeting } from '../../lib/database';
 import { MeetingDataService, MeetingStats } from '../../lib/meetingDataService';
 
 const Dashboard: React.FC = () => {
   const { currentView, setCurrentView, setSelectedMeeting, refreshMeetingData, selectedProject, selectedStakeholders } = useApp();
   const { user } = useAuth();
-  const { resetOnboarding } = useOnboarding();
+  const { isAdmin } = useAdmin();
   const [progress, setProgress] = useState<DatabaseProgress | null>(null);
   const [recentMeetings, setRecentMeetings] = useState<DatabaseMeeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const handleVisibilityChange = async () => {
       // Don't refresh during voice meetings to prevent losing conversation
-      if (!document.hidden && user?.id && currentView !== 'voice-only') {
+      if (!document.hidden && user?.id && currentView !== 'voice-only-meeting') {
         console.log('🔄 Dashboard - Page became visible, refreshing data');
         await refreshMeetingData();
         loadDashboardData();
@@ -268,16 +268,6 @@ const Dashboard: React.FC = () => {
             Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋
           </h1>
           <div className="flex items-center space-x-3">
-            <button
-              onClick={async () => {
-                await resetOnboarding();
-                setCurrentView('get-started');
-              }}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span>Reset Onboarding</span>
-            </button>
             <button
               onClick={() => {
                 console.log('🔄 Dashboard - Manual refresh triggered');
@@ -673,7 +663,7 @@ const Dashboard: React.FC = () => {
             {progress.achievements.map((achievement, index) => (
               <span
                 key={index}
-                className="px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium border border-purple-200"
+                className="px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm font-medium border border-yellow-200"
               >
                 🏆 {achievement}
               </span>
@@ -681,20 +671,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Reset Onboarding Link */}
-      <div className="mt-8 text-center">
-        <button
-          onClick={async () => {
-            await resetOnboarding();
-            setCurrentView('get-started');
-          }}
-          className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 flex items-center justify-center space-x-2 font-medium"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>Reset Onboarding</span>
-        </button>
-      </div>
     </div>
   );
 };

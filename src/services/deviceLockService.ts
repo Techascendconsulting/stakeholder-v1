@@ -72,6 +72,28 @@ class DeviceLockService {
     try {
       console.log('🔐 DEVICE LOCK - Starting device lock check for user:', userId);
       
+      // FIRST: Check if user is admin - admins bypass device lock entirely
+      try {
+        const { data: adminCheck, error: adminError } = await supabase
+          .from('user_profiles')
+          .select('is_admin')
+          .eq('user_id', userId)
+          .eq('is_admin', true)
+          .single();
+        
+        if (adminCheck && !adminError) {
+          console.log('🔐 DEVICE LOCK - Admin user detected, bypassing device lock entirely');
+          return {
+            success: true,
+            locked: false,
+            message: 'Admin access granted - device lock bypassed.',
+            deviceId: await this.getDeviceId()
+          };
+        }
+      } catch (adminCheckError) {
+        console.log('🔐 DEVICE LOCK - Admin check failed, proceeding with device lock');
+      }
+      
       // Get current device ID
       const currentDeviceId = await this.getDeviceId();
       console.log('🔐 DEVICE LOCK - Current device ID:', currentDeviceId);
@@ -105,6 +127,17 @@ class DeviceLockService {
         registeredDevice: user?.registered_device,
         isMatch: user?.registered_device === currentDeviceId
       });
+
+      // Handle RLS recursion error - if we can't access user_profiles due to RLS issues,
+      // we'll assume the user is not an admin and proceed with device lock
+      if (error && error.code === '42P17') {
+        console.log('🔐 DEVICE LOCK - RLS recursion error detected, treating as non-admin user');
+        return {
+          success: false,
+          locked: true,
+          message: 'Your account has been locked due to multiple device usage. Please contact support to unlock your account.'
+        };
+      }
 
       if (error) {
         console.error('Error fetching user device data:', error);

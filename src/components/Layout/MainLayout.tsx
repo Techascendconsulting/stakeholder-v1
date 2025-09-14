@@ -35,7 +35,7 @@ import TrainingDashboardView from '../Views/TrainingDashboardView';
 import TrainingDeliverablesView from '../Views/TrainingDeliverablesView';
 import ProjectDeliverablesView from '../Views/ProjectDeliverablesView';
 import WelcomeView from '../Views/WelcomeView';
-import PracticeView from '../Views/PracticeView';
+import PracticeLabView from '../Views/PracticeLabView';
 import MotivationPage from '../Views/MotivationPage';
 import GetStartedView from '../Views/GetStartedView';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
@@ -44,6 +44,7 @@ import ProcessMapperView from '../Views/ProcessMapperView';
 import TrainingUI from '../Views/TrainingUI';
 import LearnLandingView from '../Views/LearnLandingView';
 import ProjectLandingView from '../Views/ProjectLandingView';
+import AdminDashboard from '../AdminDashboard';
 
 
 const MainLayout: React.FC = () => {
@@ -73,7 +74,7 @@ const MainLayout: React.FC = () => {
       case 'learn':
         return <LearnLandingView />;
       case 'practice':
-        return <PracticeView />;
+        return <PracticeLabView />;
       case 'motivation':
         return <MotivationPage />;
       case 'project':
@@ -168,6 +169,8 @@ const MainLayout: React.FC = () => {
         return <ProjectDeliverablesView />;
             case 'user-story-checker':
               return <TrainingUI />;
+      case 'admin':
+        return <AdminDashboard />;
       default:
         return <ProjectsView />;
     }

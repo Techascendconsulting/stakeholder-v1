@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react'
 import { useAuth } from './AuthContext'
+import { useAdmin } from './AdminContext'
 import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
 import { MeetingDataService } from '../lib/meetingDataService'
@@ -66,6 +67,7 @@ export const useApp = () => {
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth()
+  const { isAdmin } = useAdmin()
   
   // Track hydration state to prevent blink effect - start as true to prevent flash
   const [isHydrated, setIsHydrated] = useState(true)
@@ -140,7 +142,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'structured-training',
         'pre-brief',
         'live-training-meeting',
-        'post-brief'
+        'post-brief',
+        'admin'
       ];
       if (savedView && validViews.includes(savedView as AppView)) {
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
@@ -287,13 +290,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('✅ USER_EFFECT: User is logged in, preserving current state')
       console.log('✅ USER_EFFECT: Current view:', currentView)
       console.log('✅ USER_EFFECT: Selected project:', selectedProject?.name || 'none')
+      
+      // Redirect admin users to admin panel if they're in student views
+      if (isAdmin && (currentView === 'welcome' || currentView === 'training-hub' || currentView === 'practice' || currentView === 'learn' || currentView === 'dashboard')) {
+        console.log('🔐 ADMIN_EFFECT: Admin user detected in student view, redirecting to admin panel')
+        setCurrentViewState('admin')
+        localStorage.setItem('currentView', 'admin')
+      }
     } else {
       console.log('⏳ USER_EFFECT: User state is loading or no change, doing nothing')
     }
     
     // Update previous user reference
     prevUser.current = user
-  }, [user, currentView, selectedProject])
+  }, [user, currentView, selectedProject, isAdmin])
+
+  // Set default view for admin users on initial load
+  useEffect(() => {
+    if (user && isAdmin && currentView === 'welcome') {
+      console.log('🔐 ADMIN_INIT: Admin user detected on welcome page, redirecting to admin panel')
+      setCurrentViewState('admin')
+      localStorage.setItem('currentView', 'admin')
+    }
+  }, [user, isAdmin, currentView])
 
   // Mock user progress data
   const userProgress = {

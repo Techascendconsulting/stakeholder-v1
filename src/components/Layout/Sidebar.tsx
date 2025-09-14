@@ -19,6 +19,7 @@ import {
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAdmin } from '../../contexts/AdminContext';
 import { UserAvatar } from '../Common/UserAvatar';
 import SidebarAudioPlayer from './SidebarAudioPlayer';
 
@@ -31,12 +32,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
   const { user, signOut } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
+  const { isAdmin } = useAdmin();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
 
 
-  const menuItems = [
+  // Admin-specific menu items
+  const adminMenuItems = [
+    { 
+      id: 'dashboard', 
+      label: 'Admin Dashboard', 
+      icon: LayoutDashboard
+    },
+    { 
+      id: 'admin', 
+      label: 'Admin Panel', 
+      icon: Settings
+    }
+  ];
+
+  // Student menu items
+  const studentMenuItems = [
     { 
       id: 'welcome', 
       label: 'Welcome', 
@@ -73,6 +90,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: Plus
     }
   ];
+
+  // Use admin or student menu items based on user role
+  const menuItems = isAdmin ? adminMenuItems : studentMenuItems;
 
   const handleSignOut = async () => {
     try {
