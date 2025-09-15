@@ -446,7 +446,6 @@ const LoginSignup: React.FC = () => {
             </form>
           )}
         </div>
-      </div>
 
       {/* Device Lock Alert */}
       {deviceLockResult && (
@@ -456,6 +455,7 @@ const LoginSignup: React.FC = () => {
           onClose={() => setDeviceLockResult(null)}
         />
       )}
+      </div>
     </div>
   )
 }

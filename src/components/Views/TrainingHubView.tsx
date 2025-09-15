@@ -624,8 +624,8 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
       { variant: "purple" as const, acronym: "COP", characterImage: "/onboarding-character.png" },
       { variant: "green" as const, acronym: "DEM", characterImage: "/expense-character.png" },
       { variant: "orange" as const, acronym: "MIM", characterImage: "/inventory-character.png" },
-      { variant: "blue" as const, acronym: "CSM", characterImage: "/onboarding-character.png" }, // Using onboarding as placeholder
-      { variant: "red" as const, acronym: "EPM", characterImage: "/expense-character.png" } // Using expense as placeholder
+      { variant: "blue" as const, acronym: "CSM", characterImage: "/images/support-character.png" },
+      { variant: "red" as const, acronym: "EPM", characterImage: "/images/performance-character.png" }
     ];
 
     return (
@@ -704,6 +704,18 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
                 </p>
               </div>
             </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => {
+                  setCurrentStep('training-hub');
+                  sessionStorage.setItem('fromProjectBrief', 'true');
+                }}
+                className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium shadow-sm hover:shadow-md"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Select Elicitation Stage
+              </button>
+            </div>
           </div>
         </div>
 
@@ -766,9 +778,18 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
                   {selectedProject.relevantStakeholders?.map(stakeholderId => {
                     const stakeholder = mockStakeholders.find(s => s.id === stakeholderId);
                     return (
-                      <li key={stakeholderId} className="flex items-center space-x-2">
-                        <Target className="w-4 h-4 text-purple-600" />
-                        <span>{stakeholder?.name || `Stakeholder ${stakeholderId}`}</span>
+                      <li key={stakeholderId} className="flex items-start space-x-3">
+                        <Target className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {stakeholder?.name || `Stakeholder ${stakeholderId}`}
+                          </span>
+                          {stakeholder?.role && (
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {stakeholder.role}
+                            </span>
+                          )}
+                        </div>
                       </li>
                     );
                   })}
@@ -779,28 +800,9 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Ready to Start?
                 </h3>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  Now that you understand the project context, you can begin your elicitation practice.
+                <p className="text-gray-700 dark:text-gray-300">
+                  Now that you understand the project context, you can begin your elicitation practice using the button above.
                 </p>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      setCurrentStep('training-hub');
-                      sessionStorage.setItem('fromProjectBrief', 'true');
-                    }}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-                  >
-                    <Target className="w-4 h-4 mr-2" />
-                    Select Elicitation Stage
-                  </button>
-                  <button
-                    onClick={handleBack}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Projects
-                  </button>
-                </div>
               </div>
             </div>
           </div>
