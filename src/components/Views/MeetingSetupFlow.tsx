@@ -3,12 +3,11 @@ import { ArrowLeft } from 'lucide-react';
 
 // Step components (to be created)
 import ProjectBrief from '../MeetingSetup/ProjectBrief';
-import MeetingTypeSelector from '../MeetingSetup/MeetingTypeSelector';
 import StageSelector from '../MeetingSetup/StageSelector';
 import StakeholderSelector from '../MeetingSetup/StakeholderSelector';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 
-type SetupStep = 'brief' | 'type' | 'stage' | 'stakeholders';
+type SetupStep = 'brief' | 'stage' | 'stakeholders';
 
 interface MeetingSetupFlowProps {
   projectId: string;
@@ -27,7 +26,7 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
       const raw = localStorage.getItem('meetingSetupProgress');
       if (raw) {
         const saved = JSON.parse(raw);
-        const allowed = ['brief', 'type', 'stage', 'stakeholders'];
+        const allowed = ['brief', 'stage', 'stakeholders'];
         if (saved?.projectId === projectId && allowed.includes(saved.currentStep)) {
           return saved.currentStep as SetupStep;
         }
@@ -38,7 +37,7 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
   const [meetingData, setMeetingData] = useState(() => {
     const base = {
       projectId,
-      meetingType: '',
+      meetingType: 'text',
       selectedStage: '',
       selectedStakeholders: [] as string[],
     };
@@ -54,18 +53,16 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
     return base;
   });
 
-  const steps: SetupStep[] = ['brief', 'type', 'stage', 'stakeholders'];
+  const steps: SetupStep[] = ['brief', 'stage', 'stakeholders'];
   
   const stepComponents = {
     brief: ProjectBrief,
-    type: MeetingTypeSelector,
     stage: StageSelector,
     stakeholders: StakeholderSelector
   };
 
   const stepTitles = {
     brief: 'Project Brief',
-    type: 'Meeting Type',
     stage: 'Select Stage',
     stakeholders: 'Stakeholders'
   };

@@ -16,7 +16,7 @@ const ProjectView: React.FC<{ projectId: string }> = ({ projectId }) => {
       const setup = raw ? JSON.parse(raw) : {};
       
       // Set selected stakeholders in global context
-      const type = setup?.meetingType || "";
+      const type = setup?.meetingType || "text";
       if (setup?.selectedStakeholders && Array.isArray(setup.selectedStakeholders)) {
         const selectedStakeholderIds = setup.selectedStakeholders;
         const selectedStakeholders = stakeholders.filter(stakeholder => 
@@ -25,11 +25,8 @@ const ProjectView: React.FC<{ projectId: string }> = ({ projectId }) => {
         console.log("👥 PROJECT_VIEW: Setting selected stakeholders:", selectedStakeholders.length);
         setSelectedStakeholders(selectedStakeholders);
       }
-      if (type === 'voice') {
-        setCurrentView('voice-only-meeting');
-      } else {
-        setCurrentView('meeting');
-      }
+      // Hard-set to text chat with AI suggestions
+      setCurrentView('meeting');
     } catch {
       setCurrentView('meeting');
     }
