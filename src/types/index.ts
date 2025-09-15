@@ -9,6 +9,7 @@ export type AppView =
   | 'dashboard'
   | 'learn'
   | 'practice'
+  | 'practice-2'
   | 'motivation'
   | 'project'
   | 'core-concepts'

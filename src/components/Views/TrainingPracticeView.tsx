@@ -9,6 +9,7 @@ import { singleAgentSystem } from '../../services/singleAgentSystem';
 import AIService from '../../services/aiService';
 import CompleteCoachingPanel from '../CompleteCoachingPanel';
 import DynamicCoachingPanel from '../DynamicCoachingPanel';
+import QuestionHelperBot from '../QuestionHelperBot';
 
 import { 
   ArrowLeft, 
@@ -1133,6 +1134,20 @@ Remember to start with a professional greeting and introduce yourself. Then focu
           onSessionComplete={handleEndMeeting}
         />
         
+        {/* Question Helper Bot - AI Suggestions */}
+        <QuestionHelperBot
+          conversationHistory={messages.map(msg => ({ 
+            role: msg.sender === 'user' ? 'user' : 'assistant', 
+            content: msg.content 
+          }))}
+          onQuestionSelect={(question) => {
+            setInputMessage(question);
+            // Auto-send the selected question
+            handleSendMessage();
+          }}
+          stakeholderContext={selectedStakeholders?.[0]}
+          selectedStage={session?.stage}
+        />
 
       </div>
     </div>

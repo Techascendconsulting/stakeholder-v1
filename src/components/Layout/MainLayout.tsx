@@ -80,6 +80,8 @@ const MainLayout: React.FC = () => {
         return <LearnLandingView />;
       case 'practice':
         return <PracticeLabView />;
+      case 'practice-2':
+        return <GuidedPracticeHub />;
       case 'motivation':
         return <MotivationPage />;
       case 'project':
@@ -155,6 +157,8 @@ const MainLayout: React.FC = () => {
         return <PracticeHubCardsView />;
       case 'agile-practice':
         return <ScrumPracticeView />; // TODO: Create this view for training scenarios
+      case 'scrum-practice':
+        return <ScrumPracticeView />;
       case 'training-practice':
         return <TrainingPracticeView />;
       case 'training-assess':

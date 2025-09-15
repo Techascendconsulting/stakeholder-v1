@@ -70,8 +70,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: BookOpen
     },
     { 
-      id: 'practice', 
-      label: 'Practice', 
+      id: 'practice-2', 
+      label: 'Elicitation Practice', 
+      icon: Target
+    },
+    { 
+      id: 'scrum-practice', 
+      label: 'Scrum Practice', 
       icon: Target
     },
     { 

@@ -3,7 +3,20 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        purplePrimary: "hsl(var(--purple-primary))",
+        purpleSecondary: "hsl(var(--purple-secondary))",
+        greenPrimary: "hsl(var(--green-primary))", 
+        greenSecondary: "hsl(var(--green-secondary))",
+        orangePrimary: "hsl(var(--orange-primary))",
+        orangeSecondary: "hsl(var(--orange-secondary))",
+        bluePrimary: "hsl(var(--blue-primary))",
+        blueSecondary: "hsl(var(--blue-secondary))",
+        redPrimary: "hsl(var(--red-primary))",
+        redSecondary: "hsl(var(--red-secondary))",
+      },
+    },
   },
   plugins: [],
   safelist: [

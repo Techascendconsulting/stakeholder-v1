@@ -15,6 +15,18 @@
   --purple-800: #6b21a8;
   --purple-900: #581c87;
   --purple-950: #3b0764;
+
+  /* Project Color Themes */
+  --purple-primary: 262 83% 58%;
+  --purple-secondary: 252 100% 72%;
+  --green-primary: 142 76% 36%;
+  --green-secondary: 125 100% 45%;
+  --orange-primary: 24 95% 53%;
+  --orange-secondary: 13 100% 62%;
+  --blue-primary: 217 91% 60%;
+  --blue-secondary: 199 89% 48%;
+  --red-primary: 0 84% 60%;
+  --red-secondary: 0 91% 71%;
 }
 
 /* Dark Purple Theme for Dark Mode */
