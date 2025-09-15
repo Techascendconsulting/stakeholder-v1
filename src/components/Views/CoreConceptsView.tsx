@@ -248,32 +248,18 @@ const CoreConceptsView: React.FC = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<ConceptCard | null>(null);
 
-  // Force light theme for this component
-  useEffect(() => {
-    const root = document.documentElement;
-    const hadDarkClass = root.classList.contains('dark');
-    
-    // Remove dark class when component mounts
-    root.classList.remove('dark');
-    
-    // Restore original theme when component unmounts
-    return () => {
-      if (hadDarkClass) {
-        root.classList.add('dark');
-      }
-    };
-  }, []);
+  // Respect global theme (remove previous force-light logic)
 
   // Detail view for selected concept
   if (selectedConcept) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-900 dark:to-gray-950">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-6 py-4">
             <button
               onClick={() => setSelectedConcept(null)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               Back to Core Concepts
@@ -287,7 +273,7 @@ const CoreConceptsView: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${selectedConcept.gradient} text-gray-700`}>
+                <div className={`p-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200`}>
                   {selectedConcept.icon}
                 </div>
                 <div>
@@ -310,12 +296,12 @@ const CoreConceptsView: React.FC = () => {
 
           {/* Video Section */}
           <div className="mb-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center">
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Play className="w-8 h-8 text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Video Content</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Video Content</h3>
+              <p className="text-gray-600 dark:text-gray-300">
                 Video content for this concept will be available soon. 
                 For now, review the key points and description below.
               </p>
@@ -324,9 +310,9 @@ const CoreConceptsView: React.FC = () => {
 
           {/* Description */}
           <div className="mb-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Overview</h2>
-              <p className="text-gray-600 leading-relaxed text-base">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Overview</h2>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-base">
                 {selectedConcept.detailedDescription}
               </p>
             </div>
@@ -334,15 +320,15 @@ const CoreConceptsView: React.FC = () => {
 
           {/* Key Points */}
           <div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Key Learning Points</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Key Learning Points</h2>
               <div className="space-y-4">
                 {selectedConcept.keyPoints.map((point, index) => (
-                  <div key={index} className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div key={index} className="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <div className={`w-8 h-8 bg-gradient-to-r ${selectedConcept.color} rounded-full flex items-center justify-center flex-shrink-0`}>
                       <span className="text-white font-bold text-sm">{index + 1}</span>
                     </div>
-                    <p className="text-gray-700 leading-relaxed">
+                    <p className="text-gray-700 dark:text-gray-200 leading-relaxed">
                       {point}
                     </p>
                   </div>
@@ -356,11 +342,11 @@ const CoreConceptsView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-900 dark:to-gray-950">
       {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">
+      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 dark:from-purple-700 dark:via-violet-700 dark:to-indigo-700">
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 dark:from-purple-400/10 dark:via-indigo-400/10 dark:to-fuchsia-400/10"></div>
         
         {/* Floating Elements */}
         <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-float"></div>
@@ -400,7 +386,7 @@ const CoreConceptsView: React.FC = () => {
           {concepts.map((concept) => (
             <div
               key={concept.id}
-              className={`group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer card-hover h-80 flex flex-col ${
+              className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer card-hover h-80 flex flex-col ${
                 hoveredCard === concept.id ? 'scale-105 shadow-2xl' : ''
               }`}
               onMouseEnter={() => setHoveredCard(concept.id)}
@@ -414,27 +400,27 @@ const CoreConceptsView: React.FC = () => {
               <div className="p-8 flex flex-col flex-grow">
                 {/* Concept Number */}
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                     Concept {concept.id}
                   </span>
-                  <div className={`p-3 rounded-xl ${concept.gradient} text-gray-700 group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`p-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 group-hover:scale-110 transition-transform duration-300`}>
                     {concept.icon}
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-gray-700 transition-colors">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
                   {concept.title}
                 </h3>
 
                 {/* Description - with flex-grow to push footer to bottom */}
-                <p className="text-gray-600 text-base leading-relaxed mb-6 flex-grow">
+                <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6 flex-grow">
                   {concept.description}
                 </p>
 
                 {/* Footer - will always be at bottom */}
                 <div className="flex items-center justify-between mt-auto">
-                  <span className="text-sm text-gray-500 font-medium">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                     4 key points
                   </span>
                   

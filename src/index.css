@@ -147,21 +147,30 @@
   background-color: var(--admin-bg-secondary) !important;
 }
 
-/* Test with a very obvious purple background */
+/* Keep subtle background for admin area only */
 .admin-dark-purple.dark {
-  background: linear-gradient(135deg, #1a1625 0%, #2d1b69 100%) !important;
-}
-
-.admin-dark-purple.dark * {
-  background-color: inherit !important;
-}
-
-.admin-dark-purple.dark .bg-gray-50 {
   background-color: var(--admin-bg-primary) !important;
 }
 
-.admin-dark-purple.dark .bg-gray-100 {
+/* Remove overly aggressive global overrides to avoid affecting student pages */
+.admin-dark-purple.dark main,
+.admin-dark-purple.dark aside {
+  background-color: var(--admin-bg-primary) !important;
+}
+
+/* Limit overrides to common admin surfaces (cards, panels) */
+.admin-dark-purple.dark .bg-white,
+.admin-dark-purple.dark .bg-gray-800,
+.admin-dark-purple.dark .bg-gray-900,
+.admin-dark-purple.dark .bg-gray-700 {
   background-color: var(--admin-bg-secondary) !important;
+}
+
+.admin-dark-purple.dark .border-gray-700,
+.admin-dark-purple.dark .border-gray-600,
+.admin-dark-purple.dark .border-gray-200 {
+  border-color: var(--admin-accent) !important;
+  opacity: 0.25;
 }
 
 /* Custom styles for emoji picker */

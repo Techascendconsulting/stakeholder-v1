@@ -249,14 +249,14 @@ const MotivationPage: React.FC = () => {
                   key={talk.url}
                   onClick={() => handlePlay(talk.url, talk.name, talk.type)}
                   className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
-                    activeTrack === talk.name && isPlaying
+                    activeTrack?.title === talk.name && isPlaying
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
                       : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      {activeTrack === talk.name && isPlaying ? (
+                      {activeTrack?.title === talk.name && isPlaying ? (
                         <Pause className="w-4 h-4" />
                       ) : (
                         <Play className="w-4 h-4" />
@@ -270,11 +270,15 @@ const MotivationPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    {index === 0 && (
+                    {activeTrack?.title === talk.name && isPlaying ? (
+                      <span className="px-2 py-1 bg-white/20 text-white rounded-full text-xs font-medium animate-pulse">
+                        Now Playing
+                      </span>
+                    ) : index === 0 ? (
                       <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
                         Today's Talk
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </button>
               ))}
@@ -309,14 +313,14 @@ const MotivationPage: React.FC = () => {
                     key={track.url}
                     onClick={() => handlePlay(track.url, track.name, track.type)}
                     className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
-                      activeTrack === track.name && isPlaying
+                      activeTrack?.title === track.name && isPlaying
                         ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
                         : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        {activeTrack === track.name && isPlaying ? (
+                        {activeTrack?.title === track.name && isPlaying ? (
                           <Pause className="w-4 h-4" />
                         ) : (
                           <Play className="w-4 h-4" />
@@ -330,17 +334,22 @@ const MotivationPage: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      {activeTrack === track.name && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            stopTrack()
-                          }}
-                          className="px-2 py-1 text-xs bg-white/20 hover:bg-white/30 rounded-full transition-colors"
-                        >
-                          Stop
-                        </button>
-                      )}
+                      {activeTrack?.title === track.name && isPlaying ? (
+                        <div className="flex items-center space-x-2">
+                          <span className="px-2 py-1 bg-white/20 text-white rounded-full text-xs font-medium animate-pulse">
+                            Now Playing
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              stopTrack()
+                            }}
+                            className="px-2 py-1 text-xs bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+                          >
+                            Stop
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </button>
                 ))}

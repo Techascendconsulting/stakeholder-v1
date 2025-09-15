@@ -182,9 +182,9 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className={`flex h-screen w-full bg-gray-50 dark:bg-gray-900 ${isAdmin ? 'admin-dark-purple' : ''}`}>
+    <div className={`flex h-screen w-full bg-gray-50 dark:bg-gray-900 ${isAdmin && currentView === 'admin' ? 'admin-dark-purple' : ''}`}>
       {/* Debug indicator for admin theme */}
-      {isAdmin && (
+      {isAdmin && currentView === 'admin' && (
         <div className="fixed top-4 right-4 z-50 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">
           Admin Purple Theme Active
         </div>

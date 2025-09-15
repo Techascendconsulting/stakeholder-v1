@@ -124,17 +124,17 @@ const ProjectsView: React.FC = () => {
   })
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Filter Section */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8">
           <div className="mb-6 lg:mb-0">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">Select Your Challenge Level</h2>
-            <p className="text-lg text-slate-600">Choose the complexity that matches your experience and goals</p>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">Select Your Challenge Level</h2>
+            <p className="text-lg text-slate-600 dark:text-gray-300">Choose the complexity that matches your experience and goals</p>
           </div>
           
-          <div className="flex items-center space-x-2 bg-white rounded-2xl border border-slate-200 p-2 shadow-lg">
+          <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-2 shadow-lg">
             {[
               { id: 'all', label: 'All Projects', icon: Globe },
               { id: 'beginner', label: 'Beginner', icon: Target },
@@ -149,7 +149,7 @@ const ProjectsView: React.FC = () => {
                   className={`flex items-center space-x-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                     selectedFilter === filter.id
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -179,10 +179,10 @@ const ProjectsView: React.FC = () => {
                 key={project.id}
                 onMouseEnter={() => setHoveredProject(project.id)}
                 onMouseLeave={() => setHoveredProject(null)}
-                className={`group relative bg-white rounded-3xl border overflow-hidden transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${
+                className={`group relative bg-white dark:bg-gray-800 rounded-3xl border overflow-hidden transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${
                   isSelected 
-                    ? 'ring-4 ring-indigo-500 shadow-2xl border-indigo-200' 
-                    : 'border-slate-200 shadow-lg hover:border-indigo-300'
+                    ? 'ring-4 ring-indigo-500 shadow-2xl border-indigo-200 dark:border-indigo-700' 
+                    : 'border-slate-200 dark:border-gray-700 shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700'
                 } ${isHovered ? 'shadow-2xl' : ''}`}
               >
                 {/* Project Header with Gradient */}
@@ -218,33 +218,33 @@ const ProjectsView: React.FC = () => {
 
                 {/* Project Content */}
                 <div className="p-8">
-                  <p className="text-slate-600 mb-6 leading-relaxed line-clamp-3">
+                  <p className="text-slate-600 dark:text-gray-300 mb-6 leading-relaxed line-clamp-3">
                     {project.description}
                   </p>
                   
                   {/* Impact Metrics */}
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-slate-50 rounded-xl p-4">
+                    <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <DollarSign className="w-4 h-4 text-green-600" />
                         <span className="text-xs font-medium text-slate-500">Business Impact</span>
                       </div>
-                      <div className="font-bold text-slate-900">{businessImpact.value}</div>
-                      <div className="text-xs text-slate-600">{businessImpact.type}</div>
+                      <div className="font-bold text-slate-900 dark:text-white">{businessImpact.value}</div>
+                      <div className="text-xs text-slate-600 dark:text-gray-300">{businessImpact.type}</div>
                     </div>
-                    <div className="bg-slate-50 rounded-xl p-4">
+                    <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <TrendingUp className="w-4 h-4 text-blue-600" />
                         <span className="text-xs font-medium text-slate-500">ROI Potential</span>
                       </div>
-                      <div className="font-bold text-slate-900">{businessImpact.roi}</div>
-                      <div className="text-xs text-slate-600">Expected Return</div>
+                      <div className="font-bold text-slate-900 dark:text-white">{businessImpact.roi}</div>
+                      <div className="text-xs text-slate-600 dark:text-gray-300">Expected Return</div>
                     </div>
                   </div>
                   
                   {/* Priority Badge */}
                   <div className="flex items-center space-x-3 mb-6">
-                    <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${priorityConfig.color}`}>
+                    <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${priorityConfig.color} dark:border-gray-600`}>
                       <div className={`w-2 h-2 ${priorityConfig.dot} rounded-full`}></div>
                       <span>{businessImpact.priority} Priority</span>
                     </div>

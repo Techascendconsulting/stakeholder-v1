@@ -50,22 +50,18 @@ const ScrumEssentialsView: React.FC = () => {
         ];
 
         const loadedSections: ScrumSection[] = [];
-        
         for (const file of sectionFiles) {
           try {
             const response = await fetch(`/content/scrum-essentials/${file}`);
             const content = await response.text();
-            
-            // Parse frontmatter
+
             const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
               const markdownContent = frontmatterMatch[2];
-              
               const idMatch = frontmatter.match(/id:\s*(\d+)/);
               const titleMatch = frontmatter.match(/title:\s*"([^"]+)"/);
               const minutesMatch = frontmatter.match(/estMinutes:\s*(\d+)/);
-              
               if (idMatch && titleMatch && minutesMatch) {
                 loadedSections.push({
                   id: parseInt(idMatch[1]),
@@ -79,7 +75,6 @@ const ScrumEssentialsView: React.FC = () => {
             console.error(`Error loading ${file}:`, error);
           }
         }
-        
         setSections(loadedSections.sort((a, b) => a.id - b.id));
       } catch (error) {
         console.error('Error loading sections:', error);
@@ -89,7 +84,6 @@ const ScrumEssentialsView: React.FC = () => {
     loadSections();
   }, []);
 
-  // Load current section
   useEffect(() => {
     if (sections.length > 0) {
       const section = sections.find(s => s.id === currentSectionId);
@@ -97,7 +91,6 @@ const ScrumEssentialsView: React.FC = () => {
     }
   }, [sections, currentSectionId]);
 
-  // Load progress and reflection
   useEffect(() => {
     if (user && currentSectionId) {
       loadProgressAndReflection();
@@ -106,9 +99,7 @@ const ScrumEssentialsView: React.FC = () => {
 
   const loadProgressAndReflection = async () => {
     if (!user) return;
-
     try {
-      // Load progress from database
       const { data: progressData } = await supabase
         .from('learning_progress')
         .select('is_complete, completed_at')
@@ -116,22 +107,15 @@ const ScrumEssentialsView: React.FC = () => {
         .eq('module', 'scrum-essentials')
         .eq('section_id', currentSectionId)
         .single();
-
       if (progressData) {
         setProgress(progressData);
       } else {
-        // Fallback to localStorage
         const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
         const isComplete = localStorage.getItem(fallbackKey) === 'true';
         const completedAt = localStorage.getItem(`${fallbackKey}-date`);
-        
-        setProgress({ 
-          is_complete: isComplete, 
-          completed_at: completedAt || null 
-        });
+        setProgress({ is_complete: isComplete, completed_at: completedAt || null });
       }
 
-      // Load reflection from database
       const { data: reflectionData } = await supabase
         .from('learning_reflections')
         .select('notes, updated_at')
@@ -139,12 +123,10 @@ const ScrumEssentialsView: React.FC = () => {
         .eq('module', 'scrum-essentials')
         .eq('section_id', currentSectionId)
         .single();
-
       if (reflectionData) {
         setReflection(reflectionData);
         setReflectionText(reflectionData.notes || '');
       } else {
-        // Fallback to localStorage for reflections
         const reflectionKey = `scrum-essentials-${currentSectionId}-reflection`;
         const savedReflection = localStorage.getItem(reflectionKey);
         setReflection({ notes: savedReflection || '', updated_at: null });
@@ -152,16 +134,10 @@ const ScrumEssentialsView: React.FC = () => {
       }
     } catch (error) {
       console.log('Database not available, loading from localStorage');
-      // Load from localStorage as fallback
       const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
       const isComplete = localStorage.getItem(fallbackKey) === 'true';
       const completedAt = localStorage.getItem(`${fallbackKey}-date`);
-      
-      setProgress({ 
-        is_complete: isComplete, 
-        completed_at: completedAt || null 
-      });
-
+      setProgress({ is_complete: isComplete, completed_at: completedAt || null });
       const reflectionKey = `scrum-essentials-${currentSectionId}-reflection`;
       const savedReflection = localStorage.getItem(reflectionKey);
       setReflection({ notes: savedReflection || '', updated_at: null });
@@ -173,7 +149,6 @@ const ScrumEssentialsView: React.FC = () => {
 
   const saveReflection = async () => {
     if (!user || isSaving) return;
-
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -185,7 +160,6 @@ const ScrumEssentialsView: React.FC = () => {
           notes: reflectionText,
           updated_at: new Date().toISOString()
         });
-
       if (error) throw error;
     } catch (error) {
       console.error('Error saving reflection:', error);
@@ -196,11 +170,8 @@ const ScrumEssentialsView: React.FC = () => {
 
   const markComplete = async () => {
     if (!user || progress?.is_complete || isSaving) return;
-
     try {
       setIsSaving(true);
-      
-      // Try database first
       const { error } = await supabase
         .from('learning_progress')
         .upsert({
@@ -210,21 +181,15 @@ const ScrumEssentialsView: React.FC = () => {
           is_complete: true,
           completed_at: new Date().toISOString()
         });
-
       if (error) {
-        console.log('Database not available, using localStorage fallback');
-        // Fallback to localStorage if database fails
         const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
         localStorage.setItem(fallbackKey, 'true');
         localStorage.setItem(`${fallbackKey}-date`, new Date().toISOString());
         setProgress({ is_complete: true, completed_at: new Date().toISOString() });
         return;
       }
-      
       setProgress({ is_complete: true, completed_at: new Date().toISOString() });
     } catch (error) {
-      console.log('Database error, using localStorage fallback');
-      // Fallback to localStorage
       const fallbackKey = `scrum-essentials-${currentSectionId}-complete`;
       localStorage.setItem(fallbackKey, 'true');
       localStorage.setItem(`${fallbackKey}-date`, new Date().toISOString());
@@ -240,60 +205,39 @@ const ScrumEssentialsView: React.FC = () => {
   };
 
   const goToPrevious = () => {
-    if (currentSectionId > 1) {
-      navigateToSection(currentSectionId - 1);
-    }
+    if (currentSectionId > 1) navigateToSection(currentSectionId - 1);
   };
 
   const goToNext = () => {
-    if (currentSectionId < totalSections) {
-      navigateToSection(currentSectionId + 1);
+    if (currentSectionId < totalSections) navigateToSection(currentSectionId + 1);
+  };
+
+  const getCompletedCount = () => 0;
+
+  const renderTextContent = (text: string) => {
+    if (
+      text.includes('**Where you, the BA, come in:**') ||
+      text.includes('**How you, the BA, fit with') ||
+      text.includes('**Where you fit with')
+    ) {
+      return (
+        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-5 mb-6 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center">
+              <AlertCircle className="w-3.5 h-3.5 text-purple-700 dark:text-purple-300" />
+            </div>
+            <div className="text-gray-800 dark:text-gray-200 prose prose-gray dark:prose-invert max-w-none">
+              <ReactMarkdown>{text}</ReactMarkdown>
+            </div>
+          </div>
+        </div>
+      );
     }
-  };
-
-  const getCompletedCount = () => {
-    // This would need to be calculated from the database
-    // For now, return 0
-    return 0;
-  };
-
-  const renderContent = (content: string) => {
-    // Split content into sections based on headers
-    const sections = content.split(/(?=## )/);
-    
-    return sections.map((section, index) => {
-      if (section.trim() === '') return null;
-      
-      // Check if it's a header section
-      if (section.startsWith('## ')) {
-        const lines = section.split('\n');
-        const header = lines[0].replace('## ', '');
-        const body = lines.slice(1).join('\n').trim();
-        
-        return (
-          <div key={index} className="mb-8">
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500 p-6 rounded-r-lg mb-4">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
-                {getSectionIcon(header)}
-                <span className="ml-3">{header}</span>
-              </h3>
-              <div className="prose prose-gray max-w-none">
-                {renderTextContent(body)}
-              </div>
-            </div>
-          </div>
-        );
-      } else {
-        // Regular content
-        return (
-          <div key={index} className="mb-6">
-            <div className="prose prose-lg max-w-none">
-              {renderTextContent(section)}
-            </div>
-          </div>
-        );
-      }
-    });
+    return (
+      <div className="prose prose-gray dark:prose-invert max-w-none">
+        <ReactMarkdown>{text}</ReactMarkdown>
+      </div>
+    );
   };
 
   const getSectionIcon = (header: string) => {
@@ -338,58 +282,68 @@ const ScrumEssentialsView: React.FC = () => {
       'Refinement': <CheckSquare className="w-5 h-5 text-indigo-600" />,
       'End-to-End Journey of a Requirement': <Zap className="w-5 h-5 text-purple-600" />,
     };
-    
     return iconMap[header] || <BookOpen className="w-5 h-5 text-purple-600" />;
   };
 
-  const renderTextContent = (text: string) => {
-    // Check for special BA callout formatting
-    if (text.includes('**Where you, the BA, come in:**') || 
-        text.includes('**How you, the BA, fit with') ||
-        text.includes('**Where you fit with')) {
-      return (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-          <div className="flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-            <div className="text-purple-800 prose prose-purple max-w-none">
-              <ReactMarkdown>{text}</ReactMarkdown>
+  const renderContent = (content: string) => {
+    const chunks = content.split(/(?=## )/);
+    return chunks.map((section, index) => {
+      if (section.trim() === '') return null;
+      if (section.startsWith('## ')) {
+        const lines = section.split('\n');
+        const header = lines[0].replace('## ', '');
+        const body = lines.slice(1).join('\n').trim();
+        return (
+          <div key={index} className="mb-8">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+              {/* Card top accent bar */}
+              <div className="h-1.5 bg-gradient-to-r from-purple-600 to-indigo-600" />
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center">
+                  {getSectionIcon(header)}
+                  <span className="ml-3">{header}</span>
+                </h3>
+                <div className="prose prose-gray dark:prose-invert max-w-none">
+                  {renderTextContent(body)}
+                </div>
+              </div>
             </div>
+          </div>
+        );
+      }
+      return (
+        <div key={index} className="mb-6">
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            {renderTextContent(section)}
           </div>
         </div>
       );
-    }
-    
-    // Regular content with ReactMarkdown
-    return (
-      <div className="prose prose-gray max-w-none">
-        <ReactMarkdown>{text}</ReactMarkdown>
-      </div>
-    );
+    });
   };
 
   if (isLoading || !currentSection) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading section...</p>
+          <p className="text-gray-600 dark:text-gray-300">Loading section...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex-1">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-1">
                 <div className="flex items-center space-x-3">
-                  <h1 className="text-2xl font-bold text-gray-900">{currentSection.title}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{currentSection.title}</h1>
                   {progress?.is_complete && (
-                    <div className="flex items-center space-x-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                    <div className="flex items-center space-x-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 px-2 py-1 rounded-full text-xs font-medium">
                       <CheckCircle className="w-3 h-3" />
                       <span>Completed</span>
                     </div>
@@ -398,7 +352,7 @@ const ScrumEssentialsView: React.FC = () => {
                 {currentSectionId === 1 && (
                   <button
                     onClick={() => setCurrentView('agile-practice')}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
+                    className="self-start md:self-auto inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
                   >
                     <Play className="w-4 h-4" />
                     <span>Skip to Practice</span>
@@ -406,12 +360,10 @@ const ScrumEssentialsView: React.FC = () => {
                   </button>
                 )}
               </div>
-              <p className="text-sm text-gray-600">
-                Section {currentSectionId} of {totalSections} • {getCompletedCount()}/{totalSections} completed
-              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Section {currentSectionId} of {totalSections} • {getCompletedCount()}/{totalSections} completed</p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                 <Clock className="w-4 h-4" />
                 <span>{currentSection.estMinutes} min read</span>
               </div>
@@ -424,18 +376,18 @@ const ScrumEssentialsView: React.FC = () => {
                         ? 'bg-green-500'
                         : i + 1 === currentSectionId
                         ? 'bg-blue-500'
-                        : 'bg-gray-300'
+                        : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   />
                 ))}
               </div>
             </div>
           </div>
-          
+
           {/* Progress bar */}
           <div className="mt-4">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
                 className="bg-purple-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(currentSectionId / totalSections) * 100}%` }}
               ></div>
@@ -446,28 +398,28 @@ const ScrumEssentialsView: React.FC = () => {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
           {renderContent(currentSection.content)}
         </div>
 
         {/* Reflection Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mt-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Reflection</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mt-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Reflection</h3>
           <textarea
             value={reflectionText}
             onChange={(e) => setReflectionText(e.target.value)}
             onBlur={saveReflection}
             placeholder="What are your key takeaways from this section? What questions do you have?"
-            className="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full h-32 p-4 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
           {isSaving && (
-            <p className="text-sm text-gray-500 mt-2">Saving...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Saving...</p>
           )}
         </div>
       </div>
 
       {/* Footer Navigation */}
-      <div className="bg-white border-t border-gray-200 sticky bottom-0 z-10">
+      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <button
@@ -475,7 +427,7 @@ const ScrumEssentialsView: React.FC = () => {
               disabled={currentSectionId === 1}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 currentSectionId === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-300 cursor-not-allowed'
                   : 'bg-gray-600 hover:bg-gray-700 text-white'
               }`}
             >
@@ -494,7 +446,7 @@ const ScrumEssentialsView: React.FC = () => {
                 </button>
               )}
               {progress?.is_complete && (
-                <div className="flex items-center space-x-2 text-green-600">
+                <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
                   <CheckCircle className="w-4 h-4" />
                   <span className="font-medium">Completed</span>
                 </div>
@@ -527,3 +479,5 @@ const ScrumEssentialsView: React.FC = () => {
 };
 
 export default ScrumEssentialsView;
+
+
