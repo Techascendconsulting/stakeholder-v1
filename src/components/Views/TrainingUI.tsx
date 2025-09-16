@@ -94,6 +94,35 @@ export default function TrainingUI() {
           </div>
         </div>
 
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 shadow-lg border border-blue-200 dark:border-blue-700">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Welcome to Documentation Practice
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto">
+              You've seen how user stories and acceptance criteria turn stakeholder needs into something teams can actually build. Now it's time to put that into action. This section gives you three ways to practise:
+            </p>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <h3 className="font-semibold text-blue-600 dark:text-blue-400 mb-2">Walkthrough</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">guided examples that show you how strong user stories and acceptance criteria are written.</p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <h3 className="font-semibold text-purple-600 dark:text-purple-400 mb-2">Practice</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">your chance to try it yourself, with prompts and feedback.</p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <h3 className="font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Advanced</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">more complex scenarios where you'll test your ability to think like a real BA in the workplace.</p>
+              </div>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 mt-6 text-sm">
+              Everything here is designed to help you move beyond theory and build confidence in writing documentation that gets used.
+            </p>
+          </div>
+        </div>
+
         <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
           {view === "teaching" && <TeachingLayer onStartPractice={() => setView("walkthrough")} />}
           {view === "walkthrough" && <WalkthroughSelector onStartPractice={() => setView("practice")} onBack={() => setView("teaching")} />}
