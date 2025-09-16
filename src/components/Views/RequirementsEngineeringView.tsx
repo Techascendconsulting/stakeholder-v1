@@ -311,13 +311,28 @@ const renderLessonContent = (raw: string) => {
       }
     }
 
-    // Normal paragraph
-    flushList();
-    elements.push(
-      <p key={`p-${i}`} className="text-gray-700 dark:text-gray-300 leading-relaxed">
-        {block}
-      </p>
-    );
+    // Try to detect implicit bullet lists within a block (e.g., multiple short lines or questions)
+    const lines = block.split(/\n/).map(l => l.trim()).filter(Boolean);
+    const isImplicitList = lines.length >= 3 && lines.every(l => l.length <= 140);
+
+    if (isImplicitList) {
+      flushList();
+      elements.push(
+        <ul key={`ul-${i}`} className="space-y-2 pl-5 list-disc marker:text-purple-600 dark:marker:text-purple-400 text-gray-700 dark:text-gray-300">
+          {lines.map((line, liIdx) => (
+            <li key={liIdx}>{line}</li>
+          ))}
+        </ul>
+      );
+    } else {
+      // Normal paragraph
+      flushList();
+      elements.push(
+        <p key={`p-${i}`} className="text-gray-700 dark:text-gray-300 leading-relaxed">
+          {block}
+        </p>
+      );
+    }
   });
 
   flushList();
