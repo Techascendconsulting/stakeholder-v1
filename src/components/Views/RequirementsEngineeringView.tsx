@@ -91,106 +91,37 @@ Requirements documentation should be:
 - **Traceable** - You can link back to the original business need
 - **Maintainable** - Easy to update as things change
 
-**User Stories: The Foundation of Agile Requirements**
+**Key Documentation Formats**
 
-User stories capture requirements from the user's perspective using a simple format:
-**"As a [user type], I want [functionality] so that [benefit]"**
+**1. User Stories**
+User stories capture requirements from the user's perspective:
+"As a [user type], I want [functionality] so that [benefit]"
 
-**Why User Stories Work:**
-- Focus on user value, not technical implementation
-- Encourage conversation between stakeholders and developers
-- Are small enough to be completed in a sprint
-- Can be prioritized and estimated easily
+Example: "As a customer, I want to reset my password so that I can access my account when I forget it."
 
-**Writing Effective User Stories:**
+**2. Acceptance Criteria**
+These define when a user story is complete:
+- User receives email within 5 minutes
+- Link expires after 24 hours
+- New password meets security requirements
+- User can log in with new password immediately
 
-**1. Identify the Right User Types**
-- Primary users (customers, employees)
-- Secondary users (administrators, support staff)
-- System users (external systems, APIs)
-
-**2. Focus on Value, Not Features**
-❌ "As a user, I want a login button so that I can access the system"
-✅ "As a customer, I want to securely access my account so that I can manage my orders"
-
-**3. Keep Stories Independent**
-Each story should be complete and not depend on other stories
-
-**4. Make Stories Negotiable**
-Stories are starting points for conversation, not rigid specifications
-
-**Acceptance Criteria: Defining "Done"**
-
-Acceptance criteria define when a user story is complete. They should be:
-- **Specific and measurable**
-- **Testable by the team**
-- **Written from the user's perspective**
-
-**Example User Story with Acceptance Criteria:**
-
-**Story:** "As a customer, I want to reset my password so that I can access my account when I forget it."
-
-**Acceptance Criteria:**
-- User can request password reset from login page
-- User receives email within 5 minutes of request
-- Reset link expires after 24 hours
-- New password must meet security requirements (8+ characters, mixed case, numbers)
-- User can log in with new password immediately after reset
-- User cannot use the same password they used in the last 12 months
-
-**The INVEST Criteria for User Stories:**
-
-**I**ndependent - Can be developed and tested independently
-**N**egotiable - Details can be discussed and refined
-**V**aluable - Delivers value to users or business
-**E**stimable - Team can estimate effort required
-**S**mall - Can be completed in a single sprint
-**T**estable - Has clear acceptance criteria
-
-**Documentation Formats for Different Needs:**
-
-**1. Business Requirements Document (BRD)**
-Comprehensive document for complex projects:
+**3. Business Requirements Document (BRD)**
+A comprehensive document that includes:
 - Executive summary and business context
 - Stakeholder analysis and objectives
 - Functional and non-functional requirements
 - Assumptions, constraints, and risks
 - Success criteria and metrics
 
-**2. Use Cases**
-Step-by-step descriptions of user interactions:
+**4. Use Cases**
+Step-by-step descriptions of how users interact with the system:
 - Preconditions (what must be true before starting)
 - Main flow (the happy path)
 - Alternative flows (what happens when things go wrong)
 - Postconditions (what's true after completion)
 
-**3. Story Mapping**
-Visual technique for organizing user stories:
-- User journey from left to right
-- User activities as horizontal rows
-- User stories as vertical cards under activities
-- Helps identify gaps and prioritize work
-
-**Preparing Backlog Items for Refinement:**
-
-**1. Story Sizing**
-- Use story points or t-shirt sizes (S, M, L, XL)
-- Consider complexity, effort, and uncertainty
-- Involve the whole team in estimation
-
-**2. Adding Technical Context**
-- Include technical constraints and dependencies
-- Note integration requirements
-- Specify performance expectations
-
-**3. Definition of Ready**
-Before a story goes into a sprint, ensure:
-- Acceptance criteria are clear and testable
-- Dependencies are identified
-- Technical approach is understood
-- Story is appropriately sized
-
-**Documentation Best Practices:**
+**Documentation Best Practices**
 
 **1. Start with the End in Mind**
 - What does success look like?
@@ -212,7 +143,7 @@ Before a story goes into a sprint, ensure:
 - Version control your documents
 - Keep stakeholders informed of changes
 
-**Common Documentation Mistakes:**
+**Common Documentation Mistakes**
 
 **1. Too Much Detail**
 - Including implementation specifics
@@ -234,7 +165,7 @@ Before a story goes into a sprint, ensure:
 - Inconsistent with current project state
 - Conflicting information across documents
 
-**The BA's Role in Documentation:**
+**The BA's Role in Documentation**
 
 As a Business Analyst, you're responsible for:
 - **Creating clear, complete requirements**
@@ -243,34 +174,9 @@ As a Business Analyst, you're responsible for:
 - **Facilitating communication between teams**
 - **Managing changes and updates**
 
-**Real-World Example: E-commerce Checkout**
+**Ready to Practice?**
 
-**User Story:**
-"As a customer, I want to complete my purchase quickly so that I can buy what I need without frustration."
-
-**Acceptance Criteria:**
-- Customer can review items in cart with prices and quantities
-- Customer can apply discount codes and see updated total
-- Customer can choose from available shipping options
-- Customer can enter payment information securely
-- Customer receives confirmation email within 2 minutes
-- Process completes in under 2 minutes for returning customers
-- System handles payment failures gracefully
-
-**Use Case Flow:**
-1. Customer clicks "Checkout" button
-2. System displays cart summary with itemized costs
-3. Customer enters shipping information
-4. Customer selects shipping method and sees updated total
-5. Customer enters payment details
-6. System validates payment information
-7. System processes payment
-8. System sends confirmation email
-9. Customer sees success page with order number
-
-**The Bottom Line**
-
-Good requirements documentation isn't about creating perfect documents. It's about ensuring everyone understands what needs to be built and why. Focus on clarity, completeness, and communication. Remember, the goal is to build the right thing, not to create beautiful documents.`
+Now that you understand the fundamentals of requirements documentation, it's time to practice writing user stories and acceptance criteria with interactive feedback and real-world scenarios.`
   },
   { 
     id: "validating-requirements", 
@@ -450,6 +356,26 @@ const RequirementsEngineeringView: React.FC = () => {
                   </p>
                 </div>
                 
+                {/* Practice button for documenting requirements lesson */}
+                {activeTab === 3 && (
+                  <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <div className="text-center">
+                      <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                        Ready to practice writing user stories and acceptance criteria with interactive feedback?
+                      </p>
+                      <button
+                        onClick={() => setCurrentView('user-story-checker')}
+                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+                      >
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Practice Documentation Skills
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* CTA for transition lesson */}
                 {activeTab === lessons.length - 1 && (
                   <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
