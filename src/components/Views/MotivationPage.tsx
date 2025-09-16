@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useGlobalAudio } from '../../hooks/useGlobalAudio'
 import { motivationAudioService } from '../../services/motivationAudioService'
-import { ArrowLeft, Play, Pause, Headphones, Heart, Zap, Target, TrendingUp, Star, Music, Loader2 } from 'lucide-react'
+import { ArrowLeft, Play, Pause, Headphones, Heart, Zap, Target, TrendingUp, Star, Music, Loader2, BarChart3, Clock, Award, Users, BookOpen, CheckCircle, ArrowRight } from 'lucide-react'
 
 interface AudioFile {
   name: string
@@ -142,30 +142,96 @@ const MotivationPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setCurrentView('dashboard')}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Stay Motivated
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Your energy hub for refocusing and recharging
-              </p>
+      <div className="relative bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
+        <div className="relative max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setCurrentView('dashboard')}
+                className="p-2 rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm border border-slate-200 dark:border-gray-600"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              </button>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                  📊 Motivation Analytics
+                </h1>
+                <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">
+                  Track your progress, stay energized, and keep moving forward
+                </p>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="hidden md:flex items-center space-x-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">24</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Sessions</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">87%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Completion</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">12</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Streak</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Analytics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">87%</span>
+            </div>
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Progress Rate</h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300">Above average completion</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">2.4h</span>
+            </div>
+            <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">Daily Average</h3>
+            <p className="text-sm text-purple-700 dark:text-purple-300">Consistent learning time</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-6 border border-emerald-200 dark:border-emerald-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                <Award className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">12</span>
+            </div>
+            <h3 className="font-semibold text-emerald-900 dark:text-emerald-100 mb-1">Day Streak</h3>
+            <p className="text-sm text-emerald-700 dark:text-emerald-300">Keep the momentum going!</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border border-orange-200 dark:border-orange-700">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+                <Target className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">5</span>
+            </div>
+            <h3 className="font-semibold text-orange-900 dark:text-orange-100 mb-1">Goals Met</h3>
+            <p className="text-sm text-orange-700 dark:text-orange-300">This week's achievements</p>
+          </div>
+        </div>
+
         {/* Intro Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
           <div className="text-center">
@@ -173,7 +239,7 @@ const MotivationPage: React.FC = () => {
               <Heart className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              This is your space to refocus, recharge, and keep moving forward.
+              Your Energy Hub for Refocusing and Recharging
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               When the training feels heavy or your energy dips, come here for a quick boost. 
@@ -185,16 +251,16 @@ const MotivationPage: React.FC = () => {
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Motivation Talks */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 shadow-lg border border-blue-200 dark:border-blue-700">
             <div className="flex items-center space-x-3 mb-6">
               <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
                 <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Motivation Talks
+                <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  📢 Motivation Talks
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-blue-700 dark:text-blue-300">
                   Short talks to push you through moments of doubt and overwhelm
                 </p>
               </div>
@@ -286,16 +352,16 @@ const MotivationPage: React.FC = () => {
           </div>
 
           {/* Right Column - Music for Focus */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-8 shadow-lg border border-emerald-200 dark:border-emerald-700">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                <Music className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                <Music className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Music for Focus
+                <h3 className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                  🎵 Music for Focus
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-emerald-700 dark:text-emerald-300">
                   Calming background music that loops continuously while you learn
                 </p>
               </div>
