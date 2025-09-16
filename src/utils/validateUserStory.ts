@@ -19,7 +19,7 @@ export function isUserStoryStructureValid(text: string) {
   return (
     lowerText.includes('as a') &&
     lowerText.includes('i want') &&
-    lowerText.includes('so that') &&
+    (lowerText.includes('so that') || lowerText.includes('so ')) &&
     text.length > 30
   );
 }
@@ -36,13 +36,15 @@ export async function checkUserStoryGPT(userStory: string) {
 You are an expert Business Analyst coach.
 
 Analyze the following user story using these rules:
-1. Role is clear (e.g., "As a tenant")
-2. Action is clear (e.g., "I want to upload a photo")
-3. Outcome is clear (e.g., "so that the housing team…")
-4. Uses correct format: "As a [role], I want to [action], so that [outcome]"
+1. Role is clear (e.g., "As a tenant" or "As an events manager")
+2. Action is clear (e.g., "I want to upload a photo" or "I want upload a photo")
+3. Outcome is clear (e.g., "so that the housing team…" or "so I can have access")
+4. Uses flexible format: "As a [role], I want [action], so [outcome]" (allows "I want" without "to" and "so" without "that")
 5. Avoids system-centered language ("The system should...")
 6. Describes ONE clear thing (Independent, Small)
 7. Testable: observable outcome when complete
+
+IMPORTANT: Do NOT check for capitalization issues - focus only on content quality and structure.
 
 Return a JSON object like:
 [

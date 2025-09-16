@@ -552,7 +552,7 @@ export default function PracticeAndCoachingLayer() {
           console.log('Using fallback validation for user story:', userStory);
           const roleMatch = /as a[n]?\s+\w+/i.test(userStory);
           const actionMatch = /i want\s+[a-z ]+/i.test(userStory);
-          const outcomeMatch = /so that\s+[a-z ]+/i.test(userStory);
+          const outcomeMatch = /so\s+[a-z ]+/i.test(userStory);
           
           console.log('Validation results:', { roleMatch, actionMatch, outcomeMatch });
           
