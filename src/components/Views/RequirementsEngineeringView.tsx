@@ -415,41 +415,19 @@ const RequirementsEngineeringView: React.FC = () => {
 
               {/* Content Body */}
               <div className="p-6 md:p-8">
-                <div className="grid lg:grid-cols-3 gap-8">
-                  {/* Main lesson content */}
-                  <div className="lg:col-span-2">
-                    {renderLessonContent(
-                      lessons[activeTab].content
-                        .split('[Process Mapper](/process-mapper)')
-                        .join('[[PROCESS_MAPPER]]')
-                    )}
-                    {/* Inline link replacements */}
-                    <div className="mt-4">
-                      <button
-                        onClick={handleProcessMapperClick}
-                        className="hidden" aria-hidden="true"
-                      >Process Mapper</button>
-                    </div>
+                <div>
+                  {renderLessonContent(
+                    lessons[activeTab].content
+                      .split('[Process Mapper](/process-mapper)')
+                      .join('[[PROCESS_MAPPER]]')
+                  )}
+                  {/* Inline link replacements */}
+                  <div className="mt-4">
+                    <button
+                      onClick={handleProcessMapperClick}
+                      className="hidden" aria-hidden="true"
+                    >Process Mapper</button>
                   </div>
-
-                  {/* Highlights card */}
-                  <aside className="lg:col-span-1">
-                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-5">
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Lesson highlights</div>
-                      <ul className="space-y-2 text-sm">
-                        {lessons[activeTab].content
-                          .split(/\n+/)
-                          .filter(line => /^\*\*.+\*\*$/.test(line.trim()))
-                          .slice(0, 6)
-                          .map((h, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
-                              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                              <span>{h.replace(/^\*\*/, '').replace(/\*\*$/, '')}</span>
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  </aside>
                 </div>
                 
                 {/* Practice button for documenting requirements lesson */}
