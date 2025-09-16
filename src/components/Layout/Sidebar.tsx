@@ -231,8 +231,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto">
-        <ul className="space-y-0.5">
+      <nav className="flex-1 p-1 overflow-y-auto">
+        <ul className="space-y-0">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -244,14 +244,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                     setCurrentView(item.id as any);
                     console.debug('[Sidebar] sectionClick', { id: item.id });
                   }}
-                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-3' : 'space-x-3 px-2.5 py-2'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-2' : 'space-x-3 px-2 py-1.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
                       ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
                       : 'text-purple-100 hover:bg-white/10 hover:text-white'
                   }`}
                   title={isCollapsed ? item.label : ''}
                 >
-                  <Icon size={isCollapsed ? 24 : 18} className={isActive ? 'text-white' : 'text-purple-200'} />
+                  <Icon size={isCollapsed ? 20 : 16} className={isActive ? 'text-white' : 'text-purple-200'} />
                   {!isCollapsed && (
                     <span className="truncate">{item.label}</span>
                   )}
