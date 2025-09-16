@@ -384,29 +384,40 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
                 }}
               >
                 <div className="max-w-none">
-                  <div className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-3">
+                  <div className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-6">
                     {lessons[activeTab].content.split('\n\n').map((paragraph, index) => {
                       if (paragraph.trim() === '') return null;
                       
                       // Handle headings
                       if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                         return (
-                          <div key={index} className="font-bold text-purple-600 dark:text-purple-400 text-lg mt-6 mb-3">
+                          <div key={index} className="font-bold text-purple-600 dark:text-purple-400 text-xl mt-8 mb-4">
                             {paragraph.replace(/\*\*/g, '')}
                           </div>
                         );
                       }
                       
-                      // Handle bullet points
+                      // Handle bullet points - convert to numbered boxes
                       if (paragraph.includes('- ')) {
                         const lines = paragraph.split('\n').filter(line => line.trim() !== '');
                         const bulletLines = lines.filter(line => line.startsWith('- '));
                         return (
-                          <div key={index} className="space-y-0.5 ml-6">
+                          <div key={index} className="space-y-3">
                             {bulletLines.map((line, lineIndex) => (
-                              <div key={lineIndex} className="flex items-start">
-                                <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                                <span className="leading-relaxed">{line.substring(2)}</span>
+                              <div key={lineIndex} className="flex items-start gap-4 p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-600">
+                                <div className={`w-8 h-8 bg-gradient-to-r ${
+                                  activeTab === 0 ? 'from-blue-500 to-purple-600' :
+                                  activeTab === 1 ? 'from-purple-500 to-pink-600' :
+                                  activeTab === 2 ? 'from-pink-500 to-red-600' :
+                                  activeTab === 3 ? 'from-red-500 to-orange-600' :
+                                  activeTab === 4 ? 'from-orange-500 to-yellow-600' :
+                                  'from-yellow-500 to-green-600'
+                                } rounded-full flex items-center justify-center flex-shrink-0`}>
+                                  <span className="text-white font-bold text-sm">{lineIndex + 1}</span>
+                                </div>
+                                <p className="text-gray-700 dark:text-gray-200 leading-relaxed">
+                                  {line.substring(2)}
+                                </p>
                               </div>
                             ))}
                           </div>
@@ -415,7 +426,7 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
                       
                       // Handle regular paragraphs
                       return (
-                        <p key={index} className="leading-relaxed">
+                        <p key={index} className="leading-relaxed text-lg">
                           {paragraph}
                         </p>
                       );
