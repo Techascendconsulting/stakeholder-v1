@@ -590,17 +590,7 @@ In summary, linking design to user stories is how you ensure the work done in de
               </div>
               
               {/* Content */}
-              <div 
-                className="p-8"
-                style={{
-                  background: activeTab === 0 ? 'linear-gradient(135deg, #dbeafe 0%, #e9d5ff 100%)' :
-                             activeTab === 1 ? 'linear-gradient(135deg, #e9d5ff 0%, #fce7f3 100%)' :
-                             activeTab === 2 ? 'linear-gradient(135deg, #fce7f3 0%, #fee2e2 100%)' :
-                             activeTab === 3 ? 'linear-gradient(135deg, #fee2e2 0%, #fed7aa 100%)' :
-                             activeTab === 4 ? 'linear-gradient(135deg, #fed7aa 0%, #fef3c7 100%)' :
-                             'linear-gradient(135deg, #fef3c7 0%, #dcfce7 100%)'
-                }}
-              >
+              <div className="p-8 bg-white dark:bg-gray-800">
                 <style jsx>{`
                   .design-content h3 {
                     margin-top: 1.5rem !important;
