@@ -265,7 +265,7 @@ const MotivationPage: React.FC = () => {
         </div>
 
         {/* Quote of the Day */}
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-purple-200 dark:border-purple-700 mb-8">
+        <div className="bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800/30 dark:to-purple-900/30 rounded-2xl p-8 border border-purple-200 dark:border-purple-700 mb-8">
           <div className="flex items-center space-x-4 mb-6">
             <div className="p-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl">
               <Heart className="w-8 h-8 text-white" />
