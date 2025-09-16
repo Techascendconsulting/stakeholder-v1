@@ -295,50 +295,10 @@ const RequirementsEngineeringView: React.FC = () => {
             </div>
           </div>
 
-          {/* Breadcrumb / Progress Line */}
-          <div className="mt-6 flex items-center justify-center gap-4 text-sm">
-            <div className="flex items-center text-gray-600 dark:text-gray-400">
-              <span className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800">1</span>
-              <span className="ml-2">Elicitation</span>
-            </div>
-            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
-            <div className="flex items-center text-blue-700 dark:text-blue-400 font-medium">
-              <span className="px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40">2</span>
-              <span className="ml-2">Requirements Engineering</span>
-            </div>
-            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
-            <div className="flex items-center text-gray-600 dark:text-gray-400">
-              <span className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800">3</span>
-              <span className="ml-2">Scrum Practice</span>
-            </div>
-          </div>
+          
         </header>
 
-        {/* Progress Indicator */}
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                ✓
-              </div>
-              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Elicitation</span>
-            </div>
-            <div className="w-12 h-0.5 bg-blue-300 dark:bg-blue-600"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                {activeTab + 1}
-              </div>
-              <span className="ml-2 text-sm font-medium text-blue-600 dark:text-blue-400">Requirements Engineering</span>
-            </div>
-            <div className="w-12 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center text-sm font-semibold">
-                3
-              </div>
-              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Scrum Practice</span>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Main Content Area */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
