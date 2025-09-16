@@ -184,6 +184,23 @@ const MotivationPage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Energy Hub Card */}
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-indigo-200 dark:border-indigo-700 mb-8">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="p-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl">
+              <Heart className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Energy Hub</h2>
+              <p className="text-indigo-600 dark:text-indigo-400 font-medium">For Refocusing and Recharging</p>
+            </div>
+          </div>
+          <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+            When the training feels heavy or your energy dips, come here for a quick boost. 
+            Listen to short motivational talks or calming music to refocus and recharge.
+          </p>
+        </div>
+
         {/* Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-700">
@@ -244,6 +261,25 @@ const MotivationPage: React.FC = () => {
               When the training feels heavy or your energy dips, come here for a quick boost. 
               Listen to short motivational talks or calming music to refocus and recharge.
             </p>
+          </div>
+        </div>
+
+        {/* Quotes of the Day */}
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-8 border border-amber-200 dark:border-amber-700 mb-8">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl">
+              <Heart className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quote of the Day</h2>
+              <p className="text-amber-600 dark:text-amber-400 font-medium">Daily inspiration for your journey</p>
+            </div>
+          </div>
+          <div className="text-center">
+            <blockquote className="text-xl font-medium text-gray-800 dark:text-gray-200 italic mb-4">
+              "Success is not final, failure is not fatal: it is the courage to continue that counts."
+            </blockquote>
+            <cite className="text-amber-600 dark:text-amber-400 font-semibold">— Winston Churchill</cite>
           </div>
         </div>
 
