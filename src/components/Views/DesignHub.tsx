@@ -402,7 +402,7 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
                         const lines = paragraph.split('\n').filter(line => line.trim() !== '');
                         const bulletLines = lines.filter(line => line.startsWith('- '));
                         return (
-                          <div key={index} className="space-y-0.5">
+                          <div key={index} className="space-y-0.5 ml-6">
                             {bulletLines.map((line, lineIndex) => (
                               <div key={lineIndex} className="flex items-start">
                                 <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
