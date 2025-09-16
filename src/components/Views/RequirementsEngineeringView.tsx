@@ -48,6 +48,8 @@ This is also the stage where you break down vague requirements into specific, te
 
 Often, the best way to analyse is to visualise. Drawing process maps, swimlanes, or data flows can reveal inefficiencies that words alone don't capture. For example, mapping a current approval process might show five unnecessary handoffs that nobody realised were slowing things down. When you put that in front of stakeholders, it becomes obvious why change is needed.
 
+**Try it yourself:** Use our [Process Mapper](/process-mapper) to create visual process maps that help identify inefficiencies and gaps in your requirements analysis.
+
 The point of analysis is not to finalise requirements immediately but to create clarity and structure. You are moving from messy notes and stakeholder soundbites to organised insights that everyone can build on. By the end of this stage, you'll have a clearer picture of what the project really needs, which areas need further exploration, and what gaps or conflicts must be resolved before moving forward.
 
 In summary, analysing requirements is where the BA brings order to chaos. Through grouping, resolving conflicts, testing assumptions, breaking down vague statements, and using visual models, you transform scattered input into structured insights that can guide prioritisation and documentation. Without this step, requirements remain raw fragments that no delivery team could realistically use.`
@@ -262,6 +264,10 @@ const RequirementsEngineeringView: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const { setCurrentView } = useApp();
 
+  const handleProcessMapperClick = () => {
+    setCurrentView('process-mapper');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/20 px-8 py-12">
       <div className="max-w-6xl mx-auto space-y-10">
@@ -355,9 +361,21 @@ const RequirementsEngineeringView: React.FC = () => {
               {/* Content Body */}
               <div className="p-8">
                 <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {lessons[activeTab].content}
-                  </p>
+                  <div className="whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {lessons[activeTab].content.split('[Process Mapper](/process-mapper)').map((part, index, array) => (
+                      <span key={index}>
+                        {part}
+                        {index < array.length - 1 && (
+                          <button
+                            onClick={handleProcessMapperClick}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium cursor-pointer"
+                          >
+                            Process Mapper
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 
                 {/* Practice button for documenting requirements lesson */}
