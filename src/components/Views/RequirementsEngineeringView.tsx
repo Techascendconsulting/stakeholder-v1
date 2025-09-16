@@ -5,76 +5,52 @@ const lessons = [
   { 
     id: "what-is-re", 
     title: "What is Requirements Engineering?",
-    content: `In this lesson, you'll learn what Requirements Engineering is, why it matters, and how it connects elicitation with delivery.
+    content: `When most people hear the term "requirements engineering," they imagine a Business Analyst sitting at a desk, writing long lists of requirements in a document. But in reality, Requirements Engineering (RE) is much more than that. It is the discipline that ensures projects build the right solution, for the right problem, in the right way.
 
-Requirements Engineering (RE) is the discipline of analysing, specifying, prioritising, validating, and managing requirements so a project delivers the right solution. In simple terms, it turns raw stakeholder input into clear, testable, and agreed requirements that a delivery team can actually build.
+Put simply, Requirements Engineering is the process of taking the raw information gathered from stakeholders and shaping it into structured, clear, and agreed requirements that can guide delivery. If elicitation is about asking questions and listening, Requirements Engineering is about making sense of those answers — analysing them, clarifying them, and turning them into something that a delivery team can actually build and test.
 
-RE sits between elicitation and delivery. Elicitation gathers information in line with the scope set out in the project brief or charter; Requirements Engineering makes that information usable; delivery turns it into working software or process change.
+A key thing to understand is that Requirements Engineering is not a single step you do once and move on from. It is a cycle. As a BA, you never really stop doing it. You analyse requirements, document them, prioritise them, validate them, and manage them. Then new information comes in, stakeholders change their minds, or scope shifts — and you go through the cycle again.
 
-A key point to understand is that RE is not a one-time task. It is a cycle. As the project evolves, you:
+In traditional waterfall projects, BAs were expected to "finish" requirements before delivery began. In Agile, things are different. You don't wait until you have every single requirement nailed down before the team can start building. Instead, once you have enough well-understood and prioritised requirements for the team to deliver a first valuable slice, development begins. While the team is working on that, you as the BA continue refining, analysing, and validating the next set of requirements. In other words, Requirements Engineering and delivery happen in parallel.
 
-Analyse what has been elicited so far.
+So what does this discipline actually involve? There are several overlapping activities that make up Requirements Engineering:
 
-Document and specify it clearly.
+Analysing requirements – reviewing stakeholder input, looking for conflicts, assumptions, and gaps.
 
-Prioritise what matters most.
+Specifying requirements – documenting them in a clear and unambiguous way, such as user stories, use cases, or process models.
 
-Validate with stakeholders.
+Prioritising requirements – helping stakeholders decide what is most important and what can wait.
 
-Manage changes as new information emerges.
+Validating requirements – confirming with stakeholders that the documented requirements are correct.
 
-In Agile environments, you don't wait until every requirement is discovered or perfected before delivery begins. Once there are enough well-prioritised requirements to create a first slice of value, development can start. While the team builds, the BA continues the RE cycle in parallel, refining upcoming items so they are ready just-in-time for future sprints or releases.
+Managing requirements – tracking changes, dependencies, and ensuring everything remains aligned to the business goals.
 
-**The Core Activities of RE**
+Why is all this necessary? Because raw stakeholder input is rarely enough. Stakeholders often say things in broad or conflicting terms. One person may say, "We need better reporting," while another insists, "We need to simplify approvals." On their own, these are vague. Without proper Requirements Engineering, a team could waste time building features that don't solve the real problem or miss out on something critical.
 
-Analysing Requirements – uncovering patterns, conflicts, and assumptions.
+Think of it like building a house. The project brief or charter gives you the scope — the starting point. Elicitation is like gathering the bricks, timber, and cement. But Requirements Engineering is where you create the blueprint — a structured plan that ensures everyone builds the same house. And in Agile, you don't wait until every detail of the blueprint is finished. You design enough of it to start building the foundation, while continuing to refine the rest as the house goes up.
 
-Specifying Requirements – documenting in clear formats (user stories, process models, use cases).
-
-Prioritising Requirements – deciding what matters most to the business.
-
-Validating Requirements – confirming with stakeholders that requirements are correct.
-
-Managing Requirements – handling changes, dependencies, and traceability.
-
-**Why it Matters**
-
-Stakeholder input is rarely complete. It may be vague, contradictory, or based on assumptions. Without Requirements Engineering, projects risk delivering the wrong solution.
-
-A simple way to picture it is:
-
-The Project Brief defines the starting point — the foundation of the house.
-
-Elicitation gathers the building materials.
-
-Requirements Engineering turns those materials into a buildable blueprint that everyone understands.
-
-Delivery constructs the house one section at a time, while RE continues shaping the next stages.
-
-In summary, Requirements Engineering is the continuous bridge between elicitation and delivery. It ensures that requirements are clear, prioritised, and validated so the team builds the right solution at the right time.`
+In summary, Requirements Engineering is the continuous bridge between elicitation and delivery. It transforms raw, scattered input into structured requirements, ensures priorities are clear, validates them with stakeholders, and keeps everything aligned with business goals. Without it, projects risk building the wrong thing, or worse, building nothing of real value.`
   },
   { 
     id: "analysing-requirements", 
     title: "Analysing Requirements",
-    content: `Once you've gathered input from stakeholders through elicitation, your next step is to analyse that information. This involves examining what you've collected to identify patterns, conflicts, overlaps, and gaps.
+    content: `After you've spoken with stakeholders and captured their input, you'll quickly realise something: what you've written down is not yet ready to hand over to a delivery team. Stakeholders will have given you information in many different forms — some detailed, some vague, some even contradictory. This is normal. It's your job as a BA to analyse those requirements so that they start to make sense in the bigger picture of the project.
 
-Start by reviewing all your elicitation outputs – interview notes, workshop results, surveys, and any other stakeholder input. Look for common themes and recurring needs. You might notice that multiple stakeholders mention similar pain points or desired outcomes.
+Think of this stage like tidying up after a brainstorming session. When you leave a workshop, the whiteboard may be filled with sticky notes — useful ideas, but all over the place. If you handed that board straight to a developer, they wouldn't know where to start. Your role is to organise, refine, and structure what you've collected so it becomes a usable foundation for prioritisation and documentation.
 
-As you analyse, watch for:
+One of the first things you do is group requirements. Let's say you're working on a retail platform and stakeholders have mentioned things like "customer login," "weekly sales reports," "discount vouchers," and "dashboard for store managers." On the surface, it's just a list. When you group them, you start to see categories: authentication, reporting, promotions, and management tools. Suddenly, the scattered list begins to take shape.
 
-Conflicts – when different stakeholders have opposing views on the same requirement. For example, one group wants a simple process while another needs detailed controls.
+Next comes spotting conflicts and overlaps. A finance manager might insist that every transaction requires supervisor approval, while the sales lead argues that approvals slow things down. Both perspectives are valid — but they clash. By highlighting this conflict, you create a talking point for follow-up sessions rather than allowing the contradiction to sneak into delivery.
 
-Overlaps – when multiple requirements essentially ask for the same thing but are worded differently. These can often be consolidated.
+Another responsibility is identifying gaps and assumptions. Stakeholders don't always say everything. For example, nobody may have mentioned how refunds are processed, but you know it's part of the business. That gap must be noted and explored. Similarly, assumptions can be dangerous if left unchecked. A stakeholder might say, "Of course customers will use this on their phone," but unless you confirm, you risk building a solution that doesn't meet the real need.
 
-Gaps – when you realise that important functionality or constraints haven't been mentioned by anyone. This might indicate missing stakeholders or incomplete elicitation.
+This is also the stage where you break down vague requirements into specific, testable ones. A common phrase you'll hear is, "The system should be user-friendly." On its own, this is meaningless for developers or testers. Your role is to unpack what "user-friendly" means. Does it mean fewer steps to complete a task? Does it mean a cleaner interface? A good refinement might be: "A first-time user should be able to register and log in within three steps." That is testable and clear.
 
-Ambiguities – when requirements are unclear or could be interpreted in multiple ways. These need to be clarified before they can be implemented.
+Often, the best way to analyse is to visualise. Drawing process maps, swimlanes, or data flows can reveal inefficiencies that words alone don't capture. For example, mapping a current approval process might show five unnecessary handoffs that nobody realised were slowing things down. When you put that in front of stakeholders, it becomes obvious why change is needed.
 
-During analysis, you'll also start to see relationships between requirements. Some requirements depend on others, some conflict with each other, and some might be alternative approaches to the same goal.
+The point of analysis is not to finalise requirements immediately but to create clarity and structure. You are moving from messy notes and stakeholder soundbites to organised insights that everyone can build on. By the end of this stage, you'll have a clearer picture of what the project really needs, which areas need further exploration, and what gaps or conflicts must be resolved before moving forward.
 
-A useful technique is to create a requirements traceability matrix, showing how each requirement links back to specific stakeholder needs and business objectives. This helps ensure that every requirement serves a clear purpose and can be justified to stakeholders.
-
-The goal of analysis is to transform raw stakeholder input into a coherent set of requirements that accurately represent what the business needs, without contradictions or gaps.`
+In summary, analysing requirements is where the BA brings order to chaos. Through grouping, resolving conflicts, testing assumptions, breaking down vague statements, and using visual models, you transform scattered input into structured insights that can guide prioritisation and documentation. Without this step, requirements remain raw fragments that no delivery team could realistically use.`
   },
   { 
     id: "prioritising-requirements", 
