@@ -447,7 +447,7 @@ In summary, linking design to user stories is how you ensure the work done in de
 
 👉 This completes the Design Hub. From here, the natural next step is the MVP Hub, where you'll learn how to take the full design picture and slice it into the smallest, most valuable release that can be built first.
 
-[Go to MVP Hub →](/mvp-hub)`,
+**Ready to continue your journey?**`,
       image: '/images/design-placeholder.png'
     }
   ];
@@ -619,24 +619,15 @@ In summary, linking design to user stories is how you ensure the work done in de
                       const lines = paragraph.split('\n').filter(line => line.trim() !== '');
                       const bulletLines = lines.filter(line => line.startsWith('- '));
                       return (
-                        <div key={index} className="space-y-3 mb-6">
-                          {bulletLines.map((line, lineIndex) => (
-                            <div key={lineIndex} className="flex items-start gap-4">
-                              <div className={`w-8 h-8 bg-gradient-to-r ${
-                                activeTab === 0 ? 'from-blue-500 to-purple-600' :
-                                activeTab === 1 ? 'from-purple-500 to-pink-600' :
-                                activeTab === 2 ? 'from-pink-500 to-red-600' :
-                                activeTab === 3 ? 'from-red-500 to-orange-600' :
-                                activeTab === 4 ? 'from-orange-500 to-yellow-600' :
-                                'from-yellow-500 to-green-600'
-                              } rounded-full flex items-center justify-center flex-shrink-0`}>
-                                <span className="text-white font-bold text-sm">{lineIndex + 1}</span>
-                              </div>
-                              <p className="text-gray-700 dark:text-gray-200">
-                                {line.substring(2)}
-                              </p>
-                            </div>
-                          ))}
+                        <div key={index} className="ml-6 mb-6">
+                          <ul className="space-y-2">
+                            {bulletLines.map((line, lineIndex) => (
+                              <li key={lineIndex} className="text-gray-700 dark:text-gray-200 flex items-start">
+                                <span className="text-gray-500 dark:text-gray-400 mr-2">•</span>
+                                <span>{line.substring(2)}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       );
                     }
@@ -649,6 +640,18 @@ In summary, linking design to user stories is how you ensure the work done in de
                     );
                   })}
                 </div>
+                
+                {/* MVP Hub Button for Lesson 5 */}
+                {activeTab === 4 && (
+                  <div className="mt-8 text-center">
+                    <button 
+                      onClick={() => setCurrentView('mvp-hub')} 
+                      className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      Go to MVP Hub →
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
