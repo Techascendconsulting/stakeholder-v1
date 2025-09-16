@@ -484,7 +484,7 @@ In summary, linking design to user stories is how you ensure the work done in de
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Design Portfolio Grid - Completely Different Approach */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {lessons.map((lesson, index) => (
             <div
               key={lesson.id}
@@ -494,7 +494,7 @@ In summary, linking design to user stories is how you ensure the work done in de
               }`}
             >
               {/* Design Project Card */}
-              <div className={`relative h-64 rounded-3xl overflow-hidden shadow-2xl ${
+              <div className={`relative h-48 rounded-3xl overflow-hidden shadow-2xl ${
                 activeTab === index ? 'shadow-purple-500/25 shadow-2xl' : ''
               }`}>
                 {/* Background Gradient */}
@@ -513,22 +513,22 @@ In summary, linking design to user stories is how you ensure the work done in de
                 <div className="absolute bottom-4 left-4 w-12 h-12 bg-white/20 rounded-full blur-lg"></div>
                 
                 {/* Content */}
-                <div className="relative h-full flex flex-col justify-between p-6 text-white">
+                <div className="relative h-full flex flex-col justify-between p-4 text-white">
                   <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                        {index === 0 && <PenTool className="w-6 h-6" />}
-                        {index === 1 && <Layers className="w-6 h-6" />}
-                        {index === 2 && <Eye className="w-6 h-6" />}
-                        {index === 3 && <Code className="w-6 h-6" />}
-                        {index === 4 && <Zap className="w-6 h-6" />}
-                        {index === 5 && <Sparkles className="w-6 h-6" />}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        {index === 0 && <PenTool className="w-5 h-5" />}
+                        {index === 1 && <Layers className="w-5 h-5" />}
+                        {index === 2 && <Eye className="w-5 h-5" />}
+                        {index === 3 && <Code className="w-5 h-5" />}
+                        {index === 4 && <Zap className="w-5 h-5" />}
+                        {index === 5 && <Sparkles className="w-5 h-5" />}
                       </div>
-                      <div className="text-2xl font-black opacity-60">
+                      <div className="text-xl font-black opacity-60">
                         {String(index + 1).padStart(2, '0')}
                       </div>
                     </div>
-                    <h3 className="text-xl font-bold mb-2 leading-tight">
+                    <h3 className="text-lg font-bold mb-2 leading-tight">
                       {lesson.title}
                     </h3>
                   </div>
