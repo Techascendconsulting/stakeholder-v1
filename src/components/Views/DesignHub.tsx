@@ -401,7 +401,7 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
                               'from-yellow-500 to-green-600'
                             }`}></div>
                             <div className="p-6">
-                              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                                 {paragraph.replace(/\*\*/g, '')}
                               </h3>
                             </div>
@@ -458,9 +458,11 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
                             'from-yellow-500 to-green-600'
                           }`}></div>
                           <div className="p-6">
-                            <p className="text-gray-700 dark:text-gray-200 leading-relaxed">
-                              {paragraph}
-                            </p>
+                            <div className="prose prose-gray dark:prose-invert max-w-none">
+                              <p className="text-gray-700 dark:text-gray-200 leading-relaxed">
+                                {paragraph}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       );
