@@ -384,72 +384,51 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
                 }}
               >
                 <div className="max-w-none">
-                  <div className="space-y-8">
-                    {lessons[activeTab].content.split(/(?=\*\*)/).map((section, index) => {
-                      if (section.trim() === '') return null;
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    {lessons[activeTab].content.split('\n\n').map((paragraph, index) => {
+                      if (paragraph.trim() === '') return null;
                       
-                      // Each section gets ONE card like Scrum Essentials
-                      const lines = section.split('\n');
-                      const isHeading = section.startsWith('**') && section.includes('**');
-                      const header = isHeading ? lines[0].replace(/\*\*/g, '') : null;
-                      const body = isHeading ? lines.slice(1).join('\n').trim() : section;
+                      // Handle headings
+                      if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+                        return (
+                          <h3 key={index} className="text-xl font-bold text-gray-900 dark:text-white mb-4 mt-8">
+                            {paragraph.replace(/\*\*/g, '')}
+                          </h3>
+                        );
+                      }
                       
-                      return (
-                        <div key={index} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-                          <div className={`h-1.5 bg-gradient-to-r ${
-                            activeTab === 0 ? 'from-blue-500 to-purple-600' :
-                            activeTab === 1 ? 'from-purple-500 to-pink-600' :
-                            activeTab === 2 ? 'from-pink-500 to-red-600' :
-                            activeTab === 3 ? 'from-red-500 to-orange-600' :
-                            activeTab === 4 ? 'from-orange-500 to-yellow-600' :
-                            'from-yellow-500 to-green-600'
-                          }`}></div>
-                          <div className="p-6">
-                            {header && (
-                              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                {header}
-                              </h3>
-                            )}
-                            <div className="prose prose-gray dark:prose-invert max-w-none">
-                              {body.split('\n\n').map((paragraph, pIndex) => {
-                                if (paragraph.trim() === '') return null;
-                                
-                                // Handle bullet points within the section
-                                if (paragraph.includes('- ')) {
-                                  const bulletLines = paragraph.split('\n').filter(line => line.startsWith('- '));
-                                  return (
-                                    <div key={pIndex} className="space-y-3 mb-4">
-                                      {bulletLines.map((line, lineIndex) => (
-                                        <div key={lineIndex} className="flex items-start gap-4">
-                                          <div className={`w-8 h-8 bg-gradient-to-r ${
-                                            activeTab === 0 ? 'from-blue-500 to-purple-600' :
-                                            activeTab === 1 ? 'from-purple-500 to-pink-600' :
-                                            activeTab === 2 ? 'from-pink-500 to-red-600' :
-                                            activeTab === 3 ? 'from-red-500 to-orange-600' :
-                                            activeTab === 4 ? 'from-orange-500 to-yellow-600' :
-                                            'from-yellow-500 to-green-600'
-                                          } rounded-full flex items-center justify-center flex-shrink-0`}>
-                                            <span className="text-white font-bold text-sm">{lineIndex + 1}</span>
-                                          </div>
-                                          <p className="text-gray-700 dark:text-gray-200 leading-relaxed">
-                                            {line.substring(2)}
-                                          </p>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  );
-                                }
-                                
-                                // Regular paragraphs
-                                return (
-                                  <p key={pIndex} className="text-gray-700 dark:text-gray-200 leading-relaxed mb-4">
-                                    {paragraph}
-                                  </p>
-                                );
-                              })}
-                            </div>
+                      // Handle bullet points
+                      if (paragraph.includes('- ')) {
+                        const lines = paragraph.split('\n').filter(line => line.trim() !== '');
+                        const bulletLines = lines.filter(line => line.startsWith('- '));
+                        return (
+                          <div key={index} className="space-y-3 mb-6">
+                            {bulletLines.map((line, lineIndex) => (
+                              <div key={lineIndex} className="flex items-start gap-4">
+                                <div className={`w-8 h-8 bg-gradient-to-r ${
+                                  activeTab === 0 ? 'from-blue-500 to-purple-600' :
+                                  activeTab === 1 ? 'from-purple-500 to-pink-600' :
+                                  activeTab === 2 ? 'from-pink-500 to-red-600' :
+                                  activeTab === 3 ? 'from-red-500 to-orange-600' :
+                                  activeTab === 4 ? 'from-orange-500 to-yellow-600' :
+                                  'from-yellow-500 to-green-600'
+                                } rounded-full flex items-center justify-center flex-shrink-0`}>
+                                  <span className="text-white font-bold text-sm">{lineIndex + 1}</span>
+                                </div>
+                                <p className="text-gray-700 dark:text-gray-200">
+                                  {line.substring(2)}
+                                </p>
+                              </div>
+                            ))}
                           </div>
-                        </div>
+                        );
+                      }
+                      
+                      // Regular paragraphs
+                      return (
+                        <p key={index} className="text-gray-700 dark:text-gray-200 mb-4">
+                          {paragraph}
+                        </p>
                       );
                     })}
                   </div>
