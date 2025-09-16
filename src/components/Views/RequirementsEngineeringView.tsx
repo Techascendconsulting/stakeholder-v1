@@ -57,31 +57,61 @@ In summary, analysing requirements is where the BA brings order to chaos. Throug
   { 
     id: "prioritising-requirements", 
     title: "Prioritising Requirements",
-    content: `Not all requirements are equally important. Some are essential for the project's success, while others are nice-to-have features that could be delivered later or not at all. Prioritisation helps you focus on what matters most and make informed decisions about scope and delivery.
+    content: `Once you have analysed requirements and begun to make sense of stakeholder input, the next challenge is deciding which ones should be delivered first. This is where prioritisation comes in.
 
-Several techniques can help you prioritise requirements effectively:
+In every project, you will face the same reality: you cannot deliver everything at once. Budgets are limited, deadlines are tight, and resources are constrained. Even if you had unlimited time, trying to build everything in one go almost always leads to wasted effort, scope creep, and disappointed stakeholders. Prioritisation is the discipline that prevents this.
 
-MoSCoW Prioritisation – categorises requirements into Must have, Should have, Could have, and Won't have (this time). This is particularly useful when you need to deliver within fixed timeframes or budgets.
+Your role as a BA is not to decide priorities in isolation. Instead, you facilitate prioritisation discussions, helping stakeholders balance competing needs and ensuring that decisions are tied back to business goals. Done well, prioritisation reduces conflict, creates focus, and ensures the team starts with the most valuable work.
 
-Value vs Effort Matrix – plots requirements on a grid showing business value against implementation effort. High-value, low-effort requirements are obvious wins, while high-effort, low-value requirements should be questioned.
+**The MoSCoW Method**
 
-Kano Model – categorises requirements based on how they affect customer satisfaction. Basic requirements are expected, performance requirements increase satisfaction, and excitement requirements create delight.
+The most widely used technique for prioritisation is the MoSCoW method. It divides requirements into four categories:
 
-Stakeholder voting – allows stakeholders to vote on which requirements they consider most important. This can reveal consensus or highlight areas of disagreement.
+Must have – Without these, the solution fails. These are non-negotiable.
 
-When prioritising, consider factors such as:
+Should have – Important requirements, but not critical for the first release.
 
-Business value – how much this requirement contributes to achieving business objectives.
+Could have – Nice-to-have features that can be included if time and resources allow.
 
-User impact – how many users will benefit and how significantly.
+Won't have (for now) – Requirements explicitly agreed to be out of scope for this release.
 
-Technical risk – how difficult or risky it is to implement.
+For example, imagine you are working on a new online expense management system.
 
-Dependencies – whether this requirement blocks or enables other important work.
+A Must have might be: "Employees must be able to submit an expense claim with supporting receipts." Without this, the system cannot function.
 
-Regulatory or compliance needs – whether this requirement is mandatory for legal or policy reasons.
+A Should have could be: "Employees should be able to submit expenses via a mobile app." It adds value, but the web version is sufficient for launch.
 
-Remember that prioritisation is not a one-time activity. As you learn more about the project and stakeholder needs, priorities may change. Regular review and adjustment of priorities helps ensure the project stays focused on delivering maximum value.`
+A Could have might be: "Employees could have the option to take a photo of their receipt and the system automatically extracts the details." Useful, but not essential.
+
+A Won't have (for now) might be: "Integration with personal finance apps." A good idea, but not within the immediate project scope.
+
+Using MoSCoW gives stakeholders a shared language to have difficult conversations. Instead of everyone claiming their requirement is "urgent," the discussion shifts to: "Is this a Must, Should, Could, or Won't for this release?"
+
+**MVP and Prioritisation**
+
+In Agile, prioritisation is not just about classifying requirements — it's about shaping the Minimum Viable Product (MVP). The MVP is the smallest version of the product that still delivers value to stakeholders. It allows the team to start delivering benefits early, test assumptions, and learn from real feedback.
+
+When using MoSCoW, the MVP usually consists of the Must haves and a carefully selected set of Should haves that deliver a meaningful outcome. The rest are planned for later releases. As a BA, you play a key role in guiding stakeholders to see what the MVP should include, and what can wait.
+
+For example, in the expense management project, the MVP might be:
+
+Employees can submit claims (Must have).
+
+Finance can approve or reject claims (Must have).
+
+Claims are stored and can be reported by month (Should have).
+
+Everything else — mobile app, AI receipt scanning, fancy dashboards — can follow once the MVP is live.
+
+**Prioritisation and Design Conversations**
+
+Prioritisation also feeds directly into the design phase. Once you know what features are Must haves, designers and developers can begin shaping the first version of the solution. The BA ensures that early design work aligns with the agreed priorities. For instance, there is no point designing an elaborate dashboard if reporting is only a Could have for a later release.
+
+**The BA's Role**
+
+Facilitating prioritisation can sometimes be challenging. Stakeholders may resist categorising their needs as anything less than a Must. This is where you use skills such as negotiation, asking probing questions, and pointing back to the business case or project goals. A good BA helps stakeholders see the bigger picture and make informed trade-offs.
+
+In summary, prioritisation is about focusing the project on what matters most. MoSCoW is the most popular tool for achieving this, helping stakeholders distinguish Musts from Shoulds and Coulds. Done well, prioritisation defines the MVP, guides early design, and ensures delivery starts with the highest-value features. Without it, projects risk overcommitting, building the wrong things first, or never delivering at all.`
   },
   { 
     id: "documenting-requirements", 
