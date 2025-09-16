@@ -161,39 +161,43 @@ In summary, documenting requirements in Agile is about clarity, not volume. Whet
   { 
     id: "validating-requirements", 
     title: "Validating Requirements",
-    content: `Validation is the process of confirming that your requirements accurately capture what stakeholders actually need. It's not enough to document requirements – you must verify that they are correct, complete, and understood by all parties.
+    content: `By now, you've elicited, analysed, prioritised, and documented requirements. But here's a hard truth: just because something is written down doesn't mean it's correct. Requirements must be validated — checked and confirmed with stakeholders to ensure they reflect what the business truly needs.
 
-Validation involves checking back with stakeholders to ensure that your interpretation of their needs matches their actual requirements. This is crucial because misunderstandings at this stage can lead to expensive rework later in the project.
+Validation is one of the most overlooked skills for new BAs. Many assume that once requirements are documented, the job is done. In reality, requirements are only useful if stakeholders agree they are accurate, complete, and aligned to the project's goals. Without validation, you risk building a solution that nobody recognises when it's delivered.
 
-Key validation activities include:
+Think of validation as a feedback loop. You take what you've captured, present it back to stakeholders, and confirm whether it matches their intent. This is not just a formality — it's an active process of uncovering misunderstandings, resolving ambiguities, and building confidence across the team.
 
-Stakeholder Review – presenting your documented requirements to stakeholders and asking them to confirm accuracy and completeness.
+**How Validation Happens in Practice**
 
-Walkthroughs – going through requirements with stakeholders step-by-step to ensure understanding and identify any gaps or errors.
+Validation doesn't always mean a formal sign-off. In Agile projects, it often happens continuously through collaboration. For example, during backlog refinement, you walk through user stories with the Product Owner, developers, and testers. Together, you check:
 
-Prototyping – creating simple models or mockups to help stakeholders visualise and validate requirements.
+Does the story represent the real need?
 
-Acceptance Criteria Review – ensuring that the criteria for determining whether a requirement has been met are clear and agreed upon.
+Are the acceptance criteria testable?
 
-During validation, you might discover that:
+Is there anything missing or unclear?
 
-Requirements are missing – stakeholders identify needs that weren't captured during elicitation.
+Sometimes, validation is more focused. You might hold a requirements walkthrough with a small group of stakeholders. Here, you step through a process map or a set of stories and ask, "Does this reflect how you see the business working?" These walkthroughs are powerful because they give stakeholders a chance to react to something tangible instead of relying on memory of a conversation.
 
-Requirements are incorrect – your interpretation doesn't match what stakeholders actually want.
+Validation also happens through examples and scenarios. For instance, if you've documented requirements for an expense system, you might say:
 
-Requirements are incomplete – additional detail is needed to make requirements implementable.
+"Let's imagine John submits a £100 claim for travel with a receipt. Does the process we've captured handle this correctly?"
 
-Requirements are conflicting – different stakeholders have different expectations that need to be resolved.
+"Now what if John forgets to attach the receipt — does the system behave as expected?"
 
-Validation is also an opportunity to check that requirements are:
+By playing through scenarios, stakeholders quickly spot gaps or corrections that wouldn't appear in abstract discussions.
 
-Feasible – can be implemented with available resources and technology.
+**The BA's Role**
 
-Testable – can be verified to ensure they've been met.
+Your role as a BA in validation is not to defend your documentation but to facilitate agreement. You create a safe environment where stakeholders can say, "This isn't quite right," without it being seen as failure. The goal is to catch misunderstandings early, before they become expensive problems in delivery.
 
-Aligned with business objectives – support the overall goals of the project.
+Validation is also about alignment. Stakeholders often have different perspectives, and by reviewing requirements together, you help them converge on a shared view. This shared understanding is more valuable than a signature on a document.
 
-When stakeholders confirm that requirements are correct, you have confidence that the solution you're planning to build will meet their actual needs. This validation step is essential for project success.`
+**Why Validation Matters**
+
+Skipping validation is one of the fastest ways for a project to go wrong. Imagine spending weeks capturing requirements for a new system, only to discover during user acceptance testing that key scenarios were missed. At that point, changes are costly and frustrating for everyone. By validating continuously, you reduce risk and ensure that what gets built is what the business actually needs.
+
+In summary, validation is about creating confidence and alignment. It is the process of confirming that requirements are correct, complete, and testable — not in your opinion, but in the eyes of stakeholders. Through backlog refinement, walkthroughs, and scenario-based reviews, you as a BA close the loop between what is written and what is truly needed. Without validation, even the best-written requirements risk missing the mark.`
   },
   { 
     id: "transition-to-delivery", 
