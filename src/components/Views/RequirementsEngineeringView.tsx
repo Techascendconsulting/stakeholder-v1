@@ -5,25 +5,53 @@ const lessons = [
   { 
     id: "what-is-re", 
     title: "What is Requirements Engineering?",
-    content: `Requirements Engineering is the discipline of analysing, specifying, and validating requirements. It's the crucial bridge between elicitation (gathering raw information from stakeholders) and delivery (building the solution).
+    content: `In this lesson, you'll learn what Requirements Engineering is, why it matters, and how it connects elicitation with delivery.
 
-While elicitation focuses on asking the right questions and capturing stakeholder input, Requirements Engineering transforms that raw information into something usable. This is where you take the conversations, notes, and ideas from stakeholder meetings and turn them into structured, clear, and actionable requirements.
+Requirements Engineering (RE) is the discipline of analysing, specifying, prioritising, validating, and managing requirements so a project delivers the right solution. In simple terms, it turns raw stakeholder input into clear, testable, and agreed requirements that a delivery team can actually build.
 
-The process involves several key activities:
+RE sits between elicitation and delivery. Elicitation gathers information in line with the scope set out in the project brief or charter; Requirements Engineering makes that information usable; delivery turns it into working software or process change.
 
-Analysing Requirements – examining stakeholder input to identify patterns, conflicts, and gaps.
+A key point to understand is that RE is not a one-time task. It is a cycle. As the project evolves, you:
 
-Specifying Requirements – documenting needs in a clear, unambiguous format that can be understood by all stakeholders.
+Analyse what has been elicited so far.
 
-Validating Requirements – confirming with stakeholders that you've captured their needs correctly.
+Document and specify it clearly.
 
-Prioritising Requirements – determining which requirements are most important and should be delivered first.
+Prioritise what matters most.
 
-Managing Requirements – tracking changes, dependencies, and relationships between different requirements.
+Validate with stakeholders.
 
-This phase is essential because raw stakeholder input is often incomplete, contradictory, or unclear. Without proper Requirements Engineering, you risk building the wrong solution or missing critical functionality.
+Manage changes as new information emerges.
 
-Think of it this way: elicitation is like gathering ingredients, but Requirements Engineering is the process of creating a recipe that everyone can follow to cook the same dish successfully.`
+In Agile environments, you don't wait until every requirement is discovered or perfected before delivery begins. Once there are enough well-prioritised requirements to create a first slice of value, development can start. While the team builds, the BA continues the RE cycle in parallel, refining upcoming items so they are ready just-in-time for future sprints or releases.
+
+**The Core Activities of RE**
+
+Analysing Requirements – uncovering patterns, conflicts, and assumptions.
+
+Specifying Requirements – documenting in clear formats (user stories, process models, use cases).
+
+Prioritising Requirements – deciding what matters most to the business.
+
+Validating Requirements – confirming with stakeholders that requirements are correct.
+
+Managing Requirements – handling changes, dependencies, and traceability.
+
+**Why it Matters**
+
+Stakeholder input is rarely complete. It may be vague, contradictory, or based on assumptions. Without Requirements Engineering, projects risk delivering the wrong solution.
+
+A simple way to picture it is:
+
+The Project Brief defines the starting point — the foundation of the house.
+
+Elicitation gathers the building materials.
+
+Requirements Engineering turns those materials into a buildable blueprint that everyone understands.
+
+Delivery constructs the house one section at a time, while RE continues shaping the next stages.
+
+In summary, Requirements Engineering is the continuous bridge between elicitation and delivery. It ensures that requirements are clear, prioritised, and validated so the team builds the right solution at the right time.`
   },
   { 
     id: "analysing-requirements", 
