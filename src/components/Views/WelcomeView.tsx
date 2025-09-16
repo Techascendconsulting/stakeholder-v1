@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { 
   ArrowRight, 
-  Play, 
   Target,
   FileText,
   Users,
@@ -24,7 +23,7 @@ const WelcomeView: React.FC = () => {
               Welcome to Your BA Work Experience Lab
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              You've trained as a Business Analyst — now it's time to practise.
+              You've trained as a Business Analyst, now it's time to practise.
             </p>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mt-4">
               Here you'll:
@@ -32,31 +31,58 @@ const WelcomeView: React.FC = () => {
           </div>
           
           <div className="space-y-6 max-w-2xl mx-auto">
+            {/* Refresh knowledge in Learn Hub */}
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <Lightbulb className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Refresh your knowledge in the Learn Hub</h3>
+                <p className="text-gray-600 dark:text-gray-300">Explore practical BA concepts most training programs miss, the ones that make a real difference at work.</p>
+              </div>
+            </div>
+
+            {/* See how the job is done */}
             <div className="flex items-start space-x-4">
               <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                 <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Speak to stakeholders in realistic conversations</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">See how the job is done in real life</h3>
+                <p className="text-gray-600 dark:text-gray-300">Move beyond theory and experience how Business Analysts actually work on projects.</p>
               </div>
             </div>
-            
+
+            {/* Speak to stakeholders */}
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Speak to stakeholders in realistic conversations</h3>
+                <p className="text-gray-600 dark:text-gray-300">Practise the kinds of interactions you’ll face on the job.</p>
+              </div>
+            </div>
+
+            {/* Build deliverables */}
             <div className="flex items-start space-x-4">
               <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                 <FileText className="w-4 h-4 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Build deliverables used in real projects</h3>
+                <p className="text-gray-600 dark:text-gray-300">Create the same documents and artefacts that real BAs deliver.</p>
               </div>
             </div>
-            
+
+            {/* Create a portfolio */}
             <div className="flex items-start space-x-4">
               <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                <Target className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Create a portfolio you can use in interviews</h3>
-                <p className="text-gray-600 dark:text-gray-300">Everything you produce becomes evidence of your work</p>
+                <p className="text-gray-600 dark:text-gray-300">Everything you produce here becomes evidence of your experience.</p>
               </div>
             </div>
           </div>
@@ -73,10 +99,20 @@ const WelcomeView: React.FC = () => {
             </h1>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lightbulb className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Learn Phase</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Short, focused lessons on practical BA concepts most courses miss.
+              </p>
+            </div>
+            
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Play className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Practice Phase</h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -86,7 +122,7 @@ const WelcomeView: React.FC = () => {
             
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Target className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Project Phase</h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -120,14 +156,35 @@ const WelcomeView: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <button 
+              className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-2 border-yellow-200 dark:border-yellow-700 hover:border-yellow-400 dark:hover:border-yellow-500 transition-all group text-left"
+              onClick={() => setCurrentView('learn')}
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Lightbulb className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  Open Learn Hub
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Start with practical BA concepts and lessons
+                </p>
+                <div className="flex items-center justify-center text-yellow-600 dark:text-yellow-400 font-medium">
+                  <span>Open Learn Hub</span>
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </div>
+              </div>
+            </button>
+            
             <button 
               className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-2 border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all group text-left"
-              onClick={() => setCurrentView('training-hub')}
+              onClick={() => setCurrentView('practice-2')}
             >
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Play className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                   Start Practice
@@ -148,7 +205,7 @@ const WelcomeView: React.FC = () => {
             >
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Target className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                   Start Project

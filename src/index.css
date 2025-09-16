@@ -332,3 +332,25 @@
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
+/* Content contrast helper without touching watermark */
+.content-root {
+  position: relative;
+}
+.content-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(248, 250, 252, 0.55); /* slate-50/55 */
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  z-index: 0;
+}
+.dark .content-root::before {
+  background: rgba(2, 6, 23, 0.45); /* slate-900/45 */
+}
+/* Ensure content sits above the soft mask */
+.content-root > * {
+  position: relative;
+  z-index: 1;
+}

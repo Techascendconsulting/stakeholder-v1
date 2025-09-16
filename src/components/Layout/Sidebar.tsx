@@ -14,7 +14,9 @@ import {
   Home,
   LayoutDashboard,
   Plus,
-  Heart
+  Heart,
+  PlayCircle,
+  FileText
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -70,9 +72,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: BookOpen
     },
     { 
+      id: 'project-initiation', 
+      label: 'Project Initiation', 
+      icon: PlayCircle
+    },
+    { 
       id: 'practice-2', 
       label: 'Elicitation Practice', 
       icon: Target
+    },
+    { 
+      id: 'requirements-engineering', 
+      label: 'Requirements Engineering', 
+      icon: FileText
     },
     { 
       id: 'scrum-practice', 

@@ -8,6 +8,8 @@ export type AppView =
   | 'get-started'
   | 'dashboard'
   | 'learn'
+  | 'project-initiation'
+  | 'requirements-engineering'
   | 'practice'
   | 'practice-2'
   | 'motivation'

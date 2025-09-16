@@ -988,7 +988,7 @@ Remember to start with a professional greeting and introduce yourself. Then focu
   };
 
   const renderLiveMeeting = () => (
-    <div className="h-full flex flex-col">
+    <div className="content-root h-full flex flex-col">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="flex items-center justify-between">

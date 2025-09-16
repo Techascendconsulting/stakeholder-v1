@@ -30,7 +30,7 @@ const GuidedPracticeHub: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="content-root min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
       {/* Hero Header */}
       <div className="relative bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>

@@ -26,6 +26,8 @@ import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
 import ProjectView from '../Views/ProjectView';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
+import ProjectInitiationView from '../Views/ProjectInitiationView';
+import RequirementsEngineeringView from '../Views/RequirementsEngineeringView';
 // Training Hub Views
 import TrainingHubView from '../Views/TrainingHubView';
 import PracticeHubCardsView from '../Views/PracticeHubCardsView';
@@ -78,6 +80,10 @@ const MainLayout: React.FC = () => {
         return <Dashboard />;
       case 'learn':
         return <LearnLandingView />;
+      case 'project-initiation':
+        return <ProjectInitiationView />;
+      case 'requirements-engineering':
+        return <RequirementsEngineeringView />;
       case 'practice':
         return <PracticeLabView />;
       case 'practice-2':

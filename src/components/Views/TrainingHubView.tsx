@@ -380,7 +380,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
 
   // Introduction Page
   const renderIntroduction = () => (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
+    <div className="content-root min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
       {/* Header */}
       <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 px-8 py-6 shadow-sm">
         <div className="flex items-center justify-between">
@@ -629,7 +629,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
     ];
 
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
+      <div className="content-root min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           {/* Header */}
           <header className="text-center mb-12">
@@ -684,7 +684,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
     }
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
+      <div className="content-root min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
         {/* Header */}
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 px-8 py-6 shadow-sm">
           <div className="flex items-center justify-between">
@@ -813,7 +813,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
 
   // Training Hub (Single Page Layout)
   const renderTrainingHub = () => (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
+    <div className="content-root min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
       {/* Header */}
       <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 px-8 py-6 shadow-sm">
         <div className="flex items-center justify-between">
