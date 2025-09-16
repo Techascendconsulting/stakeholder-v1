@@ -614,6 +614,25 @@ In summary, linking design to user stories is how you ensure the work done in de
                       );
                     }
                     
+                    // Handle bold text within paragraphs
+                    if (paragraph.includes('**')) {
+                      const parts = paragraph.split(/(\*\*.*?\*\*)/g);
+                      return (
+                        <p key={index} className="text-gray-700 dark:text-gray-200 mb-4">
+                          {parts.map((part, partIndex) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                              return (
+                                <strong key={partIndex} className="font-semibold text-gray-900 dark:text-white">
+                                  {part.replace(/\*\*/g, '')}
+                                </strong>
+                              );
+                            }
+                            return part;
+                          })}
+                        </p>
+                      );
+                    }
+                    
                     // Handle bullet points
                     if (paragraph.includes('- ')) {
                       const lines = paragraph.split('\n').filter(line => line.trim() !== '');
@@ -621,12 +640,27 @@ In summary, linking design to user stories is how you ensure the work done in de
                       return (
                         <div key={index} className="ml-6 mb-6">
                           <ul className="space-y-2">
-                            {bulletLines.map((line, lineIndex) => (
-                              <li key={lineIndex} className="text-gray-700 dark:text-gray-200 flex items-start">
-                                <span className="text-gray-500 dark:text-gray-400 mr-2">•</span>
-                                <span>{line.substring(2)}</span>
-                              </li>
-                            ))}
+                            {bulletLines.map((line, lineIndex) => {
+                              const text = line.substring(2);
+                              const parts = text.split(/(\*\*.*?\*\*)/g);
+                              return (
+                                <li key={lineIndex} className="text-gray-700 dark:text-gray-200 flex items-start">
+                                  <span className="text-gray-500 dark:text-gray-400 mr-2">•</span>
+                                  <span>
+                                    {parts.map((part, partIndex) => {
+                                      if (part.startsWith('**') && part.endsWith('**')) {
+                                        return (
+                                          <strong key={partIndex} className="font-semibold text-gray-900 dark:text-white">
+                                            {part.replace(/\*\*/g, '')}
+                                          </strong>
+                                        );
+                                      }
+                                      return part;
+                                    })}
+                                  </span>
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       );
