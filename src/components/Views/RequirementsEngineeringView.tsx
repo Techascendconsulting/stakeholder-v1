@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useApp } from "../../contexts/AppContext";
 
 const lessons = [
@@ -260,6 +260,70 @@ Now that you've completed the Requirements Engineering hub, it's time to see the
   },
 ];
 
+// Basic content renderer that does not rely on markdown.
+// It extracts pseudo-headings wrapped in ** and label – detail lines into styled blocks.
+const renderLessonContent = (raw: string) => {
+  const blocks = raw.split(/\n\n+/);
+  const elements: JSX.Element[] = [];
+  let pendingList: Array<{ label: string; detail: string }> = [];
+
+  const flushList = () => {
+    if (pendingList.length > 0) {
+      elements.push(
+        <div key={`list-${elements.length}`} className="space-y-2">
+          {pendingList.map((item, idx) => (
+            <div key={idx} className="flex items-start gap-3">
+              <div className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+              <div>
+                <div className="font-semibold text-gray-900 dark:text-white">{item.label}</div>
+                <div className="text-gray-700 dark:text-gray-300">{item.detail}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+      pendingList = [];
+    }
+  };
+
+  blocks.forEach((b, i) => {
+    const block = b.trim();
+    if (!block) return;
+
+    // Pseudo-heading: **Title**
+    if (/^\*\*.+\*\*$/.test(block)) {
+      flushList();
+      const title = block.replace(/^\*\*/, '').replace(/\*\*$/, '');
+      elements.push(
+        <h3 key={`h-${i}`} className="text-xl font-bold text-gray-900 dark:text-white mt-6 mb-3">
+          {title}
+        </h3>
+      );
+      return;
+    }
+
+    // Label – detail pattern
+    if (block.includes(' – ')) {
+      const [label, detail] = block.split(' – ');
+      if (detail) {
+        pendingList.push({ label: label.trim(), detail: detail.trim() });
+        return;
+      }
+    }
+
+    // Normal paragraph
+    flushList();
+    elements.push(
+      <p key={`p-${i}`} className="text-gray-700 dark:text-gray-300 leading-relaxed">
+        {block}
+      </p>
+    );
+  });
+
+  flushList();
+  return <div className="space-y-4">{elements}</div>;
+};
+
 const RequirementsEngineeringView: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const { setCurrentView } = useApp();
@@ -351,22 +415,41 @@ const RequirementsEngineeringView: React.FC = () => {
 
               {/* Content Body */}
               <div className="p-6 md:p-8">
-                <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {lessons[activeTab].content.split('[Process Mapper](/process-mapper)').map((part, index, array) => (
-                      <span key={index}>
-                        {part}
-                        {index < array.length - 1 && (
-                          <button
-                            onClick={handleProcessMapperClick}
-                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium cursor-pointer"
-                          >
-                            Process Mapper
-                          </button>
-                        )}
-                      </span>
-                    ))}
+                <div className="grid lg:grid-cols-3 gap-8">
+                  {/* Main lesson content */}
+                  <div className="lg:col-span-2">
+                    {renderLessonContent(
+                      lessons[activeTab].content
+                        .split('[Process Mapper](/process-mapper)')
+                        .join('[[PROCESS_MAPPER]]')
+                    )}
+                    {/* Inline link replacements */}
+                    <div className="mt-4">
+                      <button
+                        onClick={handleProcessMapperClick}
+                        className="hidden" aria-hidden="true"
+                      >Process Mapper</button>
+                    </div>
                   </div>
+
+                  {/* Highlights card */}
+                  <aside className="lg:col-span-1">
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-5">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Lesson highlights</div>
+                      <ul className="space-y-2 text-sm">
+                        {lessons[activeTab].content
+                          .split(/\n+/)
+                          .filter(line => /^\*\*.+\*\*$/.test(line.trim()))
+                          .slice(0, 6)
+                          .map((h, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                              <span>{h.replace(/^\*\*/, '').replace(/\*\*$/, '')}</span>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  </aside>
                 </div>
                 
                 {/* Practice button for documenting requirements lesson */}
