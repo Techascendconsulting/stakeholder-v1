@@ -129,13 +129,28 @@ export const ScrumPracticeView: React.FC = () => {
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-4">
-              Scrum Events a Business Analyst Should Learn to Take Part In
+            <h1 className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-6">
+              Scrum Practice
             </h1>
-            <p className="text-lg text-purple-700 dark:text-purple-200 max-w-3xl mx-auto">
-              Master the essential Scrum ceremonies and practices that every Business Analyst needs to know. 
-              Practice in realistic scenarios with interactive simulations and hands-on exercises.
-            </p>
+            <div className="text-lg text-purple-700 dark:text-purple-200 max-w-4xl mx-auto space-y-4">
+              <p>
+                You've just seen how requirements move from analysis and documentation into delivery, where they are shaped and managed through Scrum ceremonies. Now it's time to step inside those ceremonies and see how they actually work in practice.
+              </p>
+              <p>
+                In Agile, requirements don't live in documents alone — they come alive in conversations, planning sessions, and feedback loops. Scrum ceremonies give rhythm to that process. They are where requirements are clarified, prioritised, and inspected as the team delivers working software.
+              </p>
+              <p className="font-semibold">
+                In this section, you'll explore:
+              </p>
+              <div className="text-left max-w-2xl mx-auto space-y-2">
+                <p><strong>Walkthrough</strong> – guided examples of how Scrum ceremonies play out and the role a BA takes in each.</p>
+                <p><strong>Practice</strong> – interactive sessions where you step into a BA's shoes, handling real scenarios that happen inside Sprint Planning, Daily Stand-ups, Refinement, Reviews, and Retrospectives.</p>
+                <p><strong>Advanced</strong> – more complex situations where you'll need to apply judgement, negotiation skills, and stakeholder management to keep the team aligned.</p>
+              </div>
+              <p>
+                Scrum ceremonies are not just meetings — they are the heartbeat of Agile delivery. By practising them here, you'll gain the confidence to walk into real Scrum events and know exactly what to do, what to say, and how to add value as a Business Analyst.
+              </p>
+            </div>
           </div>
         </div>
       </div>
