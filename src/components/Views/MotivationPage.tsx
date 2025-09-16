@@ -308,16 +308,16 @@ const MotivationPage: React.FC = () => {
 
 
 
-            {/* Traditional Talk Buttons */}
-            <div className="space-y-2">
+            {/* Glassmorphism Talk Cards */}
+            <div className="space-y-3">
               {talks.map((talk, index) => (
                 <button
                   key={talk.url}
                   onClick={() => handlePlay(talk.url, talk.name, talk.type)}
-                  className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
+                  className={`w-full p-4 rounded-2xl text-left transition-all duration-300 backdrop-blur-sm border ${
                     activeTrack?.title === talk.name && isPlaying
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                      : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                      ? 'bg-gradient-to-r from-blue-500/90 to-purple-600/90 text-white shadow-2xl border-blue-400/50'
+                      : 'bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 border-white/20 dark:border-gray-700/50 shadow-lg hover:shadow-xl'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -373,15 +373,15 @@ const MotivationPage: React.FC = () => {
                 <span className="text-gray-600 dark:text-gray-400">Loading music tracks...</span>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {music.map((track) => (
                   <button
                     key={track.url}
                     onClick={() => handlePlay(track.url, track.name, track.type)}
-                    className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
+                    className={`w-full p-4 rounded-2xl text-left transition-all duration-300 backdrop-blur-sm border ${
                       activeTrack?.title === track.name && isPlaying
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
-                        : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                        ? 'bg-gradient-to-r from-emerald-500/90 to-teal-600/90 text-white shadow-2xl border-emerald-400/50'
+                        : 'bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 border-white/20 dark:border-gray-700/50 shadow-lg hover:shadow-xl'
                     }`}
                   >
                     <div className="flex items-center justify-between">
