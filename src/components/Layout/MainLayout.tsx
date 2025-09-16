@@ -29,6 +29,9 @@ import BAAcademyView from '../Views/BAAcademyView';
 import ProjectInitiationView from '../Views/ProjectInitiationView';
 import RequirementsEngineeringView from '../Views/RequirementsEngineeringView';
 import IntroductionToElicitation from '../Views/IntroductionToElicitation';
+import SolutionOptions from '../Views/SolutionOptions';
+import DesignHub from '../Views/DesignHub';
+import MVPHub from '../Views/MVPHub';
 // Training Hub Views
 import TrainingHubView from '../Views/TrainingHubView';
 import PracticeHubCardsView from '../Views/PracticeHubCardsView';
@@ -85,6 +88,12 @@ const MainLayout: React.FC = () => {
         return <ProjectInitiationView />;
       case 'requirements-engineering':
         return <RequirementsEngineeringView />;
+      case 'solution-options':
+        return <SolutionOptions />;
+      case 'design-hub':
+        return <DesignHub />;
+      case 'mvp-hub':
+        return <MVPHub />;
       case 'introduction-to-elicitation':
         return <IntroductionToElicitation />;
       case 'practice':

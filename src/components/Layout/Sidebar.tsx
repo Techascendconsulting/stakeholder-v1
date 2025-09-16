@@ -92,6 +92,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: FileText
     },
     { 
+      id: 'solution-options', 
+      label: 'Solution Options', 
+      icon: FileText
+    },
+    { 
+      id: 'design-hub', 
+      label: 'Design', 
+      icon: FileText
+    },
+    { 
+      id: 'mvp-hub', 
+      label: 'MVP', 
+      icon: FileText
+    },
+    { 
       id: 'scrum-practice', 
       label: 'Scrum Practice', 
       icon: Target

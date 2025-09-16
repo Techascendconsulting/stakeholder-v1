@@ -67,6 +67,9 @@ export type AppView =
   | 'live-training-meeting'
   | 'post-brief'
   | 'user-story-checker'
+  | 'solution-options'
+  | 'design-hub'
+  | 'mvp-hub'
   | 'admin';
 
 // Re-export specific types for convenience
