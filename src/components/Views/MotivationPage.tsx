@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useApp } from '../../contexts/AppContext'
 import { useGlobalAudio } from '../../hooks/useGlobalAudio'
-import { motivationAudioService } from '../../services/motivationAudioService'
-import { ArrowLeft, Play, Pause, Headphones, Heart, Zap, Target, TrendingUp, Star, Music, Loader2, BarChart3, Clock, Award, Users, BookOpen, CheckCircle, ArrowRight } from 'lucide-react'
+import { ArrowLeft, Play, Pause, Headphones, Heart, Target, Music, Loader2, BarChart3, Clock, Award, ArrowRight } from 'lucide-react'
 
 interface AudioFile {
   name: string
@@ -266,60 +265,21 @@ const MotivationPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Talk Themes */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Zap className="w-3 h-3 text-orange-600" />
-                  <span className="font-semibold text-orange-800 dark:text-orange-200 text-sm">Overwhelm</span>
-                </div>
-                <p className="text-xs text-orange-700 dark:text-orange-300">
-                  "Growth always feels heavy before it feels easy."
-                </p>
-              </div>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Target className="w-3 h-3 text-blue-600" />
-                  <span className="font-semibold text-blue-800 dark:text-blue-200 text-sm">Consistency</span>
-                </div>
-                <p className="text-xs text-blue-700 dark:text-blue-300">
-                  "Discipline outlasts motivation."
-                </p>
-              </div>
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
-                <div className="flex items-center space-x-2 mb-1">
-                  <TrendingUp className="w-3 h-3 text-green-600" />
-                  <span className="font-semibold text-green-800 dark:text-green-200 text-sm">Salary Vision</span>
-                </div>
-                <p className="text-xs text-green-700 dark:text-green-300">
-                  "Your next paycheck belongs to the person you're becoming."
-                </p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Star className="w-3 h-3 text-purple-600" />
-                  <span className="font-semibold text-purple-800 dark:text-purple-200 text-sm">Resilience</span>
-                </div>
-                <p className="text-xs text-purple-700 dark:text-purple-300">
-                  "Every rejection is rehearsal for your success."
-                </p>
-              </div>
-            </div>
 
 
 
-            {/* Core Concepts Style Talk Cards */}
+            {/* Motivation Talk Cards - Rounded Design */}
             <div className="space-y-4">
               {talks.map((talk, index) => (
                 <div
                   key={talk.url}
-                  className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer h-24 flex items-center ${
-                    activeTrack?.title === talk.name && isPlaying ? 'scale-105 shadow-2xl' : ''
+                  className={`group relative bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-blue-200 dark:border-blue-700 cursor-pointer h-28 flex items-center ${
+                    activeTrack?.title === talk.name && isPlaying ? 'scale-105 shadow-2xl border-blue-400 dark:border-blue-500' : ''
                   }`}
                   onClick={() => handlePlay(talk.url, talk.name, talk.type)}
                 >
-                  {/* Card Header with Gradient */}
-                  <div className={`h-1 bg-gradient-to-r ${
+                  {/* Card Header with Thick Gradient */}
+                  <div className={`h-2 bg-gradient-to-r ${
                     activeTrack?.title === talk.name && isPlaying 
                       ? 'from-blue-500 to-purple-600' 
                       : 'from-blue-500 to-indigo-600'
@@ -328,27 +288,27 @@ const MotivationPage: React.FC = () => {
                   {/* Card Content */}
                   <div className="p-6 flex items-center justify-between w-full">
                     <div className="flex items-center space-x-4">
-                      {/* Play Button */}
-                      <div className={`p-3 rounded-xl transition-all duration-300 ${
+                      {/* Play Button - Circular */}
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                         activeTrack?.title === talk.name && isPlaying
                           ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-110'
+                          : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 group-hover:scale-110 shadow-md'
                       }`}>
                         {activeTrack?.title === talk.name && isPlaying ? (
-                          <Pause className="w-5 h-5" />
+                          <Pause className="w-6 h-6" />
                         ) : (
-                          <Play className="w-5 h-5" />
+                          <Play className="w-6 h-6 ml-1" />
                         )}
                       </div>
                       
                       {/* Talk Info */}
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+                        <h4 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
                           {talk.name}
                         </h4>
                         {talk.duration && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {Math.floor(talk.duration / 60)}:{(talk.duration % 60).toString().padStart(2, '0')}
+                          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                            {Math.floor(talk.duration / 60)}:{(talk.duration % 60).toString().padStart(2, '0')} • Motivation Talk
                           </p>
                         )}
                       </div>
@@ -357,21 +317,21 @@ const MotivationPage: React.FC = () => {
                     {/* Status Badge */}
                     <div className="flex items-center space-x-2">
                       {activeTrack?.title === talk.name && isPlaying ? (
-                        <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-xs font-medium animate-pulse">
-                          Now Playing
+                        <span className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm font-bold animate-pulse shadow-lg">
+                          🔊 Now Playing
                         </span>
                       ) : index === 0 ? (
-                        <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
-                          Today's Talk
+                        <span className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-bold shadow-md">
+                          📢 Today's Talk
                         </span>
                       ) : (
-                        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-5 h-5 text-blue-500 group-hover:translate-x-1 transition-transform" />
                       )}
                     </div>
                   </div>
 
                   {/* Hover Effect Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
               ))}
             </div>
