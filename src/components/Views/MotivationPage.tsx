@@ -264,22 +264,22 @@ const MotivationPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Quotes of the Day */}
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-8 border border-amber-200 dark:border-amber-700 mb-8">
+        {/* Quote of the Day */}
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-700 mb-8">
           <div className="flex items-center space-x-4 mb-6">
-            <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl">
+            <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl">
               <Heart className="w-8 h-8 text-white" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quote of the Day</h2>
-              <p className="text-amber-600 dark:text-amber-400 font-medium">Daily inspiration for your journey</p>
+              <p className="text-blue-600 dark:text-blue-400 font-medium">Daily inspiration for your journey</p>
             </div>
           </div>
           <div className="text-center">
             <blockquote className="text-xl font-medium text-gray-800 dark:text-gray-200 italic mb-4">
               "Success is not final, failure is not fatal: it is the courage to continue that counts."
             </blockquote>
-            <cite className="text-amber-600 dark:text-amber-400 font-semibold">— Winston Churchill</cite>
+            <cite className="text-blue-600 dark:text-blue-400 font-semibold">— Winston Churchill</cite>
           </div>
         </div>
 
