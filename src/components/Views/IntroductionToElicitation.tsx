@@ -33,15 +33,10 @@ const IntroductionToElicitation: React.FC = () => {
             
             <div className="max-w-4xl mx-auto">
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
-                As a Business Analyst, one of your most important responsibilities is to elicit requirements. 
-                This is not about randomly booking meetings or collecting everything stakeholders say. 
-                Strong elicitation is structured — you move through a sequence of stages, each with a clear purpose, 
-                building a foundation that makes later analysis and delivery possible.
+                As a Business Analyst, one of your most important responsibilities is to elicit requirements. Elicitation means drawing out information from stakeholders and uncovering what the business really needs. But here’s the mistake many new BAs make: they treat elicitation like a set of random conversations. They book meetings with no structure, ask whatever comes to mind, and end up with a pile of notes that don’t connect.
               </p>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
-                Think of elicitation as a journey. Each stage has its own focus, its own set of stakeholders, 
-                and its own outputs. If you skip steps or treat elicitation as "just asking questions," 
-                you risk missing the real problem or drowning in unorganised information.
+                In reality, good elicitation is structured and purposeful. Each stage builds on the last, and each meeting has a clear goal. You always know why you are talking to a stakeholder, what you hope to achieve, and how the information will be used later.
               </p>
             </div>
 
@@ -69,7 +64,7 @@ const IntroductionToElicitation: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 mb-8 shadow-sm">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-              The 7 Stages of Structured Elicitation
+              Stages of Elicitation
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
               Each stage builds logically on the last, ensuring you capture requirements that are focused, 
@@ -234,6 +229,44 @@ const IntroductionToElicitation: React.FC = () => {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Elicitation Methods */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 mb-8 shadow-sm">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+              Elicitation Methods
+            </h2>
+            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
+              At each stage, use the right technique to draw out the right information.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Interviews</h3>
+              <p className="text-slate-600 dark:text-slate-400">Focused one-to-one sessions with SMEs or decision makers.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Workshops</h3>
+              <p className="text-slate-600 dark:text-slate-400">Group sessions for alignment and surfacing conflicts.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Observation (Shadowing)</h3>
+              <p className="text-slate-600 dark:text-slate-400">Watch work as it happens to see real behaviours and gaps.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Document Analysis</h3>
+              <p className="text-slate-600 dark:text-slate-400">Review reports, policies, manuals, or data for hidden requirements.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Surveys & Questionnaires</h3>
+              <p className="text-slate-600 dark:text-slate-400">Capture views from larger groups quickly.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Prototyping / Mock-Ups</h3>
+              <p className="text-slate-600 dark:text-slate-400">Use early sketches or screens to prompt discussion.</p>
             </div>
           </div>
         </div>
