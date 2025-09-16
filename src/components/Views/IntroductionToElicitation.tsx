@@ -12,6 +12,14 @@ const IntroductionToElicitation: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
         
         <div className="relative max-w-7xl mx-auto px-6 py-12">
+          <div className="absolute top-6 right-6 z-10">
+            <button
+              onClick={() => setCurrentView('elicitation-hub')}
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
+            >
+              <span className="text-sm">Skip to Elicitation Practice</span>
+            </button>
+          </div>
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
               <BookOpen className="w-8 h-8 text-white" />
