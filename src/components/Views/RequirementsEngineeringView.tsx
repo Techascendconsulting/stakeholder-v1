@@ -202,39 +202,61 @@ In summary, validation is about creating confidence and alignment. It is the pro
   { 
     id: "transition-to-delivery", 
     title: "Transition to Delivery",
-    content: `Once you have analysed, prioritised, documented, and validated your requirements, you're ready to transition from requirements engineering to delivery. This transition involves handing over your requirements work to the development team and supporting them throughout the delivery process.
+    content: `By this stage, you've elicited requirements, analysed them to bring structure, prioritised what matters most, documented them clearly, and validated them with stakeholders. The next step is ensuring those requirements transition smoothly into delivery — where designers, developers, and testers begin to bring the solution to life.
 
-The transition typically involves several key activities:
+Transition isn't about "handing over" requirements and walking away. In Agile, there is no handover. Delivery and requirements engineering overlap, and you as a BA remain actively involved throughout. Transition is not the end of your job — it is the bridge between understanding the problem and helping the team build the solution.
 
-Requirements Handover – presenting your requirements documentation to the development team and ensuring they understand what needs to be built.
+**What Transition Really Means**
 
-Backlog Creation – converting your requirements into a product backlog that can be used for sprint planning and development.
+Transition begins when requirements are ready enough for the team to act on. That might mean a set of Must-have user stories with acceptance criteria, or a process map validated with stakeholders. These artefacts don't sit on a shelf — they move directly into the team's backlog, shaping the upcoming sprints.
 
-Acceptance Criteria Definition – working with the team to define specific, testable criteria for each requirement.
+As a BA, your responsibility is to make sure that when requirements enter delivery, they are:
 
-Ongoing Support – being available to clarify requirements, answer questions, and help resolve issues as they arise during development.
+Clear enough to build — no ambiguity about what's expected.
 
-In agile environments, this transition often involves:
+Testable — acceptance criteria define what "done" means.
 
-Sprint Planning – participating in planning meetings to help the team understand requirements and estimate effort.
+Aligned with priorities — the team starts with the Musts and MVP scope.
 
-Backlog Refinement – regularly reviewing and updating the backlog as you learn more about requirements or as business needs change.
+But delivery is not just a technical process. In Scrum, it is organised through a set of ceremonies that bring rhythm and collaboration to the work. Understanding these ceremonies — and your role in them — is critical.
 
-User Story Writing – collaborating with the team to write detailed user stories with clear acceptance criteria.
+**Scrum Ceremonies and the BA**
 
-Definition of Done – ensuring that the team understands what constitutes a complete, deliverable feature.
+Scrum ceremonies are the structured touchpoints where requirements move from ideas into working software. Each ceremony gives you, as a BA, an opportunity to ensure requirements are understood, refined, and validated as delivery progresses.
 
-Throughout the delivery phase, your role as a BA continues to be important. You may need to:
+Sprint Planning – The team decides what can be delivered in the sprint. You explain user stories, clarify acceptance criteria, and ensure everyone understands the business context before work begins.
 
-Clarify requirements when the development team has questions.
+Daily Scrum (Stand-up) – Each day the team aligns on progress and blockers. You don't run this meeting, but you listen carefully. If a developer mentions confusion about a requirement or a tester flags an unclear rule, you step in to clarify after the stand-up.
 
-Refine requirements as you learn more about technical constraints or possibilities.
+Backlog Refinement – This is where requirements work is most visible. You break down stories, resolve questions, and make sure the backlog is ready for upcoming sprints. Backlog refinement is where Requirements Engineering and Agile delivery meet in the most practical way.
 
-Validate that delivered features meet the original requirements.
+Sprint Review – At the end of the sprint, the team demonstrates the increment to stakeholders. You check whether what has been built matches the requirements and note any feedback that should update the backlog. This is also where validation continues in real time.
 
-Manage changes to requirements as business needs evolve.
+Sprint Retrospective – While this ceremony is about improving team collaboration rather than requirements, your perspective as a BA helps the team reflect on communication, clarity, and stakeholder engagement.
 
-The transition to delivery marks the end of the requirements engineering phase, but it's not the end of your involvement. You remain a key stakeholder in ensuring that the solution delivered meets the business needs you've worked so hard to understand and document.`
+These ceremonies are not optional extras — they are the heartbeat of Agile delivery. By being present and engaged, you make sure requirements are not just written down but actually delivered in a way that stakeholders recognise and value.
+
+**The BA's Role in Transition**
+
+During delivery, your focus shifts. You are no longer just gathering and structuring requirements; you are actively supporting the team to build them correctly. That means:
+
+Answering questions about requirements quickly.
+
+Clarifying edge cases and business rules.
+
+Checking whether delivered features meet acceptance criteria.
+
+Feeding back stakeholder input into the backlog for future sprints.
+
+In many ways, you act as the translator between the business and the delivery team, ensuring that what was agreed in requirements engineering doesn't get lost in translation during development.
+
+**Closing the Loop**
+
+It's important to understand that Requirements Engineering doesn't stop once delivery begins. While one set of requirements is being built, you are often eliciting, analysing, and validating the next set. Agile delivery is a cycle — requirements and delivery happen in parallel, constantly feeding into one another.
+
+In summary, transition to delivery is where requirements stop being just words and start becoming working software. Scrum ceremonies provide the structure, and your role as a BA is to guide, clarify, and validate throughout. You remain the bridge between business intent and technical delivery, ensuring that every increment delivers value.
+
+Now that you've completed the Requirements Engineering hub, it's time to see these ceremonies in action. Move into the Scrum Practice area, where you'll experience how requirements come to life inside real Scrum events.`
   },
 ];
 
