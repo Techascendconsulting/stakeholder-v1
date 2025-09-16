@@ -211,7 +211,89 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
     {
       id: 'lesson-3',
       title: 'Wireframes & Prototypes',
-      content: `Content coming soon...`,
+      content: `While process maps show how the future solution will flow, they don't show what the user will actually see. That's where wireframes and prototypes come in.
+
+For many projects, this is the first time stakeholders can visualise the solution. Screens, forms, and interactions suddenly stop being abstract discussions and start becoming concrete. As a BA, you don't design the screens yourself, but you play a key role in reviewing them, linking them back to requirements, and making sure stakeholders agree on what's being proposed.
+
+**Wireframes vs. Prototypes**
+
+Wireframes are low-fidelity sketches of a screen or user journey. They show layout and functionality without colours or branding.
+
+Prototypes are interactive models. They allow stakeholders to click through flows, simulating what the final product will feel like.
+
+Both are tools for communication. They help uncover misunderstandings early, before development starts.
+
+**Why They Matter**
+
+Even when requirements are well documented, people interpret them differently. A stakeholder might imagine a drop-down, while a developer imagines a text box. Wireframes and prototypes remove that ambiguity. They:
+
+- Align everyone on how the system should behave.
+
+- Provide a concrete reference for developers and testers.
+
+- Reduce costly rework by uncovering mismatches before build.
+
+**Real-Life Example: Customer Identity Verification**
+
+The design team produces a wireframe for an "Upload ID" screen.
+
+The BA checks that the fields match requirements: ID type, file upload, expiry date.
+
+The BA confirms that error handling is visible — "If file type is invalid, display message X."
+
+The prototype lets stakeholders click through: upload → confirmation → error handling.
+
+Here, the BA ensures rules captured earlier appear in the design. For example, if stakeholders said only passports and licences are allowed, the wireframe must not include "Student ID."
+
+**Real-Life Example: Expense Management**
+
+A prototype shows the expense submission journey.
+
+Employees add a claim, upload a receipt, and select category.
+
+Managers see a review screen with approve/reject buttons.
+
+Finance sees a consolidated dashboard.
+
+The BA checks this flow against business rules:
+
+- "Receipts are mandatory."
+
+- "Claims over £1000 need two approvals."
+
+- "Foreign currency entries must capture exchange rate."
+
+Stakeholders click through the prototype, often spotting gaps they hadn't thought of during workshops.
+
+**When Wireframes Aren't Needed**
+
+Not every project requires UX/UI design. For example:
+
+In Salesforce or SAP projects, the UI is predefined.
+
+Instead of wireframes, the BA works with platform owners to configure existing screens and workflows.
+
+In this case, design discussions focus more on fields, reports, and automation rules than on screen sketches.
+
+Recognising this distinction is important: the BA adapts to the project context.
+
+**The BA's Role**
+
+In wireframe and prototype stages, you:
+
+- Ensure designs reflect the requirements and business rules.
+
+- Facilitate feedback sessions with stakeholders, documenting changes.
+
+- Link finalised wireframes/prototypes to user stories in Jira or Azure DevOps.
+
+- Use them as part of backlog grooming — developers can size stories more accurately when designs are attached.
+
+- Help testers use designs to prepare realistic test scenarios.
+
+In summary, wireframes and prototypes transform requirements into something stakeholders and delivery teams can see, click, and understand. As a BA, you are the bridge between design artefacts and business needs — making sure what's drawn or prototyped truly reflects what was agreed.
+
+👉 Next, in Lesson 4: Business Rules and Edge Cases, we'll explore how BAs capture the details that often trip teams up — the "what ifs" that make or break a solution in real-world use.`,
       image: '/images/design-placeholder.png'
     },
     {
@@ -383,55 +465,53 @@ In summary, To-Be process mapping is one of the BA's most valuable contributions
                              'linear-gradient(135deg, #fef3c7 0%, #dcfce7 100%)'
                 }}
               >
-                <div className="max-w-none">
-                  <div className="prose prose-gray dark:prose-invert max-w-none">
-                    {lessons[activeTab].content.split('\n\n').map((paragraph, index) => {
-                      if (paragraph.trim() === '') return null;
-                      
-                      // Handle headings
-                      if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-                        return (
-                          <h3 key={index} className="text-xl font-bold text-gray-900 dark:text-white mb-4 mt-8">
-                            {paragraph.replace(/\*\*/g, '')}
-                          </h3>
-                        );
-                      }
-                      
-                      // Handle bullet points
-                      if (paragraph.includes('- ')) {
-                        const lines = paragraph.split('\n').filter(line => line.trim() !== '');
-                        const bulletLines = lines.filter(line => line.startsWith('- '));
-                        return (
-                          <div key={index} className="space-y-3 mb-6">
-                            {bulletLines.map((line, lineIndex) => (
-                              <div key={lineIndex} className="flex items-start gap-4">
-                                <div className={`w-8 h-8 bg-gradient-to-r ${
-                                  activeTab === 0 ? 'from-blue-500 to-purple-600' :
-                                  activeTab === 1 ? 'from-purple-500 to-pink-600' :
-                                  activeTab === 2 ? 'from-pink-500 to-red-600' :
-                                  activeTab === 3 ? 'from-red-500 to-orange-600' :
-                                  activeTab === 4 ? 'from-orange-500 to-yellow-600' :
-                                  'from-yellow-500 to-green-600'
-                                } rounded-full flex items-center justify-center flex-shrink-0`}>
-                                  <span className="text-white font-bold text-sm">{lineIndex + 1}</span>
-                                </div>
-                                <p className="text-gray-700 dark:text-gray-200">
-                                  {line.substring(2)}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      }
-                      
-                      // Regular paragraphs
+                <div className="prose prose-gray dark:prose-invert max-w-none">
+                  {lessons[activeTab].content.split('\n\n').map((paragraph, index) => {
+                    if (paragraph.trim() === '') return null;
+                    
+                    // Handle headings
+                    if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                       return (
-                        <p key={index} className="text-gray-700 dark:text-gray-200 mb-4">
-                          {paragraph}
-                        </p>
+                        <h3 key={index} className="text-xl font-bold text-gray-900 dark:text-white mb-4 mt-8">
+                          {paragraph.replace(/\*\*/g, '')}
+                        </h3>
                       );
-                    })}
-                  </div>
+                    }
+                    
+                    // Handle bullet points
+                    if (paragraph.includes('- ')) {
+                      const lines = paragraph.split('\n').filter(line => line.trim() !== '');
+                      const bulletLines = lines.filter(line => line.startsWith('- '));
+                      return (
+                        <div key={index} className="space-y-3 mb-6">
+                          {bulletLines.map((line, lineIndex) => (
+                            <div key={lineIndex} className="flex items-start gap-4">
+                              <div className={`w-8 h-8 bg-gradient-to-r ${
+                                activeTab === 0 ? 'from-blue-500 to-purple-600' :
+                                activeTab === 1 ? 'from-purple-500 to-pink-600' :
+                                activeTab === 2 ? 'from-pink-500 to-red-600' :
+                                activeTab === 3 ? 'from-red-500 to-orange-600' :
+                                activeTab === 4 ? 'from-orange-500 to-yellow-600' :
+                                'from-yellow-500 to-green-600'
+                              } rounded-full flex items-center justify-center flex-shrink-0`}>
+                                <span className="text-white font-bold text-sm">{lineIndex + 1}</span>
+                              </div>
+                              <p className="text-gray-700 dark:text-gray-200">
+                                {line.substring(2)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    
+                    // Regular paragraphs
+                    return (
+                      <p key={index} className="text-gray-700 dark:text-gray-200 mb-4">
+                        {paragraph}
+                      </p>
+                    );
+                  })}
                 </div>
               </div>
             </div>
