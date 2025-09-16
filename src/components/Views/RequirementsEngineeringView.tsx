@@ -273,7 +273,7 @@ const RequirementsEngineeringView: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-10">
         {/* Header */}
         <header className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-900 dark:bg-gray-700 rounded-full mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-6">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -325,14 +325,14 @@ const RequirementsEngineeringView: React.FC = () => {
                     onClick={() => setActiveTab(index)}
                     className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                       activeTab === index
-                        ? 'bg-gray-900 dark:bg-gray-700 text-white shadow-md border border-gray-700'
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
                     <div className="flex items-center">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold mr-3 ${
                         activeTab === index
-                          ? 'bg-gray-800 text-white'
+                          ? 'bg-white/20 text-white'
                           : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
                       }`}>
                         {index + 1}
@@ -349,11 +349,11 @@ const RequirementsEngineeringView: React.FC = () => {
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
               {/* Content Header */}
-              <div className="bg-white dark:bg-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   {lessons[activeTab].title}
                 </h2>
-                <div className="flex items-center text-gray-500 dark:text-gray-400">
+                <div className="flex items-center text-blue-100">
                   <span className="text-sm">Lesson {activeTab + 1} of {lessons.length}</span>
                 </div>
               </div>
