@@ -116,103 +116,47 @@ In summary, prioritisation is about focusing the project on what matters most. M
   { 
     id: "documenting-requirements", 
     title: "Documenting Requirements",
-    content: `Now that you've analyzed and prioritized requirements, it's time to document them properly. This is where you transform stakeholder input into structured, actionable specifications that development teams can implement.
+    content: `Up to this point, you have elicited requirements, analysed them to bring structure, and worked with stakeholders to prioritise what matters most. The next question is: how do you capture these requirements so that everyone — business stakeholders, designers, developers, and testers — can work from the same understanding? This is where documentation comes in.
 
-**What Makes Good Requirements Documentation?**
+Documentation is often misunderstood. Some people imagine it as creating a thick requirements document that nobody ever reads. Others think Agile means "no documentation at all." The truth lies in the middle. Documentation is not about producing endless paperwork — it is about capturing requirements in a clear, usable format that communicates effectively to the people who need it.
 
-Requirements documentation should be:
-- **Clear and unambiguous** - Anyone can understand what needs to be built
-- **Complete and accurate** - Nothing important is missing or incorrect
-- **Testable and verifiable** - You can prove when something is done correctly
-- **Traceable** - You can link back to the original business need
-- **Maintainable** - Easy to update as things change
+In Agile environments, documentation tends to be lightweight and iterative. Instead of huge documents created at the start of a project, requirements are documented just enough to keep the team aligned and delivery moving forward.
 
-**Key Documentation Formats**
+**User Stories**
 
-**1. User Stories**
-User stories capture requirements from the user's perspective:
-"As a [user type], I want [functionality] so that [benefit]"
+One of the most common formats is the user story. A user story captures a requirement from the perspective of the user, typically written in the format:
 
-Example: "As a customer, I want to reset my password so that I can access my account when I forget it."
+"As a [user role], I want [goal], so that [benefit]."
 
-**2. Acceptance Criteria**
-These define when a user story is complete:
-- User receives email within 5 minutes
-- Link expires after 24 hours
-- New password meets security requirements
-- User can log in with new password immediately
+For example:
 
-**3. Business Requirements Document (BRD)**
-A comprehensive document that includes:
-- Executive summary and business context
-- Stakeholder analysis and objectives
-- Functional and non-functional requirements
-- Assumptions, constraints, and risks
-- Success criteria and metrics
+"As an employee, I want to submit my expense claim online so that I don't have to fill out paper forms."
 
-**4. Use Cases**
-Step-by-step descriptions of how users interact with the system:
-- Preconditions (what must be true before starting)
-- Main flow (the happy path)
-- Alternative flows (what happens when things go wrong)
-- Postconditions (what's true after completion)
+This simple structure keeps the focus on who needs something, what they need, and why they need it. A user story is not detailed enough on its own, but it creates a shared starting point for conversation and collaboration.
 
-**Documentation Best Practices**
+**Acceptance Criteria**
 
-**1. Start with the End in Mind**
-- What does success look like?
-- How will this be tested?
-- Who needs to understand this?
+Every user story should be supported by acceptance criteria — conditions that define when the story is considered complete. Acceptance criteria make requirements testable and unambiguous. For example, for the expense claim story, acceptance criteria might include:
 
-**2. Use Consistent Language**
-- Define all terms clearly
-- Use the same terminology throughout
-- Avoid jargon and acronyms
+The employee can upload a receipt as a JPG or PNG.
 
-**3. Include Examples**
-- Show what good looks like
-- Provide real-world scenarios
-- Use visual aids when helpful
+The claim must include the amount, date, and expense category.
 
-**4. Make it Living Documentation**
-- Update as requirements change
-- Version control your documents
-- Keep stakeholders informed of changes
+The system must show an error if mandatory fields are missing.
 
-**Common Documentation Mistakes**
+Together, the story and its acceptance criteria ensure everyone understands the expectation and can agree on what "done" looks like.
 
-**1. Too Much Detail**
-- Including implementation specifics
-- Over-engineering simple requirements
-- Creating documents that are hard to read
+**Process Maps and Diagrams**
 
-**2. Too Little Detail**
-- Vague or ambiguous language
-- Missing important requirements
-- No acceptance criteria
+Not all requirements are best expressed in words. Sometimes, a visual model communicates more effectively. A process map showing how expense claims move from employee to manager to finance makes it easier for stakeholders to see the flow. Swimlane diagrams can highlight handoffs between teams. Data models can clarify what information is needed and how it connects. These visuals are not "extras" — they are core documentation tools that help people see and agree on the requirement.
 
-**3. Wrong Audience**
-- Technical details for business users
-- Business language for developers
-- No consideration for different readers
+**The BA's Responsibility**
 
-**4. Out of Date**
-- Not updating when requirements change
-- Inconsistent with current project state
-- Conflicting information across documents
+As a BA, your responsibility is not to create documentation for its own sake, but to ensure that requirements are communicated clearly, completely, and in a format that fits the project. In Agile, this often means creating just enough documentation, kept up to date, and evolving with the backlog as priorities shift.
 
-**The BA's Role in Documentation**
+The real test of good documentation is simple: can stakeholders read it and say, "Yes, that's what I meant," and can delivery teams read it and say, "Yes, we can build and test that."
 
-As a Business Analyst, you're responsible for:
-- **Creating clear, complete requirements**
-- **Ensuring stakeholder understanding**
-- **Maintaining documentation quality**
-- **Facilitating communication between teams**
-- **Managing changes and updates**
-
-**Ready to Practice?**
-
-Now that you understand the fundamentals of requirements documentation, it's time to practice writing user stories and acceptance criteria with interactive feedback and real-world scenarios.`
+In summary, documenting requirements in Agile is about clarity, not volume. Whether through user stories and acceptance criteria, or process maps and models, documentation ensures that everyone shares the same understanding. And now, it's your turn to practise. In the next section, you'll move into Requirements Documentation, where you can walk through examples, practise writing your own, and test yourself in advanced scenarios.`
   },
   { 
     id: "validating-requirements", 
@@ -422,7 +366,7 @@ const RequirementsEngineeringView: React.FC = () => {
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        Practice Documentation Skills
+                        Go to Documentation Practice →
                       </button>
                     </div>
                   </div>
