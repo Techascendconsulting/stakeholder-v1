@@ -347,7 +347,7 @@ const IntroductionToElicitation: React.FC = () => {
         {/* CTA Section */}
         <div className="text-center">
           <button
-            onClick={() => setCurrentView('practice-2')}
+            onClick={() => setCurrentView('elicitation-hub')}
             className="inline-flex items-center space-x-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <span>Go to Elicitation Practice</span>

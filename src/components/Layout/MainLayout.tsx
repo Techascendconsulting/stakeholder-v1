@@ -94,11 +94,11 @@ const MainLayout: React.FC = () => {
         return <DesignHub />;
       case 'mvp-hub':
         return <MVPHub />;
-      case 'introduction-to-elicitation':
-        return <IntroductionToElicitation />;
       case 'practice':
         return <PracticeLabView />;
       case 'practice-2':
+        return <IntroductionToElicitation />;
+      case 'elicitation-hub':
         return <GuidedPracticeHub />;
       case 'motivation':
         return <MotivationPage />;
