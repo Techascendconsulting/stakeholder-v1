@@ -70,6 +70,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: LayoutDashboard
     },
     { 
+      id: 'motivation', 
+      label: 'Motivation', 
+      icon: Heart
+    },
+    { 
       id: 'learn', 
       label: 'Learn', 
       icon: BookOpen
@@ -108,11 +113,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       id: 'scrum-practice', 
       label: 'Scrum Practice', 
       icon: Target
-    },
-    { 
-      id: 'motivation', 
-      label: 'Motivation', 
-      icon: Heart
     },
     { 
       id: 'project',
