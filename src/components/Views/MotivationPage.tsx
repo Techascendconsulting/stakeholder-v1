@@ -308,45 +308,71 @@ const MotivationPage: React.FC = () => {
 
 
 
-            {/* Glassmorphism Talk Cards */}
-            <div className="space-y-3">
+            {/* Core Concepts Style Talk Cards */}
+            <div className="space-y-4">
               {talks.map((talk, index) => (
-                <button
+                <div
                   key={talk.url}
-                  onClick={() => handlePlay(talk.url, talk.name, talk.type)}
-                  className={`w-full p-4 rounded-2xl text-left transition-all duration-300 backdrop-blur-sm border ${
-                    activeTrack?.title === talk.name && isPlaying
-                      ? 'bg-gradient-to-r from-blue-500/90 to-purple-600/90 text-white shadow-2xl border-blue-400/50'
-                      : 'bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 border-white/20 dark:border-gray-700/50 shadow-lg hover:shadow-xl'
+                  className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer h-24 flex items-center ${
+                    activeTrack?.title === talk.name && isPlaying ? 'scale-105 shadow-2xl' : ''
                   }`}
+                  onClick={() => handlePlay(talk.url, talk.name, talk.type)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {activeTrack?.title === talk.name && isPlaying ? (
-                        <Pause className="w-4 h-4" />
-                      ) : (
-                        <Play className="w-4 h-4" />
-                      )}
+                  {/* Card Header with Gradient */}
+                  <div className={`h-1 bg-gradient-to-r ${
+                    activeTrack?.title === talk.name && isPlaying 
+                      ? 'from-blue-500 to-purple-600' 
+                      : 'from-blue-500 to-indigo-600'
+                  }`}></div>
+                  
+                  {/* Card Content */}
+                  <div className="p-6 flex items-center justify-between w-full">
+                    <div className="flex items-center space-x-4">
+                      {/* Play Button */}
+                      <div className={`p-3 rounded-xl transition-all duration-300 ${
+                        activeTrack?.title === talk.name && isPlaying
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-110'
+                      }`}>
+                        {activeTrack?.title === talk.name && isPlaying ? (
+                          <Pause className="w-5 h-5" />
+                        ) : (
+                          <Play className="w-5 h-5" />
+                        )}
+                      </div>
+                      
+                      {/* Talk Info */}
                       <div>
-                        <span className="font-medium text-sm">{talk.name}</span>
+                        <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+                          {talk.name}
+                        </h4>
                         {talk.duration && (
-                          <p className="text-xs opacity-75">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             {Math.floor(talk.duration / 60)}:{(talk.duration % 60).toString().padStart(2, '0')}
                           </p>
                         )}
                       </div>
                     </div>
-                    {activeTrack?.title === talk.name && isPlaying ? (
-                      <span className="px-2 py-1 bg-white/20 text-white rounded-full text-xs font-medium animate-pulse">
-                        Now Playing
-                      </span>
-                    ) : index === 0 ? (
-                      <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
-                        Today's Talk
-                      </span>
-                    ) : null}
+                    
+                    {/* Status Badge */}
+                    <div className="flex items-center space-x-2">
+                      {activeTrack?.title === talk.name && isPlaying ? (
+                        <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-xs font-medium animate-pulse">
+                          Now Playing
+                        </span>
+                      ) : index === 0 ? (
+                        <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                          Today's Talk
+                        </span>
+                      ) : (
+                        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                      )}
+                    </div>
                   </div>
-                </button>
+
+                  {/* Hover Effect Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                </div>
               ))}
             </div>
           </div>
@@ -373,51 +399,77 @@ const MotivationPage: React.FC = () => {
                 <span className="text-gray-600 dark:text-gray-400">Loading music tracks...</span>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {music.map((track) => (
-                  <button
+                  <div
                     key={track.url}
-                    onClick={() => handlePlay(track.url, track.name, track.type)}
-                    className={`w-full p-4 rounded-2xl text-left transition-all duration-300 backdrop-blur-sm border ${
-                      activeTrack?.title === track.name && isPlaying
-                        ? 'bg-gradient-to-r from-emerald-500/90 to-teal-600/90 text-white shadow-2xl border-emerald-400/50'
-                        : 'bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 border-white/20 dark:border-gray-700/50 shadow-lg hover:shadow-xl'
+                    className={`group relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer h-24 flex items-center ${
+                      activeTrack?.title === track.name && isPlaying ? 'scale-105 shadow-2xl' : ''
                     }`}
+                    onClick={() => handlePlay(track.url, track.name, track.type)}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        {activeTrack?.title === track.name && isPlaying ? (
-                          <Pause className="w-4 h-4" />
-                        ) : (
-                          <Play className="w-4 h-4" />
-                        )}
+                    {/* Card Header with Gradient */}
+                    <div className={`h-1 bg-gradient-to-r ${
+                      activeTrack?.title === track.name && isPlaying 
+                        ? 'from-emerald-500 to-teal-600' 
+                        : 'from-emerald-500 to-teal-600'
+                    }`}></div>
+                    
+                    {/* Card Content */}
+                    <div className="p-6 flex items-center justify-between w-full">
+                      <div className="flex items-center space-x-4">
+                        {/* Play Button */}
+                        <div className={`p-3 rounded-xl transition-all duration-300 ${
+                          activeTrack?.title === track.name && isPlaying
+                            ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg'
+                            : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110'
+                        }`}>
+                          {activeTrack?.title === track.name && isPlaying ? (
+                            <Pause className="w-5 h-5" />
+                          ) : (
+                            <Play className="w-5 h-5" />
+                          )}
+                        </div>
+                        
+                        {/* Track Info */}
                         <div>
-                          <span className="font-medium text-sm">{track.name}</span>
+                          <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+                            {track.name}
+                          </h4>
                           {track.duration && (
-                            <p className="text-xs opacity-75">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                               {Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')}
                             </p>
                           )}
                         </div>
                       </div>
-                      {activeTrack?.title === track.name && isPlaying ? (
-                        <div className="flex items-center space-x-2">
-                          <span className="px-2 py-1 bg-white/20 text-white rounded-full text-xs font-medium animate-pulse">
-                            Now Playing
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              stopTrack()
-                            }}
-                            className="px-2 py-1 text-xs bg-white/20 hover:bg-white/30 rounded-full transition-colors"
-                          >
-                            Stop
-                          </button>
-                        </div>
-                      ) : null}
+                      
+                      {/* Status Badge */}
+                      <div className="flex items-center space-x-2">
+                        {activeTrack?.title === track.name && isPlaying ? (
+                          <div className="flex items-center space-x-2">
+                            <span className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full text-xs font-medium animate-pulse">
+                              Now Playing
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                stopTrack()
+                              }}
+                              className="px-3 py-1 text-xs bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+                            >
+                              Stop
+                            </button>
+                          </div>
+                        ) : (
+                          <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                        )}
+                      </div>
                     </div>
-                  </button>
+
+                    {/* Hover Effect Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  </div>
                 ))}
               </div>
             )}
