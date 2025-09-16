@@ -80,35 +80,197 @@ Remember that prioritisation is not a one-time activity. As you learn more about
   { 
     id: "documenting-requirements", 
     title: "Documenting Requirements",
-    content: `Clear, well-structured documentation is essential for successful requirements engineering. Your documentation needs to be understood by multiple audiences – business stakeholders, developers, testers, and project managers – so it must be precise, unambiguous, and comprehensive.
+    content: `Now that you've analyzed and prioritized requirements, it's time to document them properly. This is where you transform stakeholder input into structured, actionable specifications that development teams can implement.
 
-Common formats for documenting requirements include:
+**What Makes Good Requirements Documentation?**
 
-User Stories – written from the user's perspective in the format "As a [user type], I want [functionality] so that [benefit]." These are particularly popular in agile environments.
+Requirements documentation should be:
+- **Clear and unambiguous** - Anyone can understand what needs to be built
+- **Complete and accurate** - Nothing important is missing or incorrect
+- **Testable and verifiable** - You can prove when something is done correctly
+- **Traceable** - You can link back to the original business need
+- **Maintainable** - Easy to update as things change
 
-Use Cases – describe interactions between users and the system, including the main flow and alternative paths. These provide detailed scenarios for complex functionality.
+**User Stories: The Foundation of Agile Requirements**
 
-Functional Requirements – specify what the system should do, often written as "The system shall..." statements.
+User stories capture requirements from the user's perspective using a simple format:
+**"As a [user type], I want [functionality] so that [benefit]"**
 
-Non-Functional Requirements – specify how the system should perform, including qualities like performance, security, usability, and reliability.
+**Why User Stories Work:**
+- Focus on user value, not technical implementation
+- Encourage conversation between stakeholders and developers
+- Are small enough to be completed in a sprint
+- Can be prioritized and estimated easily
 
-Process Maps – visual representations of business processes, showing the flow of activities, decisions, and handoffs.
+**Writing Effective User Stories:**
 
-Regardless of the format you choose, good requirements documentation should be:
+**1. Identify the Right User Types**
+- Primary users (customers, employees)
+- Secondary users (administrators, support staff)
+- System users (external systems, APIs)
 
-Clear and unambiguous – written in simple language that all stakeholders can understand.
+**2. Focus on Value, Not Features**
+❌ "As a user, I want a login button so that I can access the system"
+✅ "As a customer, I want to securely access my account so that I can manage my orders"
 
-Testable – written in a way that allows you to verify whether the requirement has been met.
+**3. Keep Stories Independent**
+Each story should be complete and not depend on other stories
 
-Complete – covering all necessary details without leaving important questions unanswered.
+**4. Make Stories Negotiable**
+Stories are starting points for conversation, not rigid specifications
 
-Consistent – using the same terminology and format throughout.
+**Acceptance Criteria: Defining "Done"**
 
-Traceable – linked back to business objectives and stakeholder needs.
+Acceptance criteria define when a user story is complete. They should be:
+- **Specific and measurable**
+- **Testable by the team**
+- **Written from the user's perspective**
 
-When documenting requirements, avoid vague terms like "user-friendly" or "fast." Instead, be specific about what you mean. For example, "The system shall respond to user input within 2 seconds" is much clearer than "The system shall be fast."
+**Example User Story with Acceptance Criteria:**
 
-Remember that documentation is a communication tool. Its purpose is to ensure that everyone involved in the project has the same understanding of what needs to be built.`
+**Story:** "As a customer, I want to reset my password so that I can access my account when I forget it."
+
+**Acceptance Criteria:**
+- User can request password reset from login page
+- User receives email within 5 minutes of request
+- Reset link expires after 24 hours
+- New password must meet security requirements (8+ characters, mixed case, numbers)
+- User can log in with new password immediately after reset
+- User cannot use the same password they used in the last 12 months
+
+**The INVEST Criteria for User Stories:**
+
+**I**ndependent - Can be developed and tested independently
+**N**egotiable - Details can be discussed and refined
+**V**aluable - Delivers value to users or business
+**E**stimable - Team can estimate effort required
+**S**mall - Can be completed in a single sprint
+**T**estable - Has clear acceptance criteria
+
+**Documentation Formats for Different Needs:**
+
+**1. Business Requirements Document (BRD)**
+Comprehensive document for complex projects:
+- Executive summary and business context
+- Stakeholder analysis and objectives
+- Functional and non-functional requirements
+- Assumptions, constraints, and risks
+- Success criteria and metrics
+
+**2. Use Cases**
+Step-by-step descriptions of user interactions:
+- Preconditions (what must be true before starting)
+- Main flow (the happy path)
+- Alternative flows (what happens when things go wrong)
+- Postconditions (what's true after completion)
+
+**3. Story Mapping**
+Visual technique for organizing user stories:
+- User journey from left to right
+- User activities as horizontal rows
+- User stories as vertical cards under activities
+- Helps identify gaps and prioritize work
+
+**Preparing Backlog Items for Refinement:**
+
+**1. Story Sizing**
+- Use story points or t-shirt sizes (S, M, L, XL)
+- Consider complexity, effort, and uncertainty
+- Involve the whole team in estimation
+
+**2. Adding Technical Context**
+- Include technical constraints and dependencies
+- Note integration requirements
+- Specify performance expectations
+
+**3. Definition of Ready**
+Before a story goes into a sprint, ensure:
+- Acceptance criteria are clear and testable
+- Dependencies are identified
+- Technical approach is understood
+- Story is appropriately sized
+
+**Documentation Best Practices:**
+
+**1. Start with the End in Mind**
+- What does success look like?
+- How will this be tested?
+- Who needs to understand this?
+
+**2. Use Consistent Language**
+- Define all terms clearly
+- Use the same terminology throughout
+- Avoid jargon and acronyms
+
+**3. Include Examples**
+- Show what good looks like
+- Provide real-world scenarios
+- Use visual aids when helpful
+
+**4. Make it Living Documentation**
+- Update as requirements change
+- Version control your documents
+- Keep stakeholders informed of changes
+
+**Common Documentation Mistakes:**
+
+**1. Too Much Detail**
+- Including implementation specifics
+- Over-engineering simple requirements
+- Creating documents that are hard to read
+
+**2. Too Little Detail**
+- Vague or ambiguous language
+- Missing important requirements
+- No acceptance criteria
+
+**3. Wrong Audience**
+- Technical details for business users
+- Business language for developers
+- No consideration for different readers
+
+**4. Out of Date**
+- Not updating when requirements change
+- Inconsistent with current project state
+- Conflicting information across documents
+
+**The BA's Role in Documentation:**
+
+As a Business Analyst, you're responsible for:
+- **Creating clear, complete requirements**
+- **Ensuring stakeholder understanding**
+- **Maintaining documentation quality**
+- **Facilitating communication between teams**
+- **Managing changes and updates**
+
+**Real-World Example: E-commerce Checkout**
+
+**User Story:**
+"As a customer, I want to complete my purchase quickly so that I can buy what I need without frustration."
+
+**Acceptance Criteria:**
+- Customer can review items in cart with prices and quantities
+- Customer can apply discount codes and see updated total
+- Customer can choose from available shipping options
+- Customer can enter payment information securely
+- Customer receives confirmation email within 2 minutes
+- Process completes in under 2 minutes for returning customers
+- System handles payment failures gracefully
+
+**Use Case Flow:**
+1. Customer clicks "Checkout" button
+2. System displays cart summary with itemized costs
+3. Customer enters shipping information
+4. Customer selects shipping method and sees updated total
+5. Customer enters payment details
+6. System validates payment information
+7. System processes payment
+8. System sends confirmation email
+9. Customer sees success page with order number
+
+**The Bottom Line**
+
+Good requirements documentation isn't about creating perfect documents. It's about ensuring everyone understands what needs to be built and why. Focus on clarity, completeness, and communication. Remember, the goal is to build the right thing, not to create beautiful documents.`
   },
   { 
     id: "validating-requirements", 

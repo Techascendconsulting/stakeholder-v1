@@ -6,17 +6,6 @@ import { SprintPlanningSim } from './ScrumPractice/SprintPlanningSim';
 
 const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' | 'sprint-planning') => void, setSelectedTheme: (theme: string) => void, setCurrentView: (view: string) => void) => [
   {
-    title: "Requirement Documentation",
-    description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
-    icon: FileText,
-    artwork: "📝💎",
-    color: "from-blue-500 to-cyan-500",
-    onClick: () => {
-      setSelectedTheme("from-blue-500 to-cyan-500");
-      setCurrentView('user-story-checker');
-    }
-  },
-  {
     title: "Backlog Refinement",
     description: "Learn how to write user stories, define acceptance criteria, and prepare backlog items for refinement.",
     icon: Users,
