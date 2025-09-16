@@ -269,21 +269,49 @@ const RequirementsEngineeringView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-8 py-12">
-      <div className="max-w-6xl mx-auto space-y-10">
-        {/* Header */}
-        <header className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-6">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6 md:px-8 py-10 md:py-12">
+      <div className="max-w-7xl mx-auto space-y-10">
+        {/* Hero */}
+        <header className="relative">
+          <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 backdrop-blur">
+            <div className="relative px-6 md:px-10 py-10 md:py-12">
+              <div className="absolute inset-0 pointer-events-none opacity-60">
+                <div className="absolute -top-24 -right-16 w-72 h-72 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-24 -left-16 w-72 h-72 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 rounded-full blur-3xl"></div>
+              </div>
+              <div className="relative text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                  Requirements Engineering
+                </h1>
+                <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
+                  Turn stakeholder input into structured, prioritised, and validated requirements that guide delivery.
+                </p>
+              </div>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Requirements Engineering
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            You've gathered input from stakeholders. Now it's time to engineer those requirements into structured, prioritised, and validated outputs that can guide successful delivery.
-          </p>
+
+          {/* Breadcrumb / Progress Line */}
+          <div className="mt-6 flex items-center justify-center gap-4 text-sm">
+            <div className="flex items-center text-gray-600 dark:text-gray-400">
+              <span className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800">1</span>
+              <span className="ml-2">Elicitation</span>
+            </div>
+            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
+            <div className="flex items-center text-blue-700 dark:text-blue-400 font-medium">
+              <span className="px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40">2</span>
+              <span className="ml-2">Requirements Engineering</span>
+            </div>
+            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
+            <div className="flex items-center text-gray-600 dark:text-gray-400">
+              <span className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800">3</span>
+              <span className="ml-2">Scrum Practice</span>
+            </div>
+          </div>
         </header>
 
         {/* Progress Indicator */}
@@ -316,14 +344,14 @@ const RequirementsEngineeringView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sticky top-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-8 border border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lessons</h3>
               <nav className="space-y-2">
                 {lessons.map((lesson, index) => (
                   <button
                     key={lesson.id}
                     onClick={() => setActiveTab(index)}
-                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                       activeTab === index
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
@@ -347,7 +375,7 @@ const RequirementsEngineeringView: React.FC = () => {
 
           {/* Content Area */}
           <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
               {/* Content Header */}
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
                 <h2 className="text-2xl font-bold text-white mb-2">
@@ -359,7 +387,7 @@ const RequirementsEngineeringView: React.FC = () => {
               </div>
 
               {/* Content Body */}
-              <div className="p-8">
+              <div className="p-6 md:p-8">
                 <div className="prose prose-lg dark:prose-invert max-w-none">
                   <div className="whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
                     {lessons[activeTab].content.split('[Process Mapper](/process-mapper)').map((part, index, array) => (
