@@ -16,7 +16,10 @@ import {
   Plus,
   Heart,
   PlayCircle,
-  FileText
+  FileText,
+  Layers,
+  PenTool,
+  Rocket
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -89,17 +92,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { 
       id: 'solution-options', 
       label: 'Solution Options', 
-      icon: FileText
+      icon: Layers
     },
     { 
       id: 'design-hub', 
       label: 'Design', 
-      icon: FileText
+      icon: PenTool
     },
     { 
       id: 'mvp-hub', 
       label: 'MVP', 
-      icon: FileText
+      icon: Rocket
     },
     { 
       id: 'scrum-practice', 
