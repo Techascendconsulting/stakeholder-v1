@@ -299,19 +299,155 @@ In summary, wireframes and prototypes transform requirements into something stak
     {
       id: 'lesson-4',
       title: 'Business Rules & Edge Cases',
-      content: `Content coming soon...`,
+      content: `When you're working in the design stage, it's easy for everyone to focus on the "happy path" — the ideal flow where everything goes right. But in real life, users make mistakes, data is incomplete, and processes don't always run smoothly. This is why capturing business rules and edge cases is so important.
+
+As a BA, you're not just there to confirm the straightforward flow. Your job is to make sure the solution can handle the messy, imperfect, but inevitable scenarios that happen in day-to-day operations.
+
+**What Are Business Rules?**
+
+Business rules are the conditions and constraints that must always be followed. They are non-negotiable, agreed rules of the business.
+
+Examples:
+
+- "Receipts must be submitted within 30 days."
+
+- "Customer ID must not be expired at the time of upload."
+
+- "High-priority cases must be escalated within 2 hours."
+
+These rules need to be clearly defined, documented, and reflected in the design.
+
+**What Are Edge Cases?**
+
+Edge cases are the unusual, less common scenarios that still need to be considered. They don't happen often, but when they do, they can cause major issues if the system doesn't handle them.
+
+Examples:
+
+- What happens if a customer uploads a blurry photo?
+
+- What happens if an employee submits an expense in a currency the system doesn't recognise?
+
+- What happens if a warehouse scanner goes offline mid-shift?
+
+By thinking about these scenarios early, you help prevent costly fixes later.
+
+**Real-Life Example: Customer Identity Verification**
+
+During workshops, the "Upload ID" design looks simple enough — but the BA digs deeper:
+
+Business rule: Only passports and driving licences are accepted.
+
+Edge case: What happens if someone tries to upload a student ID?
+
+Business rule: Expired IDs cannot be accepted.
+
+Edge case: What if the system can't detect expiry dates? Who reviews manually?
+
+Capturing these rules ensures developers know what validation to build and testers know what to check.
+
+**Real-Life Example: Expense Management**
+
+The "Submit Expense" prototype is reviewed. The BA checks:
+
+Business rule: Claims over £1000 need two levels of approval.
+
+Business rule: Receipts are mandatory for all claims.
+
+Edge case: What if a user uploads the same receipt twice?
+
+Edge case: What if a claim is submitted after the employee has left the company?
+
+Here, the BA ensures exceptions are not overlooked — because these are the very situations that cause disputes in finance teams.
+
+**The BA's Role**
+
+When it comes to rules and edge cases, your role is to:
+
+- Facilitate discussions that go beyond the happy path.
+
+- Document rules in plain, unambiguous language.
+
+- Record edge cases and ensure designs show how they'll be handled.
+
+- Attach these rules and scenarios to user stories, so developers and testers build with them in mind.
+
+- Validate with stakeholders: "Is this the correct way the system should behave if this happens?"
+
+**Why This Matters**
+
+Skipping rules and edge cases often leads to gaps in scope. Stakeholders assume they're covered, but developers may never have been told. When the system goes live, these are the scenarios that cause frustration — and sometimes project failure.
+
+By capturing them early, you reduce rework, improve quality, and protect the project from unpleasant surprises.
+
+In summary, business rules and edge cases turn an ideal design into a realistic one. As a BA, you make sure the design doesn't just show what happens when everything goes right, but also how the system and process will behave when things go wrong.
+
+👉 Next, in Lesson 5: Linking Design to User Stories, we'll look at how the BA takes everything captured in design — processes, wireframes, rules — and attaches them directly to backlog items so development is aligned and delivery teams have a complete picture.`,
       image: '/images/design-placeholder.png'
     },
     {
       id: 'lesson-5',
-      title: 'System Integration Design',
-      content: `Content coming soon...`,
-      image: '/images/design-placeholder.png'
-    },
-    {
-      id: 'lesson-6',
-      title: 'Preparing for MVP',
-      content: `Content coming soon...`,
+      title: 'Linking Design to User Stories',
+      content: `By the time designs are signed off — whether they are process maps, wireframes, prototypes, or configuration rules — the BA's work is not finished. In fact, this is the point where design becomes most valuable: it must now feed directly into delivery.
+
+This happens through user stories. Every story written for the backlog should carry the design context with it. Without this, developers and testers are forced to guess what the screen, process, or interaction should look like. That guesswork is where misunderstandings, delays, and rework creep in.
+
+**Why Designs Must Be Attached**
+
+Delivery teams don't just need words. They need visuals, rules, and flows that bring those words to life. Attaching designs to user stories ensures:
+
+- Frontend developers understand exactly what the screen should look like and how it should behave.
+
+- Backend developers see the data fields, rules, and integrations that drive that screen.
+
+- Testers can prepare test cases that confirm the built system matches the signed-off design.
+
+This alignment saves time, improves estimation, and reduces costly rework.
+
+**Real-Life Example: Expense Management**
+
+The design team has produced a prototype for the expense claim form.
+
+The BA writes a user story:
+"As an employee, I want to submit an expense with a receipt so that I can be reimbursed quickly."
+
+The prototype is attached to the story.
+
+Acceptance criteria specify the business rules: receipts are mandatory, claims over £1000 need 2 approvals, and submissions must be within 30 days.
+
+When developers open the story, they see not only the words but the visual prototype. They build with full confidence in what's expected.
+
+**Real-Life Example: Identity Verification**
+
+The design includes a wireframe of the "Upload ID" page.
+
+The BA writes a user story:
+"As a customer, I want to upload my ID document so that my account can be verified securely."
+
+The wireframe is attached to the story.
+
+Edge cases are covered in the acceptance criteria: invalid file types, expired IDs, and repeated upload failures.
+
+Developers and testers can see exactly what to implement and validate — no guesswork.
+
+**The BA's Role**
+
+At this stage, your responsibilities are to:
+
+- Write clear user stories that capture requirements in simple, testable language.
+
+- Attach designs (process maps, wireframes, configuration notes) to each story in Jira, Azure DevOps, or whichever tool the team uses.
+
+- Check traceability — each requirement and design element is linked to at least one story.
+
+- Support estimation — developers can size work more accurately when designs are visible.
+
+- Protect alignment — ensuring the backlog reflects the signed-off scope, not someone's assumption.
+
+In summary, linking design to user stories is how you ensure the work done in design doesn't sit in a folder and gather dust. It becomes a living reference point for developers and testers, reducing misunderstandings and keeping delivery aligned with the business need.
+
+👉 This completes the Design Hub. From here, the natural next step is the MVP Hub, where you'll learn how to take the full design picture and slice it into the smallest, most valuable release that can be built first.
+
+[Go to MVP Hub →](/mvp-hub)`,
       image: '/images/design-placeholder.png'
     }
   ];
