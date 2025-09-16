@@ -601,14 +601,42 @@ In summary, linking design to user stories is how you ensure the work done in de
                              'linear-gradient(135deg, #fef3c7 0%, #dcfce7 100%)'
                 }}
               >
-                <div className="prose prose-gray dark:prose-invert max-w-none">
+                <style jsx>{`
+                  .design-content h3 {
+                    margin-top: 1.5rem;
+                    margin-bottom: 0.75rem;
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    line-height: 1.4;
+                  }
+                  
+                  .design-content p {
+                    margin-bottom: 1rem;
+                    line-height: 1.6;
+                  }
+                  
+                  .design-content ul {
+                    margin-left: 1.5rem;
+                    margin-bottom: 1.5rem;
+                  }
+                  
+                  .design-content li {
+                    margin-bottom: 0.5rem;
+                    line-height: 1.5;
+                  }
+                  
+                  .design-content strong {
+                    font-weight: 600;
+                  }
+                `}</style>
+                <div className="prose prose-gray dark:prose-invert max-w-none design-content">
                   {lessons[activeTab].content.split('\n\n').map((paragraph, index) => {
                     if (paragraph.trim() === '') return null;
                     
                     // Handle headings
                     if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                       return (
-                        <h3 key={index} className="text-xl font-bold text-gray-900 dark:text-white mb-4 mt-8">
+                        <h3 key={index} className="text-gray-900 dark:text-white">
                           {paragraph.replace(/\*\*/g, '')}
                         </h3>
                       );
@@ -618,11 +646,11 @@ In summary, linking design to user stories is how you ensure the work done in de
                     if (paragraph.includes('**')) {
                       const parts = paragraph.split(/(\*\*.*?\*\*)/g);
                       return (
-                        <p key={index} className="text-gray-700 dark:text-gray-200 mb-4">
+                        <p key={index} className="text-gray-700 dark:text-gray-200">
                           {parts.map((part, partIndex) => {
                             if (part.startsWith('**') && part.endsWith('**')) {
                               return (
-                                <strong key={partIndex} className="font-semibold text-gray-900 dark:text-white">
+                                <strong key={partIndex} className="text-gray-900 dark:text-white">
                                   {part.replace(/\*\*/g, '')}
                                 </strong>
                               );
@@ -638,37 +666,32 @@ In summary, linking design to user stories is how you ensure the work done in de
                       const lines = paragraph.split('\n').filter(line => line.trim() !== '');
                       const bulletLines = lines.filter(line => line.startsWith('- '));
                       return (
-                        <div key={index} className="ml-6 mb-6">
-                          <ul className="space-y-2">
-                            {bulletLines.map((line, lineIndex) => {
-                              const text = line.substring(2);
-                              const parts = text.split(/(\*\*.*?\*\*)/g);
-                              return (
-                                <li key={lineIndex} className="text-gray-700 dark:text-gray-200 flex items-start">
-                                  <span className="text-gray-500 dark:text-gray-400 mr-2">•</span>
-                                  <span>
-                                    {parts.map((part, partIndex) => {
-                                      if (part.startsWith('**') && part.endsWith('**')) {
-                                        return (
-                                          <strong key={partIndex} className="font-semibold text-gray-900 dark:text-white">
-                                            {part.replace(/\*\*/g, '')}
-                                          </strong>
-                                        );
-                                      }
-                                      return part;
-                                    })}
-                                  </span>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
+                        <ul key={index}>
+                          {bulletLines.map((line, lineIndex) => {
+                            const text = line.substring(2);
+                            const parts = text.split(/(\*\*.*?\*\*)/g);
+                            return (
+                              <li key={lineIndex} className="text-gray-700 dark:text-gray-200">
+                                {parts.map((part, partIndex) => {
+                                  if (part.startsWith('**') && part.endsWith('**')) {
+                                    return (
+                                      <strong key={partIndex} className="text-gray-900 dark:text-white">
+                                        {part.replace(/\*\*/g, '')}
+                                      </strong>
+                                    );
+                                  }
+                                  return part;
+                                })}
+                              </li>
+                            );
+                          })}
+                        </ul>
                       );
                     }
                     
                     // Regular paragraphs
                     return (
-                      <p key={index} className="text-gray-700 dark:text-gray-200 mb-4">
+                      <p key={index} className="text-gray-700 dark:text-gray-200">
                         {paragraph}
                       </p>
                     );
