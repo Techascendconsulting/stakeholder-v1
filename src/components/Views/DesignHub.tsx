@@ -603,30 +603,66 @@ In summary, linking design to user stories is how you ensure the work done in de
               >
                 <style jsx>{`
                   .design-content h3 {
-                    margin-top: 1.5rem;
-                    margin-bottom: 0.75rem;
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    line-height: 1.4;
+                    margin-top: 1.5rem !important;
+                    margin-bottom: 0.75rem !important;
+                    font-size: 1.25rem !important;
+                    font-weight: 600 !important;
+                    line-height: 1.4 !important;
+                    color: #111827 !important;
                   }
                   
                   .design-content p {
-                    margin-bottom: 1rem;
-                    line-height: 1.6;
+                    margin-bottom: 1rem !important;
+                    line-height: 1.6 !important;
+                    color: #374151 !important;
                   }
                   
                   .design-content ul {
-                    margin-left: 1.5rem;
-                    margin-bottom: 1.5rem;
+                    margin-left: 1.5rem !important;
+                    margin-bottom: 1.5rem !important;
+                    list-style: none !important;
+                    padding-left: 0 !important;
                   }
                   
                   .design-content li {
-                    margin-bottom: 0.5rem;
-                    line-height: 1.5;
+                    margin-bottom: 0.5rem !important;
+                    line-height: 1.5 !important;
+                    color: #374151 !important;
+                    position: relative !important;
+                    padding-left: 1.5rem !important;
+                  }
+                  
+                  .design-content li::before {
+                    content: "•" !important;
+                    color: #6b7280 !important;
+                    position: absolute !important;
+                    left: 0 !important;
+                    top: 0 !important;
                   }
                   
                   .design-content strong {
-                    font-weight: 600;
+                    font-weight: 600 !important;
+                    color: #111827 !important;
+                  }
+                  
+                  .dark .design-content h3 {
+                    color: #f9fafb !important;
+                  }
+                  
+                  .dark .design-content p {
+                    color: #d1d5db !important;
+                  }
+                  
+                  .dark .design-content li {
+                    color: #d1d5db !important;
+                  }
+                  
+                  .dark .design-content li::before {
+                    color: #9ca3af !important;
+                  }
+                  
+                  .dark .design-content strong {
+                    color: #f9fafb !important;
                   }
                 `}</style>
                 <div className="prose prose-gray dark:prose-invert max-w-none design-content">
@@ -636,7 +672,7 @@ In summary, linking design to user stories is how you ensure the work done in de
                     // Handle headings
                     if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                       return (
-                        <h3 key={index} className="text-gray-900 dark:text-white">
+                        <h3 key={index}>
                           {paragraph.replace(/\*\*/g, '')}
                         </h3>
                       );
@@ -646,11 +682,11 @@ In summary, linking design to user stories is how you ensure the work done in de
                     if (paragraph.includes('**')) {
                       const parts = paragraph.split(/(\*\*.*?\*\*)/g);
                       return (
-                        <p key={index} className="text-gray-700 dark:text-gray-200">
+                        <p key={index}>
                           {parts.map((part, partIndex) => {
                             if (part.startsWith('**') && part.endsWith('**')) {
                               return (
-                                <strong key={partIndex} className="text-gray-900 dark:text-white">
+                                <strong key={partIndex}>
                                   {part.replace(/\*\*/g, '')}
                                 </strong>
                               );
@@ -671,11 +707,11 @@ In summary, linking design to user stories is how you ensure the work done in de
                             const text = line.substring(2);
                             const parts = text.split(/(\*\*.*?\*\*)/g);
                             return (
-                              <li key={lineIndex} className="text-gray-700 dark:text-gray-200">
+                              <li key={lineIndex}>
                                 {parts.map((part, partIndex) => {
                                   if (part.startsWith('**') && part.endsWith('**')) {
                                     return (
-                                      <strong key={partIndex} className="text-gray-900 dark:text-white">
+                                      <strong key={partIndex}>
                                         {part.replace(/\*\*/g, '')}
                                       </strong>
                                     );
@@ -691,7 +727,7 @@ In summary, linking design to user stories is how you ensure the work done in de
                     
                     // Regular paragraphs
                     return (
-                      <p key={index} className="text-gray-700 dark:text-gray-200">
+                      <p key={index}>
                         {paragraph}
                       </p>
                     );
