@@ -101,15 +101,6 @@ const MotivationPage: React.FC = () => {
       { name: "Overcoming Overwhelm", url: "/audio/overwhelm.m4a", type: 'talk', duration: 420, tags: "overwhelm, growth, motivation, business analysis, AI generated" },
       // Planning Phase Talks
       { name: "Sarah's Opening Talk", url: "/audio/planning/sarah-opening.mp3", type: 'talk', duration: 300, tags: "planning, opening, introduction" },
-      { name: "Lisa's Capacity Discussion", url: "/audio/planning/lisa-capacity.mp3", type: 'talk', duration: 450, tags: "planning, capacity, analysis" },
-      { name: "Victor's Goal Setting", url: "/audio/planning/victor-goal.mp3", type: 'talk', duration: 400, tags: "planning, goals, objectives" },
-      { name: "Tom's Testing Approach", url: "/audio/planning/tom-attachments.mp3", type: 'talk', duration: 350, tags: "planning, testing, quality" },
-      { name: "Srikanth's Technical Insights", url: "/audio/planning/srikanth-capacity.mp3", type: 'talk', duration: 380, tags: "planning, technical, insights" },
-      { name: "Sarah's Capacity Planning", url: "/audio/planning/sarah-capacity.mp3", type: 'talk', duration: 420, tags: "planning, capacity, strategy" },
-      { name: "Lisa's Password Security", url: "/audio/planning/lisa-password.mp3", type: 'talk', duration: 320, tags: "planning, security, best practices" },
-      { name: "Victor's ID Upload Process", url: "/audio/planning/victor-idupload.mp3", type: 'talk', duration: 380, tags: "planning, process, documentation" },
-      { name: "Tom's Password Management", url: "/audio/planning/tom-password.mp3", type: 'talk', duration: 340, tags: "planning, security, management" },
-      { name: "Srikanth's ID Upload Guide", url: "/audio/planning/srikanth-idupload.mp3", type: 'talk', duration: 360, tags: "planning, guide, documentation" },
       
       // Refinement Phase Talks
       { name: "Bola's Presentation Skills", url: "/audio/refinement/bola-presentation.mp3", type: 'talk', duration: 500, tags: "refinement, presentation, communication" },
@@ -121,7 +112,6 @@ const MotivationPage: React.FC = () => {
       { name: "Bola's Answer Session", url: "/audio/refinement/bola-answer.mp3", type: 'talk', duration: 380, tags: "refinement, answers, Q&A" },
       { name: "Sarah's Goodbye Message", url: "/audio/refinement/sarah-goodbye.mp3", type: 'talk', duration: 280, tags: "refinement, closing, farewell" },
       { name: "Lisa's Email Strategy", url: "/audio/refinement/lisa-email-2.mp3", type: 'talk', duration: 350, tags: "refinement, communication, email" },
-      { name: "Srikanth's Response Framework", url: "/audio/refinement/srikanth-response.mp3", type: 'talk', duration: 400, tags: "refinement, framework, responses" }
     ]
 
     setTalks(motivationTalks)
