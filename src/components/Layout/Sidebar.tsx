@@ -77,6 +77,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: PlayCircle
     },
     { 
+      id: 'introduction-to-elicitation', 
+      label: 'Introduction to Elicitation', 
+      icon: BookOpen
+    },
+    { 
       id: 'practice-2', 
       label: 'Elicitation Practice', 
       icon: Target

@@ -28,6 +28,7 @@ import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
 import ProjectInitiationView from '../Views/ProjectInitiationView';
 import RequirementsEngineeringView from '../Views/RequirementsEngineeringView';
+import IntroductionToElicitation from '../Views/IntroductionToElicitation';
 // Training Hub Views
 import TrainingHubView from '../Views/TrainingHubView';
 import PracticeHubCardsView from '../Views/PracticeHubCardsView';
@@ -84,6 +85,8 @@ const MainLayout: React.FC = () => {
         return <ProjectInitiationView />;
       case 'requirements-engineering':
         return <RequirementsEngineeringView />;
+      case 'introduction-to-elicitation':
+        return <IntroductionToElicitation />;
       case 'practice':
         return <PracticeLabView />;
       case 'practice-2':

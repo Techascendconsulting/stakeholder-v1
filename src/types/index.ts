@@ -12,6 +12,7 @@ export type AppView =
   | 'requirements-engineering'
   | 'practice'
   | 'practice-2'
+  | 'introduction-to-elicitation'
   | 'motivation'
   | 'project'
   | 'core-concepts'
