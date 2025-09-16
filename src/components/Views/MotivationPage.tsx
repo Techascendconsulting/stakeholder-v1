@@ -184,23 +184,6 @@ const MotivationPage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Energy Hub Card */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-indigo-200 dark:border-indigo-700 mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="p-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl">
-              <Heart className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Energy Hub</h2>
-              <p className="text-indigo-600 dark:text-indigo-400 font-medium">For Refocusing and Recharging</p>
-            </div>
-          </div>
-          <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-            When the training feels heavy or your energy dips, come here for a quick boost. 
-            Listen to short motivational talks or calming music to refocus and recharge.
-          </p>
-        </div>
-
         {/* Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-700">
