@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { useApp } from "../../contexts/AppContext";
+import { PlayCircle, FileText, Users, Calendar, Target, ArrowRight, CheckCircle } from "lucide-react";
 
 const lessons = [
   { 
     id: "day-one", 
     title: "Day One: Induction and Getting Settled",
+    icon: PlayCircle,
+    color: "from-blue-500 to-cyan-500",
+    bgColor: "from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20",
     content: `When you begin your first role as a Business Analyst, the day does not start with you writing requirements or running workshops. It begins like any other new employee in the organisation — with induction.
 
 On your very first day, the HR or People team usually runs an induction session. This may include setting up your laptop and system access, explaining company policies, and showing you how to use the tools you'll rely on every day such as email, Teams or Slack, and the company intranet. You may also meet other new joiners and be introduced to the organisation's culture, values, and expectations.
@@ -26,6 +30,9 @@ Project initiation begins here — with you moving from being a new employee to 
   { 
     id: "intro-project", 
     title: "Introduction to the Project",
+    icon: FileText,
+    color: "from-purple-500 to-pink-500",
+    bgColor: "from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20",
     content: `Once you've completed your induction and settled into the organisation, the next important step in your journey as a Business Analyst is your introduction to the project you will be working on.
 
 This usually comes from your line manager or project manager. In this meeting, their goal is to give you the context you need to understand what the project is about, why it exists, and where it currently stands. Don't worry if everything feels new or overwhelming — at this stage, no one expects you to know the details. Your role is to listen carefully, absorb the information, and begin forming an initial understanding.
@@ -49,6 +56,9 @@ Remember, at this point you are not running workshops or collecting requirements
   { 
     id: "doc-analysis", 
     title: "Early Document Analysis",
+    icon: FileText,
+    color: "from-emerald-500 to-teal-500",
+    bgColor: "from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20",
     content: `After being introduced to the project and receiving the initial documents, one of your first responsibilities as a Business Analyst is to begin analysing those documents carefully. This is not about memorising every page but about reading with a BA's lens — looking for clarity, gaps, risks, and insights that will shape your understanding of the project.
 
 The kinds of documents you may encounter at this stage include:
@@ -82,6 +92,9 @@ By the end of this phase, you should have a set of notes that summarise the key 
   { 
     id: "early-meetings", 
     title: "Sitting in Early Meetings",
+    icon: Users,
+    color: "from-orange-500 to-red-500",
+    bgColor: "from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20",
     content: `At the very start of a project, long before formal elicitation workshops are held, a Business Analyst is often invited to attend early meetings. These may include planning sessions, alignment calls, or progress updates between senior stakeholders. They are not requirement-gathering sessions, but they are still valuable opportunities for you to learn and prepare.
 
 The people in these meetings may include the project sponsor, project manager, senior leaders from affected departments, and sometimes technical leads or architects. The discussions are usually focused on scope, timelines, risks, and resources, rather than detailed requirements. Even though you are not expected to contribute heavily at this stage, your presence is important.
@@ -115,6 +128,9 @@ This is the groundwork that prepares you for the more active phases of your BA r
   { 
     id: "stakeholder-awareness", 
     title: "Stakeholder Awareness",
+    icon: Target,
+    color: "from-indigo-500 to-purple-500",
+    bgColor: "from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20",
     content: `As you progress through the initiation phase, one of the most important responsibilities for a Business Analyst is to start building stakeholder awareness. Even before you conduct formal stakeholder analysis, you will begin to notice names, roles, and influences that shape the project. This early awareness is crucial because successful Business Analysis is as much about people as it is about processes and systems.
 
 At this stage, you may hear stakeholders mentioned in documents such as the business case or project brief. You may also see them attending early meetings, voicing concerns, or asking key questions. Each of these encounters gives you clues about who matters to the project and why.
@@ -156,6 +172,9 @@ This sets the stage for you to enter elicitation with confidence, knowing who yo
   { 
     id: "early-design", 
     title: "Early Design Conversations",
+    icon: Calendar,
+    color: "from-pink-500 to-rose-500",
+    bgColor: "from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20",
     content: `In many organisations, conversations about design begin very early in the life of a project — sometimes even before requirements are fully understood. As a Business Analyst, you may find yourself in meetings where stakeholders are already suggesting solutions, sketching ideas, or showing rough prototypes.
 
 For example, someone might say, "We just need a new mobile app" or "Let's add another system to handle this process." While these conversations can be useful, they also carry a risk: the project may jump to solutions before clearly defining the problem.
@@ -189,6 +208,9 @@ This prepares you for the final part of initiation, where all the background wor
   { 
     id: "kickoff", 
     title: "Preparing for Kickoff",
+    icon: CheckCircle,
+    color: "from-green-500 to-emerald-500",
+    bgColor: "from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20",
     content: `By this stage, you have gone through induction, been introduced to the project, reviewed early documents, observed meetings, built initial stakeholder awareness, and noted early design ideas. All of this work prepares you for one of the first major milestones in any project — the kickoff meeting.
 
 The kickoff is not the beginning of requirements elicitation, but it is the moment where the project is formally launched with the wider team. Sponsors, project managers, business analysts, technical leads, and sometimes end users come together to align on the purpose of the project, the expected outcomes, and the way of working.
@@ -223,8 +245,11 @@ const ProjectInitiationView: React.FC = () => {
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <header className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl mb-6">
+            <PlayCircle className="w-8 h-8 text-white" />
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Project Initiation
+            🚀 Project Initiation
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Before you ever get to a project kickoff meeting, there are important
@@ -239,27 +264,36 @@ const ProjectInitiationView: React.FC = () => {
           {/* Tab Headers */}
           <div className="border-b border-gray-200 dark:border-gray-700">
             <div className="flex overflow-x-auto">
-              {lessons.map((lesson, index) => (
-                <button
-                  key={lesson.id}
-                  onClick={() => setActiveTab(index)}
-                  className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
-                    activeTab === index
-                      ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {lesson.title}
-                </button>
-              ))}
+              {lessons.map((lesson, index) => {
+                const IconComponent = lesson.icon;
+                return (
+                  <button
+                    key={lesson.id}
+                    onClick={() => setActiveTab(index)}
+                    className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
+                      activeTab === index
+                        ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                    {lesson.title}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Tab Content */}
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              {lessons[activeTab].title}
-            </h2>
+          <div className={`p-8 bg-gradient-to-br ${lessons[activeTab].bgColor}`}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className={`w-12 h-12 bg-gradient-to-r ${lessons[activeTab].color} rounded-xl flex items-center justify-center`}>
+                {React.createElement(lessons[activeTab].icon, { className: "w-6 h-6 text-white" })}
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {lessons[activeTab].title}
+              </h2>
+            </div>
             <div className="prose prose-lg dark:prose-invert max-w-none">
               <p className="whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
                 {lessons[activeTab].content}
