@@ -32,6 +32,9 @@ import IntroductionToElicitation from '../Views/IntroductionToElicitation';
 import SolutionOptions from '../Views/SolutionOptions';
 import DesignHub from '../Views/DesignHub';
 import MVPHub from '../Views/MVPHub';
+import BuddyView from '../Views/Community/BuddyView';
+import CohortView from '../Views/Community/CohortView';
+import LiveSessionsView from '../Views/Community/LiveSessionsView';
 // Training Hub Views
 import TrainingHubView from '../Views/TrainingHubView';
 import PracticeHubCardsView from '../Views/PracticeHubCardsView';
@@ -102,6 +105,12 @@ const MainLayout: React.FC = () => {
         return <GuidedPracticeHub />;
       case 'motivation':
         return <MotivationPage />;
+      case 'community-buddy':
+        return <BuddyView />;
+      case 'community-cohort':
+        return <CohortView />;
+      case 'community-sessions':
+        return <LiveSessionsView />;
       case 'project':
         return <ProjectLandingView />;
 

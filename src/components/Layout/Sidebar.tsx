@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   FolderOpen,
   BookOpen,
+  Calendar,
   Settings,
   LogOut,
   ChevronLeft,
@@ -19,7 +20,8 @@ import {
   FileText,
   Layers,
   PenTool,
-  Rocket
+  Rocket,
+  Users
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -108,6 +110,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       id: 'mvp-hub', 
       label: 'MVP', 
       icon: Rocket
+    },
+    // Community Hub
+    { 
+      id: 'community-buddy', 
+      label: 'My Buddy', 
+      icon: Users
+    },
+    { 
+      id: 'community-cohort', 
+      label: 'My Cohort', 
+      icon: Users
+    },
+    { 
+      id: 'community-sessions', 
+      label: 'Live Sessions', 
+      icon: Calendar
     },
     { 
       id: 'scrum-practice', 
