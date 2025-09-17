@@ -312,3 +312,4 @@ export default function AcceptanceCriteriaWalkthrough({ onStartPractice, onBack,
     </div>
   );
 }
+

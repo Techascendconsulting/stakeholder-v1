@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   FolderOpen,
   BookOpen,
-  Calendar,
   Settings,
   LogOut,
   ChevronLeft,
@@ -111,21 +110,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'MVP', 
       icon: Rocket
     },
-    // Community Hub
     { 
-      id: 'community-buddy', 
-      label: 'My Buddy', 
+      id: 'community-hub', 
+      label: 'Community Hub', 
       icon: Users
-    },
-    { 
-      id: 'community-cohort', 
-      label: 'My Cohort', 
-      icon: Users
-    },
-    { 
-      id: 'community-sessions', 
-      label: 'Live Sessions', 
-      icon: Calendar
     },
     { 
       id: 'scrum-practice', 
