@@ -38,6 +38,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const refreshAdminStatus = async () => {
     if (!user) {
+      console.log('🔐 ADMIN - No user, setting to non-admin');
       setIsAdmin(false);
       setAdminRoles([]);
       setPermissions({
@@ -53,13 +54,31 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
 
     try {
-      console.log('🔐 ADMIN - Checking admin status for user:', user.id);
+      console.log('🔐 ADMIN - Checking admin status for user:', user.id, 'email:', user.email);
       
-      // Get user details with admin roles from the database function
+      // FORCE ADMIN ACCESS FOR YOUR EMAIL - ALWAYS FIRST
+      const isYourEmail = user.email === 'techascendconsulting1@gmail.com';
+      console.log('🔐 ADMIN - Is your email?', isYourEmail);
+      
+      if (isYourEmail) {
+        console.log('🔐 ADMIN - FORCED ADMIN ACCESS for techascendconsulting1@gmail.com');
+        setIsAdmin(true);
+        setAdminRoles([]);
+        setPermissions({
+          user_management: true,
+          device_unlock: true,
+          system_settings: true,
+          analytics: true,
+          admin_management: true,
+          audit_logs: true
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Use the new simple function for other users
       const { data: userData, error: userError } = await supabase
-        .rpc('get_user_details_with_emails')
-        .eq('id', user.id)
-        .single();
+        .rpc('get_user_profile_simple');
       
       if (userError) {
         console.error('🔐 ADMIN - Error getting user details:', userError);

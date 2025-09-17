@@ -154,11 +154,9 @@ const AdminUserManagement: React.FC = () => {
           return;
         }
 
-        // Get auth users data
-        const { data: authUsers, error: authError } = await supabase
-          .from('auth.users')
-          .select('id, email, last_sign_in_at')
-          .in('id', profiles?.map(p => p.user_id) || []);
+        // Skip auth.users query (not accessible) and use profiles only
+        const authUsers = null;
+        const authError = { message: 'Auth users not accessible' };
 
         if (authError) {
           console.error('Error loading auth users:', authError);

@@ -74,6 +74,18 @@ class DeviceLockService {
       
       // FIRST: Check if user is admin - admins bypass device lock entirely
       try {
+        // FORCE ADMIN BYPASS FOR YOUR EMAIL
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.email === 'techascendconsulting1@gmail.com') {
+          console.log('🔐 DEVICE LOCK - FORCED ADMIN BYPASS for techascendconsulting1@gmail.com');
+          return {
+            success: true,
+            locked: false,
+            message: 'Admin access granted - device lock bypassed.',
+            deviceId: await this.getDeviceId()
+          };
+        }
+        
         const { data: adminCheck, error: adminError } = await supabase
           .from('user_profiles')
           .select('is_admin, is_super_admin, is_senior_admin')
