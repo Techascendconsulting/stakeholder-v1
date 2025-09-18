@@ -91,6 +91,12 @@ export default function TrainingUI() {
             >
               Advanced Practice
             </button>
+            <button
+              onClick={() => setCurrentView('agile-scrum')}
+              className="px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
+            >
+              Scrum Hub
+            </button>
           </div>
         </div>
 
@@ -137,6 +143,7 @@ export default function TrainingUI() {
     </StakeholderBotProvider>
   );
 }
+
 
 
 
