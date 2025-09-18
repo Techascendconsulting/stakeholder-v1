@@ -16,7 +16,7 @@ export interface GroupMember {
   id: string;
   group_id: string;
   user_id: string;
-  role: 'member' | 'admin';
+  role?: 'member' | 'admin';
   joined_at: string;
   user?: {
     id: string;
@@ -122,7 +122,7 @@ class GroupService {
   }
 
   // Add member to group
-  async addMemberToGroup(groupId: string, userId: string, role: 'member' | 'admin' = 'member'): Promise<boolean> {
+  async addMemberToGroup(groupId: string, userId: string, _role: 'member' | 'admin' = 'member'): Promise<boolean> {
     try {
       // Add to database
       const { error: dbError } = await supabase
@@ -130,7 +130,6 @@ class GroupService {
         .insert({
           group_id: groupId,
           user_id: userId,
-          role,
         });
 
       if (dbError) {

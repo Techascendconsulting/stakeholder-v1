@@ -140,9 +140,9 @@ const GroupsTab: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {member.user?.name || member.user?.email}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {member.role}
-                  </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {member.role || 'member'}
+                      </p>
                 </div>
               </div>
             ))}
@@ -201,9 +201,9 @@ const GroupsTab: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {member.user?.name || member.user?.email}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {member.role}
-                  </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {member.role || 'member'}
+                      </p>
                 </div>
               </div>
             ))}
