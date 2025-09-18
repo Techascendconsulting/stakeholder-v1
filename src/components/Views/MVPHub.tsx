@@ -1143,29 +1143,42 @@ const MVPHub: React.FC = () => {
 
       {/* Lessons Section */}
       <div className="max-w-7xl mx-auto px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {lessons.map((lesson, index) => (
             <button
               key={lesson.id}
               onClick={() => setCurrentLesson(lesson.id)}
-              className={`${lesson.bgColor} ${lesson.borderColor} border rounded-xl p-6 text-left hover:shadow-lg transition-all duration-200 group`}
+              className={`${lesson.bgColor} ${lesson.borderColor} border-2 rounded-2xl p-8 text-left hover:shadow-xl hover:scale-105 transition-all duration-300 group relative overflow-hidden`}
             >
-              <div className="flex items-center space-x-4 mb-4">
-                <div className={`w-12 h-12 ${lesson.bgColor} ${lesson.borderColor} border rounded-xl flex items-center justify-center`}>
-                  <span className={lesson.color}>{lesson.icon}</span>
+              {/* Background gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-gray-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              {/* Content */}
+              <div className="relative z-10">
+                <div className="flex items-start space-x-4 mb-6">
+                  <div className={`w-16 h-16 ${lesson.bgColor} ${lesson.borderColor} border-2 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+                    <span className={`${lesson.color} group-hover:scale-110 transition-transform duration-300`}>{lesson.icon}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                        Lesson {index + 1}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors leading-tight">
+                      {lesson.title}
+                    </h3>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
-                    {lesson.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Lesson {index + 1}
-                  </p>
+                
+                <div className="flex items-center justify-between mt-6">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">
+                    Start learning
+                  </span>
+                  <div className="w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+                    <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors group-hover:translate-x-1" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500 dark:text-gray-400">Click to start</span>
-                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
               </div>
             </button>
           ))}
