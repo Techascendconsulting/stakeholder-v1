@@ -685,7 +685,7 @@ const MVPHub: React.FC = () => {
         );
       }
       
-      if (id === 'how-ba-thinks-mvp') {
+      if (id === 'ba-thinks-mvp') {
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
