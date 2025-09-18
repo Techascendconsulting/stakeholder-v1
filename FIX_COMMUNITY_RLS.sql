@@ -107,6 +107,25 @@ CREATE POLICY buddy_pairs_read_own
 ON public.buddy_pairs FOR SELECT
 USING (user1_id = auth.uid() OR user2_id = auth.uid());
 
+-- User onboarding: allow owner to read and upsert own
+ALTER TABLE IF EXISTS public.user_onboarding ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  DROP POLICY IF EXISTS user_onboarding_owner_read ON public.user_onboarding;
+  DROP POLICY IF EXISTS user_onboarding_owner_write ON public.user_onboarding;
+EXCEPTION WHEN undefined_table THEN
+  NULL;
+END $$;
+
+CREATE POLICY user_onboarding_owner_read
+ON public.user_onboarding FOR SELECT
+USING (user_id = auth.uid());
+
+CREATE POLICY user_onboarding_owner_write
+ON public.user_onboarding FOR INSERT WITH CHECK (user_id = auth.uid());
+-- Allow updates by owner
+CREATE POLICY user_onboarding_owner_update
+ON public.user_onboarding FOR UPDATE USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
 -- Training sessions policies
 CREATE POLICY training_sessions_admin_all
 ON public.training_sessions FOR ALL
