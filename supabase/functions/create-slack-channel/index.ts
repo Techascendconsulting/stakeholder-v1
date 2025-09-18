@@ -4,6 +4,11 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 interface SlackCreateResponse {
   ok: boolean;
   error?: string;
@@ -11,19 +16,23 @@ interface SlackCreateResponse {
 }
 
 serve(async (req: Request) => {
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: { ...corsHeaders, "Access-Control-Allow-Methods": "POST, OPTIONS" } });
+  }
   try {
     if (req.method !== 'POST') {
-      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders });
     }
 
     const token = Deno.env.get('SLACK_BOT_TOKEN');
     if (!token) {
-      return new Response(JSON.stringify({ error: 'SLACK_BOT_TOKEN not configured' }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'SLACK_BOT_TOKEN not configured' }), { status: 500, headers: corsHeaders });
     }
 
     const { name } = await req.json();
     if (!name || typeof name !== 'string') {
-      return new Response(JSON.stringify({ error: 'Invalid name' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Invalid name' }), { status: 400, headers: corsHeaders });
     }
 
     const channelName = name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
@@ -39,15 +48,15 @@ serve(async (req: Request) => {
 
     const data = (await res.json()) as SlackCreateResponse;
     if (!data.ok || !data.channel?.id) {
-      return new Response(JSON.stringify({ error: data.error || 'Slack API error' }), { status: 400 });
+      return new Response(JSON.stringify({ error: data.error || 'Slack API error' }), { status: 400, headers: corsHeaders });
     }
 
     return new Response(JSON.stringify({ id: data.channel.id, name: data.channel.name }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
       status: 200
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: corsHeaders });
   }
 });
 
