@@ -176,8 +176,10 @@ class SlackService {
         body: payload,
       });
       console.log('🔍 functions.invoke Response [create-slack-channel]:', { data, error });
-      if (!error && data?.id) {
-        return { id: data.id, name: data.name, is_private: false };
+      const returnedId = data?.id || data?.channelId;
+      const returnedName = data?.name || payload.name;
+      if (!error && returnedId) {
+        return { id: returnedId, name: returnedName, is_private: false };
       }
       if (error) {
         console.warn('Edge function error:', error);
