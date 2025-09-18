@@ -13,13 +13,14 @@ interface AgileTicket {
   ticketNumber: string;
   projectId: string; // Fixed project association
   projectName: string; // Fixed project name
-  type: 'Story' | 'Task' | 'Bug' | 'Spike';
+  type: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Spike';
   title: string;
   description: string;
   acceptanceCriteria?: string;
   priority: 'Low' | 'Medium' | 'High';
   status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'In Sprint' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
   storyPoints?: number;
+  epic?: string; // Epic field for parent-child relationship
   createdAt: string;
   updatedAt: string;
   userId: string;
@@ -163,6 +164,7 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
 
   const getTypeIcon = (type: string) => {
     switch (type) {
+      case 'Epic': return <Target size={16} className="text-purple-600" />;
       case 'Story': return <BookOpen size={16} className="text-green-600" />;
       case 'Task': return <Square size={16} className="text-blue-600" />;
       case 'Bug': return <Bug size={16} className="text-red-600" />;
@@ -857,6 +859,7 @@ export const AgileHubView: React.FC = () => {
 
   const getTypeIcon = (type: AgileTicket['type']) => {
     switch (type) {
+      case 'Epic': return <Target className="w-4 h-4" />;
       case 'Story': return <BookOpen className="w-4 h-4" />;
       case 'Task': return <Square className="w-4 h-4" />;
       case 'Bug': return <Bug className="w-4 h-4" />;
@@ -866,6 +869,7 @@ export const AgileHubView: React.FC = () => {
 
   const getTypeColor = (type: AgileTicket['type']) => {
     switch (type) {
+      case 'Epic': return 'bg-purple-100 text-purple-700 border-purple-200';
       case 'Story': return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'Task': return 'bg-green-100 text-green-700 border-green-200';
       case 'Bug': return 'bg-red-100 text-red-700 border-red-200';
@@ -1296,6 +1300,9 @@ export const AgileHubView: React.FC = () => {
                             Type
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                            Epic
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Priority
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -1402,6 +1409,7 @@ export const AgileHubView: React.FC = () => {
                                   className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                   autoFocus
                                 >
+                                  <option value="Epic">Epic</option>
                                   <option value="Story">Story</option>
                                   <option value="Task">Task</option>
                                   <option value="Bug">Bug</option>
@@ -1416,6 +1424,19 @@ export const AgileHubView: React.FC = () => {
                                   {getTypeIcon(ticket.type)}
                                   <span className="ml-1">{ticket.type}</span>
                                 </button>
+                              )}
+                            </td>
+                            
+                            {/* Epic Column */}
+                            <td className="px-3 py-2">
+                              {ticket.type === 'Epic' ? (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 italic">Parent Epic</span>
+                              ) : ticket.epic ? (
+                                <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                                  {ticket.epic}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-400 dark:text-gray-500">No Epic</span>
                               )}
                             </td>
                             
@@ -1997,7 +2018,8 @@ const EditTicketModal: React.FC<{
     acceptanceCriteria: ticket.acceptanceCriteria || '',
     priority: ticket.priority,
     status: ticket.status,
-    storyPoints: ticket.storyPoints
+    storyPoints: ticket.storyPoints,
+    epic: ticket.epic || ''
   });
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -2006,6 +2028,7 @@ const EditTicketModal: React.FC<{
 
   const getTypeIcon = (type: AgileTicket['type']) => {
     switch (type) {
+      case 'Epic': return <Target className="w-4 h-4" />;
       case 'Story': return <BookOpen className="w-4 h-4" />;
       case 'Task': return <Square className="w-4 h-4" />;
       case 'Bug': return <Bug className="w-4 h-4" />;
@@ -2015,6 +2038,7 @@ const EditTicketModal: React.FC<{
 
   const getTypeColor = (type: AgileTicket['type']) => {
     switch (type) {
+      case 'Epic': return 'text-purple-600';
       case 'Story': return 'text-blue-600';
       case 'Task': return 'text-green-600';
       case 'Bug': return 'text-red-600';
@@ -2022,7 +2046,7 @@ const EditTicketModal: React.FC<{
     }
   };
 
-  const ticketTypes: AgileTicket['type'][] = ['Story', 'Task', 'Bug', 'Spike'];
+  const ticketTypes: AgileTicket['type'][] = ['Epic', 'Story', 'Task', 'Bug', 'Spike'];
 
   const capitalizeFirstLetter = (text: string) => {
     if (!text) return text;
@@ -2258,6 +2282,27 @@ const EditTicketModal: React.FC<{
             />
           </div>
 
+          {/* Epic Field (for Stories, Tasks, Bugs, Spikes) */}
+          {formData.type !== 'Epic' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Epic
+              </label>
+              <select
+                value={formData.epic}
+                onChange={(e) => setFormData({ ...formData, epic: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select an Epic (optional)</option>
+                {tickets.filter(ticket => ticket.type === 'Epic').map(epic => (
+                  <option key={epic.id} value={epic.title}>
+                    {epic.ticketNumber} - {epic.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Status */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -2439,18 +2484,20 @@ const CreateTicketModal: React.FC<{
   onCreateTicket: (ticket: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'ticketNumber' | 'projectId' | 'projectName'>) => void;
 }> = ({ onClose, onCreateTicket }) => {
   const [formData, setFormData] = useState({
-    type: 'Story' as AgileTicket['type'],
+    type: 'Epic' as AgileTicket['type'],
     title: '',
     description: '',
     acceptanceCriteria: '',
     priority: 'Medium' as AgileTicket['priority'],
     status: 'Draft' as AgileTicket['status'],
-    storyPoints: undefined as number | undefined
+    storyPoints: undefined as number | undefined,
+    epic: ''
   });
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
   const getTypeIcon = (type: AgileTicket['type']) => {
     switch (type) {
+      case 'Epic': return <Target className="w-4 h-4" />;
       case 'Story': return <BookOpen className="w-4 h-4" />;
       case 'Task': return <Square className="w-4 h-4" />;
       case 'Bug': return <Bug className="w-4 h-4" />;
@@ -2460,6 +2507,7 @@ const CreateTicketModal: React.FC<{
 
   const getTypeColor = (type: AgileTicket['type']) => {
     switch (type) {
+      case 'Epic': return 'text-purple-600';
       case 'Story': return 'text-blue-600';
       case 'Task': return 'text-green-600';
       case 'Bug': return 'text-red-600';
@@ -2467,7 +2515,7 @@ const CreateTicketModal: React.FC<{
     }
   };
 
-  const ticketTypes: AgileTicket['type'][] = ['Story', 'Task', 'Bug', 'Spike'];
+  const ticketTypes: AgileTicket['type'][] = ['Epic', 'Story', 'Task', 'Bug', 'Spike'];
 
   const capitalizeFirstLetter = (text: string) => {
     if (!text) return text;
@@ -2623,6 +2671,27 @@ const CreateTicketModal: React.FC<{
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+
+          {/* Epic Field (for Stories, Tasks, Bugs, Spikes) */}
+          {formData.type !== 'Epic' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Epic
+              </label>
+              <select
+                value={formData.epic}
+                onChange={(e) => setFormData({ ...formData, epic: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select an Epic (optional)</option>
+                {tickets.filter(ticket => ticket.type === 'Epic').map(epic => (
+                  <option key={epic.id} value={epic.title}>
+                    {epic.ticketNumber} - {epic.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end space-x-3 pt-4">
