@@ -337,6 +337,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [editableStory, setEditableStory] = useState("");
   const [investChecks, setInvestChecks] = useState<boolean[]>([true, true, true, true, true, true]);
 
@@ -349,6 +350,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
     
     setAnswers({ ...answers, [key]: option });
     setSelectedOption(option);
+    setIsCorrect(option === step.correct);
     setShowExplanation(true);
   };
 
@@ -356,6 +358,13 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
     setCurrentStep((prev) => prev + 1);
     setSelectedOption(null);
     setShowExplanation(false);
+    setIsCorrect(null);
+  };
+
+  const handleTryAgain = () => {
+    setSelectedOption(null);
+    setShowExplanation(false);
+    setIsCorrect(null);
   };
 
   const generateUserStory = () => {
@@ -382,6 +391,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
     setAnswers({});
     setSelectedOption(null);
     setShowExplanation(false);
+    setIsCorrect(null);
     setEditableStory("");
     setInvestChecks([true, true, true, true, true, true]);
   };
@@ -571,14 +581,14 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
               <button
                 key={option}
                 onClick={() => handleSelect(option)}
-                disabled={showExplanation}
+                disabled={showExplanation && isCorrect}
                 className={`p-4 text-left rounded-lg border-2 transition-all duration-200 ${
                   selectedOption === option
                     ? option === step.correct
                       ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                       : 'border-red-500 bg-red-50 dark:bg-red-900/20'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                } ${showExplanation ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
+                } ${showExplanation && isCorrect ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
               >
                 <div className="flex items-center space-x-3">
                   <div className={`w-4 h-4 rounded-full border-2 ${
@@ -616,13 +626,35 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
                   </div>
                 </div>
               ) : (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-red-800 dark:text-red-200 font-semibold mb-2">🔴 Why this is wrong:</p>
-                      <p className="text-red-700 dark:text-red-300 text-sm">{step.incorrectExplanations[selectedOption]}</p>
+                <div className="space-y-4">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-red-800 dark:text-red-200 font-semibold mb-2">🔴 Why this is wrong:</p>
+                        <p className="text-red-700 dark:text-red-300 text-sm">{step.incorrectExplanations[selectedOption]}</p>
+                      </div>
                     </div>
+                  </div>
+                  
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <div className="flex items-start space-x-2">
+                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-green-800 dark:text-green-200 font-semibold mb-2">✅ Correct answer:</p>
+                        <p className="text-green-700 dark:text-green-300 text-sm font-medium mb-2">{step.correct}</p>
+                        <p className="text-green-700 dark:text-green-300 text-sm">{step.explanation}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-center">
+                    <button
+                      onClick={handleTryAgain}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                      Try Again
+                    </button>
                   </div>
                 </div>
               )}
@@ -665,7 +697,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
             <span>Reset</span>
           </button>
 
-          {showExplanation && currentStep < steps.length - 1 && (
+          {showExplanation && isCorrect && currentStep < steps.length - 1 && (
             <button
               onClick={handleNext}
               className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -675,7 +707,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
             </button>
           )}
 
-          {showExplanation && currentStep === steps.length - 1 && (
+          {showExplanation && isCorrect && currentStep === steps.length - 1 && (
             <button
               onClick={handleNext}
               className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -689,6 +721,8 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
     </div>
   );
 }
+
+
 
 
 
