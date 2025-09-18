@@ -88,6 +88,10 @@ class GroupService {
     endDate?: string
   ): Promise<Group | null> {
     try {
+      // Identify creator (if available)
+      const { data: authData } = await supabase.auth.getUser();
+      const createdBy = authData?.user?.id ?? null;
+
       // Create Slack channel
       const slackChannel = await slackService.createGroupChannel(name, type);
       
@@ -100,6 +104,7 @@ class GroupService {
           slack_channel_id: slackChannel?.id || null,
           start_date: startDate || null,
           end_date: endDate || null,
+          created_by: createdBy,
         })
         .select()
         .single();
