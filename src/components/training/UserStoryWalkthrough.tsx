@@ -34,6 +34,24 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
   } : null;
 
   if (scenarioId === 'student-homework') {
+    const studentHomeworkEpicStep = {
+      key: 'epic',
+      question: 'Which Epic does this requirement belong to?',
+      tip: 'Choose the Epic that best fits this requirement.',
+      options: [
+        'File Upload Feedback',
+        'Student Services',
+        'Assignment Management',
+        'User Experience'
+      ],
+      correct: 'File Upload Feedback',
+      explanation: 'Correct — this is about providing clear feedback during file uploads.',
+      incorrectExplanations: {
+        'Student Services': 'Too broad. The focus is specifically on upload feedback.',
+        'Assignment Management': 'Close, but the Epic is about upload feedback, not general assignment management.',
+        'User Experience': 'Not quite. This is about specific upload feedback, not general UX improvements.'
+      }
+    };
     const baseSteps = [
       {
         key: 'user',
@@ -114,10 +132,28 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         incorrectExplanations: {}
       }
     ];
-    return epicStep ? [epicStep, ...baseSteps] : baseSteps;
+    return [studentHomeworkEpicStep, ...baseSteps];
   }
 
   if (scenarioId === 'shopping-checkout') {
+    const shoppingCheckoutEpicStep = {
+      key: 'epic',
+      question: 'Which Epic does this requirement belong to?',
+      tip: 'Choose the Epic that best fits this requirement.',
+      options: [
+        'Payment Confirmation',
+        'Rent Management',
+        'Online Transactions',
+        'Customer Support'
+      ],
+      correct: 'Payment Confirmation',
+      explanation: 'Correct — this is about providing instant confirmation after payment submission.',
+      incorrectExplanations: {
+        'Rent Management': 'Too broad. The focus is specifically on payment confirmation.',
+        'Online Transactions': 'Close, but payment confirmation is more specific.',
+        'Customer Support': 'Not quite. This is about payment feedback, not general support.'
+      }
+    };
     const baseSteps = [
       {
         key: 'user',
@@ -192,7 +228,7 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         incorrectExplanations: {}
       }
     ];
-    return epicStep ? [epicStep, ...baseSteps] : baseSteps;
+    return [shoppingCheckoutEpicStep, ...baseSteps];
   }
 
   // Default childcare voucher scenario
@@ -653,6 +689,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
     </div>
   );
 }
+
 
 
 
