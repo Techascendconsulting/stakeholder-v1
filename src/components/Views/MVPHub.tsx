@@ -170,6 +170,132 @@ const MVPHub: React.FC = () => {
         );
       }
       
+      if (id === 'why-mvp-matters') {
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Introduction</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                When you are in a project environment, it is very easy to get pulled in different directions by stakeholders. Everyone believes their requirement is important, and everyone wants their feature delivered first. Without a strong framework for focus, the team can lose sight of what really matters.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                This is why MVP thinking is critical for Business Analysts. It helps you protect the team and the stakeholders from wasting effort and ensures that value is delivered quickly and visibly.
+              </p>
+            </div>
+
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 border border-red-200 dark:border-red-700">
+              <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 mb-4">The Risk Without MVP Thinking</h3>
+              <p className="text-red-800 dark:text-red-300 mb-4">
+                Projects that don't use MVP thinking usually fall into two traps:
+              </p>
+              
+              <div className="space-y-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <h4 className="font-semibold text-red-900 dark:text-red-200 mb-2">Too much, too soon</h4>
+                  <p className="text-red-800 dark:text-red-300 mb-3">
+                    Teams try to deliver everything at once. The backlog becomes a giant wish list, the delivery team is stretched thin, and deadlines keep slipping. Months pass, and nothing is released to customers. By the time the system finally goes live, it is often over budget, late, and misaligned with what the business truly needs.
+                  </p>
+                  <div className="bg-red-100 dark:bg-red-800/30 rounded-lg p-3 border border-red-300 dark:border-red-600">
+                    <p className="text-red-900 dark:text-red-200 font-semibold mb-1">Example:</p>
+                    <p className="text-red-800 dark:text-red-300 text-sm">
+                      A healthcare team decides to build a new patient portal. Instead of starting with the basics (book appointment, view confirmation), they try to deliver every feature — prescription tracking, video consultations, test results, messaging, and reminders — all in the first release. The project drags on for two years, and patients still can't do the simplest thing: book an appointment online.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <h4 className="font-semibold text-red-900 dark:text-red-200 mb-2">Incomplete flows</h4>
+                  <p className="text-red-800 dark:text-red-300 mb-3">
+                    Sometimes teams deliver parts of functionality that don't connect to form a usable flow. On the surface, it looks like progress: "We've built the login page! We've built the upload screen!" But when stakeholders try to use it, nothing works end-to-end. The frustration quickly builds: "You've built pieces, but when will this actually work?"
+                  </p>
+                  <div className="bg-red-100 dark:bg-red-800/30 rounded-lg p-3 border border-red-300 dark:border-red-600">
+                    <p className="text-red-900 dark:text-red-200 font-semibold mb-1">Example:</p>
+                    <p className="text-red-800 dark:text-red-300 text-sm">
+                      A housing repair system goes live with an appointment booking page but no confirmation step. Tenants can choose a time, but the system doesn't record it properly, and engineers still show up randomly. Stakeholders are left wondering what was achieved.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
+              <h3 className="text-lg font-semibold text-green-900 dark:text-green-200 mb-4">What MVP Delivers Instead</h3>
+              <p className="text-green-800 dark:text-green-300 mb-4">
+                MVP thinking forces the team to ask: "What is the minimum set of stories that create a usable flow?"
+              </p>
+              
+              <ul className="text-green-800 dark:text-green-300 mb-4 space-y-2">
+                <li>• It focuses the conversation on value rather than on quantity of features.</li>
+                <li>• It ensures the team delivers something usable early, even if it's small.</li>
+                <li>• It creates a sense of progress for stakeholders, because they can see and use something real.</li>
+                <li>• It reduces risk, because the business gets feedback quickly and can adjust before spending more money.</li>
+              </ul>
+
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                <h4 className="font-semibold text-green-900 dark:text-green-200 mb-3">Example: Online Course Platform</h4>
+                <p className="text-green-800 dark:text-green-300 mb-3">
+                  Imagine the business wants to build an online learning portal. They list dozens of requirements:
+                </p>
+                <ul className="text-green-800 dark:text-green-300 mb-4 space-y-1 text-sm">
+                  <li>• Students should register.</li>
+                  <li>• Students should pay online.</li>
+                  <li>• Students should view courses.</li>
+                  <li>• Students should track progress.</li>
+                  <li>• Students should take quizzes.</li>
+                  <li>• Students should receive certificates.</li>
+                  <li>• Students should connect with other learners in a community forum.</li>
+                </ul>
+                <p className="text-green-800 dark:text-green-300 mb-3">
+                  Without MVP thinking, the project could try to deliver all of these in one massive release. This would take months (or years), and by the time it is done, the market may have shifted.
+                </p>
+                <div className="bg-green-100 dark:bg-green-800/30 rounded-lg p-3 border border-green-300 dark:border-green-600">
+                  <p className="text-green-900 dark:text-green-200 font-semibold mb-2">With MVP thinking, the BA asks: What is the smallest usable product that allows a student to learn?</p>
+                  <ul className="text-green-800 dark:text-green-300 space-y-1">
+                    <li>1. Register.</li>
+                    <li>2. Pay.</li>
+                    <li>3. View course videos.</li>
+                  </ul>
+                  <p className="text-green-800 dark:text-green-300 mt-3 text-sm">
+                    That's the MVP. A student can register, pay, and start learning. Everything else (progress tracking, quizzes, certificates, forums) can be added later as iterations.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-4">The BA's Role</h3>
+              <p className="text-blue-800 dark:text-blue-300 mb-4">
+                As a BA, you must guide discussions toward MVP. Stakeholders may resist — they often want everything. But your role is to ask the right questions:
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700 mb-4">
+                <ul className="text-blue-800 dark:text-blue-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>"If we only built this part, could a customer still get value?"</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>"What is the smallest flow we can release that would solve the core problem?"</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <p className="text-blue-800 dark:text-blue-300">
+                MVP matters because it makes delivery realistic and value-driven. It protects the project from being lost in endless scope and gives the business confidence through visible progress.
+              </p>
+            </div>
+
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-6 border border-emerald-200 dark:border-emerald-700">
+              <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-200 mb-4">Key Takeaway</h3>
+              <p className="text-emerald-800 dark:text-emerald-300 font-semibold">
+                MVP matters because it ensures the team delivers a working product early, avoids wasted effort, and allows the business to start learning from real usage immediately. Without it, projects either drown in scope or deliver incomplete pieces that provide no value.
+              </p>
+            </div>
+          </div>
+        );
+      }
+      
       // Placeholder for other lessons
       return (
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 mb-6">
