@@ -126,6 +126,40 @@ class SlackService {
     }
   }
 
+  // Update a message
+  async updateMessage(channelId: string, ts: string, newText: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.functions.invoke('slack-update-message', {
+        body: { channel: channelId, ts, text: newText }
+      });
+      if (error) {
+        console.error('slack-update-message error:', error);
+        return false;
+      }
+      return Boolean((data as any)?.ok ?? true);
+    } catch (e) {
+      console.error('Error updating message:', e);
+      return false;
+    }
+  }
+
+  // Delete a message
+  async deleteMessage(channelId: string, ts: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.functions.invoke('slack-delete-message', {
+        body: { channel: channelId, ts }
+      });
+      if (error) {
+        console.error('slack-delete-message error:', error);
+        return false;
+      }
+      return Boolean((data as any)?.ok ?? true);
+    } catch (e) {
+      console.error('Error deleting message:', e);
+      return false;
+    }
+  }
+
   // Get user by email
   async getUserByEmail(email: string): Promise<SlackUser | null> {
     try {
