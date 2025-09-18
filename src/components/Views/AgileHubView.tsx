@@ -494,7 +494,39 @@ export const AgileHubView: React.FC = () => {
   const [editingStoryPoints, setEditingStoryPoints] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
   const [editingEpic, setEditingEpic] = useState<string | null>(null);
-  const [showEpics, setShowEpics] = useState(false);
+  const [showEpicSidebar, setShowEpicSidebar] = useState(false);
+  const [editingEpicId, setEditingEpicId] = useState<string | null>(null);
+  const [epicEditData, setEpicEditData] = useState({
+    title: '',
+    description: '',
+    epicColor: '#8B5CF6'
+  });
+
+  // Close navigation when Epic sidebar opens to prevent page expansion
+  useEffect(() => {
+    if (showEpicSidebar) {
+      // Close any open navigation elements
+      document.body.classList.remove('overflow-hidden');
+      
+      // Close mobile navigation
+      const mobileNav = document.querySelector('[data-mobile-nav]');
+      if (mobileNav) {
+        mobileNav.classList.add('hidden');
+      }
+      
+      // Close any sidebar navigation
+      const sidebarNav = document.querySelector('[data-sidebar]');
+      if (sidebarNav) {
+        sidebarNav.classList.add('hidden');
+      }
+      
+      // Close any open dropdowns
+      const dropdowns = document.querySelectorAll('[data-dropdown]');
+      dropdowns.forEach(dropdown => {
+        dropdown.classList.add('hidden');
+      });
+    }
+  }, [showEpicSidebar]);
 
   // Custom setCurrentProject that persists to localStorage
   const updateCurrentProject = (project: Project | null) => {
@@ -848,6 +880,43 @@ export const AgileHubView: React.FC = () => {
     setEditingType(null);
   };
 
+  // Epic editing functions
+  const startEditingEpic = (epic: AgileTicket) => {
+    setEditingEpicId(epic.id);
+    setEpicEditData({
+      title: epic.title,
+      description: epic.description,
+      epicColor: epic.epicColor || '#8B5CF6'
+    });
+  };
+
+  const saveEpicEdit = () => {
+    if (!editingEpicId) return;
+    
+    const updatedTickets = tickets.map(ticket => 
+      ticket.id === editingEpicId 
+        ? { 
+            ...ticket, 
+            title: epicEditData.title,
+            description: epicEditData.description,
+            epicColor: epicEditData.epicColor,
+            updatedAt: new Date().toISOString() 
+          }
+        : ticket
+    );
+    setTickets(updatedTickets);
+    setEditingEpicId(null);
+  };
+
+  const cancelEpicEdit = () => {
+    setEditingEpicId(null);
+    setEpicEditData({
+      title: '',
+      description: '',
+      epicColor: '#8B5CF6'
+    });
+  };
+
   const handleStatusClick = (ticketId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingStatus(editingStatus === ticketId ? null : ticketId);
@@ -914,10 +983,10 @@ export const AgileHubView: React.FC = () => {
                          ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || ticket.status === filterStatus;
     
-    // Epic filtering: show Epics only if showEpics is true, hide them otherwise
-    const matchesEpicFilter = showEpics || ticket.type !== 'Epic';
+    // Never show Epics in the main backlog - they belong in the Epic sidebar
+    const isNotEpic = ticket.type !== 'Epic';
     
-    return matchesProject && matchesSearch && matchesFilter && matchesEpicFilter;
+    return matchesProject && matchesSearch && matchesFilter && isNotEpic;
   });
 
   const storiesReadyForRefinement = tickets.filter(
@@ -1040,17 +1109,6 @@ export const AgileHubView: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">Manage your delivery backlog and refinement meetings</p>
             </div>
             <button
-              onClick={() => setShowEpics(!showEpics)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                showEpics 
-                  ? 'bg-purple-600 text-white hover:bg-purple-700' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              <Target className="w-4 h-4" />
-              <span>{showEpics ? 'Hide Epics' : 'Show Epics'}</span>
-            </button>
-            <button
               onClick={() => !showRefinementModal && setShowCreateModal(true)}
               disabled={showRefinementModal}
               className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
@@ -1066,7 +1124,129 @@ export const AgileHubView: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ${showEpicSidebar ? 'flex' : ''}`}>
+
+        {/* Epic Sidebar */}
+        {showEpicSidebar && (
+          <div className="w-64 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 mr-4 flex-shrink-0">
+            <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Epics</h3>
+                <button
+                  onClick={() => setShowEpicSidebar(false)}
+                  className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <X className="w-3 h-3 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            <div className="max-h-96 overflow-y-auto">
+              {tickets
+                .filter(ticket => ticket.type === 'Epic' && currentProject && ticket.projectId === currentProject.id)
+                .map(epic => (
+                  <div
+                    key={epic.id}
+                    className="px-2 py-1 border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  >
+                    {editingEpicId === epic.id ? (
+                      // Editing mode
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="color"
+                            value={epicEditData.epicColor}
+                            onChange={(e) => setEpicEditData({ ...epicEditData, epicColor: e.target.value })}
+                            className="w-4 h-4 rounded cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={epicEditData.title}
+                            onChange={(e) => setEpicEditData({ ...epicEditData, title: e.target.value })}
+                            className="flex-1 text-xs px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Epic title"
+                            autoFocus
+                          />
+                        </div>
+                        <textarea
+                          value={epicEditData.description}
+                          onChange={(e) => setEpicEditData({ ...epicEditData, description: e.target.value })}
+                          className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Epic description"
+                          rows={2}
+                        />
+                        <div className="flex items-center justify-end space-x-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              saveEpicEdit();
+                            }}
+                            className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              cancelEpicEdit();
+                            }}
+                            className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Display mode
+                      <div className="flex items-center space-x-2">
+                        <div 
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: epic.epicColor || '#8B5CF6' }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-1">
+                            <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                              {epic.ticketNumber}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {epic.title}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                          <span>{tickets.filter(t => t.epic === epic.title).length}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditingEpic(epic);
+                            }}
+                            className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                          >
+                            <Edit3 className="w-3 h-3 text-gray-500" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              {tickets.filter(ticket => ticket.type === 'Epic' && currentProject && ticket.projectId === currentProject.id).length === 0 && (
+                <div className="text-center py-8">
+                  <Target className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-1">No Epics yet</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Create your first Epic to organize your work</p>
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="px-3 py-1 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Create Epic
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Area */}
+        <div className={`${showEpicSidebar ? 'flex-1' : 'w-full'}`}>
 
         {/* Compact Tabs with Integrated Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -1261,7 +1441,20 @@ export const AgileHubView: React.FC = () => {
                         <option value="In Progress">In Progress</option>
                         <option value="In Test">In Test</option>
                         <option value="Done">Done</option>
-                     </select>
+                      </select>
+                      
+                      {/* Epic Toggle Button */}
+                      <button
+                        onClick={() => setShowEpicSidebar(!showEpicSidebar)}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                          showEpicSidebar 
+                            ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <Target className="w-4 h-4" />
+                        <span>Epic</span>
+                      </button>
                   </div>
                   
                   {/* Multi-select controls */}
@@ -1300,8 +1493,8 @@ export const AgileHubView: React.FC = () => {
                   <div className={`flex ${selectedTicket ? 'space-x-6' : ''}`}>
                     {/* Left Side - Tickets Table */}
                     <div className={`${selectedTicket ? 'w-1/2' : 'w-full'} transition-all duration-300`}>
-                      <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <div className="overflow-x-auto max-w-full">
+                    <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
                       <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600">
                         <tr>
                           <th className="px-3 py-2 text-left">
@@ -1315,36 +1508,25 @@ export const AgileHubView: React.FC = () => {
                           <th className="px-3 py-2 text-left">
                             <GripVertical className="w-4 h-4 text-gray-400" title="Drag to reorder" />
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-20">
                             Key
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-80">
                             Summary
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                            Type
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-32">
+                            Epic
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                            <div className="flex items-center space-x-2">
-                              <span>Epic</span>
-                              {!showEpics && (
-                                <div className="w-2 h-2 rounded-full bg-gray-400" title="Epics are hidden - click 'Show Epics' to view them"></div>
-                              )}
-                              {showEpics && (
-                                <div className="w-3 h-3 rounded-full bg-purple-500" title="Epic colors help distinguish different Epics"></div>
-                              )}
-                            </div>
-                          </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-24">
                             Priority
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                            Story Points
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-20">
+                            Points
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-32">
                             Status
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-24">
                             Actions
                           </th>
                         </tr>
@@ -1393,7 +1575,7 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Key Column */}
-                            <td className="px-3 py-2" onClick={() => editTicket(ticket)}>
+                            <td className="px-3 py-2 w-20" onClick={() => editTicket(ticket)}>
                               <div className="flex items-center space-x-2">
                                 <span className={getTypeColor(ticket.type)}>
                                   {getTypeIcon(ticket.type)}
@@ -1405,7 +1587,7 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Summary Column */}
-                            <td className="px-3 py-2" onClick={() => editTicket(ticket)}>
+                            <td className="px-3 py-2 w-80" onClick={() => editTicket(ticket)}>
                               <div>
                                 <div className="flex items-center space-x-2">
                                   <div className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer">
@@ -1432,36 +1614,9 @@ export const AgileHubView: React.FC = () => {
                               </div>
                             </td>
                             
-                            {/* Type Column */}
-                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
-                              {editingType === ticket.id ? (
-                                <select
-                                  value={ticket.type}
-                                  onChange={(e) => updateTicketField(ticket.id, 'type', e.target.value)}
-                                  onBlur={() => setEditingType(null)}
-                                  className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                  autoFocus
-                                >
-                                  <option value="Epic">Epic</option>
-                                  <option value="Story">Story</option>
-                                  <option value="Task">Task</option>
-                                  <option value="Bug">Bug</option>
-                                  <option value="Spike">Spike</option>
-                                </select>
-                              ) : (
-                                <button
-                                  onClick={(e) => handleTypeClick(ticket.id, e)}
-                                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${getTypeColor(ticket.type).replace('text-', 'bg-').replace('-600', '-100')} ${getTypeColor(ticket.type)}`}
-                                  title="Click to change type"
-                                >
-                                  {getTypeIcon(ticket.type)}
-                                  <span className="ml-1">{ticket.type}</span>
-                                </button>
-                              )}
-                            </td>
                             
                             {/* Epic Column */}
-                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2 w-32" onClick={(e) => e.stopPropagation()}>
                               {ticket.type === 'Epic' ? (
                                 <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
                               ) : editingEpic === ticket.id ? (
@@ -1469,11 +1624,11 @@ export const AgileHubView: React.FC = () => {
                                   value={ticket.epic || ''}
                                   onChange={(e) => updateTicketField(ticket.id, 'epic', e.target.value)}
                                   onBlur={() => setEditingEpic(null)}
-                                  className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                  className="w-32 px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                   autoFocus
                                 >
                                   <option value="">-</option>
-                                  {tickets.filter(t => t.type === 'Epic').map(epic => (
+                                  {tickets.filter(t => t.type === 'Epic' && currentProject && t.projectId === currentProject.id).map(epic => (
                                     <option key={epic.id} value={epic.title}>
                                       {epic.ticketNumber} - {epic.title}
                                     </option>
@@ -1482,7 +1637,7 @@ export const AgileHubView: React.FC = () => {
                               ) : (
                                 <button
                                   onClick={(e) => handleEpicClick(ticket.id, e)}
-                                  className={`text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${
+                                  className={`text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity truncate max-w-32 ${
                                     ticket.epic 
                                       ? 'font-semibold' 
                                       : 'text-gray-400 dark:text-gray-500'
@@ -1492,7 +1647,7 @@ export const AgileHubView: React.FC = () => {
                                       ? tickets.find(t => t.type === 'Epic' && t.title === ticket.epic)?.epicColor || '#8B5CF6'
                                       : undefined
                                   }}
-                                  title="Click to change Epic"
+                                  title={ticket.epic ? `Epic: ${ticket.epic}` : 'Click to change Epic'}
                                 >
                                   {ticket.epic || '-'}
                                 </button>
@@ -1500,14 +1655,14 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Priority Column */}
-                            <td className="px-3 py-2" onClick={() => editTicket(ticket)}>
+                            <td className="px-3 py-2 w-24" onClick={() => editTicket(ticket)}>
                               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
                                 {ticket.priority}
                               </span>
                             </td>
                             
                             {/* Story Points Column */}
-                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2 w-20" onClick={(e) => e.stopPropagation()}>
                               {editingStoryPoints === ticket.id ? (
                                 <input
                                   type="number"
@@ -1531,7 +1686,7 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Status Column */}
-                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2 w-32" onClick={(e) => e.stopPropagation()}>
                               {editingStatus === ticket.id ? (
                                 <select
                                   value={ticket.status}
@@ -1560,7 +1715,7 @@ export const AgileHubView: React.FC = () => {
                               )}
                             </td>
                             {/* Actions Column */}
-                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-3 py-2 w-24" onClick={(e) => e.stopPropagation()}>
                               <div className="flex items-center space-x-2">
 
                                 
@@ -1968,6 +2123,7 @@ export const AgileHubView: React.FC = () => {
           onClose={() => setShowCreateModal(false)}
           onCreateTicket={createTicket}
           tickets={tickets}
+          currentProject={currentProject}
         />
       )}
 
@@ -1981,6 +2137,7 @@ export const AgileHubView: React.FC = () => {
           }}
           onUpdateTicket={updateTicket}
           tickets={tickets}
+          currentProject={currentProject}
         />
       )}
 
@@ -2062,7 +2219,8 @@ export const AgileHubView: React.FC = () => {
           }}
         />
       )}
-    </div>
+        </div> {/* Close main content area */}
+      </div>
   );
 };
 
@@ -2072,7 +2230,8 @@ const EditTicketModal: React.FC<{
   onClose: () => void;
   onUpdateTicket: (ticket: AgileTicket) => void;
   tickets: AgileTicket[];
-}> = ({ ticket, onClose, onUpdateTicket, tickets }) => {
+  currentProject: Project | null;
+}> = ({ ticket, onClose, onUpdateTicket, tickets, currentProject }) => {
   const [formData, setFormData] = useState({
     type: ticket.type,
     title: ticket.title,
@@ -2357,7 +2516,7 @@ const EditTicketModal: React.FC<{
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select an Epic</option>
-                {tickets.filter(ticket => ticket.type === 'Epic').map(epic => (
+                {tickets.filter(ticket => ticket.type === 'Epic' && currentProject && ticket.projectId === currentProject.id).map(epic => (
                   <option key={epic.id} value={epic.title}>
                     {epic.ticketNumber} - {epic.title}
                   </option>
@@ -2566,9 +2725,10 @@ const CreateTicketModal: React.FC<{
   onClose: () => void;
   onCreateTicket: (ticket: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'ticketNumber' | 'projectId' | 'projectName'>) => void;
   tickets: AgileTicket[];
-}> = ({ onClose, onCreateTicket, tickets }) => {
+  currentProject: Project | null;
+}> = ({ onClose, onCreateTicket, tickets, currentProject }) => {
   const [formData, setFormData] = useState({
-    type: 'Epic' as AgileTicket['type'],
+    type: 'Story' as AgileTicket['type'],
     title: '',
     description: '',
     acceptanceCriteria: '',
@@ -2769,7 +2929,7 @@ const CreateTicketModal: React.FC<{
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select an Epic</option>
-                {tickets.filter(ticket => ticket.type === 'Epic').map(epic => (
+                {tickets.filter(ticket => ticket.type === 'Epic' && currentProject && ticket.projectId === currentProject.id).map(epic => (
                   <option key={epic.id} value={epic.title}>
                     {epic.ticketNumber} - {epic.title}
                   </option>

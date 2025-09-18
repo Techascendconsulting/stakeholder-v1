@@ -85,11 +85,11 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
 
         if (onboardingError) {
           if (onboardingError.code === 'PGRST116') {
-            // No data found, this is expected
-            console.log('No onboarding data found for user');
-          } else if (onboardingError.code === '406' || onboardingError.message?.includes('406')) {
+            // No data found, this is expected - don't log as error
+            console.log('No onboarding data found for user - using defaults');
+          } else if (onboardingError.code === '406' || onboardingError.message?.includes('406') || onboardingError.code === 'PGRST406') {
             // Table doesn't exist or has issues, skip silently
-            console.log('user_onboarding table not available, skipping');
+            console.log('user_onboarding table not available, using defaults');
           } else {
             console.error('Error loading onboarding data:', onboardingError);
           }
@@ -128,6 +128,12 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
         onboarding_stage: onboardingData?.onboarding_stage || (profileData?.has_completed_onboarding ? 'completed' : 'in_progress'),
         completed_at: onboardingData?.completed_at || profileData?.onboarding_completed_at
       };
+
+      // If no data found anywhere, set safe defaults
+      if (!onboardingData && !profileData) {
+        console.log('No onboarding data found, using safe defaults');
+        combinedData.onboarding_stage = 'in_progress';
+      }
 
       setOnboardingData(combinedData);
       

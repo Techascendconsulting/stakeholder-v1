@@ -1,10 +1,32 @@
 import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { Rocket, Target, Zap, CheckCircle, ArrowRight, BookOpen, Lightbulb, TrendingUp, Users, ArrowLeft } from 'lucide-react';
+import MvpBuilder from './MvpBuilder';
 
 const MVPHub: React.FC = () => {
   const { setCurrentView } = useApp();
   const [currentLesson, setCurrentLesson] = useState<string | null>(null);
+  const [showMvpBuilder, setShowMvpBuilder] = useState(false);
+
+  // If MVP Builder is shown, render it instead of the hub
+  if (showMvpBuilder) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="mb-6">
+            <button
+              onClick={() => setShowMvpBuilder(false)}
+              className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to MVP Hub</span>
+            </button>
+          </div>
+          <MvpBuilder mode="training" />
+        </div>
+      </div>
+    );
+  }
 
   const lessons = [
     {
@@ -1221,14 +1243,14 @@ const MVPHub: React.FC = () => {
             <div className="max-w-2xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ready to Practice?</h2>
               <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Put your MVP knowledge into practice with our interactive MVP Engine tool.
+                Put your MVP knowledge into practice with our interactive MVP Builder tool.
               </p>
               <button
-                onClick={() => setCurrentView('mvp-engine')}
+                onClick={() => setShowMvpBuilder(true)}
                 className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 <Rocket className="w-5 h-5" />
-                <span>Try the MVP Engine</span>
+                <span>Try the MVP Builder</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
