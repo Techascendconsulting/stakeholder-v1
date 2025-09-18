@@ -32,7 +32,6 @@ import IntroductionToElicitation from '../Views/IntroductionToElicitation';
 import SolutionOptions from '../Views/SolutionOptions';
 import DesignHub from '../Views/DesignHub';
 import MVPHub from '../Views/MVPHub';
-import CommunityHub from '../Views/Community/CommunityHub';
 // Training Hub Views
 import TrainingHubView from '../Views/TrainingHubView';
 import PracticeHubCardsView from '../Views/PracticeHubCardsView';
@@ -51,6 +50,8 @@ import DiagramCreationView from '../Views/DiagramCreationView';
 import ProcessMapperView from '../Views/ProcessMapperView';
 import TrainingUI from '../Views/TrainingUI';
 import LearnLandingView from '../Views/LearnLandingView';
+import CommunityHub from '../Views/Community/CommunityHub';
+import AdminCommunityHub from '../Views/Community/AdminCommunityHub';
 import ProjectLandingView from '../Views/ProjectLandingView';
 import AdminDashboard from '../AdminDashboard';
 
@@ -103,8 +104,6 @@ const MainLayout: React.FC = () => {
         return <GuidedPracticeHub />;
       case 'motivation':
         return <MotivationPage />;
-      case 'community-hub':
-        return <CommunityHub />;
       case 'project':
         return <ProjectLandingView />;
 
@@ -201,6 +200,10 @@ const MainLayout: React.FC = () => {
               return <TrainingUI />;
       case 'admin':
         return <AdminDashboard />;
+      case 'community-hub':
+        return <CommunityHub />;
+      case 'community-admin':
+        return <AdminCommunityHub onBack={() => setCurrentView('dashboard')} />;
       default:
         return <ProjectsView />;
     }

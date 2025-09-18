@@ -71,6 +71,8 @@ export type AppView =
   | 'solution-options'
   | 'design-hub'
   | 'mvp-hub'
+  | 'community-hub'
+  | 'community-admin'
   | 'admin';
 
 // Re-export specific types for convenience

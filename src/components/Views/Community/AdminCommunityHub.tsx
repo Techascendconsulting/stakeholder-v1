@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Edit, Trash2, Users, UserCheck, Calendar, Settings } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Users, UserCheck, Calendar, Settings, X } from 'lucide-react';
 import { groupService, Group } from '../../../services/groupService';
 import { buddyService, BuddyPair } from '../../../services/buddyService';
 import { sessionService, TrainingSession } from '../../../services/sessionService';
@@ -14,6 +14,14 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
   const [buddies, setBuddies] = useState<BuddyPair[]>([]);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [createGroupData, setCreateGroupData] = useState({
+    name: '',
+    type: 'cohort' as 'cohort' | 'graduate' | 'mentor' | 'custom',
+    startDate: '',
+    endDate: ''
+  });
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -38,10 +46,46 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
     }
   };
 
+  const handleCreateGroup = async () => {
+    if (!createGroupData.name.trim()) {
+      alert('Please enter a group name');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const newGroup = await groupService.createGroup(
+        createGroupData.name,
+        createGroupData.type,
+        createGroupData.startDate || undefined,
+        createGroupData.endDate || undefined
+      );
+
+      if (newGroup) {
+        setGroups(prev => [newGroup, ...prev]);
+        setShowCreateGroup(false);
+        setCreateGroupData({
+          name: '',
+          type: 'cohort',
+          startDate: '',
+          endDate: ''
+        });
+        alert('Group created successfully!');
+      } else {
+        alert('Failed to create group. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating group:', error);
+      alert('Error creating group. Please try again.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const tabs = [
-    { id: 'groups' as const, label: 'Groups', icon: Users },
+    { id: 'groups' as const, label: 'Groups Management', icon: Users },
     { id: 'buddies' as const, label: 'Buddy Pairs', icon: UserCheck },
-    { id: 'sessions' as const, label: 'Sessions', icon: Calendar },
+    { id: 'sessions' as const, label: 'Training Sessions', icon: Calendar },
   ];
 
   if (loading) {
@@ -108,11 +152,23 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
         {activeTab === 'groups' && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Groups</h2>
-              <button className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Group
-              </button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Groups Management</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Create and manage community groups, cohorts, and member assignments</p>
+              </div>
+              <div className="flex space-x-3">
+                <button className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                  <Users className="w-4 h-4 mr-2" />
+                  Import CSV
+                </button>
+                <button 
+                  onClick={() => setShowCreateGroup(true)}
+                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Group
+                </button>
+              </div>
             </div>
             
             {groups.length === 0 ? (
@@ -144,17 +200,36 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Manage Members">
+                          <Users className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Edit Group">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600">
+                        <button className="p-2 text-gray-400 hover:text-red-600" title="Archive Group">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
                     <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <p>Slack Channel: {group.slack_channel_id || 'Not created'}</p>
-                      <p>Created: {new Date(group.created_at).toLocaleDateString()}</p>
+                      <div className="flex items-center justify-between">
+                        <span>Members:</span>
+                        <span className="font-medium">0</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Slack Channel:</span>
+                        <span className="font-medium">{group.slack_channel_id ? '✅ Created' : '❌ Not created'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Created:</span>
+                        <span className="font-medium">{new Date(group.created_at).toLocaleDateString()}</span>
+                      </div>
+                      {group.start_date && (
+                        <div className="flex items-center justify-between">
+                          <span>Start Date:</span>
+                          <span className="font-medium">{new Date(group.start_date).toLocaleDateString()}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -166,17 +241,40 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
         {activeTab === 'buddies' && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Buddy Pairs</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Buddy Pairs Management</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Monitor and manage student buddy pairings and relationships</p>
+              </div>
+              <div className="flex space-x-3">
+                <button className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  Auto-Pair
+                </button>
+                <button className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Pair
+                </button>
+              </div>
             </div>
             
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 text-center">
               <UserCheck className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Buddy pairs are user-driven
+                No buddy pairs created yet
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Users create and manage their own buddy pairs. Admin can view and manage them here.
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Create buddy pairs to help students connect and collaborate.
               </p>
+              <div className="flex justify-center space-x-3">
+                <button className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Pair
+                </button>
+                <button className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  Auto-Generate Pairs
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -184,11 +282,20 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
         {activeTab === 'sessions' && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Training Sessions</h2>
-              <button className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Session
-              </button>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Training Sessions</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Schedule and manage live training sessions for the community</p>
+              </div>
+              <div className="flex space-x-3">
+                <button className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Calendar View
+                </button>
+                <button className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Session
+                </button>
+              </div>
             </div>
             
             {sessions.length === 0 ? (
@@ -240,6 +347,95 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
           </div>
         )}
       </div>
+
+      {/* Create Group Dialog */}
+      {showCreateGroup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Create New Group</h3>
+              <button
+                onClick={() => setShowCreateGroup(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Group Name *
+                </label>
+                <input
+                  type="text"
+                  value={createGroupData.name}
+                  onChange={(e) => setCreateGroupData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter group name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Group Type
+                </label>
+                <select
+                  value={createGroupData.type}
+                  onChange={(e) => setCreateGroupData(prev => ({ ...prev, type: e.target.value as any }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="cohort">Cohort</option>
+                  <option value="graduate">Graduate</option>
+                  <option value="mentor">Mentor</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={createGroupData.startDate}
+                    onChange={(e) => setCreateGroupData(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={createGroupData.endDate}
+                    onChange={(e) => setCreateGroupData(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowCreateGroup(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateGroup}
+                disabled={creating || !createGroupData.name.trim()}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {creating ? 'Creating...' : 'Create Group'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

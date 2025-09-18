@@ -1,19 +1,11 @@
 import React, { useState } from 'react';
-import { Users, Calendar, UserCheck, Settings } from 'lucide-react';
-import { useAdmin } from '../../../contexts/AdminContext';
+import { Users, Calendar, UserCheck } from 'lucide-react';
 import BuddyTab from './BuddyTab';
 import GroupsTab from './GroupsTab';
 import LiveSessionsTab from './LiveSessionsTab';
-import AdminCommunityHub from './AdminCommunityHub';
 
 const CommunityHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'buddy' | 'groups' | 'sessions'>('buddy');
-  const [showAdmin, setShowAdmin] = useState(false);
-  const { isAdmin } = useAdmin();
-
-  if (showAdmin) {
-    return <AdminCommunityHub onBack={() => setShowAdmin(false)} />;
-  }
 
   const tabs = [
     { id: 'buddy' as const, label: 'My Buddy', icon: UserCheck },
@@ -35,15 +27,6 @@ const CommunityHub: React.FC = () => {
                 Connect with your study buddy, groups, and live sessions
               </p>
             </div>
-            {isAdmin && (
-              <button
-                onClick={() => setShowAdmin(true)}
-                className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Admin
-              </button>
-            )}
           </div>
         </div>
       </div>

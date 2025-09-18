@@ -58,10 +58,12 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       
       // FORCE ADMIN ACCESS FOR YOUR EMAIL - ALWAYS FIRST
       const isYourEmail = user.email === 'techascendconsulting1@gmail.com';
+      const isAdminEmail = user.email === 'admin@batraining.com';
       console.log('🔐 ADMIN - Is your email?', isYourEmail);
+      console.log('🔐 ADMIN - Is admin email?', isAdminEmail);
       
-      if (isYourEmail) {
-        console.log('🔐 ADMIN - FORCED ADMIN ACCESS for techascendconsulting1@gmail.com');
+      if (isYourEmail || isAdminEmail) {
+        console.log('🔐 ADMIN - FORCED ADMIN ACCESS for', user.email);
         setIsAdmin(true);
         setAdminRoles([]);
         setPermissions({

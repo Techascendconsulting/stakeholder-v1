@@ -143,6 +143,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'pre-brief',
         'live-training-meeting',
         'post-brief',
+        'community-hub',
+        'community-admin',
         'admin'
       ];
       if (savedView && validViews.includes(savedView as AppView)) {

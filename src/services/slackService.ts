@@ -23,7 +23,7 @@ class SlackService {
 
   constructor() {
     // In production, get from environment variables
-    this.botToken = process.env.VITE_SLACK_BOT_TOKEN || '';
+    this.botToken = import.meta.env.VITE_SLACK_BOT_TOKEN || '';
   }
 
   // Create a new channel
@@ -183,7 +183,36 @@ class SlackService {
 
     return this.postMessage(channelId, `Live Session Reminder: ${sessionTitle}`, blocks);
   }
+
+  // Fetch messages from channel
+  async fetchMessages(channelId: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/conversations.history`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.botToken}`,
+        },
+        // Note: This would need proper query parameter handling
+      });
+
+      const data = await response.json();
+      
+      if (data.ok) {
+        return data.messages || [];
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      return [];
+    }
+  }
 }
 
 export const slackService = new SlackService();
+
+// Export individual functions for easier importing
+export const fetchMessages = (channelId: string) => slackService.fetchMessages(channelId);
+export const postMessage = (channelId: string, text: string, blocks?: any[]) => slackService.postMessage(channelId, text, blocks);
+
 export default slackService;

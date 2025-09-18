@@ -9,6 +9,8 @@ import MainLayout from './components/Layout/MainLayout'
 import GlobalAudioPlayer, { SimpleAudioPlayer } from './components/Layout/GlobalAudioPlayer'
 import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
+import { OnboardingProvider } from './contexts/OnboardingContext'
+import { StakeholderBotProvider } from './context/StakeholderBotContext'
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
