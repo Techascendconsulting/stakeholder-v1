@@ -165,6 +165,23 @@ class SlackService {
 
   // Create group channel
   async createGroupChannel(groupName: string, groupType: string): Promise<SlackChannel | null> {
+    // Prefer server-side creation via Edge Function to avoid CORS/secret exposure
+    const functionUrl = import.meta.env.VITE_SUPABASE_FUNCTION_URL || '';
+    if (functionUrl) {
+      try {
+        const resp = await fetch(`${functionUrl}/create-slack-channel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: `${groupType}-${groupName}` })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          return { id: data.id, name: data.name, is_private: false };
+        }
+      } catch (e) {
+        console.warn('Edge function create-slack-channel failed, falling back to client Slack API:', e);
+      }
+    }
     const channelName = `${groupType}-${groupName}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     return this.createChannel(channelName, false);
   }
