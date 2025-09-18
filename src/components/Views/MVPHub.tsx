@@ -1148,7 +1148,7 @@ const MVPHub: React.FC = () => {
             <button
               key={lesson.id}
               onClick={() => setCurrentLesson(lesson.id)}
-              className="group relative bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 p-8 text-left hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-400/10 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
+              className={`group relative ${lesson.bgColor} ${lesson.borderColor} border-2 rounded-3xl p-8 text-left hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-400/10 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-500 hover:-translate-y-2 overflow-hidden`}
             >
               {/* Animated background gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-violet-50/30 to-indigo-50/50 dark:from-purple-900/20 dark:via-violet-900/10 dark:to-indigo-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
