@@ -492,6 +492,7 @@ export const AgileHubView: React.FC = () => {
   const [editingStatus, setEditingStatus] = useState<string | null>(null);
   const [editingStoryPoints, setEditingStoryPoints] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
+  const [editingEpic, setEditingEpic] = useState<string | null>(null);
 
   // Custom setCurrentProject that persists to localStorage
   const updateCurrentProject = (project: Project | null) => {
@@ -854,6 +855,13 @@ export const AgileHubView: React.FC = () => {
   const handleTypeClick = (ticketId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingType(editingType === ticketId ? null : ticketId);
+    setEditingStatus(null);
+  };
+
+  const handleEpicClick = (ticketId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingEpic(editingEpic === ticketId ? null : ticketId);
+    setEditingType(null);
     setEditingStatus(null);
   };
 
@@ -1428,15 +1436,36 @@ export const AgileHubView: React.FC = () => {
                             </td>
                             
                             {/* Epic Column */}
-                            <td className="px-3 py-2">
+                            <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                               {ticket.type === 'Epic' ? (
-                                <span className="text-xs text-gray-500 dark:text-gray-400 italic">Parent Epic</span>
-                              ) : ticket.epic ? (
-                                <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
-                                  {ticket.epic}
-                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
+                              ) : editingEpic === ticket.id ? (
+                                <select
+                                  value={ticket.epic || ''}
+                                  onChange={(e) => updateTicketField(ticket.id, 'epic', e.target.value)}
+                                  onBlur={() => setEditingEpic(null)}
+                                  className="min-w-max px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                  autoFocus
+                                >
+                                  <option value="">-</option>
+                                  {tickets.filter(t => t.type === 'Epic').map(epic => (
+                                    <option key={epic.id} value={epic.title}>
+                                      {epic.ticketNumber} - {epic.title}
+                                    </option>
+                                  ))}
+                                </select>
                               ) : (
-                                <span className="text-xs text-gray-400 dark:text-gray-500">No Epic</span>
+                                <button
+                                  onClick={(e) => handleEpicClick(ticket.id, e)}
+                                  className={`text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${
+                                    ticket.epic 
+                                      ? 'text-purple-600 dark:text-purple-400' 
+                                      : 'text-gray-400 dark:text-gray-500'
+                                  }`}
+                                  title="Click to change Epic"
+                                >
+                                  {ticket.epic || '-'}
+                                </button>
                               )}
                             </td>
                             
