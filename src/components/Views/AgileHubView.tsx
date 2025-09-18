@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown, Edit3, Trash2, MoreHorizontal, Paperclip, MessageCircle, Upload, Download, Send, GripVertical, Check, ArrowUp, ArrowDown, RotateCcw, Monitor } from 'lucide-react';
+import { Plus, FileText, Brain, BarChart3, Calendar, Filter, Search, Eye, Play, CheckCircle, Clock, AlertTriangle, Zap, Users, Target, TrendingUp, X, Workflow, BookOpen, Square, Bug, Lightbulb, ChevronDown, Edit3, Trash2, MoreHorizontal, Paperclip, MessageCircle, Upload, Download, Send, GripVertical, Check, ArrowUp, ArrowDown, RotateCcw, Monitor, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { Project } from '../../lib/types';
@@ -426,7 +426,7 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
 
 export const AgileHubView: React.FC = () => {
   const { user } = useAuth();
-  const { selectedProject, projects } = useApp();
+  const { selectedProject, projects, setCurrentView } = useApp();
   // Project context - persist Agile Hub's selected project separately
   const [currentProject, setCurrentProject] = useState<Project | null>(() => {
     // First try to restore from Agile Hub specific localStorage
@@ -971,6 +971,13 @@ export const AgileHubView: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             <div>
               <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setCurrentView('agile-practice')}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Back to Training"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </button>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agile Hub</h1>
                 {projects && projects.length > 1 ? (
                   <div className="relative">
