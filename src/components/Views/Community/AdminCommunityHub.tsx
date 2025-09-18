@@ -209,7 +209,26 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                               {group.type}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.slack_channel_id ? 'Created' : 'Not created'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                            {group.slack_channel_id ? (
+                              <span className="text-green-600">Created</span>
+                            ) : (
+                              <button
+                                onClick={async () => {
+                                  const id = await groupService.ensureSlackChannelForGroup(group.id, group.name, group.type);
+                                  if (id) {
+                                    setGroups((prev) => prev.map(g => g.id === group.id ? { ...g, slack_channel_id: id } : g));
+                                    alert('Slack channel created');
+                                  } else {
+                                    alert('Failed to create Slack channel. Check token.');
+                                  }
+                                }}
+                                className="text-purple-600 hover:underline"
+                              >
+                                Create Slack
+                              </button>
+                            )}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{new Date(group.created_at).toLocaleDateString()}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.start_date ? new Date(group.start_date).toLocaleDateString() : '-'}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
