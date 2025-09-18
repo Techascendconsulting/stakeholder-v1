@@ -254,6 +254,40 @@ class SlackService {
       return [];
     }
   }
+
+  // Add a reaction to a message
+  async addReaction(channelId: string, ts: string, emoji: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.functions.invoke('slack-add-reaction', {
+        body: { channel: channelId, ts, emoji }
+      });
+      if (error) {
+        console.error('slack-add-reaction error:', error);
+        return false;
+      }
+      return Boolean((data as any)?.ok ?? true);
+    } catch (e) {
+      console.error('Error adding reaction:', e);
+      return false;
+    }
+  }
+
+  // Remove a reaction from a message
+  async removeReaction(channelId: string, ts: string, emoji: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.functions.invoke('slack-remove-reaction', {
+        body: { channel: channelId, ts, emoji }
+      });
+      if (error) {
+        console.error('slack-remove-reaction error:', error);
+        return false;
+      }
+      return Boolean((data as any)?.ok ?? true);
+    } catch (e) {
+      console.error('Error removing reaction:', e);
+      return false;
+    }
+  }
 }
 
 export const slackService = new SlackService();
@@ -261,5 +295,9 @@ export const slackService = new SlackService();
 // Export individual functions for easier importing
 export const fetchMessages = (channelId: string) => slackService.fetchMessages(channelId);
 export const postMessage = (channelId: string, text: string, blocks?: any[]) => slackService.postMessage(channelId, text, blocks);
+export const updateMessage = (channelId: string, ts: string, text: string) => slackService.updateMessage(channelId, ts, text);
+export const deleteMessage = (channelId: string, ts: string) => slackService.deleteMessage(channelId, ts);
+export const addReaction = (channelId: string, ts: string, emoji: string) => slackService.addReaction(channelId, ts, emoji);
+export const removeReaction = (channelId: string, ts: string, emoji: string) => slackService.removeReaction(channelId, ts, emoji);
 
 export default slackService;

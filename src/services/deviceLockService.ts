@@ -35,18 +35,12 @@ class DeviceLockService {
 
       const fp = await this.fpPromise;
       const result = await fp.get();
-      
-      // Add browser session info to make device ID more unique
-      const sessionInfo = {
-        isIncognito: this.isIncognito(),
-        userAgent: navigator.userAgent,
-        timestamp: Date.now()
-      };
-      
-      const combinedId = `${result.visitorId}-${JSON.stringify(sessionInfo)}`;
-      console.log('🔐 DEVICE LOCK - Generated device ID:', combinedId);
-      
-      return combinedId;
+
+      // IMPORTANT: Use a stable device identifier so the same device passes every time.
+      // Do NOT include volatile info like timestamps or session flags that change per visit.
+      const stableId = result.visitorId;
+      console.log('🔐 DEVICE LOCK - Generated stable device ID:', stableId);
+      return stableId;
     } catch (error) {
       console.error('Failed to get device ID:', error);
       return null;
@@ -162,9 +156,9 @@ class DeviceLockService {
         };
       }
 
-      // If account is locked, check if user is admin
+      // If account is locked, check if user is admin or same device and auto-unlock
       if (user.locked) {
-        // Check if user is admin - admins can bypass device lock
+        // Admin bypass
         if (user.is_admin) {
           console.log('🔐 DEVICE LOCK - Admin user detected, bypassing device lock');
           return {
@@ -174,7 +168,20 @@ class DeviceLockService {
             deviceId: currentDeviceId
           };
         }
-        
+
+        // Auto-unlock if the current device matches the registered device (including legacy format)
+        const isLegacyMatch = typeof user.registered_device === 'string' && user.registered_device.startsWith(currentDeviceId + '-');
+        if (user.registered_device === currentDeviceId || isLegacyMatch) {
+          console.log('🔐 DEVICE LOCK - Locked but same device detected. Auto-unlocking and migrating if needed.');
+          await this.unlockAccount(userId, currentDeviceId);
+          return {
+            success: true,
+            locked: false,
+            message: 'Device verified (auto-unlocked).',
+            deviceId: currentDeviceId
+          };
+        }
+
         return {
           success: false,
           locked: true,
@@ -201,6 +208,23 @@ class DeviceLockService {
           message: 'Device verified successfully.',
           deviceId: currentDeviceId
         };
+      }
+
+      // Backward compatibility: previously we stored `${visitorId}-${JSON.stringify(sessionInfo)}`
+      // If the stored value starts with the current stable ID, treat as the same device and migrate it.
+      try {
+        if (typeof user.registered_device === 'string' && user.registered_device.startsWith(currentDeviceId + '-')) {
+          console.log('🔐 DEVICE LOCK - Detected legacy registered_device format. Migrating to stable ID.');
+          await this.registerDevice(userId, currentDeviceId);
+          return {
+            success: true,
+            locked: false,
+            message: 'Device verified (migrated).',
+            deviceId: currentDeviceId
+          };
+        }
+      } catch (migrationError) {
+        console.log('🔐 DEVICE LOCK - Migration check failed:', migrationError);
       }
 
       // If registered device doesn't match, lock account

@@ -96,7 +96,7 @@ const GroupsTab: React.FC = () => {
   return (
     <div className="h-[calc(100vh-200px)] flex rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       {/* Sidebar */}
-      <div className="w-72 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <div className="w-72 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col min-h-0">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="font-semibold text-gray-900 dark:text-white">My Cohorts</h2>
         </div>
@@ -124,9 +124,9 @@ const GroupsTab: React.FC = () => {
       </div>
 
       {/* Main Panel */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Header */}
-        <div className="h-14 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="h-14 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
           {selectedGroup ? (
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{selectedGroup.name}</div>
@@ -142,7 +142,7 @@ const GroupsTab: React.FC = () => {
         </div>
 
         {/* Chat */}
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           {selectedGroup?.slack_channel_id ? (
             <StudentGroupChat channelId={selectedGroup.slack_channel_id} />
           ) : (

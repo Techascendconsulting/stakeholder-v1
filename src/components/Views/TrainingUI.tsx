@@ -94,7 +94,8 @@ export default function TrainingUI() {
           </div>
         </div>
 
-        {/* Welcome Section */}
+        {/* Welcome Section - show only on Teaching */}
+        {view === "teaching" && (
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 shadow-lg border border-blue-200 dark:border-blue-700">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
@@ -122,6 +123,9 @@ export default function TrainingUI() {
             </p>
           </div>
         </div>
+        )}
+
+        {/* Documentation Teaching Insert removed per revert request */}
 
         <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
           {view === "teaching" && <TeachingLayer onStartPractice={() => setView("walkthrough")} />}
@@ -133,6 +137,7 @@ export default function TrainingUI() {
     </StakeholderBotProvider>
   );
 }
+
 
 
 
