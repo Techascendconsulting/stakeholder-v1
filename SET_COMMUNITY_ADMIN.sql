@@ -1,13 +1,13 @@
 -- Ensure the current admin users are recognized by RLS policies on community tables
 -- Update emails below as needed
 
-UPDATE public.profiles p
+UPDATE public.profiles AS p
 SET 
   role = 'admin',
   is_admin = true,
-  is_super_admin = COALESCE(is_super_admin, false),
-  is_senior_admin = COALESCE(is_senior_admin, false)
-FROM auth.users au
+  is_super_admin = COALESCE(p.is_super_admin, false),
+  is_senior_admin = COALESCE(p.is_senior_admin, false)
+FROM auth.users AS au
 WHERE p.id = au.id
   AND au.email IN ('techascendconsulting1@gmail.com','admin@batraining.com');
 
