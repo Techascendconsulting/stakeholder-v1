@@ -1115,7 +1115,7 @@ const MVPHub: React.FC = () => {
 
   if (currentLesson) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+      <div className="min-h-screen bg-gradient-to-br from-green-100 via-emerald-100 to-teal-100 dark:from-gray-900 dark:via-green-900/30 dark:to-emerald-900/20">
         <div className="max-w-7xl mx-auto px-6 py-16">
           {renderLessonContent(currentLesson)}
         </div>
@@ -1124,13 +1124,13 @@ const MVPHub: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-emerald-100 to-teal-100 dark:from-gray-900 dark:via-green-900/30 dark:to-emerald-900/20">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 to-indigo-600/5 dark:from-purple-400/10 dark:to-indigo-400/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-emerald-600/5 dark:from-green-400/10 dark:to-emerald-400/10" />
         <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-20">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl mb-6">
               <Rocket className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">Minimum Viable Product (MVP)</h1>
@@ -1225,7 +1225,7 @@ const MVPHub: React.FC = () => {
               </p>
               <button
                 onClick={() => setCurrentView('mvp-engine')}
-                className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 <Rocket className="w-5 h-5" />
                 <span>Try the MVP Engine</span>
