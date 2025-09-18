@@ -97,172 +97,119 @@ const GroupsTab: React.FC = () => {
     
     return (
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content - Slack Channel */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {group.name}
-                  </h2>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getGroupTypeColor(group.type)}`}>
-                    {getGroupTypeLabel(group.type)}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Slack Channel Embed */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Group Chat
-              </h3>
-              <div className="h-96 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Slack channel embed will appear here
-                  </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Channel ID: {group.slack_channel_id || 'Not created yet'}
-                  </p>
-                </div>
-              </div>
-            </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">My Group</h2>
           </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slack</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Start</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{group.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getGroupTypeColor(group.type)}`}>
+                      {getGroupTypeLabel(group.type)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.slack_channel_id ? 'Created' : 'Not created'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.start_date ? new Date(group.start_date).toLocaleDateString() : '-'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-          {/* Right Panel - Group Members */}
-          <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Group Members
-              </h3>
-              <div className="space-y-3">
-                {groupMembers.map((member) => (
-                  <div key={member.id} className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {member.user?.name || member.user?.email}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {member.role}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+        {/* Members list */}
+        <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Group Members</h3>
+          <div className="space-y-3">
+            {groupMembers.map((member) => (
+              <div key={member.id} className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {member.user?.name || member.user?.email}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {member.role}
+                  </p>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
     );
   }
 
-  // Multiple groups - show group switcher
+  // Multiple groups - show table
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2">
-          {/* Group Switcher */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Select Group
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {groups.map((group) => (
-                <button
-                  key={group.id}
-                  onClick={() => setSelectedGroup(group)}
-                  className={`p-4 rounded-lg border text-left transition-colors ${
-                    selectedGroup?.id === group.id
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Users className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {group.name}
-                      </p>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getGroupTypeColor(group.type)}`}>
-                        {getGroupTypeLabel(group.type)}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Selected Group Slack Channel */}
-          {selectedGroup && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {selectedGroup.name}
-                  </h3>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getGroupTypeColor(selectedGroup.type)}`}>
-                    {getGroupTypeLabel(selectedGroup.type)}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="h-96 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Slack channel embed will appear here
-                  </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Channel ID: {selectedGroup.slack_channel_id || 'Not created yet'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">My Groups</h2>
         </div>
-
-        {/* Right Panel - Selected Group Members */}
-        <div className="lg:col-span-1">
-          {selectedGroup && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {selectedGroup.name} Members
-              </h3>
-              <div className="space-y-3">
-                {groupMembers.map((member) => (
-                  <div key={member.id} className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {member.user?.name || member.user?.email}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {member.role}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slack</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Start</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {groups.map((g) => (
+                <tr key={g.id} className={selectedGroup?.id === g.id ? 'bg-purple-50 dark:bg-purple-900/20' : ''} onClick={() => setSelectedGroup(g)}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{g.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getGroupTypeColor(g.type)}`}>
+                      {getGroupTypeLabel(g.type)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{g.slack_channel_id ? 'Created' : 'Not created'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{g.start_date ? new Date(g.start_date).toLocaleDateString() : '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Selected group details */}
+      {selectedGroup && (
+        <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{selectedGroup.name} Members</h3>
+          <div className="space-y-3">
+            {groupMembers.map((member) => (
+              <div key={member.id} className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {member.user?.name || member.user?.email}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {member.role}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
