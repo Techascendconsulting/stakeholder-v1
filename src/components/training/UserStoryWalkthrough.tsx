@@ -274,7 +274,26 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
       incorrectExplanations: {}
     }
   ];
-  return epicStep ? [epicStep, ...baseSteps] : baseSteps;
+  // Always add Epic selection for default scenario (childcare voucher)
+  const defaultEpicStep = {
+    key: 'epic',
+    question: 'Which Epic does this requirement belong to?',
+    tip: 'Choose the Epic that best fits this requirement.',
+    options: [
+      'Form Progress Saving',
+      'User Experience Improvements', 
+      'Data Persistence',
+      'Application Management'
+    ],
+    correct: 'Form Progress Saving',
+    explanation: 'Correct — this is about saving progress while completing a form.',
+    incorrectExplanations: {
+      'User Experience Improvements': 'Too broad. The focus is specifically on saving form progress.',
+      'Data Persistence': 'Close, but form progress saving is more specific.',
+      'Application Management': 'Not quite. This is about saving progress, not managing applications.'
+    }
+  };
+  return [defaultEpicStep, ...baseSteps];
 };
 
 export default function UserStoryWalkthrough({ onStartPractice, onBack, scenarioId }: UserStoryWalkthroughProps) {
