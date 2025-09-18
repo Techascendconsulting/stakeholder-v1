@@ -22,6 +22,7 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
     endDate: ''
   });
   const [creating, setCreating] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   const [showManageMembers, setShowManageMembers] = useState(false);
   const [memberSearch, setMemberSearch] = useState('');
   const [memberSearchResults, setMemberSearchResults] = useState<Array<{ id: string; email: string; name?: string }>>([]);
@@ -162,6 +163,26 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                 <p className="text-gray-600 dark:text-gray-400 mt-1">Create and manage community groups, cohorts, and member assignments</p>
               </div>
               <div className="flex space-x-3">
+                {Object.values(selectedIds).some(Boolean) && (
+                  <button
+                    onClick={async () => {
+                      const ids = Object.entries(selectedIds).filter(([, v]) => v).map(([k]) => k);
+                      if (ids.length === 0) return;
+                      if (!confirm(`Delete ${ids.length} selected group(s)? This cannot be undone.`)) return;
+                      const ok = await groupService.deleteGroups(ids);
+                      if (ok) {
+                        setGroups(prev => prev.filter(g => !ids.includes(g.id)));
+                        setSelectedIds({});
+                        alert('Selected groups deleted');
+                      } else {
+                        alert('Failed to delete selected groups');
+                      }
+                    }}
+                    className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Delete Selected
+                  </button>
+                )}
                 <button className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                   <Users className="w-4 h-4 mr-2" />
                   Import CSV
@@ -192,6 +213,18 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-900">
                       <tr>
+                        <th className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={groups.length > 0 && groups.every(g => (selectedIds as any)?.[g.id])}
+                            onChange={(e) => {
+                              const val = e.target.checked;
+                              const next: Record<string, boolean> = {};
+                              groups.forEach(g => { next[g.id] = val; });
+                              setSelectedIds(next);
+                            }}
+                          />
+                        </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slack</th>
@@ -203,6 +236,13 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {groups.map((group) => (
                         <tr key={group.id}>
+                          <td className="px-4 py-4">
+                            <input
+                              type="checkbox"
+                              checked={!!(selectedIds as any)?.[group.id]}
+                              onChange={(e) => setSelectedIds(prev => ({ ...prev, [group.id]: e.target.checked }))}
+                            />
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{group.name}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -215,6 +255,21 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                             <div className="flex items-center justify-end space-x-2">
                               <button
+                                className="p-2 text-red-600 hover:text-red-700"
+                                title="Delete Group"
+                                onClick={async () => {
+                                  if (!confirm(`Delete group "${group.name}"? This cannot be undone.`)) return;
+                                  const ok = await groupService.archiveGroup(group.id);
+                                  if (ok) {
+                                    setGroups(prev => prev.filter(g => g.id !== group.id));
+                                  } else {
+                                    alert('Failed to delete group');
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <button
                                 className="inline-flex items-center px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
                                 title="Manage Members"
                                 onClick={() => {
@@ -226,9 +281,6 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                               </button>
                               <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Edit Group">
                                 <Edit className="w-4 h-4" />
-                              </button>
-                              <button className="p-2 text-gray-400 hover:text-red-600" title="Archive Group">
-                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </td>

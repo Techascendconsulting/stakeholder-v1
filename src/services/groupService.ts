@@ -264,6 +264,24 @@ class GroupService {
     }
   }
 
+  // Bulk delete groups (admin only)
+  async deleteGroups(groupIds: string[]): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .in('id', groupIds);
+      if (error) {
+        console.error('Error bulk deleting groups:', error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('Error in deleteGroups:', e);
+      return false;
+    }
+  }
+
   // Search users for adding to groups
   async searchUsers(query: string): Promise<Array<{ id: string; email: string; name?: string }>> {
     try {
