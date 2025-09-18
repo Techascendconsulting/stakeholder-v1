@@ -29,6 +29,7 @@ class SlackService {
   // Create a new channel
   async createChannel(name: string, isPrivate: boolean = false): Promise<SlackChannel | null> {
     try {
+      console.log('📢 Creating Slack channel (client):', { name, isPrivate });
       const response = await fetch(`${this.baseUrl}/conversations.create`, {
         method: 'POST',
         headers: {
@@ -42,6 +43,7 @@ class SlackService {
       });
 
       const data = await response.json();
+      console.log('🔍 Slack API Response [conversations.create] (client):', data);
       
       if (data.ok) {
         return {
@@ -169,13 +171,18 @@ class SlackService {
     const functionUrl = import.meta.env.VITE_SUPABASE_FUNCTION_URL || '';
     if (functionUrl) {
       try {
+        const payload = { name: `${groupType}-${groupName}` };
+        console.log('📢 Creating Slack channel via Edge Function:', payload);
         const resp = await fetch(`${functionUrl}/create-slack-channel`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: `${groupType}-${groupName}` })
+          body: JSON.stringify(payload)
         });
-        if (resp.ok) {
-          const data = await resp.json();
+        const text = await resp.text();
+        let data: any = undefined;
+        try { data = JSON.parse(text); } catch { /* leave as text */ }
+        console.log('🔍 Edge Function Response [create-slack-channel]:', data ?? text);
+        if (resp.ok && data?.id) {
           return { id: data.id, name: data.name, is_private: false };
         }
       } catch (e) {
@@ -183,6 +190,7 @@ class SlackService {
       }
     }
     const channelName = `${groupType}-${groupName}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    console.log('📢 Falling back to client Slack channel creation:', channelName);
     return this.createChannel(channelName, false);
   }
 

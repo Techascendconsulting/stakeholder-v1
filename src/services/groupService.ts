@@ -95,12 +95,19 @@ class GroupService {
       // Create Slack channel (best-effort). If it fails, continue with null.
       let slackChannel: { id: string } | null = null;
       try {
+        console.log('📢 Attempting Slack channel creation for group:', { name, type });
         slackChannel = await slackService.createGroupChannel(name, type);
+        if (slackChannel?.id) {
+          console.log('✅ Slack channel created with ID:', slackChannel.id);
+        } else {
+          console.warn('⚠️ Slack channel creation returned null.');
+        }
       } catch (slackError) {
-        console.warn('Slack channel not created:', slackError);
+        console.error('⚠️ Slack channel not created:', slackError);
       }
       
       // Create group in database
+      console.log('📢 Inserting group with slack_channel_id:', slackChannel?.id || null);
       const { data, error } = await supabase
         .from('groups')
         .insert({
@@ -115,10 +122,10 @@ class GroupService {
         .single();
 
       if (error) {
-        console.error('Error creating group:', error);
+        console.error('❌ Error creating group in Supabase:', error);
         return null;
       }
-
+      console.log('✅ Group created in Supabase:', data);
       return data;
     } catch (error) {
       console.error('Error in createGroup:', error);
