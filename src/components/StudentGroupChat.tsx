@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-// @ts-ignore - types provided by package
-import { Picker } from 'emoji-mart';
-import 'emoji-mart/css/emoji-mart.css';
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 import { useSlackChat } from '@/hooks/useSlackChat';
 
 interface Props { channelId: string | null }
@@ -47,7 +46,7 @@ const StudentGroupChat: React.FC<Props> = ({ channelId }) => {
         <button className="mr-2" onClick={() => setShowEmoji(!showEmoji)}>😊</button>
         {showEmoji && (
           <div className="absolute bottom-12 left-2 z-50 bg-white shadow-lg rounded">
-            <Picker onSelect={(emoji: any) => setInput((v) => v + emoji.native)} />
+            <Picker data={data as any} onEmojiSelect={(emoji: any) => setInput((v) => v + (emoji?.native || ''))} />
           </div>
         )}
         <textarea

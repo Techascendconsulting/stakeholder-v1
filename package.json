@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.7.0",
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
     "@fingerprintjs/fingerprintjs": "^4.6.2",
     "@supabase/supabase-js": "^2.50.4",
     "@tiptap/extension-emoji": "^3.3.0",
