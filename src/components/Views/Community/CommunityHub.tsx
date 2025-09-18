@@ -9,7 +9,7 @@ const CommunityHub: React.FC = () => {
 
   const tabs = [
     { id: 'buddy' as const, label: 'My Buddy', icon: UserCheck },
-    { id: 'groups' as const, label: 'My Groups', icon: Users },
+    { id: 'groups' as const, label: 'My Cohort', icon: Users },
     { id: 'sessions' as const, label: 'Live Sessions', icon: Calendar },
   ];
 
