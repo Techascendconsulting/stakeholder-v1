@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CheckCircle, ArrowRight, RotateCcw, FileText, User, Target, Lightbulb, AlertCircle } from "lucide-react";
+import { getEpicSelectionScenario } from "../../data/epicSelectionSteps";
 
 interface UserStoryWalkthroughProps {
   onStartPractice: () => void;
@@ -18,8 +19,22 @@ interface Step {
 }
 
 const getStepsForScenario = (scenarioId?: string): Step[] => {
+  // Get Epic selection step if scenario ID exists in our data
+  const epicScenario = getEpicSelectionScenario(scenarioId || '1');
+  const epicStep = epicScenario ? {
+    key: 'epic',
+    question: epicScenario.epicStep.question,
+    tip: 'Choose the Epic that best fits this requirement.',
+    options: epicScenario.epicStep.options.map(opt => opt.label),
+    correct: epicScenario.epicStep.options.find(opt => opt.isCorrect)?.label || '',
+    explanation: epicScenario.epicStep.options.find(opt => opt.isCorrect)?.feedback || '',
+    incorrectExplanations: epicScenario.epicStep.options
+      .filter(opt => !opt.isCorrect)
+      .reduce((acc, opt) => ({ ...acc, [opt.label]: opt.feedback }), {})
+  } : null;
+
   if (scenarioId === 'student-homework') {
-    return [
+    const baseSteps = [
       {
         key: 'user',
         question: 'Who is this feature for?',
@@ -99,10 +114,11 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         incorrectExplanations: {}
       }
     ];
+    return epicStep ? [epicStep, ...baseSteps] : baseSteps;
   }
 
   if (scenarioId === 'shopping-checkout') {
-    return [
+    const baseSteps = [
       {
         key: 'user',
         question: 'Who is the feature for?',
@@ -176,10 +192,11 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
         incorrectExplanations: {}
       }
     ];
+    return epicStep ? [epicStep, ...baseSteps] : baseSteps;
   }
 
   // Default childcare voucher scenario
-  return [
+  const baseSteps = [
     {
       key: 'user',
       question: 'Who is this feature for?',
@@ -257,6 +274,7 @@ const getStepsForScenario = (scenarioId?: string): Step[] => {
       incorrectExplanations: {}
     }
   ];
+  return epicStep ? [epicStep, ...baseSteps] : baseSteps;
 };
 
 export default function UserStoryWalkthrough({ onStartPractice, onBack, scenarioId }: UserStoryWalkthroughProps) {
@@ -268,7 +286,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
   const [investChecks, setInvestChecks] = useState<boolean[]>([true, true, true, true, true, true]);
 
   const steps = getStepsForScenario(scenarioId);
-  const progress = ((currentStep + 1) / 5) * 100;
+  const progress = ((currentStep + 1) / 6) * 100;
 
   const handleSelect = (option: string) => {
     const step = steps[currentStep];
@@ -453,7 +471,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
           <FileText className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Write a Strong User Story in 5 Guided Steps
+          Write a Strong User Story in 6 Guided Steps
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           This walkthrough helps learners shape a complete user story using a real scenario.
@@ -476,7 +494,7 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-          <span>Step {currentStep + 1} of 5</span>
+          <span>Step {currentStep + 1} of 6</span>
           <span>{Math.round(progress)}% Complete</span>
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -560,9 +578,10 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
                   <div>
                     <p className="text-blue-800 dark:text-blue-200 font-semibold mb-2">✅ Takeaway:</p>
                     <p className="text-blue-700 dark:text-blue-300 text-sm">
-                      {currentStep === 0 && "Always anchor your story in a real role. \"User\" is a placeholder, not a person."}
-                      {currentStep === 1 && "Focus on one core intent per story. This makes delivery clearer and testing easier."}
-                      {currentStep === 2 && "Your \"why\" should speak in human language, not tech terms."}
+                      {currentStep === 0 && "Epics organize related stories. Choose the Epic that best captures the business capability."}
+                      {currentStep === 1 && "Always anchor your story in a real role. \"User\" is a placeholder, not a person."}
+                      {currentStep === 2 && "Focus on one core intent per story. This makes delivery clearer and testing easier."}
+                      {currentStep === 3 && "Your \"why\" should speak in human language, not tech terms."}
                     </p>
                   </div>
                 </div>
@@ -615,6 +634,9 @@ export default function UserStoryWalkthrough({ onStartPractice, onBack, scenario
     </div>
   );
 }
+
+
+
 
 
 
