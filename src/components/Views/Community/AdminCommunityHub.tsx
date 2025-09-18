@@ -22,6 +22,11 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
     endDate: ''
   });
   const [creating, setCreating] = useState(false);
+  const [showManageMembers, setShowManageMembers] = useState(false);
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberSearchResults, setMemberSearchResults] = useState<Array<{ id: string; email: string; name?: string }>>([]);
+  const [selectedGroupForMembers, setSelectedGroupForMembers] = useState<Group | null>(null);
+  const [addingMember, setAddingMember] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -182,57 +187,56 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groups.map((group) => (
-                  <div key={group.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                          <Users className="w-5 h-5 text-purple-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">
-                            {group.name}
-                          </h3>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            {group.type}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Manage Members">
-                          <Users className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Edit Group">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600" title="Archive Group">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center justify-between">
-                        <span>Members:</span>
-                        <span className="font-medium">0</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Slack Channel:</span>
-                        <span className="font-medium">{group.slack_channel_id ? '✅ Created' : '❌ Not created'}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Created:</span>
-                        <span className="font-medium">{new Date(group.created_at).toLocaleDateString()}</span>
-                      </div>
-                      {group.start_date && (
-                        <div className="flex items-center justify-between">
-                          <span>Start Date:</span>
-                          <span className="font-medium">{new Date(group.start_date).toLocaleDateString()}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slack</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Start</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {groups.map((group) => (
+                        <tr key={group.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{group.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {group.type}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.slack_channel_id ? 'Created' : 'Not created'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{new Date(group.created_at).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.start_date ? new Date(group.start_date).toLocaleDateString() : '-'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                className="inline-flex items-center px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+                                title="Manage Members"
+                                onClick={() => {
+                                  setSelectedGroupForMembers(group);
+                                  setShowManageMembers(true);
+                                }}
+                              >
+                                <Users className="w-4 h-4 mr-1" /> Manage
+                              </button>
+                              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Edit Group">
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button className="p-2 text-gray-400 hover:text-red-600" title="Archive Group">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -432,6 +436,80 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
               >
                 {creating ? 'Creating...' : 'Create Group'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Members Dialog */}
+      {showManageMembers && selectedGroupForMembers && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-xl mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Manage Members — {selectedGroupForMembers.name}</h3>
+              <button
+                onClick={() => {
+                  setShowManageMembers(false);
+                  setMemberSearch('');
+                  setMemberSearchResults([]);
+                  setSelectedGroupForMembers(null);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add student by email or name</label>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={memberSearch}
+                  onChange={async (e) => {
+                    const q = e.target.value;
+                    setMemberSearch(q);
+                    if (q.trim().length >= 2) {
+                      const results = await groupService.searchUsers(q.trim());
+                      setMemberSearchResults(results);
+                    } else {
+                      setMemberSearchResults([]);
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="Search students..."
+                />
+              </div>
+
+              {memberSearchResults.length > 0 && (
+                <div className="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+                  {memberSearchResults.map((u) => (
+                    <div key={u.id} className="flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{u.name || u.email}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{u.email}</p>
+                      </div>
+                      <button
+                        disabled={!!addingMember}
+                        onClick={async () => {
+                          if (!selectedGroupForMembers) return;
+                          setAddingMember(u.id);
+                          const ok = await groupService.addMemberToGroup(selectedGroupForMembers.id, u.id, 'member');
+                          setAddingMember(null);
+                          if (ok) {
+                            alert('Student added to group');
+                          } else {
+                            alert('Failed to add student. Check permissions and RLS.');
+                          }
+                        }}
+                        className="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                      >
+                        {addingMember === u.id ? 'Adding...' : 'Add'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
