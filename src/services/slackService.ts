@@ -111,21 +111,15 @@ class SlackService {
   // Post message to channel
   async postMessage(channelId: string, text: string, blocks?: any[]): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/chat.postMessage`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.botToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          channel: channelId,
-          text,
-          blocks,
-        }),
+      // Prefer server function to avoid CORS and token exposure
+      const { data, error } = await supabase.functions.invoke('slack-post-message', {
+        body: { channel: channelId, text, blocks }
       });
-
-      const data = await response.json();
-      return data.ok;
+      if (error) {
+        console.error('slack-post-message error:', error);
+        return false;
+      }
+      return Boolean((data as any)?.ok);
     } catch (error) {
       console.error('Error posting message:', error);
       return false;
