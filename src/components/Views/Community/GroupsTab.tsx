@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Calendar, User } from 'lucide-react';
-import ChatPanel from '@/components/community/ChatPanel';
+import StudentGroupChat from '@/components/StudentGroupChat';
 import { useAuth } from '../../../contexts/AuthContext';
 import { groupService, Group, GroupMember } from '../../../services/groupService';
 
@@ -144,7 +144,7 @@ const GroupsTab: React.FC = () => {
         {/* Chat */}
         <div className="flex-1">
           {selectedGroup?.slack_channel_id ? (
-            <ChatPanel channelId={selectedGroup.slack_channel_id} canPost={true} />
+            <StudentGroupChat channelId={selectedGroup.slack_channel_id} />
           ) : (
             <div className="h-full flex items-center justify-center text-gray-400">
               Select a cohort to start chatting
