@@ -2296,7 +2296,7 @@ const EditTicketModal: React.FC<{
                 onChange={(e) => setFormData({ ...formData, epic: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">Select an Epic (optional)</option>
+                <option value="">Select an Epic</option>
                 {tickets.filter(ticket => ticket.type === 'Epic').map(epic => (
                   <option key={epic.id} value={epic.title}>
                     {epic.ticketNumber} - {epic.title}
@@ -2687,7 +2687,7 @@ const CreateTicketModal: React.FC<{
                 onChange={(e) => setFormData({ ...formData, epic: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">Select an Epic (optional)</option>
+                <option value="">Select an Epic</option>
                 {tickets.filter(ticket => ticket.type === 'Epic').map(epic => (
                   <option key={epic.id} value={epic.title}>
                     {epic.ticketNumber} - {epic.title}
