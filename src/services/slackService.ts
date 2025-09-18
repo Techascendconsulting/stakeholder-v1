@@ -1,3 +1,4 @@
+import { supabase } from '../lib/supabase';
 // Slack Service - handles all Slack API interactions
 // Note: This is a placeholder service. In production, you'd need:
 // 1. Slack App with proper OAuth2 setup
@@ -167,27 +168,22 @@ class SlackService {
 
   // Create group channel
   async createGroupChannel(groupName: string, groupType: string): Promise<SlackChannel | null> {
-    // Prefer server-side creation via Edge Function to avoid CORS/secret exposure
-    const functionUrl = import.meta.env.VITE_SUPABASE_FUNCTION_URL || '';
-    if (functionUrl) {
-      try {
-        const payload = { name: `${groupType}-${groupName}` };
-        console.log('📢 Creating Slack channel via Edge Function:', payload);
-        const resp = await fetch(`${functionUrl}/create-slack-channel`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const text = await resp.text();
-        let data: any = undefined;
-        try { data = JSON.parse(text); } catch { /* leave as text */ }
-        console.log('🔍 Edge Function Response [create-slack-channel]:', data ?? text);
-        if (resp.ok && data?.id) {
-          return { id: data.id, name: data.name, is_private: false };
-        }
-      } catch (e) {
-        console.warn('Edge function create-slack-channel failed, falling back to client Slack API:', e);
+    // Prefer server-side creation via Supabase Edge Function (no extra env needed)
+    try {
+      const payload = { name: `${groupType}-${groupName}` };
+      console.log('📢 Creating Slack channel via functions.invoke:', payload);
+      const { data, error } = await supabase.functions.invoke('create-slack-channel', {
+        body: payload,
+      });
+      console.log('🔍 functions.invoke Response [create-slack-channel]:', { data, error });
+      if (!error && data?.id) {
+        return { id: data.id, name: data.name, is_private: false };
       }
+      if (error) {
+        console.warn('Edge function error:', error);
+      }
+    } catch (e) {
+      console.warn('functions.invoke failed, falling back to client Slack API:', e);
     }
     const channelName = `${groupType}-${groupName}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     console.log('📢 Falling back to client Slack channel creation:', channelName);
