@@ -469,6 +469,222 @@ const MVPHub: React.FC = () => {
         );
       }
       
+      if (id === 'prioritisation-moscow') {
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Introduction</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                By now you understand that MVP is the smallest usable version of a product that delivers value. But how do we decide what belongs inside that MVP and what gets left for later? This is where prioritisation becomes one of the most important skills for a Business Analyst.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                Stakeholders rarely say, "We only need these three things." Instead, they often argue that everything is critical. If you are not careful, every requirement ends up labelled urgent, and your team is set up to fail. To avoid this, you need a simple, structured way of separating what truly matters from what can wait. One of the most widely used techniques in Agile projects is called MoSCoW prioritisation.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-4">What is MoSCoW?</h3>
+              <p className="text-blue-800 dark:text-blue-300 mb-4">
+                MoSCoW is a technique that helps stakeholders and teams agree on priorities by placing each requirement into one of four categories:
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <h4 className="font-semibold text-red-900 dark:text-red-200 mb-2">Must-Haves</h4>
+                  <p className="text-red-800 dark:text-red-300 text-sm">
+                    These are the absolute essentials. If they are not delivered, the product fails.
+                  </p>
+                </div>
+                
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
+                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">Should-Haves</h4>
+                  <p className="text-yellow-800 dark:text-yellow-300 text-sm">
+                    Important, but not vital for the first release. If they are delayed, the product still works.
+                  </p>
+                </div>
+                
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <h4 className="font-semibold text-green-900 dark:text-green-200 mb-2">Could-Haves</h4>
+                  <p className="text-green-800 dark:text-green-300 text-sm">
+                    Nice extras. They add value but are not necessary in the early stages.
+                  </p>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-900/20 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-200 mb-2">Won't-Haves (for now)</h4>
+                  <p className="text-gray-800 dark:text-gray-300 text-sm">
+                    Items that stakeholders may want, but the team agrees to leave out of scope for this release.
+                  </p>
+                </div>
+              </div>
+              
+              <p className="text-blue-800 dark:text-blue-300 mt-4">
+                This technique is simple enough to explain to any stakeholder, but powerful enough to drive clear decisions.
+              </p>
+            </div>
+
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+              <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-4">How MoSCoW Helps Define MVP</h3>
+              <p className="text-purple-800 dark:text-purple-300 mb-4">
+                The MVP is built entirely from the Must-Haves. If you try to include Should-Haves and Could-Haves, you risk bloating the scope. If you skip a Must-Have, the flow breaks and you no longer have a usable product.
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                <p className="text-purple-800 dark:text-purple-300 font-semibold">
+                  In other words, MVP = Must-Haves that together form a complete flow.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-6 border border-indigo-200 dark:border-indigo-700">
+              <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-200 mb-4">Example 1: Housing Transfer Requests</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700 mb-4">
+                <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-3">Epic: Apply for Housing Transfer</h4>
+                <p className="text-indigo-800 dark:text-indigo-300 mb-3">Stakeholder wants:</p>
+                <ul className="text-indigo-800 dark:text-indigo-300 space-y-1 text-sm">
+                  <li>• Tenants can submit a transfer form.</li>
+                  <li>• Tenants must upload supporting documents (e.g., medical letter).</li>
+                  <li>• The system should send a confirmation email.</li>
+                  <li>• Tenants should be able to edit their request after submission.</li>
+                  <li>• Tenants could track the request status online.</li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <h4 className="font-semibold text-red-900 dark:text-red-200 mb-2">Must-Haves</h4>
+                  <ul className="text-red-800 dark:text-red-300 space-y-1 text-sm">
+                    <li>• Submit form</li>
+                    <li>• Upload documents</li>
+                    <li>• Confirmation sent</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
+                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">Should-Have</h4>
+                  <ul className="text-yellow-800 dark:text-yellow-300 space-y-1 text-sm">
+                    <li>• Edit request after submission</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <h4 className="font-semibold text-green-900 dark:text-green-200 mb-2">Could-Have</h4>
+                  <ul className="text-green-800 dark:text-green-300 space-y-1 text-sm">
+                    <li>• Track request status online</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-900/20 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-200 mb-2">Won't-Have (for now)</h4>
+                  <ul className="text-gray-800 dark:text-gray-300 space-y-1 text-sm">
+                    <li>• Advanced integration with internal case management system</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-indigo-100 dark:bg-indigo-800/30 rounded-lg p-3 border border-indigo-300 dark:border-indigo-600 mt-4">
+                <p className="text-indigo-900 dark:text-indigo-200 font-semibold text-sm">
+                  Here, the MVP is clear: submit → upload → confirmation. That's the usable flow. Everything else can come later.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-teal-50 dark:bg-teal-900/20 rounded-lg p-6 border border-teal-200 dark:border-teal-700">
+              <h3 className="text-lg font-semibold text-teal-900 dark:text-teal-200 mb-4">Example 2: Event Ticketing</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-teal-200 dark:border-teal-700 mb-4">
+                <h4 className="font-semibold text-teal-900 dark:text-teal-200 mb-3">Epic: Download Event Ticket</h4>
+                <p className="text-teal-800 dark:text-teal-300 mb-3">Stakeholder wants:</p>
+                <ul className="text-teal-800 dark:text-teal-300 space-y-1 text-sm">
+                  <li>• Attendees can download their e-ticket after purchase.</li>
+                  <li>• Attendees should be able to resend the ticket to their email.</li>
+                  <li>• Attendees could store tickets in a digital wallet app.</li>
+                  <li>• Attendees want a social sharing feature.</li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <h4 className="font-semibold text-red-900 dark:text-red-200 mb-2">Must-Have</h4>
+                  <ul className="text-red-800 dark:text-red-300 space-y-1 text-sm">
+                    <li>• Download e-ticket</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
+                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">Should-Have</h4>
+                  <ul className="text-yellow-800 dark:text-yellow-300 space-y-1 text-sm">
+                    <li>• Resend ticket</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <h4 className="font-semibold text-green-900 dark:text-green-200 mb-2">Could-Have</h4>
+                  <ul className="text-green-800 dark:text-green-300 space-y-1 text-sm">
+                    <li>• Digital wallet storage</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-900/20 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-200 mb-2">Won't-Have</h4>
+                  <ul className="text-gray-800 dark:text-gray-300 space-y-1 text-sm">
+                    <li>• Social sharing</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-teal-100 dark:bg-teal-800/30 rounded-lg p-3 border border-teal-300 dark:border-teal-600 mt-4">
+                <p className="text-teal-900 dark:text-teal-200 font-semibold text-sm">
+                  The MVP here is simple: if attendees can't download their ticket, the event fails. Everything else adds convenience but is not essential.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-6 border border-amber-200 dark:border-amber-700">
+              <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-200 mb-4">The BA's Role in MoSCoW Sessions</h3>
+              <p className="text-amber-800 dark:text-amber-300 mb-4">
+                As a BA, you often facilitate MoSCoW sessions with stakeholders. This involves:
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-amber-200 dark:border-amber-700 mb-4">
+                <ul className="text-amber-800 dark:text-amber-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                    <span>Explaining the categories clearly.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                    <span>Asking probing questions when stakeholders insist something is a Must-Have.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                    <span>Challenging assumptions by linking requirements back to business outcomes.</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="bg-amber-100 dark:bg-amber-800/30 rounded-lg p-4 border border-amber-300 dark:border-amber-600">
+                <p className="text-amber-900 dark:text-amber-200 font-semibold mb-2">For example, if a stakeholder says "SMS reminders are a Must-Have", you might ask:</p>
+                <p className="text-amber-800 dark:text-amber-300 mb-3">"If we went live without SMS, would the booking system still work?"</p>
+                <p className="text-amber-800 dark:text-amber-300 text-sm">
+                  If the answer is yes, then SMS is a Should-Have, not a Must-Have.
+                </p>
+              </div>
+              
+              <p className="text-amber-800 dark:text-amber-300 mt-4">
+                This is how you protect the scope of MVP and ensure the team can deliver something usable quickly.
+              </p>
+            </div>
+
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-6 border border-emerald-200 dark:border-emerald-700">
+              <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-200 mb-4">Key Takeaway</h3>
+              <p className="text-emerald-800 dark:text-emerald-300 font-semibold">
+                MoSCoW gives you the structure to separate essentials from enhancements. MVP is made of Must-Haves. As a BA, your job is to guide stakeholders to accept this reality and build discipline around it.
+              </p>
+            </div>
+          </div>
+        );
+      }
+      
       // Placeholder for other lessons
       return (
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 mb-6">
