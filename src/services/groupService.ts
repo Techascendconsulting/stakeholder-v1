@@ -92,9 +92,13 @@ class GroupService {
       const { data: authData } = await supabase.auth.getUser();
       const createdBy = authData?.user?.id ?? null;
 
-      // Create Slack channel (if token configured)
-      const token = import.meta.env.VITE_SLACK_BOT_TOKEN;
-      const slackChannel = token ? await slackService.createGroupChannel(name, type) : null;
+      // Create Slack channel (best-effort). If it fails, continue with null.
+      let slackChannel: { id: string } | null = null;
+      try {
+        slackChannel = await slackService.createGroupChannel(name, type);
+      } catch (slackError) {
+        console.warn('Slack channel not created:', slackError);
+      }
       
       // Create group in database
       const { data, error } = await supabase
@@ -122,34 +126,6 @@ class GroupService {
     }
   }
 
-  // Backfill: create Slack channel for existing group and save ID
-  async ensureSlackChannelForGroup(groupId: string, name: string, type: Group['type']): Promise<string | null> {
-    try {
-      const token = import.meta.env.VITE_SLACK_BOT_TOKEN;
-      if (!token) {
-        console.warn('Slack token not configured; cannot create channel');
-        return null;
-      }
-
-      const channel = await slackService.createGroupChannel(name, type);
-      if (!channel?.id) return null;
-
-      const { error } = await supabase
-        .from('groups')
-        .update({ slack_channel_id: channel.id })
-        .eq('id', groupId);
-
-      if (error) {
-        console.error('Failed to save slack_channel_id:', error);
-        return null;
-      }
-
-      return channel.id;
-    } catch (e) {
-      console.error('Error ensuring Slack channel for group:', e);
-      return null;
-    }
-  }
 
   // Add member to group
   async addMemberToGroup(groupId: string, userId: string, _role: 'member' | 'admin' = 'member'): Promise<boolean> {
