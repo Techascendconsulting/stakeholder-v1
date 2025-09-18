@@ -1148,38 +1148,69 @@ const MVPHub: React.FC = () => {
             <button
               key={lesson.id}
               onClick={() => setCurrentLesson(lesson.id)}
-              className={`${lesson.bgColor} ${lesson.borderColor} border-2 rounded-2xl p-8 text-left hover:shadow-xl hover:scale-105 transition-all duration-300 group relative overflow-hidden`}
+              className="group relative bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 p-8 text-left hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-400/10 hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
             >
-              {/* Background gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-gray-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {/* Animated background gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-violet-50/30 to-indigo-50/50 dark:from-purple-900/20 dark:via-violet-900/10 dark:to-indigo-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Subtle pattern overlay */}
+              <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 via-transparent to-indigo-400/20" />
+              </div>
               
               {/* Content */}
               <div className="relative z-10">
-                <div className="flex items-start space-x-4 mb-6">
-                  <div className={`w-16 h-16 ${lesson.bgColor} ${lesson.borderColor} border-2 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}>
-                    <span className={`${lesson.color} group-hover:scale-110 transition-transform duration-300`}>{lesson.icon}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                        Lesson {index + 1}
-                      </span>
+                {/* Header with icon and lesson number */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <div className={`w-16 h-16 ${lesson.bgColor} ${lesson.borderColor} border-2 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-110`}>
+                        <span className={`${lesson.color} transition-transform duration-500`}>{lesson.icon}</span>
+                      </div>
+                      {/* Glow effect */}
+                      <div className={`absolute inset-0 ${lesson.bgColor} rounded-2xl blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-500`} />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors leading-tight">
-                      {lesson.title}
-                    </h3>
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30 px-3 py-1 rounded-full border border-purple-200 dark:border-purple-700">
+                          Lesson {index + 1}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between mt-6">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">
-                    Start learning
-                  </span>
-                  <div className="w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
-                    <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors group-hover:translate-x-1" />
+                {/* Title */}
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors duration-300 leading-tight mb-4">
+                  {lesson.title}
+                </h3>
+                
+                {/* Description based on lesson */}
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                  {index === 0 && "Learn the fundamentals of MVP and why it's essential for successful product delivery."}
+                  {index === 1 && "Understand the risks of scope creep and how MVP thinking protects your team."}
+                  {index === 2 && "Distinguish between complete flows and isolated features that don't deliver value."}
+                  {index === 3 && "Master MoSCoW prioritisation to separate essentials from enhancements."}
+                  {index === 4 && "Develop the BA mindset for thinking in flows and asking the right questions."}
+                  {index === 5 && "Learn how MVP becomes the foundation for continuous iterative improvement."}
+                </p>
+                
+                {/* Footer with CTA */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                      Start learning
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                    <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" />
                   </div>
                 </div>
               </div>
+              
+              {/* Hover border effect */}
+              <div className="absolute inset-0 rounded-3xl border-2 border-transparent group-hover:border-purple-200 dark:group-hover:border-purple-700 transition-colors duration-500" />
             </button>
           ))}
         </div>
