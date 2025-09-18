@@ -227,6 +227,7 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Members</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slack</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Start</th>
@@ -249,6 +250,7 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                               {group.type}
                             </span>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{group.members_count ?? 0}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.slack_channel_id ? 'Created' : 'Not created'}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{new Date(group.created_at).toLocaleDateString()}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{group.start_date ? new Date(group.start_date).toLocaleDateString() : '-'}</td>

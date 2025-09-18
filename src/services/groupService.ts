@@ -10,6 +10,7 @@ export interface Group {
   end_date: string | null;
   created_at: string;
   members?: GroupMember[];
+  members_count?: number;
 }
 
 export interface GroupMember {
@@ -224,10 +225,7 @@ class GroupService {
     try {
       const { data, error } = await supabase
         .from('groups')
-        .select(`
-          *,
-          members:group_members(count)
-        `)
+        .select(`*`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -235,7 +233,22 @@ class GroupService {
         return [];
       }
 
-      return data || [];
+      // Fetch member counts per group
+      const groups = data || [];
+      if (groups.length === 0) return [];
+
+      const countsMap: Record<string, number> = {};
+      await Promise.all(
+        groups.map(async (g) => {
+          const { count } = await supabase
+            .from('group_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', g.id);
+          countsMap[g.id] = count || 0;
+        })
+      );
+
+      return groups.map((g) => ({ ...g, members_count: countsMap[g.id] || 0 }));
     } catch (error) {
       console.error('Error in getAllGroups:', error);
       return [];
