@@ -23,7 +23,7 @@ const StudentGroupChat: React.FC<Props> = ({ channelId }) => {
   return (
     <div className="flex flex-col h-full border rounded-lg bg-white">
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {loading && <p className="text-gray-400">Loading chat…</p>}
+        {loading && <p className="text-gray-400">Loading chat… (debug: waiting for messages)</p>}
         {!loading && messages.length === 0 && (
           <p className="text-gray-400">No messages yet. Say hello!</p>
         )}

@@ -238,6 +238,7 @@ class SlackService {
   // Fetch messages from channel
   async fetchMessages(channelId: string): Promise<any[]> {
     try {
+      console.log('[slackService] fetchMessages via functions', { channelId });
       const { data, error } = await supabase.functions.invoke('slack-fetch-messages', {
         body: { channel: channelId, limit: 50 }
       });
@@ -245,7 +246,9 @@ class SlackService {
         console.error('slack-fetch-messages error:', error);
         return [];
       }
-      return (data as any)?.messages || [];
+      const messages = (data as any)?.messages || [];
+      console.log('[slackService] fetchMessages:got', { count: messages.length });
+      return messages;
     } catch (error) {
       console.error('Error fetching messages:', error);
       return [];

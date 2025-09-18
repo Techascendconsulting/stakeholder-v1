@@ -20,6 +20,8 @@ export function useSlackChat(channelId: string | null) {
       return;
     }
     try {
+      // Debug: start fetch
+      console.log('[useSlackChat] loadMessages:start', { channelId });
       setLoading(true);
       const raw = await slackService.fetchMessages(channelId);
       const msgs: ChatMessage[] = (raw || []).map((m: any) => ({
@@ -31,6 +33,7 @@ export function useSlackChat(channelId: string | null) {
         reactions: (m.reactions || []).map((r: any) => ({ name: r.name, count: r.count })),
       }));
       setMessages(msgs.reverse());
+      console.log('[useSlackChat] loadMessages:done', { count: msgs.length });
     } catch (err) {
       console.error('Failed to load messages:', err);
     } finally {
@@ -41,6 +44,7 @@ export function useSlackChat(channelId: string | null) {
   async function sendMessage(text: string) {
     if (!channelId || !text.trim()) return;
     try {
+      console.log('[useSlackChat] sendMessage', { channelId, text });
       await slackService.postMessage(channelId, text);
       await loadMessages();
     } catch (err) {
