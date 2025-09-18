@@ -140,10 +140,7 @@ class GroupService {
       // Add to database
       const { error: dbError } = await supabase
         .from('group_members')
-        .insert({
-          group_id: groupId,
-          user_id: userId,
-        });
+        .insert({ group_id: groupId, user_id: userId });
 
       if (dbError) {
         console.error('Error adding member to group:', dbError);
@@ -166,6 +163,24 @@ class GroupService {
       return true;
     } catch (error) {
       console.error('Error in addMemberToGroup:', error);
+      return false;
+    }
+  }
+
+  // Admin add member by email using RPC to bypass RLS
+  async addMemberToGroupByEmail(groupId: string, email: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('admin_add_member_by_email', {
+        p_group_id: groupId,
+        p_email: email
+      });
+      if (error) {
+        console.error('RPC admin_add_member_by_email error:', error);
+        return false;
+      }
+      return Boolean(data) || true;
+    } catch (e) {
+      console.error('Error in addMemberToGroupByEmail:', e);
       return false;
     }
   }

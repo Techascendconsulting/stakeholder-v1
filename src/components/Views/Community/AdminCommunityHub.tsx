@@ -494,7 +494,8 @@ const AdminCommunityHub: React.FC<AdminCommunityHubProps> = ({ onBack }) => {
                         onClick={async () => {
                           if (!selectedGroupForMembers) return;
                           setAddingMember(u.id);
-                          const ok = await groupService.addMemberToGroup(selectedGroupForMembers.id, u.id, 'member');
+                          // Prefer RPC to bypass RLS using email
+                          const ok = await groupService.addMemberToGroupByEmail(selectedGroupForMembers.id, u.email);
                           setAddingMember(null);
                           if (ok) {
                             alert('Student added to group');
