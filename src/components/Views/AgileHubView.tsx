@@ -21,6 +21,7 @@ interface AgileTicket {
   status: 'Draft' | 'Ready for Refinement' | 'Refined' | 'In Sprint' | 'To Do' | 'In Progress' | 'In Test' | 'Done';
   storyPoints?: number;
   epic?: string; // Epic field for parent-child relationship
+  epicColor?: string; // Epic color for visual distinction
   createdAt: string;
   updatedAt: string;
   userId: string;
@@ -493,6 +494,7 @@ export const AgileHubView: React.FC = () => {
   const [editingStoryPoints, setEditingStoryPoints] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
   const [editingEpic, setEditingEpic] = useState<string | null>(null);
+  const [showEpics, setShowEpics] = useState(false);
 
   // Custom setCurrentProject that persists to localStorage
   const updateCurrentProject = (project: Project | null) => {
@@ -911,7 +913,11 @@ export const AgileHubView: React.FC = () => {
     const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || ticket.status === filterStatus;
-    return matchesProject && matchesSearch && matchesFilter;
+    
+    // Epic filtering: show Epics only if showEpics is true, hide them otherwise
+    const matchesEpicFilter = showEpics || ticket.type !== 'Epic';
+    
+    return matchesProject && matchesSearch && matchesFilter && matchesEpicFilter;
   });
 
   const storiesReadyForRefinement = tickets.filter(
@@ -1033,6 +1039,17 @@ export const AgileHubView: React.FC = () => {
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Manage your delivery backlog and refinement meetings</p>
             </div>
+            <button
+              onClick={() => setShowEpics(!showEpics)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                showEpics 
+                  ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+              }`}
+            >
+              <Target className="w-4 h-4" />
+              <span>{showEpics ? 'Hide Epics' : 'Show Epics'}</span>
+            </button>
             <button
               onClick={() => !showRefinementModal && setShowCreateModal(true)}
               disabled={showRefinementModal}
@@ -1308,7 +1325,15 @@ export const AgileHubView: React.FC = () => {
                             Type
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                            Epic
+                            <div className="flex items-center space-x-2">
+                              <span>Epic</span>
+                              {!showEpics && (
+                                <div className="w-2 h-2 rounded-full bg-gray-400" title="Epics are hidden - click 'Show Epics' to view them"></div>
+                              )}
+                              {showEpics && (
+                                <div className="w-3 h-3 rounded-full bg-purple-500" title="Epic colors help distinguish different Epics"></div>
+                              )}
+                            </div>
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                             Priority
@@ -1459,9 +1484,14 @@ export const AgileHubView: React.FC = () => {
                                   onClick={(e) => handleEpicClick(ticket.id, e)}
                                   className={`text-xs font-medium hover:opacity-75 cursor-pointer transition-opacity ${
                                     ticket.epic 
-                                      ? 'text-purple-600 dark:text-purple-400' 
+                                      ? 'font-semibold' 
                                       : 'text-gray-400 dark:text-gray-500'
                                   }`}
+                                  style={{
+                                    color: ticket.epic 
+                                      ? tickets.find(t => t.type === 'Epic' && t.title === ticket.epic)?.epicColor || '#8B5CF6'
+                                      : undefined
+                                  }}
                                   title="Click to change Epic"
                                 >
                                   {ticket.epic || '-'}
@@ -2051,7 +2081,8 @@ const EditTicketModal: React.FC<{
     priority: ticket.priority,
     status: ticket.status,
     storyPoints: ticket.storyPoints,
-    epic: ticket.epic || ''
+    epic: ticket.epic || '',
+    epicColor: ticket.epicColor || '#8B5CF6' // Default purple color
   });
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -2335,6 +2366,26 @@ const EditTicketModal: React.FC<{
             </div>
           )}
 
+          {/* Epic Color Field (for Epic tickets only) */}
+          {formData.type === 'Epic' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Epic Color
+              </label>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={formData.epicColor}
+                  onChange={(e) => setFormData({ ...formData, epicColor: e.target.value })}
+                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Choose a color to distinguish this Epic
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Status */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -2524,7 +2575,8 @@ const CreateTicketModal: React.FC<{
     priority: 'Medium' as AgileTicket['priority'],
     status: 'Draft' as AgileTicket['status'],
     storyPoints: undefined as number | undefined,
-    epic: ''
+    epic: '',
+    epicColor: '#8B5CF6' // Default purple color
   });
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
@@ -2723,6 +2775,26 @@ const CreateTicketModal: React.FC<{
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {/* Epic Color Field (for Epic tickets only) */}
+          {formData.type === 'Epic' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Epic Color
+              </label>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={formData.epicColor}
+                  onChange={(e) => setFormData({ ...formData, epicColor: e.target.value })}
+                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Choose a color to distinguish this Epic
+                </span>
+              </div>
             </div>
           )}
 
