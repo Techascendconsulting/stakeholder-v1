@@ -872,7 +872,7 @@ const MVPHub: React.FC = () => {
         );
       }
       
-      if (id === 'from-mvp-to-iterations') {
+      if (id === 'mvp-to-iterations') {
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
