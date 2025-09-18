@@ -685,6 +685,193 @@ const MVPHub: React.FC = () => {
         );
       }
       
+      if (id === 'how-ba-thinks-mvp') {
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Introduction</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Up to this point, we've explored what an MVP is, why it matters, how to recognise it, and how prioritisation through MoSCoW helps you define it. But let's now step into the mindset of a Business Analyst. MVP isn't just a definition on paper — it's a way of thinking that shapes how you analyse requirements, engage stakeholders, and guide the Scrum team.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-4">The BA's Responsibility in MVP Discussions</h3>
+              <p className="text-blue-800 dark:text-blue-300 mb-4">
+                As a BA, you sit at the centre of conversations between stakeholders and the delivery team. Stakeholders often push for more. Delivery teams sometimes get caught up in the technical details. Your role is to bring everyone back to this simple truth:
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700 mb-4">
+                <p className="text-blue-800 dark:text-blue-300 font-semibold text-lg">
+                  👉 The goal is to deliver the smallest usable product that solves the core problem.
+                </p>
+              </div>
+              
+              <p className="text-blue-800 dark:text-blue-300 mb-4">That means you need to:</p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                <ul className="text-blue-800 dark:text-blue-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>Look beyond individual user stories.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>Ask which stories must connect to form a complete flow.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>Challenge "nice-to-haves" that distract from delivering value early.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
+              <h3 className="text-lg font-semibold text-green-900 dark:text-green-200 mb-4">Thinking in Flows, Not Features</h3>
+              <p className="text-green-800 dark:text-green-300 mb-4">
+                One of the most common mistakes in projects is thinking in terms of features rather than flows.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <h4 className="font-semibold text-green-900 dark:text-green-200 mb-2">Features are building blocks.</h4>
+                  <p className="text-green-800 dark:text-green-300 text-sm">
+                    Individual components that can be developed independently.
+                  </p>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <h4 className="font-semibold text-green-900 dark:text-green-200 mb-2">Flows are the customer journeys that deliver outcomes.</h4>
+                  <p className="text-green-800 dark:text-green-300 text-sm">
+                    Connected steps that solve the user's problem end-to-end.
+                  </p>
+                </div>
+              </div>
+              
+              <p className="text-green-800 dark:text-green-300 mb-4">
+                MVP requires you to connect the features into a working flow.
+              </p>
+              
+              <div className="bg-green-100 dark:bg-green-800/30 rounded-lg p-4 border border-green-300 dark:border-green-600">
+                <h4 className="font-semibold text-green-900 dark:text-green-200 mb-2">Example – Banking Loan Application</h4>
+                <div className="space-y-2">
+                  <p className="text-green-800 dark:text-green-300 text-sm">
+                    <strong>Features:</strong> Upload documents, Enter income details, Calculate affordability, Show decision.
+                  </p>
+                  <p className="text-green-800 dark:text-green-300 text-sm">
+                    <strong>Flow (MVP):</strong> Customer enters details → Uploads documents → System calculates → Decision displayed.
+                  </p>
+                  <p className="text-green-800 dark:text-green-300 text-sm font-semibold">
+                    If even one step in that flow is missing, it's not MVP. It's just isolated features.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+              <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-4">Asking the Right Questions</h3>
+              <p className="text-purple-800 dark:text-purple-300 mb-4">
+                To think like a BA about MVP, you need to ask probing questions during refinement sessions and stakeholder workshops. Examples include:
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700 mb-4">
+                <ul className="text-purple-800 dark:text-purple-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+                    <span>"If we didn't build this, could the product still work?"</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+                    <span>"Does this requirement complete the flow, or is it an enhancement?"</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+                    <span>"What is the first point at which a customer could actually use this product?"</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+                    <span>"If we stopped after this release, would the business problem be solved at least at a basic level?"</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <p className="text-purple-800 dark:text-purple-300">
+                These questions cut through assumptions and force clarity.
+              </p>
+            </div>
+
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-6 border border-indigo-200 dark:border-indigo-700">
+              <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-200 mb-4">Example – Online Learning Portal</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700 mb-4">
+                <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-3">Epic: Deliver Online Courses</h4>
+                <p className="text-indigo-800 dark:text-indigo-300 mb-3">Stakeholder requests:</p>
+                <ul className="text-indigo-800 dark:text-indigo-300 space-y-1 text-sm">
+                  <li>• Students should register.</li>
+                  <li>• Students should pay online.</li>
+                  <li>• Students should view courses.</li>
+                  <li>• Students should track progress.</li>
+                  <li>• Students should take quizzes.</li>
+                  <li>• Students should join forums.</li>
+                </ul>
+              </div>
+
+              <div className="bg-indigo-100 dark:bg-indigo-800/30 rounded-lg p-4 border border-indigo-300 dark:border-indigo-600 mb-4">
+                <h4 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-3">BA thinking process:</h4>
+                <ul className="text-indigo-800 dark:text-indigo-300 space-y-2 text-sm">
+                  <li>• If students can't register, nothing works → <strong>Must-Have</strong>.</li>
+                  <li>• If students can't pay, the business model fails → <strong>Must-Have</strong>.</li>
+                  <li>• If students can't view courses, the entire system fails → <strong>Must-Have</strong>.</li>
+                  <li>• Progress tracking, quizzes, and forums are enhancements.</li>
+                </ul>
+                <p className="text-indigo-800 dark:text-indigo-300 text-sm mt-3 font-semibold">
+                  So the MVP flow is Register → Pay → View courses.
+                </p>
+              </div>
+              
+              <p className="text-indigo-800 dark:text-indigo-300">
+                The BA identifies this by focusing on the problem to be solved (delivering courses online) and then working backward to see the essential flow.
+              </p>
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-6 border border-amber-200 dark:border-amber-700">
+              <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-200 mb-4">Why BA Thinking Protects the Team</h3>
+              <p className="text-amber-800 dark:text-amber-300 mb-4">
+                Without MVP discipline, the backlog becomes bloated, and the Scrum team risks building in circles. MVP thinking ensures:
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-amber-200 dark:border-amber-700 mb-4">
+                <ul className="text-amber-800 dark:text-amber-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                    <span>Developers focus on essentials first.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                    <span>Stakeholders see early wins.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                    <span>The business gets feedback before investing more.</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <p className="text-amber-800 dark:text-amber-300">
+                This mindset is what sets apart an average BA from a strong one. It's not just about documenting requirements. It's about framing the problem in a way that drives value early and often.
+              </p>
+            </div>
+
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-6 border border-emerald-200 dark:border-emerald-700">
+              <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-200 mb-4">Key Takeaway</h3>
+              <p className="text-emerald-800 dark:text-emerald-300 font-semibold">
+                To think like a BA about MVP, always look for the smallest complete flow that solves the problem, ask tough prioritisation questions, and guide the team away from features toward outcomes. MVP thinking protects delivery and ensures progress is real, not just activity.
+              </p>
+            </div>
+          </div>
+        );
+      }
+      
       // Placeholder for other lessons
       return (
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 mb-6">
