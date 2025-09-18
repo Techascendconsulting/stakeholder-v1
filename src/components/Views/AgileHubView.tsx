@@ -1908,6 +1908,7 @@ export const AgileHubView: React.FC = () => {
         <CreateTicketModal
           onClose={() => setShowCreateModal(false)}
           onCreateTicket={createTicket}
+          tickets={tickets}
         />
       )}
 
@@ -1920,6 +1921,7 @@ export const AgileHubView: React.FC = () => {
             setSelectedTicket(null);
           }}
           onUpdateTicket={updateTicket}
+          tickets={tickets}
         />
       )}
 
@@ -2010,7 +2012,8 @@ const EditTicketModal: React.FC<{
   ticket: AgileTicket;
   onClose: () => void;
   onUpdateTicket: (ticket: AgileTicket) => void;
-}> = ({ ticket, onClose, onUpdateTicket }) => {
+  tickets: AgileTicket[];
+}> = ({ ticket, onClose, onUpdateTicket, tickets }) => {
   const [formData, setFormData] = useState({
     type: ticket.type,
     title: ticket.title,
@@ -2482,7 +2485,8 @@ const EditTicketModal: React.FC<{
 const CreateTicketModal: React.FC<{
   onClose: () => void;
   onCreateTicket: (ticket: Omit<AgileTicket, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'ticketNumber' | 'projectId' | 'projectName'>) => void;
-}> = ({ onClose, onCreateTicket }) => {
+  tickets: AgileTicket[];
+}> = ({ onClose, onCreateTicket, tickets }) => {
   const [formData, setFormData] = useState({
     type: 'Epic' as AgileTicket['type'],
     title: '',
