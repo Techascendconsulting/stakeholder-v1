@@ -24,6 +24,9 @@ const StudentGroupChat: React.FC<Props> = ({ channelId }) => {
     <div className="flex flex-col h-full border rounded-lg bg-white">
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {loading && <p className="text-gray-400">Loading chat…</p>}
+        {!loading && messages.length === 0 && (
+          <p className="text-gray-400">No messages yet. Say hello!</p>
+        )}
         {messages.map((msg) => (
           <div key={msg.ts} className="flex space-x-2">
             <img src={msg.userAvatar} alt="avatar" className="w-8 h-8 rounded-full" />

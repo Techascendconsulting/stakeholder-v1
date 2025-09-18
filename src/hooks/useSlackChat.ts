@@ -15,7 +15,10 @@ export function useSlackChat(channelId: string | null) {
   const [loading, setLoading] = useState(true);
 
   async function loadMessages() {
-    if (!channelId) return;
+    if (!channelId) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const raw = await slackService.fetchMessages(channelId);
@@ -46,7 +49,11 @@ export function useSlackChat(channelId: string | null) {
   }
 
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     loadMessages();
     const interval = setInterval(loadMessages, 5000);
     return () => clearInterval(interval);
