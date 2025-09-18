@@ -872,6 +872,187 @@ const MVPHub: React.FC = () => {
         );
       }
       
+      if (id === 'from-mvp-to-iterations') {
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Introduction</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                By now you understand that MVP is not about building "less." It is about building the right minimum — the smallest complete flow that delivers value. But it's equally important to recognise that MVP is not the end of the journey. MVP is the beginning. It is the foundation upon which future iterations are built.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-4">Why MVP is Only the First Step</h3>
+              <p className="text-blue-800 dark:text-blue-300 mb-4">
+                The purpose of MVP is to prove value early and give the business something usable as quickly as possible. Once that is in place, the team doesn't stop. Instead, they continue to build on top of the MVP through iterative delivery.
+              </p>
+              
+              <p className="text-blue-800 dark:text-blue-300 mb-4">This iterative approach allows the team to:</p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                <ul className="text-blue-800 dark:text-blue-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>Release value early.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>Collect feedback from real users.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>Adjust priorities based on evidence, not assumptions.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                    <span>Improve the product step by step, without waiting for a "big bang" release.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
+              <h3 className="text-lg font-semibold text-green-900 dark:text-green-200 mb-4">Example 1: Repair Appointment Booking</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-700 mb-4">
+                <h4 className="font-semibold text-green-900 dark:text-green-200 mb-3">Epic: Repair Request Scheduling</h4>
+                <div className="bg-green-100 dark:bg-green-800/30 rounded-lg p-3 border border-green-300 dark:border-green-600 mb-4">
+                  <p className="text-green-900 dark:text-green-200 font-semibold mb-2">MVP Flow:</p>
+                  <p className="text-green-800 dark:text-green-300 text-sm">
+                    Tenant books appointment → System confirms slot → Engineer sees schedule.
+                  </p>
+                  <p className="text-green-800 dark:text-green-300 text-sm mt-2">
+                    This is enough to stop random visits and missed appointments.
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200 dark:border-green-700">
+                    <h5 className="font-semibold text-green-900 dark:text-green-200 mb-1">Iteration 1:</h5>
+                    <p className="text-green-800 dark:text-green-300 text-sm">Add SMS reminders to reduce no-shows.</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200 dark:border-green-700">
+                    <h5 className="font-semibold text-green-900 dark:text-green-200 mb-1">Iteration 2:</h5>
+                    <p className="text-green-800 dark:text-green-300 text-sm">Allow tenants to reschedule their appointment.</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200 dark:border-green-700">
+                    <h5 className="font-semibold text-green-900 dark:text-green-200 mb-1">Iteration 3:</h5>
+                    <p className="text-green-800 dark:text-green-300 text-sm">Enable tenants to upload photos of the repair issue.</p>
+                  </div>
+                </div>
+                
+                <p className="text-green-800 dark:text-green-300 text-sm mt-4 font-semibold">
+                  Each iteration adds value, but the MVP alone already solved the main problem.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+              <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-4">Example 2: Online Learning Portal</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700 mb-4">
+                <h4 className="font-semibold text-purple-900 dark:text-purple-200 mb-3">Epic: Deliver Online Courses</h4>
+                <div className="bg-purple-100 dark:bg-purple-800/30 rounded-lg p-3 border border-purple-300 dark:border-purple-600 mb-4">
+                  <p className="text-purple-900 dark:text-purple-200 font-semibold mb-2">MVP Flow:</p>
+                  <p className="text-purple-800 dark:text-purple-300 text-sm">
+                    Register → Pay → View courses.
+                  </p>
+                  <p className="text-purple-800 dark:text-purple-300 text-sm mt-2">
+                    This is enough for a student to start learning online.
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-700">
+                    <h5 className="font-semibold text-purple-900 dark:text-purple-200 mb-1">Iteration 1:</h5>
+                    <p className="text-purple-800 dark:text-purple-300 text-sm">Add progress tracking.</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-700">
+                    <h5 className="font-semibold text-purple-900 dark:text-purple-200 mb-1">Iteration 2:</h5>
+                    <p className="text-purple-800 dark:text-purple-300 text-sm">Introduce quizzes for self-assessment.</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-700">
+                    <h5 className="font-semibold text-purple-900 dark:text-purple-200 mb-1">Iteration 3:</h5>
+                    <p className="text-purple-800 dark:text-purple-300 text-sm">Provide certificates of completion.</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-700">
+                    <h5 className="font-semibold text-purple-900 dark:text-purple-200 mb-1">Iteration 4:</h5>
+                    <p className="text-purple-800 dark:text-purple-300 text-sm">Add community forums for learners.</p>
+                  </div>
+                </div>
+                
+                <p className="text-purple-800 dark:text-purple-300 text-sm mt-4 font-semibold">
+                  The MVP solved the immediate problem — enabling students to learn online. The iterations improve the experience, but the foundation was laid with the MVP.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-6 border border-indigo-200 dark:border-indigo-700">
+              <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-200 mb-4">How a BA Frames Iterations</h3>
+              <p className="text-indigo-800 dark:text-indigo-300 mb-4">
+                As a BA, your role is to help stakeholders see the product as an evolving journey. Many stakeholders believe everything must be delivered upfront, but your job is to show them how an MVP gets them value early, and iterations refine that value over time.
+              </p>
+              
+              <p className="text-indigo-800 dark:text-indigo-300 mb-4">You should explain:</p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700 mb-4">
+                <ul className="text-indigo-800 dark:text-indigo-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">•</span>
+                    <span>"MVP gives us the first working solution. Iterations are how we make it better, based on what we learn."</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">•</span>
+                    <span>"If we wait to build everything before going live, we risk wasting effort. By iterating, we can respond to real customer behaviour."</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <p className="text-indigo-800 dark:text-indigo-300">
+                This framing reassures stakeholders that MVP is not about cutting corners. It is about sequencing delivery to maximise value.
+              </p>
+            </div>
+
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 border border-red-200 dark:border-red-700">
+              <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 mb-4">What Happens Without Iterations</h3>
+              <p className="text-red-800 dark:text-red-300 mb-4">
+                If the project delivers MVP but does not plan for iterations, the product risks being seen as incomplete or disappointing. MVP is not a final destination — it's a milestone.
+              </p>
+              
+              <p className="text-red-800 dark:text-red-300 mb-4">Without iterations:</p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                <ul className="text-red-800 dark:text-red-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-red-600 dark:text-red-400 font-bold">•</span>
+                    <span>Customers may quickly notice gaps.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-red-600 dark:text-red-400 font-bold">•</span>
+                    <span>The business may miss opportunities to improve.</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-red-600 dark:text-red-400 font-bold">•</span>
+                    <span>The product may stagnate while competitors move forward.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-6 border border-emerald-200 dark:border-emerald-700">
+              <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-200 mb-4">Key Takeaway</h3>
+              <p className="text-emerald-800 dark:text-emerald-300 font-semibold">
+                MVP is the starting point. Iterations build on top of it. As a BA, you must help stakeholders understand that MVP delivers the first slice of value, and iterative delivery ensures the product grows stronger with each release.
+              </p>
+            </div>
+          </div>
+        );
+      }
+      
       // Placeholder for other lessons
       return (
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 mb-6">
