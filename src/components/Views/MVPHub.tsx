@@ -296,6 +296,179 @@ const MVPHub: React.FC = () => {
         );
       }
       
+      if (id === 'mvp-vs-non-mvp') {
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Introduction</h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                By now you know that an MVP is the smallest usable flow that delivers value. But in practice, teams often confuse "delivering features" with "delivering MVP." As a BA, you need to be able to spot the difference and guide others to see it clearly.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                Let's explore this distinction with practical examples.
+              </p>
+            </div>
+
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-6 border border-orange-200 dark:border-orange-700">
+              <h3 className="text-lg font-semibold text-orange-900 dark:text-orange-200 mb-4">The Danger of Isolated Features</h3>
+              <p className="text-orange-800 dark:text-orange-300 mb-4">
+                Teams sometimes celebrate progress because individual features have been developed. You might hear:
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-orange-200 dark:border-orange-700 mb-4">
+                <ul className="text-orange-800 dark:text-orange-300 space-y-2">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
+                    <span>"We've built the upload screen!"</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
+                    <span>"We've completed the notification service!"</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
+                    <span>"We've set up the reporting module!"</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <p className="text-orange-800 dark:text-orange-300">
+                But if these features don't connect to form a complete flow, they are not MVP. They are just pieces of the puzzle. Until the features come together into a usable journey, they don't solve the customer's problem.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-4">Example 1: Housing Repairs</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700 mb-4">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">Epic: Repair Appointment Booking</h4>
+                <p className="text-blue-800 dark:text-blue-300 mb-3">Stakeholder requests:</p>
+                <ul className="text-blue-800 dark:text-blue-300 space-y-1 text-sm mb-4">
+                  <li>• Tenants can choose an appointment slot.</li>
+                  <li>• The system confirms the chosen slot.</li>
+                  <li>• Engineers see the confirmed schedule.</li>
+                  <li>• Tenants receive SMS reminders.</li>
+                  <li>• Tenants can upload photos of the issue.</li>
+                </ul>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className="text-green-600 dark:text-green-400 font-bold text-lg">✅</span>
+                    <h4 className="font-semibold text-green-900 dark:text-green-200">MVP Flow:</h4>
+                  </div>
+                  <ol className="text-green-800 dark:text-green-300 space-y-1 text-sm">
+                    <li>1. Tenant books a slot.</li>
+                    <li>2. System confirms the slot.</li>
+                    <li>3. Engineer receives the schedule.</li>
+                  </ol>
+                  <p className="text-green-800 dark:text-green-300 text-sm mt-3">
+                    This flow is end-to-end. Tenants know when someone will come, and engineers know where to go. The core problem — random, missed appointments — is solved.
+                  </p>
+                </div>
+
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className="text-red-600 dark:text-red-400 font-bold text-lg">❌</span>
+                    <h4 className="font-semibold text-red-900 dark:text-red-200">Non-MVP Flow:</h4>
+                  </div>
+                  <ul className="text-red-800 dark:text-red-300 space-y-1 text-sm">
+                    <li>• Tenant books a slot, but there's no confirmation.</li>
+                    <li>• Engineer doesn't see the schedule.</li>
+                  </ul>
+                  <p className="text-red-800 dark:text-red-300 text-sm mt-3">
+                    Even though one feature (booking) exists, the flow is incomplete. The tenant still faces the same frustration, and the business problem is unsolved.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+              <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-4">Example 2: Online Learning Platform</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700 mb-4">
+                <h4 className="font-semibold text-purple-900 dark:text-purple-200 mb-3">Epic: Deliver Online Courses</h4>
+                <p className="text-purple-800 dark:text-purple-300 mb-3">Stakeholder requests:</p>
+                <ul className="text-purple-800 dark:text-purple-300 space-y-1 text-sm">
+                  <li>• Students can register.</li>
+                  <li>• Students can pay online.</li>
+                  <li>• Students can view course videos.</li>
+                  <li>• Students can track progress.</li>
+                  <li>• Students can take quizzes.</li>
+                  <li>• Students can receive certificates.</li>
+                  <li>• Students can join discussion forums.</li>
+                </ul>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className="text-green-600 dark:text-green-400 font-bold text-lg">✅</span>
+                    <h4 className="font-semibold text-green-900 dark:text-green-200">MVP Flow:</h4>
+                  </div>
+                  <ol className="text-green-800 dark:text-green-300 space-y-1 text-sm">
+                    <li>1. Register</li>
+                    <li>2. Pay</li>
+                    <li>3. View course videos</li>
+                  </ol>
+                  <p className="text-green-800 dark:text-green-300 text-sm mt-3">
+                    That's enough for a student to start learning. The core business problem (delivering education online) is solved.
+                  </p>
+                </div>
+
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className="text-red-600 dark:text-red-400 font-bold text-lg">❌</span>
+                    <h4 className="font-semibold text-red-900 dark:text-red-200">Non-MVP Flow:</h4>
+                  </div>
+                  <ul className="text-red-800 dark:text-red-300 space-y-1 text-sm">
+                    <li>• Students can register and pay, but courses are not yet viewable.</li>
+                    <li>• Or students can view videos but can't register or pay.</li>
+                  </ul>
+                  <p className="text-red-800 dark:text-red-300 text-sm mt-3">
+                    Neither flow is usable. In both cases, work has been done, but no real value is delivered.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-6 border border-indigo-200 dark:border-indigo-700">
+              <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-200 mb-4">The BA's Lens on MVP vs Non-MVP</h3>
+              <p className="text-indigo-800 dark:text-indigo-300 mb-4">
+                Always ask:
+              </p>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700 mb-4">
+                <ul className="text-indigo-800 dark:text-indigo-300 space-y-3">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">•</span>
+                    <span>Does this flow start with the user and end with the business outcome?</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">•</span>
+                    <span>Can a customer actually use it as it is today?</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <p className="text-indigo-800 dark:text-indigo-300 mb-4">
+                If not, then it's not MVP, no matter how many features are "done."
+              </p>
+              
+              <p className="text-indigo-800 dark:text-indigo-300">
+                This is a mindset shift for teams. Developers and even Product Owners sometimes celebrate partial delivery. As the BA, you must bring focus back to end-to-end value delivery.
+              </p>
+            </div>
+
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-6 border border-emerald-200 dark:border-emerald-700">
+              <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-200 mb-4">Key Takeaway</h3>
+              <p className="text-emerald-800 dark:text-emerald-300 font-semibold">
+                MVP = complete usable flow. Non-MVP = isolated or incomplete features. As a BA, you need to keep everyone focused on the difference so that progress means real value, not just ticking boxes.
+              </p>
+            </div>
+          </div>
+        );
+      }
+      
       // Placeholder for other lessons
       return (
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 mb-6">
