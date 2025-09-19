@@ -38,8 +38,8 @@ const StakeholderSelector: React.FC<StakeholderSelectorProps> = ({ data, onUpdat
     <div className="max-w-6xl mx-auto">
       {/* Section header to match design */}
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Select Stakeholders</h2>
-        <p className="text-gray-600">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Select Stakeholders</h2>
+        <p className="text-gray-600 dark:text-gray-400">
           Choose one or multiple stakeholders for your <span className="font-medium">{selectedProject?.name}</span> project
         </p>
       </div>

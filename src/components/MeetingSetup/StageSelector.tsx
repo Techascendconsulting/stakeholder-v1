@@ -131,9 +131,9 @@ const StageCard: React.FC<{
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       disabled={disabled}
-      className={`relative w-full text-left p-6 rounded-lg border-2 transition-all bg-gradient-to-br ${styles.gradientFrom} to-white dark:bg-gray-800 shadow-sm ${
+      className={`relative w-full text-left p-6 rounded-lg border-2 transition-all bg-gradient-to-br ${styles.gradientFrom} to-white dark:from-gray-800 dark:to-gray-700 shadow-sm ${
         disabled
-          ? 'opacity-60 cursor-not-allowed border-gray-200'
+          ? 'opacity-60 cursor-not-allowed border-gray-200 dark:border-gray-600'
           : 'hover:shadow-md'
       } ${
         isActive && !disabled
@@ -145,7 +145,7 @@ const StageCard: React.FC<{
       aria-pressed={isActive}
     >
       {disabled && (
-        <div className="absolute top-3 right-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+        <div className="absolute top-3 right-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
           Coming soon
         </div>
       )}

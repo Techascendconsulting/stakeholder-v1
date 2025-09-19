@@ -310,9 +310,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('✅ USER_EFFECT: Current view:', currentView)
       console.log('✅ USER_EFFECT: Selected project:', selectedProject?.name || 'none')
       
-      // Redirect admin users to admin panel if they're in student views
-      if (isAdmin && (currentView === 'welcome' || currentView === 'training-hub' || currentView === 'practice' || currentView === 'learn' || currentView === 'dashboard')) {
-        console.log('🔐 ADMIN_EFFECT: Admin user detected in student view, redirecting to admin panel')
+      // Only redirect admin users to admin panel if they're in specific restricted views
+      // Allow admins to access learning content and practice areas
+      if (isAdmin && (currentView === 'welcome' || currentView === 'training-hub' || currentView === 'practice')) {
+        console.log('🔐 ADMIN_EFFECT: Admin user detected in restricted student view, redirecting to admin panel')
         setCurrentViewState('admin')
         localStorage.setItem('currentView', 'admin')
       }
@@ -324,10 +325,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     prevUser.current = user
   }, [user, currentView, selectedProject, isAdmin])
 
-  // Set default view for admin users on initial load
+  // Set default view for admin users on initial load (only from welcome page)
   useEffect(() => {
-    if (user && isAdmin && (currentView === 'welcome' || currentView === 'dashboard')) {
-      console.log('🔐 ADMIN_INIT: Admin user detected, redirecting to admin panel')
+    if (user && isAdmin && currentView === 'welcome') {
+      console.log('🔐 ADMIN_INIT: Admin user detected on welcome page, redirecting to admin panel')
       setCurrentViewState('admin')
       localStorage.setItem('currentView', 'admin')
     }

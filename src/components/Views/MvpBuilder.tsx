@@ -79,19 +79,14 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
     warnings: string[];
   }>({ isValid: false, errors: [], warnings: [] });
 
-  // Load epics on component mount
+  // Load epics on component mount (practice-only, always uses training project)
   useEffect(() => {
-    console.log('🔄 MvpBuilder - useEffect triggered with activeProjectId:', activeProjectId);
-    
-    if (!activeProjectId) {
-      console.log('⚠️ No activeProjectId available, skipping epic loading');
-      return;
-    }
+    console.log('🔄 MvpBuilder - useEffect triggered (practice-only mode)');
     
     const loadEpicsAndStories = async () => {
       try {
         setLoading(true);
-        console.log('🔄 MvpBuilder - Starting to load epics...');
+        console.log('🔄 MvpBuilder - Starting to load epics for practice mode...');
 
         // First test the connection
         console.log('🔍 MVP Builder - Testing connection...');
@@ -107,8 +102,8 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
         // Clear any previous setup errors
         setSetupError(null);
 
-        // Load epics for training project
-        console.log('🔄 MvpBuilder - Fetching epics for training project');
+        // Load epics for training project (practice-only mode)
+        console.log('🔄 MvpBuilder - Fetching epics for training project (practice-only)');
         const epicsData = await fetchEpics();
         console.log('✅ MvpBuilder - Epics loaded:', epicsData);
 
@@ -130,7 +125,7 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
     };
 
     loadEpicsAndStories();
-  }, [activeProjectId]);
+  }, []); // Remove activeProjectId dependency since we're practice-only
 
   // Load stories when epic is selected
   useEffect(() => {
