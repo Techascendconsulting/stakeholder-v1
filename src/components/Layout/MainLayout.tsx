@@ -98,10 +98,10 @@ const MainLayout: React.FC = () => {
         return <ProjectInitiationView />;
       case 'requirements-engineering':
         return <RequirementsEngineeringView />;
-      case 'documentation':
-        return <DocumentationView />;
       case 'solution-options':
         return <SolutionOptions />;
+      case 'documentation':
+        return <DocumentationView />;
       case 'design-hub':
         return <DesignHub />;
       case 'mvp-hub':
