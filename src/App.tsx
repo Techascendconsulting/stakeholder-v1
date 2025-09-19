@@ -12,10 +12,14 @@ import { AlertCircle } from 'lucide-react'
 import { MeetingSetupProvider } from './contexts/MeetingSetupContext'
 import { OnboardingProvider } from './contexts/OnboardingContext'
 import GlobalWatermark from './components/GlobalWatermark'
+import { useBlockCopyPaste } from './hooks/useBlockCopyPaste'
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
   const [isMounted, setIsMounted] = React.useState(false)
+
+  // Block copy/paste across the entire app by default
+  useBlockCopyPaste(true)
 
   // Prevent hydration flash by waiting for mount
   React.useEffect(() => {
