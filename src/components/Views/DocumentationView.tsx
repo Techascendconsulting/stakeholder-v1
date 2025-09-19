@@ -1,7 +1,10 @@
 import React from 'react';
 import { FileText, BookOpen, Users, Target, ArrowRight } from 'lucide-react';
+import { useApp } from '../../contexts/AppContext';
 
 const DocumentationView: React.FC = () => {
+  const { setCurrentView } = useApp();
+  
   const documentationTopics = [
     {
       id: 'business-requirements-document',
@@ -120,7 +123,15 @@ const DocumentationView: React.FC = () => {
                     ))}
                   </div>
                   
-                  <button className={`inline-flex items-center px-6 py-3 rounded-lg bg-gradient-to-r ${topic.color} text-white font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-xl`}>
+                  <button 
+                    className={`inline-flex items-center px-6 py-3 rounded-lg bg-gradient-to-r ${topic.color} text-white font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-xl`}
+                    onClick={() => {
+                      if (topic.id === 'user-stories-acceptance-criteria') {
+                        // Navigate to the TrainingUI (the actual Requirement Documentation functionality)
+                        setCurrentView('user-story-checker');
+                      }
+                    }}
+                  >
                     Learn More
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </button>
