@@ -11,6 +11,7 @@ export type AppView =
   | 'project-initiation'
   | 'elicitation'
   | 'requirements-engineering'
+  | 'documentation'
   | 'solution-options'
   | 'design-hub'
   | 'mvp-hub'

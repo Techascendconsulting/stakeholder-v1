@@ -149,6 +149,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         // Learning pages that were missing
         'project-initiation',
         'requirements-engineering',
+        'documentation',
         'solution-options',
         'design-hub',
         'mvp-hub',
