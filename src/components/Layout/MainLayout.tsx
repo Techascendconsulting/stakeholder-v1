@@ -102,6 +102,8 @@ const MainLayout: React.FC = () => {
         return <SolutionOptions />;
       case 'documentation':
         return <DocumentationView />;
+      case 'documentation-practice':
+        return <DocumentationView />;
       case 'design-hub':
         return <DesignHub />;
       case 'mvp-hub':
