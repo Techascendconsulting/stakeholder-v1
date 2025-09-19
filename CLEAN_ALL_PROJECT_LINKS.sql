@@ -1,23 +1,74 @@
 -- ======================================
--- COMPLETE MVP BUILDER SETUP
--- Run this AFTER the ChatGPT script to add MVP Builder functionality
+-- CLEAN ALL PROJECT LINKS
+-- One migration to fix all project_id issues across all tables
 -- ======================================
 
--- 1. Add missing columns to epics table
+DO $$
+DECLARE
+  training_project_id uuid := '00000000-0000-0000-0000-000000000001';
+  tbl text;
+BEGIN
+  -- Ensure Training Project exists
+  IF NOT EXISTS (SELECT 1 FROM projects WHERE id = training_project_id) THEN
+    INSERT INTO projects (id, name, description, created_at)
+    VALUES (training_project_id, 'Training Project', 'Default project used for training and seed data', now());
+  END IF;
+
+  -- Loop through all relevant tables
+  FOR tbl IN SELECT unnest(ARRAY['epics','stories','acceptance_criteria','mvp_flows','agile_tickets']) LOOP
+    
+    -- Drop old FK if exists
+    EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I', tbl, tbl || '_project_id_fkey');
+
+    -- Backup invalid rows (only once per table)
+    EXECUTE format(
+      'CREATE TABLE IF NOT EXISTS %I_invalid_ids AS SELECT * FROM %I WHERE project_id IS NOT NULL AND project_id !~* ''^[0-9a-f-]{8}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f]{12}$''',
+      tbl, tbl
+    );
+
+    -- Replace invalid or NULL project_id with Training Project ID
+    EXECUTE format(
+      'UPDATE %I SET project_id = %L WHERE project_id IS NULL OR project_id !~* ''^[0-9a-f-]{8}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f]{12}$''',
+      tbl, training_project_id::text
+    );
+
+    -- Convert project_id column to uuid if not already
+    EXECUTE format(
+      'ALTER TABLE %I ALTER COLUMN project_id TYPE uuid USING project_id::uuid',
+      tbl
+    );
+
+    -- Add FK constraint
+    EXECUTE format(
+      'ALTER TABLE %I ADD CONSTRAINT %I FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE',
+      tbl, tbl || '_project_id_fkey'
+    );
+
+  END LOOP;
+END$$;
+
+-- ======================================
+-- ADD MISSING COLUMNS FOR MVP BUILDER
+-- ======================================
+
+-- Add missing columns to epics table
 ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS created_by UUID;
 ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
--- 2. Add missing columns to stories table
-ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS epic_id UUID;
+-- Add missing columns to stories table
+ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS epic_id UUID REFERENCES public.epics(id) ON DELETE CASCADE;
 ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS summary TEXT;
 ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS moscow TEXT CHECK (moscow IN ('Must', 'Should', 'Could', 'Won''t'));
 ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS created_by UUID;
 ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
--- 3. Insert MVP Builder training data
+-- ======================================
+-- INSERT MVP BUILDER TRAINING DATA
+-- ======================================
+
 INSERT INTO public.epics (id, project_id, title, description, created_by)
 VALUES 
   ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001', 'Tenant Repair Management', 'As a tenant, I want to raise and manage repair requests so that issues in my property are resolved quickly.', null),
@@ -54,7 +105,10 @@ VALUES
   ('33333333-bbbb-3333-3333-333333333333', 'Emergency contact details must include name, relationship, and phone number.')
 ON CONFLICT DO NOTHING;
 
--- 4. Enable RLS and create policies
+-- ======================================
+-- ENABLE RLS AND CREATE POLICIES
+-- ======================================
+
 ALTER TABLE public.epics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.acceptance_criteria ENABLE ROW LEVEL SECURITY;
@@ -73,10 +127,15 @@ CREATE POLICY "Allow all on acceptance_criteria" ON public.acceptance_criteria F
 DROP POLICY IF EXISTS "Allow all on mvp_flows" ON public.mvp_flows;
 CREATE POLICY "Allow all on mvp_flows" ON public.mvp_flows FOR ALL USING (true);
 
--- 5. Verification
-SELECT '=== MVP BUILDER SETUP COMPLETE ===' as status;
-SELECT 'Training Project:' as info, COUNT(*) as count FROM public.projects WHERE id = '00000000-0000-0000-0000-000000000001';
+-- ======================================
+-- VERIFICATION
+-- ======================================
+
+SELECT '=== CLEAN ALL PROJECT LINKS COMPLETE ===' as status;
+SELECT 'Training Project created:' as info, COUNT(*) as count FROM public.projects WHERE id = '00000000-0000-0000-0000-000000000001';
 SELECT 'Epics created:' as info, COUNT(*) as count FROM public.epics;
 SELECT 'Stories created:' as info, COUNT(*) as count FROM public.stories;
 SELECT 'Acceptance Criteria created:' as info, COUNT(*) as count FROM public.acceptance_criteria;
-SELECT 'MVP Builder is ready to use!' as success_message;
+
+-- Check for any backup tables created
+SELECT 'Backup tables created:' as info, COUNT(*) as count FROM information_schema.tables WHERE table_name LIKE '%_invalid_ids' AND table_schema = 'public';

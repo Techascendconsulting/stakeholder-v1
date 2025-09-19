@@ -32,6 +32,11 @@ import IntroductionToElicitation from '../Views/IntroductionToElicitation';
 import SolutionOptions from '../Views/SolutionOptions';
 import DesignHub from '../Views/DesignHub';
 import MVPHub from '../Views/MVPHub';
+import MyMentorship from '../Views/MyMentorship';
+import BookSession from '../Views/BookSession';
+import MentorFeedback from '../Views/MentorFeedback';
+import CareerCoaching from '../Views/CareerCoaching';
+import MyProgressWithMentor from '../Views/MyProgressWithMentor';
 // Training Hub Views
 import TrainingHubView from '../Views/TrainingHubView';
 import PracticeHubCardsView from '../Views/PracticeHubCardsView';
@@ -211,6 +216,17 @@ const MainLayout: React.FC = () => {
         return <CommunityHub />;
       case 'community-admin':
         return <AdminCommunityHub onBack={() => setCurrentView('dashboard')} />;
+      // Mentorship cases
+      case 'my-mentorship':
+        return <MyMentorship />;
+      case 'book-session':
+        return <BookSession />;
+      case 'mentor-feedback':
+        return <MentorFeedback />;
+      case 'career-coaching':
+        return <CareerCoaching />;
+      case 'my-progress-mentor':
+        return <MyProgressWithMentor />;
       default:
         return <ProjectsView />;
     }

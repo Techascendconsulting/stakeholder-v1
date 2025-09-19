@@ -6,6 +6,7 @@ import { Project } from '../../lib/types';
 import { RefinementMeetingView } from './RefinementMeetingView';
 import SprintPlanningMeetingView from './SprintPlanningMeetingView';
 import { DatabaseService } from '../../lib/database';
+import { fetchBacklogStories, fetchBacklogEpics, saveStoryToBacklog } from '../../services/backlogService';
 
 // Types
 interface AgileTicket {
@@ -197,21 +198,21 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
   };
 
   return (
-    <div className="h-full bg-white border-l border-gray-200 flex flex-col">
+    <div className="h-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {getTypeIcon(editingTicket.type)}
           <div>
-            <h3 className="font-semibold text-gray-900">{editingTicket.ticketNumber}</h3>
-            <p className="text-sm text-gray-500">{editingTicket.projectName}</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{editingTicket.ticketNumber}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{editingTicket.projectName}</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
-          <X size={20} className="text-gray-500" />
+          <X size={20} className="text-gray-500 dark:text-gray-400" />
         </button>
       </div>
 
@@ -219,23 +220,23 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
           <input
             type="text"
             value={editingTicket.title}
             onChange={(e) => handleFieldChange('title', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
 
         {/* Type, Priority, Status, Story Points */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
             <select
               value={editingTicket.type}
               onChange={(e) => handleFieldChange('type', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="Story">Story</option>
               <option value="Task">Task</option>
@@ -245,11 +246,11 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
             <select
               value={editingTicket.priority}
               onChange={(e) => handleFieldChange('priority', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
@@ -258,11 +259,11 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
             <select
               value={editingTicket.status}
               onChange={(e) => handleFieldChange('status', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="Draft">Draft</option>
               <option value="Ready for Refinement">Ready for Refinement</option>
@@ -276,14 +277,14 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Story Points</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Story Points</label>
             <input
               type="number"
               min="0"
               max="100"
               value={editingTicket.storyPoints || ''}
               onChange={(e) => handleFieldChange('storyPoints', e.target.value ? parseInt(e.target.value) : undefined)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter points"
             />
           </div>
@@ -291,24 +292,24 @@ const TicketDetailPanel: React.FC<TicketDetailPanelProps> = ({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
           <textarea
             value={editingTicket.description}
             onChange={(e) => handleFieldChange('description', e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
 
         {/* Acceptance Criteria (Stories only) */}
         {editingTicket.type === 'Story' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Acceptance Criteria</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Acceptance Criteria</label>
             <textarea
               value={editingTicket.acceptanceCriteria || ''}
               onChange={(e) => handleFieldChange('acceptanceCriteria', e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Define acceptance criteria..."
             />
           </div>
@@ -586,16 +587,37 @@ export const AgileHubView: React.FC = () => {
     if (!user?.id || !currentProject) return;
     
     try {
-      // Try to load from database first
-      const dbTickets = await DatabaseService.loadAgileTickets(user.id, currentProject.id);
+      // Try to load from backlog service first (stories table)
+      const backlogStories = await fetchBacklogStories(currentProject.id);
       
-      if (dbTickets && dbTickets.length > 0) {
-        console.log('✅ Loaded tickets from database:', dbTickets.length);
-        setTickets(dbTickets);
+      if (backlogStories && backlogStories.length > 0) {
+        console.log('✅ Loaded stories from backlog service:', backlogStories.length);
+        // Convert BacklogStory to AgileTicket format
+        const agileTickets = backlogStories.map(story => ({
+          id: story.id,
+          ticketNumber: story.ticketNumber,
+          projectId: story.projectId,
+          projectName: story.projectName,
+          type: story.type,
+          title: story.title, // Already mapped from summary
+          description: story.description,
+          acceptanceCriteria: story.acceptanceCriteria,
+          priority: story.priority,
+          status: story.status,
+          storyPoints: story.storyPoints,
+          epic: story.epic,
+          epicColor: story.epicColor,
+          createdAt: story.createdAt,
+          updatedAt: story.updatedAt,
+          userId: story.userId,
+          moscow: story.moscow
+        }));
         
-        // Update localStorage with database data
+        setTickets(agileTickets);
+        
+        // Update localStorage with backlog data
         const storageKey = getStorageKey('tickets');
-        localStorage.setItem(storageKey, JSON.stringify(dbTickets));
+        localStorage.setItem(storageKey, JSON.stringify(agileTickets));
       } else {
         // Fallback to localStorage if no database data
         const storageKey = getStorageKey('tickets');
@@ -659,6 +681,45 @@ export const AgileHubView: React.FC = () => {
     } catch (error) {
       console.error('❌ Error saving tickets to database:', error);
     }
+
+    // Also save stories to stories table for MVP Builder compatibility
+    try {
+      const storyTickets = ticketsWithSortOrder.filter(ticket => ticket.type === 'Story');
+      for (const ticket of storyTickets) {
+        // Map AgileTicket to story format
+        const storyData = {
+          summary: ticket.title, // Map title to summary
+          description: ticket.description,
+          moscow: mapPriorityToMoscow(ticket.priority),
+          epicId: ticket.epic ? getEpicIdByName(ticket.epic) : null,
+          projectId: currentProject.id,
+          createdBy: user.id
+        };
+
+        // Save to stories table
+        await saveStoryToBacklog(storyData);
+      }
+      console.log('✅ Stories synced to stories table for MVP Builder');
+    } catch (error) {
+      console.error('❌ Error syncing stories to stories table:', error);
+    }
+  };
+
+  // Helper function to map priority to MoSCoW
+  const mapPriorityToMoscow = (priority: string): 'Must' | 'Should' | 'Could' | 'Won\'t' => {
+    switch (priority) {
+      case 'High': return 'Must';
+      case 'Medium': return 'Should';
+      case 'Low': return 'Could';
+      default: return 'Should';
+    }
+  };
+
+  // Helper function to get epic ID by name (simplified - would need proper epic lookup)
+  const getEpicIdByName = (epicName: string): string | null => {
+    // This would need to be implemented with proper epic lookup
+    // For now, return null to avoid errors
+    return null;
   };
 
   const generateTicketNumber = (projectId: string, projectName: string) => {
@@ -1441,7 +1502,7 @@ export const AgileHubView: React.FC = () => {
                         <option value="In Progress">In Progress</option>
                         <option value="In Test">In Test</option>
                         <option value="Done">Done</option>
-                      </select>
+                     </select>
                       
                       {/* Epic Toggle Button */}
                       <button
@@ -2220,7 +2281,7 @@ export const AgileHubView: React.FC = () => {
         />
       )}
         </div> {/* Close main content area */}
-      </div>
+    </div>
   );
 };
 

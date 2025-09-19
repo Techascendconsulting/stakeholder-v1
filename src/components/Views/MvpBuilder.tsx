@@ -10,6 +10,7 @@ import {
   validateMvpFlow,
   fetchMvpFlow,
   testMvpBuilderConnection,
+  getMvpFlows,
   type Epic, 
   type Story 
 } from '../../services/mvpBuilderService';
@@ -44,19 +45,35 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   mode = 'training' 
 }) => {
   const { user } = useAuth();
-  const { selectedProject } = useApp();
+  const { selectedProject, projects } = useApp();
   
-  // Use passed projectId or fall back to selectedProject
-  const currentProjectId = projectId || selectedProject?.id;
+  // Resolve active project id
+  let activeProjectId: string | null = null;
+
+  if (projectId) {
+    activeProjectId = projectId;
+  } else if (selectedProject) {
+    activeProjectId = selectedProject.id;
+  } else if (projects && projects.length > 0) {
+    activeProjectId = projects[0].id;
+  }
+
+  console.log("🟢 Resolved activeProjectId:", activeProjectId);
+  console.log('🔄 MvpBuilder - Component initialized');
+  console.log('🔄 MvpBuilder - Props projectId:', projectId);
+  console.log('🔄 MvpBuilder - Selected project:', selectedProject);
+  console.log('🔄 MvpBuilder - Available projects:', projects?.length || 0);
   
   // State management
   const [epics, setEpics] = useState<Epic[]>([]);
-  const [selectedEpicId, setSelectedEpicId] = useState<string | null>(null);
   const [stories, setStories] = useState<Story[]>([]);
+  const [selectedEpicId, setSelectedEpicId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
   const [flowOrder, setFlowOrder] = useState<string[]>([]);
   const [expandedAC, setExpandedAC] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [validation, setValidation] = useState<{
     isValid: boolean;
     errors: string[];
@@ -65,66 +82,74 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
 
   // Load epics on component mount
   useEffect(() => {
-    const loadEpics = async () => {
+    console.log('🔄 MvpBuilder - useEffect triggered with activeProjectId:', activeProjectId);
+    
+    if (!activeProjectId) {
+      console.log('⚠️ No activeProjectId available, skipping epic loading');
+      return;
+    }
+    
+    const loadEpicsAndStories = async () => {
       try {
         setLoading(true);
-        
+        console.log('🔄 MvpBuilder - Starting to load epics...');
+
         // First test the connection
         console.log('🔍 MVP Builder - Testing connection...');
         const connectionTest = await testMvpBuilderConnection();
         console.log('🔍 Connection test result:', connectionTest);
-        
+
         if (!connectionTest.success) {
           console.error('❌ MVP Builder - Connection failed:', connectionTest.message);
+          setSetupError("MVP Builder database tables haven't been created yet. Please run the migration to get started.");
           return;
         }
-        
-        // Load epics based on mode
-        const data = await fetchEpics(mode === 'training' ? null : currentProjectId);
-        console.log('✅ MVP Builder - Epics loaded:', data);
-        setEpics(data);
-        
+
+        // Clear any previous setup errors
+        setSetupError(null);
+
+        // Load epics for the active project
+        console.log('🔄 MvpBuilder - Fetching epics for project:', activeProjectId);
+        const epicsData = await fetchEpics(activeProjectId);
+        console.log('✅ MvpBuilder - Epics loaded:', epicsData);
+
+        setEpics(epicsData);
+        console.log('✅ MvpBuilder - Epics state set, current epics length:', epicsData?.length || 0);
+
         // Auto-select first epic if available
-        if (data.length > 0) {
-          setSelectedEpicId(data[0].id);
+        if (epicsData.length > 0) {
+          setSelectedEpicId(epicsData[0].id);
         }
-      } catch (error) {
-        console.error('❌ MVP Builder - Error loading epics:', error);
-        // Show specific error message
-        if (error.message && error.message.includes('relation') && error.message.includes('does not exist')) {
-          console.error('❌ MVP Builder - Database tables not found. Migration may not have run successfully.');
+      } catch (error: any) {
+        console.error('❌ MvpBuilder - Error loading epics:', error);
+        if (error.message && (error.message.includes('relation') || error.message.includes('does not exist'))) {
+          setSetupError("MVP Builder database tables haven't been created yet. Please run the migration to get started.");
         }
       } finally {
         setLoading(false);
       }
     };
 
-    loadEpics();
-  }, [currentProjectId, mode]);
+    loadEpicsAndStories();
+  }, [activeProjectId]);
 
   // Load stories when epic is selected
   useEffect(() => {
-    const loadStories = async () => {
+    const loadStories = () => {
       if (!selectedEpicId) return;
-      
-      try {
-        const storiesData = await fetchStoriesWithAC(selectedEpicId);
-        setStories(storiesData);
-        
-        // Load existing MVP flow if available
-        const existingFlow = await fetchMvpFlow(selectedEpicId);
-        if (existingFlow) {
-          setFlowOrder(existingFlow.story_ids);
-        } else {
-          setFlowOrder([]);
-        }
-      } catch (error) {
-        console.error('Error loading stories:', error);
+
+      const selectedEpic = epics.find(epic => epic.id === selectedEpicId);
+      if (selectedEpic && selectedEpic.stories) {
+        setStories(selectedEpic.stories);
+      } else {
+        setStories([]);
       }
+
+      console.log('🔄 Epic switched, stories set:', selectedEpic?.stories?.length || 0);
     };
 
     loadStories();
-  }, [selectedEpicId]);
+  }, [selectedEpicId, epics]);
 
   // Validate flow whenever stories or flowOrder changes
   useEffect(() => {
@@ -156,6 +181,10 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
     );
   };
 
+  const handleStorySelect = (story: Story) => {
+    setSelectedStory(story);
+  };
+
   const handleDragStart = (e: React.DragEvent, storyId: string) => {
     e.dataTransfer.setData('text/plain', storyId);
   };
@@ -178,21 +207,41 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   };
 
   const handleSaveMVP = async () => {
-    if (!selectedEpicId || !user) return;
+    if (!user) return;
     
     try {
       setSaving(true);
-      const flowOrderNumbers = flowOrder.map((_, index) => index + 1);
       
-      await saveMvpFlow({
-        epicId: selectedEpicId,
-        storyIds: flowOrder,
-        flowOrder: flowOrderNumbers,
-        validated: validation.isValid,
-        createdBy: user.id
-      });
+      // Save each story in the flow to the MVP flows table
+      for (const storyId of flowOrder) {
+        const story = stories.find(s => s.id === storyId);
+        if (story) {
+          await saveMvpFlow({
+            projectId: activeProjectId,
+            epicId: story.epic_id || selectedEpicId,
+            storyId: story.id,
+            priority: story.moscow || 'Must',
+            inMvp: true,
+            createdBy: user.id
+          });
+        }
+      }
       
-      alert('MVP saved successfully!');
+      // Also save stories not in MVP as "not in MVP"
+      for (const story of stories) {
+        if (!flowOrder.includes(story.id)) {
+          await saveMvpFlow({
+            projectId: activeProjectId,
+            epicId: story.epic_id || selectedEpicId,
+            storyId: story.id,
+            priority: story.moscow || 'Should',
+            inMvp: false,
+            createdBy: user.id
+          });
+        }
+      }
+      
+      alert('✅ MVP saved successfully!');
     } catch (error) {
       console.error('Error saving MVP:', error);
       alert('Error saving MVP. Please try again.');
@@ -259,28 +308,58 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   }
 
   // Show migration notice if no epics are found and we're not loading
-  if (!loading && epics.length === 0) {
+  // Show setup error if tables are missing
+  if (setupError) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
           <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">MVP Builder Setup Required</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            The MVP Builder database tables haven't been created yet. Please run the migration to get started.
+            {setupError}
           </p>
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 text-left">
             <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Next Steps:</h3>
             <ol className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
               <li>1. Go to your Supabase Dashboard</li>
               <li>2. Open SQL Editor</li>
-              <li>3. Copy and run the migration from <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">MVP_BUILDER_MIGRATION_FIXED.sql</code></li>
-              <li>4. Run the diagnostic: <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">CHECK_MVP_TABLES.sql</code></li>
-              <li>5. Refresh this page</li>
+              <li>3. Copy and run the migration from <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">COMPLETE_MVP_BUILDER_SETUP.sql</code></li>
+              <li>4. Refresh this page</li>
             </ol>
           </div>
           <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
             <p>Debug Info:</p>
-            <p>• Project ID: {selectedProject?.id}</p>
+            <p>• Project ID: {activeProjectId}</p>
+            <p>• Loading: {loading ? 'Yes' : 'No'}</p>
+            <p>• Epics found: {epics.length}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no epics found (but tables exist)
+  console.log('🔄 MvpBuilder - Render check - Loading:', loading, 'Epics length:', epics.length, 'Setup error:', setupError);
+  if (!loading && epics.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <BookOpen className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Epics Found</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            No epics found in this project. You can create epics in the Backlog or run the seed script to add sample data.
+          </p>
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 text-left">
+            <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Options:</h3>
+            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <li>• Go to Backlog and create an Epic</li>
+              <li>• Run the seed script to add sample training data</li>
+              <li>• Switch to a different project that has epics</li>
+            </ul>
+          </div>
+          <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+            <p>Debug Info:</p>
+            <p>• Project ID: {activeProjectId}</p>
             <p>• Loading: {loading ? 'Yes' : 'No'}</p>
             <p>• Epics found: {epics.length}</p>
           </div>
@@ -372,7 +451,7 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                       <span className="font-medium">{epic.title}</span>
                     </div>
                     <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded-full">
-                      {stories.length}
+                      {epic.stories?.length || 0}
                     </span>
                   </div>
                 </button>
@@ -398,10 +477,11 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                     <p className="text-sm text-gray-500 dark:text-gray-400">Assign MoSCoW priorities and select stories for your MVP flow</p>
                   </div>
                   <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
-                    {stories.map(story => (
-                      <div
+                    {selectedEpic.stories?.map(story => (
+                      <button
                         key={story.id}
-                        className="p-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-md transition-all duration-200 bg-gray-50 dark:bg-gray-700/50"
+                        onClick={() => handleStorySelect(story)}
+                        className={`w-full text-left p-2 rounded-lg transition-all duration-200 hover:shadow-md border ${selectedStory?.id === story.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50'}`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, story.id)}
                       >
@@ -416,6 +496,11 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                             <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                               {generateStoryTitle(story.summary)}
                             </p>
+                            {story.description && (
+                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 truncate">
+                                {story.description}
+                              </p>
+                            )}
                             
                             {/* Acceptance Criteria - Compact */}
                             {story.acceptance_criteria && story.acceptance_criteria.length > 0 && (
@@ -433,13 +518,17 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                             )}
                             
                             {/* Expanded AC */}
-                            {expandedAC.includes(story.id) && story.acceptance_criteria && story.acceptance_criteria.length > 0 && (
+                            {expandedAC.includes(story.id) && (
                               <div className="mt-1 space-y-1">
-                                {story.acceptance_criteria.map((ac, index) => (
-                                  <div key={index} className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-1 rounded">
-                                    {ac}
-                                  </div>
-                                ))}
+                                {story.acceptance_criteria && story.acceptance_criteria.length > 0 ? (
+                                  story.acceptance_criteria.map((ac, index) => (
+                                    <div key={ac.id || index} className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-1 rounded">
+                                      {ac.description}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <p className="text-xs text-gray-400 italic">No acceptance criteria yet</p>
+                                )}
                               </div>
                             )}
                           </div>
@@ -461,9 +550,9 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                             </select>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     ))}
-                    {stories.length === 0 && (
+                    {(!selectedEpic.stories || selectedEpic.stories.length === 0) && (
                       <div className="text-center py-8">
                         <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                         <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-1">No Stories yet</h4>
@@ -471,6 +560,27 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                       </div>
                     )}
                   </div>
+                  {/* Selected Story Detail Panel */}
+                  {selectedStory && (
+                    <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Selected Story</h4>
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">{selectedStory.summary}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{selectedStory.description || 'No description provided.'}</p>
+                        <div className="mt-2 pl-4">
+                          {selectedStory.acceptance_criteria?.length ? (
+                            <ul className="list-disc text-xs text-gray-600 dark:text-gray-400">
+                              {selectedStory.acceptance_criteria.map((ac) => (
+                                <li key={ac.id}>• {ac.description}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-xs text-gray-400 italic">No acceptance criteria yet</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Flow Builder Area */}

@@ -1,23 +1,148 @@
 -- ======================================
--- COMPLETE MVP BUILDER SETUP
--- Run this AFTER the ChatGPT script to add MVP Builder functionality
+-- CHATGPT BULLETPROOF MIGRATION
+-- Fixes project_id issue once and for all
 -- ======================================
 
--- 1. Add missing columns to epics table
-ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS title TEXT;
-ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS description TEXT;
-ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS created_by UUID;
-ALTER TABLE public.epics ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+-- 1. Add project_id to epics
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name='epics' AND column_name='project_id'
+  ) THEN
+    ALTER TABLE epics ADD COLUMN project_id uuid;
+  END IF;
+END$$;
 
--- 2. Add missing columns to stories table
-ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS epic_id UUID;
-ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS summary TEXT;
-ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS description TEXT;
-ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS moscow TEXT CHECK (moscow IN ('Must', 'Should', 'Could', 'Won''t'));
-ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS created_by UUID;
-ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+-- 2. Add project_id to stories
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name='stories' AND column_name='project_id'
+  ) THEN
+    ALTER TABLE stories ADD COLUMN project_id uuid;
+  END IF;
+END$$;
 
--- 3. Insert MVP Builder training data
+-- 3. Add project_id to acceptance_criteria
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name='acceptance_criteria' AND column_name='project_id'
+  ) THEN
+    ALTER TABLE acceptance_criteria ADD COLUMN project_id uuid;
+  END IF;
+END$$;
+
+-- 4. Add project_id to mvp_flows
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name='mvp_flows' AND column_name='project_id'
+  ) THEN
+    ALTER TABLE mvp_flows ADD COLUMN project_id uuid;
+  END IF;
+END$$;
+
+-- 5. Add project_id to agile_tickets
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name='agile_tickets' AND column_name='project_id'
+  ) THEN
+    ALTER TABLE agile_tickets ADD COLUMN project_id uuid;
+  END IF;
+END$$;
+
+-- 6. Ensure a "Training Project" exists (default project)
+INSERT INTO projects (id, title, description, created_at)
+VALUES (
+  '00000000-0000-0000-0000-000000000001',
+  'Training Project',
+  'Default project used for training and seed data',
+  NOW()
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- 7. Backfill epics without project_id
+UPDATE epics
+SET project_id = '00000000-0000-0000-0000-000000000001'
+WHERE project_id IS NULL;
+
+-- 8. Backfill stories without project_id
+UPDATE stories
+SET project_id = '00000000-0000-0000-0000-000000000001'
+WHERE project_id IS NULL;
+
+-- 9. Backfill acceptance_criteria without project_id
+UPDATE acceptance_criteria
+SET project_id = '00000000-0000-0000-0000-000000000001'
+WHERE project_id IS NULL;
+
+-- 10. Backfill mvp_flows without project_id
+UPDATE mvp_flows
+SET project_id = '00000000-0000-0000-0000-000000000001'
+WHERE project_id IS NULL;
+
+-- 11. Backfill agile_tickets without project_id
+UPDATE agile_tickets
+SET project_id = '00000000-0000-0000-0000-000000000001'
+WHERE project_id IS NULL;
+
+-- 12. Add foreign key constraints AFTER all project_id columns exist
+DO $$
+BEGIN
+  -- Epics → Projects
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name='epics_project_id_fkey'
+  ) THEN
+    ALTER TABLE epics ADD CONSTRAINT epics_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- Stories → Projects
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name='stories_project_id_fkey'
+  ) THEN
+    ALTER TABLE stories ADD CONSTRAINT stories_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- Acceptance Criteria → Projects
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name='ac_project_id_fkey'
+  ) THEN
+    ALTER TABLE acceptance_criteria ADD CONSTRAINT ac_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- MVP Flows → Projects
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name='mvp_flows_project_id_fkey'
+  ) THEN
+    ALTER TABLE mvp_flows ADD CONSTRAINT mvp_flows_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- Agile Tickets → Projects
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name='agile_tickets_project_id_fkey'
+  ) THEN
+    ALTER TABLE agile_tickets ADD CONSTRAINT agile_tickets_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+END$$;
+
+-- 13. Insert MVP Builder training data
 INSERT INTO public.epics (id, project_id, title, description, created_by)
 VALUES 
   ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001', 'Tenant Repair Management', 'As a tenant, I want to raise and manage repair requests so that issues in my property are resolved quickly.', null),
@@ -54,29 +179,10 @@ VALUES
   ('33333333-bbbb-3333-3333-333333333333', 'Emergency contact details must include name, relationship, and phone number.')
 ON CONFLICT DO NOTHING;
 
--- 4. Enable RLS and create policies
-ALTER TABLE public.epics ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.stories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.acceptance_criteria ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.mvp_flows ENABLE ROW LEVEL SECURITY;
-
--- Create simple RLS policies (allow all for training)
-DROP POLICY IF EXISTS "Allow all on epics" ON public.epics;
-CREATE POLICY "Allow all on epics" ON public.epics FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "Allow all on stories" ON public.stories;
-CREATE POLICY "Allow all on stories" ON public.stories FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "Allow all on acceptance_criteria" ON public.acceptance_criteria;
-CREATE POLICY "Allow all on acceptance_criteria" ON public.acceptance_criteria FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "Allow all on mvp_flows" ON public.mvp_flows;
-CREATE POLICY "Allow all on mvp_flows" ON public.mvp_flows FOR ALL USING (true);
-
--- 5. Verification
-SELECT '=== MVP BUILDER SETUP COMPLETE ===' as status;
-SELECT 'Training Project:' as info, COUNT(*) as count FROM public.projects WHERE id = '00000000-0000-0000-0000-000000000001';
+-- 14. Verification
+SELECT '=== CHATGPT BULLETPROOF MIGRATION COMPLETE ===' as status;
+SELECT 'Training Project created:' as info, COUNT(*) as count FROM public.projects WHERE id = '00000000-0000-0000-0000-000000000001';
 SELECT 'Epics created:' as info, COUNT(*) as count FROM public.epics;
 SELECT 'Stories created:' as info, COUNT(*) as count FROM public.stories;
 SELECT 'Acceptance Criteria created:' as info, COUNT(*) as count FROM public.acceptance_criteria;
-SELECT 'MVP Builder is ready to use!' as success_message;
+SELECT 'All project_id columns added and backfilled!' as success_message;

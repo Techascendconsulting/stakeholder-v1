@@ -4,23 +4,29 @@ import { supabase } from '../lib/supabase';
 export interface Epic {
   id: string;
   title: string;
-  description?: string;
-  created_at: string;
+  project_id: string;
+  archived: boolean;
+  stories?: Story[];
 }
 
 export interface Story {
   id: string;
   summary: string;
-  description?: string;
-  moscow?: 'Must' | 'Should' | 'Could' | 'Won\'t';
-  acceptance_criteria?: string[];
-  created_at: string;
+  description: string;
+  moscow?: string;
+  epic_id?: string;
+  project_id?: string;
+  created_at?: string;
+  archived?: boolean;
+  acceptance_criteria?: AcceptanceCriteria[];
 }
 
 export interface AcceptanceCriteria {
   id: string;
-  description: string;
-  created_at: string;
+  description: string; // real column in DB
+  created_at?: string;
+  project_id?: string;
+  archived?: boolean;
 }
 
 export interface MvpFlow {
@@ -53,6 +59,8 @@ export async function testMvpBuilderConnection(): Promise<{
       .select('id')
       .limit(1);
     
+    console.log('🔍 Test query data:', data);
+    
     if (error) {
       if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
         return { 
@@ -75,31 +83,57 @@ export async function testMvpBuilderConnection(): Promise<{
 }
 
 // Fetch epics by project (or all epics for training mode)
-export async function fetchEpics(projectId?: string | null): Promise<Epic[]> {
+export async function fetchEpics(projectId?: string): Promise<Epic[]> {
   try {
-    console.log('🔄 Fetching epics for project:', projectId || 'all (training mode)');
-    
-    let query = supabase
+    // Force fallback to training project if projectId is null or "proj-1"
+    const activeProjectId =
+      !projectId || projectId === "proj-1"
+        ? "00000000-0000-0000-0000-000000000001"
+        : projectId;
+    console.log('🔄 Fetching epics for project:', activeProjectId);
+
+    const query = supabase
       .from('epics')
-      .select('id, title, description, created_at');
-    
-    // Only filter by project if projectId is provided
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
-    
-    const { data, error } = await query.order('created_at', { ascending: true });
+      .select(`
+        id,
+        title,
+        project_id,
+        archived,
+        stories:stories!stories_epic_id_fkey (
+          id,
+          summary,
+          description,
+          moscow,
+          epic_id,
+          project_id,
+          archived,
+          created_at,
+          acceptance_criteria:acceptance_criteria!acceptance_criteria_story_id_fkey (
+            id,
+            description,
+            created_at,
+            project_id,
+            archived
+          )
+        )
+      `)
+      .eq('project_id', activeProjectId)
+      .eq('archived', false)
+      .order('id', { ascending: true });
+
+    const { data, error } = await query;
+
+    // 🔍 Dump full nested JSON response for inspection
+    console.log(
+      '🔍 Raw Supabase response (epics + stories + acceptance_criteria):',
+      JSON.stringify(data, null, 2)
+    );
 
     if (error) {
       console.error('❌ Error fetching epics:', error);
-      // Return empty array if table doesn't exist yet
-      if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
-        console.warn('⚠️ Epics table does not exist yet. Please run the MVP Builder migration.');
-        return [];
-      }
-      throw error;
+      return [];
     }
-    console.log('✅ Epics fetched successfully:', data?.length || 0, 'epics');
+
     return data || [];
   } catch (error) {
     console.error('❌ Error in fetchEpics:', error);
@@ -114,6 +148,7 @@ export async function fetchStories(epicId: string): Promise<Story[]> {
       .from('stories')
       .select('id, summary, description, moscow, created_at')
       .eq('epic_id', epicId)
+      .eq('archived', false)  // Only show non-archived stories
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -137,6 +172,7 @@ export async function fetchAcceptanceCriteria(storyId: string): Promise<Acceptan
     .from('acceptance_criteria')
     .select('id, description, created_at')
     .eq('story_id', storyId)
+    .eq('archived', false)  // Only show non-archived acceptance criteria
     .order('created_at', { ascending: true });
 
   if (error) throw error;
@@ -160,45 +196,17 @@ export async function fetchStoriesWithAC(epicId: string): Promise<Story[]> {
       )
     `)
     .eq('epic_id', epicId)
+    .eq('archived', false)  // Only show non-archived stories
     .order('created_at', { ascending: true });
 
   if (error) throw error;
   
-  return (data || []).map(story => ({
+  return (data || []).map((story: any) => ({
     ...story,
     acceptance_criteria: story.acceptance_criteria?.map((ac: any) => ac.description) || []
   }));
 }
 
-// Save MVP flow
-export async function saveMvpFlow({
-  epicId,
-  storyIds,
-  flowOrder,
-  validated = false,
-  createdBy
-}: {
-  epicId: string;
-  storyIds: string[];
-  flowOrder: number[];
-  validated?: boolean;
-  createdBy: string;
-}): Promise<MvpFlow> {
-  const { data, error } = await supabase
-    .from('mvp_flows')
-    .upsert({
-      epic_id: epicId,
-      story_ids: storyIds,
-      flow_order: flowOrder,
-      validated,
-      created_by: createdBy
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
 
 // Update story MoSCoW priority
 export async function updateStoryPriority(storyId: string, moscow: 'Must' | 'Should' | 'Could' | 'Won\'t'): Promise<Story> {
@@ -211,6 +219,55 @@ export async function updateStoryPriority(storyId: string, moscow: 'Must' | 'Sho
 
   if (error) throw error;
   return data;
+}
+
+// Save MVP flow to database
+export async function saveMvpFlow({
+  projectId,
+  epicId,
+  storyId,
+  priority,
+  inMvp,
+  createdBy
+}: {
+  projectId?: string | null;
+  epicId: string;
+  storyId: string;
+  priority: 'Must' | 'Should' | 'Could' | 'Won\'t';
+  inMvp: boolean;
+  createdBy: string;
+}): Promise<void> {
+  const { error } = await supabase
+    .from('mvp_flows')
+    .upsert({
+      project_id: projectId,
+      epic_id: epicId,
+      story_id: storyId,
+      priority,
+      in_mvp: inMvp,
+      created_by: createdBy
+    }, {
+      onConflict: 'project_id,epic_id,story_id,created_by'
+    });
+
+  if (error) throw error;
+}
+
+// Get MVP flows for a user
+export async function getMvpFlows(projectId?: string | null, createdBy?: string): Promise<any[]> {
+  let query = supabase.from('mvp_flows').select('*');
+  
+  if (projectId !== undefined) {
+    query = query.eq('project_id', projectId);
+  }
+  
+  if (createdBy) {
+    query = query.eq('created_by', createdBy);
+  }
+  
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
 }
 
 // Create a new epic

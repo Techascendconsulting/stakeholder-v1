@@ -20,7 +20,10 @@ import {
   Layers,
   PenTool,
   Rocket,
-  Users
+  Users,
+  Calendar,
+  MessageSquare,
+  TrendingUp
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +36,20 @@ interface SidebarProps {
   className?: string;
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<any>;
+  isCollapsible?: boolean;
+  subItems?: SubMenuItem[];
+}
+
+interface SubMenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<any>;
+}
+
 
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
@@ -41,11 +58,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { isAdmin } = useAdmin();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
 
 
   // Admin-specific menu items
-  const adminMenuItems = [
+  const adminMenuItems: MenuItem[] = [
     { 
       id: 'dashboard', 
       label: 'Admin Dashboard', 
@@ -64,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   ];
 
   // Student menu items
-  const studentMenuItems = [
+  const studentMenuItems: MenuItem[] = [
     { 
       id: 'welcome', 
       label: 'Welcome', 
@@ -72,8 +90,125 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     },
     { 
       id: 'dashboard', 
-      label: 'Dashboard', 
+      label: 'My Dashboard', 
       icon: LayoutDashboard
+    },
+    { 
+      id: 'learn', 
+      label: 'My Learning', 
+      icon: BookOpen,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'project-initiation', 
+          label: 'Project Initiation', 
+          icon: PlayCircle
+        },
+        { 
+          id: 'elicitation', 
+          label: 'Requirements Elicitation', 
+          icon: BookOpen
+        },
+        { 
+          id: 'requirements-engineering', 
+          label: 'Requirements Engineering', 
+          icon: FileText
+        },
+        { 
+          id: 'solution-options', 
+          label: 'Solution Options', 
+          icon: Layers
+        },
+        { 
+          id: 'design-hub', 
+          label: 'Design', 
+          icon: PenTool
+        },
+        { 
+          id: 'mvp-hub', 
+          label: 'MVP', 
+          icon: Rocket
+        },
+        { 
+          id: 'agile-scrum', 
+          label: 'Agile Scrum', 
+          icon: Target
+        }
+      ]
+    },
+    { 
+      id: 'my-practice', 
+      label: 'My Practice', 
+      icon: Target,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'practice-2', 
+          label: 'Elicitation Practice', 
+          icon: Target
+        },
+        { 
+          id: 'documentation-practice', 
+          label: 'Documentation Practice', 
+          icon: FileText
+        },
+        { 
+          id: 'mvp-practice', 
+          label: 'MVP Practice', 
+          icon: Rocket
+        },
+        { 
+          id: 'scrum-practice', 
+          label: 'Scrum Practice', 
+          icon: Target
+        }
+      ]
+    },
+    { 
+      id: 'hands-on-project', 
+      label: 'Hands-on Project', 
+      icon: FolderOpen,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'project',
+          label: 'My Project', 
+          icon: FolderOpen
+        }
+      ]
+    },
+    { 
+      id: 'create-project',
+      label: 'Create Project', 
+      icon: Plus
+    },
+    { 
+      id: 'my-mentorship', 
+      label: 'My Mentorship', 
+      icon: Users,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'book-session', 
+          label: 'Book a Session', 
+          icon: Calendar
+        },
+        { 
+          id: 'mentor-feedback', 
+          label: 'Mentor Feedback', 
+          icon: MessageSquare
+        },
+        { 
+          id: 'career-coaching', 
+          label: 'Career Coaching', 
+          icon: Target
+        },
+        { 
+          id: 'my-progress-mentor', 
+          label: 'My Progress with Mentor', 
+          icon: TrendingUp
+        }
+      ]
     },
     { 
       id: 'motivation', 
@@ -81,59 +216,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: Heart
     },
     { 
-      id: 'learn', 
-      label: 'Learn', 
-      icon: BookOpen
-    },
-    { 
-      id: 'project-initiation', 
-      label: 'Project Initiation', 
-      icon: PlayCircle
-    },
-    { 
-      id: 'practice-2', 
-      label: 'Elicitation Practice', 
-      icon: Target
-    },
-    { 
-      id: 'requirements-engineering', 
-      label: 'Requirements Engineering', 
-      icon: FileText
-    },
-    { 
-      id: 'solution-options', 
-      label: 'Solution Options', 
-      icon: Layers
-    },
-    { 
-      id: 'design-hub', 
-      label: 'Design', 
-      icon: PenTool
-    },
-    { 
-      id: 'mvp-hub', 
-      label: 'MVP', 
-      icon: Rocket
-    },
-    { 
       id: 'community-hub', 
       label: 'Community Hub', 
       icon: Users
-    },
-    { 
-      id: 'scrum-practice', 
-      label: 'Scrum Practice', 
-      icon: Target
-    },
-    { 
-      id: 'project',
-      label: 'Project', 
-      icon: FolderOpen
-    },
-    { 
-      id: 'create-project',
-      label: 'Create Project', 
-      icon: Plus
     }
   ];
 
@@ -154,6 +239,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     if (!isCollapsed) {
       setShowUserMenu(false);
     }
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
   };
 
   // Debug: log resize and sidebar state to help trace whitespace issues when exiting fullscreen
@@ -245,13 +342,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
+            const isExpanded = expandedSections.has(item.id);
+            const hasSubItems = item.subItems && item.subItems.length > 0;
 
             return (
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => {
-                    setCurrentView(item.id as any);
-                    console.debug('[Sidebar] sectionClick', { id: item.id });
+                    if (hasSubItems && item.isCollapsible) {
+                      toggleSection(item.id);
+                    } else {
+                      setCurrentView(item.id as any);
+                      console.debug('[Sidebar] sectionClick', { id: item.id });
+                    }
                   }}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-2' : 'space-x-3 px-2 py-1.5'} rounded-lg text-left transition-all duration-200 text-sm font-medium ${
                     isActive
@@ -262,10 +365,49 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                 >
                   <Icon size={isCollapsed ? 20 : 16} className={isActive ? 'text-white' : 'text-purple-200'} />
                   {!isCollapsed && (
-                    <span className="truncate">{item.label}</span>
+                    <>
+                      <span className="truncate">{item.label}</span>
+                      {hasSubItems && item.isCollapsible && (
+                        <div className="ml-auto">
+                          {isExpanded ? (
+                            <ChevronUp size={14} className="text-purple-200" />
+                          ) : (
+                            <ChevronDown size={14} className="text-purple-200" />
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </button>
 
+                {/* Sub-items for collapsible sections */}
+                {!isCollapsed && hasSubItems && item.isCollapsible && isExpanded && item.subItems && (
+                  <ul className="ml-4 mt-1 space-y-1">
+                    {item.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      const isSubActive = currentView === subItem.id;
+                      
+                      return (
+                        <li key={subItem.id}>
+                          <button
+                            onClick={() => {
+                              setCurrentView(subItem.id as any);
+                              console.debug('[Sidebar] subItemClick', { id: subItem.id });
+                            }}
+                            className={`w-full flex items-center space-x-3 px-2 py-1.5 rounded-lg text-left transition-all duration-200 text-sm font-medium ${
+                              isSubActive
+                                ? 'bg-white/20 text-white shadow-sm backdrop-blur-sm'
+                                : 'text-purple-100 hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            <SubIcon size={14} className={isSubActive ? 'text-white' : 'text-purple-200'} />
+                            <span className="truncate">{subItem.label}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
 
                 {/* Tooltip for collapsed mode */}
                 {isCollapsed && (
