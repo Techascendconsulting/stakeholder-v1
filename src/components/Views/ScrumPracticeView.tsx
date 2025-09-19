@@ -60,6 +60,43 @@ const getSections = (handleSetActiveView: (view: 'main' | 'backlog-refinement' |
       setSelectedTheme("from-teal-500 to-cyan-500");
       console.log("Navigate to retrospective");
     }
+  },
+  {
+    title: "Practice",
+    description: "Practice user stories and acceptance criteria with interactive exercises and feedback.",
+    icon: Target,
+    artwork: "🎯💪",
+    color: "from-purple-600 to-pink-600",
+    onClick: () => {
+      setSelectedTheme("from-purple-600 to-pink-600");
+      setCurrentView('user-story-checker');
+      // Navigate to TrainingUI with practice view
+      localStorage.setItem('trainingUI_view', 'practice');
+    }
+  },
+  {
+    title: "Advanced Practice",
+    description: "Advanced exercises and complex scenarios for experienced practitioners.",
+    icon: Zap,
+    artwork: "⚡🔥",
+    color: "from-blue-500 to-purple-600",
+    onClick: () => {
+      setSelectedTheme("from-blue-500 to-purple-600");
+      setCurrentView('user-story-checker');
+      // Navigate to TrainingUI with advanced view
+      localStorage.setItem('trainingUI_view', 'advanced');
+    }
+  },
+  {
+    title: "Scrum Hub",
+    description: "Access the comprehensive Scrum Hub with all agile tools and features.",
+    icon: TrendingUp,
+    artwork: "🚀📊",
+    color: "from-green-600 to-emerald-600",
+    onClick: () => {
+      setSelectedTheme("from-green-600 to-emerald-600");
+      setCurrentView('agile-scrum');
+    }
   }
 ];
 

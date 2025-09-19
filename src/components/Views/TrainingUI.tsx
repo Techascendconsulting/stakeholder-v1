@@ -71,32 +71,31 @@ export default function TrainingUI() {
             >
               Walkthrough
             </button>
-            <button
-              onClick={() => setView("practice")}
-              className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
-                view === "practice"
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Practice
-            </button>
-            <button
-              onClick={() => setView("advanced")}
-              className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
-                view === "advanced"
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Advanced Practice
-            </button>
-            <button
-              onClick={() => setCurrentView('agile-scrum')}
-              className="px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
-            >
-              Scrum Hub
-            </button>
+            {/* Only show Practice and Advanced buttons when in those views */}
+            {(view === "practice" || view === "advanced") && (
+              <>
+                <button
+                  onClick={() => setView("practice")}
+                  className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
+                    view === "practice"
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Practice
+                </button>
+                <button
+                  onClick={() => setView("advanced")}
+                  className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 font-medium ${
+                    view === "advanced"
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  Advanced Practice
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -143,6 +142,8 @@ export default function TrainingUI() {
     </StakeholderBotProvider>
   );
 }
+
+
 
 
 
