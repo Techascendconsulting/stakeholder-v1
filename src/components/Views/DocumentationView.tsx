@@ -58,6 +58,20 @@ const DocumentationView: React.FC = () => {
         'Change impact analysis',
         'Coverage tracking'
       ]
+    },
+    {
+      id: 'user-stories-acceptance-criteria',
+      title: 'User Stories & Acceptance Criteria',
+      description: 'Master the art of writing clear user stories and defining comprehensive acceptance criteria for agile development.',
+      icon: Target,
+      color: 'from-indigo-500 to-purple-500',
+      bgColor: 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20',
+      topics: [
+        'User story structure and format',
+        'Acceptance criteria best practices',
+        'Backlog item preparation',
+        'Refinement techniques'
+      ]
     }
   ];
 
@@ -76,7 +90,7 @@ const DocumentationView: React.FC = () => {
         </div>
 
         {/* Documentation Topics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {documentationTopics.map((topic) => {
             const IconComponent = topic.icon;
             return (
