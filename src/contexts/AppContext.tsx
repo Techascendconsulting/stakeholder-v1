@@ -67,7 +67,7 @@ export const useApp = () => {
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth()
-  const { isAdmin } = useAdmin()
+  const { isAdmin, isLoading: adminLoading } = useAdmin()
   
   // Track hydration state to prevent blink effect - start as true to prevent flash
   const [isHydrated, setIsHydrated] = useState(true)
@@ -312,10 +312,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       
       // Only redirect admin users to admin panel if they're in specific restricted views
       // Allow admins to access learning content and practice areas
-      if (isAdmin && (currentView === 'welcome' || currentView === 'training-hub' || currentView === 'practice')) {
+      // Wait for admin loading to complete before making redirect decisions
+      if (!adminLoading && isAdmin && (currentView === 'welcome' || currentView === 'training-hub' || currentView === 'practice')) {
         console.log('🔐 ADMIN_EFFECT: Admin user detected in restricted student view, redirecting to admin panel')
+        console.log('🔐 ADMIN_EFFECT: Current view that triggered redirect:', currentView)
         setCurrentViewState('admin')
         localStorage.setItem('currentView', 'admin')
+      } else if (!adminLoading && isAdmin) {
+        console.log('🔐 ADMIN_EFFECT: Admin user on learning page, allowing access to:', currentView)
+      } else if (adminLoading) {
+        console.log('🔐 ADMIN_EFFECT: Admin status still loading, waiting...')
       }
     } else {
       console.log('⏳ USER_EFFECT: User state is loading or no change, doing nothing')
@@ -323,16 +329,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // Update previous user reference
     prevUser.current = user
-  }, [user, currentView, selectedProject, isAdmin])
+  }, [user, currentView, selectedProject, isAdmin, adminLoading])
 
   // Set default view for admin users on initial load (only from welcome page)
   useEffect(() => {
-    if (user && isAdmin && currentView === 'welcome') {
+    if (user && !adminLoading && isAdmin && currentView === 'welcome') {
       console.log('🔐 ADMIN_INIT: Admin user detected on welcome page, redirecting to admin panel')
       setCurrentViewState('admin')
       localStorage.setItem('currentView', 'admin')
+    } else if (user && !adminLoading && isAdmin) {
+      console.log('🔐 ADMIN_INIT: Admin user detected, but staying on current view:', currentView)
+    } else if (adminLoading) {
+      console.log('🔐 ADMIN_INIT: Admin status still loading, waiting...')
     }
-  }, [user, isAdmin, currentView])
+  }, [user, isAdmin, currentView, adminLoading])
 
   // Mock user progress data
   const userProgress = {
