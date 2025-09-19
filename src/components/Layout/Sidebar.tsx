@@ -181,6 +181,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           icon: FolderOpen
         },
         { 
+          id: 'my-project-meetings',
+          label: 'My Project Meetings', 
+          icon: Users
+        },
+        { 
           id: 'deliverables',
           label: 'My Deliverables', 
           icon: FileText
