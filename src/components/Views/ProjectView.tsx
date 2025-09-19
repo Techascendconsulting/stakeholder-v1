@@ -8,27 +8,27 @@ const ProjectView: React.FC<{ projectId: string }> = ({ projectId }) => {
   const { updateSetupData } = useMeetingSetup();
 
   const handleSetupComplete = () => {
-    // Route based on meeting type selected during setup
-    // Default to transcript meeting if none selected
+    // Always route to meeting mode selection page after setup is complete
     try {
-      // Meeting type is stored in context; we optimistically route to voice-only if chosen
-      const raw = localStorage.getItem("meetingSetupData");
+      // Set selected stakeholders in global context
+      const raw = localStorage.getItem("meetingSetupProgress");
       const setup = raw ? JSON.parse(raw) : {};
       
-      // Set selected stakeholders in global context
-      const type = setup?.meetingType || "text";
-      if (setup?.selectedStakeholders && Array.isArray(setup.selectedStakeholders)) {
-        const selectedStakeholderIds = setup.selectedStakeholders;
+      console.log("🔍 PROJECT_VIEW: Setup data:", setup);
+      if (setup?.meetingData?.selectedStakeholders && Array.isArray(setup.meetingData.selectedStakeholders)) {
+        const selectedStakeholderIds = setup.meetingData.selectedStakeholders;
         const selectedStakeholders = stakeholders.filter(stakeholder => 
           selectedStakeholderIds.includes(stakeholder.id)
         );
         console.log("👥 PROJECT_VIEW: Setting selected stakeholders:", selectedStakeholders.length);
         setSelectedStakeholders(selectedStakeholders);
       }
-      // Hard-set to text chat with AI suggestions
-      setCurrentView('meeting');
+      
+      // Route to meeting mode selection page
+      console.log("🎯 PROJECT_VIEW: Routing to meeting mode selection");
+      setCurrentView('meeting-mode-selection');
     } catch {
-      setCurrentView('meeting');
+      setCurrentView('meeting-mode-selection');
     }
   };
 

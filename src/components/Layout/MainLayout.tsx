@@ -47,18 +47,20 @@ import TrainingDashboardView from '../Views/TrainingDashboardView';
 import TrainingDeliverablesView from '../Views/TrainingDeliverablesView';
 import ProjectDeliverablesView from '../Views/ProjectDeliverablesView';
 import WelcomeView from '../Views/WelcomeView';
-import PracticeLabView from '../Views/PracticeLabView';
 import MotivationPage from '../Views/MotivationPage';
 import GetStartedView from '../Views/GetStartedView';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
 import DiagramCreationView from '../Views/DiagramCreationView';
 import ProcessMapperView from '../Views/ProcessMapperView';
 import TrainingUI from '../Views/TrainingUI';
+import PracticeLabView from '../Views/PracticeLabView';
 import LearnLandingView from '../Views/LearnLandingView';
 import CommunityHub from '../Views/Community/CommunityHub';
 import AdminCommunityHub from '../Views/Community/AdminCommunityHub';
 import ProjectLandingView from '../Views/ProjectLandingView';
 import AdminDashboard from '../AdminDashboard';
+import MvpBuilder from '../Views/MvpBuilder';
+import MeetingModeSelection from '../Views/MeetingModeSelection';
 
 
 const MainLayout: React.FC = () => {
@@ -102,16 +104,15 @@ const MainLayout: React.FC = () => {
       case 'mvp-hub':
         return <MVPHub />;
       case 'mvp-engine':
-        return <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">MVP Engine</h1>
-            <p className="text-gray-600 dark:text-gray-400">Coming soon...</p>
-          </div>
-        </div>;
-      case 'practice':
-        return <PracticeLabView />;
-      case 'practice-2':
+        return <MvpBuilder />;
+      case 'mvp-practice':
+        return <MvpBuilder />;
+        case 'practice':
+          return <PracticeLabView />;
+      case 'elicitation':
         return <IntroductionToElicitation />;
+      case 'practice-2':
+        return <GuidedPracticeHub />;
       case 'elicitation-hub':
         return <GuidedPracticeHub />;
       case 'motivation':
@@ -152,6 +153,8 @@ const MainLayout: React.FC = () => {
         return <ProjectsView />;
       case 'project-setup':
         return selectedProject ? <ProjectView projectId={selectedProject.id} /> : <ProjectsView />;
+      case 'meeting-mode-selection':
+        return <MeetingModeSelection />;
       case 'meeting':
         return <MeetingView />;
       case 'voice-only-meeting':

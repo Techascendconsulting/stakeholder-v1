@@ -82,17 +82,13 @@ export async function testMvpBuilderConnection(): Promise<{
   }
 }
 
-// Fetch epics by project (or all epics for training mode)
-export async function fetchEpics(projectId?: string): Promise<Epic[]> {
-  try {
-    // Force fallback to training project if projectId is null or "proj-1"
-    const activeProjectId =
-      !projectId || projectId === "proj-1"
-        ? "00000000-0000-0000-0000-000000000001"
-        : projectId;
-    console.log('🔄 Fetching epics for project:', activeProjectId);
+const TRAINING_PROJECT_ID = "00000000-0000-0000-0000-000000000001";
 
-    const query = supabase
+export async function fetchEpics(): Promise<Epic[]> {
+  try {
+    console.log('🔄 fetchEpics - Using training project:', TRAINING_PROJECT_ID);
+
+    const { data, error } = await supabase
       .from('epics')
       .select(`
         id,
@@ -117,26 +113,19 @@ export async function fetchEpics(projectId?: string): Promise<Epic[]> {
           )
         )
       `)
-      .eq('project_id', activeProjectId)
+      .eq('project_id', TRAINING_PROJECT_ID)
       .eq('archived', false)
       .order('id', { ascending: true });
 
-    const { data, error } = await query;
-
-    // 🔍 Dump full nested JSON response for inspection
-    console.log(
-      '🔍 Raw Supabase response (epics + stories + acceptance_criteria):',
-      JSON.stringify(data, null, 2)
-    );
+    console.log('🔍 Raw Supabase response (epics + stories + acceptance_criteria):', JSON.stringify(data, null, 2));
 
     if (error) {
       console.error('❌ Error fetching epics:', error);
       return [];
     }
-
     return data || [];
-  } catch (error) {
-    console.error('❌ Error in fetchEpics:', error);
+  } catch (err) {
+    console.error('❌ Exception in fetchEpics:', err);
     return [];
   }
 }

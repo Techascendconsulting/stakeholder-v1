@@ -62,7 +62,6 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   console.log('🔄 MvpBuilder - Component initialized');
   console.log('🔄 MvpBuilder - Props projectId:', projectId);
   console.log('🔄 MvpBuilder - Selected project:', selectedProject);
-  console.log('🔄 MvpBuilder - Available projects:', projects?.length || 0);
   
   // State management
   const [epics, setEpics] = useState<Epic[]>([]);
@@ -108,9 +107,9 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
         // Clear any previous setup errors
         setSetupError(null);
 
-        // Load epics for the active project
-        console.log('🔄 MvpBuilder - Fetching epics for project:', activeProjectId);
-        const epicsData = await fetchEpics(activeProjectId);
+        // Load epics for training project
+        console.log('🔄 MvpBuilder - Fetching epics for training project');
+        const epicsData = await fetchEpics();
         console.log('✅ MvpBuilder - Epics loaded:', epicsData);
 
         setEpics(epicsData);
@@ -490,7 +489,7 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                             <div className="flex items-center space-x-1 mb-1">
                               <BookOpen className="w-3 h-3 text-gray-500" />
                               <span className="text-xs font-medium text-gray-900 dark:text-white">
-                                Story {story.id.split('-')[1]}
+                                {generateStoryTitle(story.summary)}
                               </span>
                             </div>
                             <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
@@ -630,7 +629,7 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                                     <div className="flex items-center space-x-2 mb-2">
                                       <BookOpen className="w-4 h-4 text-gray-500" />
                                       <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                        Story {story.id.split('-')[1]}
+                                        {generateStoryTitle(story.summary)}
                                       </span>
                                       {story.moscow && (
                                         <span className={`text-xs px-2 py-1 rounded-full ${getMoscowColor(story.moscow)}`}>

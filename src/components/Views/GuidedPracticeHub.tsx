@@ -37,15 +37,6 @@ const GuidedPracticeHub: React.FC = () => {
         
 
 
-        {/* Back to Introduction Button */}
-        <div className="absolute top-6 left-6 z-10">
-          <button
-            onClick={() => setCurrentView('practice-2')}
-            className="inline-flex items-center space-x-2 bg-white dark:bg-gray-800 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:bg-slate-50 dark:hover:bg-gray-700 border border-slate-200 dark:border-gray-700 shadow-sm"
-          >
-            <span className="text-sm">Back to Introduction to Elicitation</span>
-          </button>
-        </div>
 
         {/* Skip to Training Projects Button */}
         <div className="absolute top-6 right-6 z-10">

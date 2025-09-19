@@ -64,6 +64,7 @@ const MeetingTypeSelector: React.FC<MeetingTypeSelectorProps> = ({ data, onUpdat
   };
 
   const handleSelect = (typeId: string) => {
+    console.log('🔍 MEETING_TYPE_SELECTOR: User selected meeting type:', typeId);
     onUpdate({ meetingType: typeId });
     onNext();
   };

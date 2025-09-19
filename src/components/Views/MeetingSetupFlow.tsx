@@ -3,11 +3,12 @@ import { ArrowLeft } from 'lucide-react';
 
 // Step components (to be created)
 import ProjectBrief from '../MeetingSetup/ProjectBrief';
+import MeetingTypeSelector from '../MeetingSetup/MeetingTypeSelector';
 import StageSelector from '../MeetingSetup/StageSelector';
 import StakeholderSelector from '../MeetingSetup/StakeholderSelector';
 import { useMeetingSetup } from '../../contexts/MeetingSetupContext';
 
-type SetupStep = 'brief' | 'stage' | 'stakeholders';
+type SetupStep = 'brief' | 'type' | 'stage' | 'stakeholders';
 
 interface MeetingSetupFlowProps {
   projectId: string;
@@ -26,7 +27,7 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
       const raw = localStorage.getItem('meetingSetupProgress');
       if (raw) {
         const saved = JSON.parse(raw);
-        const allowed = ['brief', 'stage', 'stakeholders'];
+        const allowed = ['brief', 'type', 'stage', 'stakeholders'];
         if (saved?.projectId === projectId && allowed.includes(saved.currentStep)) {
           return saved.currentStep as SetupStep;
         }
@@ -53,16 +54,18 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
     return base;
   });
 
-  const steps: SetupStep[] = ['brief', 'stage', 'stakeholders'];
+  const steps: SetupStep[] = ['brief', 'type', 'stage', 'stakeholders'];
   
   const stepComponents = {
     brief: ProjectBrief,
+    type: MeetingTypeSelector,
     stage: StageSelector,
     stakeholders: StakeholderSelector
   };
 
   const stepTitles = {
     brief: 'Project Brief',
+    type: 'Meeting Type',
     stage: 'Select Stage',
     stakeholders: 'Stakeholders'
   };
@@ -70,18 +73,25 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
   // Persist progress on change (synchronous state is already initialized from storage)
   React.useEffect(() => {
     try {
+      console.log('🔍 MEETING_SETUP_FLOW: Saving progress:', { projectId, currentStep, meetingData });
       localStorage.setItem(
         'meetingSetupProgress',
         JSON.stringify({ projectId, currentStep, meetingData })
       );
-    } catch {}
+    } catch (error) {
+      console.error('❌ MEETING_SETUP_FLOW: Error saving progress:', error);
+    }
   }, [projectId, currentStep, meetingData]);
 
   const handleNext = () => {
     const currentIndex = steps.indexOf(currentStep);
+    console.log('🔍 MEETING_SETUP_FLOW: handleNext called, current step:', currentStep, 'index:', currentIndex);
     if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1]);
+      const nextStep = steps[currentIndex + 1];
+      console.log('🔍 MEETING_SETUP_FLOW: Moving to next step:', nextStep);
+      setCurrentStep(nextStep);
     } else {
+      console.log('🔍 MEETING_SETUP_FLOW: Setup complete, calling onComplete');
       try {
         updateSetupData(meetingData as any);
         localStorage.setItem('meetingSetupData', JSON.stringify(meetingData));
@@ -100,6 +110,7 @@ const MeetingSetupFlow: React.FC<MeetingSetupFlowProps> = ({
   };
 
   const CurrentStepComponent = stepComponents[currentStep];
+  console.log('🔍 MEETING_SETUP_FLOW: Rendering step:', currentStep, 'Component:', CurrentStepComponent);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
