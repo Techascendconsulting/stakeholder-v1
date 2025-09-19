@@ -310,16 +310,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('✅ USER_EFFECT: Current view:', currentView)
       console.log('✅ USER_EFFECT: Selected project:', selectedProject?.name || 'none')
       
-      // Only redirect admin users to admin panel if they're in specific restricted views
-      // Allow admins to access learning content and practice areas
+      // Admin users should NEVER access training content - redirect them to admin panel
       // Wait for admin loading to complete before making redirect decisions
-      if (!adminLoading && isAdmin && (currentView === 'welcome' || currentView === 'training-hub' || currentView === 'practice')) {
-        console.log('🔐 ADMIN_EFFECT: Admin user detected in restricted student view, redirecting to admin panel')
-        console.log('🔐 ADMIN_EFFECT: Current view that triggered redirect:', currentView)
-        setCurrentViewState('admin')
-        localStorage.setItem('currentView', 'admin')
-      } else if (!adminLoading && isAdmin) {
-        console.log('🔐 ADMIN_EFFECT: Admin user on learning page, allowing access to:', currentView)
+      if (!adminLoading && isAdmin) {
+        // Check if admin is trying to access any student/training content
+        const studentViews = [
+          'learn', 'practice', 'training-hub', 'training-practice', 'training-assess', 
+          'training-feedback', 'training-dashboard', 'core-concepts', 'agile-hub', 
+          'agile-scrum', 'scrum-essentials', 'agile-practice', 'user-story-checker',
+          'mvp-practice', 'documentation-practice', 'elicitation-practice', 'elicitation',
+          'project-initiation', 'requirements-engineering', 'solution-options', 'design',
+          'mvp', 'motivation', 'community-hub', 'my-mentorship', 'book-session'
+        ];
+        
+        if (studentViews.includes(currentView) || currentView === 'welcome') {
+          console.log('🔐 ADMIN_EFFECT: Admin user detected accessing student content, redirecting to admin panel')
+          console.log('🔐 ADMIN_EFFECT: Current view that triggered redirect:', currentView)
+          setCurrentViewState('admin')
+          localStorage.setItem('currentView', 'admin')
+        }
       } else if (adminLoading) {
         console.log('🔐 ADMIN_EFFECT: Admin status still loading, waiting...')
       }
@@ -331,14 +340,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     prevUser.current = user
   }, [user, currentView, selectedProject, isAdmin, adminLoading])
 
-  // Set default view for admin users on initial load (only from welcome page)
+  // Set default view for admin users on initial load - redirect from ANY student content
   useEffect(() => {
-    if (user && !adminLoading && isAdmin && currentView === 'welcome') {
-      console.log('🔐 ADMIN_INIT: Admin user detected on welcome page, redirecting to admin panel')
-      setCurrentViewState('admin')
-      localStorage.setItem('currentView', 'admin')
-    } else if (user && !adminLoading && isAdmin) {
-      console.log('🔐 ADMIN_INIT: Admin user detected, but staying on current view:', currentView)
+    if (user && !adminLoading && isAdmin) {
+      const studentViews = [
+        'learn', 'practice', 'training-hub', 'training-practice', 'training-assess', 
+        'training-feedback', 'training-dashboard', 'core-concepts', 'agile-hub', 
+        'agile-scrum', 'scrum-essentials', 'agile-practice', 'user-story-checker',
+        'mvp-practice', 'documentation-practice', 'elicitation-practice', 'elicitation',
+        'project-initiation', 'requirements-engineering', 'solution-options', 'design',
+        'mvp', 'motivation', 'community-hub', 'my-mentorship', 'book-session', 'welcome'
+      ];
+      
+      if (studentViews.includes(currentView)) {
+        console.log('🔐 ADMIN_INIT: Admin user detected accessing student content on load, redirecting to admin panel')
+        console.log('🔐 ADMIN_INIT: Current view:', currentView)
+        setCurrentViewState('admin')
+        localStorage.setItem('currentView', 'admin')
+      }
     } else if (adminLoading) {
       console.log('🔐 ADMIN_INIT: Admin status still loading, waiting...')
     }
