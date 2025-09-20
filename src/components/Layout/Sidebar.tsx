@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronDown,
+  GraduationCap,
   Sun,
   Moon,
   Target,
@@ -99,6 +100,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: BookOpen,
       isCollapsible: true,
       subItems: [
+        { 
+          id: 'ba-fundamentals', 
+          label: 'BA Fundamentals', 
+          icon: GraduationCap
+        },
         { 
           id: 'project-initiation', 
           label: 'Project Initiation', 
