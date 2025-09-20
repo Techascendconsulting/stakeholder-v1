@@ -60,6 +60,44 @@ const IntroductionToElicitation: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Elicitation Methods */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 mb-8 shadow-sm">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+              Elicitation Methods
+            </h2>
+            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
+              At each stage, use the right technique to draw out the right information.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Interviews</h3>
+              <p className="text-slate-600 dark:text-slate-400">Focused one-to-one sessions with SMEs or decision makers.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Workshops</h3>
+              <p className="text-slate-600 dark:text-slate-400">Group sessions for alignment and surfacing conflicts.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Observation (Shadowing)</h3>
+              <p className="text-slate-600 dark:text-slate-400">Watch work as it happens to see real behaviours and gaps.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Document Analysis</h3>
+              <p className="text-slate-600 dark:text-slate-400">Review reports, policies, manuals, or data for hidden requirements.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Surveys & Questionnaires</h3>
+              <p className="text-slate-600 dark:text-slate-400">Capture views from larger groups quickly.</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Prototyping / Mock-Ups</h3>
+              <p className="text-slate-600 dark:text-slate-400">Use early sketches or screens to prompt discussion.</p>
+            </div>
+          </div>
+        </div>
+
         {/* Stages Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 mb-8 shadow-sm">
           <div className="text-center mb-8">
@@ -229,44 +267,6 @@ const IntroductionToElicitation: React.FC = () => {
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Elicitation Methods */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-8 mb-8 shadow-sm">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-              Elicitation Methods
-            </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
-              At each stage, use the right technique to draw out the right information.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Interviews</h3>
-              <p className="text-slate-600 dark:text-slate-400">Focused one-to-one sessions with SMEs or decision makers.</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Workshops</h3>
-              <p className="text-slate-600 dark:text-slate-400">Group sessions for alignment and surfacing conflicts.</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Observation (Shadowing)</h3>
-              <p className="text-slate-600 dark:text-slate-400">Watch work as it happens to see real behaviours and gaps.</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Document Analysis</h3>
-              <p className="text-slate-600 dark:text-slate-400">Review reports, policies, manuals, or data for hidden requirements.</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Surveys & Questionnaires</h3>
-              <p className="text-slate-600 dark:text-slate-400">Capture views from larger groups quickly.</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 dark:border-gray-700 p-5">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Prototyping / Mock-Ups</h3>
-              <p className="text-slate-600 dark:text-slate-400">Use early sketches or screens to prompt discussion.</p>
             </div>
           </div>
         </div>
