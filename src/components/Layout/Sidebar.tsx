@@ -144,6 +144,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           id: 'agile-scrum', 
           label: 'Agile Scrum', 
           icon: Target
+        },
+        { 
+          id: 'ba-reference', 
+          label: 'BA Reference Library', 
+          icon: BookOpen
         }
       ]
     },

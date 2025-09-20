@@ -29,6 +29,7 @@ import BAAcademyView from '../Views/BAAcademyView';
 import ProjectInitiationView from '../Views/ProjectInitiationView';
 import RequirementsEngineeringView from '../Views/RequirementsEngineeringView';
 import DocumentationView from '../Views/DocumentationView';
+import BAReferenceView from '../Views/BAReferenceView';
 import IntroductionToElicitation from '../Views/IntroductionToElicitation';
 import SolutionOptions from '../Views/SolutionOptions';
 import DesignHub from '../Views/DesignHub';
@@ -129,6 +130,8 @@ const MainLayout: React.FC = () => {
         return <CoreConceptsView />;
       case 'agile-scrum':
         return <AgileHubView />;
+      case 'ba-reference':
+        return <BAReferenceView />;
       case 'scrum-essentials':
         return <ScrumEssentialsView />;
       case 'progress-tracking':
