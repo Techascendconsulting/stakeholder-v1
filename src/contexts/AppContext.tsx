@@ -151,6 +151,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'requirements-engineering',
         'documentation',
     'ba-reference',
+    'my-resources',
         'solution-options',
         'design-hub',
         'mvp-hub',

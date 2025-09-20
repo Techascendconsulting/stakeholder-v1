@@ -13,6 +13,7 @@ export type AppView =
   | 'requirements-engineering'
   | 'documentation'
   | 'ba-reference'
+  | 'my-resources'
   | 'solution-options'
   | 'design-hub'
   | 'mvp-hub'

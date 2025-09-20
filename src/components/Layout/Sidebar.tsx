@@ -9,6 +9,7 @@ import {
   ChevronUp,
   ChevronDown,
   GraduationCap,
+  Archive,
   Sun,
   Moon,
   Target,
@@ -151,6 +152,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           icon: BookOpen
         }
       ]
+    },
+    { 
+      id: 'my-resources', 
+      label: 'My Resources', 
+      icon: Archive
     },
     { 
       id: 'my-practice', 
