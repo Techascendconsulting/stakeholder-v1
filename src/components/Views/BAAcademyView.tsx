@@ -422,15 +422,640 @@ const BAAcademyView: React.FC = () => {
             </div>
           </div>
 
-          {/* Content placeholder - full content would go here */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Learning Modules</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Full interactive learning modules would be displayed here.
-              </p>
+          {/* Search and Filter Controls */}
+          <div className="mb-8">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search Bar */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search learning modules..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Difficulty Filter */}
+                <div className="lg:w-48">
+                  <select
+                    value={difficultyFilter}
+                    onChange={(e) => setDifficultyFilter(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="all">All Difficulty Levels</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Learning Phases */}
+          {!selectedModule && (
+            <>
+              {/* Phase 1: Foundation */}
+              <div className="mb-12">
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl mr-4">
+                    <span className="text-white font-bold text-lg">1</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Foundation Phase</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Months 1-3: Core BA Fundamentals</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getFilteredModulesForPhase(0, 1).map((module) => (
+                    <div key={module.id} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group cursor-pointer" onClick={() => startModule(module.id)}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.difficulty === 'Beginner' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.difficulty === 'Intermediate' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        }`}>
+                          {module.difficulty}
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.status === 'in-progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                        }`}>
+                          {module.status === 'completed' ? 'Completed' : module.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {module.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                        {module.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {module.estimatedHours}h
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {module.topics.length} topics
+                        </div>
+                      </div>
+                      
+                      {module.status === 'in-progress' && (
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            <span>Progress</span>
+                            <span className="font-semibold">{module.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                              style={{ width: `${module.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+                          <Play className="w-4 h-4" />
+                          <span>Start Module</span>
+                        </button>
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Phase 2: Technical Skills */}
+              <div className="mb-12">
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl mr-4">
+                    <span className="text-white font-bold text-lg">2</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Technical Skills Phase</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Months 4-6: Advanced Technical Analysis</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getFilteredModulesForPhase(1, 4).map((module) => (
+                    <div key={module.id} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group cursor-pointer" onClick={() => startModule(module.id)}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.difficulty === 'Beginner' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.difficulty === 'Intermediate' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        }`}>
+                          {module.difficulty}
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.status === 'in-progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                        }`}>
+                          {module.status === 'completed' ? 'Completed' : module.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {module.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                        {module.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {module.estimatedHours}h
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {module.topics.length} topics
+                        </div>
+                      </div>
+                      
+                      {module.status === 'in-progress' && (
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            <span>Progress</span>
+                            <span className="font-semibold">{module.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                              style={{ width: `${module.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+                          <Play className="w-4 h-4" />
+                          <span>Start Module</span>
+                        </button>
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Phase 3: Advanced Techniques */}
+              <div className="mb-12">
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl mr-4">
+                    <span className="text-white font-bold text-lg">3</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Advanced Techniques Phase</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Months 7-9: Professional Excellence</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getFilteredModulesForPhase(4, 7).map((module) => (
+                    <div key={module.id} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group cursor-pointer" onClick={() => startModule(module.id)}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.difficulty === 'Beginner' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.difficulty === 'Intermediate' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        }`}>
+                          {module.difficulty}
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.status === 'in-progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                        }`}>
+                          {module.status === 'completed' ? 'Completed' : module.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {module.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                        {module.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {module.estimatedHours}h
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {module.topics.length} topics
+                        </div>
+                      </div>
+                      
+                      {module.status === 'in-progress' && (
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            <span>Progress</span>
+                            <span className="font-semibold">{module.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                              style={{ width: `${module.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+                          <Play className="w-4 h-4" />
+                          <span>Start Module</span>
+                        </button>
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Phase 4: Specialization */}
+              <div className="mb-12">
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl mr-4">
+                    <span className="text-white font-bold text-lg">4</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Specialization Phase</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Months 10-12: Domain Expertise</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getFilteredModulesForPhase(7, 10).map((module) => (
+                    <div key={module.id} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group cursor-pointer" onClick={() => startModule(module.id)}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.difficulty === 'Beginner' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.difficulty === 'Intermediate' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        }`}>
+                          {module.difficulty}
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.status === 'in-progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                        }`}>
+                          {module.status === 'completed' ? 'Completed' : module.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {module.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                        {module.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {module.estimatedHours}h
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {module.topics.length} topics
+                        </div>
+                      </div>
+                      
+                      {module.status === 'in-progress' && (
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            <span>Progress</span>
+                            <span className="font-semibold">{module.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                              style={{ width: `${module.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+                          <Play className="w-4 h-4" />
+                          <span>Start Module</span>
+                        </button>
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Phase 5: Mastery */}
+              <div className="mb-12">
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl mr-4">
+                    <span className="text-white font-bold text-lg">5</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Mastery Phase</h2>
+                    <p className="text-gray-600 dark:text-gray-400">Months 13-15: Leadership Excellence</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getFilteredModulesForPhase(10, 13).map((module) => (
+                    <div key={module.id} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group cursor-pointer" onClick={() => startModule(module.id)}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.difficulty === 'Beginner' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.difficulty === 'Intermediate' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        }`}>
+                          {module.difficulty}
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          module.status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                          module.status === 'in-progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                        }`}>
+                          {module.status === 'completed' ? 'Completed' : module.status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {module.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                        {module.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {module.estimatedHours}h
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {module.topics.length} topics
+                        </div>
+                      </div>
+                      
+                      {module.status === 'in-progress' && (
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            <span>Progress</span>
+                            <span className="font-semibold">{module.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                              style={{ width: `${module.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+                          <Play className="w-4 h-4" />
+                          <span>Start Module</span>
+                        </button>
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Interactive Lecture Interface */}
+          {selectedModule && isLectureActive && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => {
+                        setSelectedModule(null);
+                        setIsLectureActive(false);
+                        setCurrentLecture(null);
+                        setConversationHistory([]);
+                      }}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <ArrowRight className="w-5 h-5 text-gray-600 dark:text-gray-400 rotate-180" />
+                    </button>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {learningModules.find(m => m.id === selectedModule)?.title}
+                      </h2>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Interactive Learning Session
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Live Session</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Lecture Content */}
+                  <div className="lg:col-span-2">
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 mb-6">
+                      <div className="flex items-center mb-4">
+                        <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Learning Assistant</h3>
+                      </div>
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {conversationHistory.map((message, index) => (
+                          <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-3xl p-4 rounded-lg ${
+                              message.role === 'user' 
+                                ? 'bg-blue-600 text-white' 
+                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
+                            }`}>
+                              <div className="flex items-start space-x-2">
+                                {message.role === 'ai' && <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />}
+                                <div className="whitespace-pre-wrap">{message.content}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {isLoading && (
+                          <div className="flex justify-start">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                              <div className="flex items-center space-x-2">
+                                <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                <div className="flex space-x-1">
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* User Input */}
+                    <div className="flex space-x-4">
+                      <input
+                        type="text"
+                        value={userInput}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && userInput.trim()) {
+                            // Handle user input
+                            const userMessage = userInput.trim();
+                            setConversationHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+                            setUserInput('');
+                            
+                            // Simulate AI response
+                            setIsLoading(true);
+                            setTimeout(() => {
+                              setConversationHistory(prev => [...prev, { 
+                                role: 'ai', 
+                                content: `Thank you for your input: "${userMessage}". This is a simulated response. In a real implementation, this would integrate with an AI service to provide personalized learning assistance.` 
+                              }]);
+                              setIsLoading(false);
+                            }, 1000);
+                          }
+                        }}
+                        placeholder="Ask a question or share your thoughts..."
+                        className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                      />
+                      <button
+                        onClick={() => {
+                          if (userInput.trim()) {
+                            const userMessage = userInput.trim();
+                            setConversationHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+                            setUserInput('');
+                            
+                            setIsLoading(true);
+                            setTimeout(() => {
+                              setConversationHistory(prev => [...prev, { 
+                                role: 'ai', 
+                                content: `Thank you for your input: "${userMessage}". This is a simulated response. In a real implementation, this would integrate with an AI service to provide personalized learning assistance.` 
+                              }]);
+                              setIsLoading(false);
+                            }, 1000);
+                          }
+                        }}
+                        disabled={!userInput.trim() || isLoading}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center space-x-2"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Learning Progress & Topics */}
+                  <div className="space-y-6">
+                    {/* Module Progress */}
+                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Progress</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            <span>Current Topic</span>
+                            <span>{currentTopic + 1} of {learningModules.find(m => m.id === selectedModule)?.topics.length}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
+                              style={{ width: `${((currentTopic + 1) / (learningModules.find(m => m.id === selectedModule)?.topics.length || 1)) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <strong>Current Topic:</strong> {learningModules.find(m => m.id === selectedModule)?.topics[currentTopic]}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Module Topics */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Module Topics</h3>
+                      <div className="space-y-2">
+                        {learningModules.find(m => m.id === selectedModule)?.topics.map((topic, index) => (
+                          <div key={index} className={`flex items-center space-x-3 p-3 rounded-lg ${
+                            index === currentTopic 
+                              ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800' 
+                              : index < currentTopic 
+                                ? 'bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800'
+                                : 'bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                          }`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                              index === currentTopic 
+                                ? 'bg-blue-600 text-white' 
+                                : index < currentTopic 
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-gray-400 text-white'
+                            }`}>
+                              {index < currentTopic ? <CheckCircle className="w-4 h-4" /> : index + 1}
+                            </div>
+                            <span className={`text-sm ${
+                              index === currentTopic 
+                                ? 'text-blue-900 dark:text-blue-100 font-semibold' 
+                                : index < currentTopic 
+                                  ? 'text-emerald-900 dark:text-emerald-100'
+                                  : 'text-gray-600 dark:text-gray-400'
+                            }`}>
+                              {topic}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Learning Outcomes */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Outcomes</h3>
+                      <div className="space-y-2">
+                        {learningModules.find(m => m.id === selectedModule)?.learningOutcomes.map((outcome, index) => (
+                          <div key={index} className="flex items-start space-x-2">
+                            <Target className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{outcome}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
