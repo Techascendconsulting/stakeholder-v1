@@ -150,6 +150,13 @@ const BAAcademyView: React.FC = () => {
         'Process Gap Analysis',
         'Process Optimization Techniques',
         'Process Automation Requirements'
+      ],
+      learningOutcomes: [
+        'Create comprehensive BPMN 2.0 process models',
+        'Analyze current state vs future state processes',
+        'Identify process gaps and optimization opportunities',
+        'Design process automation requirements',
+        'Communicate process improvements to stakeholders'
       ]
     },
     {
@@ -166,6 +173,13 @@ const BAAcademyView: React.FC = () => {
         'Communication Strategy Development',
         'Stakeholder Influence and Interest Mapping',
         'Change Management and Stakeholder Adoption'
+      ],
+      learningOutcomes: [
+        'Identify and analyze all project stakeholders effectively',
+        'Create comprehensive RACI matrices for project roles',
+        'Develop stakeholder engagement and communication strategies',
+        'Map stakeholder influence and interest levels',
+        'Manage stakeholder expectations and change adoption'
       ]
     },
 
@@ -185,6 +199,14 @@ const BAAcademyView: React.FC = () => {
         'Visual Modeling and Diagrams',
         'Documentation Quality Assurance',
         'Stakeholder Communication Planning'
+      ],
+      learningOutcomes: [
+        'Create comprehensive business requirements documents',
+        'Develop clear requirements specifications following industry standards',
+        'Design effective executive communication and reporting strategies',
+        'Create visual models and diagrams for stakeholder understanding',
+        'Implement documentation quality assurance processes',
+        'Plan stakeholder communication throughout the project lifecycle'
       ]
     },
     {
@@ -202,6 +224,14 @@ const BAAcademyView: React.FC = () => {
         'Quality Metrics and Performance Measurement',
         'Solution Performance Assessment',
         'Continuous Improvement and Optimization'
+      ],
+      learningOutcomes: [
+        'Evaluate solutions against business requirements and success criteria',
+        'Validate and verify requirements throughout the development lifecycle',
+        'Plan and execute comprehensive user acceptance testing',
+        'Establish quality metrics and performance measurement frameworks',
+        'Assess solution performance and identify optimization opportunities',
+        'Implement continuous improvement processes for BA practices'
       ]
     },
     {
@@ -219,6 +249,14 @@ const BAAcademyView: React.FC = () => {
         'Data Analysis and Visualization Tools',
         'Project Management Integration',
         'Business Analysis Tool Selection'
+      ],
+      learningOutcomes: [
+        'Master requirements management tools for effective requirement tracking',
+        'Utilize process modeling and BPMN tools for business process documentation',
+        'Leverage collaboration platforms for stakeholder engagement',
+        'Apply data analysis and visualization tools for business insights',
+        'Integrate BA tools with project management systems',
+        'Evaluate and select appropriate BA tools for different project contexts'
       ]
     },
 
@@ -237,6 +275,13 @@ const BAAcademyView: React.FC = () => {
         'Multi-tenant Architecture',
         'Cloud Security Requirements',
         'Cost Optimization'
+      ],
+      learningOutcomes: [
+        'Define comprehensive cloud migration requirements and strategies',
+        'Plan SaaS implementation requirements and multi-tenant considerations',
+        'Design multi-tenant architecture requirements for scalable solutions',
+        'Establish cloud security requirements and compliance frameworks',
+        'Develop cost optimization strategies for cloud-based solutions'
       ]
     },
     {
@@ -253,6 +298,13 @@ const BAAcademyView: React.FC = () => {
         'Progressive Web Apps',
         'App Store Requirements',
         'Cross-platform Considerations'
+      ],
+      learningOutcomes: [
+        'Define comprehensive mobile application requirements and user experience standards',
+        'Plan responsive web design requirements for multi-device compatibility',
+        'Specify progressive web app requirements for enhanced user experience',
+        'Establish app store requirements and compliance frameworks',
+        'Design cross-platform requirements for consistent user experiences'
       ]
     },
     {
@@ -269,6 +321,13 @@ const BAAcademyView: React.FC = () => {
         'Model Validation Requirements',
         'Ethical AI Considerations',
         'AI Integration Requirements'
+      ],
+      learningOutcomes: [
+        'Define AI and machine learning project requirements and success criteria',
+        'Specify data requirements and quality standards for ML model training',
+        'Establish model validation and testing requirements for AI solutions',
+        'Address ethical AI considerations and bias mitigation requirements',
+        'Plan AI integration requirements with existing systems and workflows'
       ]
     },
 
@@ -287,6 +346,13 @@ const BAAcademyView: React.FC = () => {
         'Environment Management',
         'Monitoring and Observability',
         'Deployment Strategies'
+      ],
+      learningOutcomes: [
+        'Define continuous integration and continuous deployment requirements',
+        'Plan release automation requirements for efficient software delivery',
+        'Establish environment management requirements for consistent deployments',
+        'Design monitoring and observability requirements for system health',
+        'Develop deployment strategy requirements for risk mitigation and rollback'
       ]
     },
     {
@@ -303,6 +369,13 @@ const BAAcademyView: React.FC = () => {
         'Business Case Development',
         'ROI Analysis',
         'Strategic Requirements'
+      ],
+      learningOutcomes: [
+        'Align business analysis activities with product strategy and organizational goals',
+        'Develop comprehensive product roadmaps and strategic planning frameworks',
+        'Create compelling business cases with financial justification and risk analysis',
+        'Conduct ROI analysis and value realization assessments for strategic initiatives',
+        'Define strategic requirements that support long-term business objectives'
       ]
     },
     {
@@ -319,6 +392,13 @@ const BAAcademyView: React.FC = () => {
         'Process Improvement',
         'Best Practices Establishment',
         'BA Team Management'
+      ],
+      learningOutcomes: [
+        'Lead and manage BA teams effectively with strong leadership principles',
+        'Mentor junior business analysts and develop talent within the organization',
+        'Implement process improvement initiatives to enhance BA team efficiency',
+        'Establish best practices and standards for business analysis excellence',
+        'Manage BA team resources, priorities, and performance for optimal outcomes'
       ]
     }
   ];
@@ -1043,7 +1123,7 @@ const BAAcademyView: React.FC = () => {
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Outcomes</h3>
                       <div className="space-y-2">
-                        {learningModules.find(m => m.id === selectedModule)?.learningOutcomes.map((outcome, index) => (
+                        {learningModules.find(m => m.id === selectedModule)?.learningOutcomes?.map((outcome, index) => (
                           <div key={index} className="flex items-start space-x-2">
                             <Target className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                             <span className="text-sm text-gray-600 dark:text-gray-400">{outcome}</span>
