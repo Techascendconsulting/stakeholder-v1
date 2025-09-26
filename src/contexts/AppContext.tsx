@@ -185,10 +185,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const setCurrentView = (view: AppView) => {
     console.log('🔄 NAVIGATE: setCurrentView called with view:', view)
     console.log('🔄 NAVIGATE: Previous view was:', currentView)
+    console.log('🔄 NAVIGATE: About to set view to:', view)
     setCurrentViewState(view)
     try {
       localStorage.setItem('currentView', view)
       console.log('💾 NAVIGATE: Saved view to localStorage:', view)
+      console.log('🔄 NAVIGATE: View state updated, new currentView should be:', view)
     } catch (error) {
       console.log('❌ NAVIGATE: Could not save view to localStorage:', error)
     }

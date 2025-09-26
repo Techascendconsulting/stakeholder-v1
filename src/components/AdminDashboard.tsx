@@ -22,6 +22,9 @@ import { userActivityService, RecentActivityLog } from '../services/userActivity
 import AdminUserManagement from './AdminUserManagement';
 
 const AdminDashboard: React.FC = () => {
+  console.log('🔍 ADMIN_DASHBOARD: Component rendering');
+  const { currentView } = useApp();
+  console.log('🔍 ADMIN_DASHBOARD: Current view is:', currentView);
   const { isAdmin, isLoading, hasPermission } = useAdmin();
   const { user } = useAuth();
   const { setCurrentView } = useApp();
@@ -218,7 +221,10 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setCurrentView('admin-panel')}
+              onClick={() => {
+                console.log('🔍 ADMIN_DASHBOARD: Navigating to admin-panel');
+                setCurrentView('admin-panel');
+              }}
               className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
             >
               <Settings className="h-4 w-4 mr-2" />

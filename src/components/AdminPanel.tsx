@@ -42,6 +42,7 @@ const AdminPanel: React.FC = () => {
   console.log('🔧 ADMIN PANEL: Component rendering');
   const { isAdmin, hasPermission } = useAdmin();
   const { setCurrentView } = useApp();
+  console.log('🔧 ADMIN PANEL: Current view from context:', setCurrentView);
   const [activeTab, setActiveTab] = useState<'users' | 'content' | 'settings' | 'communication' | 'data'>('users');
   const [searchTerm, setSearchTerm] = useState('');
   

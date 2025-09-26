@@ -226,8 +226,10 @@ const MainLayout: React.FC = () => {
             case 'user-story-checker':
               return <TrainingUI />;
       case 'admin':
+        console.log('🔍 MAIN_LAYOUT: Rendering AdminDashboard');
         return <AdminDashboard />;
       case 'admin-panel':
+        console.log('🔍 MAIN_LAYOUT: Rendering AdminPanel');
         return <AdminPanel />;
       case 'community-hub':
         return <CommunityHub />;
