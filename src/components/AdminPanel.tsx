@@ -20,6 +20,7 @@ import {
 import { useAdmin } from '../contexts/AdminContext';
 import { useApp } from '../contexts/AppContext';
 import AdminUserManagement from './AdminUserManagement';
+import ContentManagementService, { LearningModule, PracticeScenario, AssessmentQuestion, EpicStory } from '../services/contentManagementService';
 
 interface ContentItem {
   id: string;
@@ -49,8 +50,12 @@ const AdminPanel: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
   // Content Management State
-  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
-  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+  const [learningModules, setLearningModules] = useState<LearningModule[]>([]);
+  const [practiceScenarios, setPracticeScenarios] = useState<PracticeScenario[]>([]);
+  const [assessmentQuestions, setAssessmentQuestions] = useState<AssessmentQuestion[]>([]);
+  const [epicStories, setEpicStories] = useState<EpicStory[]>([]);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [contentManagementService] = useState(() => ContentManagementService.getInstance());
   
   // System Settings State
   const [systemSettings, setSystemSettings] = useState<SystemSetting[]>([]);
@@ -75,34 +80,27 @@ const AdminPanel: React.FC = () => {
   const loadContentItems = async () => {
     setLoading(true);
     try {
-      // Mock data for now - would be replaced with actual Supabase queries
-      const mockContent: ContentItem[] = [
-        {
-          id: '1',
-          title: 'Business Analysis Fundamentals',
-          description: 'Master core business analysis concepts and practices',
-          status: 'active',
-          lastModified: '2024-01-15',
-          type: 'module'
-        },
-        {
-          id: '2',
-          title: 'Healthcare System Requirements',
-          description: 'Practice elicitation with healthcare stakeholders',
-          status: 'active',
-          lastModified: '2024-01-14',
-          type: 'scenario'
-        },
-        {
-          id: '3',
-          title: 'What is an MVP?',
-          description: 'Understanding Minimum Viable Product concepts',
-          status: 'draft',
-          lastModified: '2024-01-13',
-          type: 'module'
-        }
-      ];
-      setContentItems(mockContent);
+      console.log('📚 Loading content items from database...');
+      
+      // Load all content types in parallel
+      const [modules, scenarios, questions, stories] = await Promise.all([
+        contentManagementService.getLearningModules(),
+        contentManagementService.getPracticeScenarios(),
+        contentManagementService.getAssessmentQuestions(),
+        contentManagementService.getEpicStories()
+      ]);
+
+      setLearningModules(modules);
+      setPracticeScenarios(scenarios);
+      setAssessmentQuestions(questions);
+      setEpicStories(stories);
+
+      console.log('📚 Content loaded:', {
+        modules: modules.length,
+        scenarios: scenarios.length,
+        questions: questions.length,
+        stories: stories.length
+      });
     } catch (error) {
       console.error('Error loading content items:', error);
     } finally {
@@ -336,49 +334,224 @@ const AdminPanel: React.FC = () => {
           </div>
 
             {/* Content Items List */}
-            <div className="space-y-4">
-              {contentItems.map((item) => (
-                <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-                <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                          {item.title}
-                        </h3>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          item.status === 'active' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : item.status === 'draft'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                        }`}>
-                          {item.status.toUpperCase()}
-                        </span>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                          {item.type.toUpperCase()}
-                        </span>
+            <div className="space-y-6">
+              {/* Learning Modules */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Learning Modules ({learningModules.length})
+                </h3>
+                <div className="space-y-3">
+                  {learningModules.map((module) => (
+                    <div key={module.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white">
+                              {module.title}
+                            </h4>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              module.status === 'active' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : module.status === 'draft'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                            }`}>
+                              {module.status.toUpperCase()}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {module.difficulty.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {module.description}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                            {module.estimated_hours}h • {module.topics.length} topics • Updated: {new Date(module.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setEditingItem(module)}
+                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => contentManagementService.deleteLearningModule(module.id).then(() => loadContentItems())}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {item.description}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                        Last modified: {item.lastModified}
-                      </p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleContentEdit(item)}
-                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                  </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Practice Scenarios */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Practice Scenarios ({practiceScenarios.length})
+                </h3>
+                <div className="space-y-3">
+                  {practiceScenarios.map((scenario) => (
+                    <div key={scenario.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white">
+                              {scenario.title}
+                            </h4>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              scenario.status === 'active' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : scenario.status === 'draft'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                            }`}>
+                              {scenario.status.toUpperCase()}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                              {scenario.stage_id.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {scenario.description}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                            {scenario.success_criteria.length} success criteria • Updated: {new Date(scenario.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setEditingItem(scenario)}
+                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => contentManagementService.deletePracticeScenario(scenario.id).then(() => loadContentItems())}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Assessment Questions */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Assessment Questions ({assessmentQuestions.length})
+                </h3>
+                <div className="space-y-3">
+                  {assessmentQuestions.map((question) => (
+                    <div key={question.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white">
+                              {question.title}
+                            </h4>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              question.status === 'active' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : question.status === 'draft'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                            }`}>
+                              {question.status.toUpperCase()}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                              {question.type.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {question.description}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                            {question.difficulty} • {question.estimated_time} • Updated: {new Date(question.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setEditingItem(question)}
+                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => contentManagementService.deleteAssessmentQuestion(question.id).then(() => loadContentItems())}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Epic Stories */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Epic Stories ({epicStories.length})
+                </h3>
+                <div className="space-y-3">
+                  {epicStories.map((story) => (
+                    <div key={story.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white">
+                              {story.title}
+                            </h4>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              story.status === 'active' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : story.status === 'draft'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                            }`}>
+                              {story.status.toUpperCase()}
+                            </span>
+                            {story.moscow_priority && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                {story.moscow_priority.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {story.description || story.summary}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                            {story.acceptance_criteria.length} acceptance criteria • Updated: {new Date(story.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setEditingItem(story)}
+                            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => contentManagementService.deleteEpicStory(story.id).then(() => loadContentItems())}
+                            className="p-2 text-gray-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
