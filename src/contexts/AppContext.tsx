@@ -330,9 +330,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('✅ USER_EFFECT: Current view:', currentView)
       console.log('✅ USER_EFFECT: Selected project:', selectedProject?.name || 'none')
       
-      // Admin users should NEVER access training content - redirect them to admin panel
+      // Admin users should be redirected to admin panel immediately
       // Wait for admin loading to complete before making redirect decisions
       if (!adminLoading && isAdmin) {
+        // If admin is on dashboard or any student view, redirect to admin panel
+        if (currentView === 'dashboard' || currentView === 'welcome') {
+          console.log('🔐 ADMIN_EFFECT: Admin user on dashboard/welcome, redirecting to admin panel')
+          setCurrentViewState('admin')
+          localStorage.setItem('currentView', 'admin')
+        }
         // Check if admin is trying to access any student/training content
         const studentViews = [
           'learn', 'practice', 'training-hub', 'training-practice', 'training-assess', 
@@ -363,6 +369,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Set default view for admin users on initial load - redirect from ANY student content
   useEffect(() => {
     if (user && !adminLoading && isAdmin) {
+      // If admin is on dashboard, redirect to admin panel immediately
+      if (currentView === 'dashboard') {
+        console.log('🔐 ADMIN_INIT: Admin user on dashboard, redirecting to admin panel')
+        setCurrentViewState('admin')
+        localStorage.setItem('currentView', 'admin')
+        return
+      }
+      
       const studentViews = [
         'learn', 'practice', 'training-hub', 'training-practice', 'training-assess', 
         'training-feedback', 'training-dashboard', 'core-concepts', 'agile-hub', 
