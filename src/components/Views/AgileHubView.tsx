@@ -1097,9 +1097,9 @@ export const AgileHubView: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
           <Workflow className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome to Agile Hub</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome to Scrum Essentials</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Select a training project to start creating stories and practicing Agile delivery workflows.
+            Master the fundamentals of Scrum methodology and practice Agile delivery workflows with real projects.
           </p>
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
             <p className="text-sm text-blue-700 dark:text-blue-300">
@@ -1126,7 +1126,7 @@ export const AgileHubView: React.FC = () => {
                 >
                   <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agile Hub</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Scrum Essentials</h1>
                 {projects && projects.length > 1 ? (
                   <div className="relative">
                     <button
@@ -1169,18 +1169,27 @@ export const AgileHubView: React.FC = () => {
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Manage your delivery backlog and refinement meetings</p>
             </div>
-            <button
-              onClick={() => !showRefinementModal && setShowCreateModal(true)}
-              disabled={showRefinementModal}
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
-                showRefinementModal
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              <Plus size={16} />
-              <span>Create New Ticket</span>
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setCurrentView('scrum-essentials')}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+              >
+                <Target size={16} />
+                <span>Scrum Delivery</span>
+              </button>
+              <button
+                onClick={() => !showRefinementModal && setShowCreateModal(true)}
+                disabled={showRefinementModal}
+                className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                  showRefinementModal
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                <Plus size={16} />
+                <span>Create New Ticket</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -29,6 +29,7 @@ import BAAcademyView from '../Views/BAAcademyView';
 import ProjectInitiationView from '../Views/ProjectInitiationView';
 import RequirementsEngineeringView from '../Views/RequirementsEngineeringView';
 import DocumentationView from '../Views/DocumentationView';
+import DocumentationPracticeView from '../Views/DocumentationPracticeView';
 import BAReferenceView from '../Views/BAReferenceView';
 import MyResourcesView from '../Views/MyResourcesView';
 import IntroductionToElicitation from '../Views/IntroductionToElicitation';
@@ -106,7 +107,7 @@ const MainLayout: React.FC = () => {
       case 'documentation':
         return <DocumentationView />;
       case 'documentation-practice':
-        return <DocumentationView />;
+        return <DocumentationPracticeView />;
       case 'design-hub':
         return <DesignHub />;
       case 'mvp-hub':
@@ -130,14 +131,14 @@ const MainLayout: React.FC = () => {
 
       case 'core-concepts':
         return <CoreConceptsView />;
+      case 'scrum-essentials':
+        return <ScrumEssentialsView />;
       case 'agile-scrum':
         return <AgileHubView />;
       case 'ba-reference':
         return <BAReferenceView />;
       case 'my-resources':
         return <MyResourcesView />;
-      case 'scrum-essentials':
-        return <ScrumEssentialsView />;
       case 'progress-tracking':
         return <TrainingDashboardView />; // TODO: Create ProgressTrackingView
       case 'project-workspace':

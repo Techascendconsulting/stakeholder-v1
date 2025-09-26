@@ -15,7 +15,8 @@ import {
   BarChart3,
   Mail,
   Bell,
-  Shield
+  Shield,
+  XCircle
 } from 'lucide-react';
 import { useAdmin } from '../contexts/AdminContext';
 import { useApp } from '../contexts/AppContext';
@@ -55,6 +56,8 @@ const AdminPanel: React.FC = () => {
   const [assessmentQuestions, setAssessmentQuestions] = useState<AssessmentQuestion[]>([]);
   const [epicStories, setEpicStories] = useState<EpicStory[]>([]);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newContentType, setNewContentType] = useState<'module' | 'scenario' | 'question' | 'story'>('module');
   const [contentManagementService] = useState(() => ContentManagementService.getInstance());
   
   // System Settings State
@@ -186,8 +189,74 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleContentEdit = (item: ContentItem) => {
+  const handleContentEdit = (item: any) => {
     setEditingItem(item);
+  };
+
+  const handleAddContent = (type: 'module' | 'scenario' | 'question' | 'story') => {
+    setNewContentType(type);
+    setShowAddModal(true);
+  };
+
+  const handleSaveContent = async (contentData: any) => {
+    setLoading(true);
+    try {
+      let result;
+      switch (newContentType) {
+        case 'module':
+          result = await contentManagementService.createLearningModule(contentData);
+          break;
+        case 'scenario':
+          result = await contentManagementService.createPracticeScenario(contentData);
+          break;
+        case 'question':
+          result = await contentManagementService.createAssessmentQuestion(contentData);
+          break;
+        case 'story':
+          result = await contentManagementService.createEpicStory(contentData);
+          break;
+      }
+      
+      if (result) {
+        console.log('✅ Content created successfully:', result);
+        await loadContentItems(); // Reload content
+        setShowAddModal(false);
+      }
+    } catch (error) {
+      console.error('Error creating content:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateContent = async (id: string, updates: any) => {
+    setLoading(true);
+    try {
+      let result;
+      if (editingItem && 'difficulty' in editingItem) {
+        // It's a learning module
+        result = await contentManagementService.updateLearningModule(id, updates);
+      } else if (editingItem && 'stage_id' in editingItem) {
+        // It's a practice scenario
+        result = await contentManagementService.updatePracticeScenario(id, updates);
+      } else if (editingItem && 'type' in editingItem) {
+        // It's an assessment question
+        result = await contentManagementService.updateAssessmentQuestion(id, updates);
+      } else if (editingItem && 'epic_id' in editingItem) {
+        // It's an epic story
+        result = await contentManagementService.updateEpicStory(id, updates);
+      }
+      
+      if (result) {
+        console.log('✅ Content updated successfully:', result);
+        await loadContentItems(); // Reload content
+        setEditingItem(null);
+      }
+    } catch (error) {
+      console.error('Error updating content:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAnnouncementCreate = async () => {
@@ -322,10 +391,15 @@ const AdminPanel: React.FC = () => {
                 Content Management
               </h2>
               <div className="flex items-center space-x-4">
-                <button className="flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Content
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowAddModal(true)}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Content
+                  </button>
+                </div>
                 <button className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
                   <Upload className="h-4 w-4 mr-2" />
                   Import
@@ -847,7 +921,293 @@ const AdminPanel: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Add Content Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Add New Content
+              </h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Content Type
+                </label>
+                <select
+                  value={newContentType}
+                  onChange={(e) => setNewContentType(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="module">Learning Module</option>
+                  <option value="scenario">Practice Scenario</option>
+                  <option value="question">Assessment Question</option>
+                  <option value="story">Epic Story</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="contentTitle"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter content title"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="contentDescription"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter content description"
+                />
+              </div>
+
+              {newContentType === 'module' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Difficulty
+                    </label>
+                    <select
+                      id="contentDifficulty"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Estimated Hours
+                    </label>
+                    <input
+                      type="number"
+                      id="contentHours"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      placeholder="8"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {newContentType === 'scenario' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Stage ID
+                  </label>
+                  <select
+                    id="contentStageId"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="problem_exploration">Problem Exploration</option>
+                    <option value="as_is">As-Is Analysis</option>
+                    <option value="to_be">To-Be Process</option>
+                    <option value="solution_design">Solution Design</option>
+                  </select>
+                </div>
+              )}
+
+              {newContentType === 'question' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Type
+                    </label>
+                    <select
+                      id="contentQuestionType"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="case-study">Case Study</option>
+                      <option value="assignment">Assignment</option>
+                      <option value="quiz">Quiz</option>
+                      <option value="essay">Essay</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Difficulty
+                    </label>
+                    <select
+                      id="contentQuestionDifficulty"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end space-x-4 pt-4">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const title = (document.getElementById('contentTitle') as HTMLInputElement)?.value;
+                    const description = (document.getElementById('contentDescription') as HTMLTextAreaElement)?.value;
+                    
+                    if (!title || !description) {
+                      alert('Please fill in title and description');
+                      return;
+                    }
+
+                    const contentData: any = {
+                      title,
+                      description,
+                      status: 'draft',
+                      created_by: 'current-user-id' // This should come from auth context
+                    };
+
+                    if (newContentType === 'module') {
+                      contentData.difficulty = (document.getElementById('contentDifficulty') as HTMLSelectElement)?.value;
+                      contentData.estimated_hours = parseInt((document.getElementById('contentHours') as HTMLInputElement)?.value || '0');
+                      contentData.topics = [];
+                      contentData.learning_outcomes = [];
+                    } else if (newContentType === 'scenario') {
+                      contentData.stage_id = (document.getElementById('contentStageId') as HTMLSelectElement)?.value;
+                      contentData.objective = description;
+                      contentData.success_criteria = [];
+                      contentData.must_cover_areas = {};
+                    } else if (newContentType === 'question') {
+                      contentData.type = (document.getElementById('contentQuestionType') as HTMLSelectElement)?.value;
+                      contentData.difficulty = (document.getElementById('contentQuestionDifficulty') as HTMLSelectElement)?.value;
+                      contentData.topic = 'General';
+                      contentData.estimated_time = '30 minutes';
+                      contentData.questions = {};
+                      contentData.learning_objectives = [];
+                    } else if (newContentType === 'story') {
+                      contentData.summary = title;
+                      contentData.acceptance_criteria = [];
+                      contentData.moscow_priority = 'Should';
+                    }
+
+                    handleSaveContent(contentData);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                >
+                  Create Content
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Edit Content Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Edit Content
+              </h3>
+              <button
+                onClick={() => setEditingItem(null)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  defaultValue={editingItem.title}
+                  id="editTitle"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </label>
+                <textarea
+                  defaultValue={editingItem.description}
+                  id="editDescription"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Status
+                </label>
+                <select
+                  defaultValue={editingItem.status}
+                  id="editStatus"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end space-x-4 pt-4">
+                <button
+                  onClick={() => setEditingItem(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const title = (document.getElementById('editTitle') as HTMLInputElement)?.value;
+                    const description = (document.getElementById('editDescription') as HTMLTextAreaElement)?.value;
+                    const status = (document.getElementById('editStatus') as HTMLSelectElement)?.value;
+                    
+                    if (!title || !description) {
+                      alert('Please fill in title and description');
+                      return;
+                    }
+
+                    const updates = {
+                      title,
+                      description,
+                      status
+                    };
+
+                    handleUpdateContent(editingItem.id, updates);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

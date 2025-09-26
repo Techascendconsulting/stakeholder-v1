@@ -158,6 +158,10 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     try {
       setIsSaving(true);
       
+      // Set onboarding in progress flag
+      localStorage.setItem('onboardingInProgress', 'true');
+      console.log('🎯 ONBOARDING: Marked onboarding as in progress');
+      
       // Try to save to user_onboarding table
       try {
         // First, delete any existing onboarding record for this user
@@ -287,6 +291,11 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
         completed_at: completedAt
       } : null);
 
+      // Set localStorage flags to control welcome page visibility
+      localStorage.setItem('onboardingCompleted', 'true');
+      localStorage.removeItem('onboardingInProgress');
+      console.log('🎯 ONBOARDING: Marked onboarding as completed in localStorage');
+
     } catch (error) {
       console.error('Error completing onboarding:', error);
     } finally {
@@ -296,6 +305,11 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
 
   const resetOnboarding = async () => {
     if (!user) return;
+    
+    // Clear localStorage flags
+    localStorage.removeItem('onboardingCompleted');
+    localStorage.removeItem('onboardingInProgress');
+    console.log('🎯 ONBOARDING: Reset onboarding flags in localStorage');
     
     try {
       setIsSaving(true);

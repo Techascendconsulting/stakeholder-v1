@@ -83,13 +83,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     }
   ];
 
+  // Check onboarding status to determine if welcome page should be shown
+  const onboardingCompleted = localStorage.getItem('onboardingCompleted')
+  const isOnboardingInProgress = localStorage.getItem('onboardingInProgress')
+  
+  // For existing users who don't have onboarding flags, assume they've completed onboarding
+  if (!onboardingCompleted && !isOnboardingInProgress) {
+    localStorage.setItem('onboardingCompleted', 'true')
+  }
+
   // Student menu items
   const studentMenuItems: MenuItem[] = [
-    { 
+    // Only show welcome page if onboarding is not completed
+    ...(localStorage.getItem('onboardingCompleted') !== 'true' ? [{
       id: 'welcome', 
       label: 'Welcome', 
       icon: Home
-    },
+    }] : []),
     { 
       id: 'dashboard', 
       label: 'My Dashboard', 
@@ -142,8 +152,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           icon: Rocket
         },
         { 
-          id: 'agile-scrum', 
-          label: 'Agile Scrum', 
+          id: 'scrum-essentials', 
+          label: 'Scrum Essentials', 
           icon: Target
         },
         { 

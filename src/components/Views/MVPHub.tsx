@@ -1151,6 +1151,16 @@ const MVPHub: React.FC = () => {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-emerald-600/5 dark:from-green-400/10 dark:to-emerald-400/10" />
         <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-20">
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex-1"></div>
+            <button
+              onClick={() => setShowMvpBuilder(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+            >
+              <Rocket className="w-5 h-5" />
+              <span>Skip to MVP Builder</span>
+            </button>
+          </div>
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl mb-6">
               <Rocket className="w-8 h-8 text-white" />

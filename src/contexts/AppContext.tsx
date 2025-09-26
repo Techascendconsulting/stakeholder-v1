@@ -75,13 +75,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Track previous user state to detect actual logout vs initial loading
   const prevUser = useRef(user)
 
-  // Initialize currentView from localStorage or default to welcome for new work experience approach
+  // Initialize currentView from localStorage or default to dashboard for returning users
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
     console.log('🔍 INIT: AppContext initializing currentView...')
     
     try {
       const savedView = localStorage.getItem('currentView')
       console.log('🔍 INIT: Found saved view in localStorage:', savedView)
+      
+      // Check onboarding status to determine if welcome page should be accessible
+      const onboardingCompleted = localStorage.getItem('onboardingCompleted')
+      const isOnboardingInProgress = localStorage.getItem('onboardingInProgress')
+      
+      // For existing users who don't have onboarding flags, assume they've completed onboarding
+      if (!onboardingCompleted && !isOnboardingInProgress) {
+        console.log('🔍 INIT: No onboarding flags found, assuming user has completed onboarding')
+        localStorage.setItem('onboardingCompleted', 'true')
+      }
+      
+      // If user has completed onboarding and is trying to access welcome page, redirect to dashboard
+      if (savedView === 'welcome' && localStorage.getItem('onboardingCompleted') === 'true') {
+        console.log('🔍 INIT: User has completed onboarding, preventing access to welcome page')
+        return 'dashboard'
+      }
       
       // Validate that the saved view is a valid AppView
       const validViews: AppView[] = [
@@ -172,12 +188,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.log('✅ INIT: Restoring valid view from localStorage:', savedView)
         return savedView as AppView
       } else {
-        console.log('⚠️ INIT: Invalid or missing saved view, defaulting to welcome. savedView:', savedView)
-        return 'welcome'
+        console.log('⚠️ INIT: Invalid or missing saved view, defaulting to dashboard. savedView:', savedView)
+        return 'dashboard'
       }
     } catch (error) {
-      console.log('❌ INIT: Error loading saved view, defaulting to welcome:', error)
-      return 'welcome'
+      console.log('❌ INIT: Error loading saved view, defaulting to dashboard:', error)
+      return 'dashboard'
     }
   })
 
@@ -333,6 +349,54 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('✅ USER_EFFECT: Current view:', currentView)
       console.log('✅ USER_EFFECT: Selected project:', selectedProject?.name || 'none')
       
+      // Check if user needs onboarding (only for non-admin users)
+      if (!adminLoading && !isAdmin) {
+        // Check if user has completed onboarding
+        let onboardingCompleted = localStorage.getItem('onboardingCompleted')
+        const isOnboardingInProgress = localStorage.getItem('onboardingInProgress')
+        
+        // For existing users who don't have onboarding flags, assume they've completed onboarding
+        if (!onboardingCompleted && !isOnboardingInProgress) {
+          console.log('🎯 ONBOARDING: No onboarding flags found, assuming user has completed onboarding')
+          localStorage.setItem('onboardingCompleted', 'true')
+          onboardingCompleted = 'true'
+        }
+        
+        console.log('🎯 ONBOARDING: Raw localStorage values:', {
+          onboardingCompleted: localStorage.getItem('onboardingCompleted'),
+          isOnboardingInProgress: localStorage.getItem('onboardingInProgress')
+        })
+        
+        // Temporary debug: Add a way to manually complete onboarding
+        if (typeof window !== 'undefined') {
+          (window as any).completeOnboarding = () => {
+            localStorage.setItem('onboardingCompleted', 'true');
+            localStorage.removeItem('onboardingInProgress');
+            console.log('🎯 ONBOARDING: Manually completed onboarding');
+            window.location.reload();
+          };
+          (window as any).resetOnboarding = () => {
+            localStorage.removeItem('onboardingCompleted');
+            localStorage.removeItem('onboardingInProgress');
+            console.log('🎯 ONBOARDING: Manually reset onboarding');
+            window.location.reload();
+          };
+        }
+        
+        console.log('🎯 ONBOARDING: Checking onboarding state:', { 
+          onboardingCompleted: onboardingCompleted, 
+          isOnboardingInProgress: isOnboardingInProgress,
+          currentView 
+        })
+        
+        // If user is on dashboard but hasn't completed onboarding, redirect to welcome
+        if (currentView === 'dashboard' && !onboardingCompleted && !isOnboardingInProgress) {
+          console.log('🎯 ONBOARDING: User needs onboarding, redirecting to welcome page')
+          setCurrentViewState('welcome')
+          localStorage.setItem('currentView', 'welcome')
+        }
+      }
+      
       // Admin users should be redirected to admin panel immediately
       // Wait for admin loading to complete before making redirect decisions
       if (!adminLoading && isAdmin) {
@@ -399,6 +463,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       console.log('🔐 ADMIN_INIT: Admin status still loading, waiting...')
     }
   }, [user, isAdmin, currentView, adminLoading])
+
+  // Check onboarding status on initial load for non-admin users
+  useEffect(() => {
+    if (user && !adminLoading && !isAdmin) {
+      let onboardingCompleted = localStorage.getItem('onboardingCompleted')
+      const isOnboardingInProgress = localStorage.getItem('onboardingInProgress')
+      
+      // For existing users who don't have onboarding flags, assume they've completed onboarding
+      if (!onboardingCompleted && !isOnboardingInProgress) {
+        console.log('🎯 ONBOARDING_INIT: No onboarding flags found, assuming user has completed onboarding')
+        localStorage.setItem('onboardingCompleted', 'true')
+        onboardingCompleted = 'true'
+      }
+      
+      console.log('🎯 ONBOARDING_INIT: Checking initial onboarding state:', { 
+        onboardingCompleted: onboardingCompleted, 
+        isOnboardingInProgress: isOnboardingInProgress,
+        currentView 
+      })
+      
+      // Only redirect to welcome if user is on dashboard and hasn't completed onboarding
+      if (!onboardingCompleted && !isOnboardingInProgress && currentView === 'dashboard') {
+        console.log('🎯 ONBOARDING_INIT: User needs onboarding, redirecting from dashboard to welcome page')
+        setCurrentViewState('welcome')
+        localStorage.setItem('currentView', 'welcome')
+      }
+    }
+  }, [user, isAdmin, adminLoading, currentView])
 
   // Mock user progress data
   const userProgress = {
