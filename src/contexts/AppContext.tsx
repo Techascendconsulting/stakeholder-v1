@@ -334,9 +334,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       // Admin users should be redirected to admin panel immediately
       // Wait for admin loading to complete before making redirect decisions
       if (!adminLoading && isAdmin) {
-        // If admin is on dashboard or any student view, redirect to admin panel
-        if (currentView === 'dashboard' || currentView === 'welcome') {
-          console.log('🔐 ADMIN_EFFECT: Admin user on dashboard/welcome, redirecting to admin panel')
+        // If admin is on welcome page, redirect to admin dashboard
+        if (currentView === 'welcome') {
+          console.log('🔐 ADMIN_EFFECT: Admin user on welcome, redirecting to admin dashboard')
           setCurrentViewState('admin')
           localStorage.setItem('currentView', 'admin')
         }

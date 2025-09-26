@@ -39,6 +39,7 @@ interface SystemSetting {
 }
 
 const AdminPanel: React.FC = () => {
+  console.log('🔧 ADMIN PANEL: Component rendering');
   const { isAdmin, hasPermission } = useAdmin();
   const { setCurrentView } = useApp();
   const [activeTab, setActiveTab] = useState<'users' | 'content' | 'settings' | 'communication' | 'data'>('users');
