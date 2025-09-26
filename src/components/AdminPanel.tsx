@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAdmin } from '../contexts/AdminContext';
 import { useApp } from '../contexts/AppContext';
+import AdminUserManagement from './AdminUserManagement';
 
 interface ContentItem {
   id: string;
@@ -311,11 +312,7 @@ const AdminPanel: React.FC = () => {
               </div>
             </div>
             
-            <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
-              <p className="text-gray-600 dark:text-gray-400 text-center">
-                User management functionality will be integrated here from the existing AdminUserManagement component.
-              </p>
-            </div>
+            <AdminUserManagement />
           </div>
         )}
 
