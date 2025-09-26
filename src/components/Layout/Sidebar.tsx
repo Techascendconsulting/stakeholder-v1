@@ -72,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       icon: LayoutDashboard
     },
     { 
-      id: 'admin', 
+      id: 'admin-panel', 
       label: 'Admin Panel', 
       icon: Settings
     },
