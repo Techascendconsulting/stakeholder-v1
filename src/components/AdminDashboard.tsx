@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAdmin } from '../contexts/AdminContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useApp } from '../contexts/AppContext';
 import { adminService, UserAdminRole, AdminActivityLog } from '../services/adminService';
 import { deviceLockService } from '../services/deviceLockService';
 import { supabase } from '../lib/supabase';
@@ -23,6 +24,7 @@ import AdminUserManagement from './AdminUserManagement';
 const AdminDashboard: React.FC = () => {
   const { isAdmin, isLoading, hasPermission } = useAdmin();
   const { user } = useAuth();
+  const { setCurrentView } = useApp();
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics' | 'activity' | 'user-activity'>('overview');
   const [adminUsers, setAdminUsers] = useState<UserAdminRole[]>([]);
   const [activityLogs, setActivityLogs] = useState<AdminActivityLog[]>([]);
@@ -198,20 +200,32 @@ const AdminDashboard: React.FC = () => {
   const tabs = [
     { id: 'overview', label: 'Dashboard', icon: BarChart3, permission: null },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, permission: 'analytics' },
-    { id: 'users', label: 'User Management', icon: Users, permission: 'user_management' },
-    { id: 'activity', label: 'Admin Activity', icon: Activity, permission: 'audit_logs' },
+    { id: 'activity', label: 'Activity Logs', icon: Activity, permission: 'audit_logs' },
     { id: 'user-activity', label: 'User Activity', icon: Clock, permission: 'audit_logs' }
   ].filter(tab => !tab.permission || hasPermission(tab.permission as keyof any));
 
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Admin Dashboard
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage users, roles, device locks, and system access
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Admin Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              System overview, analytics, and monitoring
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setCurrentView('admin-panel')}
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Admin Panel
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Navigation Tabs */}
@@ -510,9 +524,6 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'users' && hasPermission('user_management') && (
-          <AdminUserManagement />
-        )}
 
 
 

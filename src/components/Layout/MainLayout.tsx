@@ -62,6 +62,7 @@ import CommunityHub from '../Views/Community/CommunityHub';
 import AdminCommunityHub from '../Views/Community/AdminCommunityHub';
 import ProjectLandingView from '../Views/ProjectLandingView';
 import AdminDashboard from '../AdminDashboard';
+import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
 import MeetingModeSelection from '../Views/MeetingModeSelection';
 
@@ -226,6 +227,8 @@ const MainLayout: React.FC = () => {
               return <TrainingUI />;
       case 'admin':
         return <AdminDashboard />;
+      case 'admin-panel':
+        return <AdminPanel />;
       case 'community-hub':
         return <CommunityHub />;
       case 'community-admin':

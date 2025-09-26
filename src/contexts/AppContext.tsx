@@ -146,6 +146,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'community-hub',
         'community-admin',
         'admin',
+        'admin-panel',
         // Learning pages that were missing
         'project-initiation',
         'requirements-engineering',
