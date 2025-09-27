@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Target, BookOpen, CheckCircle, ArrowRight, Save, Plus, ChevronDown, ChevronUp, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
@@ -42,8 +42,9 @@ const getMoscowColor = (moscow: string) => {
 const MvpBuilder: React.FC<MvpBuilderProps> = ({ 
   projectId = null, 
   userId, 
-  mode = 'training' 
+  mode = 'training'
 }) => {
+  console.log('🔄 MvpBuilder: Component mounting...');
   const { user } = useAuth();
   const { selectedProject, projects } = useApp();
   
@@ -67,7 +68,16 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   const [epics, setEpics] = useState<Epic[]>([]);
   const [stories, setStories] = useState<Story[]>([]);
   const [selectedEpicId, setSelectedEpicId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
+  
+  // Use sessionStorage to persist loading state across component mounts
+  const getInitialLoadingState = () => {
+    const saved = sessionStorage.getItem('mvp-builder-loading');
+    return saved ? JSON.parse(saved) : true;
+  };
+  
+  const [isInitiallyLoading, setIsInitiallyLoading] = useState(getInitialLoadingState);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [flowOrder, setFlowOrder] = useState<string[]>([]);
   const [expandedAC, setExpandedAC] = useState<string[]>([]);
@@ -83,10 +93,16 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   useEffect(() => {
     console.log('🔄 MvpBuilder - useEffect triggered (practice-only mode)');
     
+    // Prevent multiple loads in React Strict Mode
+    if (hasLoadedRef.current) {
+      console.log('🔄 MvpBuilder - Already loaded, skipping...');
+      return;
+    }
+    
     const loadEpicsAndStories = async () => {
       try {
-        setLoading(true);
         console.log('🔄 MvpBuilder - Starting to load epics for practice mode...');
+        setLoading(true);
 
         // First test the connection
         console.log('🔍 MVP Builder - Testing connection...');
@@ -120,7 +136,11 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
           setSetupError("MVP Builder database tables haven't been created yet. Please run the migration to get started.");
         }
       } finally {
+        console.log('🔄 MvpBuilder - Setting loading to false');
+        hasLoadedRef.current = true;
         setLoading(false);
+        setIsInitiallyLoading(false);
+        sessionStorage.setItem('mvp-builder-loading', 'false');
       }
     };
 
@@ -248,12 +268,57 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   const availableStories = stories.filter(story => !flowOrder.includes(story.id));
   const flowStories = stories.filter(story => flowOrder.includes(story.id));
 
-  if (loading) {
+  if (isInitiallyLoading || loading || epics.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading MVP Builder...</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Header skeleton */}
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3">
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-48"></div>
+              </div>
+              <div className="flex space-x-3">
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-32"></div>
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left sidebar skeleton */}
+            <div className="lg:col-span-1">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-32 mb-4"></div>
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }, (_, i) => (
+                    <div key={i} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-full mb-2"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Main content skeleton */}
+            <div className="lg:col-span-2">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-48 mb-4"></div>
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }, (_, i) => (
+                    <div key={i} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-full mb-2"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-2/3 mb-2"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

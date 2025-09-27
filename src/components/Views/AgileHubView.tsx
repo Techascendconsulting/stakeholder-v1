@@ -1120,9 +1120,9 @@ export const AgileHubView: React.FC = () => {
             <div>
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setCurrentView('agile-practice')}
+                  onClick={() => setCurrentView('scrum-learning')}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  title="Back to Training"
+                  title="Back to Scrum Learning"
                 >
                   <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
@@ -1170,13 +1170,6 @@ export const AgileHubView: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">Manage your delivery backlog and refinement meetings</p>
             </div>
             <div className="flex space-x-3">
-              <button
-                onClick={() => setCurrentView('scrum-essentials')}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-              >
-                <Target size={16} />
-                <span>Scrum Delivery</span>
-              </button>
               <button
                 onClick={() => !showRefinementModal && setShowCreateModal(true)}
                 disabled={showRefinementModal}

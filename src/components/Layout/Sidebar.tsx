@@ -164,6 +164,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       ]
     },
     { 
+      id: 'learning-hub', 
+      label: 'Learning Hub', 
+      icon: BookOpen,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'core-learning', 
+          label: 'Core Learning', 
+          icon: GraduationCap
+        },
+        { 
+          id: 'process-mapper', 
+          label: 'Process Mapper', 
+          icon: PenTool
+        },
+        { 
+          id: 'scrum-essentials', 
+          label: 'Scrum Essentials', 
+          icon: Target
+        }
+      ]
+    },
+    { 
       id: 'my-resources', 
       label: 'My Resources', 
       icon: Archive

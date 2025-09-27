@@ -19,6 +19,8 @@ import AnalysisView from '../Views/AnalysisView';
 import CustomProjectView from '../Views/CustomProjectView';
 import CustomStakeholdersView from '../Views/CustomStakeholdersView';
 import ScrumEssentialsView from '../Views/ScrumEssentialsView';
+import ScrumLearningView from '../Views/ScrumLearningView';
+import BAReferenceLibrary from '../Views/BAReferenceLibrary';
 import { AgileHubView } from '../Views/AgileHubView';
 import ScrumPracticeView from '../Views/ScrumPracticeView';
 import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
@@ -30,7 +32,6 @@ import ProjectInitiationView from '../Views/ProjectInitiationView';
 import RequirementsEngineeringView from '../Views/RequirementsEngineeringView';
 import DocumentationView from '../Views/DocumentationView';
 import DocumentationPracticeView from '../Views/DocumentationPracticeView';
-import BAReferenceView from '../Views/BAReferenceView';
 import MyResourcesView from '../Views/MyResourcesView';
 import IntroductionToElicitation from '../Views/IntroductionToElicitation';
 import SolutionOptions from '../Views/SolutionOptions';
@@ -66,6 +67,7 @@ import AdminDashboard from '../AdminDashboard';
 import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
 import MeetingModeSelection from '../Views/MeetingModeSelection';
+import CoreLearningView from '../Views/CoreLearningView';
 
 
 const MainLayout: React.FC = () => {
@@ -89,6 +91,7 @@ const MainLayout: React.FC = () => {
   }
 
   const renderView = () => {
+    console.log('🔄 MainLayout: renderView called with currentView:', currentView);
     switch (currentView) {
       case 'welcome':
         return <WelcomeView />;
@@ -98,6 +101,10 @@ const MainLayout: React.FC = () => {
         return <Dashboard />;
       case 'learn':
         return <LearnLandingView />;
+      case 'learning-hub':
+        return <CoreLearningView />; // This will be the main Learning Hub view
+      case 'core-learning':
+        return <CoreLearningView />;
       case 'project-initiation':
         return <ProjectInitiationView />;
       case 'requirements-engineering':
@@ -132,11 +139,15 @@ const MainLayout: React.FC = () => {
       case 'core-concepts':
         return <CoreConceptsView />;
       case 'scrum-essentials':
+        console.log('🔄 MainLayout: Rendering ScrumEssentialsView');
         return <ScrumEssentialsView />;
+      case 'scrum-learning':
+        console.log('🔄 MainLayout: Rendering ScrumLearningView');
+        return <ScrumLearningView />;
       case 'agile-scrum':
         return <AgileHubView />;
       case 'ba-reference':
-        return <BAReferenceView />;
+        return <BAReferenceLibrary />;
       case 'my-resources':
         return <MyResourcesView />;
       case 'progress-tracking':

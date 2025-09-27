@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { ArrowLeft, Target, Users, Clock, CheckCircle, BookOpen, Play, Zap, Award, ArrowRight } from 'lucide-react';
+import { Target, Clock, BookOpen, Zap, Award, ArrowRight, X } from 'lucide-react';
 
 const ScrumEssentialsView: React.FC = () => {
+  console.log('🔄 ScrumEssentialsView: Component mounting...');
   const { setCurrentView } = useApp();
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const scrumConcepts = [
     {
@@ -107,17 +109,30 @@ These values give direction to the Scrum Team with regard to their work, actions
     }
   ];
 
+      console.log('🔄 ScrumEssentialsView: Rendering JSX...');
       return (
     <div className="w-full h-full px-6 py-4 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Scrum Essentials</h1>
-        <button 
-          onClick={() => setCurrentView('agile-scrum')}
-          className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
-        >
-          <Target className="w-5 h-5" />
-          <span>Scrum Delivery</span>
-        </button>
+        <div className="flex space-x-3">
+          <button 
+            onClick={() => {
+              console.log('🔄 ScrumEssentialsView: Navigating to scrum-learning...');
+              setCurrentView('scrum-learning');
+            }}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+          >
+            <BookOpen className="w-5 h-5" />
+            <span>Skip to Start Learning</span>
+          </button>
+          <button 
+            onClick={() => setCurrentView('agile-scrum')}
+            className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+          >
+            <Target className="w-5 h-5" />
+            <span>Scrum Delivery</span>
+          </button>
+        </div>
       </div>
 
       {/* Hero Section */}
@@ -126,7 +141,7 @@ These values give direction to the Scrum Team with regard to their work, actions
           <Target className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Master Scrum Fundamentals
+          Master Scrum Essentials
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
           Learn the essential concepts, roles, events, and artifacts that make Scrum an effective framework for delivering value
@@ -135,11 +150,12 @@ These values give direction to the Scrum Team with regard to their work, actions
         {/* Hero Image */}
         <div className="max-w-4xl mx-auto">
           <img 
-            src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop&auto=format&q=80" 
+            src="/Screenshot 2025-09-27 at 11.36.44.png" 
             alt="Scrum team collaboration" 
-            className="w-full h-64 object-cover rounded-2xl shadow-lg"
+            className="w-full max-h-96 object-contain rounded-2xl shadow-lg bg-white dark:bg-gray-800 p-4 cursor-pointer hover:shadow-xl transition-shadow duration-300"
+            onClick={() => setShowImageModal(true)}
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">Scrum team working together on product development</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-3 italic">Click the image to view in full size - <em>Image courtesy of Scrum Alliance</em></p>
         </div>
       </div>
 
@@ -186,23 +202,63 @@ These values give direction to the Scrum Team with regard to their work, actions
       <div className="mt-16 text-center">
         <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl mx-auto mb-4 shadow-lg">
-            <Play className="w-8 h-8 text-white" />
+            <BookOpen className="w-8 h-8 text-white" />
         </div>
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Ready to Practice Scrum?
+            Ready to Dive Deeper?
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-            Apply your Scrum knowledge with hands-on practice in our interactive delivery environment.
+            Continue your Scrum learning journey with our comprehensive step-by-step guide covering roles, events, artifacts, and more.
           </p>
-            <button
-            onClick={() => setCurrentView('agile-scrum')}
+          <button
+            onClick={() => {
+              console.log('🔄 ScrumEssentialsView: Navigating to scrum-learning...');
+              setCurrentView('scrum-learning');
+            }}
             className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-10 py-4 rounded-xl hover:from-green-700 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 mx-auto"
           >
-            <span>Scrum Delivery</span>
+            <span>Start Learning</span>
             <ArrowRight className="w-5 h-5" />
-              </button>
+          </button>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowImageModal(false)}
+        >
+          <div className="relative max-w-6xl max-h-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full transition-all duration-200"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Modal Image */}
+            <div className="p-8">
+              <img 
+                src="/Screenshot 2025-09-27 at 11.36.44.png" 
+                alt="Scrum team collaboration - Full Size" 
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              />
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-8 pb-8 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Scrum team working together on product development
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                Click outside the image or press the X button to close
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
