@@ -402,7 +402,7 @@ const HandbookView: React.FC = () => {
           width: '100%',
           boxSizing: 'border-box',
           overflow: 'hidden',
-          padding: '0',
+          padding: '40px',
           margin: '0'
         }}
       >
