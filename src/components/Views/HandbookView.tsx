@@ -90,7 +90,7 @@ const HandbookView: React.FC = () => {
   useEffect(() => {
     console.log('📚 HandbookView: Component mounted');
     console.log('📚 Window size:', window.innerWidth, 'x', window.innerHeight);
-    console.log('📚 Book target aspect: A4 (210x297)');
+    console.log('📚 Fixed book size:', pageWidth, 'x', pageHeight);
     
     setTimeout(() => {
       const container = document.getElementById('handbook-book');
@@ -112,6 +112,17 @@ const HandbookView: React.FC = () => {
         if (rect.left <= 0) console.warn('⚠️ BOOK TOUCHING LEFT EDGE!');
         if (rect.right >= window.innerWidth) console.warn('⚠️ BOOK TOUCHING RIGHT EDGE!');
         if (rect.bottom >= window.innerHeight) console.warn('⚠️ BOOK TOUCHING BOTTOM EDGE!');
+        
+        // Check actual book element
+        const bookElement = container.querySelector('.react-pageflip');
+        if (bookElement) {
+          const bookRect = bookElement.getBoundingClientRect();
+          console.log('📚 BOOK ELEMENT DEBUG:');
+          console.log('  - Book position:', { top: bookRect.top, left: bookRect.left, right: bookRect.right, bottom: bookRect.bottom });
+          console.log('  - Book size:', { width: bookRect.width, height: bookRect.height });
+        } else {
+          console.warn('⚠️ Book element not found!');
+        }
       } else {
         console.error('❌ Container element not found!');
       }
