@@ -112,6 +112,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       isCollapsible: true,
       subItems: [
         { 
+          id: 'core-learning', 
+          label: 'Core Learning', 
+          icon: GraduationCap
+        },
+        { 
+          id: 'handbook', 
+          label: 'BA Handbook', 
+          icon: BookOpen
+        },
+        { 
           id: 'ba-fundamentals', 
           label: 'BA Fundamentals', 
           icon: GraduationCap
@@ -170,19 +180,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       isCollapsible: true,
       subItems: [
         { 
-          id: 'core-learning', 
-          label: 'Core Learning', 
+          id: 'ba-fundamentals', 
+          label: 'BA Fundamentals', 
           icon: GraduationCap
         },
         { 
           id: 'process-mapper', 
           label: 'Process Mapper', 
           icon: PenTool
-        },
-        { 
-          id: 'scrum-essentials', 
-          label: 'Scrum Essentials', 
-          icon: Target
         }
       ]
     },

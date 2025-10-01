@@ -30,3 +30,4 @@ BEGIN
     RAISE NOTICE 'User superadmin@test.com not found in auth.users. Please create the account first.';
   END IF;
 END $$;
+

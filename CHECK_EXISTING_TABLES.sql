@@ -20,3 +20,4 @@ FROM information_schema.columns
 WHERE table_name = 'agile_tickets' 
 AND table_schema = 'public'
 ORDER BY ordinal_position;
+

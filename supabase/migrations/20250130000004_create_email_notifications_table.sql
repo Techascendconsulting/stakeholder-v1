@@ -45,3 +45,4 @@ CREATE POLICY "Admins can update email notifications" ON public.email_notificati
             AND (is_admin = true OR is_super_admin = true OR is_senior_admin = true)
         )
     );
+

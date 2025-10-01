@@ -21,6 +21,7 @@ import CustomStakeholdersView from '../Views/CustomStakeholdersView';
 import ScrumEssentialsView from '../Views/ScrumEssentialsView';
 import ScrumLearningView from '../Views/ScrumLearningView';
 import BAReferenceLibrary from '../Views/BAReferenceLibrary';
+import HandbookView from '../Views/HandbookView';
 import { AgileHubView } from '../Views/AgileHubView';
 import ScrumPracticeView from '../Views/ScrumPracticeView';
 import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
@@ -148,6 +149,8 @@ const MainLayout: React.FC = () => {
         return <AgileHubView />;
       case 'ba-reference':
         return <BAReferenceLibrary />;
+      case 'handbook':
+        return <HandbookView />;
       case 'my-resources':
         return <MyResourcesView />;
       case 'progress-tracking':

@@ -10,3 +10,4 @@ ALTER TABLE public.agile_tickets ADD CONSTRAINT agile_tickets_type_check
 
 -- Add epic column if it doesn't exist (for parent-child relationships)
 ALTER TABLE public.agile_tickets ADD COLUMN IF NOT EXISTS epic text;
+

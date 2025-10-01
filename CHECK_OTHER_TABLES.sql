@@ -21,3 +21,4 @@ FROM information_schema.columns
 WHERE table_name = 'acceptance_criteria' 
 AND table_schema = 'public'
 ORDER BY ordinal_position;
+

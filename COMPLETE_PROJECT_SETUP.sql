@@ -265,3 +265,4 @@ SELECT 'Epics created:' as info, COUNT(*) as count FROM public.epics;
 SELECT 'Stories created:' as info, COUNT(*) as count FROM public.stories;
 SELECT 'Acceptance Criteria created:' as info, COUNT(*) as count FROM public.acceptance_criteria;
 SELECT 'Tables with RLS enabled:' as info, COUNT(*) as count FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('projects', 'epics', 'stories', 'acceptance_criteria', 'mvp_flows');
+

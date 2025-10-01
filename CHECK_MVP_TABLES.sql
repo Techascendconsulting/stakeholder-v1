@@ -70,3 +70,4 @@ SELECT COUNT(*) as user_projects_count FROM projects WHERE created_by = auth.uid
 SELECT 'RLS Test - Insert Epic:' as info;
 -- This will show if RLS is working correctly
 SELECT 'RLS policies are working if you see this message without errors' as rls_status;
+

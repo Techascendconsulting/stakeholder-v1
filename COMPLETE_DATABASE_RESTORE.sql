@@ -287,3 +287,4 @@ BEGIN
   RAISE NOTICE '- Triggers set up for updated_at';
   RAISE NOTICE '====================================================================';
 END $$;
+

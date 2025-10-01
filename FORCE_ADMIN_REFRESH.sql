@@ -66,3 +66,4 @@ GRANT EXECUTE ON FUNCTION public.check_my_admin_status() TO authenticated;
 SELECT * FROM public.check_my_admin_status();
 
 SELECT 'Admin refresh complete! Try refreshing your browser now.' as status;
+

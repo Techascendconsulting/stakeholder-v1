@@ -65,3 +65,4 @@ SELECT
   '2. You should now see admin privileges' as step2,
   '3. Access admin dashboard to manage users' as step3,
   '4. Unlock your main account (admin@batraining.com) if needed' as step4;
+

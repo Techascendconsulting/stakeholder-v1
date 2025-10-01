@@ -477,3 +477,4 @@ export const epicSelectionScenarios: EpicSelectionScenario[] = [
 export const getEpicSelectionScenario = (id: string): EpicSelectionScenario | undefined => {
   return epicSelectionScenarios.find(scenario => scenario.id === id);
 };
+

@@ -139,3 +139,4 @@ SELECT 'Acceptance Criteria created:' as info, COUNT(*) as count FROM public.acc
 
 -- Check for any backup tables created
 SELECT 'Backup tables created:' as info, COUNT(*) as count FROM information_schema.tables WHERE table_name LIKE '%_invalid_ids' AND table_schema = 'public';
+

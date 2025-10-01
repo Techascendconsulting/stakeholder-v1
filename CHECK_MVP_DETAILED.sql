@@ -85,3 +85,4 @@ SELECT '=== ERROR CHECK ===' as section;
 SELECT 
   'No obvious errors found' as status,
   'Check browser console for detailed errors' as note;
+

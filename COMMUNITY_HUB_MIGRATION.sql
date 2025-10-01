@@ -219,3 +219,4 @@ SELECT
   (SELECT COUNT(*) FROM public.groups) as groups_count,
   (SELECT COUNT(*) FROM public.group_members) as group_members_count,
   (SELECT COUNT(*) FROM public.training_sessions) as training_sessions_count;
+

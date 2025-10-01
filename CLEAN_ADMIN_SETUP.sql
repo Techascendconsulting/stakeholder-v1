@@ -124,3 +124,4 @@ SELECT
 FROM user_profiles up
 LEFT JOIN auth.users au ON up.user_id = au.id
 WHERE au.email = 'your-email@example.com';  -- CHANGE THIS EMAIL
+

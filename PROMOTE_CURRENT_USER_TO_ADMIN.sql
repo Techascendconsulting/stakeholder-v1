@@ -29,3 +29,4 @@ SELECT
 FROM auth.users au
 LEFT JOIN public.user_profiles up ON au.id = up.user_id
 ORDER BY au.created_at DESC;
+

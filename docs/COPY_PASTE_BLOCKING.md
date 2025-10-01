@@ -85,3 +85,4 @@ const MyPage = () => {
 - Could add keyboard shortcuts blocking (Ctrl+C, Ctrl+V, etc.)
 - Could add right-click context menu blocking
 - Could add more granular control (allow copy but block paste, etc.)
+

@@ -40,3 +40,4 @@ COMMENT ON TABLE email_notifications IS 'Tracks all email notifications sent to 
 COMMENT ON COLUMN email_notifications.type IS 'Type of notification: device_reset, admin_invitation, etc.';
 COMMENT ON COLUMN email_notifications.status IS 'Delivery status: sent, delivered, failed, bounced';
 COMMENT ON COLUMN email_notifications.metadata IS 'Additional notification data in JSON format';
+

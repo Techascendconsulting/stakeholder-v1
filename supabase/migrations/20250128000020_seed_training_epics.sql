@@ -120,3 +120,4 @@ from (values
         ('System must allow tenant to confirm or edit contact details.')
      ) as ac(description)
 on conflict do nothing;
+

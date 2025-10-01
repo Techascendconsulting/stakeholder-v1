@@ -131,3 +131,4 @@ const BuddyTab: React.FC = () => {
 };
 
 export default BuddyTab;
+

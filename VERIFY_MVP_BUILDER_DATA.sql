@@ -25,3 +25,4 @@ SELECT
   (SELECT COUNT(*) FROM public.epics) as epic_count,
   (SELECT COUNT(*) FROM public.stories) as story_count,
   (SELECT COUNT(*) FROM public.acceptance_criteria) as ac_count;
+

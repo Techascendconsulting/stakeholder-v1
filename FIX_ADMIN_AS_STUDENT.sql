@@ -38,3 +38,4 @@ SELECT
 FROM user_profiles up
 LEFT JOIN auth.users au ON up.user_id = au.id
 WHERE au.email = 'admin@batraining.com';
+

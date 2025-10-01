@@ -64,3 +64,4 @@ $$;
 -- SELECT revoke_admin('someone@example.com');
 
 
+

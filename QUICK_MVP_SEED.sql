@@ -70,3 +70,4 @@ UNION ALL
 SELECT 'AC count:' as info, COUNT(*) as count FROM public.acceptance_criteria WHERE story_id IN (
   SELECT id FROM public.stories WHERE project_id = '00000000-0000-0000-0000-000000000001'
 );
+

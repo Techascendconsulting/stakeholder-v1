@@ -19,3 +19,4 @@ UPDATE users SET locked = false WHERE locked IS NULL;
 -- Add comment to document the purpose
 COMMENT ON COLUMN users.registered_device IS 'FingerprintJS device ID for device lock functionality';
 COMMENT ON COLUMN users.locked IS 'Whether the account is locked due to device mismatch';
+

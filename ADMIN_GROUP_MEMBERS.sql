@@ -46,3 +46,4 @@ REVOKE ALL ON FUNCTION public.admin_add_member_by_email(UUID, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.admin_add_member_by_email(UUID, TEXT) TO anon, authenticated;
 
 
+

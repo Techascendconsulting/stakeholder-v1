@@ -26,3 +26,4 @@ BEGIN
     
     RAISE NOTICE 'Updated admin@batraining.com to be a regular locked student with device';
 END $$;
+

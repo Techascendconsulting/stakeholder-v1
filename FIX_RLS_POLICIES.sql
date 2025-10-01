@@ -129,3 +129,4 @@ WHERE user_id = (
   SELECT id FROM auth.users 
   WHERE email = 'techascendconsulting1@gmail.com'
 );
+

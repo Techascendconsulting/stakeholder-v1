@@ -15,3 +15,4 @@ SELECT EXISTS (
   AND column_name = 'title'
   AND table_schema = 'public'
 ) as title_column_exists;
+

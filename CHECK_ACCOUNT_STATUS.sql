@@ -23,3 +23,4 @@ FROM user_profiles up
 JOIN auth.users au ON up.user_id = au.id
 WHERE au.email IN ('techascendconsulting@gmail.com', 'obyj1st@gmail.com', 'superadmin@test.com', 'admin@batraining.com')
 ORDER BY au.email;
+

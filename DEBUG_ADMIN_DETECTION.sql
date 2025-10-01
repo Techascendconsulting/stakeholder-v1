@@ -64,3 +64,4 @@ WHERE au.email = 'your-email@example.com';
 SELECT * FROM public.get_user_details_with_emails();
 
 SELECT 'Admin detection debug complete! Check the results above.' as status;
+

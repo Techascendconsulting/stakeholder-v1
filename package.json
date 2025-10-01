@@ -43,6 +43,7 @@
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
+    "react-pageflip": "^2.0.3",
     "svg2pdf.js": "^2.5.0",
     "voice-stream": "^1.0.1"
   },

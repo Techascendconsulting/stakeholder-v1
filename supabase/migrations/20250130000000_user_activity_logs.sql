@@ -159,3 +159,4 @@ COMMENT ON COLUMN user_activity_logs.metadata IS 'Additional activity-specific d
 COMMENT ON FUNCTION get_user_last_activity(UUID) IS 'Get comprehensive activity summary for a specific user';
 COMMENT ON FUNCTION get_recent_user_activity(INTEGER) IS 'Get recent activity logs for admin dashboard';
 COMMENT ON FUNCTION log_user_activity(UUID, TEXT, TEXT, INET, TEXT, TEXT, BOOLEAN, TEXT, JSONB) IS 'Log user activity with comprehensive tracking data';
+

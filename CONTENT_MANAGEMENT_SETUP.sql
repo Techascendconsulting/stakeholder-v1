@@ -247,3 +247,4 @@ ON CONFLICT (id) DO UPDATE SET
   difficulty = EXCLUDED.difficulty,
   estimated_time = EXCLUDED.estimated_time,
   questions = EXCLUDED.questions;
+

@@ -53,3 +53,4 @@ SELECT
 SELECT 
   '🔍 USER ROLES FUNCTION' as check_type,
   get_user_admin_roles('564c6bf8-f067-4819-900e-f3322d402258') as admin_roles;
+

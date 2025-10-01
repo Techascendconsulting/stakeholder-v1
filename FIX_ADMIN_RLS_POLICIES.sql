@@ -93,3 +93,4 @@ CREATE POLICY "Users can update own profile" ON user_profiles
       AND is_admin = true
     )
   );
+

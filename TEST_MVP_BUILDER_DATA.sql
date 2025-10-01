@@ -47,3 +47,4 @@ LEFT JOIN public.stories s ON e.id = s.epic_id
 LEFT JOIN public.acceptance_criteria ac ON s.id = ac.story_id
 GROUP BY p.id, p.name
 ORDER BY p.name;
+

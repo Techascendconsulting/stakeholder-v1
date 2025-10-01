@@ -69,3 +69,4 @@ FROM public.stories s
 LEFT JOIN public.acceptance_criteria ac ON s.id = ac.story_id
 GROUP BY s.id, s.summary
 ORDER BY s.summary;
+
