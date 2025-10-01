@@ -155,22 +155,35 @@ const HandbookView: React.FC = () => {
   }, []);
 
   const splitContentByParagraphs = (content: string, approxCharsPerPage: number): string[] => {
-    const paragraphs = content.split(/\n\s*\n/);
+    // Split by double line breaks (paragraphs) and single line breaks (sections)
+    const sections = content.split(/\n\s*\n/);
     const pages: string[] = [];
-    let buffer: string[] = [];
-    let count = 0;
-    for (const para of paragraphs) {
-      const toAdd = (buffer.length ? "\n\n" : "") + para.trim();
-      if (count + toAdd.length > approxCharsPerPage && buffer.length) {
-        pages.push(buffer.join("\n\n"));
-        buffer = [para.trim()];
-        count = para.trim().length;
+    let currentPage = '';
+    let currentLength = 0;
+    
+    for (const section of sections) {
+      const trimmedSection = section.trim();
+      if (!trimmedSection) continue;
+      
+      const sectionWithSpacing = currentPage ? '\n\n' + trimmedSection : trimmedSection;
+      const newLength = currentLength + sectionWithSpacing.length;
+      
+      // If adding this section would exceed the limit and we have content, start a new page
+      if (newLength > approxCharsPerPage && currentPage) {
+        pages.push(currentPage);
+        currentPage = trimmedSection;
+        currentLength = trimmedSection.length;
       } else {
-        buffer.push(para.trim());
-        count += toAdd.length;
+        currentPage += sectionWithSpacing;
+        currentLength = newLength;
       }
     }
-    if (buffer.length) pages.push(buffer.join("\n\n"));
+    
+    // Add the last page if it has content
+    if (currentPage.trim()) {
+      pages.push(currentPage);
+    }
+    
     return pages;
   };
 
@@ -192,8 +205,8 @@ const HandbookView: React.FC = () => {
         if (response.ok) {
           const content = await response.text();
           // Determine an approximate chars-per-page based on current computed height
-          // Fallback to 2200 if not yet computed
-          const approxCharsPerPage = Math.max(1200, Math.floor((pageHeight || 1000) * 2.2));
+          // Use a higher multiplier to better fill pages and reduce unnecessary breaks
+          const approxCharsPerPage = Math.max(2000, Math.floor((pageHeight || 1000) * 3.5));
           const segments = splitContentByParagraphs(content, approxCharsPerPage);
           chapterIndexMap[chapter.id] = loadedPages.length; // first page index for this chapter
           segments.forEach((segment) => {
