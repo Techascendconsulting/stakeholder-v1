@@ -205,8 +205,8 @@ const HandbookView: React.FC = () => {
         if (response.ok) {
           const content = await response.text();
           // Determine an approximate chars-per-page based on current computed height
-          // Use a higher multiplier to better fill pages and reduce unnecessary breaks
-          const approxCharsPerPage = Math.max(2000, Math.floor((pageHeight || 1000) * 3.5));
+          // Conservative per-page sizing to avoid bottom clipping
+          const approxCharsPerPage = Math.max(1800, Math.floor((pageHeight || 1000) * 3.0));
           const segments = splitContentByParagraphs(content, approxCharsPerPage);
           chapterIndexMap[chapter.id] = loadedPages.length; // first page index for this chapter
           segments.forEach((segment) => {
@@ -457,7 +457,7 @@ const HandbookView: React.FC = () => {
                   boxSizing: 'border-box'
                 }}>
                   <div className="h-full flex flex-col">
-                    <div className="flex-1 overflow-hidden prose prose-sm max-w-none handbook-content">
+                    <div className="flex-1 overflow-hidden prose prose-sm max-w-none handbook-content" style={{ paddingBottom: '0.75rem' }}>
                       <ReactMarkdown>{page.content}</ReactMarkdown>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-200 text-center text-sm text-gray-500 flex-shrink-0">
