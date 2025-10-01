@@ -36,9 +36,9 @@ const HandbookView: React.FC = () => {
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
   const [chapterFirstPageIndex, setChapterFirstPageIndex] = useState<Record<string, number>>({});
   const bookRef = useRef<any>(null);
-    // A4 sizing state (single page): maintain 210mm x 297mm aspect ratio
-    const [pageWidth, setPageWidth] = useState<number>(420);
-    const [pageHeight, setPageHeight] = useState<number>(594);
+    // Default to large size that fills most screens
+    const [pageWidth, setPageWidth] = useState<number>(1200);
+    const [pageHeight, setPageHeight] = useState<number>(800);
 
   const chapters: Chapter[] = [
     // Front Matter
@@ -138,15 +138,7 @@ const HandbookView: React.FC = () => {
       
       setPageWidth(Math.floor(newWidth));
       setPageHeight(Math.floor(newHeight));
-      console.log('📐 DEBUG - Container dimensions:');
-      console.log('  - Available width:', availW);
-      console.log('  - Available height:', availH);
-      console.log('  - Computed book width:', Math.floor(newWidth));
-      console.log('  - Computed book height:', Math.floor(newHeight));
-      console.log('  - Container rect:', rect);
-      console.log('  - Window height:', window.innerHeight);
-      console.log('  - Header height (80px)');
-      console.log('  - Available after header:', window.innerHeight - 80);
+      console.log('📐 Book size:', Math.floor(newWidth), 'x', Math.floor(newHeight));
     };
 
     computeSize();
