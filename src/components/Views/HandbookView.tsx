@@ -119,7 +119,7 @@ const HandbookView: React.FC = () => {
     loadAllPages();
   }, []);
 
-  // Dynamically compute page size to fill available space naturally
+  // Dynamic sizing to fill available space (big book feel)
   useEffect(() => {
     const computeSize = () => {
       const container = document.getElementById('handbook-book');
@@ -131,13 +131,21 @@ const HandbookView: React.FC = () => {
       const availW = Math.max(0, rect.width - padX);
       const availH = Math.max(0, rect.height - padY);
       
-      // Use most of the available space, let height be natural
-      let newWidth = availW * 0.98; // use almost full width
-      let newHeight = availH * 0.95; // use most of the height
+      // Make book height exactly match container height
+      let newWidth = availW * 0.98;
+      let newHeight = rect.height; // use actual container height
       
       setPageWidth(Math.floor(newWidth));
       setPageHeight(Math.floor(newHeight));
-      console.log('📐 Computed page size:', Math.floor(newWidth), 'x', Math.floor(newHeight));
+      console.log('📐 DEBUG - Container dimensions:');
+      console.log('  - Available width:', availW);
+      console.log('  - Available height:', availH);
+      console.log('  - Computed book width:', Math.floor(newWidth));
+      console.log('  - Computed book height:', Math.floor(newHeight));
+      console.log('  - Container rect:', rect);
+      console.log('  - Window height:', window.innerHeight);
+      console.log('  - Header height (80px)');
+      console.log('  - Available after header:', window.innerHeight - 80);
     };
 
     computeSize();
@@ -344,17 +352,19 @@ const HandbookView: React.FC = () => {
 
       {/* Book Container */}
       <div 
-        className="flex-1 flex items-center justify-center bg-slate-800 p-1 md:p-2" 
+        className="flex justify-center bg-slate-800 px-1 md:px-2" 
         id="handbook-book"
         style={{
-          minHeight: 'calc(100vh - 80px)',
-          maxHeight: 'calc(100vh - 80px)',
+          height: 'calc(100vh - 80px)',
+          width: '100%',
           boxSizing: 'border-box',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          padding: '0',
+          margin: '0'
         }}
       >
         <div 
-          className="relative flex items-center justify-center w-full h-full"
+          className="relative flex justify-center w-full h-full"
           style={{
             backgroundColor: 'transparent'
           }}
@@ -365,16 +375,19 @@ const HandbookView: React.FC = () => {
             width={pageWidth}
             height={pageHeight}
             size="fixed"
-            minWidth={200}
-            maxWidth={1600}
-            minHeight={200}
-            maxHeight={2000}
+            minWidth={pageWidth}
+            maxWidth={pageWidth}
+            minHeight={pageHeight}
+            maxHeight={pageHeight}
             maxShadowOpacity={0.8}
             showCover={false}
             mobileScrollSupport={false}
             onFlip={onFlip}
             className="shadow-2xl"
-            style={{}}
+            style={{
+              width: `${pageWidth}px`,
+              height: `${pageHeight}px`
+            }}
             startPage={0}
             drawShadow={true}
             flippingTime={800}
