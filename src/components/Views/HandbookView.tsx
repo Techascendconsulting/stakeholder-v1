@@ -34,6 +34,7 @@ const HandbookView: React.FC = () => {
   const [showTOC, setShowTOC] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
+  const [chapterFirstPageIndex, setChapterFirstPageIndex] = useState<Record<string, number>>({});
   const bookRef = useRef<any>(null);
     // A4 sizing state (single page): maintain 210mm x 297mm aspect ratio
     const [pageWidth, setPageWidth] = useState<number>(420);
@@ -153,9 +154,30 @@ const HandbookView: React.FC = () => {
     return () => window.removeEventListener('resize', computeSize);
   }, []);
 
+  const splitContentByParagraphs = (content: string, approxCharsPerPage: number): string[] => {
+    const paragraphs = content.split(/\n\s*\n/);
+    const pages: string[] = [];
+    let buffer: string[] = [];
+    let count = 0;
+    for (const para of paragraphs) {
+      const toAdd = (buffer.length ? "\n\n" : "") + para.trim();
+      if (count + toAdd.length > approxCharsPerPage && buffer.length) {
+        pages.push(buffer.join("\n\n"));
+        buffer = [para.trim()];
+        count = para.trim().length;
+      } else {
+        buffer.push(para.trim());
+        count += toAdd.length;
+      }
+    }
+    if (buffer.length) pages.push(buffer.join("\n\n"));
+    return pages;
+  };
+
   const loadAllPages = async () => {
     setLoading(true);
     const loadedPages: Page[] = [];
+    const chapterIndexMap: Record<string, number> = {};
 
     // Add cover page
     loadedPages.push({
@@ -169,10 +191,17 @@ const HandbookView: React.FC = () => {
         const response = await fetch(`/content/handbook/${chapter.file}`);
         if (response.ok) {
           const content = await response.text();
-          loadedPages.push({
-            content,
-            title: chapter.title,
-            chapterId: chapter.id
+          // Determine an approximate chars-per-page based on current computed height
+          // Fallback to 2200 if not yet computed
+          const approxCharsPerPage = Math.max(1200, Math.floor((pageHeight || 1000) * 2.2));
+          const segments = splitContentByParagraphs(content, approxCharsPerPage);
+          chapterIndexMap[chapter.id] = loadedPages.length; // first page index for this chapter
+          segments.forEach((segment) => {
+            loadedPages.push({
+              content: segment,
+              title: chapter.title,
+              chapterId: chapter.id
+            });
           });
         }
       } catch (error) {
@@ -182,6 +211,7 @@ const HandbookView: React.FC = () => {
 
     console.log('📚 Total pages loaded:', loadedPages.length);
     setPages(loadedPages);
+    setChapterFirstPageIndex(chapterIndexMap);
     setLoading(false);
   };
 
@@ -325,10 +355,13 @@ const HandbookView: React.FC = () => {
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               <div className="space-y-1">
-                {filteredChapters.map((chapter, index) => (
+                {filteredChapters.map((chapter) => (
                   <button
                     key={chapter.id}
-                    onClick={() => goToPage(index + 1)} // +1 because cover page is at index 0
+                    onClick={() => {
+                      const target = chapterFirstPageIndex[chapter.id] ?? 0;
+                      goToPage(target);
+                    }}
                     className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group"
                   >
                     <div className="flex items-center justify-between">
@@ -407,11 +440,11 @@ const HandbookView: React.FC = () => {
                   WebkitUserSelect: 'none',
                   MozUserSelect: 'none',
                   msUserSelect: 'none',
-                  overflow: 'hidden',
+                  overflow: 'hidden', // prevent internal scrolling
                   boxSizing: 'border-box'
                 }}>
                   <div className="h-full flex flex-col">
-                    <div className="flex-1 overflow-y-auto prose prose-sm max-w-none handbook-content">
+                    <div className="flex-1 overflow-hidden prose prose-sm max-w-none handbook-content">
                       <ReactMarkdown>{page.content}</ReactMarkdown>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-200 text-center text-sm text-gray-500 flex-shrink-0">
