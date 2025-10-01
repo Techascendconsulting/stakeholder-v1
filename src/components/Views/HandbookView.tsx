@@ -36,9 +36,9 @@ const HandbookView: React.FC = () => {
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
   const [chapterFirstPageIndex, setChapterFirstPageIndex] = useState<Record<string, number>>({});
   const bookRef = useRef<any>(null);
-    // Set initial size to match typical screen dimensions
-    const [pageWidth, setPageWidth] = useState<number>(window.innerWidth - 100);
-    const [pageHeight, setPageHeight] = useState<number>(window.innerHeight - 100);
+    // Fixed large size that works consistently
+    const [pageWidth, setPageWidth] = useState<number>(1400);
+    const [pageHeight, setPageHeight] = useState<number>(900);
 
   const chapters: Chapter[] = [
     // Front Matter
@@ -120,31 +120,7 @@ const HandbookView: React.FC = () => {
     loadAllPages();
   }, []);
 
-  // Dynamic sizing to fill available space (big book feel)
-  useEffect(() => {
-    const computeSize = () => {
-      const container = document.getElementById('handbook-book');
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
-      const styles = window.getComputedStyle(container);
-      const padX = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-      const padY = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
-      const availW = Math.max(0, rect.width - padX);
-      const availH = Math.max(0, rect.height - padY);
-      
-      // Make book fill the full container with small margin
-      let newWidth = Math.max(800, rect.width - 20);
-      let newHeight = Math.max(600, rect.height - 20);
-      
-      setPageWidth(Math.floor(newWidth));
-      setPageHeight(Math.floor(newHeight));
-      console.log('📐 Book size:', Math.floor(newWidth), 'x', Math.floor(newHeight));
-    };
-
-    computeSize();
-    window.addEventListener('resize', computeSize);
-    return () => window.removeEventListener('resize', computeSize);
-  }, []);
+  // No dynamic sizing - use fixed large size
 
   const splitContentByParagraphs = (content: string, approxCharsPerPage: number): string[] => {
     // Split by double line breaks (paragraphs) and single line breaks (sections)
