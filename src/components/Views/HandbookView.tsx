@@ -173,6 +173,21 @@ const HandbookView: React.FC = () => {
       
       const sectionWithSpacing = currentPage ? '\n\n' + trimmedSection : trimmedSection;
       const newLength = currentLength + sectionWithSpacing.length;
+      const remainingCapacity = approxCharsPerPage - currentLength;
+      
+      // Heuristic: if placing a heading near the bottom, ensure there's room for some following content
+      // Require at least a small chunk (~200 chars) of following content to accompany a heading
+      if (isHeading && currentPage) {
+        const minimalFollowing = isNextHeading ? 0 : Math.min((nextSection?.length || 0), 220);
+        const neededForHeadingBlock = sectionWithSpacing.length + minimalFollowing;
+        if (remainingCapacity < neededForHeadingBlock) {
+          // push current page and start a new one with the heading
+          pages.push(currentPage);
+          currentPage = trimmedSection;
+          currentLength = trimmedSection.length;
+          continue;
+        }
+      }
       
       // If adding this section would exceed the limit and we have content
       if (newLength > approxCharsPerPage && currentPage) {
