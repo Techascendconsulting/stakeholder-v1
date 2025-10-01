@@ -36,9 +36,9 @@ const HandbookView: React.FC = () => {
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
   const [chapterFirstPageIndex, setChapterFirstPageIndex] = useState<Record<string, number>>({});
   const bookRef = useRef<any>(null);
-    // Default to large size that fills most screens
-    const [pageWidth, setPageWidth] = useState<number>(1200);
-    const [pageHeight, setPageHeight] = useState<number>(800);
+    // Set initial size to match typical screen dimensions
+    const [pageWidth, setPageWidth] = useState<number>(window.innerWidth - 100);
+    const [pageHeight, setPageHeight] = useState<number>(window.innerHeight - 100);
 
   const chapters: Chapter[] = [
     // Front Matter
@@ -132,9 +132,9 @@ const HandbookView: React.FC = () => {
       const availW = Math.max(0, rect.width - padX);
       const availH = Math.max(0, rect.height - padY);
       
-      // Make book fill the full container
-      let newWidth = rect.width; // use full container width
-      let newHeight = rect.height; // use full container height
+      // Make book fill the full container with small margin
+      let newWidth = Math.max(800, rect.width - 20);
+      let newHeight = Math.max(600, rect.height - 20);
       
       setPageWidth(Math.floor(newWidth));
       setPageHeight(Math.floor(newHeight));
