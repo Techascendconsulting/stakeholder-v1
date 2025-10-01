@@ -132,9 +132,9 @@ const HandbookView: React.FC = () => {
       const availW = Math.max(0, rect.width - padX);
       const availH = Math.max(0, rect.height - padY);
       
-      // Make book height exactly match container height
-      let newWidth = availW * 0.98;
-      let newHeight = rect.height; // use actual container height
+      // Make book fill the full container
+      let newWidth = rect.width; // use full container width
+      let newHeight = rect.height; // use full container height
       
       setPageWidth(Math.floor(newWidth));
       setPageHeight(Math.floor(newHeight));
