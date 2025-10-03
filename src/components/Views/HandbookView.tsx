@@ -582,16 +582,21 @@ const HandbookView: React.FC = () => {
                   WebkitUserSelect: 'none',
                   MozUserSelect: 'none',
                   msUserSelect: 'none',
-                  overflow: 'hidden', // prevent internal scrolling
-                  boxSizing: 'border-box'
+                  overflow: 'visible', // Allow content to flow properly
+                  boxSizing: 'border-box',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}>
-                  <div className="h-full flex flex-col">
-                    <div className="flex-1 overflow-hidden prose prose-sm max-w-none handbook-content" style={{ paddingBottom: '1.5rem' }}>
-                      <ReactMarkdown>{page.content}</ReactMarkdown>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-gray-200 text-center text-sm text-gray-500 flex-shrink-0">
-                      {index + 1}
-                    </div>
+                  <div className="flex-1 prose prose-sm max-w-none handbook-content" style={{ 
+                    paddingBottom: '3rem',
+                    height: '100%',
+                    overflow: 'visible'
+                  }}>
+                    <ReactMarkdown>{page.content}</ReactMarkdown>
+                  </div>
+                  <div className="mt-auto pt-3 border-t border-gray-200 text-center text-sm text-gray-500 flex-shrink-0">
+                    {index + 1}
                   </div>
                 </div>
               );
@@ -647,6 +652,13 @@ const HandbookView: React.FC = () => {
           font-size: 0.9rem;
           line-height: 1.6;
           color: #1f2937;
+          min-height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .handbook-content > * {
+          flex-shrink: 0;
         }
         
         .handbook-content h1 {
