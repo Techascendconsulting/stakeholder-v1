@@ -115,16 +115,18 @@ const HandbookView: React.FC = () => {
         if (rect.right >= window.innerWidth) console.warn('⚠️ BOOK TOUCHING RIGHT EDGE!');
         if (rect.bottom >= window.innerHeight) console.warn('⚠️ BOOK TOUCHING BOTTOM EDGE!');
         
-        // Check actual book element
-        const bookElement = container.querySelector('.react-pageflip');
-        if (bookElement) {
-          const bookRect = bookElement.getBoundingClientRect();
-          console.log('📚 BOOK ELEMENT DEBUG:');
-          console.log('  - Book position:', { top: bookRect.top, left: bookRect.left, right: bookRect.right, bottom: bookRect.bottom });
-          console.log('  - Book size:', { width: bookRect.width, height: bookRect.height });
-        } else {
-          console.warn('⚠️ Book element not found!');
-        }
+        // Check actual book element with longer delay for react-pageflip
+        setTimeout(() => {
+          const bookElement = container.querySelector('.react-pageflip');
+          if (bookElement) {
+            const bookRect = bookElement.getBoundingClientRect();
+            console.log('📚 BOOK ELEMENT DEBUG:');
+            console.log('  - Book position:', { top: bookRect.top, left: bookRect.left, right: bookRect.right, bottom: bookRect.bottom });
+            console.log('  - Book size:', { width: bookRect.width, height: bookRect.height });
+          } else {
+            console.warn('⚠️ Book element not found!');
+          }
+        }, 2000);
       } else {
         console.error('❌ Container element not found!');
       }
@@ -425,7 +427,7 @@ const HandbookView: React.FC = () => {
           width: '100%',
           boxSizing: 'border-box',
           overflow: 'hidden',
-          padding: '40px',
+          padding: '60px',
           margin: '0'
         }}
       >
