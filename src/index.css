@@ -40,85 +40,61 @@
   --accent-secondary: #c084fc; /* Light purple accent */
 }
 
-/* Direct dark mode overrides - force dark backgrounds and light text */
-.dark {
-  background-color: #111827 !important;
-  color: #f9fafb !important;
-}
-
-.dark body {
-  background-color: #111827 !important;
-  color: #f9fafb !important;
-}
-
-.dark .min-h-screen {
+/* Specific dark mode overrides for main content areas only */
+.dark .min-h-screen:not([class*="sidebar"]):not([class*="nav"]) {
   background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%) !important;
 }
 
-.dark .bg-white {
+/* Only target specific content containers, not sidebar */
+.dark .container:not([class*="sidebar"]) .bg-white,
+.dark .max-w-4xl .bg-white,
+.dark .max-w-7xl .bg-white {
   background-color: #1f2937 !important;
+}
+
+.dark .container:not([class*="sidebar"]) .text-gray-900,
+.dark .max-w-4xl .text-gray-900,
+.dark .max-w-7xl .text-gray-900 {
   color: #f9fafb !important;
 }
 
-.dark .text-gray-900 {
-  color: #f9fafb !important;
-}
-
-.dark .text-gray-600 {
+.dark .container:not([class*="sidebar"]) .text-gray-600,
+.dark .max-w-4xl .text-gray-600,
+.dark .max-w-7xl .text-gray-600 {
   color: #d1d5db !important;
 }
 
-.dark .text-gray-500 {
+.dark .container:not([class*="sidebar"]) .text-gray-500,
+.dark .max-w-4xl .text-gray-500,
+.dark .max-w-7xl .text-gray-500 {
   color: #9ca3af !important;
 }
 
-.dark .border-gray-200 {
+.dark .container:not([class*="sidebar"]) .border-gray-200,
+.dark .max-w-4xl .border-gray-200,
+.dark .max-w-7xl .border-gray-200 {
   border-color: #374151 !important;
 }
 
-.dark .bg-gray-50 {
-  background-color: #1f2937 !important;
-}
-
-.dark .bg-white {
-  background-color: #1f2937 !important;
-}
-
-.dark .rounded-xl,
-.dark .rounded-2xl,
-.dark .rounded-lg {
+/* Fix specific content container classes */
+.dark .container .rounded-xl:not([class*="sidebar"]),
+.dark .container .rounded-2xl:not([class*="sidebar"]),
+.dark .container .rounded-lg:not([class*="sidebar"]) {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
 }
 
-.dark .shadow-lg,
-.dark .shadow-xl {
-  background-color: #1f2937 !important;
-}
-
-/* Fix specific container classes */
-.dark .bg-white\/50 {
+.dark .container .bg-white\/50:not([class*="sidebar"]) {
   background-color: rgba(31, 41, 55, 0.5) !important;
 }
 
-.dark .bg-blue-50 {
-  background-color: #1e3a8a !important;
-}
-
-.dark .bg-yellow-100 {
-  background-color: #92400e !important;
-}
-
-.dark .bg-indigo-100 {
-  background-color: #3730a3 !important;
-}
-
-.dark .bg-green-100 {
-  background-color: #166534 !important;
-}
-
-.dark .bg-purple-100 {
-  background-color: #6b21a8 !important;
+/* Fix icon backgrounds in content areas */
+.dark .container .bg-blue-50:not([class*="sidebar"]),
+.dark .container .bg-yellow-100:not([class*="sidebar"]),
+.dark .container .bg-indigo-100:not([class*="sidebar"]),
+.dark .container .bg-green-100:not([class*="sidebar"]),
+.dark .container .bg-purple-100:not([class*="sidebar"]) {
+  background-color: rgba(31, 41, 55, 0.8) !important;
 }
 
 /* Admin-specific dark purple styling */
