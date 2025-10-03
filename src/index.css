@@ -76,16 +76,31 @@
   border-color: #374151 !important;
 }
 
+/* Fix ALL white backgrounds in content areas */
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark .bg-white\/50 {
+  background-color: rgba(31, 41, 55, 0.5) !important;
+}
+
+.dark .bg-white\/80 {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
 /* Fix specific content container classes */
-.dark .container .rounded-xl:not([class*="sidebar"]),
-.dark .container .rounded-2xl:not([class*="sidebar"]),
-.dark .container .rounded-lg:not([class*="sidebar"]) {
+.dark .rounded-xl,
+.dark .rounded-2xl,
+.dark .rounded-lg {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
 }
 
-.dark .container .bg-white\/50:not([class*="sidebar"]) {
-  background-color: rgba(31, 41, 55, 0.5) !important;
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-sm {
+  background-color: #1f2937 !important;
 }
 
 /* Fix icon backgrounds in content areas */
