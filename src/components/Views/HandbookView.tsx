@@ -163,13 +163,18 @@ const HandbookView: React.FC = () => {
       const newLength = currentLength + sectionWithSpacing.length;
       const remainingCapacity = approxCharsPerPage - currentLength;
       
-      // Heuristic: if placing a heading near the bottom, ensure there's room for some following content
-      // Require at least a small chunk (~200 chars) of following content to accompany a heading
+      // Digital publishing rules for headings:
+      // 1. Headings must have at least 3 lines of content after them
+      // 2. Headings cannot be orphaned at the bottom of pages
+      // 3. If there's not enough space for heading + content, start new page
+      
       if (isHeading && currentPage) {
-        const minimalFollowing = isNextHeading ? 0 : Math.min((nextSection?.length || 0), 220);
-        const neededForHeadingBlock = sectionWithSpacing.length + minimalFollowing;
-        if (remainingCapacity < neededForHeadingBlock) {
-          // push current page and start a new one with the heading
+        // Calculate minimum space needed: heading + at least 3 lines of content (~400-500 chars)
+        const minContentAfterHeading = 400;
+        const neededSpace = sectionWithSpacing.length + minContentAfterHeading;
+        
+        // If we don't have enough space for heading + content, start new page
+        if (remainingCapacity < neededSpace) {
           pages.push(currentPage);
           currentPage = trimmedSection;
           currentLength = trimmedSection.length;
@@ -179,13 +184,14 @@ const HandbookView: React.FC = () => {
       
       // If adding this section would exceed the limit and we have content
       if (newLength > approxCharsPerPage && currentPage) {
-        // If this is a heading and there's content after it, move the heading to next page
-        if (isHeading && nextSection) {
+        // For headings: always move to next page if there's following content
+        if (isHeading && nextSection && !isNextHeading) {
           pages.push(currentPage);
           currentPage = trimmedSection;
           currentLength = trimmedSection.length;
-        } else {
-          // For regular content, split at the current point
+        } 
+        // For regular content: split at current point
+        else {
           pages.push(currentPage);
           currentPage = trimmedSection;
           currentLength = trimmedSection.length;
@@ -229,9 +235,9 @@ const HandbookView: React.FC = () => {
         const response = await fetch(`/content/handbook/${chapter.file}`);
         if (response.ok) {
           const content = await response.text();
-          // Determine an approximate chars-per-page based on current computed height
-          // Very conservative per-page sizing to prevent clipping and orphaned headings
-          const approxCharsPerPage = Math.max(1500, Math.floor((pageHeight || 1000) * 2.5));
+          // Digital publishing: Conservative per-page sizing to prevent orphaned headings
+          // Reduced from 2.5x to 2.0x for better spacing and readability
+          const approxCharsPerPage = Math.max(1200, Math.floor((pageHeight || 1000) * 2.0));
           const segments = splitContentByParagraphs(content, approxCharsPerPage);
           chapterIndexMap[chapter.id] = loadedPages.length; // first page index for this chapter
           segments.forEach((segment) => {
