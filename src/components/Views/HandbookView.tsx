@@ -211,7 +211,13 @@ const HandbookView: React.FC = () => {
 
     // Add cover page
     loadedPages.push({
-      content: `# Practical Business Analysis\n\n## A Modern Guide to Agile, Requirements & Value\n\n---\n\n### Teaching Handbook for Aspiring and Practicing Business Analysts\n\n*Flip to begin your journey*`,
+      content: `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 2rem;">
+        <img src="/coverpage.png" alt="Practical Business Analysis Cover" style="max-width: 80%; max-height: 70%; object-fit: contain; margin-bottom: 2rem;" />
+        <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; color: white;">Practical Business Analysis</h1>
+        <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #e5e7eb;">A Modern Guide to Agile, Requirements & Value</h2>
+        <p style="font-size: 1.1rem; color: #d1d5db; margin-top: 2rem;">Teaching Handbook for Aspiring and Practicing Business Analysts</p>
+        <p style="font-size: 1rem; color: #9ca3af; font-style: italic; margin-top: 1rem;">Flip to begin your journey</p>
+      </div>`,
       title: 'Cover',
       chapterId: 'cover'
     });
