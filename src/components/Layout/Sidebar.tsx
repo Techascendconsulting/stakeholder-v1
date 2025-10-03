@@ -12,6 +12,7 @@ import {
   Archive,
   Sun,
   Moon,
+  Monitor,
   Target,
   Home,
   LayoutDashboard,
@@ -56,7 +57,7 @@ interface SubMenuItem {
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
   const { user, signOut } = useAuth();
-  const { resolvedTheme, toggleTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
   const { isAdmin } = useAdmin();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -491,6 +492,45 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           })}
         </ul>
       </nav>
+
+      {/* Theme Toggle */}
+      <div className="px-3 mb-3">
+        <div className="flex items-center justify-center bg-purple-600/30 rounded-lg p-1 backdrop-blur-sm">
+          <button
+            onClick={() => setTheme('light')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'light' 
+                ? 'bg-white/20 text-white shadow-sm' 
+                : 'text-purple-200 hover:text-white hover:bg-white/10'
+            }`}
+            title="Light mode"
+          >
+            <Sun size={16} />
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'dark' 
+                ? 'bg-white/20 text-white shadow-sm' 
+                : 'text-purple-200 hover:text-white hover:bg-white/10'
+            }`}
+            title="Dark mode"
+          >
+            <Moon size={16} />
+          </button>
+          <button
+            onClick={() => setTheme('system')}
+            className={`p-2 rounded-md transition-colors ${
+              theme === 'system' 
+                ? 'bg-white/20 text-white shadow-sm' 
+                : 'text-purple-200 hover:text-white hover:bg-white/10'
+            }`}
+            title="System preference"
+          >
+            <Monitor size={16} />
+          </button>
+        </div>
+      </div>
 
       {/* Audio Player */}
       <div className="px-3">
