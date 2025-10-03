@@ -40,11 +40,12 @@
   --accent-secondary: #c084fc; /* Light purple accent */
 }
 
-/* Apply dark purple theme to body and root */
+/* Apply dark purple theme to body and root - REMOVED: conflicting with Tailwind gradients
 .dark body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
+*/
 
 /* .dark {
   background-color: var(--bg-primary);
