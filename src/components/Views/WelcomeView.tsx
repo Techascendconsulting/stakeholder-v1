@@ -13,6 +13,25 @@ const WelcomeView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [currentStep, setCurrentStep] = useState(0);
 
+  // Ensure copy/paste is enabled
+  React.useEffect(() => {
+    const handleCopy = (e: ClipboardEvent) => {
+      // Allow copy
+    };
+    
+    const handlePaste = (e: ClipboardEvent) => {
+      // Allow paste
+    };
+
+    document.addEventListener('copy', handleCopy);
+    document.addEventListener('paste', handlePaste);
+
+    return () => {
+      document.removeEventListener('copy', handleCopy);
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, []);
+
   const steps = [
     {
       title: "Welcome to Your BA Work Experience Lab",
@@ -238,7 +257,10 @@ const WelcomeView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10"
+      style={{ userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
+    >
       <div className="container mx-auto px-4 py-8">
         {/* Progress Bar */}
         <div className="max-w-4xl mx-auto mb-8">
