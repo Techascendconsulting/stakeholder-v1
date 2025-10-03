@@ -537,14 +537,14 @@ export default function ProcessMapper({ projectId, diagramId, storage, onBack, t
   }, [onBack, save]);
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-white px-4 py-3">
+      <div className="flex items-center justify-between border-b bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 px-4 py-3">
         <div className="flex items-center space-x-3">
           {onBack && (
             <button
               onClick={onBack}
-              className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -553,14 +553,14 @@ export default function ProcessMapper({ projectId, diagramId, storage, onBack, t
             </button>
           )}
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h1>
           </div>
         </div>
         
         <div className="flex items-center space-x-2">
           <button
             onClick={createNew}
-            className="px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            className="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             New Diagram
           </button>
@@ -570,12 +570,12 @@ export default function ProcessMapper({ projectId, diagramId, storage, onBack, t
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               dirty 
                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
             }`}
           >
             {dirty ? 'Save*' : 'Saved'}
           </button>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
             {dirty ? 'Unsaved changes' : 'All changes saved'}
           </div>
           <button

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { 
   ArrowRight, 
   Target,
@@ -11,6 +12,7 @@ import {
 
 const WelcomeView: React.FC = () => {
   const { setCurrentView } = useApp();
+  const { resolvedTheme } = useTheme();
   const [currentStep, setCurrentStep] = useState(0);
 
   // Ensure copy/paste is enabled
