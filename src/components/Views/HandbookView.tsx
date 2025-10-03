@@ -530,7 +530,7 @@ const HandbookView: React.FC = () => {
                   }}>
                     <div className="h-full flex flex-col items-center justify-center text-center" style={{ padding: '3rem' }}>
                       <img 
-                        src="/coverpage.png" 
+                        src="/images/COVERIMAGE2.png" 
                         alt="Practical Business Analysis Cover" 
                         style={{ 
                           width: '100%', 
