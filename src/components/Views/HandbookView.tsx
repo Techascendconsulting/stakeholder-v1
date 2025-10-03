@@ -260,9 +260,17 @@ const HandbookView: React.FC = () => {
     if (bookRef.current) {
       // pageNumber is already the correct index (0-based)
       console.log('📚 Attempting to flip to page:', pageNumber);
-      bookRef.current.pageFlip().flip(pageNumber);
-      setCurrentPageNumber(pageNumber);
-      setShowTOC(false);
+      // Add small delay to ensure book is ready
+      setTimeout(() => {
+        try {
+          bookRef.current.pageFlip().flip(pageNumber);
+          setCurrentPageNumber(pageNumber);
+          setShowTOC(false);
+          console.log('📚 Flip command executed for page:', pageNumber);
+        } catch (error) {
+          console.error('📚 Error flipping to page:', pageNumber, error);
+        }
+      }, 100);
     } else {
       console.warn('⚠️ bookRef.current is null - book not ready');
     }
