@@ -274,11 +274,19 @@ const HandbookView: React.FC = () => {
           console.log('📚 Total pages available:', pages.length);
           console.log('📚 Attempting to flip to page:', pageNumber);
           
-          // Try different flip methods
-          if (bookRef.current.pageFlip().flipToPage) {
-            bookRef.current.pageFlip().flipToPage(pageNumber);
+          // Use the correct react-pageflip API
+          const pageFlip = bookRef.current.pageFlip();
+          console.log('📚 Available pageFlip methods:', Object.keys(pageFlip));
+          
+          // Try the correct method for react-pageflip
+          if (pageFlip.flip) {
+            pageFlip.flip(pageNumber);
+          } else if (pageFlip.turnToPage) {
+            pageFlip.turnToPage(pageNumber);
+          } else if (pageFlip.goToPage) {
+            pageFlip.goToPage(pageNumber);
           } else {
-            bookRef.current.pageFlip().flip(pageNumber);
+            console.error('📚 No valid flip method found');
           }
           
           setCurrentPageNumber(pageNumber);
