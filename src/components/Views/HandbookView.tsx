@@ -231,6 +231,7 @@ const HandbookView: React.FC = () => {
     }
 
     console.log('📚 Total pages loaded:', loadedPages.length);
+    console.log('📚 Chapter page mapping:', chapterIndexMap);
     setPages(loadedPages);
     setChapterFirstPageIndex(chapterIndexMap);
     setLoading(false);
@@ -381,6 +382,7 @@ const HandbookView: React.FC = () => {
                     key={chapter.id}
                     onClick={() => {
                       const target = chapterFirstPageIndex[chapter.id] ?? 0;
+                      console.log('📚 TOC Click:', chapter.title, '-> Page', target);
                       goToPage(target);
                     }}
                     className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group"
