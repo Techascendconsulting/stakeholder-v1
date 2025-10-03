@@ -211,12 +211,17 @@ const HandbookView: React.FC = () => {
 
     // Add cover page
     loadedPages.push({
-      content: `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 2rem;">
-        <img src="/coverpage.png" alt="Practical Business Analysis Cover" style="max-width: 80%; max-height: 70%; object-fit: contain; margin-bottom: 2rem;" />
-        <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; color: white;">Practical Business Analysis</h1>
-        <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #e5e7eb;">A Modern Guide to Agile, Requirements & Value</h2>
-        <p style="font-size: 1.1rem; color: #d1d5db; margin-top: 2rem;">Teaching Handbook for Aspiring and Practicing Business Analysts</p>
-        <p style="font-size: 1rem; color: #9ca3af; font-style: italic; margin-top: 1rem;">Flip to begin your journey</p>
+      content: `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 3rem;">
+        <div style="width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);">
+          <div style="font-size: 4rem; font-weight: bold;">BA</div>
+        </div>
+        <h1 style="font-size: 3rem; font-weight: bold; margin-bottom: 1rem; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Practical Business Analysis</h1>
+        <h2 style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem; color: #e5e7eb; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">A Modern Guide to Agile, Requirements & Value</h2>
+        <div style="width: 100px; height: 3px; background: linear-gradient(90deg, #60a5fa, #3b82f6, #1d4ed8); margin: 2rem auto; border-radius: 2px;"></div>
+        <p style="font-size: 1.2rem; color: #d1d5db; margin-top: 1rem; line-height: 1.6;">Teaching Handbook for Aspiring and Practicing Business Analysts</p>
+        <div style="margin-top: 3rem; padding: 1rem 2rem; background: rgba(255,255,255,0.1); border-radius: 25px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
+          <p style="font-size: 1rem; color: #9ca3af; font-style: italic; margin: 0;">📖 Flip to begin your journey</p>
+        </div>
       </div>`,
       title: 'Cover',
       chapterId: 'cover'
