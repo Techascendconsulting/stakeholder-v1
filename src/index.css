@@ -46,9 +46,9 @@
   color: var(--text-primary);
 }
 
-.dark {
+/* .dark {
   background-color: var(--bg-primary);
-}
+} */
 
 /* Admin-specific dark purple styling */
 .admin-dark-purple {
