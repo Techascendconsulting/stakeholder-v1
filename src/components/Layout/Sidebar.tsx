@@ -139,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         },
         { 
           id: 'process-mapper', 
-          label: 'Process Mapper', 
+          label: 'Process Mapping', 
           icon: PenTool
         },
         { 
