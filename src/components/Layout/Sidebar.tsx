@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import { UserAvatar } from '../Common/UserAvatar';
 import SidebarAudioPlayer from './SidebarAudioPlayer';
@@ -54,7 +53,6 @@ interface SubMenuItem {
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
   const { user, signOut } = useAuth();
-  const { resolvedTheme } = useTheme();
   const { isAdmin } = useAdmin();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -375,33 +373,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           )}
         </div>
 
-        {/* Theme Toggle */}
-        <div className={`mx-4 mb-2 mt-4 ${isCollapsed ? 'mx-2' : ''}`}>
-          <button
-            onClick={toggleTheme}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2'} px-2 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors group`}
-            title={isCollapsed ? `Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} mode` : ''}
-          >
-            {resolvedTheme === 'light' ? (
-              <Moon size={isCollapsed ? 22 : 18} className="text-purple-200" />
-            ) : (
-              <Sun size={isCollapsed ? 22 : 18} className="text-purple-200" />
-            )}
-            {!isCollapsed && (
-              <span className="text-purple-200 text-sm">
-                {resolvedTheme === 'light' ? 'Dark Mode' : 'Light Mode'}
-              </span>
-            )}
-          </button>
-          
-          {/* Tooltip for collapsed theme toggle */}
-          {isCollapsed && (
-            <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg">
-              {resolvedTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Navigation */}
