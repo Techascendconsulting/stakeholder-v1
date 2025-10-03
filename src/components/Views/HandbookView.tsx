@@ -36,6 +36,7 @@ const HandbookView: React.FC = () => {
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
   const [chapterFirstPageIndex, setChapterFirstPageIndex] = useState<Record<string, number>>({});
   const bookRef = useRef<any>(null);
+  const isProgrammaticFlip = useRef(false);
     // Responsive size that fits screen
     const [pageWidth, setPageWidth] = useState<number>(Math.min(1200, window.innerWidth - 100));
     const [pageHeight, setPageHeight] = useState<number>(Math.min(700, window.innerHeight - 150));
@@ -239,7 +240,13 @@ const HandbookView: React.FC = () => {
 
   const onFlip = (e: any) => {
     console.log('📖 Page flipped to:', e.data);
-    setCurrentPageNumber(e.data);
+    // Only update state if this is a user-initiated flip, not programmatic
+    if (!isProgrammaticFlip.current) {
+      setCurrentPageNumber(e.data);
+    } else {
+      console.log('📖 Ignoring programmatic flip event');
+      isProgrammaticFlip.current = false; // Reset flag
+    }
   };
 
   const goToNextPage = () => {
@@ -263,12 +270,14 @@ const HandbookView: React.FC = () => {
       // Add small delay to ensure book is ready
       setTimeout(() => {
         try {
+          isProgrammaticFlip.current = true; // Set flag before programmatic flip
           bookRef.current.pageFlip().flip(pageNumber);
           setCurrentPageNumber(pageNumber);
           setShowTOC(false);
           console.log('📚 Flip command executed for page:', pageNumber);
         } catch (error) {
           console.error('📚 Error flipping to page:', pageNumber, error);
+          isProgrammaticFlip.current = false; // Reset flag on error
         }
       }, 100);
     } else {
