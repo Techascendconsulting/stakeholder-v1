@@ -80,6 +80,47 @@
   background-color: #1f2937 !important;
 }
 
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark .rounded-xl,
+.dark .rounded-2xl,
+.dark .rounded-lg {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .shadow-lg,
+.dark .shadow-xl {
+  background-color: #1f2937 !important;
+}
+
+/* Fix specific container classes */
+.dark .bg-white\/50 {
+  background-color: rgba(31, 41, 55, 0.5) !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: #1e3a8a !important;
+}
+
+.dark .bg-yellow-100 {
+  background-color: #92400e !important;
+}
+
+.dark .bg-indigo-100 {
+  background-color: #3730a3 !important;
+}
+
+.dark .bg-green-100 {
+  background-color: #166534 !important;
+}
+
+.dark .bg-purple-100 {
+  background-color: #6b21a8 !important;
+}
+
 /* Admin-specific dark purple styling */
 .admin-dark-purple {
   --admin-bg-primary: #1a1625;    /* Even darker purple for admin */
