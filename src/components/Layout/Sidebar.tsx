@@ -138,6 +138,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           icon: BookOpen
         },
         { 
+          id: 'process-mapper', 
+          label: 'Process Mapper', 
+          icon: PenTool
+        },
+        { 
           id: 'requirements-engineering', 
           label: 'Requirements Engineering', 
           icon: FileText
@@ -184,11 +189,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           id: 'ba-fundamentals', 
           label: 'BA Fundamentals', 
           icon: GraduationCap
-        },
-        { 
-          id: 'process-mapper', 
-          label: 'Process Mapper', 
-          icon: PenTool
         }
       ]
     },
