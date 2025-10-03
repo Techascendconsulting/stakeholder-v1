@@ -37,6 +37,7 @@ const HandbookView: React.FC = () => {
   const [chapterFirstPageIndex, setChapterFirstPageIndex] = useState<Record<string, number>>({});
   const [startPage, setStartPage] = useState(0);
   const bookRef = useRef<any>(null);
+  const isProgrammaticFlip = useRef(false);
     // Responsive size that fits screen
     const [pageWidth, setPageWidth] = useState<number>(Math.min(1200, window.innerWidth - 100));
     const [pageHeight, setPageHeight] = useState<number>(Math.min(700, window.innerHeight - 150));
@@ -263,6 +264,7 @@ const HandbookView: React.FC = () => {
 
   const goToPage = (pageNumber: number) => {
     console.log('📚 Navigating to page:', pageNumber);
+    isProgrammaticFlip.current = true;
     setStartPage(pageNumber);
     setCurrentPageNumber(pageNumber);
     setShowTOC(false);
@@ -387,6 +389,8 @@ const HandbookView: React.FC = () => {
                     key={chapter.id}
                     onClick={() => {
                       const target = chapterFirstPageIndex[chapter.id] ?? 0;
+                      console.log('📚 TOC click - navigating to page:', target, 'for chapter:', chapter.id);
+                      isProgrammaticFlip.current = true;
                       setStartPage(target);
                       setCurrentPageNumber(target);
                       setShowTOC(false);
