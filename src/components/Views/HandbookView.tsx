@@ -211,15 +211,15 @@ const HandbookView: React.FC = () => {
 
     // Add cover page
     loadedPages.push({
-      content: `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 2rem;">
-        <img src="/coverpage.png" alt="Practical Business Analysis Cover" style="max-width: 80%; max-height: 70%; object-fit: contain; margin-bottom: 2rem;" 
-             onload="console.log('✅ Cover image loaded successfully')" 
-             onerror="console.error('❌ Cover image failed to load:', this.src); this.style.display='none';" />
-        <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; color: white;">Practical Business Analysis</h1>
-        <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #e5e7eb;">A Modern Guide to Agile, Requirements & Value</h2>
-        <p style="font-size: 1.1rem; color: #d1d5db; margin-top: 2rem;">Teaching Handbook for Aspiring and Practicing Business Analysts</p>
-        <p style="font-size: 1rem; color: #9ca3af; font-style: italic; margin-top: 1rem;">Flip to begin your journey</p>
-      </div>`,
+      content: `# Practical Business Analysis
+
+## A Modern Guide to Agile, Requirements & Value
+
+---
+
+### Teaching Handbook for Aspiring and Practicing Business Analysts
+
+*Flip to begin your journey*`,
       title: 'Cover',
       chapterId: 'cover'
     });
@@ -516,6 +516,56 @@ const HandbookView: React.FC = () => {
             disableFlipByClick={false}
           >
             {pages.map((page, index) => {
+              // Special handling for cover page
+              if (page.chapterId === 'cover') {
+                return (
+                  <div key={index} className="page bg-white handbook-page" style={{ 
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    MozUserSelect: 'none',
+                    msUserSelect: 'none',
+                    overflow: 'hidden',
+                    boxSizing: 'border-box',
+                    background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+                    color: 'white'
+                  }}>
+                    <div className="h-full flex flex-col items-center justify-center text-center" style={{ padding: '3rem' }}>
+                      <img 
+                        src="/coverpage.png" 
+                        alt="Practical Business Analysis Cover" 
+                        style={{ 
+                          maxWidth: '80%', 
+                          maxHeight: '60%', 
+                          objectFit: 'contain', 
+                          marginBottom: '2rem' 
+                        }}
+                        onLoad={() => console.log('✅ Cover image loaded successfully')}
+                        onError={(e) => {
+                          console.error('❌ Cover image failed to load:', e.currentTarget.src);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem', color: 'white' }}>
+                        Practical Business Analysis
+                      </h1>
+                      <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem', color: '#e5e7eb' }}>
+                        A Modern Guide to Agile, Requirements & Value
+                      </h2>
+                      <p style={{ fontSize: '1.1rem', color: '#d1d5db', marginTop: '2rem' }}>
+                        Teaching Handbook for Aspiring and Practicing Business Analysts
+                      </p>
+                      <p style={{ fontSize: '1rem', color: '#9ca3af', fontStyle: 'italic', marginTop: '1rem' }}>
+                        Flip to begin your journey
+                      </p>
+                      <div className="mt-3 pt-3 border-t border-gray-300 text-center text-sm text-gray-300 flex-shrink-0">
+                        {index + 1}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Regular pages
               return (
                 <div key={index} className="page bg-white handbook-page" style={{ 
                   userSelect: 'none',
