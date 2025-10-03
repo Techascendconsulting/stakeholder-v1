@@ -40,23 +40,7 @@
   --accent-secondary: #c084fc; /* Light purple accent */
 }
 
-/* TARGETED DARK MODE FIX - ONLY AFFECTS SPECIFIC CARDS */
-.dark main .bg-white {
-  background: #374151 !important;
-  color: #ffffff !important;
-}
-
-.dark main .text-gray-900 {
-  color: #ffffff !important;
-}
-
-.dark main .text-gray-600 {
-  color: #ffffff !important;
-}
-
-.dark main .text-gray-500 {
-  color: #d1d5db !important;
-}
+/* Let Tailwind handle dark mode naturally */
 
 /* Admin-specific dark purple styling */
 .admin-dark-purple {
