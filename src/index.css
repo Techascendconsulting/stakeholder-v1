@@ -40,7 +40,50 @@
   --accent-secondary: #c084fc; /* Light purple accent */
 }
 
-/* Remove all conflicting dark mode overrides to let Tailwind handle it */
+/* Force dark mode to work with CSS custom properties */
+.dark {
+  --tw-bg-opacity: 1;
+  --tw-text-opacity: 1;
+}
+
+.dark .bg-gray-50 {
+  background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+}
+
+.dark .from-gray-50 {
+  --tw-gradient-from: rgb(17 24 39 / var(--tw-bg-opacity));
+  --tw-gradient-to: rgb(17 24 39 / 0);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dark .via-blue-50\/30 {
+  --tw-gradient-to: rgb(30 58 138 / 0.1) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), rgb(30 58 138 / 0.1) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+
+.dark .to-purple-50\/30 {
+  --tw-gradient-to: rgb(147 51 234 / 0.1);
+}
+
+.dark .text-gray-900 {
+  color: rgb(243 244 246 / var(--tw-text-opacity));
+}
+
+.dark .text-gray-600 {
+  color: rgb(209 213 219 / var(--tw-text-opacity));
+}
+
+.dark .text-gray-500 {
+  color: rgb(156 163 175 / var(--tw-text-opacity));
+}
+
+.dark .bg-white {
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+}
+
+.dark .border-gray-200 {
+  border-color: rgb(55 65 81 / var(--tw-border-opacity));
+}
 
 /* Admin-specific dark purple styling */
 .admin-dark-purple {
