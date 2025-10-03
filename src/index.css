@@ -40,49 +40,44 @@
   --accent-secondary: #c084fc; /* Light purple accent */
 }
 
-/* Force dark mode to work with CSS custom properties */
+/* Direct dark mode overrides - force dark backgrounds and light text */
 .dark {
-  --tw-bg-opacity: 1;
-  --tw-text-opacity: 1;
+  background-color: #111827 !important;
+  color: #f9fafb !important;
 }
 
-.dark .bg-gray-50 {
-  background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+.dark body {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
 }
 
-.dark .from-gray-50 {
-  --tw-gradient-from: rgb(17 24 39 / var(--tw-bg-opacity));
-  --tw-gradient-to: rgb(17 24 39 / 0);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.dark .via-blue-50\/30 {
-  --tw-gradient-to: rgb(30 58 138 / 0.1) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), rgb(30 58 138 / 0.1) var(--tw-gradient-via-position), var(--tw-gradient-to);
-}
-
-.dark .to-purple-50\/30 {
-  --tw-gradient-to: rgb(147 51 234 / 0.1);
-}
-
-.dark .text-gray-900 {
-  color: rgb(243 244 246 / var(--tw-text-opacity));
-}
-
-.dark .text-gray-600 {
-  color: rgb(209 213 219 / var(--tw-text-opacity));
-}
-
-.dark .text-gray-500 {
-  color: rgb(156 163 175 / var(--tw-text-opacity));
+.dark .min-h-screen {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%) !important;
 }
 
 .dark .bg-white {
-  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+.dark .text-gray-900 {
+  color: #f9fafb !important;
+}
+
+.dark .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark .text-gray-500 {
+  color: #9ca3af !important;
 }
 
 .dark .border-gray-200 {
-  border-color: rgb(55 65 81 / var(--tw-border-opacity));
+  border-color: #374151 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #1f2937 !important;
 }
 
 /* Admin-specific dark purple styling */
