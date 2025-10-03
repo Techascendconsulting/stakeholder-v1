@@ -547,8 +547,22 @@ const HandbookView: React.FC = () => {
                           e.currentTarget.style.display = 'none';
                         }}
                       />
-                      <div className="mt-3 pt-3 border-t border-gray-300 text-center text-sm text-gray-300 flex-shrink-0" style={{ position: 'relative', zIndex: 2, marginTop: 'auto' }}>
-                        {index + 1}
+                      <div style={{ 
+                        position: 'absolute', 
+                        top: '1rem', 
+                        left: '50%', 
+                        transform: 'translateX(-50%)', 
+                        zIndex: 2,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '25px',
+                        fontSize: '0.9rem',
+                        fontWeight: '500',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                      }}>
+                        📖 Click to flip and begin reading
                       </div>
                     </div>
                   </div>
