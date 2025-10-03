@@ -44,14 +44,19 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const applyTheme = (resolvedTheme: ResolvedTheme) => {
     const root = document.documentElement;
     
+    console.log('🎨 Applying theme:', resolvedTheme);
+    
     if (resolvedTheme === 'dark') {
       root.classList.add('dark');
+      console.log('🎨 Added dark class to root');
     } else {
       root.classList.remove('dark');
+      console.log('🎨 Removed dark class from root');
     }
     
     // Also apply to body for additional styling
     document.body.className = resolvedTheme === 'dark' ? 'dark' : '';
+    console.log('🎨 Body className:', document.body.className);
   };
 
   // Set theme with persistence
@@ -67,6 +72,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Toggle between light and dark (skips system)
   const toggleTheme = () => {
     const newTheme = resolvedTheme === 'light' ? 'dark' : 'light';
+    console.log('🔄 Toggle theme from', resolvedTheme, 'to', newTheme);
     setTheme(newTheme);
   };
 
@@ -96,7 +102,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return () => {
       mediaQuery.removeEventListener('change', handleSystemThemeChange);
     };
-  }, []);
+  }, [theme]);
 
   // Update resolved theme when theme changes
   useEffect(() => {
