@@ -526,18 +526,20 @@ const HandbookView: React.FC = () => {
                     msUserSelect: 'none',
                     overflow: 'hidden',
                     boxSizing: 'border-box',
-                    background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
-                    color: 'white'
+                    position: 'relative'
                   }}>
                     <div className="h-full flex flex-col items-center justify-center text-center" style={{ padding: '3rem' }}>
                       <img 
                         src="/coverpage.png" 
                         alt="Practical Business Analysis Cover" 
                         style={{ 
-                          maxWidth: '80%', 
-                          maxHeight: '60%', 
-                          objectFit: 'contain', 
-                          marginBottom: '2rem' 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'cover',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          zIndex: 1
                         }}
                         onLoad={() => console.log('✅ Cover image loaded successfully')}
                         onError={(e) => {
@@ -545,19 +547,7 @@ const HandbookView: React.FC = () => {
                           e.currentTarget.style.display = 'none';
                         }}
                       />
-                      <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem', color: 'white' }}>
-                        Practical Business Analysis
-                      </h1>
-                      <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem', color: '#e5e7eb' }}>
-                        A Modern Guide to Agile, Requirements & Value
-                      </h2>
-                      <p style={{ fontSize: '1.1rem', color: '#d1d5db', marginTop: '2rem' }}>
-                        Teaching Handbook for Aspiring and Practicing Business Analysts
-                      </p>
-                      <p style={{ fontSize: '1rem', color: '#9ca3af', fontStyle: 'italic', marginTop: '1rem' }}>
-                        Flip to begin your journey
-                      </p>
-                      <div className="mt-3 pt-3 border-t border-gray-300 text-center text-sm text-gray-300 flex-shrink-0">
+                      <div className="mt-3 pt-3 border-t border-gray-300 text-center text-sm text-gray-300 flex-shrink-0" style={{ position: 'relative', zIndex: 2, marginTop: 'auto' }}>
                         {index + 1}
                       </div>
                     </div>
