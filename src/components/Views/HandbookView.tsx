@@ -143,7 +143,7 @@ const HandbookView: React.FC = () => {
   // No dynamic sizing - use fixed large size
 
   const splitContentByParagraphs = (content: string, approxCharsPerPage: number): string[] => {
-    // Split by double line breaks (paragraphs) and single line breaks (sections)
+    // Split content into logical sections
     const sections = content.split(/\n\s*\n/);
     const pages: string[] = [];
     let currentPage = '';
@@ -154,27 +154,21 @@ const HandbookView: React.FC = () => {
       const trimmedSection = section.trim();
       if (!trimmedSection) continue;
       
-      // Check if this section is a heading (starts with #)
       const isHeading = trimmedSection.startsWith('#');
       const nextSection = i + 1 < sections.length ? sections[i + 1]?.trim() : '';
-      const isNextHeading = nextSection && nextSection.startsWith('#');
+      const hasFollowingContent = nextSection && !nextSection.startsWith('#');
       
       const sectionWithSpacing = currentPage ? '\n\n' + trimmedSection : trimmedSection;
       const newLength = currentLength + sectionWithSpacing.length;
-      const remainingCapacity = approxCharsPerPage - currentLength;
+      const remainingSpace = approxCharsPerPage - currentLength;
       
-      // Digital publishing rules for headings:
-      // 1. Headings must have at least 3 lines of content after them
-      // 2. Headings cannot be orphaned at the bottom of pages
-      // 3. If there's not enough space for heading + content, start new page
-      
+      // FIX ISSUE 1: Prevent orphaned headings
       if (isHeading && currentPage) {
-        // Calculate minimum space needed: heading + at least 3 lines of content (~400-500 chars)
-        const minContentAfterHeading = 400;
-        const neededSpace = sectionWithSpacing.length + minContentAfterHeading;
+        // Ensure heading has at least 200 chars of content after it
+        const minContentAfterHeading = hasFollowingContent ? 200 : 0;
+        const spaceNeeded = sectionWithSpacing.length + minContentAfterHeading;
         
-        // If we don't have enough space for heading + content, start new page
-        if (remainingCapacity < neededSpace) {
+        if (remainingSpace < spaceNeeded) {
           pages.push(currentPage);
           currentPage = trimmedSection;
           currentLength = trimmedSection.length;
@@ -182,27 +176,27 @@ const HandbookView: React.FC = () => {
         }
       }
       
-      // If adding this section would exceed the limit and we have content
+      // FIX ISSUE 2: Prevent widowed content (content pushed to next page)
       if (newLength > approxCharsPerPage && currentPage) {
-        // For headings: always move to next page if there's following content
-        if (isHeading && nextSection && !isNextHeading) {
+        // If this is a heading with content, move both to next page
+        if (isHeading && hasFollowingContent) {
           pages.push(currentPage);
           currentPage = trimmedSection;
           currentLength = trimmedSection.length;
-        } 
-        // For regular content: split at current point
-        else {
+        } else {
+          // For regular content, split here
           pages.push(currentPage);
           currentPage = trimmedSection;
           currentLength = trimmedSection.length;
         }
       } else {
+        // Add content to current page
         currentPage += sectionWithSpacing;
         currentLength = newLength;
       }
     }
     
-    // Add the last page if it has content
+    // Add final page
     if (currentPage.trim()) {
       pages.push(currentPage);
     }
@@ -235,9 +229,8 @@ const HandbookView: React.FC = () => {
         const response = await fetch(`/content/handbook/${chapter.file}`);
         if (response.ok) {
           const content = await response.text();
-          // Digital publishing: Conservative per-page sizing to prevent orphaned headings
-          // Reduced from 2.5x to 2.0x for better spacing and readability
-          const approxCharsPerPage = Math.max(1200, Math.floor((pageHeight || 1000) * 2.0));
+          // Professional pagination: Optimal content per page for readability
+          const approxCharsPerPage = Math.max(1000, Math.floor((pageHeight || 1000) * 1.8));
           const segments = splitContentByParagraphs(content, approxCharsPerPage);
           chapterIndexMap[chapter.id] = loadedPages.length; // first page index for this chapter
           segments.forEach((segment) => {
@@ -589,9 +582,10 @@ const HandbookView: React.FC = () => {
                   flexDirection: 'column'
                 }}>
                   <div className="flex-1 prose prose-sm max-w-none handbook-content" style={{ 
-                    paddingBottom: '3rem',
+                    paddingBottom: '2rem',
                     height: '100%',
-                    overflow: 'visible'
+                    overflow: 'visible',
+                    display: 'block'
                   }}>
                     <ReactMarkdown>{page.content}</ReactMarkdown>
                   </div>
@@ -655,10 +649,39 @@ const HandbookView: React.FC = () => {
           min-height: 100%;
           display: flex;
           flex-direction: column;
+          justify-content: flex-start;
+          padding: 0;
+          margin: 0;
         }
         
         .handbook-content > * {
           flex-shrink: 0;
+          margin-bottom: 0.75rem;
+        }
+        
+        .handbook-content > *:last-child {
+          margin-bottom: 0;
+        }
+        
+        /* FIX ISSUE 3: Improve spacing */
+        .handbook-content p {
+          margin-bottom: 1rem;
+          text-align: justify;
+        }
+        
+        .handbook-content h1, 
+        .handbook-content h2, 
+        .handbook-content h3, 
+        .handbook-content h4 {
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
+        }
+        
+        /* FIX ISSUE 4: Prevent content overflow */
+        .handbook-content * {
+          max-width: 100%;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
         }
         
         .handbook-content h1 {
