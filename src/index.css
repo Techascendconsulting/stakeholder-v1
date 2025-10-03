@@ -40,13 +40,10 @@
   --accent-secondary: #c084fc; /* Light purple accent */
 }
 
-/* SIMPLE DARK MODE FIX - ONLY AFFECTS MAIN CONTENT */
-.dark main {
-  background: #111827 !important;
-}
-
+/* TARGETED DARK MODE FIX - ONLY AFFECTS SPECIFIC CARDS */
 .dark main .bg-white {
   background: #374151 !important;
+  color: #ffffff !important;
 }
 
 .dark main .text-gray-900 {
@@ -59,10 +56,6 @@
 
 .dark main .text-gray-500 {
   color: #d1d5db !important;
-}
-
-.dark main .border-gray-200 {
-  border-color: #4b5563 !important;
 }
 
 /* Admin-specific dark purple styling */
