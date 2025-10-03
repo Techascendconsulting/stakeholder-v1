@@ -271,7 +271,16 @@ const HandbookView: React.FC = () => {
       setTimeout(() => {
         try {
           isProgrammaticFlip.current = true; // Set flag before programmatic flip
-          bookRef.current.pageFlip().flip(pageNumber);
+          console.log('📚 Total pages available:', pages.length);
+          console.log('📚 Attempting to flip to page:', pageNumber);
+          
+          // Try different flip methods
+          if (bookRef.current.pageFlip().flipToPage) {
+            bookRef.current.pageFlip().flipToPage(pageNumber);
+          } else {
+            bookRef.current.pageFlip().flip(pageNumber);
+          }
+          
           setCurrentPageNumber(pageNumber);
           setShowTOC(false);
           console.log('📚 Flip command executed for page:', pageNumber);
