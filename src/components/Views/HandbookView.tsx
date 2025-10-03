@@ -135,6 +135,11 @@ const HandbookView: React.FC = () => {
     loadAllPages();
   }, []);
 
+  // Debug startPage changes
+  useEffect(() => {
+    console.log('📚 startPage changed to:', startPage);
+  }, [startPage]);
+
   // No dynamic sizing - use fixed large size
 
   const splitContentByParagraphs = (content: string, approxCharsPerPage: number): string[] => {
@@ -392,10 +397,44 @@ const HandbookView: React.FC = () => {
                     onClick={() => {
                       const target = chapterFirstPageIndex[chapter.id] ?? 0;
                       console.log('📚 TOC click - navigating to page:', target, 'for chapter:', chapter.id);
-                      isProgrammaticFlip.current = true;
-                      setStartPage(target);
-                      setCurrentPageNumber(target);
-                      setShowTOC(false);
+                      console.log('📚 Using react-pageflip API to navigate...');
+                      
+                      // Use react-pageflip API to navigate
+                      if (bookRef.current && bookRef.current.pageFlip) {
+                        try {
+                          // Try different methods available in react-pageflip
+                          const pageFlip = bookRef.current.pageFlip();
+                          console.log('📚 PageFlip methods:', Object.keys(pageFlip));
+                          
+                          // Try turnToPage method
+                          if (typeof pageFlip.turnToPage === 'function') {
+                            console.log('📚 Using turnToPage method');
+                            pageFlip.turnToPage(target);
+                          } else if (typeof pageFlip.flip === 'function') {
+                            console.log('📚 Using flip method with page number');
+                            pageFlip.flip(target);
+                          } else {
+                            console.log('📚 Using flipNext repeatedly');
+                            // Flip through pages one by one
+                            let currentPage = 0;
+                            const flipInterval = setInterval(() => {
+                              if (currentPage < target) {
+                                pageFlip.flipNext();
+                                currentPage++;
+                              } else {
+                                clearInterval(flipInterval);
+                              }
+                            }, 100);
+                          }
+                          
+                          setCurrentPageNumber(target);
+                          setShowTOC(false);
+                        } catch (error) {
+                          console.error('📚 Error navigating to page:', error);
+                        }
+                      } else {
+                        console.warn('📚 BookRef or pageFlip not available');
+                      }
                     }}
                     className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group"
                   >
@@ -456,7 +495,7 @@ const HandbookView: React.FC = () => {
               width: `${pageWidth}px`,
               height: `${pageHeight}px`
             }}
-            startPage={startPage}
+            startPage={0}
             drawShadow={true}
             flippingTime={800}
             usePortrait={true}
