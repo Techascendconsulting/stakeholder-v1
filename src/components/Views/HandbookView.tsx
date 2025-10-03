@@ -35,8 +35,8 @@ const HandbookView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
   const [chapterFirstPageIndex, setChapterFirstPageIndex] = useState<Record<string, number>>({});
+  const [startPage, setStartPage] = useState(0);
   const bookRef = useRef<any>(null);
-  const isProgrammaticFlip = useRef(false);
     // Responsive size that fits screen
     const [pageWidth, setPageWidth] = useState<number>(Math.min(1200, window.innerWidth - 100));
     const [pageHeight, setPageHeight] = useState<number>(Math.min(700, window.innerHeight - 150));
@@ -262,43 +262,10 @@ const HandbookView: React.FC = () => {
   };
 
   const goToPage = (pageNumber: number) => {
-    console.log('📚 goToPage called with:', pageNumber);
-    console.log('📚 bookRef.current:', bookRef.current);
-    if (bookRef.current) {
-      // pageNumber is already the correct index (0-based)
-      console.log('📚 Attempting to flip to page:', pageNumber);
-      // Add small delay to ensure book is ready
-      setTimeout(() => {
-        try {
-          isProgrammaticFlip.current = true; // Set flag before programmatic flip
-          console.log('📚 Total pages available:', pages.length);
-          console.log('📚 Attempting to flip to page:', pageNumber);
-          
-          // Use flipController for navigation
-          const pageFlip = bookRef.current.pageFlip();
-          const flipController = pageFlip.flipController;
-          
-          if (flipController && flipController.turnToPage) {
-            flipController.turnToPage(pageNumber);
-          } else if (flipController && flipController.goToPage) {
-            flipController.goToPage(pageNumber);
-          } else if (pageFlip.flip) {
-            pageFlip.flip(pageNumber);
-          } else {
-            console.error('📚 No valid navigation method found');
-          }
-          
-          setCurrentPageNumber(pageNumber);
-          setShowTOC(false);
-          console.log('📚 Flip command executed for page:', pageNumber);
-        } catch (error) {
-          console.error('📚 Error flipping to page:', pageNumber, error);
-          isProgrammaticFlip.current = false; // Reset flag on error
-        }
-      }, 100);
-    } else {
-      console.warn('⚠️ bookRef.current is null - book not ready');
-    }
+    console.log('📚 Navigating to page:', pageNumber);
+    setStartPage(pageNumber);
+    setCurrentPageNumber(pageNumber);
+    setShowTOC(false);
   };
 
   // Disable copy-paste and right-click
@@ -420,8 +387,9 @@ const HandbookView: React.FC = () => {
                     key={chapter.id}
                     onClick={() => {
                       const target = chapterFirstPageIndex[chapter.id] ?? 0;
-                      console.log('📚 TOC Click:', chapter.title, '-> Page', target);
-                      goToPage(target);
+                      setStartPage(target);
+                      setCurrentPageNumber(target);
+                      setShowTOC(false);
                     }}
                     className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group"
                   >
@@ -482,7 +450,7 @@ const HandbookView: React.FC = () => {
               width: `${pageWidth}px`,
               height: `${pageHeight}px`
             }}
-            startPage={0}
+            startPage={startPage}
             drawShadow={true}
             flippingTime={800}
             usePortrait={true}
