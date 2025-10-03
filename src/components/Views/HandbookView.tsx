@@ -255,11 +255,16 @@ const HandbookView: React.FC = () => {
   };
 
   const goToPage = (pageNumber: number) => {
+    console.log('📚 goToPage called with:', pageNumber);
+    console.log('📚 bookRef.current:', bookRef.current);
     if (bookRef.current) {
       // pageNumber is already the correct index (0-based)
+      console.log('📚 Attempting to flip to page:', pageNumber);
       bookRef.current.pageFlip().flip(pageNumber);
       setCurrentPageNumber(pageNumber);
       setShowTOC(false);
+    } else {
+      console.warn('⚠️ bookRef.current is null - book not ready');
     }
   };
 
