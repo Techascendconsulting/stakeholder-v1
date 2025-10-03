@@ -325,9 +325,9 @@ const HandbookView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50 dark:from-gray-900 dark:via-blue-900 dark:to-gray-900 flex flex-col">
       {/* Header */}
-      <div className="bg-black/30 backdrop-blur-sm border-b border-white/10 sticky top-0 z-20">
+      <div className="bg-white/80 dark:bg-black/30 backdrop-blur-sm border-b border-gray-200/50 dark:border-white/10 sticky top-0 z-20">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <div className="flex items-center space-x-4">
