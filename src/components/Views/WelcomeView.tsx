@@ -15,9 +15,6 @@ const WelcomeView: React.FC = () => {
   const { resolvedTheme } = useTheme();
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Debug theme
-  console.log('WelcomeView - resolvedTheme:', resolvedTheme);
-
   // Ensure copy/paste is enabled
   React.useEffect(() => {
     const handleCopy = (e: ClipboardEvent) => {
@@ -266,10 +263,6 @@ const WelcomeView: React.FC = () => {
       className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10"
       style={{ userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
     >
-      {/* Debug theme indicator */}
-      <div className="fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 text-black dark:text-white p-2 rounded shadow">
-        Theme: {resolvedTheme}
-      </div>
       <div className="container mx-auto px-4 py-8">
         {/* Progress Bar */}
         <div className="max-w-4xl mx-auto mb-8">
