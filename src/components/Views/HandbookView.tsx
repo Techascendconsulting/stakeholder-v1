@@ -274,19 +274,18 @@ const HandbookView: React.FC = () => {
           console.log('📚 Total pages available:', pages.length);
           console.log('📚 Attempting to flip to page:', pageNumber);
           
-          // Use the correct react-pageflip API
+          // Use flipController for navigation
           const pageFlip = bookRef.current.pageFlip();
-          console.log('📚 Available pageFlip methods:', Object.keys(pageFlip));
+          const flipController = pageFlip.flipController;
           
-          // Try the correct method for react-pageflip
-          if (pageFlip.flip) {
+          if (flipController && flipController.turnToPage) {
+            flipController.turnToPage(pageNumber);
+          } else if (flipController && flipController.goToPage) {
+            flipController.goToPage(pageNumber);
+          } else if (pageFlip.flip) {
             pageFlip.flip(pageNumber);
-          } else if (pageFlip.turnToPage) {
-            pageFlip.turnToPage(pageNumber);
-          } else if (pageFlip.goToPage) {
-            pageFlip.goToPage(pageNumber);
           } else {
-            console.error('📚 No valid flip method found');
+            console.error('📚 No valid navigation method found');
           }
           
           setCurrentPageNumber(pageNumber);
