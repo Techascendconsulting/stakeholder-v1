@@ -44,22 +44,14 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const applyTheme = (resolvedTheme: ResolvedTheme) => {
     const root = document.documentElement;
     
-    console.log('🎨 applyTheme called with:', resolvedTheme);
-    console.log('🎨 Current root classes:', root.className);
-    
     if (resolvedTheme === 'dark') {
       root.classList.add('dark');
-      console.log('🎨 Added dark class to root');
     } else {
       root.classList.remove('dark');
-      console.log('🎨 Removed dark class from root');
     }
-    
-    console.log('🎨 Root classes after:', root.className);
     
     // Also apply to body for additional styling
     document.body.className = resolvedTheme === 'dark' ? 'dark' : '';
-    console.log('🎨 Body className:', document.body.className);
   };
 
   // Set theme with persistence
@@ -75,7 +67,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Toggle between light and dark (skips system)
   const toggleTheme = () => {
     const newTheme = resolvedTheme === 'light' ? 'dark' : 'light';
-    console.log('🔄 toggleTheme called:', { current: resolvedTheme, new: newTheme });
     setTheme(newTheme);
   };
 
@@ -85,11 +76,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const savedTheme = localStorage.getItem('theme') as Theme;
     const initialTheme = savedTheme || 'system';
     
-    console.log('🎨 ThemeContext: Initializing theme', { savedTheme, initialTheme });
-    
     setThemeState(initialTheme);
     const resolved = resolveTheme(initialTheme);
-    console.log('🎨 ThemeContext: Resolved theme', resolved);
     setResolvedTheme(resolved);
     applyTheme(resolved);
 

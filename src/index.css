@@ -40,16 +40,7 @@
   --accent-secondary: #c084fc; /* Light purple accent */
 }
 
-/* Apply dark purple theme to body and root - REMOVED: conflicting with Tailwind gradients
-.dark body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
-*/
-
-/* .dark {
-  background-color: var(--bg-primary);
-} */
+/* Remove all conflicting dark mode overrides to let Tailwind handle it */
 
 /* Admin-specific dark purple styling */
 .admin-dark-purple {
