@@ -49,9 +49,9 @@ export default function AIProcessMapperView() {
       
       const saveData = {
         user_id: user.id,
+        project_id: selectedProject?.id || 'default',
         name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,
-        xml_content: xmlContent,
-        map_data: mapData
+        xml: xmlContent
       };
 
       // Use existing save logic or create new entry
@@ -455,14 +455,10 @@ export default function AIProcessMapperView() {
         const bpmnXML = generateBPMNXML(mapData);
         
         const diagramData = {
+          user_id: user.id,
+          project_id: selectedProject?.id || 'default',
           name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,
-          xml_content: bpmnXML,
-          map_data: {
-            ...mapData,
-            generated_at: new Date().toISOString(),
-            generated_by: 'ai-process-mapper'
-          },
-          user_id: user.id
+          xml: bpmnXML
         };
 
         let result;
