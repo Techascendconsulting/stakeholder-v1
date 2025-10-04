@@ -267,10 +267,14 @@ export default function ProcessMappingIntroView() {
                 <div className="space-y-6">
                   {/* Start/End */}
                   <div className="flex items-start gap-6 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                    <div className="flex-shrink-0">
-                      <svg width="60" height="40" viewBox="0 0 60 40" aria-label="Start/End symbol">
+                    <div className="flex-shrink-0 flex gap-2">
+                      <svg width="60" height="40" viewBox="0 0 60 40" aria-label="Start symbol">
                         <ellipse cx="30" cy="20" rx="25" ry="15" fill="#10b981" stroke="#059669" strokeWidth="2"/>
                         <text x="30" y="25" textAnchor="middle" className="text-sm font-medium fill-white">Start</text>
+                      </svg>
+                      <svg width="60" height="40" viewBox="0 0 60 40" aria-label="End symbol">
+                        <ellipse cx="30" cy="20" rx="25" ry="15" fill="#dc2626" stroke="#b91c1c" strokeWidth="2"/>
+                        <text x="30" y="25" textAnchor="middle" className="text-sm font-medium fill-white">End</text>
                       </svg>
                     </div>
                     <div className="flex-1">
