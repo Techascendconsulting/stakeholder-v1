@@ -203,7 +203,7 @@ class AIService {
     return this.generateStakeholderResponse(userMessage, stakeholder, context);
   }
 
-  // AI Process Map Generation with strengthened prompt control
+  // AI Process Map Generation with strengthened prompt control and role-based lanes
   public async generateProcessMap(description: string): Promise<{
     success: boolean;
     map?: any;
@@ -217,6 +217,10 @@ class AIService {
       const contextKeywords = this.extractContextKeywords(description);
       console.log('🔍 Context keywords detected:', contextKeywords);
 
+      // Extract roles and departments from description
+      const roles = await this.extractRoles(description);
+      console.log('👥 Roles extracted:', roles);
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -228,7 +232,7 @@ class AIService {
           messages: [
             {
               role: 'system',
-              content: `You are an assistant that converts a user's plain-text process description into a JSON representation of that exact process — nothing more, nothing less.
+              content: `You are a process mapping assistant that converts user descriptions into structured process maps with role-based swimlanes and smart decision paths.
 
 CRITICAL RULES:
 - Never reinterpret or replace the domain context
@@ -238,6 +242,8 @@ CRITICAL RULES:
 - Use the same terminology as the user
 - Do NOT substitute a different process domain
 - Preserve the exact business context provided
+
+DETECTED ROLES/DEPARTMENTS: ${roles.join(', ')}
 
 REQUIRED OUTPUT FORMAT:
 {
@@ -258,16 +264,31 @@ REQUIRED OUTPUT FORMAT:
   ]
 }
 
+ROLE-BASED LANE ASSIGNMENT RULES:
+- Create one swimlane for each unique role/department mentioned
+- Assign each node to the lane of the actor who performs that step
+- Never merge different actors into the same lane
+- Use the detected roles: ${roles.join(', ')}
+- If a step involves multiple actors, assign to the primary responsible party
+
+DECISION BRANCHING RULES:
+- Each decision (gateway) must contain two or more labeled outgoing connections
+- Use clear condition labels like "Yes", "No", "Approved", "Rejected", "Valid", "Invalid"
+- Each decision branch should lead to different outcomes or paths
+- Maintain clear branching structure for alternate paths
+
 NODE TYPES:
 - start: Beginning of the process
-- activity: Specific action or task
-- decision: Decision point or gateway
-- end: Process completion
+- activity: Specific action or task performed by a role
+- decision: Decision point or gateway with multiple paths
+- end: Process completion step
 
 OUTPUT REQUIREMENTS:
 - Output ONLY valid JSON (no commentary)
 - Use exact terminology from the user's description
 - Maintain the specific business domain context
+- Ensure every lane has at least one node
+- Ensure every decision node has 2+ outgoing connections
 - If any step is ambiguous, add a clarification request in the JSON`
             },
             {
@@ -301,20 +322,35 @@ ${description}`
 
       const parsed = JSON.parse(content);
       
+      // Assign nodes to lanes based on detected roles
+      const enhancedMap = this.assignLanesToNodes(parsed, roles);
+      
       // Validate context consistency
-      const contextValidation = this.validateContextConsistency(description, parsed, contextKeywords);
+      const contextValidation = this.validateContextConsistency(description, enhancedMap, contextKeywords);
       if (!contextValidation.isValid) {
         console.warn('⚠️ AISERVICE: Context validation failed:', contextValidation.reason);
         return { 
           success: true, 
-          map: parsed, 
+          map: enhancedMap, 
           clarificationNeeded: true,
           error: contextValidation.reason 
         };
       }
       
-      console.log('✅ AISERVICE: Process map generated successfully with context validation passed');
-      return { success: true, map: parsed };
+      // Validate lane assignment and decision branching
+      const laneValidation = this.validateLaneAssignment(enhancedMap);
+      if (!laneValidation.isValid) {
+        console.warn('⚠️ AISERVICE: Lane validation failed:', laneValidation.reason);
+        return { 
+          success: true, 
+          map: enhancedMap, 
+          clarificationNeeded: true,
+          error: laneValidation.reason 
+        };
+      }
+      
+      console.log('✅ AISERVICE: Process map generated successfully with role-based lanes and validation passed');
+      return { success: true, map: enhancedMap };
 
     } catch (error: any) {
       console.error('❌ AISERVICE: Process map generation error:', error);
@@ -518,6 +554,191 @@ Please update the process map to incorporate this clarification and ensure all a
       };
     }
     
+    return { isValid: true };
+  }
+
+  // Extract roles and departments from user description
+  private async extractRoles(description: string): Promise<string[]> {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an assistant that extracts all unique roles, teams, or departments mentioned in a process description. 
+
+Return ONLY a JSON array of strings representing the roles/departments, no explanation.
+
+Examples:
+- "Customer Service Representative, Finance Team, Store Manager" → ["Customer Service", "Finance Team", "Store Manager"]
+- "Tenant Services logs complaint, sends to Maintenance or Finance" → ["Tenant Services", "Maintenance", "Finance"]
+- "Doctor examines patient, nurse administers medication" → ["Doctor", "Nurse"]`
+            },
+            {
+              role: 'user',
+              content: description
+            }
+          ],
+          temperature: 0,
+        }),
+      });
+
+      const data = await response.json();
+      const content = data?.choices?.[0]?.message?.content || '[]';
+      
+      if (!content.trim().startsWith('[')) {
+        console.warn('⚠️ Invalid role extraction response, using fallback');
+        return this.extractRolesFallback(description);
+      }
+
+      const roles = JSON.parse(content);
+      console.log('👥 Extracted roles:', roles);
+      return roles.filter((role: any) => role && typeof role === 'string' && role.trim().length > 0);
+
+    } catch (error) {
+      console.error('❌ Role extraction error:', error);
+      return this.extractRolesFallback(description);
+    }
+  }
+
+  // Fallback role extraction using keyword patterns
+  private extractRolesFallback(description: string): string[] {
+    const text = description.toLowerCase();
+    const rolePatterns = [
+      'customer service', 'cs rep', 'customer rep',
+      'maintenance', 'maintenance team', 'maintenance worker',
+      'finance', 'finance team', 'accounting', 'billing',
+      'manager', 'supervisor', 'lead',
+      'tenant services', 'tenant service',
+      'property manager', 'landlord',
+      'doctor', 'physician', 'nurse', 'medical staff',
+      'teacher', 'instructor', 'professor',
+      'support', 'help desk', 'technical support',
+      'sales', 'sales rep', 'sales team',
+      'admin', 'administrator', 'administration'
+    ];
+
+    const foundRoles: string[] = [];
+    
+    for (const pattern of rolePatterns) {
+      if (text.includes(pattern)) {
+        // Capitalize first letter of each word
+        const capitalizedRole = pattern.split(' ').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+        
+        if (!foundRoles.includes(capitalizedRole)) {
+          foundRoles.push(capitalizedRole);
+        }
+      }
+    }
+
+    // If no roles found, add a default "General Process" role
+    if (foundRoles.length === 0) {
+      foundRoles.push('General Process');
+    }
+
+    console.log('👥 Fallback role extraction:', foundRoles);
+    return foundRoles;
+  }
+
+  // Assign nodes to appropriate lanes based on role matching
+  private assignLanesToNodes(processMap: any, roles: string[]): any {
+    if (!processMap.nodes || !processMap.lanes) {
+      return processMap;
+    }
+
+    // Create lane lookup map
+    const laneMap = new Map<string, string>();
+    for (const lane of processMap.lanes) {
+      laneMap.set(lane.label.toLowerCase(), lane.id);
+    }
+
+    // Enhanced nodes with better lane assignment
+    const enhancedNodes = processMap.nodes.map((node: any) => {
+      const nodeLabel = node.label.toLowerCase();
+      
+      // Try to match node to lane based on role keywords
+      let bestMatch = null;
+      let bestScore = 0;
+
+      for (const role of roles) {
+        const roleLower = role.toLowerCase();
+        const roleWords = roleLower.split(' ');
+        
+        let score = 0;
+        for (const word of roleWords) {
+          if (nodeLabel.includes(word)) {
+            score += word.length; // Longer matches get higher scores
+          }
+        }
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = roleLower;
+        }
+      }
+
+      // Assign to best matching lane or default to first lane
+      const assignedLaneId = bestMatch && laneMap.has(bestMatch) 
+        ? laneMap.get(bestMatch) 
+        : processMap.lanes[0]?.id || 'lane1';
+
+      return {
+        ...node,
+        lane: assignedLaneId
+      };
+    });
+
+    return {
+      ...processMap,
+      nodes: enhancedNodes
+    };
+  }
+
+  // Validate lane assignment and decision branching
+  private validateLaneAssignment(processMap: any): {
+    isValid: boolean;
+    reason?: string;
+  } {
+    if (!processMap.nodes || !processMap.lanes) {
+      return { isValid: false, reason: 'Process map is missing nodes or lanes' };
+    }
+
+    // Check that every lane has at least one node
+    const laneIds = new Set(processMap.lanes.map((lane: any) => lane.id));
+    const usedLanes = new Set(processMap.nodes.map((node: any) => node.lane));
+    
+    for (const laneId of laneIds) {
+      if (!usedLanes.has(laneId)) {
+        return { 
+          isValid: false, 
+          reason: `Lane "${laneId}" has no assigned nodes. Please clarify which steps belong to this role.` 
+        };
+      }
+    }
+
+    // Check that every decision node has multiple outgoing connections
+    const decisionNodes = processMap.nodes.filter((node: any) => node.type === 'decision');
+    const connections = processMap.connections || [];
+    
+    for (const decisionNode of decisionNodes) {
+      const outgoingConnections = connections.filter((conn: any) => conn.from === decisionNode.id);
+      
+      if (outgoingConnections.length < 2) {
+        return { 
+          isValid: false, 
+          reason: `Decision node "${decisionNode.label}" needs multiple outcome paths. Please clarify what happens in each case (Yes/No, Approved/Rejected, etc.).` 
+        };
+      }
+    }
+
     return { isValid: true };
   }
 }

@@ -85,7 +85,7 @@ export default function AIProcessMapperView() {
     }
   };
 
-  // Convert AI-generated map to BPMN XML with proper structure
+  // Convert AI-generated map to BPMN XML with proper structure and swimlanes
   const generateBPMNXML = (mapData: any) => {
     const { lanes, nodes, connections } = mapData;
     
@@ -97,7 +97,7 @@ export default function AIProcessMapperView() {
       return createMinimalBPMN();
     }
 
-    // Create complete BPMN XML with diagram information
+    // Create complete BPMN XML with diagram information and swimlanes
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -108,38 +108,92 @@ export default function AIProcessMapperView() {
 
   <bpmn:process id="Process_1" isExecutable="false">`;
 
-    // Track nodes for diagram positioning
-    const nodePositions: { [key: string]: { x: number, y: number, width: number, height: number } } = {};
-    let currentX = 100;
-    let currentY = 100;
-    const nodeSpacing = 200;
+    // Add swimlanes if they exist
+    if (lanes && lanes.length > 0) {
+      xml += `\n    <bpmn:laneSet id="LaneSet_1">`;
+      lanes.forEach((lane: any, index: number) => {
+        xml += `\n      <bpmn:lane id="${lane.id}" name="${lane.label}">`;
+        // Add flowNodeRefs for nodes in this lane
+        const laneNodes = nodes.filter((node: any) => node.lane === lane.id);
+        laneNodes.forEach((node: any) => {
+          xml += `\n        <bpmn:flowNodeRef>node_${node.id}</bpmn:flowNodeRef>`;
+        });
+        xml += `\n      </bpmn:lane>`;
+      });
+      xml += `\n    </bpmn:laneSet>`;
+    }
 
-    // Add nodes with proper flow references
-    const nodeFlows: { [key: string]: string[] } = {};
+    // Track nodes for diagram positioning with swimlane support
+    const nodePositions: { [key: string]: { x: number, y: number, width: number, height: number } } = {};
+    const lanePositions: { [key: string]: { y: number, height: number } } = {};
     
-    nodes.forEach((node: any, index: number) => {
-      const bpmnId = `node_${node.id}`;
-      const outgoingFlows: string[] = [];
+    // Calculate lane positions if swimlanes exist
+    if (lanes && lanes.length > 0) {
+      const laneHeight = 120;
+      lanes.forEach((lane: any, index: number) => {
+        lanePositions[lane.id] = {
+          y: 50 + (index * laneHeight),
+          height: laneHeight
+        };
+      });
+    }
+
+    // Group nodes by lane for better positioning
+    const nodesByLane: { [key: string]: any[] } = {};
+    nodes.forEach((node: any) => {
+      const laneId = node.lane || 'default';
+      if (!nodesByLane[laneId]) {
+        nodesByLane[laneId] = [];
+      }
+      nodesByLane[laneId].push(node);
+    });
+
+    // Add nodes with proper flow references and lane-aware positioning
+    const nodeFlows: { [key: string]: string[] } = {};
+    let globalX = 100;
+    
+    // Process each lane
+    Object.entries(nodesByLane).forEach(([laneId, laneNodes]) => {
+      const lanePos = lanePositions[laneId] || { y: 100, height: 120 };
+      let laneX = globalX;
       
-      // Find outgoing connections
-      const outgoingConnections = connections.filter((conn: any) => conn.from === node.id);
-      outgoingConnections.forEach((conn: any, flowIndex: number) => {
-        const flowId = `Flow_${conn.from}_to_${conn.to}`;
-        outgoingFlows.push(flowId);
+      laneNodes.forEach((node: any, index: number) => {
+        const bpmnId = `node_${node.id}`;
+        const outgoingFlows: string[] = [];
+        
+        // Find outgoing connections
+        const outgoingConnections = connections.filter((conn: any) => conn.from === node.id);
+        outgoingConnections.forEach((conn: any, flowIndex: number) => {
+          const flowId = `Flow_${conn.from}_to_${conn.to}`;
+          outgoingFlows.push(flowId);
+        });
+        
+        nodeFlows[bpmnId] = outgoingFlows;
+        
+        // Set node dimensions based on type
+        let width = 100, height = 80;
+        if (node.type === 'start' || node.type === 'end') {
+          width = 36; height = 36;
+        } else if (node.type === 'decision') {
+          width = 50; height = 50;
+        }
+        
+        // Position node within lane (centered vertically in lane)
+        const nodeY = lanePos.y + (lanePos.height / 2) - (height / 2);
+        nodePositions[bpmnId] = { x: laneX, y: nodeY, width, height };
+        
+        // Move to next position in lane
+        laneX += 200;
       });
       
-      nodeFlows[bpmnId] = outgoingFlows;
-      
-      // Set node dimensions based on type
-      let width = 100, height = 80;
-      if (node.type === 'start' || node.type === 'end') {
-        width = 36; height = 36;
-      } else if (node.type === 'decision') {
-        width = 50; height = 50;
-      }
-      
-      // Store position for diagram
-      nodePositions[bpmnId] = { x: currentX, y: currentY, width, height };
+      // Update global X position for next lane
+      globalX = Math.max(globalX, laneX);
+    });
+
+    // Add all nodes to XML
+    nodes.forEach((node: any) => {
+      const bpmnId = `node_${node.id}`;
+      const outgoingFlows = nodeFlows[bpmnId] || [];
       
       switch (node.type) {
         case 'start':
@@ -170,9 +224,6 @@ export default function AIProcessMapperView() {
           });
           xml += `\n    </bpmn:task>`;
       }
-      
-      // Move to next position
-      currentX += nodeSpacing;
     });
 
     // Add sequence flows
@@ -191,6 +242,20 @@ export default function AIProcessMapperView() {
 
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">`;
+
+    // Add BPMN shapes for swimlanes if they exist
+    if (lanes && lanes.length > 0) {
+      xml += `\n      <bpmndi:BPMNShape id="LaneSet_1_di" bpmnElement="LaneSet_1" isHorizontal="true">
+        <dc:Bounds x="50" y="50" width="800" height="${lanes.length * 120}"/>
+      </bpmndi:BPMNShape>`;
+      
+      lanes.forEach((lane: any, index: number) => {
+        const lanePos = lanePositions[lane.id];
+        xml += `\n      <bpmndi:BPMNShape id="${lane.id}_di" bpmnElement="${lane.id}">
+        <dc:Bounds x="50" y="${lanePos.y}" width="800" height="${lanePos.height}"/>
+      </bpmndi:BPMNShape>`;
+      });
+    }
 
     // Add BPMN shapes for each node
     Object.entries(nodePositions).forEach(([nodeId, pos]) => {
@@ -232,7 +297,7 @@ export default function AIProcessMapperView() {
     return xml;
   };
 
-  // Create minimal BPMN XML as fallback with diagram information
+  // Create minimal BPMN XML as fallback with diagram information and swimlanes
   const createMinimalBPMN = () => {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -242,6 +307,13 @@ export default function AIProcessMapperView() {
   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
   id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="lane1" name="General Process">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_1</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
     <bpmn:startEvent id="StartEvent_1" name="Start" />
     <bpmn:task id="Task_1" name="Process Step" />
     <bpmn:endEvent id="EndEvent_1" name="End" />
@@ -250,22 +322,28 @@ export default function AIProcessMapperView() {
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="LaneSet_1_di" bpmnElement="LaneSet_1" isHorizontal="true">
+        <dc:Bounds x="50" y="50" width="800" height="120"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="lane1_di" bpmnElement="lane1">
+        <dc:Bounds x="50" y="50" width="800" height="120"/>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="100" y="100" width="36" height="36"/>
+        <dc:Bounds x="100" y="82" width="36" height="36"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
-        <dc:Bounds x="200" y="80" width="100" height="80"/>
+        <dc:Bounds x="200" y="70" width="100" height="80"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="350" y="100" width="36" height="36"/>
+        <dc:Bounds x="350" y="82" width="36" height="36"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
-        <di:waypoint x="136" y="118"/>
-        <di:waypoint x="200" y="118"/>
+        <di:waypoint x="136" y="100"/>
+        <di:waypoint x="200" y="100"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
-        <di:waypoint x="300" y="118"/>
-        <di:waypoint x="350" y="118"/>
+        <di:waypoint x="300" y="100"/>
+        <di:waypoint x="350" y="100"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
