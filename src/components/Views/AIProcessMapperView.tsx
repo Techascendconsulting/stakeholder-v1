@@ -97,7 +97,7 @@ export default function AIProcessMapperView() {
       return createMinimalBPMN();
     }
 
-    // Create a simplified single-process BPMN XML
+    // Create complete BPMN XML with diagram information
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -107,6 +107,12 @@ export default function AIProcessMapperView() {
   id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
 
   <bpmn:process id="Process_1" isExecutable="false">`;
+
+    // Track nodes for diagram positioning
+    const nodePositions: { [key: string]: { x: number, y: number, width: number, height: number } } = {};
+    let currentX = 100;
+    let currentY = 100;
+    const nodeSpacing = 200;
 
     // Add nodes with proper flow references
     const nodeFlows: { [key: string]: string[] } = {};
@@ -123,6 +129,17 @@ export default function AIProcessMapperView() {
       });
       
       nodeFlows[bpmnId] = outgoingFlows;
+      
+      // Set node dimensions based on type
+      let width = 100, height = 80;
+      if (node.type === 'start' || node.type === 'end') {
+        width = 36; height = 36;
+      } else if (node.type === 'decision') {
+        width = 50; height = 50;
+      }
+      
+      // Store position for diagram
+      nodePositions[bpmnId] = { x: currentX, y: currentY, width, height };
       
       switch (node.type) {
         case 'start':
@@ -153,6 +170,9 @@ export default function AIProcessMapperView() {
           });
           xml += `\n    </bpmn:task>`;
       }
+      
+      // Move to next position
+      currentX += nodeSpacing;
     });
 
     // Add sequence flows
@@ -168,17 +188,58 @@ export default function AIProcessMapperView() {
     }
 
     xml += `\n  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">`;
+
+    // Add BPMN shapes for each node
+    Object.entries(nodePositions).forEach(([nodeId, pos]) => {
+      xml += `\n      <bpmndi:BPMNShape id="${nodeId}_di" bpmnElement="${nodeId}">
+        <dc:Bounds x="${pos.x}" y="${pos.y}" width="${pos.width}" height="${pos.height}"/>
+      </bpmndi:BPMNShape>`;
+    });
+
+    // Add BPMN edges for each connection
+    if (connections && connections.length > 0) {
+      connections.forEach((conn: any) => {
+        const flowId = `Flow_${conn.from}_to_${conn.to}`;
+        const sourceNodeId = `node_${conn.from}`;
+        const targetNodeId = `node_${conn.to}`;
+        
+        const sourcePos = nodePositions[sourceNodeId];
+        const targetPos = nodePositions[targetNodeId];
+        
+        if (sourcePos && targetPos) {
+          // Calculate waypoints for the flow
+          const sourceX = sourcePos.x + sourcePos.width;
+          const sourceY = sourcePos.y + (sourcePos.height / 2);
+          const targetX = targetPos.x;
+          const targetY = targetPos.y + (targetPos.height / 2);
+          
+          xml += `\n      <bpmndi:BPMNEdge id="${flowId}_di" bpmnElement="${flowId}">
+        <di:waypoint x="${sourceX}" y="${sourceY}"/>
+        <di:waypoint x="${targetX}" y="${targetY}"/>
+      </bpmndi:BPMNEdge>`;
+        }
+      });
+    }
+
+    xml += `\n    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
 </bpmn:definitions>`;
 
-    console.log('✅ Generated BPMN XML:', xml.substring(0, 300) + '...');
+    console.log('✅ Generated complete BPMN XML with diagram info:', xml.substring(0, 400) + '...');
     return xml;
   };
 
-  // Create minimal BPMN XML as fallback
+  // Create minimal BPMN XML as fallback with diagram information
   const createMinimalBPMN = () => {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
   id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn:process id="Process_1" isExecutable="false">
     <bpmn:startEvent id="StartEvent_1" name="Start" />
@@ -187,6 +248,27 @@ export default function AIProcessMapperView() {
     <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
     <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
   </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="100" y="100" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
+        <dc:Bounds x="200" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="350" y="100" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="136" y="118"/>
+        <di:waypoint x="200" y="118"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="300" y="118"/>
+        <di:waypoint x="350" y="118"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
 </bpmn:definitions>`;
   };
 
