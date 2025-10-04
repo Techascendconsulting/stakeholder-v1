@@ -1,18 +1,16 @@
 import React from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { useTheme } from '../../contexts/ThemeContext';
 
 const WelcomeView: React.FC = () => {
   const { setCurrentView } = useApp();
-  const { resolvedTheme } = useTheme();
 
   // Ensure copy/paste is enabled
   React.useEffect(() => {
-    const handleCopy = (e: ClipboardEvent) => {
+    const handleCopy = () => {
       // Allow copy
     };
     
-    const handlePaste = (e: ClipboardEvent) => {
+    const handlePaste = () => {
       // Allow paste
     };
 
