@@ -10,7 +10,7 @@ export default function ProcessMappingIntroView() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-700 px-8 py-6">
-            <h1 className="text-4xl font-bold text-white mb-2">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Process Mapping: Seeing How Work Really Happens
             </h1>
           </div>
@@ -74,7 +74,7 @@ export default function ProcessMappingIntroView() {
 
             {/* What Is Process Mapping */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">What Is Process Mapping?</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">What Is Process Mapping?</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                   Process mapping is the act of visually representing how a process works. It's not about fancy symbols or complex notations — it's about clarity. You're simply drawing the journey of a task from beginning to end.
@@ -90,7 +90,7 @@ export default function ProcessMappingIntroView() {
 
             {/* Why a Business Analyst Should Do It */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Why a Business Analyst Should Do It</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Why a Business Analyst Should Do It</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                   As a BA, process mapping is one of your most powerful tools for understanding how things really work. Stakeholders often explain processes in vague terms. They'll say, "We check it," or "We send it to Finance." But when you map it, those generalities fall apart. You discover that "checking" involves three people, two systems, and a manual spreadsheet.
@@ -112,7 +112,7 @@ export default function ProcessMappingIntroView() {
 
             {/* Why Clarity Matters */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Why Clarity Matters</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Why Clarity Matters</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                   Processes live in people's heads. And when things go wrong, everyone sees the symptom but not the cause. A process map brings the cause into view. It reveals the handovers, delays, approvals, and decision points that make or break efficiency.
@@ -135,7 +135,7 @@ export default function ProcessMappingIntroView() {
 
             {/* Benefits of Process Mapping */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Benefits of Process Mapping</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Benefits of Process Mapping</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
                   A well-designed process map delivers value far beyond documentation. It:
@@ -170,7 +170,7 @@ export default function ProcessMappingIntroView() {
 
             {/* Importance in Projects */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Importance in Projects</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Importance in Projects</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                   Every major improvement, automation, or system implementation depends on understanding existing processes. Whether you're replacing a legacy CRM, introducing AI, or redesigning a customer journey, you must first know what is being changed.
@@ -186,7 +186,7 @@ export default function ProcessMappingIntroView() {
 
             {/* What Process Mapping Reveals */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">What Process Mapping Reveals</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">What Process Mapping Reveals</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
                   When you map a process honestly — not the "ideal version," but what really happens — patterns emerge:
@@ -221,7 +221,7 @@ export default function ProcessMappingIntroView() {
 
             {/* How to Do It */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">How to Do It (Step by Step)</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">How to Do It (Step by Step)</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
                   You don't need expensive software or complex notation. Start simple.
@@ -257,7 +257,7 @@ export default function ProcessMappingIntroView() {
 
             {/* Symbols and What They Mean */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Symbols and What They Mean</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Symbols and What They Mean</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
                   Process mapping doesn't need to be complicated, but consistency matters. These simple symbols are all you need to tell a clear story:
@@ -364,7 +364,7 @@ export default function ProcessMappingIntroView() {
 
             {/* From Understanding to Action */}
             <section>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">From Understanding to Action</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">From Understanding to Action</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                   Process mapping isn't paperwork. It's the foundation for change. Once the process is clear, you can start improving it — redesigning steps, automating tasks, or redefining roles.
