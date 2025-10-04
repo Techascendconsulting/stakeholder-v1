@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { Layers, ArrowRight, BookOpen } from 'lucide-react';
+import { 
+  Layers, 
+  ArrowRight, 
+  BookOpen, 
+  ChevronRight,
+  Play,
+  Clock,
+  Users
+} from 'lucide-react';
 
 const SolutionOptions: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -11,6 +19,7 @@ const SolutionOptions: React.FC = () => {
     {
       id: 'lesson-1',
       title: 'What Are Solution Options?',
+      duration: '8 min',
       content: `Once you've completed elicitation, you don't jump straight into design. First, you pause and ask: "Given what we know about the problem and the desired future state, what different solutions could we consider?"
 
 This is the stage called exploring solution options.
@@ -84,6 +93,7 @@ In summary, solution options are the bridge between problem and design. They inv
     {
       id: 'lesson-2', 
       title: 'Evaluating Options',
+      duration: '12 min',
       content: `Once potential solution options have been identified, the next step is to evaluate them. This is where you as a BA help the business move from "what could we do?" to "what makes the most sense for us right now?"
 
 When you're sitting in these meetings, it often feels like there are too many voices in the room. One stakeholder loves the cheapest option, another is pushing for the newest technology, and someone else is worried about compliance risks. This is exactly why your role as a BA matters — you bring structure to what would otherwise be a noisy debate.
@@ -158,7 +168,8 @@ Remember: you don't choose the solution. Your role is to create the environment 
     },
     {
       id: 'lesson-3',
-      title: 'Recommending a Way Forward', 
+      title: 'Recommending a Way Forward',
+      duration: '10 min', 
       content: `After solution options have been identified and evaluated, the business now faces a choice: which way forward? This is the point where the BA helps move from structured evaluation into a clear recommendation that stakeholders can align around.
 
 **Why This Step Matters**
@@ -248,6 +259,7 @@ In summary, recommending a way forward is about turning evaluation into action. 
     {
       id: 'lesson-4',
       title: 'From Preferred Solution to Design',
+      duration: '14 min',
       content: `After the business has agreed on a preferred solution, the next challenge is to answer the question: "What will this actually look like in practice?"
 
 This is where the project moves into the Design stage. Design is not about decorating wireframes or choosing colours. It's about shaping the chosen solution into processes, system behaviours, and user experiences that will guide delivery.
@@ -344,6 +356,7 @@ In summary, Design is the stage where the preferred solution takes shape. As a B
     {
       id: 'lesson-5',
       title: 'The Three Amigos',
+      duration: '6 min',
       content: `In Agile delivery, there's also the Three Amigos model:
 
 **The BA** – representing business value and clarity.
@@ -357,6 +370,7 @@ Together, the Three Amigos make sure requirements and solutions are shaped from 
     {
       id: 'lesson-6',
       title: 'The BA\'s Responsibility',
+      duration: '5 min',
       content: `Your responsibility in solutioning is to:
 
 **Facilitate structured discussions** on options.
@@ -375,91 +389,64 @@ In summary, solution options are the bridge between problem and design. They inv
 
   if (currentPage === 'overview') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
-        {/* Hero */}
-        <div className="relative bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10" />
-          <div className="relative max-w-7xl mx-auto px-6 py-10 md:py-12">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
-                <Layers className="w-8 h-8 text-white" />
+      <div className="min-h-screen bg-white">
+        {/* Simple Header */}
+        <div className="border-b border-gray-200">
+          <div className="max-w-4xl mx-auto px-6 py-8">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Layers className="w-4 h-4 text-white" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">📖 Solution Options</h1>
-              <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 max-w-3xl mx-auto">
-                From problem to possible solutions — this is where the BA helps shape the way forward.
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">Solution Options</h1>
             </div>
+            <p className="text-gray-600 text-lg">
+              Learn how to bridge the gap between understanding problems and designing effective solutions.
+            </p>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-          {/* Intro Narrative */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-6 md:p-8 shadow-sm">
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-              After elicitation, once the problem is clear and both the current (As-Is) and future (To-Be) states are understood,
-              the next step is to explore how the problem could be solved. This hub is about generating and evaluating possible
-              solution options. As a BA, you don't invent solutions in isolation — you facilitate conversations, capture trade-offs,
-              and ensure options are tied to business needs. In real projects, you'll work closely with Solution Architects,
-              Tech Leads, and Testers to shape solutions that are realistic, valuable, and testable.
-            </p>
-          </div>
-
-          {/* What You'll Explore */}
+        {/* Simple Lessons List */}
+        <div className="max-w-4xl mx-auto px-6 py-8">
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">What You'll Explore Here</h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl p-5 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-700 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center"><Layers className="w-5 h-5" /></div>
+            {lessons.map((lesson, index) => (
+              <div
+                key={lesson.id}
+                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                onClick={() => {
+                  setActiveTab(index);
+                  setCurrentPage('lessons');
+                }}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-medium text-gray-600">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{lesson.title}</h3>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center space-x-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{lesson.duration}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">What Are Solution Options?</h3>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  Understanding the bridge between problem analysis and solution design.
-                </p>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
               </div>
-
-              <div className="rounded-xl p-5 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-700 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-purple-600 text-white flex items-center justify-center"><BookOpen className="w-5 h-5" /></div>
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Evaluating Options</h3>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  Structured criteria for comparing different solution approaches.
-                </p>
-              </div>
-
-              <div className="rounded-xl p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border border-emerald-200 dark:border-emerald-700 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center"><Layers className="w-5 h-5" /></div>
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Types of Solutions</h3>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  From process improvements to new systems - understanding all options.
-                </p>
-              </div>
-
-              <div className="rounded-xl p-5 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border border-amber-200 dark:border-amber-700 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-amber-600 text-white flex items-center justify-center"><Layers className="w-5 h-5" /></div>
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">The BA's Role</h3>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  Facilitating structured discussions and keeping options grounded in business value.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* CTA */}
-          <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-6 md:p-8 text-center shadow-md">
-            <p className="text-white/90 mb-4 text-lg">
-              Ready to dive deep into solution options? Explore the detailed lessons below.
-            </p>
+          {/* Simple CTA */}
+          <div className="mt-12 text-center">
             <button
-              onClick={() => setCurrentPage('lessons')}
-              className="inline-flex items-center px-6 py-3 bg-white text-slate-900 rounded-lg font-semibold hover:bg-white/90 transition-all"
+              onClick={() => {
+                setActiveTab(0);
+                setCurrentPage('lessons');
+              }}
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
-              Explore Solution Options Lessons <ArrowRight className="w-4 h-4 ml-2" />
+              <Play className="w-4 h-4 mr-2" />
+              Start Learning
             </button>
           </div>
         </div>
@@ -468,88 +455,123 @@ In summary, solution options are the bridge between problem and design. They inv
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Hero */}
-      <div className="relative bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10" />
-        <div className="relative max-w-7xl mx-auto px-6 py-10 md:py-12">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
-              <Layers className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-white">
+      {/* Simple Header */}
+      <div className="border-b border-gray-200 sticky top-0 bg-white z-10">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setCurrentPage('overview')}
+                className="p-2 text-gray-400 hover:text-gray-600"
+              >
+                <ArrowRight className="w-5 h-5 rotate-180" />
+              </button>
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Layers className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">Solution Options</h1>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-4">📖 Solution Options</h1>
-            <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 max-w-3xl mx-auto">
-              Detailed lessons on exploring and evaluating solution options.
-            </p>
-            <button
-              onClick={() => setCurrentPage('overview')}
-              className="mt-4 text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              ← Back to Overview
-            </button>
+            <div className="text-sm text-gray-500">
+              {activeTab + 1} of {lessons.length}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Tabbed Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 shadow-sm overflow-hidden">
-          {/* Tab Navigation */}
-          <div className="border-b border-slate-200 dark:border-gray-700">
-            <div className="flex overflow-x-auto">
-              {lessons.map((lesson, index) => (
-                <button
-                  key={lesson.id}
-                  onClick={() => setActiveTab(index)}
-                  className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                    activeTab === index
-                      ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300'
-                  }`}
-                >
-                  {lesson.title}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-6 md:p-8">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">
-                {lessons[activeTab].title}
-              </h2>
-              <div className="prose prose-lg max-w-none">
-                <div className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  {lessons[activeTab].content.split('\n').map((line, index) => {
-                    if (line.startsWith('**') && line.endsWith('**')) {
-                      return (
-                        <div key={index} className="font-semibold text-slate-900 dark:text-slate-100 mt-4 mb-2">
-                          {line.replace(/\*\*/g, '')}
-                        </div>
-                      );
-                    } else if (line.startsWith('- ')) {
-                      return (
-                        <div key={index} className="ml-4 mb-1">
-                          • {line.substring(2)}
-                        </div>
-                      );
-                    } else if (line.trim() === '') {
-                      return <br key={index} />;
-                    } else {
-                      return (
-                        <div key={index} className="mb-2">
-                          {line}
-                        </div>
-                      );
-                    }
-                  })}
-                </div>
-              </div>
-            </div>
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Simple Navigation */}
+        <div className="mb-8">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+            {lessons.map((lesson, index) => (
+              <button
+                key={lesson.id}
+                onClick={() => setActiveTab(index)}
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === index
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {lesson.title}
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* Lesson Content */}
+        <div className="bg-white border border-gray-200 rounded-lg p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {lessons[activeTab].title}
+            </h2>
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-1">
+                <Clock className="w-4 h-4" />
+                <span>{lessons[activeTab].duration}</span>
+              </div>
+              <span>Lesson {activeTab + 1}</span>
+            </div>
+          </div>
+
+          <div className="prose max-w-none">
+            <div className="text-gray-700 leading-relaxed space-y-4">
+              {lessons[activeTab].content.split('\n').map((line, index) => {
+                if (line.startsWith('**') && line.endsWith('**')) {
+                  return (
+                    <div key={index} className="font-bold text-xl text-gray-900 mt-8 mb-4 pb-2 border-b border-gray-200">
+                      {line.replace(/\*\*/g, '')}
+                    </div>
+                  );
+                } else if (line.startsWith('- ')) {
+                  return (
+                    <div key={index} className="flex items-start space-x-3 ml-4">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-gray-700">{line.substring(2)}</span>
+                    </div>
+                  );
+                } else if (line.trim() === '') {
+                  return <div key={index} className="h-4"></div>;
+                } else if (line.includes('🧩') || line.includes('📚') || line.includes('🎯') || line.includes('👉')) {
+                  return (
+                    <div key={index} className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                      <span className="text-gray-700 font-medium">{line}</span>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={index} className="text-gray-700 leading-relaxed">
+                      {line}
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          </div>
+
+          {/* Simple Navigation */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setActiveTab(Math.max(0, activeTab - 1))}
+                disabled={activeTab === 0}
+                className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+                Previous
+              </button>
+
+              <button
+                onClick={() => setActiveTab(Math.min(lessons.length - 1, activeTab + 1))}
+                disabled={activeTab === lessons.length - 1}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

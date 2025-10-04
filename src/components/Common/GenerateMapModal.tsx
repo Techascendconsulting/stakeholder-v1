@@ -66,10 +66,16 @@ ${structuredInput.outcome}
 Please create a comprehensive process map that includes all the steps, decision points, and flows between the mentioned roles/departments.`;
 
       const aiService = AIService.getInstance();
-      const result = await aiService.generateProcessMap(structuredPrompt);
+      
+      // Extract roles if provided
+      const forcedRoles = structuredInput.roles.trim() 
+        ? structuredInput.roles.split(',').map(r => r.trim()).filter(r => r.length > 0)
+        : undefined;
+      
+      const result = await aiService.generateProcessMap(structuredPrompt, forcedRoles);
 
-      if (result.success && result.map) {
-        onGenerate(result.map, result.clarificationNeeded, result.error);
+      if (result.success && result.spec) {
+        onGenerate(result.spec, result.clarificationNeeded, result.error);
         console.log('Process map generated successfully!', { clarificationNeeded: result.clarificationNeeded });
       } else {
         throw new Error(result.error || 'Failed to generate process map');

@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabase';
 import AIService from '../../services/aiService';
 import { v4 as uuidv4 } from 'uuid';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
+import { buildBPMN, type MapSpec } from '../../utils/bpmnBuilder';
 
 export default function AIProcessMapperView() {
   const { setCurrentView, selectedProject } = useApp();
@@ -42,7 +43,7 @@ export default function AIProcessMapperView() {
   };
 
   // Save map to Supabase function
-  const saveMapToSupabase = async (mapData: any, xmlContent: string) => {
+  const saveMapToSupabase = async (spec: MapSpec, xmlContent: string) => {
     if (!user || !selectedProject) return;
     
     try {
@@ -53,7 +54,9 @@ export default function AIProcessMapperView() {
         user_id: user.id,
         project_id: selectedProject?.id || 'default',
         name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,
-        xml: xmlContent
+        data: spec, // Store the spec as JSON
+        xml: xmlContent,
+        updated_at: new Date().toISOString()
       };
 
       // Use existing save logic or create new entry
@@ -544,18 +547,18 @@ export default function AIProcessMapperView() {
         const enhancedDescription = `${clarificationRequest.step}: ${clarification}`;
         const result = await aiService.generateProcessMap(enhancedDescription);
         
-        if (result.success && result.map) {
-          // Generate BPMN XML from the new map
-          const newXml = generateBPMNXML(result.map);
+        if (result.success && result.spec) {
+          // Use the XML from the result or build it
+          const newXml = result.xml || buildBPMN(result.spec);
           
           // Update the modeler with the new XML
           await initializeAndLoadXML(newXml);
           
           // Update state with the new map
-          setGeneratedMap(result.map);
+          setGeneratedMap(result.spec);
           
           // Auto-save the new map
-          await saveMapToSupabase(result.map, newXml);
+          await saveMapToSupabase(result.spec, newXml);
           
           // Show success toast
           displayToast('✅ Process map regenerated with correct context.', 'success');
@@ -580,18 +583,18 @@ export default function AIProcessMapperView() {
           currentMap: generatedMap
         });
         
-        if (result.success && result.map) {
-          // Generate BPMN XML from the updated map
-          const updatedXml = generateBPMNXML(result.map);
+        if (result.success && result.spec) {
+          // Use the XML from the result or build it
+          const updatedXml = result.xml || buildBPMN(result.spec);
           
           // Update the modeler with the new XML
           await initializeAndLoadXML(updatedXml);
           
           // Update state with the new map
-          setGeneratedMap(result.map);
+          setGeneratedMap(result.spec);
           
           // Auto-save the updated map
-          await saveMapToSupabase(result.map, updatedXml);
+          await saveMapToSupabase(result.spec, updatedXml);
           
           // Show success toast
           displayToast('✅ Process map updated with your clarification.', 'success');
@@ -613,9 +616,9 @@ export default function AIProcessMapperView() {
   };
 
   // Convert AI-generated map to BPMN format and save it
-  const handleGeneratedMap = async (mapData: any, clarificationNeeded?: boolean, error?: string) => {
+  const handleGeneratedMap = async (spec: MapSpec, clarificationNeeded?: boolean, error?: string) => {
     try {
-      console.log('🤖 AIProcessMapperView: Processing generated map:', mapData, { clarificationNeeded, error });
+      console.log('🤖 AIProcessMapperView: Processing generated map:', spec, { clarificationNeeded, error });
       
       // Check if domain context validation failed
       if (clarificationNeeded && error) {
@@ -630,38 +633,18 @@ export default function AIProcessMapperView() {
         return; // Don't proceed until clarification is provided
       }
       
-      // Check if clarification is needed for unclear steps
-      const stepClarificationNeeded = checkForClarificationNeeds(mapData);
-      
-      if (stepClarificationNeeded) {
-        setClarificationRequest(stepClarificationNeeded);
-        setShowClarificationModal(true);
-        return; // Don't proceed until clarification is provided
-      }
-      
       // Store the map data for immediate display
-      setGeneratedMap(mapData);
+      setGeneratedMap(spec);
       
-      // Generate BPMN XML
-      const bpmnXML = generateBPMNXML(mapData);
-      console.log('🔧 Generated BPMN XML:', bpmnXML.substring(0, 200) + '...');
+      // Build BPMN XML synchronously from lanes/nodes/connections
+      const xml = buildBPMN(spec);
+      console.log('🔧 Generated BPMN XML:', xml.substring(0, 200) + '...');
       
       // Initialize modeler and load XML
-      await initializeAndLoadXML(bpmnXML);
+      await initializeAndLoadXML(xml);
 
-      // Fallback timeout - if BPMN modeler doesn't load within 5 seconds, show fallback
-      setTimeout(() => {
-        if (isLoadingMap) {
-          console.log('⏰ BPMN Modeler timeout - falling back to simplified view');
-          setIsLoadingMap(false);
-          setBpmnModelerFailed(true);
-        }
-      }, 5000);
-      
-      // Trigger auto-save if user is available
-      if (user?.id) {
-        autoSaveMap(mapData, lastSavedId);
-      }
+      // Save to Supabase
+      await saveMapToSupabase(spec, xml);
       
     } catch (error) {
       console.error('❌ Error handling generated map:', error);
@@ -1227,8 +1210,8 @@ export default function AIProcessMapperView() {
       {showGenerateModal && (
         <GenerateMapModal
           onClose={() => setShowGenerateModal(false)}
-          onGenerate={(mapData, clarificationNeeded, error) => {
-            handleGeneratedMap(mapData, clarificationNeeded, error);
+          onGenerate={(spec, clarificationNeeded, error) => {
+            handleGeneratedMap(spec, clarificationNeeded, error);
             setShowGenerateModal(false);
           }}
         />

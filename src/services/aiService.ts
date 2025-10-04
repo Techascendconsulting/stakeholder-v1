@@ -1,5 +1,6 @@
 import { singleAgentSystem } from './singleAgentSystem';
 import { API_CONFIG } from '../config/openai';
+import { buildBPMN, type MapSpec } from '../utils/bpmnBuilder';
 
 // Lightweight shared types for other modules
 export interface StakeholderContext {
@@ -204,22 +205,45 @@ class AIService {
   }
 
   // AI Process Map Generation with strengthened prompt control and role-based lanes
-  public async generateProcessMap(description: string): Promise<{
+  public async generateProcessMap(description: string, forcedRoles?: string[]): Promise<{
     success: boolean;
-    map?: any;
+    spec?: MapSpec;
+    xml?: string;
     error?: string;
     clarificationNeeded?: boolean;
   }> {
     try {
       console.log('🤖 AISERVICE: Generating process map for description:', description.substring(0, 100) + '...');
 
-      // Extract context keywords from user description for validation
-      const contextKeywords = this.extractContextKeywords(description);
-      console.log('🔍 Context keywords detected:', contextKeywords);
+      const SYSTEM_PROMPT = `
+You convert the user's process description into a STRICT JSON map (lanes, nodes, connections).
+You MUST stay inside the user's domain; do not reinterpret (e.g., do not turn "tenant services" into "refunds").
+If any actor/decision is unclear, ask a clarification instead of guessing.
+Output JSON only.
 
-      // Extract roles and departments from description
-      const roles = await this.extractRoles(description);
-      console.log('👥 Roles extracted:', roles);
+REQUIRED OUTPUT FORMAT:
+{
+  "lanes": [
+    {"id": "lane1", "name": "Role/Department Name"},
+    {"id": "lane2", "name": "Another Role/Department"}
+  ],
+  "nodes": [
+    {"id": "1", "type": "start", "label": "Exact process step description", "laneId": "lane1"},
+    {"id": "2", "type": "task", "label": "Specific activity description", "laneId": "lane2"},
+    {"id": "3", "type": "decision", "label": "Decision point with exact wording", "laneId": "lane2"},
+    {"id": "4", "type": "end", "label": "Process completion step", "laneId": "lane1"}
+  ],
+  "connections": [
+    {"from": "1", "to": "2"},
+    {"from": "2", "to": "3"},
+    {"from": "3", "to": "4", "label": "Yes/No condition"}
+  ]
+}
+
+NODE TYPES: start, task, decision, end
+Use exact terminology from the user's description.
+Maintain the specific business domain context.
+`;
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -232,79 +256,14 @@ class AIService {
           messages: [
             {
               role: 'system',
-              content: `You are a process mapping assistant that converts user descriptions into structured process maps with role-based swimlanes and smart decision paths.
-
-CRITICAL RULES:
-- Never reinterpret or replace the domain context
-- If the user mentions tenants, maintenance, or billing, stay within that scenario
-- If the user mentions refunds, purchases, or customer service, stay within that scenario
-- If something is unclear, ask a clarification question instead of making assumptions
-- Use the same terminology as the user
-- Do NOT substitute a different process domain
-- Preserve the exact business context provided
-
-DETECTED ROLES/DEPARTMENTS: ${roles.join(', ')}
-
-REQUIRED OUTPUT FORMAT:
-{
-  "lanes": [
-    {"id": "lane1", "label": "Role/Department Name", "role": "Specific Role Title"},
-    {"id": "lane2", "label": "Another Role/Department", "role": "Another Role Title"}
-  ],
-  "nodes": [
-    {"id": "1", "type": "start", "label": "Exact process step description", "lane": "lane1"},
-    {"id": "2", "type": "activity", "label": "Specific activity description", "lane": "lane2"},
-    {"id": "3", "type": "decision", "label": "Decision point with exact wording", "lane": "lane2"},
-    {"id": "4", "type": "end", "label": "Process completion step", "lane": "lane1"}
-  ],
-  "connections": [
-    {"from": "1", "to": "2"},
-    {"from": "2", "to": "3"},
-    {"from": "3", "to": "4", "condition": "Yes/No condition"}
-  ]
-}
-
-ROLE-BASED LANE ASSIGNMENT RULES:
-- Create one swimlane for each unique role/department mentioned
-- Assign each node to the lane of the actor who performs that step
-- Never merge different actors into the same lane
-- Use the detected roles: ${roles.join(', ')}
-- If a step involves multiple actors, assign to the primary responsible party
-
-DECISION BRANCHING RULES:
-- Each decision (gateway) must contain two or more labeled outgoing connections
-- Use clear condition labels like "Yes", "No", "Approved", "Rejected", "Valid", "Invalid"
-- Each decision branch should lead to different outcomes or paths
-- Maintain clear branching structure for alternate paths
-
-NODE TYPES:
-- start: Beginning of the process
-- activity: Specific action or task performed by a role
-- decision: Decision point or gateway with multiple paths
-- end: Process completion step
-
-OUTPUT REQUIREMENTS:
-- Output ONLY valid JSON (no commentary)
-- Use exact terminology from the user's description
-- Maintain the specific business domain context
-- Ensure every lane has at least one node
-- Ensure every decision node has 2+ outgoing connections
-- If any step is ambiguous, add a clarification request in the JSON`
+              content: SYSTEM_PROMPT
             },
             {
               role: 'user',
-              content: `Generate a detailed process map JSON for the following process.
-
-You must strictly adhere to the context, roles, and actions provided.
-Do NOT substitute a different process domain.
-Use the same terminology as the user.
-If any step or decision is ambiguous, add a clarification request.
-
-PROCESS DESCRIPTION:
-${description}`
+              content: `Generate a process map JSON for: ${description}`
             }
           ],
-          temperature: 0.1, // Lower temperature for more consistent adherence to instructions
+          temperature: 0.1,
         }),
       });
 
@@ -320,37 +279,16 @@ ${description}`
         throw new Error('Invalid response format from OpenAI');
       }
 
-      const parsed = JSON.parse(content);
+      let spec = JSON.parse(content) as MapSpec;
       
-      // Assign nodes to lanes based on detected roles
-      const enhancedMap = this.assignLanesToNodes(parsed, roles);
+      // Normalize the spec using the BPMN builder utilities
+      spec = this.normalizeMap(spec, forcedRoles);
       
-      // Validate context consistency
-      const contextValidation = this.validateContextConsistency(description, enhancedMap, contextKeywords);
-      if (!contextValidation.isValid) {
-        console.warn('⚠️ AISERVICE: Context validation failed:', contextValidation.reason);
-        return { 
-          success: true, 
-          map: enhancedMap, 
-          clarificationNeeded: true,
-          error: contextValidation.reason 
-        };
-      }
+      // Build BPMN XML from the normalized spec
+      const xml = buildBPMN(spec);
       
-      // Validate lane assignment and decision branching
-      const laneValidation = this.validateLaneAssignment(enhancedMap);
-      if (!laneValidation.isValid) {
-        console.warn('⚠️ AISERVICE: Lane validation failed:', laneValidation.reason);
-        return { 
-          success: true, 
-          map: enhancedMap, 
-          clarificationNeeded: true,
-          error: laneValidation.reason 
-        };
-      }
-      
-      console.log('✅ AISERVICE: Process map generated successfully with role-based lanes and validation passed');
-      return { success: true, map: enhancedMap };
+      console.log('✅ AISERVICE: Process map generated successfully with BPMN XML');
+      return { success: true, spec, xml };
 
     } catch (error: any) {
       console.error('❌ AISERVICE: Process map generation error:', error);
@@ -361,6 +299,17 @@ ${description}`
     }
   }
 
+  // Normalize map specification with forced roles
+  private normalizeMap(spec: MapSpec, forcedRoles?: string[]): MapSpec {
+    // Lock to roles if user provided
+    if (forcedRoles?.length) {
+      const lanes = forcedRoles.map((r, i) => ({ id: `lane_${i+1}`, name: r }));
+      spec.lanes = lanes;
+    }
+    // Enforce branches + lane assignment happens inside buildBPMN via helpers
+    return spec;
+  }
+
   // Regenerate process map with clarification
   public async regenerateProcessMapWithClarification(clarificationData: {
     originalStep: string;
@@ -368,7 +317,7 @@ ${description}`
     currentMap?: any;
   }): Promise<{
     success: boolean;
-    map?: any;
+    spec?: MapSpec;
     xml?: string;
     error?: string;
   }> {
@@ -391,21 +340,21 @@ ${description}`
 REQUIRED OUTPUT FORMAT:
 {
   "lanes": [
-    {"id": "lane1", "label": "Customer Service", "role": "Customer Service Representative"},
-    {"id": "lane2", "label": "Finance", "role": "Finance Team"},
-    {"id": "lane3", "label": "Management", "role": "Store Manager"}
+    {"id": "lane1", "name": "Customer Service"},
+    {"id": "lane2", "name": "Finance"},
+    {"id": "lane3", "name": "Management"}
   ],
   "nodes": [
-    {"id": "1", "type": "start", "label": "Customer submits refund request", "lane": "lane1"},
-    {"id": "2", "type": "activity", "label": "Validate purchase details", "lane": "lane2"},
-    {"id": "3", "type": "decision", "label": "Purchase within 30 days?", "lane": "lane2"},
-    {"id": "4", "type": "activity", "label": "Process refund", "lane": "lane2"},
-    {"id": "5", "type": "end", "label": "Refund completed", "lane": "lane1"}
+    {"id": "1", "type": "start", "label": "Customer submits refund request", "laneId": "lane1"},
+    {"id": "2", "type": "task", "label": "Validate purchase details", "laneId": "lane2"},
+    {"id": "3", "type": "decision", "label": "Purchase within 30 days?", "laneId": "lane2"},
+    {"id": "4", "type": "task", "label": "Process refund", "laneId": "lane2"},
+    {"id": "5", "type": "end", "label": "Refund completed", "laneId": "lane1"}
   ],
   "connections": [
     {"from": "1", "to": "2"},
     {"from": "2", "to": "3"},
-    {"from": "3", "to": "4", "condition": "Yes"},
+    {"from": "3", "to": "4", "label": "Yes"},
     {"from": "4", "to": "5"}
   ]
 }
@@ -448,10 +397,16 @@ Please update the process map to incorporate this clarification and ensure all a
         throw new Error('Invalid response format from OpenAI');
       }
 
-      const parsed = JSON.parse(content);
+      let spec = JSON.parse(content) as MapSpec;
+      
+      // Normalize the spec
+      spec = this.normalizeMap(spec);
+      
+      // Build BPMN XML from the normalized spec
+      const xml = buildBPMN(spec);
       
       console.log('✅ AISERVICE: Process map regenerated successfully with clarification');
-      return { success: true, map: parsed };
+      return { success: true, spec, xml };
 
     } catch (error: any) {
       console.error('❌ AISERVICE: Process map regeneration error:', error);
