@@ -6,6 +6,7 @@ import ClarificationModal from '../Common/ClarificationModal';
 import { supabaseDiagramStorage } from '../../utils/supabaseDiagramStorage';
 import { supabase } from '../../lib/supabase';
 import AIService from '../../services/aiService';
+import { v4 as uuidv4 } from 'uuid';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 
 export default function AIProcessMapperView() {
@@ -48,6 +49,7 @@ export default function AIProcessMapperView() {
       setSaveStatus('saving');
       
       const saveData = {
+        id: uuidv4(),
         user_id: user.id,
         project_id: selectedProject?.id || 'default',
         name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,
@@ -455,6 +457,7 @@ export default function AIProcessMapperView() {
         const bpmnXML = generateBPMNXML(mapData);
         
         const diagramData = {
+          id: uuidv4(),
           user_id: user.id,
           project_id: selectedProject?.id || 'default',
           name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,

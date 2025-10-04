@@ -62,3 +62,4 @@ SELECT
 FROM user_profiles 
 WHERE user_id = '564c6bf8-f067-4819-900e-f3322d402258';
 
+

@@ -79,3 +79,4 @@ Professionalism is what makes stakeholders trust your analysis. Without it, even
 The competencies described here — analytical thinking, communication, stakeholder engagement, domain knowledge, technical awareness, adaptability, and professionalism — are not optional extras. They are the fabric of effective Business Analysis. They allow you to move across industries, delivery methods, and organisational cultures without losing sight of your purpose.
 
 A BA is not defined by the tools they use or the documents they produce. They are defined by these competencies, expressed in practice, day after day. Develop them, and you will not only succeed in the role — you will also shape projects that deliver genuine value.
+

@@ -61,3 +61,4 @@ APIs and integrations are the connective tissue of modern business systems. They
 For Business Analysts, this means developing fluency in integrations. Not by coding, but by understanding what APIs do, how they enable value, and where they can fail. It means surfacing integration requirements early, validating them rigorously, and working with technical teams to ensure that the business impact of integrations is fully understood.
 
 The BA who masters integrations stops being a translator of requirements only. They become a guardian of connected value, ensuring that systems not only work individually but also work together to deliver seamless business outcomes.
+

@@ -73,3 +73,4 @@ Ultimately, your career is your own project. No one else will define it for you.
 Digital transformation, Agile, AI — these will continue to reshape the role. But one thing will remain constant: organisations will always need people who can navigate complexity, align diverse voices, and ensure solutions deliver real value. That is the essence of Business Analysis.
 
 The next step is yours to take.
+

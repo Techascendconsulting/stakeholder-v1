@@ -99,3 +99,4 @@ SELECT 'Training Epics:' as info, title, description FROM public.epics WHERE pro
 -- Show the stories we created
 SELECT 'Training Stories:' as info, summary, moscow, epic_id FROM public.stories WHERE project_id = '00000000-0000-0000-0000-000000000001' AND archived = false;
 
+

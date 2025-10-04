@@ -48,3 +48,4 @@
 -- COMMENT ON COLUMN profiles.registered_device IS 'FingerprintJS device ID for device lock functionality';
 -- COMMENT ON COLUMN profiles.locked IS 'Whether the account is locked due to device mismatch';
 
+

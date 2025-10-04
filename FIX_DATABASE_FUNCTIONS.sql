@@ -327,3 +327,4 @@ CREATE POLICY "Users can update their own onboarding" ON public.user_onboarding
 -- Success message
 SELECT 'Database functions fixed successfully! All missing functions have been created.' as status;
 
+

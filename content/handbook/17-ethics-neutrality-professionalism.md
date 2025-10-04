@@ -53,3 +53,4 @@ In a healthcare project, a proposal emerged to make patients opt out of data sha
 Business Analysis is as much about character as capability. Stakeholders look to the BA not just for requirements, but for steadiness, neutrality, and integrity. A BA who loses neutrality becomes a partisan. A BA who abandons professionalism creates noise instead of clarity. A BA who ignores ethics may deliver solutions that work technically but fail the business morally.
 
 By embodying ethics, neutrality, and professionalism, the Business Analyst becomes more than a requirements gatherer. They become a trusted advisor, a voice of reason, and a guardian of value. In a world of competing agendas and constant change, that trust is not just desirable — it is essential.
+

@@ -99,3 +99,4 @@ SELECT
   COUNT(CASE WHEN locked = false THEN 1 END) as unlocked_users
 FROM public.get_user_details_with_emails();
 
+

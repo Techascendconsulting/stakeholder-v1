@@ -43,3 +43,4 @@ FROM auth.users au
 LEFT JOIN public.user_profiles up ON au.id = up.user_id
 WHERE up.locked = true;
 
+

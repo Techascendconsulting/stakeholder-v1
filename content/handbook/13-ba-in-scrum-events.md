@@ -70,3 +70,4 @@ This is the BAs strength: turning backlog clutter into deliverable work. Without
 Scrum does not mention Business Analysts, but real Scrum teams thrive when someone plays the analytical role. In Sprint Planning, the BA turns ambition into commitment. In Daily Scrums, they spot hidden blockers. In Sprint Reviews, they turn demos into dialogue. In Retrospectives, they surface systemic issues. And in Backlog Refinement, they transform vague backlog items into deliverable work.
 
 The BA does not own these events. They enhance them. Their presence ensures that clarity, alignment, and value remain at the centre of Agile delivery. In a world where Scrum risks becoming a series of rituals, the BA ensures those rituals serve their true purpose: delivering outcomes that matter.
+

@@ -130,3 +130,4 @@ Process mapping is not about producing a diagram. It is about producing clarity.
 Unlike other techniques, process mapping is not a tool you pull out occasionally. It is the BA's constant companion — the foundation of analysis, improvement, and alignment.
 
 With process maps, organisations stop arguing about who is at fault and start seeing where change must happen. They stop imagining processes and start confronting reality. For a Business Analyst, there are few tools more powerful.
+

@@ -51,3 +51,4 @@ A project to modernise a banking platform illustrated this perfectly. At initiat
 Stakeholder identification and analysis are not background exercises to tick off a list. They are central to the BA's role, because projects succeed or fail not only on technical merit but on human alignment. By finding the right stakeholders, analysing their influence and interest, mapping their expectations, and engaging them as people rather than roles, the BA lays the foundation for everything that follows.
 
 A system that works but is rejected by its users has failed. A solution that satisfies regulators but frustrates customers has missed the point. The BA's value lies in navigating these competing interests with honesty, curiosity, and skill. Stakeholder analysis is how you begin that journey — not as a one-time task, but as a continuous practice that sustains projects from start to finish.
+

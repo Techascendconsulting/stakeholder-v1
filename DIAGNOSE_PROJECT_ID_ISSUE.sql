@@ -35,3 +35,4 @@ WHERE table_name = 'projects'
 AND table_schema = 'public'
 ORDER BY ordinal_position;
 
+

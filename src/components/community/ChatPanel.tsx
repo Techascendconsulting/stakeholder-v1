@@ -216,3 +216,4 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ channelId, canPost }) => {
 
 export default ChatPanel;
 
+

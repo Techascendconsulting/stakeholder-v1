@@ -93,3 +93,4 @@ SELECT 'Epics table columns:' as info, COUNT(*) as count FROM information_schema
 SELECT 'Stories table columns:' as info, COUNT(*) as count FROM information_schema.columns WHERE table_name = 'stories' AND table_schema = 'public';
 SELECT 'MVP flows table created:' as info, COUNT(*) as count FROM information_schema.tables WHERE table_name = 'mvp_flows' AND table_schema = 'public';
 
+

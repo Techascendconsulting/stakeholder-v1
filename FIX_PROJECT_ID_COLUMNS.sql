@@ -56,3 +56,4 @@ SELECT 'Epics table now has project_id:' as info,
 SELECT 'Stories table now has project_id:' as info, 
        EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'stories' AND column_name = 'project_id' AND table_schema = 'public') as has_project_id;
 
+

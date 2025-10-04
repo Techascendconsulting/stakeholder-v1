@@ -103,3 +103,4 @@ SELECT 'Epics created:' as info, COUNT(*) as count FROM public.epics;
 SELECT 'Stories created:' as info, COUNT(*) as count FROM public.stories;
 SELECT 'Acceptance Criteria created:' as info, COUNT(*) as count FROM public.acceptance_criteria;
 
+

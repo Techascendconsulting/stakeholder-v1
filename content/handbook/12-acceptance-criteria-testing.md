@@ -79,3 +79,4 @@ Acceptance criteria are more than checkboxes at the end of a requirement. They a
 For the Business Analyst, writing good acceptance criteria is an act of precision, but collaborating around them is an act of leadership. By engaging testers, developers, and business representatives in shaping and validating criteria, the BA ensures that requirements are not just written, but delivered and proven.
 
 Projects that treat acceptance criteria as an afterthought stumble into disputes and rework. Projects that use them as contracts of clarity move forward with confidence. In the end, acceptance criteria are not about documentation — they are about trust. Trust that what was promised will be delivered, and delivered in a way that everyone can recognise as success.
+

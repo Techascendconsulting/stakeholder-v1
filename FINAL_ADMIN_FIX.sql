@@ -128,3 +128,4 @@ WHERE au.email = 'techascendconsulting1@gmail.com';
 
 SELECT 'FINAL ADMIN FIX COMPLETE! Your account is now permanently set as super admin.' as result;
 
+

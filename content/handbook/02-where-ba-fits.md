@@ -37,3 +37,4 @@ Understanding where the BA fits is not about memorising jargon or aligning yours
 - Agile requires constant collaboration and iteration rather than upfront documentation
 - Hybrid approaches demand adaptability and the ability to switch between different working styles
 - The BA's core purpose remains constant regardless of the delivery approach
+

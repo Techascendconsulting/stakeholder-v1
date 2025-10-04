@@ -67,3 +67,4 @@ Navigating business priorities between efficiency and trust.
 AI accelerates output. The BA ensures outcomes.
 
 In that sense, AI does not diminish the Business Analyst. It makes the role more essential than ever — the human bridge between intelligence that is artificial and value that must remain profoundly human.
+

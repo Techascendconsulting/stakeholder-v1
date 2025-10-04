@@ -92,3 +92,4 @@ SELECT public.check_if_super_admin() as is_super_admin;
 
 SELECT 'Ultra simple admin setup complete! All complex functions removed, simple boolean functions created.' as status;
 
+

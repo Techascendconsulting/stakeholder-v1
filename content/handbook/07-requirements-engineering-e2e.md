@@ -77,3 +77,4 @@ The BA must adapt accordingly. In Waterfall, precision and completeness up front
 Requirements engineering is not clerical work. It is the discipline that prevents projects from chasing the wrong goals, building the wrong things, or delivering solutions that nobody wants. Each stage — elicitation, analysis, specification, validation, and management — builds on the others. Together, they ensure that requirements are not just written, but engineered for clarity, alignment, and value.
 
 For the BA, mastering this end-to-end discipline is what transforms you from a passive note-taker into an active architect of solutions. Projects succeed or fail not on how many requirements are written, but on whether those requirements are right. And whether they are right depends on the skill, judgement, and persistence of the Business Analyst.
+

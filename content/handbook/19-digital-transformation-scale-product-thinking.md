@@ -53,3 +53,4 @@ For Business Analysts, this means expanding beyond traditional tasks. You are no
 The analyst who embraces these shifts will find themselves at the centre of strategy, not the edge of delivery. The one who resists will struggle to remain relevant.
 
 Digital transformation is not just about technology. It is about analysis — rigorous, value-focused, ethically grounded analysis. And in that, the Business Analyst has never been more essential.
+

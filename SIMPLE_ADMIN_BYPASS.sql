@@ -109,3 +109,4 @@ WHERE user_id = (
 
 SELECT 'Simple admin bypass complete! The complex functions are removed and simple ones are created.' as status;
 
+

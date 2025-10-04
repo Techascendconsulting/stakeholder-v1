@@ -6,3 +6,4 @@
 
 When not consulting or writing, [Author] can be found mentoring aspiring BAs, contributing to open-source projects, or exploring the intersection of business analysis and emerging technologies like AI and data science.
 
+

@@ -28,3 +28,4 @@ WHERE table_schema = 'auth'
 AND table_name = 'users'
 ORDER BY ordinal_position;
 
+

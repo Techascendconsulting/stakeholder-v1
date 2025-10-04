@@ -24,3 +24,4 @@ LEFT JOIN user_profiles up ON au.id = up.user_id
 WHERE au.email IN ('techascendconsulting2@gmail.com', 'obyj1st2@gmail.com')
 ORDER BY au.email;
 
+

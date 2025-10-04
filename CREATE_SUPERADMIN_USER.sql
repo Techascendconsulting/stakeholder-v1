@@ -96,3 +96,4 @@ SELECT
   '4. Run this script again to assign admin role' as step4,
   '5. Sign in with superadmin@test.com to access admin dashboard' as step5;
 
+

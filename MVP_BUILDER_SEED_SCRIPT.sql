@@ -506,3 +506,4 @@ SELECT '=== MVP BUILDER SEED COMPLETE ===' as status;
 SELECT 'Epics, Stories, and Acceptance Criteria have been seeded for Training Project' as message;
 SELECT 'MVP Builder and Backlog should now display data' as next_step;
 
+

@@ -57,3 +57,4 @@ ORDER BY au.created_at DESC;
 SELECT 'Testing get_user_details_with_emails function:' as test;
 SELECT * FROM public.get_user_details_with_emails();
 
+

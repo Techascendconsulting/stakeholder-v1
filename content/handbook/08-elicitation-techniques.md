@@ -117,3 +117,4 @@ Projects fail when elicitation is reduced to a single method, like "just intervi
 Elicitation is the heartbeat of Business Analysis. It is not about collecting wish lists. It is about discovery — drawing out needs, testing assumptions, surfacing hidden truths, and shaping requirements that deliver value. Each technique — interviews, workshops, observation, document analysis, prototyping, surveys, focus groups, brainstorming, interface reviews, data analysis — is a tool. Alone, each is limited. Together, they give the BA vision.
 
 The BA who masters this toolkit is not just a recorder of requirements. They are an investigator of value. They are the person who ensures that projects solve the right problems, for the right people, in the right way.
+
