@@ -18,8 +18,8 @@ const AppContent: React.FC = () => {
   const { user, loading } = useAuth()
   const [isMounted, setIsMounted] = React.useState(false)
 
-  // Block copy/paste across the entire app by default
-  useBlockCopyPaste(true)
+  // Block copy/paste across the entire app by default - DISABLED FOR DEVELOPMENT
+  useBlockCopyPaste(false)
 
   // Prevent hydration flash by waiting for mount
   React.useEffect(() => {

@@ -284,30 +284,30 @@ const HandbookView: React.FC = () => {
     setShowTOC(false);
   };
 
-  // Disable copy-paste and right-click
-  useEffect(() => {
-    const handleCopy = (e: ClipboardEvent) => e.preventDefault();
-    const handleCut = (e: ClipboardEvent) => e.preventDefault();
-    const handlePaste = (e: ClipboardEvent) => e.preventDefault();
-    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+  // Disable copy-paste and right-click - DISABLED FOR DEVELOPMENT
+  // useEffect(() => {
+  //   const handleCopy = (e: ClipboardEvent) => e.preventDefault();
+  //   const handleCut = (e: ClipboardEvent) => e.preventDefault();
+  //   const handlePaste = (e: ClipboardEvent) => e.preventDefault();
+  //   const handleContextMenu = (e: MouseEvent) => e.preventDefault();
 
-    const bookElement = document.getElementById('handbook-book');
-    if (bookElement) {
-      bookElement.addEventListener('copy', handleCopy);
-      bookElement.addEventListener('cut', handleCut);
-      bookElement.addEventListener('paste', handlePaste);
-      bookElement.addEventListener('contextmenu', handleContextMenu);
-    }
+  //   const bookElement = document.getElementById('handbook-book');
+  //   if (bookElement) {
+  //     bookElement.addEventListener('copy', handleCopy);
+  //     bookElement.addEventListener('cut', handleCut);
+  //     bookElement.addEventListener('paste', handlePaste);
+  //     bookElement.addEventListener('contextmenu', handleContextMenu);
+  //   }
 
-    return () => {
-      if (bookElement) {
-        bookElement.removeEventListener('copy', handleCopy);
-        bookElement.removeEventListener('cut', handleCut);
-        bookElement.removeEventListener('paste', handlePaste);
-        bookElement.removeEventListener('contextmenu', handleContextMenu);
-      }
-    };
-  }, []);
+  //   return () => {
+  //     if (bookElement) {
+  //       bookElement.removeEventListener('copy', handleCopy);
+  //       bookElement.removeEventListener('cut', handleCut);
+  //       bookElement.removeEventListener('paste', handlePaste);
+  //       bookElement.removeEventListener('contextmenu', handleContextMenu);
+  //     }
+  //   };
+  // }, []);
 
   const filteredChapters = chapters.filter(chapter =>
     chapter.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -519,10 +519,10 @@ const HandbookView: React.FC = () => {
               if (page.chapterId === 'cover') {
                 return (
                   <div key={index} className="page bg-white handbook-page" style={{ 
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                    MozUserSelect: 'none',
-                    msUserSelect: 'none',
+                    userSelect: 'text',
+                    WebkitUserSelect: 'text',
+                    MozUserSelect: 'text',
+                    msUserSelect: 'text',
                     overflow: 'hidden',
                     boxSizing: 'border-box',
                     position: 'relative'
@@ -571,10 +571,10 @@ const HandbookView: React.FC = () => {
               // Regular pages
               return (
                 <div key={index} className="page bg-white handbook-page" style={{ 
-                  userSelect: 'none',
-                  WebkitUserSelect: 'none',
-                  MozUserSelect: 'none',
-                  msUserSelect: 'none',
+                  userSelect: 'text',
+                  WebkitUserSelect: 'text',
+                  MozUserSelect: 'text',
+                  msUserSelect: 'text',
                   overflow: 'visible', // Allow content to flow properly
                   boxSizing: 'border-box',
                   height: '100%',
