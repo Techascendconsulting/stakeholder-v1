@@ -22,6 +22,7 @@ export default function ProcessMapperView() {
 	const [openPicker, setOpenPicker] = useState(false);
 	const [loadingList, setLoadingList] = useState(false);
 	const [listError, setListError] = useState<string | null>(null);
+	const [showLandingPage, setShowLandingPage] = useState(true);
 
 	// Generate a UUID id
 	const createNewId = () => crypto.randomUUID();
@@ -414,6 +415,247 @@ export default function ProcessMapperView() {
 			alert('Failed to delete diagrams. Please try again.');
 		}
 	};
+
+	// Show landing page if no diagram is selected and showLandingPage is true
+	if (showLandingPage && !diagramId) {
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
+				<div className="container mx-auto px-4 py-8 max-w-6xl">
+					<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+						{/* Header */}
+						<div className="bg-gradient-to-r from-blue-600 to-purple-700 px-8 py-6">
+							<h1 className="text-4xl font-bold text-white mb-2">
+								Process Mapping: Seeing How Work Really Happens
+							</h1>
+						</div>
+
+						{/* Content */}
+						<div className="p-8 space-y-8">
+							{/* Introduction */}
+							<div className="prose prose-lg dark:prose-invert max-w-none">
+								<p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+									If there's one skill that separates a good Business Analyst from a great one, it's the ability to make work visible.
+								</p>
+								<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+									Most of the pain points, inefficiencies, and frustrations inside organisations hide in the invisible space between people, systems, and decisions. Everyone describes what they do — "I approve the form," "I process the payment," "I send the email" — but few can clearly explain how all these actions connect. That gap between perception and reality is where confusion, duplication, and wasted effort live.
+								</p>
+								<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+									Process mapping bridges that gap. It takes something messy and scattered — often just stories from stakeholders — and turns it into a clear visual picture of how work actually flows. It shows, in one glance, where things start, where they end, who's involved, what decisions are made, and where delays creep in.
+								</p>
+							</div>
+
+							{/* Quick Start Sections */}
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+								{/* Start Your First Map */}
+								<div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+									<div className="flex items-center gap-3 mb-4">
+										<svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+										</svg>
+										<h3 className="text-xl font-semibold text-green-800 dark:text-green-200">Start Your First Map</h3>
+									</div>
+									<p className="text-green-700 dark:text-green-300 mb-4">
+										Create a new process map to visualize how work really happens in your organization.
+									</p>
+									<button 
+										onClick={() => {
+											setShowLandingPage(false);
+											handleCreateNew();
+										}}
+										className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+									>
+										Create New Process Map
+									</button>
+								</div>
+
+								{/* View Sample */}
+								<div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+									<div className="flex items-center gap-3 mb-4">
+										<svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+										</svg>
+										<h3 className="text-xl font-semibold text-blue-800 dark:text-blue-200">View Sample</h3>
+									</div>
+									<p className="text-blue-700 dark:text-blue-300 mb-4">
+										Explore existing process maps to see examples of how others have mapped their workflows.
+									</p>
+									<button 
+										onClick={() => setShowLandingPage(false)}
+										className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+									>
+										Browse Existing Maps
+									</button>
+								</div>
+							</div>
+
+							{/* What Is Process Mapping */}
+							<section>
+								<h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">What Is Process Mapping?</h2>
+								<div className="prose prose-lg dark:prose-invert max-w-none">
+									<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+										Process mapping is the act of visually representing how a process works. It's not about fancy symbols or complex notations — it's about clarity. You're simply drawing the journey of a task from beginning to end.
+									</p>
+									<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+										You can think of it like telling a story, but instead of words, you use shapes and arrows. Each shape represents an action, decision, or event. Each arrow shows what happens next. Together, they form a visual narrative of how something gets done.
+									</p>
+								</div>
+							</section>
+
+							{/* Why a Business Analyst Should Do It */}
+							<section>
+								<h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Why a Business Analyst Should Do It</h2>
+								<div className="prose prose-lg dark:prose-invert max-w-none">
+									<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+										As a BA, process mapping is one of your most powerful tools for understanding how things really work. Stakeholders often explain processes in vague terms. They'll say, "We check it," or "We send it to Finance." But when you map it, those generalities fall apart. You discover that "checking" involves three people, two systems, and a manual spreadsheet.
+									</p>
+									<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+										Mapping forces clarity. It helps you ask better questions like:
+									</p>
+									<ul className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed list-disc list-inside space-y-2 ml-4">
+										<li>Who exactly performs this task?</li>
+										<li>What triggers it?</li>
+										<li>What happens if it's delayed?</li>
+										<li>Where does information come from and where does it go next?</li>
+									</ul>
+								</div>
+							</section>
+
+							{/* Benefits of Process Mapping */}
+							<section>
+								<h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Benefits of Process Mapping</h2>
+								<div className="prose prose-lg dark:prose-invert max-w-none">
+									<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+										A well-designed process map delivers value far beyond documentation. It:
+									</p>
+									<ul className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed space-y-4">
+										<li className="flex items-start">
+											<span className="text-blue-600 dark:text-blue-400 font-bold mr-3">•</span>
+											<span><strong>Creates shared understanding.</strong> Everyone — from leadership to operations — can see the same picture and agree on what really happens.</span>
+										</li>
+										<li className="flex items-start">
+											<span className="text-blue-600 dark:text-blue-400 font-bold mr-3">•</span>
+											<span><strong>Reveals inefficiencies.</strong> Bottlenecks, rework loops, and redundant steps become obvious when visualised.</span>
+										</li>
+										<li className="flex items-start">
+											<span className="text-blue-600 dark:text-blue-400 font-bold mr-3">•</span>
+											<span><strong>Supports improvement.</strong> It becomes the foundation for redesign — you can't build a "to-be" process until you understand the "as-is."</span>
+										</li>
+										<li className="flex items-start">
+											<span className="text-blue-600 dark:text-blue-400 font-bold mr-3">•</span>
+											<span><strong>Strengthens communication.</strong> A picture cuts through jargon; you can explain a complex workflow to anyone in minutes.</span>
+										</li>
+										<li className="flex items-start">
+											<span className="text-blue-600 dark:text-blue-400 font-bold mr-3">•</span>
+											<span><strong>Provides evidence for decisions.</strong> When you propose changes, the map supports your argument. You're not giving opinions; you're showing facts.</span>
+										</li>
+									</ul>
+								</div>
+							</section>
+
+							{/* Symbols Section */}
+							<section>
+								<h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Symbols and What They Mean</h2>
+								<div className="prose prose-lg dark:prose-invert max-w-none">
+									<p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
+										Process mapping doesn't need to be complicated, but consistency matters. These simple symbols are all you need to tell a clear story:
+									</p>
+									
+									{/* Symbols Grid */}
+									<div className="space-y-6">
+										{/* Start/End */}
+										<div className="flex items-start gap-6 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+											<div className="flex-shrink-0">
+												<svg width="60" height="40" viewBox="0 0 60 40" aria-label="Start/End symbol">
+													<ellipse cx="30" cy="20" rx="25" ry="15" fill="#10b981" stroke="#059669" strokeWidth="2"/>
+													<text x="30" y="25" textAnchor="middle" className="text-sm font-medium fill-white">Start</text>
+												</svg>
+											</div>
+											<div className="flex-1">
+												<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Start / End (Oval)</h3>
+												<p className="text-gray-600 dark:text-gray-400">Marks where a process begins and finishes. Every process should have one clear start and one clear end.</p>
+											</div>
+										</div>
+
+										{/* Activity */}
+										<div className="flex items-start gap-6 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+											<div className="flex-shrink-0">
+												<svg width="60" height="40" viewBox="0 0 60 40" aria-label="Activity/Process Step symbol">
+													<rect x="5" y="5" width="50" height="30" rx="4" fill="white" stroke="#1e40af" strokeWidth="2"/>
+													<text x="30" y="22" textAnchor="middle" className="text-xs font-medium fill-gray-700">Activity</text>
+												</svg>
+											</div>
+											<div className="flex-1">
+												<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Activity / Process Step (Rectangle)</h3>
+												<p className="text-gray-600 dark:text-gray-400">Shows an action being performed. Always describe it using a verb, like "Log complaint," "Approve invoice."</p>
+											</div>
+										</div>
+
+										{/* Decision */}
+										<div className="flex items-start gap-6 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+											<div className="flex-shrink-0">
+												<svg width="60" height="40" viewBox="0 0 60 40" aria-label="Decision symbol">
+													<path d="M30 5 L55 20 L30 35 L5 20 Z" fill="white" stroke="#d97706" strokeWidth="2"/>
+													<text x="30" y="22" textAnchor="middle" className="text-xs font-medium fill-gray-700">Decision</text>
+												</svg>
+											</div>
+											<div className="flex-1">
+												<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Decision (Diamond)</h3>
+												<p className="text-gray-600 dark:text-gray-400">Represents a point where something is evaluated and different outcomes follow.</p>
+											</div>
+										</div>
+
+										{/* Document */}
+										<div className="flex items-start gap-6 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+											<div className="flex-shrink-0">
+												<svg width="60" height="40" viewBox="0 0 60 40" aria-label="Document/Data symbol">
+													<path d="M8 8 L45 8 L52 15 L52 32 L8 32 Z M45 8 L45 15 L52 15" fill="white" stroke="#0d9488" strokeWidth="2"/>
+													<text x="30" y="22" textAnchor="middle" className="text-xs font-medium fill-gray-700">Document</text>
+												</svg>
+											</div>
+											<div className="flex-1">
+												<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Document / Data (Parallelogram)</h3>
+												<p className="text-gray-600 dark:text-gray-400">Indicates where a form, record, or file is created, read, or stored.</p>
+											</div>
+										</div>
+
+										{/* Connector */}
+										<div className="flex items-start gap-6 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+											<div className="flex-shrink-0">
+												<svg width="60" height="40" viewBox="0 0 60 40" aria-label="Connector/Arrow symbol">
+													<path d="M10 20 L45 20 M40 15 L45 20 L40 25" stroke="#1e40af" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+												</svg>
+											</div>
+											<div className="flex-1">
+												<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Connector / Arrow</h3>
+												<p className="text-gray-600 dark:text-gray-400">Shows direction of flow — the order of events. A process without arrows is just shapes; arrows give it meaning.</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</section>
+
+							{/* Action Button */}
+							<div className="text-center pt-8">
+								<button
+									onClick={() => {
+										setShowLandingPage(false);
+										handleCreateNew();
+									}}
+									className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-lg transition-colors flex items-center justify-center gap-3 mx-auto"
+								>
+									<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+									</svg>
+									Start Process Mapping
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	if (!selectedProject) {
 		return (
