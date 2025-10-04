@@ -253,10 +253,46 @@ export default function AIProcessMapperView() {
     try {
       setIsLoadingMap(true);
       await modelerRef.current.importXML(xml);
+      console.log('✅ BPMN XML loaded successfully');
+      
+      // Auto-fit the diagram
+      const canvas = modelerRef.current.get('canvas');
+      canvas.zoom('fit-viewport');
     } catch (error) {
       console.error('Error loading BPMN XML:', error);
       setIsLoadingMap(false);
       setBpmnModelerFailed(true);
+    }
+  };
+
+  // Initialize modeler and load XML in one function
+  const initializeAndLoadXML = async (xml: string) => {
+    try {
+      // Ensure container is ready
+      if (!containerRef.current) {
+        console.log('🔧 Container not ready, retrying...');
+        setTimeout(() => initializeAndLoadXML(xml), 100);
+        return;
+      }
+
+      // Initialize modeler if not already done
+      if (!modelerRef.current) {
+        initializeModeler();
+      }
+
+      // Wait for modeler to be ready, then load XML
+      const loadXML = () => {
+        if (modelerRef.current) {
+          loadBPMNXML(xml);
+        } else {
+          setTimeout(loadXML, 50);
+        }
+      };
+      
+      setTimeout(loadXML, 100);
+    } catch (error) {
+      console.error('Error in initializeAndLoadXML:', error);
+      setIsLoadingMap(false);
     }
   };
 
@@ -354,10 +390,7 @@ export default function AIProcessMapperView() {
         const updatedXml = generateBPMNXML(result.map);
         
         // Update the modeler with the new XML
-        if (modelerRef.current) {
-          await modelerRef.current.importXML(updatedXml);
-          modelerRef.current.get('canvas').zoom('fit-viewport');
-        }
+        await initializeAndLoadXML(updatedXml);
         
         // Update state with the new map
         setGeneratedMap(result.map);
@@ -403,17 +436,8 @@ export default function AIProcessMapperView() {
       const bpmnXML = generateBPMNXML(mapData);
       console.log('🔧 Generated BPMN XML:', bpmnXML.substring(0, 200) + '...');
       
-      // Wait for container to be ready, then initialize modeler
-      setTimeout(() => {
-        if (!modelerRef.current) {
-          initializeModeler();
-        }
-        
-        // Load the BPMN XML after a short delay to ensure container is ready
-        setTimeout(() => {
-          loadBPMNXML(bpmnXML);
-        }, 500);
-      }, 100);
+      // Initialize modeler and load XML
+      await initializeAndLoadXML(bpmnXML);
 
       // Fallback timeout - if BPMN modeler doesn't load within 5 seconds, show fallback
       setTimeout(() => {
@@ -845,14 +869,20 @@ export default function AIProcessMapperView() {
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 relative">
                   <div 
                     ref={containerRef}
-                    className="w-full h-96 rounded-lg"
-                    style={{ minHeight: '400px' }}
+                    className="w-full rounded-lg"
+                    style={{ 
+                      width: "100%", 
+                      height: "80vh", 
+                      minHeight: "500px",
+                      background: "#fff",
+                      border: "1px solid #e5e7eb"
+                    }}
                   />
                   {isLoadingMap && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 rounded-lg">
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                        <p className="text-gray-600 dark:text-gray-400">Loading process map...</p>
+                        <p className="text-gray-600 dark:text-gray-400">Rendering diagram...</p>
                       </div>
                     </div>
                   )}
