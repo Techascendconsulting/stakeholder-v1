@@ -12,6 +12,7 @@ export default function AIProcessMapperView() {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [generatedMap, setGeneratedMap] = useState(null);
   const [isLoadingMap, setIsLoadingMap] = useState(false);
+  const [bpmnModelerFailed, setBpmnModelerFailed] = useState(false);
   const modelerRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -102,29 +103,44 @@ export default function AIProcessMapperView() {
 
   // Initialize BPMN modeler
   const initializeModeler = () => {
-    if (!containerRef.current || modelerRef.current) return;
+    if (!containerRef.current || modelerRef.current) {
+      console.log('🔧 BPMN Modeler: Container not ready or already initialized', {
+        container: !!containerRef.current,
+        modeler: !!modelerRef.current
+      });
+      return;
+    }
     
-    const modeler = new BpmnModeler({
-      container: containerRef.current,
-      additionalModules: [],
-      moddleExtensions: {}
-    });
+    console.log('🔧 BPMN Modeler: Initializing with container:', containerRef.current);
+    
+    try {
+      const modeler = new BpmnModeler({
+        container: containerRef.current,
+        additionalModules: [],
+        moddleExtensions: {}
+      });
 
-    modelerRef.current = modeler;
-    
-    // Set up event listeners
-    modeler.on('import.done', (event: any) => {
-      if (event.error) {
-        console.error('BPMN import error:', event.error);
-        setIsLoadingMap(false);
-      } else {
-        console.log('BPMN diagram imported successfully');
-        setIsLoadingMap(false);
-        // Auto-fit the diagram
-        const canvas = modeler.get('canvas');
-        canvas.zoom('fit-viewport');
-      }
-    });
+      modelerRef.current = modeler;
+      console.log('✅ BPMN Modeler: Initialized successfully');
+      
+      // Set up event listeners
+      modeler.on('import.done', (event: any) => {
+        if (event.error) {
+          console.error('❌ BPMN import error:', event.error);
+          setIsLoadingMap(false);
+        } else {
+          console.log('✅ BPMN diagram imported successfully');
+          setIsLoadingMap(false);
+          // Auto-fit the diagram
+          const canvas = modeler.get('canvas');
+          canvas.zoom('fit-viewport');
+        }
+      });
+    } catch (error) {
+      console.error('❌ BPMN Modeler initialization error:', error);
+      setIsLoadingMap(false);
+      setBpmnModelerFailed(true);
+    }
   };
 
   // Load BPMN XML into modeler
@@ -137,6 +153,7 @@ export default function AIProcessMapperView() {
     } catch (error) {
       console.error('Error loading BPMN XML:', error);
       setIsLoadingMap(false);
+      setBpmnModelerFailed(true);
     }
   };
 
@@ -150,14 +167,28 @@ export default function AIProcessMapperView() {
       
       // Generate BPMN XML
       const bpmnXML = generateBPMNXML(mapData);
+      console.log('🔧 Generated BPMN XML:', bpmnXML.substring(0, 200) + '...');
       
-      // Initialize modeler if not already done
-      if (!modelerRef.current) {
-        initializeModeler();
-      }
-      
-      // Load the BPMN XML
-      await loadBPMNXML(bpmnXML);
+      // Wait for container to be ready, then initialize modeler
+      setTimeout(() => {
+        if (!modelerRef.current) {
+          initializeModeler();
+        }
+        
+        // Load the BPMN XML after a short delay to ensure container is ready
+        setTimeout(() => {
+          loadBPMNXML(bpmnXML);
+        }, 500);
+      }, 100);
+
+      // Fallback timeout - if BPMN modeler doesn't load within 5 seconds, show fallback
+      setTimeout(() => {
+        if (isLoadingMap) {
+          console.log('⏰ BPMN Modeler timeout - falling back to simplified view');
+          setIsLoadingMap(false);
+          setBpmnModelerFailed(true);
+        }
+      }, 5000);
       
       if (!user?.id) {
         console.error('❌ No user ID available');
@@ -206,10 +237,84 @@ export default function AIProcessMapperView() {
   // Clear the generated map
   const clearGeneratedMap = () => {
     setGeneratedMap(null);
+    setBpmnModelerFailed(false);
     if (modelerRef.current) {
       modelerRef.current.destroy();
       modelerRef.current = null;
     }
+  };
+
+  // Fallback visual representation component
+  const ProcessMapFallback = ({ mapData }: { mapData: any }) => {
+    const { nodes, connections } = mapData;
+    
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Process Map Structure
+        </h3>
+        
+        {/* Nodes */}
+        <div className="mb-6">
+          <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Process Steps:</h4>
+          <div className="space-y-2">
+            {nodes.map((node: any, index: number) => (
+              <div key={node.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className={`w-3 h-3 rounded-full ${
+                  node.type === 'start' ? 'bg-green-500' :
+                  node.type === 'end' ? 'bg-red-500' :
+                  node.type === 'decision' ? 'bg-yellow-500' :
+                  'bg-blue-500'
+                }`}></div>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase">
+                  {node.type}:
+                </span>
+                <span className="text-sm text-gray-900 dark:text-white">
+                  {node.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Connections */}
+        {connections && connections.length > 0 && (
+          <div>
+            <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Process Flow:</h4>
+            <div className="space-y-2">
+              {connections.map((conn: any, index: number) => {
+                const fromNode = nodes.find((n: any) => n.id === conn.from);
+                const toNode = nodes.find((n: any) => n.id === conn.to);
+                return (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {fromNode?.label || conn.from}
+                    </span>
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {toNode?.label || conn.to}
+                    </span>
+                    {conn.condition && (
+                      <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                        {conn.condition}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <p className="text-amber-700 dark:text-amber-300 text-sm">
+            <strong>Note:</strong> This is a simplified view. Click "Edit in Full Editor" to see the complete BPMN diagram.
+          </p>
+        </div>
+      </div>
+    );
   };
 
   // Cleanup on unmount
@@ -331,22 +436,26 @@ export default function AIProcessMapperView() {
                 </div>
               </div>
               
-              {/* BPMN Viewer Container */}
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div 
-                  ref={containerRef}
-                  className="w-full h-96 rounded-lg"
-                  style={{ minHeight: '400px' }}
-                />
-                {isLoadingMap && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 rounded-lg">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                      <p className="text-gray-600 dark:text-gray-400">Loading process map...</p>
+              {/* Process Map Display */}
+              {bpmnModelerFailed ? (
+                <ProcessMapFallback mapData={generatedMap} />
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 relative">
+                  <div 
+                    ref={containerRef}
+                    className="w-full h-96 rounded-lg"
+                    style={{ minHeight: '400px' }}
+                  />
+                  {isLoadingMap && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 rounded-lg">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                        <p className="text-gray-600 dark:text-gray-400">Loading process map...</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
               
               <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p className="text-blue-700 dark:text-blue-300 text-sm">
