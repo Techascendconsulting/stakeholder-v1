@@ -223,29 +223,45 @@ class AIService {
           messages: [
             {
               role: 'system',
-              content: `You are a Business Analyst assistant that converts process descriptions into structured process map JSON.
-Use only these element types: start, activity, decision, end.
-Each node should include {id, type, label}.
-Use sequential order unless conditional language like "if" or "otherwise" appears.
-Output ONLY valid JSON (no commentary).
-Example:
+              content: `You are a Business Analyst assistant that converts structured process descriptions into comprehensive process map JSON with swimlanes and role assignments.
+
+REQUIRED OUTPUT FORMAT:
 {
+  "lanes": [
+    {"id": "lane1", "label": "Customer Service", "role": "Customer Service Representative"},
+    {"id": "lane2", "label": "Finance", "role": "Finance Team"},
+    {"id": "lane3", "label": "Management", "role": "Store Manager"}
+  ],
   "nodes": [
-    {"id": "1", "type": "start", "label": "Tenant submits complaint"},
-    {"id": "2", "type": "activity", "label": "Tenant Services logs complaint"},
-    {"id": "3", "type": "decision", "label": "Complaint type?"},
-    {"id": "4", "type": "activity", "label": "Send to Finance"},
-    {"id": "5", "type": "activity", "label": "Resolve issue"},
-    {"id": "6", "type": "end", "label": "Complaint closed"}
+    {"id": "1", "type": "start", "label": "Customer submits refund request", "lane": "lane1"},
+    {"id": "2", "type": "activity", "label": "Validate purchase details", "lane": "lane2"},
+    {"id": "3", "type": "decision", "label": "Purchase within 30 days?", "lane": "lane2"},
+    {"id": "4", "type": "activity", "label": "Process refund", "lane": "lane2"},
+    {"id": "5", "type": "end", "label": "Refund completed", "lane": "lane1"}
   ],
   "connections": [
     {"from": "1", "to": "2"},
     {"from": "2", "to": "3"},
-    {"from": "3", "to": "4", "condition": "Billing"},
-    {"from": "4", "to": "5"},
-    {"from": "5", "to": "6"}
+    {"from": "3", "to": "4", "condition": "Yes"},
+    {"from": "4", "to": "5"}
   ]
-}`
+}
+
+RULES:
+1. Create swimlanes for each distinct role/department mentioned
+2. Assign each activity to the appropriate lane based on who performs it
+3. Use node types: start, activity, decision, end
+4. Include lane assignment for each node
+5. Add conditions to connections when decisions branch
+6. If no specific roles mentioned, create a single "General Process" lane
+7. Ensure logical flow and proper handoffs between lanes
+8. Output ONLY valid JSON (no commentary)
+
+LANE ASSIGNMENT LOGIC:
+- Match activities to roles based on keywords and context
+- Create separate lanes for different departments/roles
+- Ensure each node has a lane assignment
+- Use clear, descriptive lane labels`
             },
             { role: 'user', content: description }
           ],
@@ -277,6 +293,124 @@ Example:
         error: error.message || 'Failed to generate process map' 
       };
     }
+  }
+
+  // Regenerate process map with clarification
+  public async regenerateProcessMapWithClarification(clarificationData: {
+    originalStep: string;
+    clarification: string;
+    currentMap?: any;
+  }): Promise<{
+    success: boolean;
+    map?: any;
+    xml?: string;
+    error?: string;
+  }> {
+    try {
+      console.log('🤖 AISERVICE: Regenerating process map with clarification:', clarificationData.clarification);
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a process mapping assistant that clarifies ambiguous steps and updates process diagrams.
+
+REQUIRED OUTPUT FORMAT:
+{
+  "lanes": [
+    {"id": "lane1", "label": "Customer Service", "role": "Customer Service Representative"},
+    {"id": "lane2", "label": "Finance", "role": "Finance Team"},
+    {"id": "lane3", "label": "Management", "role": "Store Manager"}
+  ],
+  "nodes": [
+    {"id": "1", "type": "start", "label": "Customer submits refund request", "lane": "lane1"},
+    {"id": "2", "type": "activity", "label": "Validate purchase details", "lane": "lane2"},
+    {"id": "3", "type": "decision", "label": "Purchase within 30 days?", "lane": "lane2"},
+    {"id": "4", "type": "activity", "label": "Process refund", "lane": "lane2"},
+    {"id": "5", "type": "end", "label": "Refund completed", "lane": "lane1"}
+  ],
+  "connections": [
+    {"from": "1", "to": "2"},
+    {"from": "2", "to": "3"},
+    {"from": "3", "to": "4", "condition": "Yes"},
+    {"from": "4", "to": "5"}
+  ]
+}
+
+INSTRUCTIONS:
+1. Take the user's clarification and integrate it into the process map
+2. Break down vague steps into specific, actionable activities
+3. Assign each activity to the appropriate role/department lane
+4. Maintain logical flow and proper handoffs
+5. Output ONLY valid JSON (no commentary)
+
+CLARIFICATION CONTEXT:
+- Original vague step: "${clarificationData.originalStep}"
+- User clarification: "${clarificationData.clarification}"
+- Use this information to create more detailed, specific process steps`
+            },
+            {
+              role: 'user',
+              content: `Please regenerate the process map with this clarification:
+
+ORIGINAL STEP: "${clarificationData.originalStep}"
+CLARIFICATION: "${clarificationData.clarification}"
+
+Please update the process map to incorporate this clarification and ensure all activities have clear role assignments and specific descriptions.`
+            }
+          ],
+          temperature: 0.2,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'OpenAI API error');
+      }
+
+      const content = data?.choices?.[0]?.message?.content;
+
+      if (!content || !content.trim().startsWith('{')) {
+        throw new Error('Invalid response format from OpenAI');
+      }
+
+      const parsed = JSON.parse(content);
+      
+      console.log('✅ AISERVICE: Process map regenerated successfully with clarification');
+      return { success: true, map: parsed };
+
+    } catch (error: any) {
+      console.error('❌ AISERVICE: Process map regeneration error:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Failed to regenerate process map with clarification' 
+      };
+    }
+  }
+
+  // Parse AI response to diagram format
+  public parseAIResponseToDiagram(aiResponse: any): {
+    xml: string;
+    nodes: any[];
+    connections: any[];
+    lanes: any[];
+  } {
+    // This method converts the AI response to the format expected by the BPMN viewer
+    // For now, we'll return a basic structure - this can be enhanced later
+    return {
+      xml: '', // Will be generated by generateBPMNXML
+      nodes: aiResponse.nodes || [],
+      connections: aiResponse.connections || [],
+      lanes: aiResponse.lanes || []
+    };
   }
 }
 

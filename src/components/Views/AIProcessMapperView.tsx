@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import GenerateMapModal from '../Common/GenerateMapModal';
+import ClarificationModal from '../Common/ClarificationModal';
 import { supabaseDiagramStorage } from '../../utils/supabaseDiagramStorage';
 import { supabase } from '../../lib/supabase';
+import AIService from '../../services/aiService';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 
 export default function AIProcessMapperView() {
@@ -13,90 +15,189 @@ export default function AIProcessMapperView() {
   const [generatedMap, setGeneratedMap] = useState(null);
   const [isLoadingMap, setIsLoadingMap] = useState(false);
   const [bpmnModelerFailed, setBpmnModelerFailed] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastSavedId, setLastSavedId] = useState(null);
+  const [showClarificationModal, setShowClarificationModal] = useState(false);
+  const [clarificationRequest, setClarificationRequest] = useState(null);
+  const [isProcessingClarification, setIsProcessingClarification] = useState(false);
+  const [cachedClarifications, setCachedClarifications] = useState(new Map());
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('info');
+  const [showToast, setShowToast] = useState(false);
   const modelerRef = useRef(null);
   const containerRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
-  // Convert AI-generated map to BPMN XML
+  // Toast notification function
+  const displayToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+    
+    // Auto-hide toast after 4 seconds
+    setTimeout(() => {
+      setShowToast(false);
+    }, 4000);
+  };
+
+  // Save map to Supabase function
+  const saveMapToSupabase = async (mapData: any, xmlContent: string) => {
+    if (!user || !selectedProject) return;
+    
+    try {
+      setSaveStatus('saving');
+      
+      const saveData = {
+        user_id: user.id,
+        name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,
+        xml_content: xmlContent,
+        map_data: mapData
+      };
+
+      // Use existing save logic or create new entry
+      if (lastSavedId) {
+        const { data, error } = await supabase
+          .from('process_diagrams')
+          .update(saveData)
+          .eq('id', lastSavedId)
+          .select('*');
+        
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('process_diagrams')
+          .insert(saveData)
+          .select('*');
+        
+        if (error) throw error;
+        setLastSavedId(data[0]?.id);
+      }
+      
+      setSaveStatus('saved');
+      console.log('✅ Map saved to Supabase successfully');
+      
+    } catch (error) {
+      console.error('❌ Error saving map to Supabase:', error);
+      setSaveStatus('error');
+      displayToast('⚠️ Failed to save map. Please try again.', 'error');
+    }
+  };
+
+  // Convert AI-generated map to BPMN XML with swimlanes
   const generateBPMNXML = (mapData: any) => {
-    const { nodes, connections } = mapData;
+    const { lanes, nodes, connections } = mapData;
+    
+    console.log('🔧 Generating BPMN XML with lanes:', lanes, 'nodes:', nodes);
     
     // Generate unique IDs for BPMN elements
     const generateId = (prefix: string, index: number) => `${prefix}_${index}`;
     
-    // Create BPMN XML structure
+    // Create BPMN XML structure with swimlanes
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
   id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:process id="Process_1" isExecutable="false">`;
+  
+  <!-- Collaboration with swimlanes -->
+  <bpmn:collaboration id="Collaboration_1">`;
 
-    // Add nodes
-    nodes.forEach((node: any, index: number) => {
-      const bpmnId = generateId('Element', index + 1);
-      const x = 100 + (index * 200);
-      const y = 100;
+    // Add participants (swimlanes) if they exist
+    if (lanes && lanes.length > 0) {
+      lanes.forEach((lane: any, index: number) => {
+        xml += `\n    <bpmn:participant id="${lane.id}" name="${lane.label}" processRef="Process_${index + 1}" />`;
+      });
+    } else {
+      // Default single lane
+      xml += `\n    <bpmn:participant id="Participant_1" name="General Process" processRef="Process_1" />`;
+    }
+
+    xml += `\n  </bpmn:collaboration>`;
+
+    // Create processes for each lane
+    if (lanes && lanes.length > 0) {
+      lanes.forEach((lane: any, laneIndex: number) => {
+        const laneNodes = nodes.filter((node: any) => node.lane === lane.id);
+        
+        xml += `\n\n  <bpmn:process id="Process_${laneIndex + 1}" isExecutable="false">`;
+        
+        // Add nodes for this lane
+        laneNodes.forEach((node: any, nodeIndex: number) => {
+          const bpmnId = `node_${node.id}`;
+          
+          switch (node.type) {
+            case 'start':
+              xml += `\n    <bpmn:startEvent id="${bpmnId}" name="${node.label}">
+      <bpmn:outgoing>Flow_${node.id}</bpmn:outgoing>
+    </bpmn:startEvent>`;
+              break;
+            case 'end':
+              xml += `\n    <bpmn:endEvent id="${bpmnId}" name="${node.label}">
+      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
+    </bpmn:endEvent>`;
+              break;
+            case 'decision':
+              xml += `\n    <bpmn:exclusiveGateway id="${bpmnId}" name="${node.label}">
+      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
+      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
+    </bpmn:exclusiveGateway>`;
+              break;
+            default:
+              xml += `\n    <bpmn:task id="${bpmnId}" name="${node.label}">
+      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
+      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
+    </bpmn:task>`;
+          }
+        });
+
+        xml += `\n  </bpmn:process>`;
+      });
+    } else {
+      // Single process without lanes
+      xml += `\n\n  <bpmn:process id="Process_1" isExecutable="false">`;
       
-      switch (node.type) {
-        case 'start':
-          xml += `\n    <bpmn:startEvent id="${bpmnId}" name="${node.label}"/>`;
-          break;
-        case 'end':
-          xml += `\n    <bpmn:endEvent id="${bpmnId}" name="${node.label}"/>`;
-          break;
-        case 'decision':
-          xml += `\n    <bpmn:exclusiveGateway id="${bpmnId}" name="${node.label}"/>`;
-          break;
-        case 'activity':
-          xml += `\n    <bpmn:task id="${bpmnId}" name="${node.label}"/>`;
-          break;
-        default:
-          xml += `\n    <bpmn:task id="${bpmnId}" name="${node.label}"/>`;
-      }
-    });
+      nodes.forEach((node: any, index: number) => {
+        const bpmnId = `node_${node.id}`;
+        
+        switch (node.type) {
+          case 'start':
+            xml += `\n    <bpmn:startEvent id="${bpmnId}" name="${node.label}">
+      <bpmn:outgoing>Flow_${node.id}</bpmn:outgoing>
+    </bpmn:startEvent>`;
+            break;
+          case 'end':
+            xml += `\n    <bpmn:endEvent id="${bpmnId}" name="${node.label}">
+      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
+    </bpmn:endEvent>`;
+            break;
+          case 'decision':
+            xml += `\n    <bpmn:exclusiveGateway id="${bpmnId}" name="${node.label}">
+      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
+      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
+    </bpmn:exclusiveGateway>`;
+            break;
+          default:
+            xml += `\n    <bpmn:task id="${bpmnId}" name="${node.label}">
+      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
+      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
+    </bpmn:task>`;
+        }
+      });
 
-    // Add connections (sequence flows)
+      xml += `\n  </bpmn:process>`;
+    }
+
+    // Add sequence flows
+    xml += `\n\n  <!-- Sequence Flows -->`;
     connections.forEach((conn: any, index: number) => {
-      const flowId = generateId('Flow', index + 1);
-      const sourceId = generateId('Element', nodes.findIndex((n: any) => n.id === conn.from) + 1);
-      const targetId = generateId('Element', nodes.findIndex((n: any) => n.id === conn.to) + 1);
-      
-      if (conn.condition) {
-        xml += `\n    <bpmn:sequenceFlow id="${flowId}" sourceRef="${sourceId}" targetRef="${targetId}">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${conn.condition}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>`;
-      } else {
-        xml += `\n    <bpmn:sequenceFlow id="${flowId}" sourceRef="${sourceId}" targetRef="${targetId}"/>`;
-      }
+      const flowId = `Flow_${conn.from}_to_${conn.to}`;
+      const condition = conn.condition ? ` name="${conn.condition}"` : '';
+      xml += `\n  <bpmn:sequenceFlow id="${flowId}" sourceRef="node_${conn.from}" targetRef="node_${conn.to}"${condition} />`;
     });
 
-    xml += `\n  </bpmn:process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">`;
-
-    // Add visual elements
-    nodes.forEach((node: any, index: number) => {
-      const bpmnId = generateId('Element', index + 1);
-      const x = 100 + (index * 200);
-      const y = 100;
-      const width = node.type === 'decision' ? 50 : 100;
-      const height = node.type === 'decision' ? 50 : 80;
-      
-      xml += `\n      <bpmndi:BPMNShape id="${bpmnId}_di" bpmnElement="${bpmnId}">
-        <dc:Bounds x="${x}" y="${y}" width="${width}" height="${height}"/>
-      </bpmndi:BPMNShape>`;
-    });
-
-    // Add visual connections
-    connections.forEach((conn: any, index: number) => {
-      const flowId = generateId('Flow', index + 1);
-      xml += `\n      <bpmndi:BPMNEdge id="${flowId}_di" bpmnElement="${flowId}"/>`;
-    });
-
-    xml += `\n    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
-</bpmn:definitions>`;
+    xml += `\n</bpmn:definitions>`;
 
     return xml;
   };
@@ -157,10 +258,141 @@ export default function AIProcessMapperView() {
     }
   };
 
+  // Check if generated map needs clarification
+  const checkForClarificationNeeds = (mapData: any) => {
+    const { nodes, lanes } = mapData;
+    
+    // Check for ambiguous activities
+    const ambiguousNodes = nodes.filter((node: any) => {
+      if (node.type !== 'activity') return false;
+      
+      const label = node.label.toLowerCase();
+      const ambiguousPhrases = [
+        'someone', 'they', 'the system', 'it', 'someone else',
+        'review', 'check', 'verify', 'process', 'handle'
+      ];
+      
+      // Check for vague language
+      const hasVagueLanguage = ambiguousPhrases.some(phrase => label.includes(phrase));
+      
+      // Check for missing lane assignment
+      const hasNoLane = !node.lane || node.lane === 'unknown';
+      
+      return hasVagueLanguage || hasNoLane;
+    });
+
+    if (ambiguousNodes.length > 0) {
+      const firstAmbiguous = ambiguousNodes[0];
+      const clarificationKey = `${firstAmbiguous.label}_${firstAmbiguous.type}`;
+      
+      // Check if we already have clarification for this step
+      if (cachedClarifications.has(clarificationKey)) {
+        return null; // Already clarified
+      }
+
+      return {
+        step: firstAmbiguous.label,
+        question: generateClarificationQuestion(firstAmbiguous),
+        context: `This step appears to be unclear. We need more specific information about who performs this action and what exactly happens.`,
+        nodeId: firstAmbiguous.id,
+        clarificationKey: clarificationKey
+      };
+    }
+
+    return null;
+  };
+
+  // Generate appropriate clarification question
+  const generateClarificationQuestion = (node: any) => {
+    const label = node.label.toLowerCase();
+    
+    if (label.includes('someone') || label.includes('they')) {
+      return `Who specifically performs "${node.label}"? Please specify the role or department.`;
+    }
+    
+    if (label.includes('review') || label.includes('check') || label.includes('verify')) {
+      return `What exactly is being reviewed/checked in "${node.label}"? What are the criteria or steps involved?`;
+    }
+    
+    if (label.includes('process') || label.includes('handle')) {
+      return `What are the specific steps involved in "${node.label}"? Who performs this action?`;
+    }
+    
+    if (!node.lane || node.lane === 'unknown') {
+      return `Which role or department is responsible for "${node.label}"?`;
+    }
+    
+    return `Can you provide more specific details about "${node.label}"? What exactly happens in this step?`;
+  };
+
+  // Handle clarification submission
+  const handleClarification = async (clarification: string) => {
+    if (!clarificationRequest) return;
+
+    setIsProcessingClarification(true);
+    
+    try {
+      // Cache the clarification
+      setCachedClarifications(prev => {
+        const newMap = new Map(prev);
+        newMap.set(clarificationRequest.clarificationKey, clarification);
+        return newMap;
+      });
+
+      // Regenerate the map with clarification
+      const aiService = AIService.getInstance();
+      const result = await aiService.regenerateProcessMapWithClarification({
+        originalStep: clarificationRequest.step,
+        clarification: clarification,
+        currentMap: generatedMap
+      });
+      
+      if (result.success && result.map) {
+        // Generate BPMN XML from the updated map
+        const updatedXml = generateBPMNXML(result.map);
+        
+        // Update the modeler with the new XML
+        if (modelerRef.current) {
+          await modelerRef.current.importXML(updatedXml);
+          modelerRef.current.get('canvas').zoom('fit-viewport');
+        }
+        
+        // Update state with the new map
+        setGeneratedMap(result.map);
+        
+        // Auto-save the updated map
+        await saveMapToSupabase(result.map, updatedXml);
+        
+        // Show success toast
+        displayToast('✅ Process map updated with your clarification.', 'success');
+      } else {
+        // Show error toast
+        displayToast('⚠️ Could not update process map. Please try again.', 'error');
+      }
+      
+      setShowClarificationModal(false);
+      setClarificationRequest(null);
+      
+    } catch (error) {
+      console.error('❌ Error processing clarification:', error);
+    } finally {
+      setIsProcessingClarification(false);
+    }
+  };
+
   // Convert AI-generated map to BPMN format and save it
   const handleGeneratedMap = async (mapData: any) => {
     try {
       console.log('🤖 AIProcessMapperView: Processing generated map:', mapData);
+      
+      // Check if clarification is needed
+      const clarificationNeeded = checkForClarificationNeeds(mapData);
+      
+      if (clarificationNeeded) {
+        setClarificationRequest(clarificationNeeded);
+        setShowClarificationModal(true);
+        return; // Don't proceed until clarification is provided
+      }
       
       // Store the map data for immediate display
       setGeneratedMap(mapData);
@@ -190,117 +422,245 @@ export default function AIProcessMapperView() {
         }
       }, 5000);
       
-      if (!user?.id) {
-        console.error('❌ No user ID available');
-        return;
+      // Trigger auto-save if user is available
+      if (user?.id) {
+        autoSaveMap(mapData, lastSavedId);
       }
-
-      if (!selectedProject) {
-        console.error('❌ No project selected');
-        return;
-      }
-
-      // Generate a new diagram ID
-      const diagramId = crypto.randomUUID();
-      
-      // Convert AI map format to BPMN-like format that ProcessMapper expects
-      const bpmnData = convertAIMapToBPMN(mapData);
-      
-      // Save the diagram to Supabase
-      const { error } = await supabase
-        .from('process_diagrams')
-        .insert({
-          id: diagramId,
-          user_id: user.id,
-          project_id: selectedProject.id,
-          name: `AI Generated Process - ${new Date().toLocaleDateString()}`,
-          data: bpmnData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-
-      if (error) {
-        console.error('❌ Error saving diagram:', error);
-        return;
-      }
-
-      console.log('✅ Diagram saved successfully with ID:', diagramId);
-      
-      // Store the diagram ID in sessionStorage so ProcessMapperView can load it if user wants to edit
-      sessionStorage.setItem('selectedDiagramId', diagramId);
       
     } catch (error) {
       console.error('❌ Error handling generated map:', error);
     }
   };
 
+  // Auto-save function with debounce
+  const autoSaveMap = async (mapData: any, diagramId: string = null) => {
+    if (!user?.id) return;
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set debounced save
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        setSaveStatus('saving');
+        
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(
+          import.meta.env.VITE_SUPABASE_URL,
+          import.meta.env.VITE_SUPABASE_ANON_KEY
+        );
+
+        const bpmnXML = generateBPMNXML(mapData);
+        
+        const diagramData = {
+          name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,
+          xml_content: bpmnXML,
+          map_data: {
+            ...mapData,
+            generated_at: new Date().toISOString(),
+            generated_by: 'ai-process-mapper'
+          },
+          user_id: user.id
+        };
+
+        let result;
+        if (diagramId) {
+          // Update existing diagram
+          result = await supabase
+            .from('process_diagrams')
+            .update(diagramData)
+            .eq('id', diagramId)
+            .eq('user_id', user.id)
+            .select('*');
+        } else {
+          // Create new diagram
+          result = await supabase
+            .from('process_diagrams')
+            .insert(diagramData)
+            .select('*');
+        }
+
+        if (result.error) {
+          throw result.error;
+        }
+
+        const savedData = Array.isArray(result.data) ? result.data[0] : result.data;
+        console.log('✅ Auto-saved process map:', savedData.id);
+        setLastSavedId(savedData.id);
+        setSaveStatus('saved');
+        
+        // Store diagram ID for potential editing
+        sessionStorage.setItem('selectedDiagramId', savedData.id);
+        
+        // Clear saved status after 3 seconds
+        setTimeout(() => setSaveStatus('idle'), 3000);
+        
+      } catch (error) {
+        console.error('❌ Auto-save failed:', error);
+        setSaveStatus('error');
+        
+        // Clear error status after 5 seconds
+        setTimeout(() => setSaveStatus('idle'), 5000);
+      }
+    }, 2000); // 2 second debounce
+  };
+
   // Clear the generated map
   const clearGeneratedMap = () => {
     setGeneratedMap(null);
     setBpmnModelerFailed(false);
+    setSaveStatus('idle');
+    setLastSavedId(null);
+    
+    // Clear save timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
     if (modelerRef.current) {
       modelerRef.current.destroy();
       modelerRef.current = null;
     }
   };
 
-  // Fallback visual representation component
+  // Enhanced fallback visual representation component with swimlanes
   const ProcessMapFallback = ({ mapData }: { mapData: any }) => {
-    const { nodes, connections } = mapData;
+    const { lanes, nodes, connections } = mapData;
+    
+    // Group nodes by lane
+    const nodesByLane = lanes ? lanes.reduce((acc: any, lane: any) => {
+      acc[lane.id] = {
+        lane: lane,
+        nodes: nodes.filter((node: any) => node.lane === lane.id)
+      };
+      return acc;
+    }, {}) : { 'default': { lane: { id: 'default', label: 'General Process' }, nodes: nodes } };
     
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Process Map Structure
-        </h3>
-        
-        {/* Nodes */}
-        <div className="mb-6">
-          <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Process Steps:</h4>
-          <div className="space-y-2">
-            {nodes.map((node: any, index: number) => (
-              <div key={node.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div className={`w-3 h-3 rounded-full ${
-                  node.type === 'start' ? 'bg-green-500' :
-                  node.type === 'end' ? 'bg-red-500' :
-                  node.type === 'decision' ? 'bg-yellow-500' :
-                  'bg-blue-500'
-                }`}></div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase">
-                  {node.type}:
-                </span>
-                <span className="text-sm text-gray-900 dark:text-white">
-                  {node.label}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Generated Process Map
+          </h3>
+          {lanes && lanes.length > 1 && (
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {lanes.length} swimlanes • {nodes.length} steps
+            </div>
+          )}
         </div>
 
-        {/* Connections */}
+        {/* Swimlanes */}
+        {Object.values(nodesByLane).map((laneData: any, index: number) => (
+          <div key={laneData.lane.id} className="mb-6 last:mb-0">
+            {/* Lane Header */}
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border border-blue-200 dark:border-blue-700 rounded-t-lg p-3">
+              <h4 className="text-md font-semibold text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                {laneData.lane.label}
+                {laneData.lane.role && (
+                  <span className="text-sm font-normal text-blue-600 dark:text-blue-300">
+                    ({laneData.lane.role})
+                  </span>
+                )}
+              </h4>
+            </div>
+
+            {/* Lane Content */}
+            <div className="bg-gray-50 dark:bg-gray-700/50 border-l border-r border-b border-gray-200 dark:border-gray-600 rounded-b-lg p-4">
+              {laneData.nodes.length > 0 ? (
+                <div className="space-y-3">
+                  {laneData.nodes.map((node: any, nodeIndex: number) => (
+                    <div key={node.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
+                      <div className={`w-4 h-4 rounded-full flex-shrink-0 ${
+                        node.type === 'start' ? 'bg-green-500' :
+                        node.type === 'end' ? 'bg-red-500' :
+                        node.type === 'decision' ? 'bg-yellow-500' :
+                        'bg-blue-500'
+                      }`}></div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            {node.type}
+                          </span>
+                          {node.type === 'decision' && (
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Decision Point
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-sm text-gray-900 dark:text-white font-medium">
+                          {node.label}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <div className="w-8 h-8 mx-auto mb-2 opacity-50">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm">No activities assigned to this lane</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Process Flow */}
         {connections && connections.length > 0 && (
-          <div>
-            <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Process Flow:</h4>
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+            <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Process Flow
+            </h4>
             <div className="space-y-2">
               {connections.map((conn: any, index: number) => {
                 const fromNode = nodes.find((n: any) => n.id === conn.from);
                 const toNode = nodes.find((n: any) => n.id === conn.to);
+                const fromLane = lanes ? lanes.find((l: any) => l.id === fromNode?.lane) : null;
+                const toLane = lanes ? lanes.find((l: any) => l.id === toNode?.lane) : null;
+                
                 return (
-                  <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {fromNode?.label || conn.from}
-                    </span>
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {toNode?.label || conn.to}
-                    </span>
-                    {conn.condition && (
-                      <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
-                        {conn.condition}
-                      </span>
-                    )}
+                  <div key={index} className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                          {fromLane ? fromLane.label : 'General'}
+                        </span>
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                          {toLane ? toLane.label : 'General'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-700 dark:text-gray-300">
+                        <span className="font-medium">{fromNode?.label || conn.from}</span>
+                        {conn.condition && (
+                          <>
+                            {' '}
+                            <span className="text-gray-500 dark:text-gray-400">→</span>
+                            {' '}
+                            <span className="text-blue-600 dark:text-blue-400 font-medium">
+                              {conn.condition}
+                            </span>
+                          </>
+                        )}
+                        {' '}
+                        <span className="text-gray-500 dark:text-gray-400">→</span>
+                        {' '}
+                        <span className="font-medium">{toNode?.label || conn.to}</span>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -308,10 +668,23 @@ export default function AIProcessMapperView() {
           </div>
         )}
 
-        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <p className="text-amber-700 dark:text-amber-300 text-sm">
-            <strong>Note:</strong> This is a simplified view. Click "Edit in Full Editor" to see the complete BPMN diagram.
-          </p>
+        {/* Info Box */}
+        <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <div className="flex items-start gap-3">
+            <div className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h5 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-1">
+                Process Map Generated Successfully!
+              </h5>
+              <p className="text-green-700 dark:text-green-300 text-sm">
+                Your process map has been automatically saved. Click "Edit in Full Editor" to see the complete BPMN diagram with advanced editing capabilities, or "Clear Map" to generate a new one.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -322,6 +695,9 @@ export default function AIProcessMapperView() {
     return () => {
       if (modelerRef.current) {
         modelerRef.current.destroy();
+      }
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
     };
   }, []);
@@ -399,9 +775,36 @@ export default function AIProcessMapperView() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-700 px-8 py-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              AI Process Mapper
-            </h1>
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold text-white">
+                AI Process Mapper
+              </h1>
+              {/* Save Status Indicator */}
+              <div className="flex items-center gap-2">
+                {saveStatus === 'saving' && (
+                  <div className="flex items-center gap-2 bg-blue-500/20 px-3 py-1 rounded-full">
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm">Saving...</span>
+                  </div>
+                )}
+                {saveStatus === 'saved' && (
+                  <div className="flex items-center gap-2 bg-green-500/20 px-3 py-1 rounded-full">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm">💾 Saved</span>
+                  </div>
+                )}
+                {saveStatus === 'error' && (
+                  <div className="flex items-center gap-2 bg-red-500/20 px-3 py-1 rounded-full">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm">⚠️ Couldn't save — retrying...</span>
+                  </div>
+                )}
+              </div>
+            </div>
             <p className="text-xl text-white/90 max-w-3xl">
               Describe a business process in plain English, and let AI instantly create your process map.
             </p>
@@ -590,6 +993,40 @@ export default function AIProcessMapperView() {
             setShowGenerateModal(false);
           }}
         />
+      )}
+
+      {/* Clarification Modal */}
+      <ClarificationModal
+        isOpen={showClarificationModal}
+        onClose={() => setShowClarificationModal(false)}
+        onClarify={handleClarification}
+        clarificationRequest={clarificationRequest}
+        isProcessing={isProcessingClarification}
+      />
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`px-6 py-3 rounded-lg shadow-lg border transition-all duration-300 ${
+            toastType === 'success' 
+              ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-200'
+              : toastType === 'error'
+              ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-200'
+              : 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-200'
+          }`}>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">{toastMessage}</span>
+              <button
+                onClick={() => setShowToast(false)}
+                className="text-current opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
