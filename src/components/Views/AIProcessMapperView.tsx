@@ -85,16 +85,19 @@ export default function AIProcessMapperView() {
     }
   };
 
-  // Convert AI-generated map to BPMN XML with swimlanes
+  // Convert AI-generated map to BPMN XML with proper structure
   const generateBPMNXML = (mapData: any) => {
     const { lanes, nodes, connections } = mapData;
     
-    console.log('🔧 Generating BPMN XML with lanes:', lanes, 'nodes:', nodes);
+    console.log('🔧 Generating BPMN XML with lanes:', lanes, 'nodes:', nodes, 'connections:', connections);
     
-    // Generate unique IDs for BPMN elements
-    const generateId = (prefix: string, index: number) => `${prefix}_${index}`;
-    
-    // Create BPMN XML structure with swimlanes
+    // Validate input data
+    if (!nodes || nodes.length === 0) {
+      console.error('❌ No nodes provided for BPMN generation');
+      return createMinimalBPMN();
+    }
+
+    // Create a simplified single-process BPMN XML
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -102,106 +105,89 @@ export default function AIProcessMapperView() {
   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
   id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
-  
-  <!-- Collaboration with swimlanes -->
-  <bpmn:collaboration id="Collaboration_1">`;
 
-    // Add participants (swimlanes) if they exist
-    if (lanes && lanes.length > 0) {
-      lanes.forEach((lane: any, index: number) => {
-        xml += `\n    <bpmn:participant id="${lane.id}" name="${lane.label}" processRef="Process_${index + 1}" />`;
-      });
-    } else {
-      // Default single lane
-      xml += `\n    <bpmn:participant id="Participant_1" name="General Process" processRef="Process_1" />`;
-    }
+  <bpmn:process id="Process_1" isExecutable="false">`;
 
-    xml += `\n  </bpmn:collaboration>`;
-
-    // Create processes for each lane
-    if (lanes && lanes.length > 0) {
-      lanes.forEach((lane: any, laneIndex: number) => {
-        const laneNodes = nodes.filter((node: any) => node.lane === lane.id);
-        
-        xml += `\n\n  <bpmn:process id="Process_${laneIndex + 1}" isExecutable="false">`;
-        
-        // Add nodes for this lane
-        laneNodes.forEach((node: any, nodeIndex: number) => {
-          const bpmnId = `node_${node.id}`;
-          
-          switch (node.type) {
-            case 'start':
-              xml += `\n    <bpmn:startEvent id="${bpmnId}" name="${node.label}">
-      <bpmn:outgoing>Flow_${node.id}</bpmn:outgoing>
-    </bpmn:startEvent>`;
-              break;
-            case 'end':
-              xml += `\n    <bpmn:endEvent id="${bpmnId}" name="${node.label}">
-      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
-    </bpmn:endEvent>`;
-              break;
-            case 'decision':
-              xml += `\n    <bpmn:exclusiveGateway id="${bpmnId}" name="${node.label}">
-      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
-      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
-    </bpmn:exclusiveGateway>`;
-              break;
-            default:
-              xml += `\n    <bpmn:task id="${bpmnId}" name="${node.label}">
-      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
-      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
-    </bpmn:task>`;
-          }
-        });
-
-        xml += `\n  </bpmn:process>`;
-      });
-    } else {
-      // Single process without lanes
-      xml += `\n\n  <bpmn:process id="Process_1" isExecutable="false">`;
+    // Add nodes with proper flow references
+    const nodeFlows: { [key: string]: string[] } = {};
+    
+    nodes.forEach((node: any, index: number) => {
+      const bpmnId = `node_${node.id}`;
+      const outgoingFlows: string[] = [];
       
-      nodes.forEach((node: any, index: number) => {
-        const bpmnId = `node_${node.id}`;
-        
-        switch (node.type) {
-          case 'start':
-            xml += `\n    <bpmn:startEvent id="${bpmnId}" name="${node.label}">
-      <bpmn:outgoing>Flow_${node.id}</bpmn:outgoing>
-    </bpmn:startEvent>`;
-            break;
-          case 'end':
-            xml += `\n    <bpmn:endEvent id="${bpmnId}" name="${node.label}">
-      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
-    </bpmn:endEvent>`;
-            break;
-          case 'decision':
-            xml += `\n    <bpmn:exclusiveGateway id="${bpmnId}" name="${node.label}">
-      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
-      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
-    </bpmn:exclusiveGateway>`;
-            break;
-          default:
-            xml += `\n    <bpmn:task id="${bpmnId}" name="${node.label}">
-      <bpmn:incoming>Flow_${node.id}</bpmn:incoming>
-      <bpmn:outgoing>Flow_${node.id}_out</bpmn:outgoing>
-    </bpmn:task>`;
-        }
+      // Find outgoing connections
+      const outgoingConnections = connections.filter((conn: any) => conn.from === node.id);
+      outgoingConnections.forEach((conn: any, flowIndex: number) => {
+        const flowId = `Flow_${conn.from}_to_${conn.to}`;
+        outgoingFlows.push(flowId);
       });
-
-      xml += `\n  </bpmn:process>`;
-    }
-
-    // Add sequence flows
-    xml += `\n\n  <!-- Sequence Flows -->`;
-    connections.forEach((conn: any, index: number) => {
-      const flowId = `Flow_${conn.from}_to_${conn.to}`;
-      const condition = conn.condition ? ` name="${conn.condition}"` : '';
-      xml += `\n  <bpmn:sequenceFlow id="${flowId}" sourceRef="node_${conn.from}" targetRef="node_${conn.to}"${condition} />`;
+      
+      nodeFlows[bpmnId] = outgoingFlows;
+      
+      switch (node.type) {
+        case 'start':
+          xml += `\n    <bpmn:startEvent id="${bpmnId}" name="${node.label || 'Start'}">`;
+          outgoingFlows.forEach(flowId => {
+            xml += `\n      <bpmn:outgoing>${flowId}</bpmn:outgoing>`;
+          });
+          xml += `\n    </bpmn:startEvent>`;
+          break;
+          
+        case 'end':
+          xml += `\n    <bpmn:endEvent id="${bpmnId}" name="${node.label || 'End'}">`;
+          xml += `\n    </bpmn:endEvent>`;
+          break;
+          
+        case 'decision':
+          xml += `\n    <bpmn:exclusiveGateway id="${bpmnId}" name="${node.label || 'Decision'}">`;
+          outgoingFlows.forEach(flowId => {
+            xml += `\n      <bpmn:outgoing>${flowId}</bpmn:outgoing>`;
+          });
+          xml += `\n    </bpmn:exclusiveGateway>`;
+          break;
+          
+        default:
+          xml += `\n    <bpmn:task id="${bpmnId}" name="${node.label || 'Task'}">`;
+          outgoingFlows.forEach(flowId => {
+            xml += `\n      <bpmn:outgoing>${flowId}</bpmn:outgoing>`;
+          });
+          xml += `\n    </bpmn:task>`;
+      }
     });
 
-    xml += `\n</bpmn:definitions>`;
+    // Add sequence flows
+    if (connections && connections.length > 0) {
+      connections.forEach((conn: any) => {
+        const flowId = `Flow_${conn.from}_to_${conn.to}`;
+        const sourceRef = `node_${conn.from}`;
+        const targetRef = `node_${conn.to}`;
+        const condition = conn.condition ? ` name="${conn.condition}"` : '';
+        
+        xml += `\n    <bpmn:sequenceFlow id="${flowId}" sourceRef="${sourceRef}" targetRef="${targetRef}"${condition} />`;
+      });
+    }
 
+    xml += `\n  </bpmn:process>
+</bpmn:definitions>`;
+
+    console.log('✅ Generated BPMN XML:', xml.substring(0, 300) + '...');
     return xml;
+  };
+
+  // Create minimal BPMN XML as fallback
+  const createMinimalBPMN = () => {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" name="Start" />
+    <bpmn:task id="Task_1" name="Process Step" />
+    <bpmn:endEvent id="EndEvent_1" name="End" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+  </bpmn:process>
+</bpmn:definitions>`;
   };
 
   // Initialize BPMN modeler
@@ -250,18 +236,37 @@ export default function AIProcessMapperView() {
   const loadBPMNXML = async (xml: string) => {
     if (!modelerRef.current) return;
     
+    // Validate XML before importing
+    if (!xml || xml.trim() === '') {
+      console.error('❌ Empty XML provided to loadBPMNXML');
+      displayToast('Unable to visualize process. Please refine or clarify your description.', 'error');
+      setIsLoadingMap(false);
+      return;
+    }
+    
+    if (!xml.includes('<bpmn:definitions') || !xml.includes('</bpmn:definitions>')) {
+      console.error('❌ Invalid BPMN XML structure:', xml.substring(0, 200));
+      displayToast('Unable to visualize process. Please refine or clarify your description.', 'error');
+      setIsLoadingMap(false);
+      return;
+    }
+    
     try {
       setIsLoadingMap(true);
+      console.log('🔧 Importing BPMN XML:', xml.substring(0, 200) + '...');
+      
       await modelerRef.current.importXML(xml);
       console.log('✅ BPMN XML loaded successfully');
       
       // Auto-fit the diagram
       const canvas = modelerRef.current.get('canvas');
       canvas.zoom('fit-viewport');
+      
     } catch (error) {
-      console.error('Error loading BPMN XML:', error);
+      console.error('❌ BPMN import error:', error);
       setIsLoadingMap(false);
       setBpmnModelerFailed(true);
+      displayToast('Unable to visualize process. Please refine or clarify your description.', 'error');
     }
   };
 
