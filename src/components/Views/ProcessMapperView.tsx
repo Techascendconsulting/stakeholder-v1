@@ -24,6 +24,14 @@ export default function ProcessMapperView() {
 	const [listError, setListError] = useState<string | null>(null);
 	const [showLandingPage, setShowLandingPage] = useState(true);
 
+	// Debug logging
+	console.log('🔍 ProcessMapperView render:', {
+		showLandingPage,
+		diagramId,
+		selectedProject: selectedProject?.name,
+		existingCount: existing.length
+	});
+
 	// Generate a UUID id
 	const createNewId = () => crypto.randomUUID();
 
@@ -417,6 +425,7 @@ export default function ProcessMapperView() {
 	};
 
 	// Show landing page if no diagram is selected and showLandingPage is true
+	console.log('🔍 Checking landing page condition:', { showLandingPage, diagramId, shouldShow: showLandingPage && !diagramId });
 	if (showLandingPage && !diagramId) {
 		return (
 			<div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
@@ -459,6 +468,7 @@ export default function ProcessMapperView() {
 									</p>
 									<button 
 										onClick={() => {
+											console.log('🔍 Create New Process Map clicked');
 											setShowLandingPage(false);
 											handleCreateNew();
 										}}
@@ -481,7 +491,10 @@ export default function ProcessMapperView() {
 										Explore existing process maps to see examples of how others have mapped their workflows.
 									</p>
 									<button 
-										onClick={() => setShowLandingPage(false)}
+										onClick={() => {
+											console.log('🔍 Browse Existing Maps clicked');
+											setShowLandingPage(false);
+										}}
 										className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
 									>
 										Browse Existing Maps
@@ -639,6 +652,7 @@ export default function ProcessMapperView() {
 							<div className="text-center pt-8">
 								<button
 									onClick={() => {
+										console.log('🔍 Start Process Mapping clicked');
 										setShowLandingPage(false);
 										handleCreateNew();
 									}}
