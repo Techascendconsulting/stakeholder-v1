@@ -4,7 +4,7 @@ import AIService from '../../services/aiService';
 
 interface GenerateMapModalProps {
   onClose: () => void;
-  onGenerate: (mapData: any) => void;
+  onGenerate: (mapData: any, clarificationNeeded?: boolean, error?: string) => void;
 }
 
 interface StructuredInput {
@@ -69,8 +69,8 @@ Please create a comprehensive process map that includes all the steps, decision 
       const result = await aiService.generateProcessMap(structuredPrompt);
 
       if (result.success && result.map) {
-        onGenerate(result.map);
-        console.log('Process map generated successfully!');
+        onGenerate(result.map, result.clarificationNeeded, result.error);
+        console.log('Process map generated successfully!', { clarificationNeeded: result.clarificationNeeded });
       } else {
         throw new Error(result.error || 'Failed to generate process map');
       }

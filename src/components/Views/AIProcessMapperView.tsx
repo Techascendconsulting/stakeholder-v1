@@ -457,39 +457,70 @@ export default function AIProcessMapperView() {
     setIsProcessingClarification(true);
     
     try {
-      // Cache the clarification
-      setCachedClarifications(prev => {
-        const newMap = new Map(prev);
-        newMap.set(clarificationRequest.clarificationKey, clarification);
-        return newMap;
-      });
-
-      // Regenerate the map with clarification
-      const aiService = AIService.getInstance();
-      const result = await aiService.regenerateProcessMapWithClarification({
-        originalStep: clarificationRequest.step,
-        clarification: clarification,
-        currentMap: generatedMap
-      });
-      
-      if (result.success && result.map) {
-        // Generate BPMN XML from the updated map
-        const updatedXml = generateBPMNXML(result.map);
+      // Handle domain mismatch clarification differently
+      if (clarificationRequest.type === 'domain_mismatch') {
+        console.log('🔄 Regenerating process map with domain clarification:', clarification);
         
-        // Update the modeler with the new XML
-        await initializeAndLoadXML(updatedXml);
+        // For domain mismatch, regenerate the entire process map with the clarification
+        const aiService = AIService.getInstance();
+        const enhancedDescription = `${clarificationRequest.step}: ${clarification}`;
+        const result = await aiService.generateProcessMap(enhancedDescription);
         
-        // Update state with the new map
-        setGeneratedMap(result.map);
-        
-        // Auto-save the updated map
-        await saveMapToSupabase(result.map, updatedXml);
-        
-        // Show success toast
-        displayToast('✅ Process map updated with your clarification.', 'success');
+        if (result.success && result.map) {
+          // Generate BPMN XML from the new map
+          const newXml = generateBPMNXML(result.map);
+          
+          // Update the modeler with the new XML
+          await initializeAndLoadXML(newXml);
+          
+          // Update state with the new map
+          setGeneratedMap(result.map);
+          
+          // Auto-save the new map
+          await saveMapToSupabase(result.map, newXml);
+          
+          // Show success toast
+          displayToast('✅ Process map regenerated with correct context.', 'success');
+        } else {
+          // Show error toast
+          displayToast('⚠️ Could not regenerate process map. Please try again.', 'error');
+        }
       } else {
-        // Show error toast
-        displayToast('⚠️ Could not update process map. Please try again.', 'error');
+        // Handle step clarification as before
+        // Cache the clarification
+        setCachedClarifications(prev => {
+          const newMap = new Map(prev);
+          newMap.set(clarificationRequest.clarificationKey, clarification);
+          return newMap;
+        });
+
+        // Regenerate the map with clarification
+        const aiService = AIService.getInstance();
+        const result = await aiService.regenerateProcessMapWithClarification({
+          originalStep: clarificationRequest.step,
+          clarification: clarification,
+          currentMap: generatedMap
+        });
+        
+        if (result.success && result.map) {
+          // Generate BPMN XML from the updated map
+          const updatedXml = generateBPMNXML(result.map);
+          
+          // Update the modeler with the new XML
+          await initializeAndLoadXML(updatedXml);
+          
+          // Update state with the new map
+          setGeneratedMap(result.map);
+          
+          // Auto-save the updated map
+          await saveMapToSupabase(result.map, updatedXml);
+          
+          // Show success toast
+          displayToast('✅ Process map updated with your clarification.', 'success');
+        } else {
+          // Show error toast
+          displayToast('⚠️ Could not update process map. Please try again.', 'error');
+        }
       }
       
       setShowClarificationModal(false);
@@ -497,21 +528,35 @@ export default function AIProcessMapperView() {
       
     } catch (error) {
       console.error('❌ Error processing clarification:', error);
+      displayToast('❌ Error processing clarification. Please try again.', 'error');
     } finally {
       setIsProcessingClarification(false);
     }
   };
 
   // Convert AI-generated map to BPMN format and save it
-  const handleGeneratedMap = async (mapData: any) => {
+  const handleGeneratedMap = async (mapData: any, clarificationNeeded?: boolean, error?: string) => {
     try {
-      console.log('🤖 AIProcessMapperView: Processing generated map:', mapData);
+      console.log('🤖 AIProcessMapperView: Processing generated map:', mapData, { clarificationNeeded, error });
       
-      // Check if clarification is needed
-      const clarificationNeeded = checkForClarificationNeeds(mapData);
+      // Check if domain context validation failed
+      if (clarificationNeeded && error) {
+        console.log('⚠️ Domain context validation failed:', error);
+        setClarificationRequest({
+          step: 'Domain Context Mismatch',
+          reason: 'The AI seems to have misunderstood your process.',
+          message: `The AI seems to have misunderstood your process. ${error}. Please confirm whether the process is about the topic you described.`,
+          type: 'domain_mismatch'
+        });
+        setShowClarificationModal(true);
+        return; // Don't proceed until clarification is provided
+      }
       
-      if (clarificationNeeded) {
-        setClarificationRequest(clarificationNeeded);
+      // Check if clarification is needed for unclear steps
+      const stepClarificationNeeded = checkForClarificationNeeds(mapData);
+      
+      if (stepClarificationNeeded) {
+        setClarificationRequest(stepClarificationNeeded);
         setShowClarificationModal(true);
         return; // Don't proceed until clarification is provided
       }
@@ -1104,8 +1149,8 @@ export default function AIProcessMapperView() {
       {showGenerateModal && (
         <GenerateMapModal
           onClose={() => setShowGenerateModal(false)}
-          onGenerate={(mapData) => {
-            handleGeneratedMap(mapData);
+          onGenerate={(mapData, clarificationNeeded, error) => {
+            handleGeneratedMap(mapData, clarificationNeeded, error);
             setShowGenerateModal(false);
           }}
         />

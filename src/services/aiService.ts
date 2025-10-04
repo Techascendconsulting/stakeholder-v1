@@ -203,14 +203,19 @@ class AIService {
     return this.generateStakeholderResponse(userMessage, stakeholder, context);
   }
 
-  // AI Process Map Generation
+  // AI Process Map Generation with strengthened prompt control
   public async generateProcessMap(description: string): Promise<{
     success: boolean;
     map?: any;
     error?: string;
+    clarificationNeeded?: boolean;
   }> {
     try {
       console.log('🤖 AISERVICE: Generating process map for description:', description.substring(0, 100) + '...');
+
+      // Extract context keywords from user description for validation
+      const contextKeywords = this.extractContextKeywords(description);
+      console.log('🔍 Context keywords detected:', contextKeywords);
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -223,49 +228,62 @@ class AIService {
           messages: [
             {
               role: 'system',
-              content: `You are a Business Analyst assistant that converts structured process descriptions into comprehensive process map JSON with swimlanes and role assignments.
+              content: `You are an assistant that converts a user's plain-text process description into a JSON representation of that exact process — nothing more, nothing less.
+
+CRITICAL RULES:
+- Never reinterpret or replace the domain context
+- If the user mentions tenants, maintenance, or billing, stay within that scenario
+- If the user mentions refunds, purchases, or customer service, stay within that scenario
+- If something is unclear, ask a clarification question instead of making assumptions
+- Use the same terminology as the user
+- Do NOT substitute a different process domain
+- Preserve the exact business context provided
 
 REQUIRED OUTPUT FORMAT:
 {
   "lanes": [
-    {"id": "lane1", "label": "Customer Service", "role": "Customer Service Representative"},
-    {"id": "lane2", "label": "Finance", "role": "Finance Team"},
-    {"id": "lane3", "label": "Management", "role": "Store Manager"}
+    {"id": "lane1", "label": "Role/Department Name", "role": "Specific Role Title"},
+    {"id": "lane2", "label": "Another Role/Department", "role": "Another Role Title"}
   ],
   "nodes": [
-    {"id": "1", "type": "start", "label": "Customer submits refund request", "lane": "lane1"},
-    {"id": "2", "type": "activity", "label": "Validate purchase details", "lane": "lane2"},
-    {"id": "3", "type": "decision", "label": "Purchase within 30 days?", "lane": "lane2"},
-    {"id": "4", "type": "activity", "label": "Process refund", "lane": "lane2"},
-    {"id": "5", "type": "end", "label": "Refund completed", "lane": "lane1"}
+    {"id": "1", "type": "start", "label": "Exact process step description", "lane": "lane1"},
+    {"id": "2", "type": "activity", "label": "Specific activity description", "lane": "lane2"},
+    {"id": "3", "type": "decision", "label": "Decision point with exact wording", "lane": "lane2"},
+    {"id": "4", "type": "end", "label": "Process completion step", "lane": "lane1"}
   ],
   "connections": [
     {"from": "1", "to": "2"},
     {"from": "2", "to": "3"},
-    {"from": "3", "to": "4", "condition": "Yes"},
-    {"from": "4", "to": "5"}
+    {"from": "3", "to": "4", "condition": "Yes/No condition"}
   ]
 }
 
-RULES:
-1. Create swimlanes for each distinct role/department mentioned
-2. Assign each activity to the appropriate lane based on who performs it
-3. Use node types: start, activity, decision, end
-4. Include lane assignment for each node
-5. Add conditions to connections when decisions branch
-6. If no specific roles mentioned, create a single "General Process" lane
-7. Ensure logical flow and proper handoffs between lanes
-8. Output ONLY valid JSON (no commentary)
+NODE TYPES:
+- start: Beginning of the process
+- activity: Specific action or task
+- decision: Decision point or gateway
+- end: Process completion
 
-LANE ASSIGNMENT LOGIC:
-- Match activities to roles based on keywords and context
-- Create separate lanes for different departments/roles
-- Ensure each node has a lane assignment
-- Use clear, descriptive lane labels`
+OUTPUT REQUIREMENTS:
+- Output ONLY valid JSON (no commentary)
+- Use exact terminology from the user's description
+- Maintain the specific business domain context
+- If any step is ambiguous, add a clarification request in the JSON`
             },
-            { role: 'user', content: description }
+            {
+              role: 'user',
+              content: `Generate a detailed process map JSON for the following process.
+
+You must strictly adhere to the context, roles, and actions provided.
+Do NOT substitute a different process domain.
+Use the same terminology as the user.
+If any step or decision is ambiguous, add a clarification request.
+
+PROCESS DESCRIPTION:
+${description}`
+            }
           ],
-          temperature: 0.2,
+          temperature: 0.1, // Lower temperature for more consistent adherence to instructions
         }),
       });
 
@@ -283,7 +301,19 @@ LANE ASSIGNMENT LOGIC:
 
       const parsed = JSON.parse(content);
       
-      console.log('✅ AISERVICE: Process map generated successfully');
+      // Validate context consistency
+      const contextValidation = this.validateContextConsistency(description, parsed, contextKeywords);
+      if (!contextValidation.isValid) {
+        console.warn('⚠️ AISERVICE: Context validation failed:', contextValidation.reason);
+        return { 
+          success: true, 
+          map: parsed, 
+          clarificationNeeded: true,
+          error: contextValidation.reason 
+        };
+      }
+      
+      console.log('✅ AISERVICE: Process map generated successfully with context validation passed');
       return { success: true, map: parsed };
 
     } catch (error: any) {
@@ -411,6 +441,84 @@ Please update the process map to incorporate this clarification and ensure all a
       connections: aiResponse.connections || [],
       lanes: aiResponse.lanes || []
     };
+  }
+
+  // Extract context keywords from user description
+  private extractContextKeywords(description: string): string[] {
+    const text = description.toLowerCase();
+    const keywords: string[] = [];
+    
+    // Define domain-specific keyword patterns
+    const domainPatterns = {
+      tenant: ['tenant', 'rent', 'lease', 'property', 'landlord', 'maintenance', 'repair', 'apartment', 'building'],
+      retail: ['customer', 'purchase', 'refund', 'order', 'payment', 'shopping', 'store', 'product'],
+      healthcare: ['patient', 'doctor', 'medical', 'treatment', 'hospital', 'clinic', 'health'],
+      finance: ['account', 'bank', 'loan', 'credit', 'investment', 'transaction', 'money'],
+      service: ['service', 'support', 'complaint', 'issue', 'ticket', 'resolution'],
+      manufacturing: ['production', 'factory', 'assembly', 'quality', 'inventory', 'supply'],
+      education: ['student', 'teacher', 'course', 'grade', 'school', 'education', 'learning']
+    };
+    
+    // Check for domain-specific keywords
+    for (const [domain, patterns] of Object.entries(domainPatterns)) {
+      if (patterns.some(pattern => text.includes(pattern))) {
+        keywords.push(domain);
+      }
+    }
+    
+    // Extract business entities (capitalized words that might be proper nouns)
+    const capitalizedWords = description.match(/\b[A-Z][a-z]+\b/g) || [];
+    keywords.push(...capitalizedWords.map(word => word.toLowerCase()));
+    
+    return [...new Set(keywords)]; // Remove duplicates
+  }
+
+  // Validate context consistency between input and generated map
+  private validateContextConsistency(originalDescription: string, generatedMap: any, contextKeywords: string[]): {
+    isValid: boolean;
+    reason?: string;
+  } {
+    if (!generatedMap || !generatedMap.nodes) {
+      return { isValid: false, reason: 'Generated map is missing nodes' };
+    }
+    
+    const originalText = originalDescription.toLowerCase();
+    const generatedText = JSON.stringify(generatedMap).toLowerCase();
+    
+    // Check for domain mismatch
+    const domainMismatches = [
+      { original: ['tenant', 'rent', 'maintenance'], forbidden: ['customer', 'refund', 'purchase'] },
+      { original: ['customer', 'refund', 'purchase'], forbidden: ['tenant', 'rent', 'maintenance'] },
+      { original: ['patient', 'medical', 'doctor'], forbidden: ['customer', 'tenant', 'student'] },
+      { original: ['student', 'teacher', 'course'], forbidden: ['patient', 'customer', 'tenant'] }
+    ];
+    
+    for (const mismatch of domainMismatches) {
+      const hasOriginalContext = mismatch.original.some(term => originalText.includes(term));
+      const hasForbiddenContext = mismatch.forbidden.some(term => generatedText.includes(term));
+      
+      if (hasOriginalContext && hasForbiddenContext) {
+        const detectedOriginal = mismatch.original.find(term => originalText.includes(term));
+        const detectedForbidden = mismatch.forbidden.find(term => generatedText.includes(term));
+        return { 
+          isValid: false, 
+          reason: `Domain mismatch detected: Original context "${detectedOriginal}" but generated map contains "${detectedForbidden}" terms` 
+        };
+      }
+    }
+    
+    // Check if key business entities are preserved
+    const keyEntities = contextKeywords.filter(keyword => keyword.length > 3);
+    const preservedEntities = keyEntities.filter(entity => generatedText.includes(entity));
+    
+    if (keyEntities.length > 0 && preservedEntities.length < keyEntities.length * 0.5) {
+      return { 
+        isValid: false, 
+        reason: `Key business entities from original description are missing in generated map` 
+      };
+    }
+    
+    return { isValid: true };
   }
 }
 
