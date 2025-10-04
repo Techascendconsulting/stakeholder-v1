@@ -25,7 +25,8 @@ import {
   MessageSquare,
   TrendingUp,
   Moon,
-  Sun
+  Sun,
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -140,6 +141,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           id: 'process-mapper', 
           label: 'Process Mapping', 
           icon: PenTool
+        },
+        { 
+          id: 'ai-process-mapper', 
+          label: 'AI Process Mapper', 
+          icon: Sparkles
         },
         { 
           id: 'requirements-engineering', 

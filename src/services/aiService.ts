@@ -1,4 +1,5 @@
 import { singleAgentSystem } from './singleAgentSystem';
+import { API_CONFIG } from '../config/openai';
 
 // Lightweight shared types for other modules
 export interface StakeholderContext {
@@ -200,6 +201,82 @@ class AIService {
 
   public async generateMentionResponse(stakeholder: any, userMessage: string, context: any): Promise<string> {
     return this.generateStakeholderResponse(userMessage, stakeholder, context);
+  }
+
+  // AI Process Map Generation
+  public async generateProcessMap(description: string): Promise<{
+    success: boolean;
+    map?: any;
+    error?: string;
+  }> {
+    try {
+      console.log('🤖 AISERVICE: Generating process map for description:', description.substring(0, 100) + '...');
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a Business Analyst assistant that converts process descriptions into structured process map JSON.
+Use only these element types: start, activity, decision, end.
+Each node should include {id, type, label}.
+Use sequential order unless conditional language like "if" or "otherwise" appears.
+Output ONLY valid JSON (no commentary).
+Example:
+{
+  "nodes": [
+    {"id": "1", "type": "start", "label": "Tenant submits complaint"},
+    {"id": "2", "type": "activity", "label": "Tenant Services logs complaint"},
+    {"id": "3", "type": "decision", "label": "Complaint type?"},
+    {"id": "4", "type": "activity", "label": "Send to Finance"},
+    {"id": "5", "type": "activity", "label": "Resolve issue"},
+    {"id": "6", "type": "end", "label": "Complaint closed"}
+  ],
+  "connections": [
+    {"from": "1", "to": "2"},
+    {"from": "2", "to": "3"},
+    {"from": "3", "to": "4", "condition": "Billing"},
+    {"from": "4", "to": "5"},
+    {"from": "5", "to": "6"}
+  ]
+}`
+            },
+            { role: 'user', content: description }
+          ],
+          temperature: 0.2,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'OpenAI API error');
+      }
+
+      const content = data?.choices?.[0]?.message?.content;
+
+      if (!content || !content.trim().startsWith('{')) {
+        throw new Error('Invalid response format from OpenAI');
+      }
+
+      const parsed = JSON.parse(content);
+      
+      console.log('✅ AISERVICE: Process map generated successfully');
+      return { success: true, map: parsed };
+
+    } catch (error: any) {
+      console.error('❌ AISERVICE: Process map generation error:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Failed to generate process map' 
+      };
+    }
   }
 }
 

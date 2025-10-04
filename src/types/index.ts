@@ -42,6 +42,7 @@ export type AppView =
   | 'create-project'
   | 'ba-fundamentals'
   | 'process-mapper'
+  | 'ai-process-mapper'
   | 'process-mapper-editor'
   | 'diagram-creation'
   | 'advanced-topics'

@@ -155,6 +155,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'analysis',
         'ba-fundamentals',
         'process-mapper',
+        'ai-process-mapper',
         'process-mapper-editor',
         'diagram-creation',
         'project-setup',
