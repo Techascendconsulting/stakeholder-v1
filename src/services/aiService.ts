@@ -223,15 +223,12 @@ Output JSON only.
 
 REQUIRED OUTPUT FORMAT:
 {
-  "lanes": [
-    {"id": "lane1", "name": "Role/Department Name"},
-    {"id": "lane2", "name": "Another Role/Department"}
-  ],
+  "lanes": ["Role/Department Name", "Another Role/Department"],
   "nodes": [
-    {"id": "1", "type": "start", "label": "Exact process step description", "laneId": "lane1"},
-    {"id": "2", "type": "task", "label": "Specific activity description", "laneId": "lane2"},
-    {"id": "3", "type": "decision", "label": "Decision point with exact wording", "laneId": "lane2"},
-    {"id": "4", "type": "end", "label": "Process completion step", "laneId": "lane1"}
+    {"id": "1", "type": "startEvent", "label": "Exact process step description", "lane": "Role/Department Name"},
+    {"id": "2", "type": "task", "label": "Specific activity description", "lane": "Another Role/Department"},
+    {"id": "3", "type": "exclusiveGateway", "label": "Decision point with exact wording", "lane": "Another Role/Department"},
+    {"id": "4", "type": "endEvent", "label": "Process completion step", "lane": "Role/Department Name"}
   ],
   "connections": [
     {"from": "1", "to": "2"},
@@ -240,9 +237,10 @@ REQUIRED OUTPUT FORMAT:
   ]
 }
 
-NODE TYPES: start, task, decision, end
+NODE TYPES: startEvent, task, exclusiveGateway, endEvent
 Use exact terminology from the user's description.
 Maintain the specific business domain context.
+Each node must have a "lane" property matching one of the lane names exactly.
 `;
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
