@@ -969,7 +969,7 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
               }`}
             >
-              Next AC
+              {stepIndex === 0 ? 'Next' : 'Next AC'}
             </button>
           </div>
         </div>

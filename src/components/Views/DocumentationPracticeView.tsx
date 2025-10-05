@@ -14,6 +14,11 @@ const DocumentationPracticeView: React.FC = () => {
     setActiveTab('advanced');
   };
 
+  // Ensure currentView is set to documentation-practice when this component loads
+  useEffect(() => {
+    setCurrentView('documentation-practice');
+  }, [setCurrentView]);
+
   // Save view to localStorage whenever it changes
   useEffect(() => {
     try {

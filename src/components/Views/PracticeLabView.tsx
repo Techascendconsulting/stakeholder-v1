@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   ArrowLeft, 
   Target, 
@@ -15,6 +15,11 @@ import { useApp } from '../../contexts/AppContext';
 
 const PracticeLabView: React.FC = () => {
   const { setCurrentView } = useApp();
+
+  // Ensure currentView is set to practice when this component loads
+  useEffect(() => {
+    setCurrentView('practice');
+  }, [setCurrentView]);
 
   const handleBack = () => {
     setCurrentView('training-hub');
