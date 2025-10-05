@@ -134,7 +134,7 @@ const HandbookView: React.FC = () => {
       }
     }, 1000);
     
-    loadAllPages();
+    loadEssentialContent();
   }, []);
 
   // Debug startPage changes
