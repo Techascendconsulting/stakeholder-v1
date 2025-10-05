@@ -1114,7 +1114,7 @@ export const AgileHubView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 transition-all duration-300 ${showDocumentationSection ? 'mr-96' : ''}`}>
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -2194,7 +2194,7 @@ export const AgileHubView: React.FC = () => {
 
       {/* Documentation Sidebar */}
       {showDocumentationSection && (
-        <div className="fixed top-0 right-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl border-l border-gray-200 dark:border-gray-700 z-50 transform transition-transform duration-300 ease-in-out">
+        <div className="fixed top-0 right-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl border-l border-gray-200 dark:border-gray-700 z-40">
           <div className="h-full flex flex-col">
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between">
@@ -2217,6 +2217,7 @@ export const AgileHubView: React.FC = () => {
           </div>
         </div>
       )}
+
 
       {/* Edit Ticket Modal */}
       {showEditModal && selectedTicket && (
