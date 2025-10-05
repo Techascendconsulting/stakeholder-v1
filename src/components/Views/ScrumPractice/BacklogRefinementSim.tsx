@@ -235,30 +235,6 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
             </div>
           </div>
         </div>
-        
-        {/* Call to Action */}
-        <div className="text-center mt-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">Ready to See It in Action?</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            Watch real refinement sessions and learn how experienced BAs facilitate these crucial discussions
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button
-              onClick={() => setPage('simulation-info')}
-              className="inline-flex items-center px-8 py-4 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-all duration-200 hover:scale-105 shadow-lg"
-            >
-              <Play className="w-5 h-5 mr-3" />
-              Watch Refinement Simulation
-            </button>
-            <button
-              onClick={scrollToProcessSection}
-              className="inline-flex items-center px-8 py-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 shadow-lg"
-            >
-              <Target className="w-5 h-5 mr-3" />
-              Learn the Process
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Key Benefits Section */}
@@ -397,6 +373,30 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Call to Action */}
+      <div className="max-w-4xl mx-auto px-6 py-8 pb-16 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">Ready to See It in Action?</h2>
+        <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+          Watch real refinement sessions and learn how experienced BAs facilitate these crucial discussions
+        </p>
+        <div className="flex flex-wrap gap-4 justify-center">
+          <button
+            onClick={() => setPage('simulation-info')}
+            className="inline-flex items-center px-8 py-4 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-all duration-200 hover:scale-105 shadow-lg"
+          >
+            <Play className="w-5 h-5 mr-3" />
+            Watch Refinement Simulation
+          </button>
+          <button
+            onClick={scrollToProcessSection}
+            className="inline-flex items-center px-8 py-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-600 shadow-lg"
+          >
+            <Target className="w-5 h-5 mr-3" />
+            Learn the Process
+          </button>
         </div>
       </div>
 
