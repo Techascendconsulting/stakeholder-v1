@@ -264,11 +264,21 @@ export default function AIProcessMapperView() {
       else if (n.type === 'decision') proc += `    <bpmn:exclusiveGateway id="${esc(n.id)}" name="${esc(n.label)}"/>\n`;
     }
 
+    // Create a lookup map for all valid node IDs
+    const validNodeIds = new Set(resolvedNodes.map(n => n.id));
+    console.log('🔧 Valid node IDs:', Array.from(validNodeIds));
+
     // Sequence flows with optional condition labels
     let flowXml = '';
     let flowNum = 1;
     const flowIds: string[] = [];
     (spec.connections || []).forEach(c => {
+      // Validate that source and target nodes exist
+      if (!validNodeIds.has(c.from) || !validNodeIds.has(c.to)) {
+        console.warn(`⚠️ Skipping invalid connection: ${c.from} -> ${c.to} (node not found)`);
+        return;
+      }
+      
       const id = c.id || `Flow_${flowNum++}`;
       flowIds.push(id);
       const cond = (c.label && c.label.trim().length)
@@ -299,11 +309,23 @@ export default function AIProcessMapperView() {
       di += `      </bpmndi:BPMNShape>\n`;
     }
 
-    // Edge waypoints (simple orthogonal routing)
+    // Edge waypoints (simple orthogonal routing) - only for valid connections
     (spec.connections || []).forEach((c, i) => {
+      // Only create edges for valid connections
+      if (!validNodeIds.has(c.from) || !validNodeIds.has(c.to)) {
+        return;
+      }
+      
       const sid = c.id || `Flow_${i + 1}`;
       const s = xy[c.from];
       const t = xy[c.to];
+      
+      // Ensure coordinates exist
+      if (!s || !t) {
+        console.warn(`⚠️ Missing coordinates for connection: ${c.from} -> ${c.to}`);
+        return;
+      }
+      
       const sCenterY = s.y + s.h / 2;
       const tCenterY = t.y + t.h / 2;
       const sRightX = s.x + s.w;
@@ -320,7 +342,12 @@ export default function AIProcessMapperView() {
     di += `  </bpmndi:BPMNDiagram>\n`;
 
     const defsClose = `</bpmn:definitions>`;
-    return [defsOpen, proc, di, defsClose].join('');
+    const finalXml = [defsOpen, proc, di, defsClose].join('');
+    
+    // Log the first 500 characters for verification
+    console.log('🔧 Generated BPMN XML (first 500 chars):', finalXml.slice(0, 500));
+    
+    return finalXml;
   };
 
   // Small utility used above
