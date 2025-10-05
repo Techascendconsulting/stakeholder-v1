@@ -79,70 +79,254 @@ export default function AIProcessMapperView() {
     }
   };
 
-  // Generate BPMN XML from AI response data with validation and logging
-  const generateBPMNXML = async (mapData: any): Promise<string> => {
-    console.log('🔧 generateBPMNXML: Processing map data:', mapData);
-    
-    const { lanes, nodes, connections } = mapData;
-    
-    // Log any missing data but don't crash
-    if (!lanes || lanes.length === 0) {
-      console.warn('⚠️ No lanes provided - will use default lane');
-    }
-    
-    if (!nodes || nodes.length === 0) {
-      console.error('❌ No nodes provided for BPMN generation');
-      return createMinimalBPMN();
-    }
-    
-    if (!connections || connections.length === 0) {
-      console.warn('⚠️ No connections provided - will create basic flow');
-    }
-    
-    console.log('🔧 generateBPMNXML: Lanes:', lanes?.length || 0, 'Nodes:', nodes.length, 'Connections:', connections?.length || 0);
-
-    // Convert to MapSpec format for buildBPMN utility
-    const mapSpec = {
-      lanes: lanes || [],
-      nodes: nodes || [],
-      connections: connections || []
-    };
-
-    try {
-      // Use our robust buildBPMN utility
-      const xml = buildBPMN(mapSpec);
-      
-      // Validate the generated XML
-      if (!xml || !xml.includes('<bpmn:definitions')) {
-        console.error('❌ buildBPMN returned invalid XML');
-        return createMinimalBPMN();
-      }
-      
-      if (!xml.includes('<bpmn:process')) {
-        console.error('❌ Generated XML missing process element');
-        return createMinimalBPMN();
-      }
-      
-      if (!xml.includes('<bpmn:startEvent') && !xml.includes('<bpmn:start')) {
-        console.warn('⚠️ Generated XML missing start event');
-      }
-      
-      if (!xml.includes('<bpmn:endEvent') && !xml.includes('<bpmn:end')) {
-        console.warn('⚠️ Generated XML missing end event');
-      }
-      
-      if (!xml.includes('<bpmn:sequenceFlow')) {
-        console.warn('⚠️ Generated XML missing sequence flows');
-      }
-
-      console.log('✅ generateBPMNXML: Successfully generated valid BPMN XML');
-      return xml;
-      
-    } catch (error) {
-      console.error('❌ generateBPMNXML: Error in buildBPMN:', error);
-      return createMinimalBPMN();
-    }
+  // ---- BPMN Generator: JSON ({lanes,nodes,connections}) -> BPMN 2.0 XML with BPMNDI ----
+  
+  type NodeType = 'start' | 'task' | 'decision' | 'end';
+  type Lane = { id?: string; name: string };
+  type Node = {
+    id: string;
+    type: NodeType;
+    label: string;
+    lane?: string;     // lane name (preferred)
+    laneId?: string;   // lane id (optional)
   };
+  type Conn = { id?: string; from: string; to: string; label?: string };
+  type MapSpec = { title?: string; lanes: Lane[]; nodes: Node[]; connections: Conn[] };
+
+  const generateBPMNXML = (specIn: MapSpec): string => {
+    // --- helpers ---
+    const esc = (s = '') =>
+      s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+
+    const uid = (() => {
+      let i = 1;
+      return (p: string) => `${p}_${i++}`;
+    })();
+
+    // Defensive clone
+    const spec: MapSpec = JSON.parse(JSON.stringify(specIn || { lanes: [], nodes: [], connections: [] }));
+
+    // Normalize lanes (always at least one)
+    if (!spec.lanes || !spec.lanes.length) {
+      spec.lanes = [{ id: 'lane_1', name: 'General' }];
+    }
+    // assign lane ids if missing
+    spec.lanes = spec.lanes.map((l, idx) => ({ id: l.id || `lane_${idx + 1}`, name: l.name?.trim() || `Lane ${idx + 1}` }));
+
+    // Map lane lookup
+    const laneByName = new Map(spec.lanes.map(l => [l.name.toLowerCase(), l]));
+    const defaultLaneId = spec.lanes[0].id!;
+
+    // Index nodes and connections
+    const byId = new Map<string, Node>();
+    (spec.nodes || []).forEach(n => byId.set(n.id, n));
+
+    // ----- Ensure Start/End presence -----
+    const incomingCount: Record<string, number> = {};
+    const outgoingCount: Record<string, number> = {};
+    (spec.nodes || []).forEach(n => { incomingCount[n.id] = 0; outgoingCount[n.id] = 0; });
+    (spec.connections || []).forEach(c => {
+      if (incomingCount[c.to] == null) incomingCount[c.to] = 0;
+      if (outgoingCount[c.from] == null) outgoingCount[c.from] = 0;
+      incomingCount[c.to] += 1;
+      outgoingCount[c.from] += 1;
+    });
+
+    const hasStart = spec.nodes.some(n => n.type === 'start');
+    if (!hasStart) {
+      // Pick a node with no incoming as first activity and prepend a Start
+      const first = spec.nodes.find(n => (incomingCount[n.id] ?? 0) === 0) || spec.nodes[0];
+      const startId = 'StartEvent_1';
+      spec.nodes.unshift({ id: startId, type: 'start', label: 'Start', lane: first?.lane, laneId: first?.laneId });
+      spec.connections.unshift({ id: uid('Flow'), from: startId, to: first?.id ?? 'EndEvent_1' });
+      byId.set(startId, spec.nodes[0]);
+      incomingCount[first?.id ?? ''] = (incomingCount[first?.id ?? ''] ?? 0) + 1;
+    }
+
+    const hasEnd = spec.nodes.some(n => n.type === 'end');
+    if (!hasEnd) {
+      const endId = 'EndEvent_1';
+      spec.nodes.push({ id: endId, type: 'end', label: 'End' });
+      byId.set(endId, spec.nodes[spec.nodes.length - 1]);
+      // Any nodes with no outgoing should flow to End
+      spec.nodes.forEach(n => {
+        if ((outgoingCount[n.id] ?? 0) === 0 && n.type !== 'end') {
+          spec.connections.push({ id: uid('Flow'), from: n.id, to: endId });
+          outgoingCount[n.id] = (outgoingCount[n.id] ?? 0) + 1;
+          incomingCount[endId] = (incomingCount[endId] ?? 0) + 1;
+        }
+      });
+    }
+
+    // ----- Ensure gateways (decision) have 2+ branches -----
+    const outgoingOf = (id: string) => (spec.connections || []).filter(c => c.from === id);
+    spec.nodes
+      .filter(n => n.type === 'decision')
+      .forEach(gw => {
+        const outs = outgoingOf(gw.id);
+        if (outs.length < 2) {
+          // If only one path and it's labeled Yes/True, add No/False to End
+          const yesish = outs.some(o => /^(yes|true|approved)/i.test(o.label || ''));
+          const altLabel = yesish ? 'No' : 'False';
+          const end = spec.nodes.find(n => n.type === 'end')!;
+          spec.connections.push({ id: uid('Flow'), from: gw.id, to: end.id, label: altLabel });
+        }
+      });
+
+    // ----- Assign nodes to lanes -----
+    const resolvedNodes: Node[] = spec.nodes.map(n => {
+      // Prefer explicit laneId, then lane name on node, else infer from label, else default lane
+      let laneId = n.laneId;
+      if (!laneId && n.lane) {
+        laneId = laneByName.get(n.lane.toLowerCase())?.id;
+      }
+      if (!laneId) {
+        // simple inference: if label contains lane name
+        const m = spec.lanes.find(l => n.label && new RegExp(`\\b${escapeRegExp(l.name)}\\b`, 'i').test(n.label));
+        laneId = m?.id ?? defaultLaneId;
+      }
+      return { ...n, laneId };
+    });
+
+    // ----- Simple layout -----
+    // compute topological-ish levels to spread horizontally
+    const levels: Record<string, number> = {};
+    const indeg: Record<string, number> = {};
+    resolvedNodes.forEach(n => indeg[n.id] = 0);
+    spec.connections.forEach(c => { indeg[c.to] = (indeg[c.to] ?? 0) + 1; });
+    const q: string[] = resolvedNodes.filter(n => indeg[n.id] === 0).map(n => n.id);
+    q.forEach(id => levels[id] = 0);
+    while (q.length) {
+      const u = q.shift()!;
+      const outs = (spec.connections || []).filter(c => c.from === u).map(c => c.to);
+      outs.forEach(v => {
+        indeg[v] -= 1;
+        levels[v] = Math.max(levels[v] ?? 0, (levels[u] ?? 0) + 1);
+        if (indeg[v] === 0) q.push(v);
+      });
+    }
+    // fallback
+    resolvedNodes.forEach(n => { if (levels[n.id] == null) levels[n.id] = 0; });
+
+    // Layout constants
+    const laneHeight = 220;
+    const laneGap = 8;
+    const left = 80;
+    const top = 80;
+    const nodeW = 120;
+    const nodeH = 80;
+    const colGap = 160;
+    const procWidth = 1600;
+
+    // assign (x,y)
+    const laneIndexById = new Map(spec.lanes.map((l, i) => [l.id!, i]));
+    const xy: Record<string, { x: number; y: number; w: number; h: number }> = {};
+    resolvedNodes.forEach(n => {
+      const laneIdx = laneIndexById.get(n.laneId!) ?? 0;
+      const yTop = top + laneIdx * (laneHeight + laneGap) + (laneHeight - nodeH) / 2;
+      const col = levels[n.id] ?? 0;
+      const x = left + 40 + col * (nodeW + colGap);
+      const isEvt = n.type === 'start' || n.type === 'end';
+      const isGw = n.type === 'decision';
+      const w = isGw ? 50 : isEvt ? 36 : nodeW;
+      const h = isGw ? 50 : isEvt ? 36 : nodeH;
+      xy[n.id] = { x, y: yTop, w, h };
+    });
+
+    // ----- XML: definitions & process -----
+    const defsOpen = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">`;
+
+    const procId = 'Process_1';
+    let proc = `  <bpmn:process id="${procId}" isExecutable="false">\n`;
+
+    // LaneSet with flowNodeRef
+    proc += `    <bpmn:laneSet id="LaneSet_1">\n`;
+    for (const lane of spec.lanes) {
+      proc += `      <bpmn:lane id="${esc(lane.id!)}" name="${esc(lane.name)}">\n`;
+    resolvedNodes
+      .filter(n => n.laneId === lane.id)
+      .forEach(n => proc += `        <bpmn:flowNodeRef>${esc(n.id)}</bpmn:flowNodeRef>\n`);
+    proc += `      </bpmn:lane>\n`;
+    }
+    proc += `    </bpmn:laneSet>\n`;
+
+    // Flow nodes
+    for (const n of resolvedNodes) {
+      if (n.type === 'start') proc += `    <bpmn:startEvent id="${esc(n.id)}" name="${esc(n.label)}"/>\n`;
+      else if (n.type === 'end') proc += `    <bpmn:endEvent id="${esc(n.id)}" name="${esc(n.label)}"/>\n`;
+      else if (n.type === 'task') proc += `    <bpmn:task id="${esc(n.id)}" name="${esc(n.label)}"/>\n`;
+      else if (n.type === 'decision') proc += `    <bpmn:exclusiveGateway id="${esc(n.id)}" name="${esc(n.label)}"/>\n`;
+    }
+
+    // Sequence flows with optional condition labels
+    let flowXml = '';
+    let flowNum = 1;
+    const flowIds: string[] = [];
+    (spec.connections || []).forEach(c => {
+      const id = c.id || `Flow_${flowNum++}`;
+      flowIds.push(id);
+      const cond = (c.label && c.label.trim().length)
+        ? `\n      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[${c.label}]]></bpmn:conditionExpression>\n    `
+        : '';
+      flowXml += `    <bpmn:sequenceFlow id="${esc(id)}" sourceRef="${esc(c.from)}" targetRef="${esc(c.to)}">${cond}</bpmn:sequenceFlow>\n`;
+    });
+    proc += flowXml;
+    proc += `  </bpmn:process>\n`;
+
+    // ----- BPMNDI (diagram + plane + shapes + edges) -----
+    let di = `  <bpmndi:BPMNDiagram id="BPMNDiagram_1">\n`;
+    di += `    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="${procId}">\n`;
+
+    // Lane shapes
+    spec.lanes.forEach((lane, i) => {
+      const y = top + i * (laneHeight + laneGap);
+      di += `      <bpmndi:BPMNShape id="${esc(lane.id!)}_di" bpmnElement="${esc(lane.id!)}">\n`;
+      di += `        <dc:Bounds x="${left}" y="${y}" width="${procWidth}" height="${laneHeight}"/>\n`;
+      di += `      </bpmndi:BPMNShape>\n`;
+    });
+
+    // Node shapes
+    for (const n of resolvedNodes) {
+      const b = xy[n.id];
+      di += `      <bpmndi:BPMNShape id="${esc(n.id)}_di" bpmnElement="${esc(n.id)}">\n`;
+      di += `        <dc:Bounds x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>\n`;
+      di += `      </bpmndi:BPMNShape>\n`;
+    }
+
+    // Edge waypoints (simple orthogonal routing)
+    (spec.connections || []).forEach((c, i) => {
+      const sid = c.id || `Flow_${i + 1}`;
+      const s = xy[c.from];
+      const t = xy[c.to];
+      const sCenterY = s.y + s.h / 2;
+      const tCenterY = t.y + t.h / 2;
+      const sRightX = s.x + s.w;
+      const midX = Math.max(sRightX + 20, t.x - 20); // bend in the middle-ish
+      di += `      <bpmndi:BPMNEdge id="${esc(sid)}_di" bpmnElement="${esc(sid)}">\n`;
+      di += `        <di:waypoint x="${sRightX}" y="${sCenterY}"/>\n`;
+      di += `        <di:waypoint x="${midX}" y="${sCenterY}"/>\n`;
+      di += `        <di:waypoint x="${midX}" y="${tCenterY}"/>\n`;
+      di += `        <di:waypoint x="${t.x}" y="${tCenterY}"/>\n`;
+      di += `      </bpmndi:BPMNEdge>\n`;
+    });
+
+    di += `    </bpmndi:BPMNPlane>\n`;
+    di += `  </bpmndi:BPMNDiagram>\n`;
+
+    const defsClose = `</bpmn:definitions>`;
+    return [defsOpen, proc, di, defsClose].join('');
+  };
+
+  // Small utility used above
+  function escapeRegExp(s: string) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 
   // Create minimal BPMN XML as fallback with diagram information and swimlanes
   const createMinimalBPMN = () => {
@@ -515,7 +699,7 @@ export default function AIProcessMapperView() {
           import.meta.env.VITE_SUPABASE_ANON_KEY
         );
 
-        const bpmnXML = await generateBPMNXML(mapData);
+        const bpmnXML = generateBPMNXML(mapData);
         
         const diagramData = {
           id: uuidv4(),
