@@ -8,6 +8,11 @@ import { StakeholderBotProvider } from '../../context/StakeholderBotContext';
 const DocumentationPracticeView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [activeTab, setActiveTab] = useState<'practice' | 'advanced'>('practice');
+  
+  // Function to switch to advanced tab (can be called from child components)
+  const switchToAdvancedTab = () => {
+    setActiveTab('advanced');
+  };
 
   // Save view to localStorage whenever it changes
   useEffect(() => {
@@ -64,7 +69,7 @@ const DocumentationPracticeView: React.FC = () => {
         </div>
 
         <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-white dark:bg-gray-800 min-h-[500px]">
-          {activeTab === "practice" && <PracticeAndCoachingLayer />}
+          {activeTab === "practice" && <PracticeAndCoachingLayer onSwitchToAdvanced={switchToAdvancedTab} />}
           {activeTab === "advanced" && <AdvancedLayer />}
         </div>
       </div>

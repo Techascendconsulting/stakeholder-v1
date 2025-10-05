@@ -81,7 +81,11 @@ const getRandomPracticeScenario = (): Scenario => {
   return practiceOnly[idx];
 };
 
-export default function PracticeAndCoachingLayer() {
+interface PracticeAndCoachingLayerProps {
+  onSwitchToAdvanced?: () => void;
+}
+
+export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: PracticeAndCoachingLayerProps) {
   const { setCurrentUserStory, setCurrentStep, setBotCurrentScenario } = useStakeholderBot();
   // Initialize state from localStorage or defaults
   const [stepIndex, setStepIndex] = useState(() => {
@@ -133,10 +137,10 @@ export default function PracticeAndCoachingLayer() {
   const [userStory, setUserStory] = useState(() => {
     try {
       const saved = localStorage.getItem('practice_coaching_userStory');
-      return saved || '';
+      return saved || 'As a [role]\nI want [action]\nSo that [benefit]';
     } catch (error) {
       console.log('Error loading userStory from localStorage:', error);
-      return '';
+      return 'As a [role]\nI want [action]\nSo that [benefit]';
     }
   });
 
@@ -384,8 +388,10 @@ export default function PracticeAndCoachingLayer() {
     setShowAdvancedExplainer(false);
     localStorage.setItem('seenAdvancedCoach', 'true');
     setUserHasSeenAdvancedCoach(true);
-    // Navigate to advanced explainer page
-    window.open('/advanced-coaching', '_blank');
+    // Switch to advanced tab to start advanced coaching
+    if (onSwitchToAdvanced) {
+      onSwitchToAdvanced();
+    }
   };
 
   const handleDismissAdvanced = () => {
@@ -509,7 +515,7 @@ export default function PracticeAndCoachingLayer() {
     
     // Reset all state
     setCurrentScenario(getRandomPracticeScenario());
-    setUserStory('');
+    setUserStory('As a [role]\nI want [action]\nSo that [benefit]');
     setStepIndex(0);
     setAcInputs(Array(coachingSteps.length).fill(''));
     setFeedbacks(Array(coachingSteps.length).fill(''));
@@ -673,7 +679,14 @@ export default function PracticeAndCoachingLayer() {
   };
 
   const handleNext = () => {
-    if (stepIndex < coachingSteps.length - 1 && acInputs[stepIndex].trim()) {
+    const canProceed = stepIndex === 0 ? 
+      // For user story step, check if AI validation passed
+      userStory.trim() && aiValidationResults.length > 0 && aiValidationResults.every((r: any) => r.status === '✅')
+      : 
+      // For other steps, check if input is provided
+      acInputs[stepIndex].trim();
+      
+    if (stepIndex < coachingSteps.length - 1 && canProceed) {
       setStepIndex(stepIndex + 1);
       setAcValidation(null);
       setAiValidationResults([]); // Clear AI feedback when moving to next step
@@ -935,9 +948,23 @@ export default function PracticeAndCoachingLayer() {
 
             <button
               onClick={handleNext}
-              disabled={stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()}
+              disabled={
+                stepIndex === coachingSteps.length - 1 || 
+                (stepIndex === 0 ? 
+                  // For user story step (step 0), check if AI validation passed
+                  !userStory.trim() || !aiValidationResults.length || !aiValidationResults.every((r: any) => r.status === '✅')
+                  : 
+                  // For other steps, check if input is provided
+                  !acInputs[stepIndex].trim()
+                )
+              }
               className={`px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
-                stepIndex === coachingSteps.length - 1 || !acInputs[stepIndex].trim()
+                stepIndex === coachingSteps.length - 1 || 
+                (stepIndex === 0 ? 
+                  !userStory.trim() || !aiValidationResults.length || !aiValidationResults.every((r: any) => r.status === '✅')
+                  : 
+                  !acInputs[stepIndex].trim()
+                )
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
               }`}
