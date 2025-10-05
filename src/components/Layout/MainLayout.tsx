@@ -56,7 +56,7 @@ import WelcomeView from '../Views/WelcomeView';
 import MotivationPage from '../Views/MotivationPage';
 import GetStartedView from '../Views/GetStartedView';
 import ProcessMappingIntroView from '../Views/ProcessMappingIntroView';
-import AIProcessMapperView from '../Views/AIProcessMapperView';
+// import AIProcessMapperView from '../Views/AIProcessMapperView'; // Archived
 import DiagramCreationView from '../Views/DiagramCreationView';
 import ProcessMapperView from '../Views/ProcessMapperView';
 import TrainingUI from '../Views/TrainingUI';
@@ -169,8 +169,8 @@ const MainLayout: React.FC = () => {
 
       case 'process-mapper':
         return <ProcessMappingIntroView />;
-      case 'ai-process-mapper':
-        return <AIProcessMapperView />;
+      // case 'ai-process-mapper': // Archived
+      //   return <AIProcessMapperView />;
       case 'process-mapper-editor':
         return <ProcessMapperView />;
       case 'diagram-creation':

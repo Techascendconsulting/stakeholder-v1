@@ -26,7 +26,7 @@ import {
   TrendingUp,
   Moon,
   Sun,
-  Sparkles
+  // Sparkles // Archived with AI Process Mapper
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -142,11 +142,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           label: 'Process Mapping', 
           icon: PenTool
         },
-        { 
-          id: 'ai-process-mapper', 
-          label: 'AI Process Mapper', 
-          icon: Sparkles
-        },
+        // { 
+        //   id: 'ai-process-mapper', 
+        //   label: 'AI Process Mapper', 
+        //   icon: Sparkles
+        // }, // Archived
         { 
           id: 'requirements-engineering', 
           label: 'Requirements Engineering', 
