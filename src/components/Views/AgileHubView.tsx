@@ -1189,7 +1189,7 @@ export const AgileHubView: React.FC = () => {
         </div>
       </div>
 
-      <div className={`${showDocumentationSection ? 'max-w-none lg:pr-96' : 'max-w-7xl'} mx-auto px-4 sm:px-6 lg:px-8 py-6 ${showEpicSidebar ? 'flex' : ''}`}>
+      <div className={`${showDocumentationSection ? 'max-w-none xl:pr-96' : 'max-w-7xl'} mx-auto px-4 sm:px-6 lg:px-8 py-6 ${showEpicSidebar ? 'flex' : ''}`}>
 
         {/* Epic Sidebar */}
         {showEpicSidebar && (
@@ -1555,9 +1555,9 @@ export const AgileHubView: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className={`flex flex-col lg:flex-row ${selectedTicket ? 'lg:space-x-6 space-y-6' : ''}`}>
+                  <div className={`flex flex-col xl:flex-row ${selectedTicket ? 'xl:space-x-6 space-y-6' : ''}`}>
                     {/* Left Side - Tickets Table */}
-                    <div className={`${selectedTicket ? (showDocumentationSection ? 'lg:w-1/3 w-full' : 'lg:w-1/2 w-full') : (showDocumentationSection ? 'lg:w-2/3 w-full' : 'w-full')} transition-all duration-300`}>
+                    <div className={`${selectedTicket ? (showDocumentationSection ? 'xl:w-1/3 w-full' : 'xl:w-1/2 w-full') : (showDocumentationSection ? 'xl:w-2/3 w-full' : 'w-full')} transition-all duration-300`}>
                       <div className="overflow-x-auto max-w-full">
                     <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
                       <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600">
@@ -1818,7 +1818,7 @@ export const AgileHubView: React.FC = () => {
 
                     {/* Right Side - Ticket Details Panel (Jira-style split screen) */}
                     {selectedTicket && (
-                      <div className={`${showDocumentationSection ? 'lg:w-1/3 w-full' : 'lg:w-1/2 w-full'} transition-all duration-300`}>
+                      <div className={`${showDocumentationSection ? 'xl:w-1/3 w-full' : 'xl:w-1/2 w-full'} transition-all duration-300`}>
                         <TicketDetailPanel 
                           ticket={selectedTicket} 
                           onClose={() => setSelectedTicket(null)}
