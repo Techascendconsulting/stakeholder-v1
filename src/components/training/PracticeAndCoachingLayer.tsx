@@ -213,25 +213,6 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
   // Completion modal state
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
-  // Debug function to reset advanced coach flag (for testing)
-  const resetAdvancedCoachFlag = () => {
-    console.log('🔄 DEBUG: Reset button clicked');
-    console.log('🔄 DEBUG: Before reset - userHasSeenAdvancedCoach:', userHasSeenAdvancedCoach);
-    console.log('🔄 DEBUG: Before reset - isAdvancedMode:', isAdvancedMode);
-    console.log('🔄 DEBUG: Before reset - localStorage seenAdvancedCoach:', localStorage.getItem('seenAdvancedCoach'));
-    console.log('🔄 DEBUG: Before reset - localStorage advancedMode:', localStorage.getItem('practice_coaching_advancedMode'));
-    
-    localStorage.removeItem('seenAdvancedCoach');
-    localStorage.removeItem('practice_coaching_advancedMode');
-    setUserHasSeenAdvancedCoach(false);
-    setIsAdvancedMode(false);
-    
-    console.log('🔄 DEBUG: After reset - userHasSeenAdvancedCoach:', false);
-    console.log('🔄 DEBUG: After reset - isAdvancedMode:', false);
-    console.log('🔄 DEBUG: After reset - localStorage seenAdvancedCoach:', localStorage.getItem('seenAdvancedCoach'));
-    console.log('🔄 DEBUG: After reset - localStorage advancedMode:', localStorage.getItem('practice_coaching_advancedMode'));
-    console.log('🔄 DEBUG: Advanced coach flags reset complete');
-  };
 
   // Load a random scenario on component mount if none is saved
   useEffect(() => {
@@ -354,40 +335,21 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
 
   // Detect advanced triggers when user story or AC inputs change (debounced)
   useEffect(() => {
-    console.log('🔍 DEBUG: Advanced detection useEffect triggered');
-    console.log('🔍 DEBUG: userStory:', userStory);
-    console.log('🔍 DEBUG: acInputs:', acInputs);
-    console.log('🔍 DEBUG: userHasSeenAdvancedCoach:', userHasSeenAdvancedCoach);
-    console.log('🔍 DEBUG: isAdvancedMode:', isAdvancedMode);
-    
     const timeoutId = setTimeout(() => {
-      console.log('🔍 DEBUG: Advanced detection timeout fired after 2 seconds');
       const combinedInput = userStory + ' ' + acInputs.join(' ');
-      console.log('🔍 DEBUG: combinedInput:', combinedInput);
       
       if (combinedInput.trim().length > 0) {
         const triggers = getAdvancedTriggersFound(combinedInput);
-        console.log('🔍 DEBUG: triggers found:', triggers);
         setAdvancedTriggersFound(triggers);
         
         // Show advanced explainer if triggers found and user hasn't seen it
         if (triggers.length > 0 && !userHasSeenAdvancedCoach && !isAdvancedMode) {
-          console.log('🔍 DEBUG: Should show advanced explainer modal!');
           setShowAdvancedExplainer(true);
-        } else {
-          console.log('🔍 DEBUG: Not showing modal because:', {
-            hasTriggers: triggers.length > 0,
-            hasntSeenCoach: !userHasSeenAdvancedCoach,
-            notAdvancedMode: !isAdvancedMode
-          });
         }
       }
     }, 2000); // 2 second debounce for trigger detection
 
-    return () => {
-      console.log('🔍 DEBUG: Clearing advanced detection timeout');
-      clearTimeout(timeoutId);
-    };
+    return () => clearTimeout(timeoutId);
   }, [userStory, acInputs, userHasSeenAdvancedCoach, isAdvancedMode]);
 
   const handleInputChange = (value: string) => {
@@ -757,41 +719,6 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
   return (
     <>
     <div className="p-4 h-full flex flex-col">
-      {/* Debug button for testing advanced coach (temporary) */}
-      <div className="mb-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
-        <button 
-          onClick={resetAdvancedCoachFlag}
-          className="text-sm bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-        >
-          🔄 Reset Advanced Coach Flag (Debug)
-        </button>
-        <span className="ml-2 text-xs text-gray-600">
-          userHasSeenAdvancedCoach: {userHasSeenAdvancedCoach.toString()}, 
-          triggers: {advancedTriggersFound.length}
-        </span>
-        <button 
-          onClick={() => {
-            console.log('🧪 DEBUG: Testing advanced detection manually');
-            const testStory = 'As a customer, I want to submit a booking request so that I can schedule an appointment';
-            setUserStory(testStory);
-            console.log('🧪 DEBUG: Set test story with triggers');
-          }}
-          className="ml-2 text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-        >
-          🧪 Test Advanced Detection
-        </button>
-        <button 
-          onClick={() => {
-            console.log('🔄 DEBUG: Force practice mode');
-            setIsAdvancedMode(false);
-            localStorage.setItem('practice_coaching_advancedMode', 'false');
-            console.log('🔄 DEBUG: Set to practice mode');
-          }}
-          className="ml-2 text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-        >
-          🔄 Force Practice Mode
-        </button>
-      </div>
       
       {/* Save Status Indicator */}
       {lastSavedAt && (
