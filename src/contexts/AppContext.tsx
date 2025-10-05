@@ -163,8 +163,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'pre-brief',
         'live-training-meeting',
         'post-brief',
-        'community-hub',
-        'community-admin',
+        // 'community-hub', // Archived for MVP
+        // 'community-admin', // Archived for MVP
         'admin',
         'admin-panel',
         // Learning pages that were missing
@@ -419,7 +419,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           'agile-scrum', 'scrum-essentials', 'agile-practice', 'user-story-checker',
           'mvp-practice', 'documentation-practice', 'elicitation-practice', 'elicitation',
           'project-initiation', 'requirements-engineering', 'solution-options', 'design',
-          'mvp', 'motivation', 'community-hub', 'my-mentorship', 'book-session'
+          'mvp', 'motivation', 'my-mentorship', 'book-session' // 'community-hub' archived for MVP
         ];
         
         if (studentViews.includes(currentView) || currentView === 'welcome') {
@@ -456,7 +456,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'agile-scrum', 'scrum-essentials', 'agile-practice', 'user-story-checker',
         'mvp-practice', 'documentation-practice', 'elicitation-practice', 'elicitation',
         'project-initiation', 'requirements-engineering', 'solution-options', 'design',
-        'mvp', 'motivation', 'community-hub', 'my-mentorship', 'book-session', 'welcome'
+        'mvp', 'motivation', 'my-mentorship', 'book-session', 'welcome' // 'community-hub' archived for MVP
       ];
       
       if (studentViews.includes(currentView)) {
