@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   FolderOpen, 
   Workflow, 
@@ -13,7 +13,6 @@ import {
   Plus
 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
-import ProjectsView from './ProjectsView';
 
 interface ProjectCategory {
   id: string;
@@ -31,7 +30,6 @@ interface ProjectCategory {
 
 const ProjectLandingView: React.FC = () => {
   const { setCurrentView } = useApp();
-  const [activeTab, setActiveTab] = useState<string>('overview');
 
   const projectCategories: ProjectCategory[] = [
     {
@@ -139,14 +137,8 @@ const ProjectLandingView: React.FC = () => {
     }
   ];
 
-  const handleCategoryClick = (viewId: string, categoryId: string) => {
-    // If it's Project Workspace, show in tab instead of navigating away
-    if (categoryId === 'projects') {
-      setActiveTab('projects');
-    } else {
-      // For all other categories, preserve original navigation logic
-      setCurrentView(viewId as any);
-    }
+  const handleCategoryClick = (viewId: string) => {
+    setCurrentView(viewId as any);
   };
 
   return (
@@ -169,113 +161,73 @@ const ProjectLandingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content with Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Tab Navigation */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`px-6 py-4 font-medium text-sm transition-all duration-200 ${
-                activeTab === 'overview'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <FolderOpen className="w-4 h-4" />
-                <span>Overview</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('projects')}
-              className={`px-6 py-4 font-medium text-sm transition-all duration-200 ${
-                activeTab === 'projects'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <Workflow className="w-4 h-4" />
-                <span>Project Workspace</span>
-              </div>
-            </button>
-          </div>
-        </div>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        {/* Tab Content */}
-        <div className="min-h-[600px]">
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {projectCategories.map((category) => {
-                const Icon = category.icon;
-                return (
-                  <div
-                    key={category.id}
-                    className="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
-                    onClick={() => handleCategoryClick(category.viewId, category.id)}
-                  >
-                    {/* Subtle gradient overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative z-10">
-                    {/* Category Header */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className={`p-4 ${category.bgColor} rounded-2xl`}>
-                        <Icon className={`w-8 h-8 ${category.color}`} />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {category.isNew && (
-                          <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
-                            NEW
-                          </span>
-                        )}
-                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
-                      </div>
-                    </div>
-
-                    {/* Category Content */}
-                    <div className="mb-6">
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                        {category.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {category.description}
-                      </p>
-                    </div>
-
-                    {/* Features List */}
-                    <div className="mb-8">
-                      <ul className="space-y-2">
-                        {category.features.map((feature, index) => (
-                          <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></div>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Action Button */}
-                    <button
-                      className="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg group-hover:scale-105"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCategoryClick(category.viewId, category.id);
-                      }}
-                    >
-                      {category.actionText}
-                    </button>
-                    </div>
+        {/* Project Categories Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projectCategories.map((category) => {
+            const Icon = category.icon;
+            return (
+              <div
+                key={category.id}
+                className="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                onClick={() => handleCategoryClick(category.viewId)}
+              >
+                {/* Subtle gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10">
+                {/* Category Header */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className={`p-4 ${category.bgColor} rounded-2xl`}>
+                    <Icon className={`w-8 h-8 ${category.color}`} />
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  <div className="flex items-center space-x-2">
+                    {category.isNew && (
+                      <span className="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
+                        NEW
+                      </span>
+                    )}
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+                  </div>
+                </div>
 
-          {activeTab === 'projects' && (
-            <ProjectsView embedded={true} />
-          )}
+                {/* Category Content */}
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                    {category.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {category.description}
+                  </p>
+                </div>
+
+                {/* Features List */}
+                <div className="mb-8">
+                  <ul className="space-y-2">
+                    {category.features.map((feature, index) => (
+                      <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                        <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3"></div>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Action Button */}
+                <button
+                  className="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg group-hover:scale-105"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCategoryClick(category.viewId);
+                  }}
+                >
+                  {category.actionText}
+                </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
       </div>
@@ -284,7 +236,6 @@ const ProjectLandingView: React.FC = () => {
 };
 
 export default ProjectLandingView;
-
 
 
 
