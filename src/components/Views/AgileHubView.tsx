@@ -1818,7 +1818,7 @@ export const AgileHubView: React.FC = () => {
 
                     {/* Right Side - Ticket Details Panel (Jira-style split screen) */}
                     {selectedTicket && (
-                      <div className="w-1/2">
+                      <div className={`${showDocumentationSection ? 'w-1/3' : 'w-1/2'} transition-all duration-300`}>
                         <TicketDetailPanel 
                           ticket={selectedTicket} 
                           onClose={() => setSelectedTicket(null)}
@@ -2194,7 +2194,13 @@ export const AgileHubView: React.FC = () => {
 
       {/* Documentation Sidebar */}
       {showDocumentationSection && (
-        <div className="fixed top-0 right-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl border-l border-gray-200 dark:border-gray-700 z-40">
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-20 z-30"
+            onClick={() => setShowDocumentationSection(false)}
+          />
+          <div className="fixed top-0 right-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl border-l border-gray-200 dark:border-gray-700 z-40">
           <div className="h-full flex flex-col">
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between">
@@ -2216,6 +2222,7 @@ export const AgileHubView: React.FC = () => {
             </div>
           </div>
         </div>
+        </>
       )}
 
 
