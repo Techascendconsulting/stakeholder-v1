@@ -412,7 +412,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                 <button
                   onClick={() => {
                     if (hasSubItems && item.isCollapsible) {
-                      toggleSection(item.id);
+                      // For My Resources, go directly to handbook instead of toggling
+                      if (item.id === 'my-resources') {
+                        setCurrentView('handbook');
+                        console.debug('[Sidebar] sectionClick', { id: 'handbook' });
+                      } else {
+                        toggleSection(item.id);
+                      }
                     } else {
                       setCurrentView(item.id as any);
                       console.debug('[Sidebar] sectionClick', { id: item.id });
