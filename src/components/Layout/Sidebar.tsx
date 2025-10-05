@@ -253,11 +253,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         }
       ]
     },
-    { 
-      id: 'motivation', 
-      label: 'Motivation', 
-      icon: Heart
-    },
     // { 
     //   id: 'community-hub', 
     //   label: 'Community Hub', 
@@ -278,6 +273,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           id: 'ba-reference', 
           label: 'BA Reference Library', 
           icon: BookOpen
+        },
+        { 
+          id: 'motivation', 
+          label: 'Motivation', 
+          icon: Heart
         }
       ]
     }
