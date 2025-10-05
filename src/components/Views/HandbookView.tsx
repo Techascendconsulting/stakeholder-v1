@@ -30,8 +30,9 @@ interface Page {
 const HandbookView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [pages, setPages] = useState<Page[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [showTOC, setShowTOC] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
@@ -205,14 +206,37 @@ const HandbookView: React.FC = () => {
     return pages;
   };
 
-  const loadAllPages = async () => {
-    setLoading(true);
-    setLoadingProgress(0);
-    const loadedPages: Page[] = [];
+  // Modern approach: Load essential content first, then lazy load chapters
+  const loadEssentialContent = async () => {
+    const cachedData = localStorage.getItem('handbook-cache');
+    if (cachedData) {
+      try {
+        const { pages: cachedPages, chapterIndexMap, timestamp } = JSON.parse(cachedData);
+        const cacheAge = Date.now() - timestamp;
+        const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+        
+        if (cacheAge < CACHE_DURATION && cachedPages.length > 0) {
+          console.log('📚 Using cached handbook content');
+          setPages(cachedPages);
+          setChapterFirstPageIndex(chapterIndexMap);
+          setIsInitialized(true);
+          return;
+        } else {
+          console.log('📚 Cache expired, will reload');
+          localStorage.removeItem('handbook-cache');
+        }
+      } catch (error) {
+        console.error('📚 Error parsing cached data:', error);
+        localStorage.removeItem('handbook-cache');
+      }
+    }
+
+    // Load cover and TOC immediately (essential content)
+    const essentialPages: Page[] = [];
     const chapterIndexMap: Record<string, number> = {};
 
     // Add cover page
-    loadedPages.push({
+    essentialPages.push({
       content: `# Practical Business Analysis
 
 ## A Modern Guide to Agile, Requirements & Value
@@ -226,6 +250,33 @@ const HandbookView: React.FC = () => {
       chapterId: 'cover'
     });
 
+    // Add table of contents
+    essentialPages.push({
+      content: `# Table of Contents
+
+${chapters.map((chapter, index) => `${index + 1}. ${chapter.title}`).join('\n')}
+
+---
+
+*Click on any chapter to load its content*`,
+      title: 'Table of Contents',
+      chapterId: 'toc'
+    });
+
+    setPages(essentialPages);
+    setIsInitialized(true);
+
+    // Load full content in background
+    loadAllPagesInBackground(essentialPages, chapterIndexMap);
+  };
+
+  const loadAllPagesInBackground = async (existingPages: Page[], existingChapterIndexMap: Record<string, number>) => {
+    setLoading(true);
+    setLoadingProgress(0);
+    
+    const loadedPages = [...existingPages];
+    const chapterIndexMap = { ...existingChapterIndexMap };
+
     const totalChapters = chapters.length;
     
     for (let i = 0; i < chapters.length; i++) {
@@ -234,10 +285,10 @@ const HandbookView: React.FC = () => {
         const response = await fetch(`/content/handbook/${chapter.file}`);
         if (response.ok) {
           const content = await response.text();
-          // Professional pagination: Optimal content per page for readability
           const approxCharsPerPage = Math.max(1000, Math.floor((pageHeight || 1000) * 1.8));
           const segments = splitContentByParagraphs(content, approxCharsPerPage);
-          chapterIndexMap[chapter.id] = loadedPages.length; // first page index for this chapter
+          chapterIndexMap[chapter.id] = loadedPages.length;
+          
           segments.forEach((segment) => {
             loadedPages.push({
               content: segment,
@@ -247,7 +298,6 @@ const HandbookView: React.FC = () => {
           });
         }
         
-        // Update progress
         const progress = Math.round(((i + 1) / totalChapters) * 100);
         setLoadingProgress(progress);
         
@@ -257,10 +307,17 @@ const HandbookView: React.FC = () => {
     }
 
     console.log('📚 Total pages loaded:', loadedPages.length);
-    console.log('📚 Chapter page mapping:', chapterIndexMap);
     setPages(loadedPages);
     setChapterFirstPageIndex(chapterIndexMap);
     setLoading(false);
+
+    // Cache the complete content
+    const cacheData = {
+      pages: loadedPages,
+      chapterIndexMap,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('handbook-cache', JSON.stringify(cacheData));
   };
 
   const onFlip = (e: any) => {

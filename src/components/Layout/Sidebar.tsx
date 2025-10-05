@@ -170,24 +170,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       ]
     },
     { 
-      id: 'my-resources', 
-      label: 'My Resources', 
-      icon: Archive,
-      isCollapsible: true,
-      subItems: [
-        { 
-          id: 'handbook', 
-          label: 'BA Handbook', 
-          icon: BookOpen
-        },
-        { 
-          id: 'ba-reference', 
-          label: 'BA Reference Library', 
-          icon: BookOpen
-        }
-      ]
-    },
-    { 
       id: 'my-practice', 
       label: 'My Practice', 
       icon: Target,
@@ -280,6 +262,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       id: 'community-hub', 
       label: 'Community Hub', 
       icon: Users
+    },
+    { 
+      id: 'my-resources', 
+      label: 'My Resources', 
+      icon: Archive,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'handbook', 
+          label: 'BA Handbook', 
+          icon: BookOpen
+        },
+        { 
+          id: 'ba-reference', 
+          label: 'BA Reference Library', 
+          icon: BookOpen
+        }
+      ]
     }
   ];
 
