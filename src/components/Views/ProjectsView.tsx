@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb } from 'lucide-react'
+import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb, Search, SortAsc, Grid3X3, List, Eye, Clock3, Flame, Shield, ArrowUpRight, Info } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
   const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user, meetings } = useApp()
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [sortBy, setSortBy] = useState<'complexity' | 'priority' | 'impact'>('complexity')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showDetails, setShowDetails] = useState<string | null>(null)
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -118,10 +122,41 @@ const ProjectsView: React.FC = () => {
     return icons[projectId as keyof typeof icons] || Briefcase
   }
 
-  const filteredProjects = projects.filter(project => {
-    if (selectedFilter === 'all') return true
-    return project.complexity.toLowerCase() === selectedFilter
-  })
+  // Enhanced filtering and sorting logic
+  const filteredProjects = projects
+    .filter(project => {
+      // Filter by complexity
+      if (selectedFilter !== 'all' && project.complexity.toLowerCase() !== selectedFilter) return false
+      
+      // Filter by search term
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase()
+        return (
+          project.name.toLowerCase().includes(searchLower) ||
+          project.description.toLowerCase().includes(searchLower) ||
+          project.complexity.toLowerCase().includes(searchLower)
+        )
+      }
+      
+      return true
+    })
+    .sort((a, b) => {
+      const aImpact = getBusinessImpact(a.id)
+      const bImpact = getBusinessImpact(b.id)
+      
+      switch (sortBy) {
+        case 'complexity':
+          const complexityOrder = { 'Beginner': 1, 'Intermediate': 2, 'Advanced': 3 }
+          return complexityOrder[a.complexity as keyof typeof complexityOrder] - complexityOrder[b.complexity as keyof typeof complexityOrder]
+        case 'priority':
+          const priorityOrder = { 'Critical': 1, 'High': 2, 'Medium': 3 }
+          return priorityOrder[aImpact.priority as keyof typeof priorityOrder] - priorityOrder[bImpact.priority as keyof typeof priorityOrder]
+        case 'impact':
+          return parseFloat(bImpact.value.replace(/[£$,]/g, '')) - parseFloat(aImpact.value.replace(/[£$,]/g, ''))
+        default:
+          return 0
+      }
+    })
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
