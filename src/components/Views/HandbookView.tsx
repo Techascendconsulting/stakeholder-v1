@@ -31,6 +31,7 @@ const HandbookView: React.FC = () => {
   const { setCurrentView } = useApp();
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [showTOC, setShowTOC] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPageNumber, setCurrentPageNumber] = useState(0);
@@ -206,6 +207,7 @@ const HandbookView: React.FC = () => {
 
   const loadAllPages = async () => {
     setLoading(true);
+    setLoadingProgress(0);
     const loadedPages: Page[] = [];
     const chapterIndexMap: Record<string, number> = {};
 
@@ -224,7 +226,10 @@ const HandbookView: React.FC = () => {
       chapterId: 'cover'
     });
 
-    for (const chapter of chapters) {
+    const totalChapters = chapters.length;
+    
+    for (let i = 0; i < chapters.length; i++) {
+      const chapter = chapters[i];
       try {
         const response = await fetch(`/content/handbook/${chapter.file}`);
         if (response.ok) {
@@ -241,6 +246,11 @@ const HandbookView: React.FC = () => {
             });
           });
         }
+        
+        // Update progress
+        const progress = Math.round(((i + 1) / totalChapters) * 100);
+        setLoadingProgress(progress);
+        
       } catch (error) {
         console.error(`Error loading ${chapter.file}:`, error);
       }
@@ -318,7 +328,14 @@ const HandbookView: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <BookOpen className="w-16 h-16 text-blue-400 animate-pulse mx-auto mb-4" />
-          <p className="text-white text-xl">Loading handbook...</p>
+          <p className="text-white text-xl font-medium mb-2">Loading BA Handbook...</p>
+          <p className="text-gray-300 text-sm mb-4">Preparing {loadingProgress}% of content</p>
+          <div className="w-64 bg-gray-700 rounded-full h-2 mx-auto">
+            <div 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${loadingProgress}%` }}
+            ></div>
+          </div>
         </div>
       </div>
     );
