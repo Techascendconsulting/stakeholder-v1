@@ -15,6 +15,7 @@ export type AppView =
   | 'requirements-engineering'
   | 'documentation'
   | 'ba-reference'
+  | 'handbook'
   | 'my-resources'
   | 'solution-options'
   | 'design-hub'
