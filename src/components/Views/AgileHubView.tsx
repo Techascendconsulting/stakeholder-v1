@@ -1114,7 +1114,7 @@ export const AgileHubView: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 transition-all duration-300 ${showDocumentationSection ? 'mr-96' : ''}`}>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1189,7 +1189,7 @@ export const AgileHubView: React.FC = () => {
         </div>
       </div>
 
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ${showEpicSidebar ? 'flex' : ''}`}>
+      <div className={`${showDocumentationSection ? 'max-w-none pr-96' : 'max-w-7xl'} mx-auto px-4 sm:px-6 lg:px-8 py-6 ${showEpicSidebar ? 'flex' : ''}`}>
 
         {/* Epic Sidebar */}
         {showEpicSidebar && (
@@ -1557,7 +1557,7 @@ export const AgileHubView: React.FC = () => {
                 ) : (
                   <div className={`flex ${selectedTicket ? 'space-x-6' : ''}`}>
                     {/* Left Side - Tickets Table */}
-                    <div className={`${selectedTicket ? 'w-1/2' : 'w-full'} transition-all duration-300`}>
+                    <div className={`${selectedTicket ? (showDocumentationSection ? 'w-1/3' : 'w-1/2') : (showDocumentationSection ? 'w-2/3' : 'w-full')} transition-all duration-300`}>
                       <div className="overflow-x-auto max-w-full">
                     <table className="w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
                       <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-600">
@@ -2212,7 +2212,7 @@ export const AgileHubView: React.FC = () => {
             
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
-              <DocumentationView />
+              <DocumentationView compact={true} />
             </div>
           </div>
         </div>

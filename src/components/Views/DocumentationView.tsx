@@ -5,7 +5,11 @@ import TeachingLayer from '../training/TeachingLayer';
 import WalkthroughSelector from '../training/WalkthroughSelector';
 import { StakeholderBotProvider } from '../../context/StakeholderBotContext';
 
-const DocumentationView: React.FC = () => {
+interface DocumentationViewProps {
+  compact?: boolean;
+}
+
+const DocumentationView: React.FC<DocumentationViewProps> = ({ compact = false }) => {
   const { setCurrentView } = useApp();
   const [activeTab, setActiveTab] = useState<'teaching' | 'walkthrough'>('teaching');
 
@@ -17,6 +21,44 @@ const DocumentationView: React.FC = () => {
       console.log('Error saving documentation UI view to localStorage:', error);
     }
   }, [activeTab]);
+
+  if (compact) {
+    return (
+      <StakeholderBotProvider>
+        <div className="w-full h-full space-y-3">
+          {/* Compact Tab Navigation */}
+          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => setActiveTab("teaching")}
+              className={`flex-1 px-3 py-2 text-xs rounded-md transition-all duration-200 font-medium ${
+                activeTab === "teaching"
+                  ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Teaching
+            </button>
+            <button
+              onClick={() => setActiveTab("walkthrough")}
+              className={`flex-1 px-3 py-2 text-xs rounded-md transition-all duration-200 font-medium ${
+                activeTab === "walkthrough"
+                  ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Walkthrough
+            </button>
+          </div>
+
+          {/* Compact Content */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm bg-white dark:bg-gray-800">
+            {activeTab === "teaching" && <TeachingLayer onStartPractice={() => setActiveTab("walkthrough")} />}
+            {activeTab === "walkthrough" && <WalkthroughSelector onStartPractice={() => {}} onBack={() => setActiveTab("teaching")} />}
+          </div>
+        </div>
+      </StakeholderBotProvider>
+    );
+  }
 
   return (
     <StakeholderBotProvider>
