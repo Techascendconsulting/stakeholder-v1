@@ -171,6 +171,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         'project-initiation',
         'requirements-engineering',
         'documentation',
+        'documentation-practice',
     'ba-reference',
   'handbook',
     'my-resources',
