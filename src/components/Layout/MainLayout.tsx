@@ -27,6 +27,7 @@ import ScrumPracticeView from '../Views/ScrumPracticeView';
 import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
 import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
 import ProjectView from '../Views/ProjectView';
+import ProjectBrief from '../Views/ProjectBrief';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
 import BAAcademyView from '../Views/BAAcademyView';
 import ProjectInitiationView from '../Views/ProjectInitiationView';
@@ -181,6 +182,8 @@ const MainLayout: React.FC = () => {
         return <BAAcademyView />; // Will be enhanced later
       case 'projects':
         return <ProjectsView />;
+      case 'project-brief':
+        return <ProjectBrief />;
       case 'project-setup':
         return selectedProject ? <ProjectView projectId={selectedProject.id} /> : <ProjectsView />;
       case 'meeting-mode-selection':
