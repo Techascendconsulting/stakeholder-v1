@@ -2192,10 +2192,10 @@ export const AgileHubView: React.FC = () => {
       )}
 
       {/* Documentation Modal */}
-      {showDocumentationModal && (
+      {showDocumentationSection && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowDocumentationModal(false)}
+          onClick={() => setShowDocumentationSection(false)}
         >
           <div 
             className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
@@ -2207,7 +2207,7 @@ export const AgileHubView: React.FC = () => {
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Documentation & Learning</h3>
               </div>
               <button
-                onClick={() => setShowDocumentationModal(false)}
+                onClick={() => setShowDocumentationSection(false)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
