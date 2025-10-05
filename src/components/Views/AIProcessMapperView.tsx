@@ -243,7 +243,7 @@ export default function AIProcessMapperView() {
   id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">`;
 
     const procId = 'Process_1';
-    let proc = `  <bpmn:process id="${procId}" isExecutable="false">\n`;
+    let proc = `  <bpmn:process id="${procId}" isExecutable="true">\n`;
 
     // LaneSet with flowNodeRef
     proc += `    <bpmn:laneSet id="LaneSet_1">\n`;
@@ -577,7 +577,7 @@ export default function AIProcessMapperView() {
         
         if (result.success && result.spec) {
           // Use the XML from the result or build it
-          const newXml = result.xml || buildBPMN(result.spec);
+          const newXml = result.xml || generateBPMNXML(result.spec);
           
           // Update the modeler with the new XML
           await initializeAndLoadXML(newXml);
@@ -613,7 +613,7 @@ export default function AIProcessMapperView() {
         
         if (result.success && result.spec) {
           // Use the XML from the result or build it
-          const updatedXml = result.xml || buildBPMN(result.spec);
+          const updatedXml = result.xml || generateBPMNXML(result.spec);
           
           // Update the modeler with the new XML
           await initializeAndLoadXML(updatedXml);
@@ -665,8 +665,8 @@ export default function AIProcessMapperView() {
       setGeneratedMap(spec);
       
       // Build BPMN XML synchronously from lanes/nodes/connections
-      const xml = buildBPMN(spec);
-      console.log('🔧 Generated BPMN XML:', xml.substring(0, 200) + '...');
+      const xml = generateBPMNXML(spec);
+      console.log('🧩 FINAL XML TO IMPORT:', xml.slice(0, 300));
       
       // Initialize modeler and load XML
       await initializeAndLoadXML(xml);
