@@ -123,11 +123,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           icon: BookOpen
         },
         { 
-          id: 'ba-fundamentals', 
-          label: 'BA Fundamentals', 
-          icon: GraduationCap
-        },
-        { 
           id: 'project-initiation', 
           label: 'Project Initiation', 
           icon: PlayCircle
@@ -181,19 +176,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           id: 'ba-reference', 
           label: 'BA Reference Library', 
           icon: BookOpen
-        }
-      ]
-    },
-    { 
-      id: 'learning-hub', 
-      label: 'Learning Hub', 
-      icon: BookOpen,
-      isCollapsible: true,
-      subItems: [
-        { 
-          id: 'ba-fundamentals', 
-          label: 'BA Fundamentals', 
-          icon: GraduationCap
         }
       ]
     },
