@@ -759,6 +759,17 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
         >
           🧪 Test Advanced Detection
         </button>
+        <button 
+          onClick={() => {
+            console.log('🔄 DEBUG: Force practice mode');
+            setIsAdvancedMode(false);
+            localStorage.setItem('practice_coaching_advancedMode', 'false');
+            console.log('🔄 DEBUG: Set to practice mode');
+          }}
+          className="ml-2 text-sm bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+        >
+          🔄 Force Practice Mode
+        </button>
       </div>
       
       {/* Save Status Indicator */}
