@@ -118,11 +118,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           icon: GraduationCap
         },
         { 
-          id: 'handbook', 
-          label: 'BA Handbook', 
-          icon: BookOpen
-        },
-        { 
           id: 'project-initiation', 
           label: 'Project Initiation', 
           icon: PlayCircle
@@ -172,17 +167,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           label: 'Scrum Essentials', 
           icon: Target
         },
+      ]
+    },
+    { 
+      id: 'my-resources', 
+      label: 'My Resources', 
+      icon: Archive,
+      isCollapsible: true,
+      subItems: [
+        { 
+          id: 'handbook', 
+          label: 'BA Handbook', 
+          icon: BookOpen
+        },
         { 
           id: 'ba-reference', 
           label: 'BA Reference Library', 
           icon: BookOpen
         }
       ]
-    },
-    { 
-      id: 'my-resources', 
-      label: 'My Resources', 
-      icon: Archive
     },
     { 
       id: 'my-practice', 
