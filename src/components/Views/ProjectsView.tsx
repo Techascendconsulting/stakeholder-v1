@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb, Search, SortAsc, Grid3X3, List, Eye, Clock3, Flame, Shield, ArrowUpRight, Info, XCircle } from 'lucide-react'
+import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb, Search, SortAsc, Grid3X3, List, Eye, Clock3, Flame, Shield, ArrowUpRight, Info, XCircle, ArrowLeft } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
   const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user, meetings } = useApp()
@@ -206,17 +206,31 @@ const ProjectsView: React.FC = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Enhanced Header Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
-            <Target className="w-8 h-8 text-white" />
+        {/* Enhanced Header Section with Back Button */}
+        <div className="mb-12">
+          {/* Back Button */}
+          <div className="mb-8">
+            <button
+              onClick={() => setCurrentView('project')}
+              className="flex items-center space-x-2 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="font-medium">Back to Project Hub</span>
+            </button>
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
-            Choose Your Business Challenge
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Select from real-world business scenarios designed to accelerate your BA skills. Each project offers hands-on experience with industry-standard practices.
-          </p>
+          
+          {/* Main Header */}
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
+              <Target className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+              Choose Your Business Challenge
+            </h1>
+            <p className="text-xl text-slate-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              Select from real-world business scenarios designed to accelerate your BA skills. Each project offers hands-on experience with industry-standard practices.
+            </p>
+          </div>
         </div>
 
         {/* Clean Professional Controls */}
