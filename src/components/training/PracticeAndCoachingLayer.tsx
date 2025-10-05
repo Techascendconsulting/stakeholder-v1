@@ -209,6 +209,9 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
     }
   });
   const [advancedTriggersFound, setAdvancedTriggersFound] = useState<string[]>([]);
+  
+  // Completion modal state
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   // Debug function to reset advanced coach flag (for testing)
   const resetAdvancedCoachFlag = () => {
@@ -733,6 +736,24 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
     }
   };
 
+  // Check if user has completed all steps
+  const isCompleted = stepIndex === coachingSteps.length - 1 && acInputs[stepIndex].trim();
+
+  // Handle scenario completion
+  const handleCompleteScenario = () => {
+    // Save the completed story
+    saveToServer(true);
+    
+    // Show completion celebration
+    setShowCompletionModal(true);
+  };
+
+  // Handle starting new scenario
+  const handleNewScenarioAfterCompletion = () => {
+    setShowCompletionModal(false);
+    handleNewScenario();
+  };
+
   return (
     <>
     <div className="p-4 h-full flex flex-col">
@@ -1023,29 +1044,27 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
             <div className="w-2" />
 
             <button
-              onClick={handleNext}
+              onClick={stepIndex === coachingSteps.length - 1 ? handleCompleteScenario : handleNext}
               disabled={
-                stepIndex === coachingSteps.length - 1 || 
-                (stepIndex === 0 ? 
+                stepIndex === 0 ? 
                   // For user story step (step 0), check if AI validation passed
                   !userStory.trim() || !aiValidationResults.length || !aiValidationResults.every((r: any) => r.status === '✅')
                   : 
                   // For other steps, check if input is provided
                   !acInputs[stepIndex].trim()
-                )
               }
               className={`px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
-                stepIndex === coachingSteps.length - 1 || 
-                (stepIndex === 0 ? 
+                stepIndex === 0 ? 
                   !userStory.trim() || !aiValidationResults.length || !aiValidationResults.every((r: any) => r.status === '✅')
                   : 
                   !acInputs[stepIndex].trim()
-                )
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                  : stepIndex === coachingSteps.length - 1
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
               }`}
             >
-              {stepIndex === 0 ? 'Next' : 'Next AC'}
+              {stepIndex === coachingSteps.length - 1 ? '🎉 Complete Scenario!' : (stepIndex === 0 ? 'Next' : 'Next AC')}
             </button>
           </div>
         </div>
@@ -1137,6 +1156,62 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
           onDismiss={handleDismissAdvanced}
           triggersFound={advancedTriggersFound}
         />
+      )}
+
+      {/* Completion Celebration Modal */}
+      {showCompletionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-8 text-center animate-bounce">
+            <div className="mb-6">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                Amazing Work!
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                You've successfully completed the {isAdvancedMode ? 'Advanced' : 'Practice'} scenario!
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-6">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-3">What You Accomplished:</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
+                <div>
+                  <span className="font-medium">✅ User Story:</span> Clear & well-defined
+                </div>
+                <div>
+                  <span className="font-medium">✅ Acceptance Criteria:</span> {acInputs.filter(ac => ac.trim()).length} comprehensive ACs
+                </div>
+                <div>
+                  <span className="font-medium">✅ Technical Details:</span> {isAdvancedMode ? 'Advanced integrations covered' : 'Solid foundation built'}
+                </div>
+                <div>
+                  <span className="font-medium">✅ Scenario:</span> {currentScenario?.title || 'Practice scenario'}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Ready to tackle another challenge? Each scenario builds your skills and confidence!
+              </p>
+            </div>
+
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={handleNewScenarioAfterCompletion}
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                🚀 Start New Scenario
+              </button>
+              <button
+                onClick={() => setShowCompletionModal(false)}
+                className="px-8 py-3 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Review My Work
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
     <StakeholderBotLauncher />
