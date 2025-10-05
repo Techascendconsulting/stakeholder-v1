@@ -44,47 +44,38 @@ export default function AIProcessMapperView() {
 
   // Save map to Supabase function
   const saveMapToSupabase = async (spec: MapSpec, xmlContent: string) => {
-    if (!user || !selectedProject) return;
+    if (!user?.id) return;
     
     try {
       setSaveStatus('saving');
       
-      const saveData = {
-        id: uuidv4(),
-        user_id: user.id,
-        project_id: selectedProject?.id || 'default',
-        name: `AI Generated Process Map - ${new Date().toLocaleDateString()}`,
-        data: spec, // Store the spec as JSON
-        xml: xmlContent,
-        updated_at: new Date().toISOString()
-      };
+      const { data, error } = await supabase
+        .from('process_diagrams')
+        .insert([
+          {
+            user_id: user.id,
+            project_id: selectedProject?.id || null,
+            map_data: spec,
+            xml_content: xmlContent,
+            updated_at: new Date().toISOString()
+          }
+        ])
+        .select();
 
-      // Use existing save logic or create new entry
-      if (lastSavedId) {
-        const { data, error } = await supabase
-          .from('process_diagrams')
-          .update(saveData)
-          .eq('id', lastSavedId)
-          .select('*');
-        
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from('process_diagrams')
-          .insert(saveData)
-          .select('*');
-        
-        if (error) throw error;
-        setLastSavedId(data[0]?.id);
+      if (error) {
+        console.error("❌ Error saving map:", error);
+        throw error;
       }
-      
+
+      console.log("✅ Map saved successfully:", data);
       setSaveStatus('saved');
-      console.log('✅ Map saved to Supabase successfully');
+      setLastSavedId(data[0]?.id);
+      return data;
       
-    } catch (error) {
-      console.error('❌ Error saving map to Supabase:', error);
+    } catch (err) {
+      console.error("❌ saveMapToSupabase() failed:", err);
       setSaveStatus('error');
-      displayToast('⚠️ Failed to save map. Please try again.', 'error');
+      return null;
     }
   };
 
