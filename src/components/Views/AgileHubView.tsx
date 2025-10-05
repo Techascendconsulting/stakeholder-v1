@@ -1182,6 +1182,13 @@ export const AgileHubView: React.FC = () => {
                 <Plus size={16} />
                 <span>Create New Ticket</span>
               </button>
+              <button
+                onClick={() => setCurrentView('documentation')}
+                className="px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
+              >
+                <BookOpen size={16} />
+                <span>Skip to Documentation</span>
+              </button>
             </div>
           </div>
         </div>
