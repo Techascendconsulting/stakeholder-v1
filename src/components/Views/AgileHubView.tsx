@@ -452,6 +452,7 @@ export const AgileHubView: React.FC = () => {
   const [tickets, setTickets] = useState<AgileTicket[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDocumentationSection, setShowDocumentationSection] = useState(false);
   // Persist refinement meeting state across refreshes
   const [showRefinementModal, setShowRefinementModal] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -1176,11 +1177,11 @@ export const AgileHubView: React.FC = () => {
                 <span>Create New Ticket</span>
               </button>
               <button
-                onClick={() => setCurrentView('documentation')}
+                onClick={() => setShowDocumentationSection(!showDocumentationSection)}
                 className="px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 bg-purple-600 text-white hover:bg-purple-700"
               >
                 <BookOpen size={16} />
-                <span>Skip to Documentation</span>
+                <span>{showDocumentationSection ? 'Hide Documentation' : 'Show Documentation'}</span>
               </button>
             </div>
           </div>
@@ -2188,6 +2189,102 @@ export const AgileHubView: React.FC = () => {
           tickets={tickets}
           currentProject={currentProject}
         />
+      )}
+
+      {/* Documentation Modal */}
+      {showDocumentationModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowDocumentationModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <BookOpen className="w-6 h-6 text-purple-600" />
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Documentation & Learning</h3>
+              </div>
+              <button
+                onClick={() => setShowDocumentationModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">📝 User Story Template</h4>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2"><strong>As a</strong> [user role]</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2"><strong>I want</strong> [action/goal]</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300"><strong>So that</strong> [benefit/value]</p>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Example: "As a customer, I want to track my order status, so that I know when to expect delivery."
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">🎯 Acceptance Criteria Template</h4>
+                <div className="space-y-3">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Given</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">The initial state or context</p>
+                  </div>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">When</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">The action is performed</p>
+                  </div>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Then</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">The expected outcome</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">✨ Best Practices</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Clear & Specific</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Use precise language, avoid vague terms</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Testable</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Criteria must be verifiable</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">User-Focused</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Think from user's perspective</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Business Value</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">Always include the "why"</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Edit Ticket Modal */}
