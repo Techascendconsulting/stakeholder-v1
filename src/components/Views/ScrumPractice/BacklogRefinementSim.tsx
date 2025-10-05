@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Play, Users, Target, FileText, Lightbulb, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Play, Users, Target, FileText, CheckCircle } from 'lucide-react';
 import { RefinementMeetingView } from '../RefinementMeetingView';
 
 interface BacklogRefinementSimProps {
@@ -66,7 +66,7 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
     return (
       <div className="content-root min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-700/60">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-6 py-4">
             <button
               onClick={() => setPage('overview')}
               className="inline-flex items-center px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition-colors"
@@ -74,7 +74,6 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Overview
             </button>
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Refinement Simulation</div>
           </div>
         </div>
 
@@ -114,7 +113,7 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
 
             {/* Meeting 2 Card */}
             <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text_WHITE mb-2">Meeting 2</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Meeting 2</h2>
               <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Requirement</p>
               <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{sampleStoriesAlt[0].title}</p>
               <p className="text-sm text-gray-700 dark:text-gray-300">{sampleStoriesAlt[0].description}</p>
