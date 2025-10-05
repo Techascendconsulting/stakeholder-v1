@@ -77,11 +77,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'Admin Panel', 
       icon: Settings
     },
-    { 
-      id: 'community-admin', 
-      label: 'Community Hub (Admin)', 
-      icon: Users
-    }
+    // { 
+    //   id: 'community-admin', 
+    //   label: 'Community Hub (Admin)', 
+    //   icon: Users
+    // } // Archived for MVP
   ];
 
   // Check onboarding status to determine if welcome page should be shown
@@ -258,11 +258,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'Motivation', 
       icon: Heart
     },
-    { 
-      id: 'community-hub', 
-      label: 'Community Hub', 
-      icon: Users
-    },
+    // { 
+    //   id: 'community-hub', 
+    //   label: 'Community Hub', 
+    //   icon: Users
+    // }, // Archived for MVP
     { 
       id: 'my-resources', 
       label: 'My Resources', 

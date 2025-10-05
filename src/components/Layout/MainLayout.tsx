@@ -62,8 +62,8 @@ import ProcessMapperView from '../Views/ProcessMapperView';
 import TrainingUI from '../Views/TrainingUI';
 import PracticeLabView from '../Views/PracticeLabView';
 import LearnLandingView from '../Views/LearnLandingView';
-import CommunityHub from '../Views/Community/CommunityHub';
-import AdminCommunityHub from '../Views/Community/AdminCommunityHub';
+// import CommunityHub from '../Views/Community/CommunityHub'; // Archived for MVP
+// import AdminCommunityHub from '../Views/Community/AdminCommunityHub'; // Archived for MVP
 import ProjectLandingView from '../Views/ProjectLandingView';
 import AdminDashboard from '../AdminDashboard';
 import AdminPanel from '../AdminPanel';
@@ -249,10 +249,10 @@ const MainLayout: React.FC = () => {
       case 'admin-panel':
         console.log('🔍 MAIN_LAYOUT: Rendering AdminPanel');
         return <AdminPanel />;
-      case 'community-hub':
-        return <CommunityHub />;
-      case 'community-admin':
-        return <AdminCommunityHub onBack={() => setCurrentView('dashboard')} />;
+      // case 'community-hub':
+      //   return <CommunityHub />; // Archived for MVP
+      // case 'community-admin':
+      //   return <AdminCommunityHub onBack={() => setCurrentView('dashboard')} />; // Archived for MVP
       // Mentorship cases
       case 'my-mentorship':
         return <MyMentorship />;
