@@ -345,20 +345,40 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
 
   // Detect advanced triggers when user story or AC inputs change (debounced)
   useEffect(() => {
+    console.log('🔍 DEBUG: Advanced detection useEffect triggered');
+    console.log('🔍 DEBUG: userStory:', userStory);
+    console.log('🔍 DEBUG: acInputs:', acInputs);
+    console.log('🔍 DEBUG: userHasSeenAdvancedCoach:', userHasSeenAdvancedCoach);
+    console.log('🔍 DEBUG: isAdvancedMode:', isAdvancedMode);
+    
     const timeoutId = setTimeout(() => {
+      console.log('🔍 DEBUG: Advanced detection timeout fired after 2 seconds');
       const combinedInput = userStory + ' ' + acInputs.join(' ');
+      console.log('🔍 DEBUG: combinedInput:', combinedInput);
+      
       if (combinedInput.trim().length > 0) {
         const triggers = getAdvancedTriggersFound(combinedInput);
+        console.log('🔍 DEBUG: triggers found:', triggers);
         setAdvancedTriggersFound(triggers);
         
         // Show advanced explainer if triggers found and user hasn't seen it
         if (triggers.length > 0 && !userHasSeenAdvancedCoach && !isAdvancedMode) {
+          console.log('🔍 DEBUG: Should show advanced explainer modal!');
           setShowAdvancedExplainer(true);
+        } else {
+          console.log('🔍 DEBUG: Not showing modal because:', {
+            hasTriggers: triggers.length > 0,
+            hasntSeenCoach: !userHasSeenAdvancedCoach,
+            notAdvancedMode: !isAdvancedMode
+          });
         }
       }
     }, 2000); // 2 second debounce for trigger detection
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      console.log('🔍 DEBUG: Clearing advanced detection timeout');
+      clearTimeout(timeoutId);
+    };
   }, [userStory, acInputs, userHasSeenAdvancedCoach, isAdvancedMode]);
 
   const handleInputChange = (value: string) => {
