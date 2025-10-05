@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb, Search, SortAsc, Grid3X3, List, Eye, Clock3, Flame, Shield, ArrowUpRight, Info } from 'lucide-react'
+import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb, Search, SortAsc, Grid3X3, List, Eye, Clock3, Flame, Shield, ArrowUpRight, Info, XCircle } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
   const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user, meetings } = useApp()
@@ -36,47 +36,90 @@ const ProjectsView: React.FC = () => {
     }
   }
 
+  const getProjectColorScheme = (projectId: string) => {
+    const colorSchemes = {
+      'proj-1': {
+        gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
+        header: 'from-emerald-400 to-emerald-600',
+        accent: 'emerald',
+        icon: 'bg-emerald-500',
+        badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        cardBg: 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20',
+        border: 'border-emerald-200 dark:border-emerald-700'
+      },
+      'proj-2': {
+        gradient: 'from-blue-500 via-indigo-500 to-purple-500',
+        header: 'from-blue-400 to-blue-600',
+        accent: 'blue',
+        icon: 'bg-blue-500',
+        badge: 'bg-blue-100 text-blue-700 border-blue-200',
+        cardBg: 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20',
+        border: 'border-blue-200 dark:border-blue-700'
+      },
+      'proj-3': {
+        gradient: 'from-purple-500 via-pink-500 to-rose-500',
+        header: 'from-purple-400 to-purple-600',
+        accent: 'purple',
+        icon: 'bg-purple-500',
+        badge: 'bg-purple-100 text-purple-700 border-purple-200',
+        cardBg: 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20',
+        border: 'border-purple-200 dark:border-purple-700'
+      },
+      'proj-4': {
+        gradient: 'from-orange-500 via-red-500 to-pink-500',
+        header: 'from-orange-400 to-orange-600',
+        accent: 'orange',
+        icon: 'bg-orange-500',
+        badge: 'bg-orange-100 text-orange-700 border-orange-200',
+        cardBg: 'bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20',
+        border: 'border-orange-200 dark:border-orange-700'
+      },
+      'proj-5': {
+        gradient: 'from-violet-500 via-purple-500 to-indigo-500',
+        header: 'from-violet-400 to-violet-600',
+        accent: 'violet',
+        icon: 'bg-violet-500',
+        badge: 'bg-violet-100 text-violet-700 border-violet-200',
+        cardBg: 'bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20',
+        border: 'border-violet-200 dark:border-violet-700'
+      }
+    }
+    return colorSchemes[projectId as keyof typeof colorSchemes] || {
+      gradient: 'from-teal-500 via-cyan-500 to-blue-500',
+      header: 'from-teal-400 to-teal-600',
+      accent: 'teal',
+      icon: 'bg-teal-500',
+      badge: 'bg-teal-100 text-teal-700 border-teal-200',
+      cardBg: 'bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20',
+      border: 'border-teal-200 dark:border-teal-700'
+    }
+  }
+
   const getComplexityConfig = (complexity: string) => {
     switch (complexity) {
       case 'Beginner':
         return {
-          color: 'from-emerald-400 to-emerald-600',
-          textColor: 'text-emerald-700',
-          bgColor: 'bg-emerald-50',
-          borderColor: 'border-emerald-200',
           icon: Target,
           description: 'Perfect Starting Point',
-          iconBg: 'bg-emerald-500'
+          dot: 'bg-green-500'
         }
       case 'Intermediate':
         return {
-          color: 'from-blue-400 to-blue-600',
-          textColor: 'text-blue-700',
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-200',
           icon: Brain,
           description: 'Level Up Your Skills',
-          iconBg: 'bg-blue-500'
+          dot: 'bg-blue-500'
         }
       case 'Advanced':
         return {
-          color: 'from-purple-400 to-purple-600',
-          textColor: 'text-purple-700',
-          bgColor: 'bg-purple-50',
-          borderColor: 'border-purple-200',
           icon: Trophy,
           description: 'Master-Level Challenge',
-          iconBg: 'bg-purple-500'
+          dot: 'bg-purple-500'
         }
       default:
         return {
-          color: 'from-slate-400 to-slate-600',
-          textColor: 'text-slate-700',
-          bgColor: 'bg-slate-50',
-          borderColor: 'border-slate-200',
           icon: Star,
           description: 'Standard Level',
-          iconBg: 'bg-slate-500'
+          dot: 'bg-slate-500'
         }
     }
   }
@@ -159,45 +202,134 @@ const ProjectsView: React.FC = () => {
     })
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Filter Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8">
-          <div className="mb-6 lg:mb-0">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">Select Your Challenge Level</h2>
-            <p className="text-lg text-slate-600 dark:text-gray-300">Choose the complexity that matches your experience and goals</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Enhanced Header Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
+            <Target className="w-8 h-8 text-white" />
           </div>
+          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            Choose Your Business Challenge
+          </h1>
+          <p className="text-xl text-slate-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Select from real-world business scenarios designed to accelerate your BA skills. Each project offers hands-on experience with industry-standard practices.
+          </p>
+        </div>
+
+        {/* Clean Professional Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           
-          <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-2 shadow-lg">
-            {[
-              { id: 'all', label: 'All Projects', icon: Globe },
-              { id: 'beginner', label: 'Beginner', icon: Target },
-              { id: 'intermediate', label: 'Intermediate', icon: Brain },
-              { id: 'advanced', label: 'Advanced', icon: Trophy }
-            ].map((filter) => {
-              const Icon = filter.icon
-              return (
+          {/* Simple Search */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Clean Filter Controls */}
+          <div className="flex items-center gap-3">
+            
+            {/* Complexity Filter */}
+            <div className="flex items-center bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg p-1">
+              {[
+                { id: 'all', label: 'All', count: projects.length },
+                { id: 'beginner', label: 'Beginner', count: projects.filter(p => p.complexity === 'Beginner').length },
+                { id: 'intermediate', label: 'Intermediate', count: projects.filter(p => p.complexity === 'Intermediate').length },
+                { id: 'advanced', label: 'Advanced', count: projects.filter(p => p.complexity === 'Advanced').length }
+              ].map((filter) => (
                 <button
                   key={filter.id}
                   onClick={() => setSelectedFilter(filter.id)}
-                  className={`flex items-center space-x-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                  className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
                     selectedFilter === filter.id
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105'
-                      : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700'
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{filter.label}</span>
+                  {filter.label} ({filter.count})
                 </button>
-              )
-            })}
+              ))}
+            </div>
+
+            {/* Sort Dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-3 py-2 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            >
+              <option value="complexity">Sort by Complexity</option>
+              <option value="priority">Sort by Priority</option>
+              <option value="impact">Sort by Impact</option>
+            </select>
+
+            {/* View Toggle */}
+            <div className="flex items-center bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-md transition-all ${
+                  viewMode === 'grid' 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-gray-300'
+                }`}
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-md transition-all ${
+                  viewMode === 'list' 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-gray-300'
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Project Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-16">
+        {/* Results Count */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="text-slate-600 dark:text-gray-300">
+            <span className="font-medium">{filteredProjects.length}</span> project{filteredProjects.length !== 1 ? 's' : ''} found
+            {searchTerm && (
+              <span className="ml-2 text-sm">for "{searchTerm}"</span>
+            )}
+          </div>
+          {filteredProjects.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">No projects found</h3>
+              <p className="text-slate-600 dark:text-gray-300">Try adjusting your search or filter criteria</p>
+            </div>
+          )}
+        </div>
+
+        {/* Project Cards - Enhanced Design */}
+        <div className={`${viewMode === 'grid' 
+          ? 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8' 
+          : 'space-y-6'
+        } mb-16`}>
           {filteredProjects.map((project) => {
+            const colorScheme = getProjectColorScheme(project.id)
             const complexityConfig = getComplexityConfig(project.complexity)
             const businessImpact = getBusinessImpact(project.id)
             const priorityConfig = getPriorityConfig(businessImpact.priority)
@@ -208,136 +340,224 @@ const ProjectsView: React.FC = () => {
             const ProjectIcon = getProjectIcon(project.id)
             const ComplexityIcon = complexityConfig.icon
             const isHovered = hoveredProject === project.id
+            const showFullDetails = showDetails === project.id
             
             return (
               <div
                 key={project.id}
                 onMouseEnter={() => setHoveredProject(project.id)}
                 onMouseLeave={() => setHoveredProject(null)}
-                className={`group relative bg-white dark:bg-gray-800 rounded-3xl border overflow-hidden transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${
+                className={`group relative ${colorScheme.cardBg} rounded-3xl border-2 overflow-hidden transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${
                   isSelected 
-                    ? 'ring-4 ring-indigo-500 shadow-2xl border-indigo-200 dark:border-indigo-700' 
-                    : 'border-slate-200 dark:border-gray-700 shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700'
-                } ${isHovered ? 'shadow-2xl' : ''}`}
+                    ? `ring-4 ring-${colorScheme.accent}-500 shadow-2xl ${colorScheme.border}` 
+                    : `${colorScheme.border} shadow-lg hover:border-${colorScheme.accent}-400 dark:hover:border-${colorScheme.accent}-500`
+                } ${isHovered ? 'shadow-2xl' : ''} ${viewMode === 'list' ? 'flex' : ''}`}
               >
-                {/* Project Header with Gradient */}
-                <div className={`relative p-8 bg-gradient-to-r ${complexityConfig.color} text-white overflow-hidden`}>
+                {/* Enhanced Project Header with Unique Colors */}
+                <div className={`relative ${viewMode === 'list' ? 'flex-1' : ''} p-6 bg-gradient-to-r ${colorScheme.header} text-white overflow-hidden`}>
                   <div className="absolute inset-0 bg-black/10"></div>
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-16 -translate-y-16"></div>
+                  <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-r ${colorScheme.gradient} opacity-20 rounded-full blur-xl transform -translate-x-12 translate-y-12`}></div>
                   
                   <div className="relative z-10">
-                    {isSelected && (
-                      <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-bl-2xl text-xs font-bold">
-                        ACTIVE
+                    {/* Status Indicators */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
+                        isSelected ? 'bg-yellow-400/20 text-yellow-100 border border-yellow-300/30' : 'bg-white/10'
+                      }`}>
+                        {isSelected && <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>}
+                        <span>{isSelected ? 'ACTIVE PROJECT' : hasMeetings ? 'IN PROGRESS' : 'READY TO START'}</span>
                       </div>
-                    )}
+                      
+                      {requiredTier !== 'free' && (
+                        <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-white/20 text-xs font-medium">
+                          {requiredTier === 'premium' ? (
+                            <>
+                              <Star className="w-3 h-3" />
+                              <span>Premium</span>
+                            </>
+                          ) : (
+                            <>
+                              <Crown className="w-3 h-3" />
+                              <span>Enterprise</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     
+                    {/* Project Icon and Complexity */}
                     <div className="flex items-center space-x-4 mb-4">
-                      <div className={`w-12 h-12 ${complexityConfig.iconBg} rounded-2xl flex items-center justify-center shadow-lg`}>
+                      <div className={`w-12 h-12 ${colorScheme.icon} rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm`}>
                         <ProjectIcon className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
-                          <ComplexityIcon className="w-4 h-4" />
+                          <div className={`w-2 h-2 ${complexityConfig.dot} rounded-full`}></div>
                           <span className="text-sm font-medium opacity-90">{project.complexity}</span>
+                          <span className="text-xs opacity-75">• {complexityConfig.description}</span>
                         </div>
-                        <div className="text-xs opacity-75">{complexityConfig.description}</div>
                       </div>
                     </div>
                     
-                    <h3 className="text-xl font-bold mb-3 leading-tight">
+                    <h3 className="text-xl font-bold mb-2 leading-tight">
                       {project.name}
                     </h3>
                   </div>
                 </div>
 
-                {/* Project Content */}
-                <div className="p-8">
-                  <p className="text-slate-600 dark:text-gray-300 mb-6 leading-relaxed line-clamp-3">
+                {/* Enhanced Project Content */}
+                <div className={`${viewMode === 'list' ? 'flex-1' : ''} p-6`}>
+                  <p className="text-slate-600 dark:text-gray-300 mb-6 leading-relaxed">
                     {project.description}
                   </p>
                   
-                  {/* Impact Metrics */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        <span className="text-xs font-medium text-slate-500">Business Impact</span>
+                  {/* Key Metrics - Vibrant Colors */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-8 h-8 ${colorScheme.icon} rounded-lg flex items-center justify-center`}>
+                          <DollarSign className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900 dark:text-white text-sm">{businessImpact.value}</div>
+                          <div className="text-xs text-slate-600 dark:text-gray-400">Impact</div>
+                        </div>
                       </div>
-                      <div className="font-bold text-slate-900 dark:text-white">{businessImpact.value}</div>
-                      <div className="text-xs text-slate-600 dark:text-gray-300">{businessImpact.type}</div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
+                          <TrendingUp className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900 dark:text-white text-sm">{businessImpact.roi}</div>
+                          <div className="text-xs text-slate-600 dark:text-gray-400">ROI</div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <TrendingUp className="w-4 h-4 text-blue-600" />
-                        <span className="text-xs font-medium text-slate-500">ROI Potential</span>
-                      </div>
-                      <div className="font-bold text-slate-900 dark:text-white">{businessImpact.roi}</div>
-                      <div className="text-xs text-slate-600 dark:text-gray-300">Expected Return</div>
+                    
+                    {/* Priority Indicator */}
+                    <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${priorityConfig.color}`}>
+                      <div className={`w-2 h-2 ${priorityConfig.dot} rounded-full`}></div>
+                      <span>{businessImpact.priority}</span>
                     </div>
                   </div>
                   
-                  {/* Priority Badge */}
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium border ${priorityConfig.color} dark:border-gray-600`}>
-                      <div className={`w-2 h-2 ${priorityConfig.dot} rounded-full`}></div>
-                      <span>{businessImpact.priority} Priority</span>
-                    </div>
+                  {/* Detailed Metrics - Progressive Disclosure */}
+                  <div className="mb-6">
+                    <button
+                      onClick={() => setShowDetails(showFullDetails ? null : project.id)}
+                      className="flex items-center space-x-2 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors text-sm"
+                    >
+                      <Info className="w-4 h-4" />
+                      <span>{showFullDetails ? 'Hide' : 'Show'} details</span>
+                      <ArrowUpRight className={`w-4 h-4 transition-transform ${showFullDetails ? 'rotate-180' : ''}`} />
+                    </button>
                     
-                    {requiredTier !== 'free' && (
-                      <div className="flex items-center space-x-1 px-3 py-1 rounded-full bg-gradient-to-r from-amber-100 to-amber-200 text-amber-700 text-xs font-medium border border-amber-300">
-                        {requiredTier === 'premium' ? (
-                          <>
-                            <Star className="w-3 h-3" />
-                            <span>Premium</span>
-                          </>
-                        ) : (
-                          <>
-                            <Crown className="w-3 h-3" />
-                            <span>Enterprise</span>
-                          </>
-                        )}
+                    {showFullDetails && (
+                      <div className={`mt-4 p-4 ${colorScheme.cardBg} rounded-xl space-y-3 border ${colorScheme.border}`}>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="text-xs font-medium text-slate-600 dark:text-gray-400 mb-1">Business Impact</div>
+                            <div className="font-semibold text-slate-900 dark:text-white">{businessImpact.value}</div>
+                            <div className="text-xs text-slate-600 dark:text-gray-300">{businessImpact.type}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-medium text-slate-600 dark:text-gray-400 mb-1">ROI Potential</div>
+                            <div className="font-semibold text-slate-900 dark:text-white">{businessImpact.roi}</div>
+                            <div className="text-xs text-slate-600 dark:text-gray-300">Expected Return</div>
+                          </div>
+                        </div>
+                        <div className={`pt-2 border-t ${colorScheme.border}`}>
+                          <div className="text-xs font-medium text-slate-600 dark:text-gray-400 mb-1">Project Type</div>
+                          <div className="text-sm text-slate-900 dark:text-white">{complexityConfig.description}</div>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Action Button */}
-                  <button
-                    onClick={() => handleViewBrief(project)}
-                    disabled={!isAccessible}
-                    className={`w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center space-x-3 group shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
-                      isHovered ? 'shadow-2xl' : ''
-                    }`}
-                  >
-                    <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>{hasMeetings ? 'Continue Project' : 'Start Project'}</span>
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  {/* Enhanced Action Button */}
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => handleViewBrief(project)}
+                      disabled={!isAccessible}
+                      className={`w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center space-x-3 group shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isHovered ? 'shadow-2xl' : ''
+                      }`}
+                    >
+                      <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      <span>{hasMeetings ? 'Continue Project' : 'Start Project'}</span>
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    
+                    {hasMeetings && (
+                      <div className="flex items-center justify-center space-x-2 text-xs text-slate-500">
+                        <Clock3 className="w-4 h-4" />
+                        <span>Last active: {new Date().toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )
           })}
         </div>
 
-        {/* Bottom CTA Section */}
-        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-12 text-center text-white shadow-2xl">
-          <div className="max-w-3xl mx-auto">
-            <h3 className="text-3xl font-bold mb-4">Ready to Transform Your BA Skills?</h3>
-            <p className="text-xl text-slate-300 mb-8">
-              Join thousands of business analysts who have accelerated their careers through our immersive training platform.
+        {/* Enhanced Bottom CTA Section */}
+        <div className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 rounded-3xl p-12 text-center text-white shadow-2xl overflow-hidden">
+          {/* Background Elements */}
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20"></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl transform -translate-x-48 -translate-y-48"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl transform translate-x-48 translate-y-48"></div>
+          
+          <div className="relative z-10 max-w-4xl mx-auto">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-6 backdrop-blur-sm">
+              <Trophy className="w-8 h-8 text-yellow-400" />
+            </div>
+            
+            <h3 className="text-4xl font-bold mb-4">Ready to Master Business Analysis?</h3>
+            <p className="text-xl text-slate-200 mb-8 leading-relaxed">
+              Join thousands of professionals who have transformed their careers through our immersive, real-world training platform.
             </p>
-            <div className="flex flex-wrap justify-center gap-8 text-center">
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-6 h-6 text-green-400" />
-                <span className="text-lg">Real-world scenarios</span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="flex flex-col items-center space-y-3 p-4 bg-white/5 rounded-2xl backdrop-blur-sm">
+                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-400" />
+                </div>
+                <span className="text-lg font-medium">Real-world scenarios</span>
+                <span className="text-sm text-slate-300">Industry-standard challenges</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-6 h-6 text-green-400" />
-                <span className="text-lg">AI-powered feedback</span>
+              
+              <div className="flex flex-col items-center space-y-3 p-4 bg-white/5 rounded-2xl backdrop-blur-sm">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-blue-400" />
+                </div>
+                <span className="text-lg font-medium">AI-powered feedback</span>
+                <span className="text-sm text-slate-300">Personalized learning</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-6 h-6 text-green-400" />
-                <span className="text-lg">Industry recognition</span>
+              
+              <div className="flex flex-col items-center space-y-3 p-4 bg-white/5 rounded-2xl backdrop-blur-sm">
+                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                  <Award className="w-6 h-6 text-purple-400" />
+                </div>
+                <span className="text-lg font-medium">Industry recognition</span>
+                <span className="text-sm text-slate-300">Career advancement</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-300">
+              <div className="flex items-center space-x-2">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <span>500+ Success Stories</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Shield className="w-4 h-4 text-blue-400" />
+                <span>Industry Certified</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                <span>90% Career Growth</span>
               </div>
             </div>
           </div>
