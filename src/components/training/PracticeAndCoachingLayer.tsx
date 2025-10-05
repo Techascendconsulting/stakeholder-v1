@@ -210,6 +210,13 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
   });
   const [advancedTriggersFound, setAdvancedTriggersFound] = useState<string[]>([]);
 
+  // Debug function to reset advanced coach flag (for testing)
+  const resetAdvancedCoachFlag = () => {
+    localStorage.removeItem('seenAdvancedCoach');
+    setUserHasSeenAdvancedCoach(false);
+    console.log('🔄 DEBUG: Advanced coach flag reset');
+  };
+
   // Load a random scenario on component mount if none is saved
   useEffect(() => {
     if (!currentScenario) {
@@ -696,6 +703,20 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
   return (
     <>
     <div className="p-4 h-full flex flex-col">
+      {/* Debug button for testing advanced coach (temporary) */}
+      <div className="mb-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
+        <button 
+          onClick={resetAdvancedCoachFlag}
+          className="text-sm bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+        >
+          🔄 Reset Advanced Coach Flag (Debug)
+        </button>
+        <span className="ml-2 text-xs text-gray-600">
+          userHasSeenAdvancedCoach: {userHasSeenAdvancedCoach.toString()}, 
+          triggers: {advancedTriggersFound.length}
+        </span>
+      </div>
+      
       {/* Save Status Indicator */}
       {lastSavedAt && (
         <div className="mb-4 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
