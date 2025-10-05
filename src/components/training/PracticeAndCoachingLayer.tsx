@@ -214,14 +214,20 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
   const resetAdvancedCoachFlag = () => {
     console.log('🔄 DEBUG: Reset button clicked');
     console.log('🔄 DEBUG: Before reset - userHasSeenAdvancedCoach:', userHasSeenAdvancedCoach);
+    console.log('🔄 DEBUG: Before reset - isAdvancedMode:', isAdvancedMode);
     console.log('🔄 DEBUG: Before reset - localStorage seenAdvancedCoach:', localStorage.getItem('seenAdvancedCoach'));
+    console.log('🔄 DEBUG: Before reset - localStorage advancedMode:', localStorage.getItem('practice_coaching_advancedMode'));
     
     localStorage.removeItem('seenAdvancedCoach');
+    localStorage.removeItem('practice_coaching_advancedMode');
     setUserHasSeenAdvancedCoach(false);
+    setIsAdvancedMode(false);
     
     console.log('🔄 DEBUG: After reset - userHasSeenAdvancedCoach:', false);
+    console.log('🔄 DEBUG: After reset - isAdvancedMode:', false);
     console.log('🔄 DEBUG: After reset - localStorage seenAdvancedCoach:', localStorage.getItem('seenAdvancedCoach'));
-    console.log('🔄 DEBUG: Advanced coach flag reset complete');
+    console.log('🔄 DEBUG: After reset - localStorage advancedMode:', localStorage.getItem('practice_coaching_advancedMode'));
+    console.log('🔄 DEBUG: Advanced coach flags reset complete');
   };
 
   // Load a random scenario on component mount if none is saved
