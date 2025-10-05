@@ -212,9 +212,16 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
 
   // Debug function to reset advanced coach flag (for testing)
   const resetAdvancedCoachFlag = () => {
+    console.log('🔄 DEBUG: Reset button clicked');
+    console.log('🔄 DEBUG: Before reset - userHasSeenAdvancedCoach:', userHasSeenAdvancedCoach);
+    console.log('🔄 DEBUG: Before reset - localStorage seenAdvancedCoach:', localStorage.getItem('seenAdvancedCoach'));
+    
     localStorage.removeItem('seenAdvancedCoach');
     setUserHasSeenAdvancedCoach(false);
-    console.log('🔄 DEBUG: Advanced coach flag reset');
+    
+    console.log('🔄 DEBUG: After reset - userHasSeenAdvancedCoach:', false);
+    console.log('🔄 DEBUG: After reset - localStorage seenAdvancedCoach:', localStorage.getItem('seenAdvancedCoach'));
+    console.log('🔄 DEBUG: Advanced coach flag reset complete');
   };
 
   // Load a random scenario on component mount if none is saved
@@ -715,6 +722,17 @@ export default function PracticeAndCoachingLayer({ onSwitchToAdvanced }: Practic
           userHasSeenAdvancedCoach: {userHasSeenAdvancedCoach.toString()}, 
           triggers: {advancedTriggersFound.length}
         </span>
+        <button 
+          onClick={() => {
+            console.log('🧪 DEBUG: Testing advanced detection manually');
+            const testStory = 'As a customer, I want to submit a booking request so that I can schedule an appointment';
+            setUserStory(testStory);
+            console.log('🧪 DEBUG: Set test story with triggers');
+          }}
+          className="ml-2 text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+        >
+          🧪 Test Advanced Detection
+        </button>
       </div>
       
       {/* Save Status Indicator */}
