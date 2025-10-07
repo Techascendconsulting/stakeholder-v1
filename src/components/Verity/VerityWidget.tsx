@@ -94,7 +94,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   const [issueSubject, setIssueSubject] = useState('');
   const [submittingIssue, setSubmittingIssue] = useState(false);
   const [issueSubmitted, setIssueSubmitted] = useState(false);
-  const { messages, sendMessage, loading } = useVerity(context, pageTitle);
+  const { messages, sendMessage, loading, clearChat } = useVerity(context, pageTitle);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
 
@@ -259,10 +259,19 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
 
           {/* Page Context Indicator */}
           {pageTitle && (
-            <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50">
+            <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50 flex items-center justify-between">
               <p className="text-xs text-purple-700 dark:text-purple-300">
                 📍 Helping with: <span className="font-medium">{pageTitle}</span>
               </p>
+              {messages.length > 1 && (
+                <button
+                  onClick={clearChat}
+                  className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 font-medium transition-colors"
+                  title="Start new conversation"
+                >
+                  🔄 New Chat
+                </button>
+              )}
             </div>
           )}
 

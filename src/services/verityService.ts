@@ -1,8 +1,16 @@
 import OpenAI from 'openai';
 import { VERITY_SYSTEM_PROMPT } from '../components/Verity/VerityPrompt';
 
+// Check if API key is available
+const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+if (!apiKey) {
+  console.error('❌ VITE_OPENAI_API_KEY is not set in environment variables');
+} else {
+  console.log('✅ OpenAI API key loaded:', apiKey.substring(0, 20) + '...');
+}
+
 const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  apiKey: apiKey,
   dangerouslyAllowBrowser: true // Note: In production, move this to a backend endpoint
 });
 
@@ -45,8 +53,7 @@ User role: ${context.userRole || 'learner'}`;
           ...messages
         ],
         temperature: 0.7,
-        max_tokens: 300, // Reduced for faster responses
-        timeout: 20000 // 20 second timeout
+        max_tokens: 300 // Reduced for faster responses
       });
 
       const reply = completion.choices[0]?.message?.content || 
@@ -64,6 +71,11 @@ User role: ${context.userRole || 'learner'}`;
 
     } catch (error) {
       console.error('❌ Verity Service Error:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: error?.constructor?.name,
+        hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY
+      });
       
       // Don't auto-escalate on service errors - just inform the user
       return {

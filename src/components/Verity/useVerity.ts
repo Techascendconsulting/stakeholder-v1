@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import VerityService from '../../services/verityService';
@@ -18,19 +18,91 @@ interface VerityContext {
  * Custom hook for Verity AI assistant
  * Handles OpenAI communication and Supabase escalation
  */
-export function useVerity(context: string, pageTitle?: string) {
-  const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([
+const STORAGE_KEY = 'verity_chat_history';
+const MAX_STORED_MESSAGES = 30;
+
+// Load chat history from localStorage
+const loadChatHistory = (context: string): Message[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Return messages for this context, or all if no context match
+      return parsed.filter((msg: any) => !msg.page_context || msg.page_context === context).slice(-MAX_STORED_MESSAGES);
+    }
+  } catch (error) {
+    console.error('Failed to load chat history:', error);
+  }
+  
+  // Default welcome message
+  return [
     {
       role: 'assistant',
       content: `Hi! I'm Verity 👋 Ask me about BA concepts, learning exercises, or navigating the platform. 
 
 Having technical issues? Use the **⚠️ Report Issue** tab above.`
     }
-  ]);
+  ];
+};
+
+// Save chat history to localStorage
+const saveChatHistory = (messages: Message[], context: string) => {
+  try {
+    const messagesToSave = messages.slice(-MAX_STORED_MESSAGES).map(msg => ({
+      ...msg,
+      page_context: context
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messagesToSave));
+  } catch (error) {
+    console.error('Failed to save chat history:', error);
+  }
+};
+
+export function useVerity(context: string, pageTitle?: string) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>(() => loadChatHistory(context));
   const [loading, setLoading] = useState(false);
+  const [messageCount, setMessageCount] = useState(0);
+  const [rateLimitResetTime, setRateLimitResetTime] = useState<number | null>(null);
+
+  // Save messages whenever they change
+  useEffect(() => {
+    if (messages.length > 1) { // Don't save just the welcome message
+      saveChatHistory(messages, context);
+    }
+  }, [messages, context]);
 
   async function sendMessage(userMessage: string) {
+    // Rate limiting: 10 messages per minute
+    const now = Date.now();
+    const RATE_LIMIT = 10;
+    const RATE_WINDOW = 60000; // 1 minute
+
+    if (rateLimitResetTime && now < rateLimitResetTime) {
+      const secondsLeft = Math.ceil((rateLimitResetTime - now) / 1000);
+      setMessages(prev => [...prev, 
+        { role: 'user', content: userMessage },
+        { 
+          role: 'assistant', 
+          content: `⏳ Whoa, slow down! You've reached the message limit. Please wait ${secondsLeft} seconds before asking again. This helps keep the platform running smoothly for everyone.` 
+        }
+      ]);
+      return;
+    }
+
+    // Reset counter if window expired
+    if (!rateLimitResetTime || now >= rateLimitResetTime) {
+      setMessageCount(1);
+      setRateLimitResetTime(now + RATE_WINDOW);
+    } else {
+      const newCount = messageCount + 1;
+      setMessageCount(newCount);
+      
+      if (newCount >= RATE_LIMIT) {
+        setRateLimitResetTime(now + RATE_WINDOW);
+      }
+    }
+
     // Add user message to chat
     const newUserMessage: Message = { role: 'user', content: userMessage };
     setMessages(prev => [...prev, newUserMessage]);
@@ -106,7 +178,12 @@ Having technical issues? Use the **⚠️ Report Issue** tab above.`
     }
   }
 
-  return { messages, sendMessage, loading };
+  const clearChat = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setMessages(loadChatHistory(context));
+  };
+
+  return { messages, sendMessage, loading, clearChat };
 }
 
 export default useVerity;
