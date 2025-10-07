@@ -309,8 +309,8 @@ const MainLayout: React.FC = () => {
         {renderView()}
       </main>
       
-      {/* Verity Assistant - Available on every page except documentation (which has its own AI) */}
-      {currentView !== 'documentation' && (
+      {/* Verity Assistant - Hide on pages with dedicated AI assistants */}
+      {!['documentation', 'documentation-practice', 'training-practice', 'voice-only-meeting', 'meeting'].includes(currentView) && (
         <div className="fixed bottom-6 right-6 z-50">
           <VerityWidget 
             context={currentView} 
