@@ -103,13 +103,13 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Auto-scroll when widget opens
+  // Instant scroll to bottom when widget opens (no animation)
   useEffect(() => {
     if (open) {
-      // Delay to ensure DOM is rendered
+      // Use instant scroll when opening
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 50);
     }
   }, [open]);
 
