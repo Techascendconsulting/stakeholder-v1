@@ -121,27 +121,26 @@ const StakeholdersView: React.FC = () => {
   }
 
   const handleStartGroupMeeting = () => {
+    // Always let users choose meeting mode, even for continuing meetings
+    const relevantStakeholders = stakeholders.filter(stakeholder => {
+      if (!selectedProject?.relevantStakeholders) {
+        return true;
+      }
+      return selectedProject.relevantStakeholders.includes(stakeholder.id);
+    });
+    
+    const selectedStakeholderObjects = relevantStakeholders.filter(s => 
+      localSelectedStakeholders.includes(s.id)
+    )
+    console.log('🎯 DEBUG: Starting meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
+    setSelectedStakeholders(selectedStakeholderObjects)
+    
     if (hasActiveMeeting && activeMeetingId) {
-      // Continue existing meeting - go directly to voice meeting view
-      console.log('🔄 Continuing existing meeting:', activeMeetingId)
-      setCurrentView('voice-only-meeting')
-    } else {
-      // Start new meeting
-      const relevantStakeholders = stakeholders.filter(stakeholder => {
-        if (!selectedProject?.relevantStakeholders) {
-          return true;
-        }
-        return selectedProject.relevantStakeholders.includes(stakeholder.id);
-      });
-      
-      const selectedStakeholderObjects = relevantStakeholders.filter(s => 
-        localSelectedStakeholders.includes(s.id)
-      )
-      console.log('🎯 DEBUG: Starting new meeting with stakeholders:', selectedStakeholderObjects.map(s => s.name))
-      setSelectedStakeholders(selectedStakeholderObjects)
-      console.log('🎯 DEBUG: Setting current view to meeting mode selection')
-      setCurrentView('meeting-mode-selection')
+      console.log('🔄 Continuing existing meeting:', activeMeetingId, '- but allowing mode selection')
     }
+    
+    console.log('🎯 DEBUG: Setting current view to meeting mode selection')
+    setCurrentView('meeting-mode-selection')
   }
 
   const isStakeholderSelected = (stakeholderId: string) => {
