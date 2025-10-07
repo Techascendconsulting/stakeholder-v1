@@ -20,16 +20,29 @@ interface VerityContext {
  * Handles OpenAI communication and Supabase escalation
  */
 const STORAGE_KEY = 'verity_chat_history';
+const STORAGE_TIMESTAMP_KEY = 'verity_chat_timestamp';
 const MAX_STORED_MESSAGES = 30;
+const CHAT_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
-// Load chat history from localStorage
+// Load chat history from localStorage (expires after 1 hour)
 const loadChatHistory = (context: string): Message[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      // Return messages for this context, or all if no context match
-      return parsed.filter((msg: any) => !msg.page_context || msg.page_context === context).slice(-MAX_STORED_MESSAGES);
+    const timestamp = localStorage.getItem(STORAGE_TIMESTAMP_KEY);
+    
+    if (stored && timestamp) {
+      const age = Date.now() - parseInt(timestamp);
+      
+      // Check if chat history has expired (older than 1 hour)
+      if (age > CHAT_EXPIRY_MS) {
+        console.log('🕐 Chat history expired (> 1 hour) - clearing');
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_TIMESTAMP_KEY);
+      } else {
+        const parsed = JSON.parse(stored);
+        // Return messages for this context, or all if no context match
+        return parsed.filter((msg: any) => !msg.page_context || msg.page_context === context).slice(-MAX_STORED_MESSAGES);
+      }
     }
   } catch (error) {
     console.error('Failed to load chat history:', error);
@@ -46,7 +59,7 @@ Having technical issues? Use the **⚠️ Report Issue** tab above.`
   ];
 };
 
-// Save chat history to localStorage
+// Save chat history to localStorage with timestamp
 const saveChatHistory = (messages: Message[], context: string) => {
   try {
     const messagesToSave = messages.slice(-MAX_STORED_MESSAGES).map(msg => ({
@@ -54,6 +67,7 @@ const saveChatHistory = (messages: Message[], context: string) => {
       page_context: context
     }));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messagesToSave));
+    localStorage.setItem(STORAGE_TIMESTAMP_KEY, Date.now().toString());
   } catch (error) {
     console.error('Failed to save chat history:', error);
   }
