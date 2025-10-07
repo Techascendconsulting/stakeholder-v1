@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Lock, CheckCircle, PlayCircle, BookOpen, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LEARNING_MODULES, Module } from './learningData';
-import ProgressService, { LearningProgress } from './progressService';
+import { 
+  getLearningProgress, 
+  initializeLearningProgress,
+  getModuleCompletionPercentage,
+  LearningProgressRow 
+} from '../../utils/learningProgress';
 
 interface ModuleListProps {
   onModuleSelect: (moduleId: string) => void;
@@ -10,18 +15,33 @@ interface ModuleListProps {
 
 const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
   const { user } = useAuth();
-  const [progress, setProgress] = useState<LearningProgress | null>(null);
+  const [progressRows, setProgressRows] = useState<LearningProgressRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
 
-    // Load or initialize progress
-    let userProgress = ProgressService.load(user.id);
-    if (!userProgress) {
-      const moduleIds = LEARNING_MODULES.map(m => m.id);
-      userProgress = ProgressService.initialize(user.id, moduleIds);
-    }
-    setProgress(userProgress);
+    const loadProgress = async () => {
+      try {
+        // Try to load existing progress
+        let progress = await getLearningProgress(user.id);
+        
+        // If no progress exists, initialize it
+        if (progress.length === 0) {
+          const moduleIds = LEARNING_MODULES.map(m => m.id);
+          await initializeLearningProgress(user.id, moduleIds);
+          progress = await getLearningProgress(user.id);
+        }
+
+        setProgressRows(progress);
+      } catch (error) {
+        console.error('Failed to load progress:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProgress();
   }, [user]);
 
   const getColorScheme = (color: string) => {
@@ -52,15 +72,13 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
   };
 
   const handleModuleClick = (module: Module) => {
-    if (!progress) return;
-
-    const moduleProgress = progress.modules[module.id];
+    const moduleProgress = progressRows.find(p => p.module_id === module.id);
     if (moduleProgress && moduleProgress.status !== 'locked') {
       onModuleSelect(module.id);
     }
   };
 
-  if (!progress) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -89,14 +107,14 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Overall Progress</h2>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {Object.values(progress.modules).filter(m => m.status === 'completed').length} / {LEARNING_MODULES.length} modules completed
+              {progressRows.filter(m => m.status === 'completed').length} / {LEARNING_MODULES.length} modules completed
             </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
             <div 
               className="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full transition-all duration-500"
               style={{ 
-                width: `${(Object.values(progress.modules).filter(m => m.status === 'completed').length / LEARNING_MODULES.length) * 100}%` 
+                width: `${(progressRows.filter(m => m.status === 'completed').length / LEARNING_MODULES.length) * 100}%` 
               }}
             />
           </div>
@@ -105,13 +123,12 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
         {/* Modules Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {LEARNING_MODULES.map((module, index) => {
-            const moduleProgress = progress.modules[module.id];
+            const moduleProgress = progressRows.find(p => p.module_id === module.id);
             const colors = getColorScheme(module.color);
             const isLocked = moduleProgress?.status === 'locked';
             const isCompleted = moduleProgress?.status === 'completed';
-            const completion = ProgressService.getModuleCompletion(
-              progress, 
-              module.id, 
+            const completion = getModuleCompletionPercentage(
+              moduleProgress || null, 
               module.lessons.length
             );
 

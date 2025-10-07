@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, Lock, Clock, BookOpen } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { getModuleById, getLessonById, getNextModuleId } from './learningData';
-import ProgressService, { LearningProgress } from './progressService';
+import { getModuleById, getNextModuleId } from './learningData';
+import { 
+  getModuleProgress, 
+  markLessonCompleted, 
+  markModuleCompleted,
+  isLessonAccessible,
+  isAssignmentAccessible,
+  LearningProgressRow 
+} from '../../utils/learningProgress';
 import AssignmentPlaceholder from './AssignmentPlaceholder';
 import ReactMarkdown from 'react-markdown';
 
@@ -13,42 +20,58 @@ interface LessonViewProps {
 
 const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
   const { user } = useAuth();
-  const [progress, setProgress] = useState<LearningProgress | null>(null);
+  const [moduleProgress, setModuleProgress] = useState<LearningProgressRow | null>(null);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [showAssignment, setShowAssignment] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const module = getModuleById(moduleId);
 
   useEffect(() => {
     if (!user) return;
-    const userProgress = ProgressService.load(user.id);
-    if (userProgress) {
-      setProgress(userProgress);
-    }
-  }, [user]);
+    
+    const loadProgress = async () => {
+      try {
+        const progress = await getModuleProgress(user.id, moduleId);
+        setModuleProgress(progress);
+      } catch (error) {
+        console.error('Failed to load module progress:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!module || !progress) {
+    loadProgress();
+  }, [user, moduleId]);
+
+  if (!module || loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
   }
 
-  const moduleProgress = progress.modules[moduleId];
   const currentLesson = module.lessons[currentLessonIndex];
-  const isLessonCompleted = moduleProgress?.completedLessons.includes(currentLesson.id);
+  const isLessonCompleted = moduleProgress?.completed_lessons.includes(currentLesson?.id);
   const isLastLesson = currentLessonIndex === module.lessons.length - 1;
-  const canAccessAssignment = ProgressService.isAssignmentAccessible(progress, moduleId, module.lessons.length);
-  const isAssignmentCompleted = moduleProgress?.assignmentCompleted;
+  const canAccessAssignmentNow = isAssignmentAccessible(moduleProgress, module.lessons.length);
+  const isAssignmentCompleted = moduleProgress?.assignment_completed;
 
-  const handleMarkComplete = () => {
+  const handleMarkComplete = async () => {
     if (!user || !currentLesson) return;
 
-    const updatedProgress = ProgressService.completeLesson(progress, moduleId, currentLesson.id);
-    setProgress(updatedProgress);
+    try {
+      await markLessonCompleted(user.id, moduleId, currentLesson.id);
+      // Reload progress
+      const updated = await getModuleProgress(user.id, moduleId);
+      setModuleProgress(updated);
+    } catch (error) {
+      console.error('Failed to mark lesson complete:', error);
+    }
   };
 
   const handleNext = () => {
@@ -72,18 +95,22 @@ const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
     }
   };
 
-  const handleCompleteAssignment = () => {
+  const handleCompleteAssignment = async () => {
     if (!user) return;
 
-    const nextModuleId = getNextModuleId(moduleId);
-    const updatedProgress = ProgressService.completeAssignment(progress, moduleId, nextModuleId);
-    setProgress(updatedProgress);
+    try {
+      const nextModuleId = getNextModuleId(moduleId);
+      await markModuleCompleted(user.id, moduleId, nextModuleId);
+      // Reload progress
+      const updated = await getModuleProgress(user.id, moduleId);
+      setModuleProgress(updated);
+    } catch (error) {
+      console.error('Failed to complete assignment:', error);
+    }
   };
 
-  const canAccessLesson = ProgressService.isLessonAccessible(
-    progress,
-    moduleId,
-    currentLesson?.id,
+  const canAccessLesson = isLessonAccessible(
+    moduleProgress,
     currentLessonIndex,
     module.lessons
   );
@@ -221,8 +248,7 @@ const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
               <button
                 key={index}
                 onClick={() => {
-                  const lessonId = module.lessons[index].id;
-                  const canAccess = ProgressService.isLessonAccessible(progress, moduleId, lessonId, index, module.lessons);
+                  const canAccess = isLessonAccessible(moduleProgress, index, module.lessons);
                   if (canAccess) {
                     setCurrentLessonIndex(index);
                   }
@@ -231,7 +257,7 @@ const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
                   w-3 h-3 rounded-full transition-all
                   ${index === currentLessonIndex 
                     ? 'bg-purple-600 w-8' 
-                    : moduleProgress?.completedLessons.includes(module.lessons[index].id)
+                    : moduleProgress?.completed_lessons.includes(module.lessons[index].id)
                       ? 'bg-green-500'
                       : 'bg-gray-300 dark:bg-gray-600'
                   }
@@ -241,14 +267,14 @@ const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
             ))}
             {/* Assignment dot */}
             <button
-              onClick={() => canAccessAssignment && setShowAssignment(true)}
+              onClick={() => canAccessAssignmentNow && setShowAssignment(true)}
               className={`
                 w-3 h-3 rounded-full transition-all
                 ${showAssignment 
                   ? 'bg-purple-600 w-8' 
                   : isAssignmentCompleted
                     ? 'bg-green-500'
-                    : canAccessAssignment
+                    : canAccessAssignmentNow
                       ? 'bg-orange-400'
                       : 'bg-gray-300 dark:bg-gray-600'
                 }
