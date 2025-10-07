@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, AlertCircle, CheckCircle } from 'lucide-react';
+import { MessageCircle, X, Send, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 import { useVerity } from './useVerity';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -235,12 +235,26 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                 <p className="text-xs text-purple-100">Your BA WorkXP Assistant</p>
               </div>
             </div>
-            <button 
-              onClick={() => setOpen(false)} 
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center space-x-2">
+              {/* Clear Chat Button */}
+              {messages.length > 1 && (
+                <button 
+                  onClick={clearChat}
+                  className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                  title="Clear chat"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+              {/* Close Button */}
+              <button 
+                onClick={() => setOpen(false)} 
+                className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                title="Close chat"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -269,19 +283,10 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
 
           {/* Page Context Indicator */}
           {pageTitle && (
-            <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50 flex items-center justify-between">
+            <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50">
               <p className="text-xs text-purple-700 dark:text-purple-300">
                 📍 Helping with: <span className="font-medium">{pageTitle}</span>
               </p>
-              {messages.length > 1 && (
-                <button
-                  onClick={clearChat}
-                  className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 font-medium transition-colors"
-                  title="Start new conversation"
-                >
-                  🔄 New Chat
-                </button>
-              )}
             </div>
           )}
 
