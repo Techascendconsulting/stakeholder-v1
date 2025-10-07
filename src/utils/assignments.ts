@@ -199,20 +199,19 @@ export async function getLatestAssignment(
 }
 
 /**
- * Check if 24 hours have passed since submission and process delayed unlock
+ * Check if 24 hours have passed since submission, review with AI, and unlock if passed
  * Call this on page load or periodically
  */
-export async function processDelayedUnlocks(userId: string): Promise<void> {
+export async function processDelayedReviewsAndUnlocks(userId: string): Promise<void> {
   try {
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-    // Get all reviewed assignments that are not yet marked as complete
+    // Get all submitted assignments that haven't been reviewed yet
     const { data: assignments, error } = await supabase
       .from('learning_assignments')
       .select('*')
       .eq('user_id', userId)
-      .eq('status', 'reviewed')
-      .gte('score', 70);
+      .eq('status', 'submitted');
 
     if (error) throw error;
     if (!assignments || assignments.length === 0) return;
@@ -223,48 +222,55 @@ export async function processDelayedUnlocks(userId: string): Promise<void> {
       const submittedAt = new Date(assignment.created_at).getTime();
       const timePassed = now - submittedAt;
 
-      // Check if 24 hours have passed
+      // Check if 24 hours have passed - time to review!
       if (timePassed >= TWENTY_FOUR_HOURS) {
-        console.log(`⏰ 24 hours passed for ${assignment.module_id}, unlocking...`);
+        console.log(`⏰ 24 hours passed for ${assignment.module_id}, reviewing now...`);
 
-        // Mark module as completed
-        await supabase
-          .from('learning_progress')
-          .update({
-            status: 'completed',
-            assignment_completed: true,
-            completed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-          .eq('module_id', assignment.module_id);
+        // NOW call AI to review (after 24 hours)
+        const moduleTitle = assignment.module_id; // Would need to get from learningData
+        const feedback = await reviewAssignmentWithAI(
+          userId,
+          assignment.module_id,
+          moduleTitle,
+          'Assignment', // Would need actual description
+          assignment.submission
+        );
 
-        // Unlock next module
-        const nextModuleId = getNextModuleId(assignment.module_id);
-        if (nextModuleId) {
+        // If score >= 70%, unlock next module
+        if (feedback.score >= 70) {
+          // Mark module as completed
           await supabase
             .from('learning_progress')
             .update({
-              status: 'unlocked',
+              status: 'completed',
+              assignment_completed: true,
+              completed_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
             .eq('user_id', userId)
-            .eq('module_id', nextModuleId);
+            .eq('module_id', assignment.module_id);
 
-          console.log(`✅ Module ${assignment.module_id} completed, ${nextModuleId} unlocked after 24h delay`);
+          // Unlock next module
+          const nextModuleId = getNextModuleId(assignment.module_id);
+          if (nextModuleId) {
+            await supabase
+              .from('learning_progress')
+              .update({
+                status: 'unlocked',
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', userId)
+              .eq('module_id', nextModuleId);
+
+            console.log(`✅ Module ${assignment.module_id} reviewed and unlocked ${nextModuleId}`);
+          }
+        } else {
+          console.log(`⚠️ Score ${feedback.score} < 70, needs revision`);
         }
-
-        // Update assignment to prevent re-processing
-        await supabase
-          .from('learning_assignments')
-          .update({
-            status: 'completed'
-          })
-          .eq('id', assignment.id);
       }
     }
   } catch (error) {
-    console.error('❌ processDelayedUnlocks error:', error);
+    console.error('❌ processDelayedReviewsAndUnlocks error:', error);
   }
 }
 

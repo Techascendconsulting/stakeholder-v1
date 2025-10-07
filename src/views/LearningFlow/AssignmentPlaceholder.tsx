@@ -71,28 +71,15 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
 
     setSubmitting(true);
     try {
-      // Submit assignment
-      await submitAssignment(user.id, moduleId, submission);
+      // Just submit assignment - NO instant AI review
+      const submitted = await submitAssignment(user.id, moduleId, submission);
 
-      // Get AI review
-      const feedback = await reviewAssignmentWithAI(
-        user.id,
-        moduleId,
-        moduleTitle,
-        description,
-        submission
-      );
-
-      setAiFeedback(feedback);
       setPreviousSubmission(submission);
+      setSubmittedAt(submitted.created_at);
+      setSubmission(''); // Clear form
 
-      // If score >= 70%, trigger completion
-      if (feedback.score >= 70) {
-        // Wait a bit to show the feedback
-        setTimeout(() => {
-          onComplete();
-        }, 2000);
-      }
+      // Show success message (no feedback yet - that comes in 24h)
+      alert('✅ Assignment submitted! Verity will review it in 24 hours. Come back to see your feedback and score.');
     } catch (error) {
       console.error('Failed to submit assignment:', error);
       alert('Failed to submit assignment. Please try again.');
@@ -116,36 +103,94 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
     );
   }
 
-  // Waiting for 24-hour unlock state
-  if (aiFeedback && aiFeedback.score >= 70 && !isCompleted && submittedAt) {
+  // Waiting for AI review state (submitted but not yet reviewed)
+  if (submittedAt && !aiFeedback) {
     const timeRemaining = getTimeUntilUnlock(submittedAt);
     
-    if (timeRemaining > 0) {
-      return (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-12 text-center border-2 border-blue-200 dark:border-blue-800">
-          <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Clock className="w-12 h-12 text-blue-600 dark:text-blue-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-            Great Work! ⏳
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            You scored <span className="font-bold text-blue-600">{aiFeedback.score}/100</span>!  
-            Your next module will unlock in:
-          </p>
-          <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-6">
-            {formatTimeRemaining(timeRemaining)}
-          </div>
-          
-          {/* Show feedback */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-left">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Verity's Feedback:</h3>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{aiFeedback.summary}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{aiFeedback.feedback}</p>
-          </div>
+    return (
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-12 text-center border-2 border-blue-200 dark:border-blue-800">
+        <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Clock className="w-12 h-12 text-blue-600 dark:text-blue-400 animate-pulse" />
         </div>
-      );
-    }
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+          Assignment Submitted! ✓
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Your assignment has been submitted successfully.  
+          Verity will review it and provide feedback in:
+        </p>
+        <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-6">
+          {formatTimeRemaining(timeRemaining)}
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-left max-w-md mx-auto">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">What happens next?</h3>
+          <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+            <li>• Verity will review your submission</li>
+            <li>• You'll receive a score (0-100) and personalized feedback</li>
+            <li>• If you score ≥ 70%, the next module will unlock</li>
+            <li>• If you score &lt; 70%, you can revise and resubmit</li>
+          </ul>
+        </div>
+
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-6">
+          Come back in {formatTimeRemaining(timeRemaining).toLowerCase()} to see your results!
+        </p>
+      </div>
+    );
+  }
+
+  // Reviewed state - show feedback and either unlock or request revision
+  if (aiFeedback && submittedAt) {
+    const isPass = aiFeedback.score >= 70;
+    
+    return (
+      <div className={`bg-gradient-to-br ${isPass ? 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20' : 'from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20'} rounded-xl p-12 text-center border-2 ${isPass ? 'border-green-200 dark:border-green-800' : 'border-yellow-200 dark:border-yellow-800'}`}>
+        <div className={`w-20 h-20 ${isPass ? 'bg-green-100 dark:bg-green-900/40' : 'bg-yellow-100 dark:bg-yellow-900/40'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+          {isPass ? (
+            <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
+          ) : (
+            <AlertCircle className="w-12 h-12 text-yellow-600 dark:text-yellow-400" />
+          )}
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+          {isPass ? 'Assignment Passed! 🎉' : 'Revision Needed'}
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          You scored <span className={`font-bold ${isPass ? 'text-green-600' : 'text-yellow-600'}`}>{aiFeedback.score}/100</span>
+        </p>
+
+        {/* Show feedback */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-left mb-6">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Verity's Feedback:</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{aiFeedback.summary}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{aiFeedback.feedback}</p>
+        </div>
+
+        {isPass ? (
+          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-green-100 dark:bg-green-900/40 rounded-lg text-green-700 dark:text-green-300 text-sm font-medium">
+            <CheckCircle className="w-4 h-4" />
+            <span>Module Complete - Next module unlocked!</span>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-4">
+              Please revise your submission based on the feedback above and resubmit.
+            </p>
+            <button
+              onClick={() => {
+                setAiFeedback(null);
+                setSubmittedAt(null);
+                setSubmission(previousSubmission); // Pre-fill with previous attempt
+              }}
+              className="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium"
+            >
+              Revise & Resubmit
+            </button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   // Completed state
