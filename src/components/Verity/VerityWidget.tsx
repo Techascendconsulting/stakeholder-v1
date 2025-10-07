@@ -123,7 +123,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   };
 
   return (
-    <div ref={widgetRef} className="fixed bottom-6 right-6 z-50">
+    <div ref={widgetRef}>
       {open ? (
         <div className="w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col h-[500px] sm:h-[520px]">
           {/* Header */}

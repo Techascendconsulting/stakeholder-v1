@@ -48,16 +48,26 @@ export function useVerity(context: string, pageTitle?: string) {
       const aiReply = data.reply || "I'll forward this to Joy to help further.";
       const shouldEscalate = data.escalate;
 
+      // Check if user is asking for help or stuck
+      const userNeedsHelp = /help|stuck|confused|don't understand|can't|cannot|not working/i.test(userMessage);
+
       // Add AI response to chat
+      let finalReply = aiReply.replace('[ESCALATE_TO_JOY]', '');
+      
+      // If escalation needed or user clearly needs help
+      if (shouldEscalate || userNeedsHelp) {
+        await logHelpRequest(userMessage, context, pageTitle, 'learning');
+        
+        // Add escalation confirmation if not already in response
+        if (!finalReply.toLowerCase().includes('joy') && !finalReply.toLowerCase().includes('shared')) {
+          finalReply += "\n\nGot it — I've shared this with Joy. You'll get a response soon!";
+        }
+      }
+      
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: aiReply.replace('[ESCALATE_TO_JOY]', '') 
+        content: finalReply
       }]);
-
-      // If escalation needed, log to Supabase
-      if (shouldEscalate) {
-        await logHelpRequest(userMessage, context, pageTitle);
-      }
 
     } catch (error) {
       console.error('Verity error:', error);
@@ -69,20 +79,21 @@ export function useVerity(context: string, pageTitle?: string) {
       }]);
 
       // Log as help request
-      await logHelpRequest(userMessage, context, pageTitle);
+      await logHelpRequest(userMessage, context, pageTitle, 'learning');
     } finally {
       setLoading(false);
     }
   }
 
-  async function logHelpRequest(question: string, pageContext: string, pageTitle?: string) {
+  async function logHelpRequest(question: string, pageContext: string, pageTitle?: string, issueType: 'learning' | 'technical' = 'learning') {
     try {
       await supabase.from('help_requests').insert({
         user_id: user?.id,
-        user_email: user?.email,
+        email: user?.email,
         question,
         page_context: pageContext,
         page_title: pageTitle,
+        issue_type: issueType,
         status: 'pending',
         created_at: new Date().toISOString()
       });
