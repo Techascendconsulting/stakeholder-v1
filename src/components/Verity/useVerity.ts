@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import VerityService from '../../services/verityService';
+import EmailService from '../../services/emailService';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -166,6 +167,7 @@ export function useVerity(context: string, pageTitle?: string) {
 
   async function logHelpRequest(question: string, pageContext: string, pageTitle?: string, issueType: 'learning' | 'technical' = 'learning') {
     try {
+      // Log to Supabase
       await supabase.from('help_requests').insert({
         user_id: user?.id,
         email: user?.email,
@@ -178,6 +180,23 @@ export function useVerity(context: string, pageTitle?: string) {
       });
       
       console.log('✅ Help request logged to Supabase');
+
+      // Send email notification to Tech Ascend Consulting
+      const emailSent = await EmailService.sendHelpRequestEmail({
+        userEmail: user?.email || 'anonymous',
+        userName: user?.full_name || user?.email,
+        pageTitle: pageTitle || 'Unknown Page',
+        pageContext: pageContext,
+        issueType: issueType,
+        question: question,
+        timestamp: new Date().toLocaleString()
+      });
+
+      if (emailSent) {
+        console.log('✅ Email notification sent to Tech Ascend Consulting');
+      } else {
+        console.warn('⚠️ Email notification failed');
+      }
     } catch (error) {
       console.error('❌ Failed to log help request:', error);
     }
