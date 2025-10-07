@@ -234,12 +234,12 @@ export const LEARNING_MODULES: Module[] = [
         duration: '8 min',
         content: conceptToMarkdown(
           'Understanding Systems and Processes',
-          'Processes = what people do. Systems = the tools they use to do it. BAs map out both — especially when things aren\'t working. A great system can still fail if the process behind it is broken. Always check how people and tech interact — that's where the truth is.',
+          'Processes = what people do. Systems = the tools they use to do it. BAs map out both — especially when things aren\'t working. A great system can still fail if the process behind it is broken. Always check how people and tech interact — that\'s where the truth is.',
           [
             'Processes = what people do. Systems = the tools they use to do it.',
             'BAs map out both — especially when things aren\'t working.',
             'A great system can still fail if the process behind it is broken.',
-            'Always check how people and tech interact — that's where the truth is.'
+            'Always check how people and tech interact — that\'s where the truth is.'
           ]
         )
       },
@@ -399,12 +399,12 @@ Ask open-ended questions: "How does this work today?" not "Do you want feature X
         duration: '8 min',
         content: conceptToMarkdown(
           'Understanding Systems and Processes',
-          'Processes = what people do. Systems = the tools they use to do it. BAs map out both — especially when things aren\'t working. A great system can still fail if the process behind it is broken. Always check how people and tech interact — that's where the truth is.',
+          'Processes = what people do. Systems = the tools they use to do it. BAs map out both — especially when things aren\'t working. A great system can still fail if the process behind it is broken. Always check how people and tech interact — that\'s where the truth is.',
           [
             'Processes = what people do. Systems = the tools they use to do it.',
             'BAs map out both — especially when things aren\'t working.',
             'A great system can still fail if the process behind it is broken.',
-            'Always check how people and tech interact — that's where the truth is.'
+            'Always check how people and tech interact — that\'s where the truth is.'
           ]
         )
       },
