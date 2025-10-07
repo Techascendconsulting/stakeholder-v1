@@ -50,7 +50,7 @@ User role: ${context.userRole || 'learner'}`;
       });
 
       const reply = completion.choices[0]?.message?.content || 
-        "I'm having trouble right now. Let me notify Joy so she can help you directly.";
+        "I'm having trouble right now. Let me notify Tech Ascend Consulting so they can help you directly.";
 
       // Detect if escalation is needed
       const escalate = 
@@ -66,7 +66,7 @@ User role: ${context.userRole || 'learner'}`;
       console.error('❌ Verity Service Error:', error);
       
       return {
-        reply: "I'm experiencing technical difficulties right now. I'll notify Joy so she can assist you directly.",
+        reply: "I'm experiencing technical difficulties right now. I'll notify Tech Ascend Consulting so they can assist you directly.",
         escalate: true
       };
     }

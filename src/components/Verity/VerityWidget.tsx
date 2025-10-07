@@ -188,13 +188,13 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       
       setIssueSubmitted(true);
       
-      // Reset after 2 seconds
+      // Reset after 4 seconds to give user time to read
       setTimeout(() => {
         setIssueText('');
         setIssueSubject('');
         setIssueSubmitted(false);
         setActiveTab('chat');
-      }, 2000);
+      }, 4000);
 
     } catch (error) {
       console.error('❌ Failed to submit issue:', error);
@@ -234,23 +234,23 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 pt-2">
             <button
               onClick={() => setActiveTab('chat')}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex-1 px-4 py-3 text-sm font-bold transition-all rounded-t-lg overflow-hidden ${
                 activeTab === 'chat'
-                  ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-white dark:bg-gray-900'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  ? 'text-white bg-gradient-to-r from-purple-600 to-purple-500 shadow-md'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               💬 Ask Verity
             </button>
             <button
               onClick={() => setActiveTab('report')}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex-1 px-4 py-3 text-sm font-bold transition-all rounded-t-lg overflow-hidden ${
                 activeTab === 'report'
-                  ? 'text-orange-600 dark:text-orange-400 border-b-2 border-orange-600 dark:border-orange-400 bg-white dark:bg-gray-900'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  ? 'text-white bg-gradient-to-r from-orange-600 to-red-500 shadow-md'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               ⚠️ Report Issue
@@ -353,7 +353,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
 
           {/* Report Issue Tab Content */}
           {activeTab === 'report' && (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col overflow-hidden">
               {issueSubmitted ? (
                 // Success State
                 <div className="flex-1 flex items-center justify-center p-8">
@@ -391,7 +391,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                         value={issueText}
                         onChange={(e) => setIssueText(e.target.value)}
                         placeholder="Describe the issue in detail: what were you doing, what happened, what did you expect..."
-                        rows={6}
+                        rows={4}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 resize-none text-sm"
                         disabled={submittingIssue}
                       />
@@ -400,13 +400,13 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                     <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-lg p-3">
                       <p className="text-xs text-orange-700 dark:text-orange-300 flex items-start space-x-2">
                         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span>This will be sent to Tech Ascend Consulting. Include as much detail as possible (what you were doing, what happened, etc.)</span>
+                        <span>This will be sent to Tech Ascend Consulting. Include as much detail as possible.</span>
                       </p>
                     </div>
                   </div>
 
                   {/* Issue Submit Button */}
-                  <form onSubmit={handleIssueSubmit} className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                  <form onSubmit={handleIssueSubmit} className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                     <button
                       type="submit"
                       disabled={!issueSubject.trim() || !issueText.trim() || submittingIssue}
