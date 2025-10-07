@@ -35,13 +35,17 @@ CREATE INDEX IF NOT EXISTS idx_help_requests_created_at ON public.help_requests(
 -- =========================================
 ALTER TABLE public.help_requests ENABLE ROW LEVEL SECURITY;
 
+-- Drop policies if they exist, then recreate
+DROP POLICY IF EXISTS "Users can create their own help requests" ON public.help_requests;
+DROP POLICY IF EXISTS "Admin can view and update all help requests" ON public.help_requests;
+
 -- Allow logged-in users to insert help requests
 CREATE POLICY "Users can create their own help requests"
 ON public.help_requests
 FOR INSERT
 WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
--- Allow only Joy (admin) to view and update all requests
+-- Allow only admin to view and update all requests
 CREATE POLICY "Admin can view and update all help requests"
 ON public.help_requests
 FOR ALL
