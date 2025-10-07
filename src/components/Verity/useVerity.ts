@@ -120,8 +120,8 @@ export function useVerity(context: string, pageTitle?: string) {
       const aiReply = data.reply || "I'll forward this to Tech Ascend Consulting to help further.";
       const shouldEscalate = data.escalate;
 
-      // Check if user is asking for help or stuck
-      const userNeedsHelp = /help|stuck|confused|don't understand|can't|cannot|not working/i.test(userMessage);
+      // Check if user is asking for help or stuck (use word boundaries to avoid false matches)
+      const userNeedsHelp = /\b(help me|i'm stuck|stuck|confused|don't understand|can't|cannot|not working|doesn't work|won't work)\b/i.test(userMessage);
 
       // Add AI response to chat
       let finalReply = aiReply.replace('[ESCALATE_TO_JOY]', '');

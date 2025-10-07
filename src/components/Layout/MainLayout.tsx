@@ -375,6 +375,7 @@ function getPageTitle(view: string): string {
     'project-workspace': 'Project Workspace',
     'project-brief': 'Project Brief',
     'meeting': 'Stakeholder Meeting',
+    'meeting-summary': 'Meeting Summary',
     'meeting-history': 'Meeting History',
     'voice-only-meeting': 'Voice Meeting',
     'elevenlabs-meeting': 'AI Meeting',
