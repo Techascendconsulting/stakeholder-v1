@@ -3,61 +3,13 @@ import { test, expect } from '@playwright/test';
 /**
  * Performance Test Suite
  * 
- * Tests page load performance with support for React.lazy and Suspense
- * Waits for proper hydration before checking elements
+ * Tests page load performance using reliable data-testid selectors
+ * Waits for the refinement-page testid before checking elements
  */
-
-/**
- * Helper function to wait for React hydration and lazy chunks to complete
- * Uses visual detection - waits for actual content to appear
- */
-async function waitForReactHydration(page: any, timeoutMs = 20000) {
-  const startTime = Date.now();
-  
-  // Step 1: Wait for document to be fully loaded
-  await page.waitForLoadState('domcontentloaded', { timeout: timeoutMs });
-  
-  // Step 2: Wait for network to be idle (lazy chunks loaded)
-  try {
-    await page.waitForLoadState('networkidle', { timeout: 5000 });
-  } catch {
-    // Network idle might not happen in dev mode, continue anyway
-  }
-  
-  // Step 3: Wait for React root to contain visible content
-  // This is a practical, visual check that lazy components have rendered
-  try {
-    await page.waitForFunction(() => {
-      const root = document.querySelector('#root') || 
-                   document.querySelector('.content-root') || 
-                   document.body;
-      
-      if (!root) return false;
-      
-      // Check for either text content OR interactive elements (buttons)
-      // This covers both text-heavy and interactive pages
-      const hasText = root.innerText && root.innerText.includes('Refinement');
-      const hasButton = root.querySelector('button') !== null;
-      
-      return hasText || hasButton;
-    }, { timeout: timeoutMs });
-    
-    const elapsed = Date.now() - startTime;
-    console.log(`   ⚡ React hydration complete in ${elapsed}ms`);
-    
-  } catch (error) {
-    const elapsed = Date.now() - startTime;
-    console.log(`   ⚠️  Page visible but content not yet hydrated after ${elapsed}ms`);
-    throw new Error('React content not hydrated - no visible text or buttons found');
-  }
-  
-  // Extra buffer for animations and transitions
-  await page.waitForTimeout(500);
-}
 
 test.describe('Performance Tests', () => {
   test('should load Backlog Refinement page within 10 seconds', async ({ page }) => {
-    console.log('\n🚀 Starting performance test (with React.lazy support)...\n');
+    console.log('\n🚀 Starting performance test...\n');
     
     try {
       // Record start time
@@ -69,15 +21,19 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for React hydration and lazy chunks
-      console.log('   ⏳ Waiting for React hydration and lazy chunks...');
-      await waitForReactHydration(page, 20000);
+      // Wait for the refinement page to be fully rendered (React.lazy complete)
+      console.log('   ⏳ Waiting for page to render...');
+      await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
-      // Wait for the critical heading to be visible (flexible selector)
-      // Match any h1 or h2 that contains "Refinement"
+      // Wait for network to stabilize
+      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
+        // Ignore if network doesn't go idle (dev mode)
+      });
+      
+      // Verify the critical heading is visible
       await page.locator('h1, h2').filter({ hasText: /Refinement/i }).first().waitFor({ 
         state: 'visible',
-        timeout: 10000 
+        timeout: 5000 
       });
       
       // Calculate load time
@@ -106,7 +62,7 @@ test.describe('Performance Tests', () => {
   });
 
   test('should verify critical UI elements are present', async ({ page }) => {
-    console.log('🔍 Verifying critical UI elements (after hydration)...\n');
+    console.log('🔍 Verifying critical UI elements...\n');
     
     try {
       await page.goto('http://localhost:4173', { 
@@ -114,9 +70,10 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for React hydration
-      console.log('   ⏳ Waiting for lazy components to load...');
-      await waitForReactHydration(page, 20000);
+      // Wait for the page to be fully rendered
+      console.log('   ⏳ Waiting for components to load...');
+      await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
+      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       
       // Check for critical page elements with flexible selectors
       // 1. Main heading with "Refinement"
@@ -155,7 +112,7 @@ test.describe('Performance Tests', () => {
   });
 
   test('should measure time to interactive', async ({ page }) => {
-    console.log('⏱️  Measuring Time to Interactive (with lazy loading)...\n');
+    console.log('⏱️  Measuring Time to Interactive...\n');
     
     try {
       const startTime = Date.now();
@@ -165,15 +122,15 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for React hydration and lazy chunks
-      console.log('   ⏳ Waiting for components to become interactive...');
-      await waitForReactHydration(page, 20000);
+      // Wait for the page to be fully rendered
+      console.log('   ⏳ Waiting for interactive elements...');
+      await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
+      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       
       // Wait for the main action button to be clickable (role-based selector)
-      // This is more reliable and matches how users interact
       await page.getByRole('button', { name: /Watch.*Simulation/i }).first().waitFor({
         state: 'visible',
-        timeout: 10000
+        timeout: 5000
       });
       
       const timeToInteractive = Date.now() - startTime;
@@ -201,7 +158,7 @@ test.describe('Performance Tests', () => {
   });
 
   test('should handle navigation and back button', async ({ page }) => {
-    console.log('🔄 Testing navigation (after lazy load)...\n');
+    console.log('🔄 Testing navigation...\n');
     
     try {
       await page.goto('http://localhost:4173', { 
@@ -209,13 +166,14 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for hydration
-      console.log('   ⏳ Waiting for navigation elements to load...');
-      await waitForReactHydration(page, 20000);
+      // Wait for the page to be fully rendered
+      console.log('   ⏳ Waiting for navigation elements...');
+      await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
+      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       
       // Find and verify the main action button
       const watchButton = page.getByRole('button', { name: /Watch.*Simulation/i }).first();
-      await watchButton.waitFor({ state: 'visible', timeout: 10000 });
+      await watchButton.waitFor({ state: 'visible', timeout: 5000 });
       
       console.log('   ✅ Watch button is clickable');
       
@@ -244,18 +202,15 @@ test.describe('Performance Tests', () => {
     
     try {
       // Track network requests to verify lazy chunks are loaded
-      const lazyChunkLoaded = new Promise((resolve) => {
-        page.on('response', response => {
-          const url = response.url();
-          // Look for lazy-loaded chunk files (ScrumPracticeView, etc.)
-          if (url.includes('ScrumPracticeView') || url.includes('.js')) {
-            console.log(`   📦 Lazy chunk loaded: ${url.split('/').pop()}`);
-            resolve(true);
-          }
-        });
-        
-        // Resolve after timeout if no chunks detected
-        setTimeout(() => resolve(true), 5000);
+      let lazyChunkDetected = false;
+      
+      page.on('response', response => {
+        const url = response.url();
+        // Look for lazy-loaded chunk files (ScrumPracticeView, etc.)
+        if (url.includes('ScrumPracticeView') || (url.includes('.js') && url.includes('chunk'))) {
+          console.log(`   📦 Lazy chunk loaded: ${url.split('/').pop()}`);
+          lazyChunkDetected = true;
+        }
       });
       
       await page.goto('http://localhost:4173', { 
@@ -263,11 +218,10 @@ test.describe('Performance Tests', () => {
         waitUntil: 'networkidle'
       });
       
-      await lazyChunkLoaded;
+      // Wait for the page to be fully rendered
+      await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
       // Verify the page loaded successfully
-      await waitForReactHydration(page, 20000);
-      
       const hasContent = await page.evaluate(() => {
         return document.body.textContent?.includes('Refinement') || false;
       });
@@ -279,6 +233,10 @@ test.describe('Performance Tests', () => {
       }
       
       expect(hasContent).toBeTruthy();
+      
+      if (lazyChunkDetected) {
+        console.log('   ✅ Lazy chunk network request detected');
+      }
       
       console.log('\n✅ React.lazy is working correctly\n');
       

@@ -117,7 +117,7 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
   // Simulation Info Page (Page 2) - Simplified initial render
   if (page === 'simulation-info') {
     return (
-      <div className="content-root min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div data-testid="refinement-page" className="content-root min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-700/60">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <button
@@ -218,7 +218,7 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
 
   // Overview Page (Page 1) - Optimized for fast initial render
   return (
-    <div className="content-root min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div data-testid="refinement-page" className="content-root min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header - Critical content, render immediately */}
       <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-700/60">
         <div className="max-w-7xl mx-auto px-6 py-4">
