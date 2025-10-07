@@ -72,15 +72,19 @@ export function useVerity(context: string, pageTitle?: string) {
     }
   }, [messages, context]);
 
-  // Reset chat when context (page) changes
+  // Detect page changes and notify user (but keep history)
   useEffect(() => {
     const storedContext = localStorage.getItem('verity_current_context');
-    if (storedContext && storedContext !== context) {
-      console.log('🔄 Page changed - clearing Verity chat history');
-      setMessages(loadChatHistory(context));
+    if (storedContext && storedContext !== context && messages.length > 1) {
+      console.log('🔄 Page changed from', storedContext, 'to', context);
+      // Add a system message to inform user of page change
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `📍 You've navigated to a new page. I'm now helping with: **${pageTitle || context}**. How can I assist you here?`
+      }]);
     }
     localStorage.setItem('verity_current_context', context);
-  }, [context]);
+  }, [context, pageTitle]);
 
   async function sendMessage(userMessage: string) {
     // Rate limiting: 10 messages per minute
