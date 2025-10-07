@@ -1,18 +1,16 @@
-import emailjs from '@emailjs/browser';
-
 /**
  * Email Service for Verity Help Requests
  * 
+ * Uses FormSubmit.co - a free email service that requires NO SETUP!
  * Sends email notifications to techascendconsulting@gmail.com
  * when users submit help requests
  * 
- * Setup required:
- * 1. Sign up at emailjs.com
- * 2. Create email template
- * 3. Add credentials to .env.local:
- *    VITE_EMAILJS_SERVICE_ID=your_service_id
- *    VITE_EMAILJS_TEMPLATE_ID=your_template_id
- *    VITE_EMAILJS_PUBLIC_KEY=your_public_key
+ * How it works:
+ * 1. POST form data to https://formsubmit.co/your-email@example.com
+ * 2. FormSubmit sends email to that address
+ * 3. No API keys, no signup, no config needed!
+ * 
+ * First time only: FormSubmit sends confirmation email to verify address
  */
 
 interface HelpRequestEmailData {
@@ -26,53 +24,49 @@ interface HelpRequestEmailData {
 }
 
 export class EmailService {
-  private static SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-  private static TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-  private static PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+  private static RECIPIENT_EMAIL = 'techascendconsulting@gmail.com';
 
   /**
-   * Send help request notification email
+   * Send help request notification email via FormSubmit.co
+   * No configuration needed - just works!
    */
   static async sendHelpRequestEmail(data: HelpRequestEmailData): Promise<boolean> {
-    // Check if EmailJS is configured
-    if (!this.SERVICE_ID || !this.TEMPLATE_ID || !this.PUBLIC_KEY) {
-      console.warn('⚠️ EmailJS not configured - email will not be sent');
-      console.log('💡 To enable emails, add to .env.local:');
-      console.log('   VITE_EMAILJS_SERVICE_ID=your_service_id');
-      console.log('   VITE_EMAILJS_TEMPLATE_ID=your_template_id');
-      console.log('   VITE_EMAILJS_PUBLIC_KEY=your_public_key');
-      return false;
-    }
-
     try {
-      // Initialize EmailJS
-      emailjs.init(this.PUBLIC_KEY);
+      const formData = new FormData();
+      
+      // FormSubmit.co special fields (start with _)
+      formData.append('_subject', `🆘 ${data.issueType === 'technical' ? 'Technical Issue' : 'Help Request'}: ${data.pageTitle}`);
+      formData.append('_template', 'box'); // Use FormSubmit's nice HTML template
+      formData.append('_captcha', 'false'); // Disable captcha for automated requests
+      
+      // Custom data fields (will appear in the email)
+      formData.append('User Email', data.userEmail);
+      formData.append('User Name', data.userName || data.userEmail);
+      formData.append('Page Title', data.pageTitle);
+      formData.append('Page Context', data.pageContext);
+      formData.append('Issue Type', data.issueType);
+      formData.append('Question/Issue', data.question);
+      formData.append('Timestamp', data.timestamp);
 
-      // Prepare email parameters
-      const templateParams = {
-        to_email: 'techascendconsulting@gmail.com',
-        from_email: data.userEmail,
-        from_name: data.userName || data.userEmail,
-        page_title: data.pageTitle,
-        page_context: data.pageContext,
-        issue_type: data.issueType,
-        question: data.question,
-        timestamp: data.timestamp,
-        subject: `🆘 ${data.issueType === 'technical' ? 'Technical Issue' : 'Help Request'}: ${data.pageTitle}`
-      };
+      // Send to FormSubmit.co
+      const response = await fetch(`https://formsubmit.co/${this.RECIPIENT_EMAIL}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json' // Get JSON response instead of redirect
+        }
+      });
 
-      // Send email
-      const response = await emailjs.send(
-        this.SERVICE_ID,
-        this.TEMPLATE_ID,
-        templateParams
-      );
+      if (!response.ok) {
+        throw new Error(`FormSubmit.co returned status ${response.status}`);
+      }
 
-      console.log('✅ Email sent successfully:', response);
+      const result = await response.json();
+      console.log('✅ Email sent successfully via FormSubmit.co:', result);
       return true;
 
     } catch (error) {
-      console.error('❌ Failed to send email:', error);
+      console.error('❌ Failed to send email via FormSubmit.co:', error);
       return false;
     }
   }
