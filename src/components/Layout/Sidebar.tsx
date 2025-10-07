@@ -113,9 +113,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       isCollapsible: true,
       subItems: [
         { 
+          id: 'learning-flow', 
+          label: 'Learning Journey', 
+          icon: GraduationCap
+        },
+        { 
           id: 'core-learning', 
           label: 'Core Learning', 
-          icon: GraduationCap
+          icon: BookOpen
         },
         { 
           id: 'project-initiation', 
