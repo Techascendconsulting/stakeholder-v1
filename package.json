@@ -45,6 +45,7 @@
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
     "react-pageflip": "^2.0.3",
+    "resend": "^6.1.2",
     "svg2pdf.js": "^2.5.0",
     "uuid": "^13.0.0",
     "voice-stream": "^1.0.1"
