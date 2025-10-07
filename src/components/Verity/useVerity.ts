@@ -23,7 +23,7 @@ export function useVerity(context: string, pageTitle?: string) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Hi! I'm Verity, your BA WorkXP assistant. I can help you with anything on this page. What would you like to know?`
+      content: `Hi! I'm Verity, your BA WorkXP assistant. Ask me anything about this page or your BA learning journey.`
     }
   ]);
   const [loading, setLoading] = useState(false);

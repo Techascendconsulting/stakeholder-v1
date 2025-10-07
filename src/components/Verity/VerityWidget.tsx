@@ -238,7 +238,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
           
           {/* Tooltip */}
           <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-            Ask Verity for help
+            Ask Verity
             <div className="absolute top-full right-4 w-2 h-2 bg-gray-900 dark:bg-gray-800 transform rotate-45 -mt-1"></div>
           </div>
         </button>
