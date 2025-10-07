@@ -72,6 +72,16 @@ export function useVerity(context: string, pageTitle?: string) {
     }
   }, [messages, context]);
 
+  // Reset chat when context (page) changes
+  useEffect(() => {
+    const storedContext = localStorage.getItem('verity_current_context');
+    if (storedContext && storedContext !== context) {
+      console.log('🔄 Page changed - clearing Verity chat history');
+      setMessages(loadChatHistory(context));
+    }
+    localStorage.setItem('verity_current_context', context);
+  }, [context]);
+
   async function sendMessage(userMessage: string) {
     // Rate limiting: 10 messages per minute
     const now = Date.now();
