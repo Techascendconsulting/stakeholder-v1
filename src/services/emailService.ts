@@ -37,15 +37,20 @@ export class EmailService {
 
       if (error) {
         console.error('❌ Edge function error:', error);
+        console.error('Full error details:', JSON.stringify(error, null, 2));
         return false;
       }
+
+      console.log('📧 Edge function response:', result);
 
       if (!result?.success) {
         console.error('❌ Email send failed:', result);
+        console.error('Full response:', JSON.stringify(result, null, 2));
         return false;
       }
 
-      console.log('✅ Email sent successfully via Resend');
+      console.log('✅ Email sent successfully via Resend!');
+      console.log('Email details:', result.data);
       return true;
 
     } catch (error) {
