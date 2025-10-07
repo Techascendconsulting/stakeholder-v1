@@ -134,20 +134,13 @@ export function useVerity(context: string, pageTitle?: string) {
       const aiReply = data.reply || "I'll forward this to Tech Ascend Consulting to help further.";
       const shouldEscalate = data.escalate;
 
-      // Check if user is asking for help or stuck (use word boundaries to avoid false matches)
-      const userNeedsHelp = /\b(help me|i'm stuck|stuck|confused|don't understand|can't|cannot|not working|doesn't work|won't work)\b/i.test(userMessage);
-
-      // Add AI response to chat
+      // Only escalate if AI explicitly requests it (not on keywords)
+      // Users can use the Report Issue tab if they need help
       let finalReply = aiReply.replace('[ESCALATE_TO_JOY]', '');
       
-      // If escalation needed or user clearly needs help
-      if (shouldEscalate || userNeedsHelp) {
+      // Only log escalation if AI explicitly requested it
+      if (shouldEscalate && finalReply.toLowerCase().includes('tech ascend')) {
         await logHelpRequest(userMessage, context, pageTitle, 'learning');
-        
-        // Add escalation confirmation if not already in response
-        if (!finalReply.toLowerCase().includes('tech ascend') && !finalReply.toLowerCase().includes('shared')) {
-          finalReply += "\n\nGot it — I've shared this with Tech Ascend Consulting. You'll get a response soon!";
-        }
       }
       
       setMessages(prev => [...prev, { 
