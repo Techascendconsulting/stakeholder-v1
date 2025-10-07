@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Play, Users, Target, CheckCircle } from 'lucide-react';
+import { RefinementMeetingView } from '../RefinementMeetingView';
 
 interface BacklogRefinementSimProps {
   onBack: () => void;
@@ -98,10 +99,20 @@ const BacklogRefinementSim: React.FC<BacklogRefinementSimProps> = ({ onBack }) =
     }
   };
 
-  // Note: Simulation view removed for now - will be re-implemented with proper lazy loading
-  // if (showSimulation) {
-  //   return <RefinementMeetingView ... />;
-  // }
+  // If simulation is active, show the meeting view
+  if (showSimulation) {
+    const stories = scenario === 'meeting-1' ? sampleStories : sampleStoriesAlt;
+    return (
+      <RefinementMeetingView
+        stories={stories}
+        onMeetingEnd={(results) => {
+          console.log('Meeting ended with results:', results);
+          setShowSimulation(false);
+        }}
+        onClose={() => setShowSimulation(false)}
+      />
+    );
+  }
 
   // Simulation Info Page (Page 2) - Simplified initial render
   if (page === 'simulation-info') {
