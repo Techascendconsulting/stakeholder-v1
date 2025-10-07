@@ -130,7 +130,16 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     setSubmittingIssue(true);
 
     try {
-      await supabase.from('help_requests').insert({
+      console.log('📤 Submitting issue:', {
+        user_id: user?.id,
+        email: user?.email,
+        question: issueText,
+        page_context: context,
+        page_title: pageTitle,
+        issue_type: 'technical'
+      });
+
+      const { data, error } = await supabase.from('help_requests').insert({
         user_id: user?.id ?? null,
         email: user?.email ?? null,
         question: issueText,
@@ -139,8 +148,14 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
         issue_type: 'technical',
         status: 'pending',
         created_at: new Date().toISOString()
-      });
+      }).select();
 
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+
+      console.log('✅ Issue submitted successfully:', data);
       setIssueSubmitted(true);
       
       // Reset after 2 seconds
@@ -152,7 +167,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
 
     } catch (error) {
       console.error('❌ Failed to submit issue:', error);
-      alert('Failed to submit issue. Please try again.');
+      alert(`Failed to submit issue: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setSubmittingIssue(false);
     }
