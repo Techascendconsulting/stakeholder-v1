@@ -27,3 +27,10 @@ dist-ssr
 # Core dumps
 core
 core.*
+
+# Test outputs
+tests/lighthouse-report.html
+tests/lighthouse-report.json
+tests/autocannon-results.txt
+test-results/
+playwright-report/
