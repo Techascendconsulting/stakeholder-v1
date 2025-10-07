@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.help_requests (
   question text NOT NULL,
   page_context text,               -- e.g. "backlog_refinement", "lesson_reflection", etc.
   page_title text,
+  issue_type text,                 -- learning | technical
   status text DEFAULT 'pending',   -- pending | resolved | ignored
   assigned_to text DEFAULT 'techascendconsulting@gmail.com',
   verity_confidence numeric,       -- optional, if you add AI scoring later
