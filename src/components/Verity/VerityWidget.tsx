@@ -79,6 +79,15 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'report'>('chat');
+
+  // Log user authentication status
+  useEffect(() => {
+    if (user) {
+      console.log('👤 Verity: User authenticated:', user.email, 'ID:', user.id);
+    } else {
+      console.log('❌ Verity: User NOT authenticated - help requests may not work');
+    }
+  }, [user]);
   const [input, setInput] = useState('');
   const [issueText, setIssueText] = useState('');
   const [submittingIssue, setSubmittingIssue] = useState(false);
