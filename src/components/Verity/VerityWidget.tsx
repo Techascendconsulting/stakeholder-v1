@@ -90,13 +90,22 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     if (!open) return;
 
     function handleClickOutside(event: MouseEvent) {
-      if (widgetRef.current && !widgetRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (widgetRef.current && !widgetRef.current.contains(target)) {
+        console.log('🔵 Clicked outside Verity, closing...');
         setOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // Add delay to avoid closing immediately after opening
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [open]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -228,11 +237,11 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="group relative px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center space-x-2"
+          className="group relative px-6 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center space-x-2.5"
           aria-label="Open Verity Assistant"
         >
-          <MessageCircle className="w-5 h-5 text-white" />
-          <span className="text-white font-semibold text-sm">Ask Verity</span>
+          <MessageCircle className="w-5 h-5 text-white flex-shrink-0" />
+          <span className="text-white font-bold text-base whitespace-nowrap">Ask Verity</span>
           
           {/* Pulse animation */}
           <span className="absolute inset-0 rounded-full bg-purple-400 opacity-0 group-hover:opacity-20 animate-ping"></span>
