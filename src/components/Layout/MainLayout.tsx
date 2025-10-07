@@ -323,22 +323,67 @@ const MainLayout: React.FC = () => {
  */
 function getPageTitle(view: string): string {
   const titles: Record<string, string> = {
+    // Main sections
     'dashboard': 'Dashboard',
-    'scrum-practice': 'Scrum Practice',
-    'backlog-refinement': 'Backlog Refinement',
+    'welcome': 'Welcome',
+    'get-started': 'Getting Started',
+    
+    // Learning & Documentation
     'documentation': 'Documentation',
     'documentation-practice': 'Documentation Practice',
-    'agile-scrum': 'Agile Hub',
     'handbook': 'BA Handbook',
     'ba-reference': 'BA Reference Library',
-    'solution-options': 'Solution Options',
-    'elicitation': 'Introduction to Elicitation',
+    'ba-fundamentals': 'BA Fundamentals',
+    'core-concepts': 'Core Concepts',
+    'my-resources': 'My Resources',
+    
+    // Scrum & Agile
+    'scrum-practice': 'Scrum Practice',
+    'scrum-learning': 'Scrum Learning',
+    'scrum-essentials': 'Scrum Essentials',
+    'agile-scrum': 'Agile Hub',
+    'backlog-refinement': 'Backlog Refinement',
+    'sprint-planning': 'Sprint Planning',
+    
+    // Practice & Training
     'practice': 'Practice Lab',
+    'practice-2': 'Guided Practice',
     'training-practice': 'Training Practice',
+    'training-hub': 'Training Hub',
+    'training-assess': 'Training Assessment',
+    'training-feedback': 'Training Feedback',
+    'training-dashboard': 'Training Dashboard',
+    
+    // Elicitation & Requirements
+    'elicitation': 'Introduction to Elicitation',
+    'elicitation-hub': 'Elicitation Hub',
+    'solution-options': 'Solution Options',
+    
+    // Design & MVP
+    'design-hub': 'Design Hub',
+    'mvp-hub': 'MVP Hub',
+    'mvp-engine': 'MVP Engine',
+    'mvp-practice': 'MVP Practice',
+    
+    // Projects & Meetings
+    'projects': 'Projects',
+    'project': 'Project Workspace',
+    'project-workspace': 'Project Workspace',
+    'project-brief': 'Project Brief',
     'meeting': 'Stakeholder Meeting',
-    'projects': 'Project Workspace',
+    'meeting-history': 'Meeting History',
+    'voice-only-meeting': 'Voice Meeting',
+    'elevenlabs-meeting': 'AI Meeting',
+    
+    // Process Mapping
+    'process-mapper': 'Process Mapper',
+    'diagram-creation': 'Diagram Creation',
+    
+    // Other
     'motivation': 'Motivation',
-    'my-resources': 'My Resources'
+    'deliverables': 'Deliverables',
+    'analysis': 'Analysis',
+    'profile': 'Profile'
   };
   
   return titles[view] || 'BA WorkXP Platform';

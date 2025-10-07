@@ -1,6 +1,65 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, AlertCircle } from 'lucide-react';
+import { MessageCircle, X, Send, AlertCircle, ExternalLink } from 'lucide-react';
 import { useVerity } from './useVerity';
+import { useApp } from '../../contexts/AppContext';
+
+/**
+ * Simple markdown renderer for Verity messages
+ * Handles bold (**text**), bullet points, navigation links, and line breaks
+ */
+function renderMarkdown(text: string, onNavigate?: (pageId: string) => void) {
+  // Split by double newlines to create paragraphs
+  const paragraphs = text.split('\n\n');
+  
+  return paragraphs.map((para, paraIndex) => {
+    const lines = para.split('\n');
+    
+    return (
+      <div key={paraIndex} className="mb-3 last:mb-0">
+        {lines.map((line, lineIndex) => {
+          // Handle bullet points
+          if (line.trim().startsWith('-') || line.trim().startsWith('•')) {
+            const content = line.replace(/^[-•]\s*/, '');
+            return (
+              <div key={lineIndex} className="flex items-start space-x-2 ml-2 mb-1">
+                <span className="text-purple-600 dark:text-purple-400 mt-1">•</span>
+                <span dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(content, onNavigate) }} />
+              </div>
+            );
+          }
+          
+          // Regular line with bold formatting
+          return (
+            <div 
+              key={lineIndex} 
+              className="mb-1 last:mb-0"
+              dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(line, onNavigate) }}
+            />
+          );
+        })}
+      </div>
+    );
+  });
+}
+
+/**
+ * Format inline markdown (bold, links, etc.)
+ */
+function formatInlineMarkdown(text: string, onNavigate?: (pageId: string) => void): string {
+  let formatted = text;
+  
+  // Convert **text** to <strong>text</strong>
+  formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
+  
+  // Convert [Link Text](page-id) to clickable links (only when onNavigate is provided)
+  if (onNavigate) {
+    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, 
+      '<a href="#" data-page-id="$2" class="text-purple-600 dark:text-purple-400 hover:underline font-medium inline-flex items-center gap-1">$1 <span class="text-xs">→</span></a>'
+    );
+  }
+  
+  return formatted;
+}
 
 interface VerityWidgetProps {
   context: string;
@@ -14,15 +73,31 @@ interface VerityWidgetProps {
  * Provides context-aware help and escalates issues to Joy when needed
  */
 export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) {
+  const { setCurrentView } = useApp();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const { messages, sendMessage, loading } = useVerity(context, pageTitle);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const widgetRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Close widget when clicking outside
+  useEffect(() => {
+    if (!open) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      if (widgetRef.current && !widgetRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +107,14 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     }
   };
 
+  // Handle navigation link clicks
+  const handleNavigate = (pageId: string) => {
+    setCurrentView(pageId as any);
+    setOpen(false); // Close Verity after navigation
+  };
+
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div ref={widgetRef} className="fixed bottom-6 right-6 z-50">
       {open ? (
         <div className="w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col h-[500px] sm:h-[520px]">
           {/* Header */}
@@ -78,7 +159,24 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                       : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-bl-sm'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
+                  <div 
+                    className="text-sm leading-relaxed"
+                    onClick={(e) => {
+                      // Handle navigation link clicks
+                      const target = e.target as HTMLElement;
+                      if (target.tagName === 'A' && target.hasAttribute('data-page-id')) {
+                        e.preventDefault();
+                        const pageId = target.getAttribute('data-page-id');
+                        if (pageId) handleNavigate(pageId);
+                      }
+                    }}
+                  >
+                    {m.role === 'user' ? (
+                      <p className="whitespace-pre-wrap">{m.content}</p>
+                    ) : (
+                      renderMarkdown(m.content, handleNavigate)
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
