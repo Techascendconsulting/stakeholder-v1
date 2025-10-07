@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 /**
  * Performance Test Suite
  * 
- * Tests page load performance using reliable data-testid selectors
- * Waits for the refinement-page testid before checking elements
+ * Tests page load performance by navigating through the UI to reach Backlog Refinement
+ * Works with state-based routing (not URL-based routing)
  */
 
 test.describe('Performance Tests', () => {
@@ -15,16 +15,41 @@ test.describe('Performance Tests', () => {
       // Record start time
       const startTime = Date.now();
       
-      // Navigate to the app
+      // Navigate to the app root
       await page.goto('http://localhost:4173', { 
         timeout: 10000,
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for the refinement page to be fully rendered (React.lazy complete)
-      console.log('   ⏳ Waiting for page to render...');
+      console.log('   ⏳ Navigating to Scrum Practice...');
       
       // Wait for React app hydration and lazy chunks
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1000); // give time for lazy imports
+      
+      // Navigate to Scrum Practice by clicking the menu or using localStorage
+      // Set the view to scrum-practice via localStorage
+      await page.evaluate(() => {
+        localStorage.setItem('currentView', 'scrum-practice');
+        window.location.reload();
+      });
+      
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
+      
+      // Click on "Backlog Refinement" to navigate to the page
+      const backlogRefinementButton = page.locator('text=Backlog Refinement').or(
+        page.getByRole('heading', { name: /Backlog Refinement/i })
+      ).first();
+      
+      await backlogRefinementButton.waitFor({ state: 'visible', timeout: 5000 });
+      await backlogRefinementButton.click();
+      
+      console.log('   ⏳ Waiting for Backlog Refinement page to render...');
+      
+      // Now wait for the refinement page to be fully rendered
       await page.waitForLoadState('domcontentloaded');
       await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
       await page.waitForTimeout(2000); // give time for lazy imports
@@ -70,13 +95,34 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for the page to be fully rendered
-      console.log('   ⏳ Waiting for components to load...');
+      console.log('   ⏳ Navigating to Backlog Refinement...');
       
       // Wait for React app hydration and lazy chunks
       await page.waitForLoadState('domcontentloaded');
       await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-      await page.waitForTimeout(2000); // give time for lazy imports
+      await page.waitForTimeout(1000);
+      
+      // Navigate to scrum-practice
+      await page.evaluate(() => {
+        localStorage.setItem('currentView', 'scrum-practice');
+        window.location.reload();
+      });
+      
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
+      
+      // Click on Backlog Refinement
+      const backlogButton = page.locator('text=Backlog Refinement').or(
+        page.getByRole('heading', { name: /Backlog Refinement/i })
+      ).first();
+      await backlogButton.waitFor({ state: 'visible', timeout: 5000 });
+      await backlogButton.click();
+      
+      // Wait for the page to be fully rendered
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
       // Check for critical page elements with flexible selectors
@@ -126,13 +172,34 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for the page to be fully rendered
-      console.log('   ⏳ Waiting for interactive elements...');
+      console.log('   ⏳ Navigating to Backlog Refinement...');
       
       // Wait for React app hydration and lazy chunks
       await page.waitForLoadState('domcontentloaded');
       await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-      await page.waitForTimeout(2000); // give time for lazy imports
+      await page.waitForTimeout(1000);
+      
+      // Navigate to scrum-practice
+      await page.evaluate(() => {
+        localStorage.setItem('currentView', 'scrum-practice');
+        window.location.reload();
+      });
+      
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
+      
+      // Click on Backlog Refinement
+      const backlogButton = page.locator('text=Backlog Refinement').or(
+        page.getByRole('heading', { name: /Backlog Refinement/i })
+      ).first();
+      await backlogButton.waitFor({ state: 'visible', timeout: 5000 });
+      await backlogButton.click();
+      
+      // Wait for the page to be fully rendered
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
       // Wait for the main action button to be clickable (role-based selector)
@@ -174,13 +241,34 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for the page to be fully rendered
-      console.log('   ⏳ Waiting for navigation elements...');
+      console.log('   ⏳ Navigating to Backlog Refinement...');
       
       // Wait for React app hydration and lazy chunks
       await page.waitForLoadState('domcontentloaded');
       await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-      await page.waitForTimeout(2000); // give time for lazy imports
+      await page.waitForTimeout(1000);
+      
+      // Navigate to scrum-practice
+      await page.evaluate(() => {
+        localStorage.setItem('currentView', 'scrum-practice');
+        window.location.reload();
+      });
+      
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
+      
+      // Click on Backlog Refinement
+      const backlogButton = page.locator('text=Backlog Refinement').or(
+        page.getByRole('heading', { name: /Backlog Refinement/i })
+      ).first();
+      await backlogButton.waitFor({ state: 'visible', timeout: 5000 });
+      await backlogButton.click();
+      
+      // Wait for the page to be fully rendered
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
       // Find and verify the main action button
@@ -230,11 +318,34 @@ test.describe('Performance Tests', () => {
         waitUntil: 'domcontentloaded'
       });
       
-      // Wait for the page to be fully rendered
+      console.log('   ⏳ Navigating to Backlog Refinement...');
+      
       // Wait for React app hydration and lazy chunks
       await page.waitForLoadState('domcontentloaded');
       await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-      await page.waitForTimeout(2000); // give time for lazy imports
+      await page.waitForTimeout(1000);
+      
+      // Navigate to scrum-practice
+      await page.evaluate(() => {
+        localStorage.setItem('currentView', 'scrum-practice');
+        window.location.reload();
+      });
+      
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
+      
+      // Click on Backlog Refinement
+      const backlogButton = page.locator('text=Backlog Refinement').or(
+        page.getByRole('heading', { name: /Backlog Refinement/i })
+      ).first();
+      await backlogButton.waitFor({ state: 'visible', timeout: 5000 });
+      await backlogButton.click();
+      
+      // Wait for the page to be fully rendered
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000);
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
       // Verify the page loaded successfully
