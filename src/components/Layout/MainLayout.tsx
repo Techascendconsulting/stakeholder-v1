@@ -310,7 +310,7 @@ const MainLayout: React.FC = () => {
       </main>
       
       {/* Verity Assistant - Hide only on pages with conversational AI (not coaching AI) */}
-      {!['voice-only-meeting', 'meeting', 'elicitation'].includes(currentView) && (
+      {!['voice-only-meeting', 'meeting', 'elicitation', 'documentation'].includes(currentView) && (
         <div className="fixed bottom-6 right-6 z-50">
           <VerityWidget 
             context={currentView} 
