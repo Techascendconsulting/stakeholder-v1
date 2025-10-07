@@ -46,7 +46,7 @@ User role: ${context.userRole || 'learner'}`;
         ],
         temperature: 0.7,
         max_tokens: 300, // Reduced for faster responses
-        timeout: 10000 // 10 second timeout
+        timeout: 20000 // 20 second timeout
       });
 
       const reply = completion.choices[0]?.message?.content || 
@@ -65,9 +65,10 @@ User role: ${context.userRole || 'learner'}`;
     } catch (error) {
       console.error('❌ Verity Service Error:', error);
       
+      // Don't auto-escalate on service errors - just inform the user
       return {
-        reply: "I'm experiencing technical difficulties right now. I'll notify Tech Ascend Consulting so they can assist you directly.",
-        escalate: true
+        reply: "I'm having a bit of trouble connecting right now. Please try asking again, or use the **⚠️ Report Issue** tab if you need immediate help.",
+        escalate: false
       };
     }
   }
