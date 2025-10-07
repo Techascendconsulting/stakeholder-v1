@@ -5,7 +5,7 @@
  * Guarantees no data loss - every submission is sent immediately
  */
 
-import { supabase } from './supabase';
+import { supabase } from '../lib/supabase';
 
 interface HelpRequestEmailData {
   userEmail: string;

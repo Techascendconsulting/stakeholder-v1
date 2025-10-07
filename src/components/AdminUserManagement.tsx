@@ -20,7 +20,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { useAuth } from '../contexts/AuthContext';
 import { adminService } from '../services/adminService';
 import { deviceLockService } from '../services/deviceLockService';
-import { emailService } from '../services/emailService';
+import EmailService from '../services/emailService';
 import { adminInviteService } from '../services/adminInviteService';
 import { supabase } from '../lib/supabase';
 
@@ -273,12 +273,12 @@ const AdminUserManagement: React.FC = () => {
       }
 
       // Send email notification to student (Step 1: Email Notification)
-      console.log('📧 Sending device reset notification to:', email);
-      const emailSent = await emailService.sendDeviceResetNotification(email);
-      
-      if (!emailSent) {
-        console.warn('⚠️ Failed to send email notification, but device binding was cleared');
-      }
+      // TODO: Implement sendDeviceResetNotification in EmailService
+      console.log('📧 Device reset - email notification temporarily disabled');
+      // const emailSent = await EmailService.sendDeviceResetNotification(email);
+      // if (!emailSent) {
+      //   console.warn('⚠️ Failed to send email notification, but device binding was cleared');
+      // }
 
       // Log the action
       console.log('🔍 Logging clear device binding action...');
