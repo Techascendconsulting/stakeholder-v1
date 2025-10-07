@@ -45,7 +45,7 @@ export function useVerity(context: string, pageTitle?: string) {
         }
       );
 
-      const aiReply = data.reply || "I'll forward this to Joy to help further.";
+      const aiReply = data.reply || "I'll forward this to Tech Ascend Consulting to help further.";
       const shouldEscalate = data.escalate;
 
       // Check if user is asking for help or stuck
@@ -59,8 +59,8 @@ export function useVerity(context: string, pageTitle?: string) {
         await logHelpRequest(userMessage, context, pageTitle, 'learning');
         
         // Add escalation confirmation if not already in response
-        if (!finalReply.toLowerCase().includes('joy') && !finalReply.toLowerCase().includes('shared')) {
-          finalReply += "\n\nGot it — I've shared this with Joy. You'll get a response soon!";
+        if (!finalReply.toLowerCase().includes('tech ascend') && !finalReply.toLowerCase().includes('shared')) {
+          finalReply += "\n\nGot it — I've shared this with Tech Ascend Consulting. You'll get a response soon!";
         }
       }
       
@@ -75,7 +75,7 @@ export function useVerity(context: string, pageTitle?: string) {
       // Fallback response
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "I'm having trouble connecting right now. Let me notify Joy about this so she can help you directly."
+        content: "I'm having trouble connecting right now. Let me notify Tech Ascend Consulting about this so they can help you directly."
       }]);
 
       // Log as help request

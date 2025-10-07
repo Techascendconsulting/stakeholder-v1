@@ -316,7 +316,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                       <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Thanks for letting us know!</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Joy's team will review this shortly.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Tech Ascend Consulting will review this shortly.</p>
                   </div>
                 </div>
               ) : (
@@ -340,7 +340,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                     <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-lg p-3">
                       <p className="text-xs text-orange-700 dark:text-orange-300 flex items-start space-x-2">
                         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span>This will be sent to Joy's team. Include as much detail as possible (what you were doing, what happened, etc.)</span>
+                        <span>This will be sent to Tech Ascend Consulting. Include as much detail as possible (what you were doing, what happened, etc.)</span>
                       </p>
                     </div>
                   </div>
