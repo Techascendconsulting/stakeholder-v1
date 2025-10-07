@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard';
+import VerityWidget from '../Verity/VerityWidget';
 
 // Loading fallback component
 const ViewLoadingFallback = () => (
@@ -307,8 +308,40 @@ const MainLayout: React.FC = () => {
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 min-h-screen">
         {renderView()}
       </main>
+      
+      {/* Verity Assistant - Available on every page */}
+      <VerityWidget 
+        context={currentView} 
+        pageTitle={getPageTitle(currentView)} 
+      />
     </div>
   );
 };
+
+/**
+ * Helper function to get user-friendly page titles for Verity context
+ */
+function getPageTitle(view: string): string {
+  const titles: Record<string, string> = {
+    'dashboard': 'Dashboard',
+    'scrum-practice': 'Scrum Practice',
+    'backlog-refinement': 'Backlog Refinement',
+    'documentation': 'Documentation',
+    'documentation-practice': 'Documentation Practice',
+    'agile-scrum': 'Agile Hub',
+    'handbook': 'BA Handbook',
+    'ba-reference': 'BA Reference Library',
+    'solution-options': 'Solution Options',
+    'elicitation': 'Introduction to Elicitation',
+    'practice': 'Practice Lab',
+    'training-practice': 'Training Practice',
+    'meeting': 'Stakeholder Meeting',
+    'projects': 'Project Workspace',
+    'motivation': 'Motivation',
+    'my-resources': 'My Resources'
+  };
+  
+  return titles[view] || 'BA WorkXP Platform';
+}
 
 export default MainLayout;
