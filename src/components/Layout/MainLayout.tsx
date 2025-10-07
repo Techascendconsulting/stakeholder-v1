@@ -4,6 +4,7 @@ import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard';
 import VerityWidget from '../Verity/VerityWidget';
+import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
 
 // Loading fallback component
 const ViewLoadingFallback = () => (
@@ -118,6 +119,8 @@ const MainLayout: React.FC = () => {
         return <LearnLandingView />;
       case 'learning-hub':
         return <CoreLearningView />; // This will be the main Learning Hub view
+      case 'learning-flow':
+        return <LearningFlowView />;
       case 'core-learning':
         return <CoreLearningView />;
       case 'project-initiation':
@@ -310,7 +313,7 @@ const MainLayout: React.FC = () => {
       </main>
       
       {/* Verity Assistant - Hide only on pages with conversational AI (not coaching AI) */}
-      {!['voice-only-meeting', 'meeting', 'elicitation', 'documentation'].includes(currentView) && (
+      {!['voice-only-meeting', 'meeting', 'documentation'].includes(currentView) && (
         <div className="fixed bottom-6 right-6 z-50">
           <VerityWidget 
             context={currentView} 
@@ -335,6 +338,7 @@ function getPageTitle(view: string): string {
     // Learning & Documentation
     'documentation': 'Documentation',
     'documentation-practice': 'Documentation Practice',
+    'learning-flow': 'Learning Journey',
     'handbook': 'BA Handbook',
     'ba-reference': 'BA Reference Library',
     'ba-fundamentals': 'BA Fundamentals',
