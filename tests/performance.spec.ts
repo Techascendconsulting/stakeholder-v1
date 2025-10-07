@@ -23,12 +23,12 @@ test.describe('Performance Tests', () => {
       
       // Wait for the refinement page to be fully rendered (React.lazy complete)
       console.log('   ⏳ Waiting for page to render...');
-      await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
-      // Wait for network to stabilize
-      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
-        // Ignore if network doesn't go idle (dev mode)
-      });
+      // Wait for React app hydration and lazy chunks
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000); // give time for lazy imports
+      await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
       // Verify the critical heading is visible
       await page.locator('h1, h2').filter({ hasText: /Refinement/i }).first().waitFor({ 
@@ -72,8 +72,12 @@ test.describe('Performance Tests', () => {
       
       // Wait for the page to be fully rendered
       console.log('   ⏳ Waiting for components to load...');
+      
+      // Wait for React app hydration and lazy chunks
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000); // give time for lazy imports
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
-      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       
       // Check for critical page elements with flexible selectors
       // 1. Main heading with "Refinement"
@@ -124,8 +128,12 @@ test.describe('Performance Tests', () => {
       
       // Wait for the page to be fully rendered
       console.log('   ⏳ Waiting for interactive elements...');
+      
+      // Wait for React app hydration and lazy chunks
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000); // give time for lazy imports
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
-      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       
       // Wait for the main action button to be clickable (role-based selector)
       await page.getByRole('button', { name: /Watch.*Simulation/i }).first().waitFor({
@@ -168,8 +176,12 @@ test.describe('Performance Tests', () => {
       
       // Wait for the page to be fully rendered
       console.log('   ⏳ Waiting for navigation elements...');
+      
+      // Wait for React app hydration and lazy chunks
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000); // give time for lazy imports
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
-      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       
       // Find and verify the main action button
       const watchButton = page.getByRole('button', { name: /Watch.*Simulation/i }).first();
@@ -215,10 +227,14 @@ test.describe('Performance Tests', () => {
       
       await page.goto('http://localhost:4173', { 
         timeout: 10000,
-        waitUntil: 'networkidle'
+        waitUntil: 'domcontentloaded'
       });
       
       // Wait for the page to be fully rendered
+      // Wait for React app hydration and lazy chunks
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(2000); // give time for lazy imports
       await page.waitForSelector('[data-testid="refinement-page"]', { timeout: 20000 });
       
       // Verify the page loaded successfully
