@@ -43,7 +43,7 @@ Understanding this concept is foundational to your work as a Business Analyst. A
  * 10 BA Learning Modules - Using Real App Content
  */
 export const LEARNING_MODULES: Module[] = [
-  // MODULE 1: Core Learning (BA Fundamentals)
+  // MODULE 1: Core Learning (BA Fundamentals) - ALL 14 CONCEPTS
   {
     id: 'module-1-core-learning',
     title: 'BA Fundamentals',
@@ -128,6 +128,150 @@ export const LEARNING_MODULES: Module[] = [
             'The BA adds clarity, structure, and alignment.',
             'They reduce risk, surface hidden needs, and ensure what gets delivered actually helps.',
             'BAs are paid to improve decision-making before the build starts.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-6',
+        title: 'What a BA Does (and Doesn\'t Do)',
+        type: 'reading',
+        duration: '7 min',
+        content: conceptToMarkdown(
+          'What a BA Does (and Doesn\'t Do)',
+          'They ask questions, gather info, and document what the business really needs. They write clear requirements — not vague guesses. They don\'t code, design, or test directly — but support those who do. Their job is to define the \'what\' and \'why\' — not the \'how\'.',
+          [
+            'They ask questions, gather info, and document what the business really needs.',
+            'They write clear requirements — not vague guesses.',
+            'They don\'t code, design, or test directly — but support those who do.',
+            'Their job is to define the \'what\' and \'why\' — not the \'how\'.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-7',
+        title: 'How a BA Works',
+        type: 'reading',
+        duration: '8 min',
+        content: conceptToMarkdown(
+          'How a BA Works',
+          'They speak with stakeholders to uncover goals, gaps, and conflicts. They map out current and future states. They write user stories, acceptance criteria, and sometimes process flows. They support delivery teams by keeping the focus on solving the right problem.',
+          [
+            'They speak with stakeholders to uncover goals, gaps, and conflicts.',
+            'They map out current and future states.',
+            'They write user stories, acceptance criteria, and sometimes process flows.',
+            'They support delivery teams by keeping the focus on solving the right problem.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-8',
+        title: 'Agile and Waterfall',
+        type: 'reading',
+        duration: '9 min',
+        content: conceptToMarkdown(
+          'Agile and Waterfall',
+          'Waterfall means plan everything up front, then build. Agile means break the work into small chunks and adjust along the way. In Agile, BAs work closely with teams during each sprint. In Waterfall, BAs often define everything before development begins.',
+          [
+            'Waterfall means plan everything up front, then build.',
+            'Agile means break the work into small chunks and adjust along the way.',
+            'In Agile, BAs work closely with teams during each sprint.',
+            'In Waterfall, BAs often define everything before development begins.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-9',
+        title: 'Understanding the Problem',
+        type: 'reading',
+        duration: '7 min',
+        content: conceptToMarkdown(
+          'Understanding the Problem',
+          'Most people focus on symptoms — BAs go deeper. Good BAs ask "What\'s really going wrong here?" You\'re not paid to guess — you\'re paid to confirm. The wrong solution to the wrong problem still fails.',
+          [
+            'Most people focus on symptoms — BAs go deeper.',
+            'Good BAs ask "What\'s really going wrong here?"',
+            'You\'re not paid to guess — you\'re paid to confirm.',
+            'The wrong solution to the wrong problem still fails.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-10',
+        title: 'Working With Stakeholders',
+        type: 'reading',
+        duration: '9 min',
+        content: conceptToMarkdown(
+          'Working With Stakeholders',
+          'BAs interview stakeholders to understand different perspectives. You\'ll deal with conflict, uncertainty, and unclear needs. Listening well builds trust — guessing loses it. Keep stakeholders involved and aligned.',
+          [
+            'BAs interview stakeholders to understand different perspectives.',
+            'You\'ll deal with conflict, uncertainty, and unclear needs.',
+            'Listening well builds trust — guessing loses it.',
+            'Keep stakeholders involved and aligned.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-11',
+        title: 'Working With Developers',
+        type: 'reading',
+        duration: '8 min',
+        content: conceptToMarkdown(
+          'Working With Developers',
+          'Developers rely on you to explain what needs to be built — clearly. You don\'t need to know code, but you must speak clearly and be available. You remove confusion and answer questions — fast. When you\'re clear, developers build better and faster.',
+          [
+            'Developers rely on you to explain what needs to be built — clearly.',
+            'You don\'t need to know code, but you must speak clearly and be available.',
+            'You remove confusion and answer questions — fast.',
+            'When you\'re clear, developers build better and faster.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-12',
+        title: 'Understanding Systems and Processes',
+        type: 'reading',
+        duration: '8 min',
+        content: conceptToMarkdown(
+          'Understanding Systems and Processes',
+          'Processes = what people do. Systems = the tools they use to do it. BAs map out both — especially when things aren\'t working. A great system can still fail if the process behind it is broken. Always check how people and tech interact — that's where the truth is.',
+          [
+            'Processes = what people do. Systems = the tools they use to do it.',
+            'BAs map out both — especially when things aren\'t working.',
+            'A great system can still fail if the process behind it is broken.',
+            'Always check how people and tech interact — that's where the truth is.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-13',
+        title: 'Spotting Inefficiencies',
+        type: 'reading',
+        duration: '7 min',
+        content: conceptToMarkdown(
+          'Spotting Inefficiencies',
+          'Look for delays, double entry, unclear handoffs, and manual rework. You may hear: "It\'s just how we do it." That\'s your cue. Inefficiencies hide inside normal routines. Your job is to question what everyone else ignores.',
+          [
+            'Look for delays, double entry, unclear handoffs, and manual rework.',
+            'You may hear: "It\'s just how we do it." That\'s your cue.',
+            'Inefficiencies hide inside normal routines.',
+            'Your job is to question what everyone else ignores.'
+          ]
+        )
+      },
+      {
+        id: 'lesson-1-14',
+        title: 'Tools Business Analysts Use',
+        type: 'reading',
+        duration: '8 min',
+        content: conceptToMarkdown(
+          'Tools Business Analysts Use',
+          'Common tools: Jira (requirements), Confluence (documentation), Excel (data), Miro (flows), Lucidchart (diagrams). You\'ll use CRM systems, ticketing platforms, and internal apps too. You don\'t need to master them all — just know how to use them for clarity. Good thinking always matters more than flashy tools.',
+          [
+            'Common tools: Jira (requirements), Confluence (documentation), Excel (data), Miro (flows), Lucidchart (diagrams).',
+            'You\'ll use CRM systems, ticketing platforms, and internal apps too.',
+            'You don\'t need to master them all — just know how to use them for clarity.',
+            'Good thinking always matters more than flashy tools.'
           ]
         )
       }
