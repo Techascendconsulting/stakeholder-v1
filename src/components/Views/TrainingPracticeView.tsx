@@ -323,54 +323,23 @@ Response:`;
   const handleStartMeeting = async () => {
     if (session && selectedStakeholders.length > 0) {
       try {
-        // Start real session with API
-        const sessionData = await trainingService.startSession(
-          session.stage,
-          session.projectId,
-          'practice',
-          selectedStakeholders.map(s => s.id)
-        );
+        // Store stakeholders in global context for meeting mode selection
+        setAppSelectedStakeholders(selectedStakeholders);
         
-        setSession(sessionData);
+        // Save training config to sessionStorage for meeting views
+        sessionStorage.setItem('trainingConfig', JSON.stringify({
+          sessionId: session.id,
+          stage: session.stage,
+          projectId: session.projectId,
+          selectedStakeholders: selectedStakeholders.map(s => s.id)
+        }));
         
-        // Initialize singleAgentSystem
-        try {
-          await singleAgentSystem.initialize();
-        } catch (error) {
-          console.error('Failed to initialize singleAgentSystem:', error);
-        }
-
-        setCurrentStep('live-meeting');
-        setIsMeetingActive(true);
+        // Navigate to meeting mode selection so user can choose Voice/Video/Transcript
+        console.log('🎯 Navigating to meeting mode selection with stakeholders:', selectedStakeholders.map(s => s.name));
+        setCurrentView('meeting-mode-selection');
       } catch (error) {
-        console.error('Failed to start session:', error);
+        console.error('Failed to navigate to meeting mode selection:', error);
       }
-      
-      // Add initial greeting with stakeholder context
-      const stakeholderNames = selectedStakeholders.map(s => `${s.name} (${s.role})`).join(', ');
-      
-      // Set the correct question based on the stage
-      let currentQuestionText = 'Understanding current process challenges';
-      if (session.stage === 'as_is') {
-        currentQuestionText = "From your perspective, can you walk me through how this process works today, from the moment it starts to the final outcome? Who does what, using which systems?";
-      } else if (session.stage === 'problem_exploration') {
-        currentQuestionText = currentQuestion?.text || 'What problems are we trying to solve?';
-      }
-      
-      const initialMessage = {
-        id: 'initial',
-        sender: 'system',
-        content: `Welcome to your ${session.stage.replace('_', ' ')} practice session! 
-
-You'll be meeting with ${stakeholderNames} from ${selectedStakeholders[0].department}.
-
-Current Focus: ${currentQuestionText}
-
-Remember to start with a professional greeting and introduce yourself. Then focus on addressing the current question while maintaining professional etiquette throughout the conversation.`,
-        timestamp: new Date(),
-        type: 'greeting'
-      };
-      setMessages([initialMessage]);
     }
   };
 
