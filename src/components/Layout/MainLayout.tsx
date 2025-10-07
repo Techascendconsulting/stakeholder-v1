@@ -309,13 +309,15 @@ const MainLayout: React.FC = () => {
         {renderView()}
       </main>
       
-      {/* Verity Assistant - Available on every page */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <VerityWidget 
-          context={currentView} 
-          pageTitle={getPageTitle(currentView)} 
-        />
-      </div>
+      {/* Verity Assistant - Available on every page except documentation (which has its own AI) */}
+      {currentView !== 'documentation' && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <VerityWidget 
+            context={currentView} 
+            pageTitle={getPageTitle(currentView)} 
+          />
+        </div>
+      )}
     </div>
   );
 };
