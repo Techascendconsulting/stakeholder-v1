@@ -312,6 +312,8 @@ const MainLayout: React.FC = () => {
       
       {/* Smart Help System - Available on every page */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-3">
+        {console.log('🔍 MainLayout: Rendering help system for view:', currentView, 'title:', getPageTitle(currentView))}
+        
         {/* Report Issue Button (above Verity) */}
         <ReportIssueButton 
           pageContext={currentView} 

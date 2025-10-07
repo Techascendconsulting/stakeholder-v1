@@ -16,6 +16,8 @@ interface ReportIssueButtonProps {
 export default function ReportIssueButton({ pageContext, pageTitle }: ReportIssueButtonProps) {
   const [showModal, setShowModal] = useState(false);
 
+  console.log('🟠 ReportIssueButton rendering:', { pageContext, pageTitle });
+
   return (
     <>
       <button
