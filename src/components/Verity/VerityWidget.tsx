@@ -4,6 +4,7 @@ import { useVerity } from './useVerity';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import EmailService from '../../services/emailService';
 
 /**
  * Simple markdown renderer for Verity messages
@@ -165,6 +166,24 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       }
 
       console.log('✅ Issue submitted successfully:', data);
+      
+      // Send email notification to Tech Ascend Consulting
+      const emailSent = await EmailService.sendHelpRequestEmail({
+        userEmail: user?.email || 'anonymous',
+        userName: user?.full_name || user?.email,
+        pageTitle: pageTitle || 'Unknown Page',
+        pageContext: context,
+        issueType: 'technical',
+        question: issueText,
+        timestamp: new Date().toLocaleString()
+      });
+      
+      if (emailSent) {
+        console.log('✅ Email notification sent to Tech Ascend Consulting');
+      } else {
+        console.log('⚠️ Email not sent (EmailJS not configured - check console)');
+      }
+      
       setIssueSubmitted(true);
       
       // Reset after 2 seconds
