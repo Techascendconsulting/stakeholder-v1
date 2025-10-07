@@ -91,6 +91,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   }, [user]);
   const [input, setInput] = useState('');
   const [issueText, setIssueText] = useState('');
+  const [issueSubject, setIssueSubject] = useState('');
   const [submittingIssue, setSubmittingIssue] = useState(false);
   const [issueSubmitted, setIssueSubmitted] = useState(false);
   const { messages, sendMessage, loading } = useVerity(context, pageTitle);
@@ -135,7 +136,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   const handleIssueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!issueText.trim()) return;
+    if (!issueSubject.trim() || !issueText.trim()) return;
 
     setSubmittingIssue(true);
 
@@ -143,16 +144,17 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       console.log('📤 Submitting issue:', {
         user_id: user?.id,
         email: user?.email,
+        subject: issueSubject,
         question: issueText,
         page_context: context,
         page_title: pageTitle,
         issue_type: 'technical'
       });
 
-      const { data, error } = await supabase.from('help_requests').insert({
+      const { data, error} = await supabase.from('help_requests').insert({
         user_id: user?.id ?? null,
         email: user?.email ?? null,
-        question: issueText,
+        question: `[${issueSubject}] ${issueText}`,
         page_context: context,
         page_title: pageTitle,
         issue_type: 'technical',
@@ -171,7 +173,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       const emailSent = await EmailService.sendHelpRequestEmail({
         userEmail: user?.email || 'anonymous',
         userName: user?.full_name || user?.email,
-        pageTitle: pageTitle || 'Unknown Page',
+        pageTitle: issueSubject, // Use subject as the page title
         pageContext: context,
         issueType: 'technical',
         question: issueText,
@@ -189,6 +191,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
       // Reset after 2 seconds
       setTimeout(() => {
         setIssueText('');
+        setIssueSubject('');
         setIssueSubmitted(false);
         setActiveTab('chat');
       }, 2000);
@@ -368,12 +371,26 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                   <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Subject
+                      </label>
+                      <input
+                        type="text"
+                        value={issueSubject}
+                        onChange={(e) => setIssueSubject(e.target.value)}
+                        placeholder="Brief summary (e.g., 'Save button not working')"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 text-sm"
+                        disabled={submittingIssue}
+                      />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         What went wrong?
                       </label>
                       <textarea
                         value={issueText}
                         onChange={(e) => setIssueText(e.target.value)}
-                        placeholder="E.g., The 'Save' button isn't working, or I can't see the video..."
+                        placeholder="Describe the issue in detail: what were you doing, what happened, what did you expect..."
                         rows={6}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 resize-none text-sm"
                         disabled={submittingIssue}
@@ -392,7 +409,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                   <form onSubmit={handleIssueSubmit} className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                     <button
                       type="submit"
-                      disabled={!issueText.trim() || submittingIssue}
+                      disabled={!issueSubject.trim() || !issueText.trim() || submittingIssue}
                       className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
                     >
                       {submittingIssue ? (

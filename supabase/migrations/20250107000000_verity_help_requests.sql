@@ -39,11 +39,12 @@ ALTER TABLE public.help_requests ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can create their own help requests" ON public.help_requests;
 DROP POLICY IF EXISTS "Admin can view and update all help requests" ON public.help_requests;
 
--- Allow logged-in users to insert help requests
+-- Allow any authenticated user to insert help requests
 CREATE POLICY "Users can create their own help requests"
 ON public.help_requests
 FOR INSERT
-WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+TO authenticated
+WITH CHECK (true);
 
 -- Allow only admin to view and update all requests
 CREATE POLICY "Admin can view and update all help requests"
