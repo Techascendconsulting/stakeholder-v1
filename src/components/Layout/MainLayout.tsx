@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard';
+
+// Loading fallback component
+const ViewLoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+      <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
+    </div>
+  </div>
+);
 import CoreConceptsView from '../Views/CoreConceptsView';
 import GuidedPracticeHub from '../Views/GuidedPracticeHub';
 import ProjectsView from '../Views/ProjectsView';
@@ -23,9 +33,10 @@ import ScrumLearningView from '../Views/ScrumLearningView';
 import BAReferenceLibrary from '../Views/BAReferenceLibrary';
 import HandbookView from '../Views/HandbookView';
 import { AgileHubView } from '../Views/AgileHubView';
-import ScrumPracticeView from '../Views/ScrumPracticeView';
-import ElevenLabsMultiAgentMeeting from '../Views/ElevenLabsMultiAgentMeeting';
-import IndividualAgentMeeting from '../Views/IndividualAgentMeeting';
+// Lazy load heavy Scrum views
+const ScrumPracticeView = lazy(() => import('../Views/ScrumPracticeView'));
+const ElevenLabsMultiAgentMeeting = lazy(() => import('../Views/ElevenLabsMultiAgentMeeting'));
+const IndividualAgentMeeting = lazy(() => import('../Views/IndividualAgentMeeting'));
 import ProjectView from '../Views/ProjectView';
 import ProjectBrief from '../Views/ProjectBrief';
 import EnhancedTrainingFlow from '../Views/EnhancedTrainingFlow';
@@ -211,9 +222,17 @@ const MainLayout: React.FC = () => {
       case 'custom-stakeholders':
         return <CustomStakeholdersView />;
       case 'elevenlabs-meeting':
-        return <ElevenLabsMultiAgentMeeting />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <ElevenLabsMultiAgentMeeting />
+          </Suspense>
+        );
       case 'individual-agent-meeting':
-        return <IndividualAgentMeeting />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <IndividualAgentMeeting />
+          </Suspense>
+        );
       case 'enhanced-training-flow':
         return <EnhancedTrainingFlow />;
       // Training Hub Views
@@ -226,7 +245,11 @@ const MainLayout: React.FC = () => {
       case 'agile-practice':
         return <ScrumPracticeView />; // TODO: Create this view for training scenarios
       case 'scrum-practice':
-        return <ScrumPracticeView />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <ScrumPracticeView />
+          </Suspense>
+        );
       case 'training-practice':
         return <TrainingPracticeView />;
       case 'training-assess':
