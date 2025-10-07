@@ -8,7 +8,7 @@ import {
   getModuleCompletionPercentage,
   LearningProgressRow 
 } from '../../utils/learningProgress';
-import { processDelayedUnlocks, getLatestAssignment, getTimeUntilUnlock, formatTimeRemaining } from '../../utils/assignments';
+import { processDelayedReviewsAndUnlocks, getLatestAssignment, getTimeUntilUnlock, formatTimeRemaining } from '../../utils/assignments';
 
 interface ModuleListProps {
   onModuleSelect: (moduleId: string) => void;
@@ -25,7 +25,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
     const loadProgress = async () => {
       try {
         // Process any delayed unlocks first (24-hour check)
-        await processDelayedUnlocks(user.id);
+        await processDelayedReviewsAndUnlocks(user.id);
         
         // Try to load existing progress
         let progress = await getLearningProgress(user.id);
