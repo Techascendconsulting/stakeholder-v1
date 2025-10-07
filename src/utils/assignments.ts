@@ -142,39 +142,22 @@ ${submissionText}`
       console.error('Failed to store feedback:', updateError);
     }
 
-    // Auto-unlock next module if score >= 70%
-    if (parsed.score >= 70) {
-      console.log(`✅ Score ${parsed.score} >= 70, marking module complete`);
-      
-      // Mark current module as completed
-      await supabase
-        .from('learning_progress')
-        .update({
-          status: 'completed',
-          assignment_completed: true,
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-        .eq('module_id', moduleId);
-
-      // Unlock next module
-      const nextModuleId = getNextModuleId(moduleId);
-      if (nextModuleId) {
-        await supabase
-          .from('learning_progress')
-          .update({
-            status: 'unlocked',
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-          .eq('module_id', nextModuleId);
-
-        console.log(`✅ Next module ${nextModuleId} unlocked`);
-      }
-    } else {
-      console.log(`⚠️ Score ${parsed.score} < 70, revision needed`);
-    }
+    // Don't auto-unlock yet - wait for 24-hour delay
+    // Just store the score and feedback
+    console.log(`📝 Score ${parsed.score} recorded. ${parsed.score >= 70 ? 'Will unlock after 24 hours' : 'Needs revision'}`);
+    
+    // Update assignment status based on score
+    const newStatus = parsed.score >= 70 ? 'reviewed' : 'needs_revision';
+    await supabase
+      .from('learning_assignments')
+      .update({
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+      .eq('module_id', moduleId)
+      .order('created_at', { ascending: false })
+      .limit(1);
 
     return parsed;
   } catch (error) {
@@ -213,5 +196,103 @@ export async function getLatestAssignment(
     console.error('Failed to get latest assignment:', error);
     return null;
   }
+}
+
+/**
+ * Check if 24 hours have passed since submission and process delayed unlock
+ * Call this on page load or periodically
+ */
+export async function processDelayedUnlocks(userId: string): Promise<void> {
+  try {
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+    // Get all reviewed assignments that are not yet marked as complete
+    const { data: assignments, error } = await supabase
+      .from('learning_assignments')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'reviewed')
+      .gte('score', 70);
+
+    if (error) throw error;
+    if (!assignments || assignments.length === 0) return;
+
+    const now = new Date().getTime();
+
+    for (const assignment of assignments) {
+      const submittedAt = new Date(assignment.created_at).getTime();
+      const timePassed = now - submittedAt;
+
+      // Check if 24 hours have passed
+      if (timePassed >= TWENTY_FOUR_HOURS) {
+        console.log(`⏰ 24 hours passed for ${assignment.module_id}, unlocking...`);
+
+        // Mark module as completed
+        await supabase
+          .from('learning_progress')
+          .update({
+            status: 'completed',
+            assignment_completed: true,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+          .eq('module_id', assignment.module_id);
+
+        // Unlock next module
+        const nextModuleId = getNextModuleId(assignment.module_id);
+        if (nextModuleId) {
+          await supabase
+            .from('learning_progress')
+            .update({
+              status: 'unlocked',
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', userId)
+            .eq('module_id', nextModuleId);
+
+          console.log(`✅ Module ${assignment.module_id} completed, ${nextModuleId} unlocked after 24h delay`);
+        }
+
+        // Update assignment to prevent re-processing
+        await supabase
+          .from('learning_assignments')
+          .update({
+            status: 'completed'
+          })
+          .eq('id', assignment.id);
+      }
+    }
+  } catch (error) {
+    console.error('❌ processDelayedUnlocks error:', error);
+  }
+}
+
+/**
+ * Get time remaining until unlock (in milliseconds)
+ * Returns 0 if already unlockable
+ */
+export function getTimeUntilUnlock(submittedAt: string): number {
+  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+  const submitted = new Date(submittedAt).getTime();
+  const now = new Date().getTime();
+  const timePassed = now - submitted;
+  const remaining = TWENTY_FOUR_HOURS - timePassed;
+  return remaining > 0 ? remaining : 0;
+}
+
+/**
+ * Format time remaining as human-readable string
+ */
+export function formatTimeRemaining(milliseconds: number): string {
+  if (milliseconds <= 0) return 'Ready to unlock';
+  
+  const hours = Math.floor(milliseconds / (60 * 60 * 1000));
+  const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / (60 * 1000));
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m remaining`;
+  }
+  return `${minutes}m remaining`;
 }
 

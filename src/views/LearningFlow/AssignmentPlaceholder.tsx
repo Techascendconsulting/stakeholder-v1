@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, CheckCircle, Lock, Send, Sparkles, ThumbsUp, AlertCircle } from 'lucide-react';
+import { FileText, CheckCircle, Lock, Send, Sparkles, ThumbsUp, AlertCircle, Clock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   submitAssignment, 
   reviewAssignmentWithAI, 
   getLatestAssignment,
+  getTimeUntilUnlock,
+  formatTimeRemaining,
   AIFeedbackResult 
 } from '../../utils/assignments';
 
@@ -32,6 +34,7 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<AIFeedbackResult | null>(null);
   const [previousSubmission, setPreviousSubmission] = useState<string>('');
+  const [submittedAt, setSubmittedAt] = useState<string | null>(null);
 
   // Load any previous submission on mount
   useEffect(() => {
@@ -42,6 +45,7 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
         const latest = await getLatestAssignment(user.id, moduleId);
         if (latest) {
           setPreviousSubmission(latest.submission);
+          setSubmittedAt(latest.created_at);
           if (latest.feedback && latest.score !== null) {
             // Parse stored feedback back into structure
             const [summary, ...feedbackParts] = latest.feedback.split('\n\n');
@@ -110,6 +114,38 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
         </p>
       </div>
     );
+  }
+
+  // Waiting for 24-hour unlock state
+  if (aiFeedback && aiFeedback.score >= 70 && !isCompleted && submittedAt) {
+    const timeRemaining = getTimeUntilUnlock(submittedAt);
+    
+    if (timeRemaining > 0) {
+      return (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-12 text-center border-2 border-blue-200 dark:border-blue-800">
+          <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Clock className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            Great Work! ⏳
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            You scored <span className="font-bold text-blue-600">{aiFeedback.score}/100</span>!  
+            Your next module will unlock in:
+          </p>
+          <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-6">
+            {formatTimeRemaining(timeRemaining)}
+          </div>
+          
+          {/* Show feedback */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-left">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Verity's Feedback:</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{aiFeedback.summary}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{aiFeedback.feedback}</p>
+          </div>
+        </div>
+      );
+    }
   }
 
   // Completed state

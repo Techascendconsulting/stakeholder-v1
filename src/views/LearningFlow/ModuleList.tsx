@@ -8,6 +8,7 @@ import {
   getModuleCompletionPercentage,
   LearningProgressRow 
 } from '../../utils/learningProgress';
+import { processDelayedUnlocks, getLatestAssignment, getTimeUntilUnlock, formatTimeRemaining } from '../../utils/assignments';
 
 interface ModuleListProps {
   onModuleSelect: (moduleId: string) => void;
@@ -23,6 +24,9 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 
     const loadProgress = async () => {
       try {
+        // Process any delayed unlocks first (24-hour check)
+        await processDelayedUnlocks(user.id);
+        
         // Try to load existing progress
         let progress = await getLearningProgress(user.id);
         
@@ -42,6 +46,13 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
     };
 
     loadProgress();
+    
+    // Refresh progress every minute to update countdown timers
+    const interval = setInterval(() => {
+      loadProgress();
+    }, 60000);
+    
+    return () => clearInterval(interval);
   }, [user]);
 
   const getColorScheme = (color: string) => {
