@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
+import { MessageCircle, X, Send, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { useVerity } from './useVerity';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -236,24 +236,36 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              {/* Clear Chat Button */}
+              {/* Reset Chat Button */}
               {messages.length > 1 && (
-                <button 
-                  onClick={clearChat}
-                  className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
-                  title="Clear chat"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="relative group">
+                  <button 
+                    onClick={clearChat}
+                    className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block">
+                    <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                      Reset chat
+                    </div>
+                  </div>
+                </div>
               )}
               {/* Close Button */}
-              <button 
-                onClick={() => setOpen(false)} 
-                className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
-                title="Close chat"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="relative group">
+                <button 
+                  onClick={() => setOpen(false)} 
+                  className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block">
+                  <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    Close chat
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
