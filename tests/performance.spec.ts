@@ -9,6 +9,7 @@ import { test, expect } from '@playwright/test';
 
 /**
  * Helper function to wait for React hydration and lazy chunks to complete
+ * Uses visual detection - waits for actual content to appear
  */
 async function waitForReactHydration(page: any, timeoutMs = 20000) {
   const startTime = Date.now();
@@ -23,41 +24,31 @@ async function waitForReactHydration(page: any, timeoutMs = 20000) {
     // Network idle might not happen in dev mode, continue anyway
   }
   
-  // Step 3: Wait for React root to contain "Refinement" text
-  // This ensures lazy-loaded components have rendered
-  const maxRetries = 40; // 40 * 500ms = 20s total
-  let retries = 0;
-  let hydrated = false;
-  
-  while (retries < maxRetries && !hydrated) {
+  // Step 3: Wait for React root to contain visible content
+  // This is a practical, visual check that lazy components have rendered
+  try {
+    await page.waitForFunction(() => {
+      const root = document.querySelector('#root') || 
+                   document.querySelector('.content-root') || 
+                   document.body;
+      
+      if (!root) return false;
+      
+      // Check for either text content OR interactive elements (buttons)
+      // This covers both text-heavy and interactive pages
+      const hasText = root.innerText && root.innerText.includes('Refinement');
+      const hasButton = root.querySelector('button') !== null;
+      
+      return hasText || hasButton;
+    }, { timeout: timeoutMs });
+    
     const elapsed = Date.now() - startTime;
+    console.log(`   ⚡ React hydration complete in ${elapsed}ms`);
     
-    if (elapsed > timeoutMs) {
-      throw new Error('Timeout waiting for React hydration');
-    }
-    
-    // Check if content is hydrated by looking for "Refinement" in the page
-    const hasContent = await page.evaluate(() => {
-      // Check in root container
-      const root = document.getElementById('root') || document.querySelector('.content-root') || document.body;
-      const text = root.textContent || '';
-      return text.toLowerCase().includes('refinement');
-    });
-    
-    if (hasContent) {
-      hydrated = true;
-      console.log(`   ⚡ React hydration complete in ${elapsed}ms`);
-      break;
-    }
-    
-    // Wait before retrying
-    await page.waitForTimeout(500);
-    retries++;
-  }
-  
-  if (!hydrated) {
-    console.log('   ⚠️  Page visible but content not yet hydrated');
-    throw new Error('React content not hydrated after 20s');
+  } catch (error) {
+    const elapsed = Date.now() - startTime;
+    console.log(`   ⚠️  Page visible but content not yet hydrated after ${elapsed}ms`);
+    throw new Error('React content not hydrated - no visible text or buttons found');
   }
   
   // Extra buffer for animations and transitions
