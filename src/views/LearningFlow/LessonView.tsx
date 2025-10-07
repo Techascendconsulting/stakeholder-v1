@@ -147,11 +147,13 @@ const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
         {showAssignment ? (
           // Assignment View
           <AssignmentPlaceholder
+            moduleId={moduleId}
+            moduleTitle={module.title}
             title={module.assignmentTitle}
             description={module.assignmentDescription}
             isCompleted={isAssignmentCompleted}
             onComplete={handleCompleteAssignment}
-            canAccess={canAccessAssignment}
+            canAccess={canAccessAssignmentNow}
           />
         ) : !canAccessLesson ? (
           // Locked Lesson
