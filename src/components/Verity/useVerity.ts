@@ -78,29 +78,27 @@ export function useVerity(context: string, pageTitle?: string) {
     const RATE_LIMIT = 10;
     const RATE_WINDOW = 60000; // 1 minute
 
-    if (rateLimitResetTime && now < rateLimitResetTime) {
-      const secondsLeft = Math.ceil((rateLimitResetTime - now) / 1000);
-      setMessages(prev => [...prev, 
-        { role: 'user', content: userMessage },
-        { 
-          role: 'assistant', 
-          content: `⏳ Whoa, slow down! You've reached the message limit. Please wait ${secondsLeft} seconds before asking again. This helps keep the platform running smoothly for everyone.` 
-        }
-      ]);
-      return;
-    }
-
     // Reset counter if window expired
     if (!rateLimitResetTime || now >= rateLimitResetTime) {
       setMessageCount(1);
       setRateLimitResetTime(now + RATE_WINDOW);
     } else {
       const newCount = messageCount + 1;
-      setMessageCount(newCount);
       
-      if (newCount >= RATE_LIMIT) {
-        setRateLimitResetTime(now + RATE_WINDOW);
+      // Check if we've exceeded the limit
+      if (newCount > RATE_LIMIT) {
+        const secondsLeft = Math.ceil((rateLimitResetTime - now) / 1000);
+        setMessages(prev => [...prev, 
+          { role: 'user', content: userMessage },
+          { 
+            role: 'assistant', 
+            content: `⏳ Whoa, slow down! You've reached the message limit (${RATE_LIMIT} per minute). Please wait ${secondsLeft} seconds before asking again. This helps keep the platform running smoothly for everyone.` 
+          }
+        ]);
+        return;
       }
+      
+      setMessageCount(newCount);
     }
 
     // Add user message to chat
