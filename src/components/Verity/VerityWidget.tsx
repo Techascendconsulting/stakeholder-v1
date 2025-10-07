@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, AlertCircle, ExternalLink } from 'lucide-react';
+import { MessageCircle, X, Send, AlertCircle, CheckCircle } from 'lucide-react';
 import { useVerity } from './useVerity';
 import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 /**
  * Simple markdown renderer for Verity messages
@@ -67,15 +69,20 @@ interface VerityWidgetProps {
 }
 
 /**
- * Verity Floating Chat Widget
+ * Verity Floating Chat Widget with Tabs
  * 
- * A persistent assistant that appears on every page
- * Provides context-aware help and escalates issues to Joy when needed
+ * Tab 1: Ask Verity (AI chat)
+ * Tab 2: Report Issue (technical issue form)
  */
 export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) {
   const { setCurrentView } = useApp();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'report'>('chat');
   const [input, setInput] = useState('');
+  const [issueText, setIssueText] = useState('');
+  const [submittingIssue, setSubmittingIssue] = useState(false);
+  const [issueSubmitted, setIssueSubmitted] = useState(false);
   const { messages, sendMessage, loading } = useVerity(context, pageTitle);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
@@ -92,7 +99,6 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
       if (widgetRef.current && !widgetRef.current.contains(target)) {
-        console.log('🔵 Clicked outside Verity, closing...');
         setOpen(false);
       }
     }
@@ -108,11 +114,47 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     };
   }, [open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !loading) {
       sendMessage(input);
       setInput('');
+    }
+  };
+
+  const handleIssueSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!issueText.trim()) return;
+
+    setSubmittingIssue(true);
+
+    try {
+      await supabase.from('help_requests').insert({
+        user_id: user?.id ?? null,
+        email: user?.email ?? null,
+        question: issueText,
+        page_context: context,
+        page_title: pageTitle,
+        issue_type: 'technical',
+        status: 'pending',
+        created_at: new Date().toISOString()
+      });
+
+      setIssueSubmitted(true);
+      
+      // Reset after 2 seconds
+      setTimeout(() => {
+        setIssueText('');
+        setIssueSubmitted(false);
+        setActiveTab('chat');
+      }, 2000);
+
+    } catch (error) {
+      console.error('❌ Failed to submit issue:', error);
+      alert('Failed to submit issue. Please try again.');
+    } finally {
+      setSubmittingIssue(false);
     }
   };
 
@@ -145,6 +187,30 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
             </button>
           </div>
 
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'chat'
+                  ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-white dark:bg-gray-900'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              💬 Ask Verity
+            </button>
+            <button
+              onClick={() => setActiveTab('report')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'report'
+                  ? 'text-orange-600 dark:text-orange-400 border-b-2 border-orange-600 dark:border-orange-400 bg-white dark:bg-gray-900'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              ⚠️ Report Issue
+            </button>
+          </div>
+
           {/* Page Context Indicator */}
           {pageTitle && (
             <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50">
@@ -154,85 +220,155 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
             </div>
           )}
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
-            {messages.map((m, i) => (
-              <div 
-                key={i} 
-                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] p-3 rounded-2xl ${
-                    m.role === 'user'
-                      ? 'bg-purple-600 text-white rounded-br-sm'
-                      : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-bl-sm'
-                  }`}
-                >
+          {/* Chat Tab Content */}
+          {activeTab === 'chat' && (
+            <>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
+                {messages.map((m, i) => (
                   <div 
-                    className="text-sm leading-relaxed"
-                    onClick={(e) => {
-                      // Handle navigation link clicks
-                      const target = e.target as HTMLElement;
-                      if (target.tagName === 'A' && target.hasAttribute('data-page-id')) {
-                        e.preventDefault();
-                        const pageId = target.getAttribute('data-page-id');
-                        if (pageId) handleNavigate(pageId);
-                      }
-                    }}
+                    key={i} 
+                    className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    {m.role === 'user' ? (
-                      <p className="whitespace-pre-wrap">{m.content}</p>
-                    ) : (
-                      renderMarkdown(m.content, handleNavigate)
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {loading && (
-              <div className="flex justify-start">
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-2xl rounded-bl-sm max-w-[85%]">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div
+                      className={`max-w-[85%] p-3 rounded-2xl ${
+                        m.role === 'user'
+                          ? 'bg-purple-600 text-white rounded-br-sm'
+                          : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-bl-sm'
+                      }`}
+                    >
+                      <div 
+                        className="text-sm leading-relaxed"
+                        onClick={(e) => {
+                          // Handle navigation link clicks
+                          const target = e.target as HTMLElement;
+                          if (target.tagName === 'A' && target.hasAttribute('data-page-id')) {
+                            e.preventDefault();
+                            const pageId = target.getAttribute('data-page-id');
+                            if (pageId) handleNavigate(pageId);
+                          }
+                        }}
+                      >
+                        {m.role === 'user' ? (
+                          <p className="whitespace-pre-wrap">{m.content}</p>
+                        ) : (
+                          renderMarkdown(m.content, handleNavigate)
+                        )}
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">Verity is thinking...</p>
+                  </div>
+                ))}
+                
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-2xl rounded-bl-sm max-w-[85%]">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 italic">Verity is thinking...</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Chat Input Form */}
+              <form
+                onSubmit={handleChatSubmit}
+                className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+              >
+                <div className="flex items-center space-x-2">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask Verity anything..."
+                    disabled={loading}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || loading}
+                    className="p-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 rounded-xl text-white disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  💡 Ask about this page, BA concepts, or get help
+                </p>
+              </form>
+            </>
+          )}
+
+          {/* Report Issue Tab Content */}
+          {activeTab === 'report' && (
+            <div className="flex-1 flex flex-col">
+              {issueSubmitted ? (
+                // Success State
+                <div className="flex-1 flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Thanks for letting us know!</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Joy's team will review this shortly.</p>
                   </div>
                 </div>
-              </div>
-            )}
-            
-            <div ref={messagesEndRef} />
-          </div>
+              ) : (
+                <>
+                  {/* Issue Form */}
+                  <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        What went wrong?
+                      </label>
+                      <textarea
+                        value={issueText}
+                        onChange={(e) => setIssueText(e.target.value)}
+                        placeholder="E.g., The 'Save' button isn't working, or I can't see the video..."
+                        rows={6}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 resize-none text-sm"
+                        disabled={submittingIssue}
+                      />
+                    </div>
 
-          {/* Input Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-          >
-            <div className="flex items-center space-x-2">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask Verity anything..."
-                disabled={loading}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || loading}
-                className="p-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 rounded-xl text-white disabled:cursor-not-allowed transition-colors"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-lg p-3">
+                      <p className="text-xs text-orange-700 dark:text-orange-300 flex items-start space-x-2">
+                        <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        <span>This will be sent to Joy's team. Include as much detail as possible (what you were doing, what happened, etc.)</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Issue Submit Button */}
+                  <form onSubmit={handleIssueSubmit} className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                    <button
+                      type="submit"
+                      disabled={!issueText.trim() || submittingIssue}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
+                    >
+                      {submittingIssue ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-4 h-4" />
+                          <span>Submit Issue</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              💡 Ask about this page, BA concepts, or report issues
-            </p>
-          </form>
+          )}
         </div>
       ) : (
         <button
@@ -250,4 +386,3 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     </div>
   );
 }
-

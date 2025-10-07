@@ -4,7 +4,6 @@ import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard';
 import VerityWidget from '../Verity/VerityWidget';
-import ReportIssueButton from '../Verity/ReportIssueButton';
 
 // Loading fallback component
 const ViewLoadingFallback = () => (
@@ -310,17 +309,8 @@ const MainLayout: React.FC = () => {
         {renderView()}
       </main>
       
-      {/* Smart Help System - Available on every page */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-3">
-        {console.log('🔍 MainLayout: Rendering help system for view:', currentView, 'title:', getPageTitle(currentView))}
-        
-        {/* Report Issue Button (above Verity) */}
-        <ReportIssueButton 
-          pageContext={currentView} 
-          pageTitle={getPageTitle(currentView)} 
-        />
-        
-        {/* Verity Assistant */}
+      {/* Verity Assistant - Available on every page */}
+      <div className="fixed bottom-6 right-6 z-50">
         <VerityWidget 
           context={currentView} 
           pageTitle={getPageTitle(currentView)} 
