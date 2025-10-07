@@ -37,7 +37,7 @@ export class VerityService {
 The current page is: ${context.pageTitle || 'Unknown Page'} (${context.context}).
 User role: ${context.userRole || 'learner'}`;
 
-      // Call OpenAI
+      // Call OpenAI with optimized settings for faster responses
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
@@ -45,7 +45,8 @@ User role: ${context.userRole || 'learner'}`;
           ...messages
         ],
         temperature: 0.7,
-        max_tokens: 500
+        max_tokens: 300, // Reduced for faster responses
+        timeout: 10000 // 10 second timeout
       });
 
       const reply = completion.choices[0]?.message?.content || 
