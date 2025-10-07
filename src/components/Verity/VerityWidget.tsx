@@ -245,8 +245,8 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                   >
                     <RefreshCw className="w-4 h-4" />
                   </button>
-                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block">
-                    <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
+                    <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs px-3 py-1.5 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 whitespace-nowrap">
                       Reset chat
                     </div>
                   </div>
@@ -260,8 +260,8 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
                 >
                   <X className="w-5 h-5" />
                 </button>
-                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block">
-                  <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10">
+                  <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs px-3 py-1.5 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 whitespace-nowrap">
                     Close chat
                   </div>
                 </div>
