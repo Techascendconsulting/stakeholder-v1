@@ -38,14 +38,14 @@ const GuidedPracticeHub: React.FC = () => {
 
 
 
-        {/* Skip to Training Projects Button */}
+        {/* Skip to Your Practice Button */}
         <div className="absolute top-6 right-6 z-10">
           <button
             onClick={() => setCurrentView('training-hub-project-selection')}
             className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
           >
             <Target className="w-4 h-4" />
-            <span className="text-sm">Skip to Training Projects</span>
+            <span className="text-sm">Skip to Your Practice</span>
           </button>
         </div>
 
