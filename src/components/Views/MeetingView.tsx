@@ -3402,39 +3402,6 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Direct Addressing Guidance */}
-          <div className="border-t border-b bg-blue-50 p-3 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-sm text-blue-700">
-                <HelpCircle className="w-4 h-4 flex-shrink-0" />
-                <span>
-                  <strong>Tip:</strong> To get input from a specific stakeholder, address them directly (e.g., "David, what are your thoughts?" or "Sarah, can you help with...")
-                </span>
-              </div>
-              
-              {/* Conversation Queue Indicator */}
-              {conversationQueue.length > 0 && (
-                <div className="flex items-center space-x-2 text-xs text-gray-600">
-                  <span>Speaking queue:</span>
-                  <div className="flex space-x-1">
-                    {conversationQueue.map((stakeholderId, index) => {
-                      const stakeholder = selectedStakeholders.find(s => s.id === stakeholderId)
-                      return stakeholder ? (
-                        <span 
-                          key={stakeholderId}
-                          className={`px-2 py-1 rounded text-xs ${
-                            index === 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          {stakeholder.name}
-                        </span>
-                      ) : null
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* Response Queue Indicator */}
           {(responseQueue.current || responseQueue.upcoming.length > 0) && (
