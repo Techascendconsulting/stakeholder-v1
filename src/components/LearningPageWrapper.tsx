@@ -39,6 +39,8 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
           .eq('user_id', user.id)
           .single();
 
+        console.log('📄 LearningPageWrapper - User type:', data?.user_type, 'for module:', moduleId);
+
         if (data) {
           setUserType(data.user_type || 'existing');
         }
