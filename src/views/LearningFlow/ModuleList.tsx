@@ -83,10 +83,9 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
   };
 
   const handleModuleClick = (module: Module) => {
-    const moduleProgress = progressRows.find(p => p.module_id === module.id);
-    if (moduleProgress && moduleProgress.status !== 'locked') {
-      onModuleSelect(module.id);
-    }
+    // TESTING MODE: Allow all clicks (ignore lock status)
+    console.log('🖱️ Module card clicked:', module.id, module.title);
+    onModuleSelect(module.id);
   };
 
   if (loading) {
@@ -237,4 +236,5 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 };
 
 export default ModuleList;
+
 
