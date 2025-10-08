@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useApp } from '../contexts/AppContext';
 import { supabase } from '../lib/supabase';
 import AssignmentPlaceholder from '../views/LearningFlow/AssignmentPlaceholder';
 import { getModuleProgress, markModuleCompleted } from '../utils/learningProgress';
 import { getNextModuleId } from '../views/LearningFlow/learningData';
+import { ArrowLeft } from 'lucide-react';
 
 interface LearningPageWrapperProps {
   children: React.ReactNode;
@@ -25,6 +27,7 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
   assignmentDescription
 }) => {
   const { user } = useAuth();
+  const { setCurrentView } = useApp();
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
   const [moduleProgress, setModuleProgress] = useState<any>(null);
 
@@ -74,10 +77,20 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
 
   return (
     <div>
-      {/* DEBUG: Show user type on page */}
-      <div className="fixed top-20 right-4 z-50 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-500 rounded-lg px-4 py-2 text-sm font-bold">
-        DEBUG: User Type = {userType}
-      </div>
+      {/* Back to Learning Journey button - ONLY for new students */}
+      {userType === 'new' && (
+        <div className="bg-purple-50 dark:bg-purple-900/20 border-b border-purple-200 dark:border-purple-800 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <button
+              onClick={() => setCurrentView('learning-flow')}
+              className="flex items-center space-x-2 text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 transition-colors font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Learning Journey</span>
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Original page content */}
       {children}
