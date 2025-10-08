@@ -352,19 +352,44 @@ const ProjectInitiationView: React.FC = () => {
             
             {/* CTA for kickoff lesson */}
             {activeTab === lessons.length - 1 && (
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-center">
-                  <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-                    You are now ready to begin eliciting requirements from stakeholders.
-                  </p>
-                  <button
-                    onClick={() => setCurrentView('practice-2')}
-                    className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    Start Elicitation Practice
-                  </button>
+              <>
+                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-center">
+                    <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                      You are now ready to begin eliciting requirements from stakeholders.
+                    </p>
+                    <button
+                      onClick={() => setCurrentView('practice-2')}
+                      className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Start Elicitation Practice
+                    </button>
+                  </div>
                 </div>
-              </div>
+
+                {/* Assignment - ONLY on last tab, ONLY for new students */}
+                {userType === 'new' && (
+                  <div className="mt-12 pt-8 border-t-4 border-purple-200 dark:border-purple-800">
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        📝 Module Assignment
+                      </h2>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Complete this assignment to unlock the next module
+                      </p>
+                    </div>
+                    <AssignmentPlaceholder
+                      moduleId={moduleId}
+                      moduleTitle="Project Initiation"
+                      title="Project Initiation Understanding"
+                      description="Describe the key activities a BA performs during project initiation. What documents should you review first and why?"
+                      isCompleted={moduleProgress?.assignment_completed || false}
+                      canAccess={true}
+                      onComplete={handleCompleteAssignment}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
