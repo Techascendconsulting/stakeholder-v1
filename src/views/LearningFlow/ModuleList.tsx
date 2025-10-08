@@ -99,36 +99,76 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-            Your Learning Journey
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Master Business Analysis one topic at a time. Complete lessons in order to unlock the next module.
-          </p>
-        </div>
+  const completedCount = progressRows.filter(m => m.status === 'completed').length;
+  const progressPercentage = (completedCount / LEARNING_MODULES.length) * 100;
 
-        {/* Progress Overview */}
-        <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Overall Progress</h2>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {progressRows.filter(m => m.status === 'completed').length} / {LEARNING_MODULES.length} modules completed
-            </span>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-950 dark:via-purple-950/20 dark:to-indigo-950/20">
+      {/* Hero Header with Glassmorphism */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-indigo-600/10 to-blue-600/10 dark:from-purple-400/5 dark:via-indigo-400/5 dark:to-blue-400/5" />
+        <div className="absolute inset-0 backdrop-blur-3xl" style={{ maskImage: 'linear-gradient(to bottom, black, transparent)' }} />
+        
+        <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-20">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-6 shadow-2xl shadow-purple-500/30 dark:shadow-purple-500/20">
+              <span className="text-4xl">🎓</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 dark:from-purple-400 dark:via-indigo-400 dark:to-blue-400 bg-clip-text text-transparent mb-4">
+              Your Learning Journey
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Master Business Analysis with our structured curriculum. Progress through each module to unlock your potential.
+            </p>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full transition-all duration-500"
-              style={{ 
-                width: `${(progressRows.filter(m => m.status === 'completed').length / LEARNING_MODULES.length) * 100}%` 
-              }}
-            />
+
+          {/* Premium Progress Card */}
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-purple-200/50 dark:border-purple-800/50">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Your Progress</h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {completedCount} of {LEARNING_MODULES.length} modules mastered
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                    {Math.round(progressPercentage)}%
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Complete</p>
+                </div>
+              </div>
+              
+              <div className="relative w-full h-4 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div 
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 rounded-full transition-all duration-700 ease-out shadow-lg shadow-purple-500/50"
+                  style={{ width: `${progressPercentage}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-pulse" />
+                </div>
+              </div>
+              
+              {progressPercentage > 0 && progressPercentage < 100 && (
+                <p className="text-center text-sm text-purple-600 dark:text-purple-400 mt-4 font-medium">
+                  🔥 Keep going! You're {Math.round(progressPercentage)}% of the way there
+                </p>
+              )}
+              {progressPercentage === 100 && (
+                <p className="text-center text-sm text-green-600 dark:text-green-400 mt-4 font-medium">
+                  🎉 Congratulations! You've completed the Learning Journey!
+                </p>
+              )}
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Modules Section */}
+      <div className="max-w-7xl mx-auto px-6 pb-16">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+          Learning Modules
+        </h2>
 
         {/* Modules Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -148,84 +188,107 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                 key={module.id}
                 onClick={() => handleModuleClick(module)}
                 className={`
-                  relative rounded-xl border-2 p-6 transition-all duration-200
+                  group relative overflow-hidden rounded-2xl transition-all duration-300
                   ${isLocked 
-                    ? 'bg-gray-100 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 opacity-60 cursor-not-allowed' 
-                    : `${colors.bg} ${colors.border} cursor-pointer hover:shadow-xl hover:scale-105`
+                    ? 'bg-gray-100/50 dark:bg-gray-900/50 backdrop-blur-sm border border-gray-300 dark:border-gray-700 opacity-60 cursor-not-allowed' 
+                    : 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-purple-200/50 dark:border-purple-800/50 cursor-pointer hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-2 hover:border-purple-300 dark:hover:border-purple-700'
                   }
                 `}
               >
-                {/* Lock Badge */}
-                {isLocked && (
-                  <div className="absolute top-4 right-4">
-                    <Lock className="w-5 h-5 text-gray-500" />
-                  </div>
+                {/* Gradient overlay on hover */}
+                {!isLocked && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:via-indigo-500/5 group-hover:to-blue-500/5 transition-all duration-300" />
                 )}
+                
+                <div className="relative p-8">
+                {/* Status Badge - Top Right */}
+                <div className="absolute top-6 right-6">
+                  {isLocked && (
+                    <div className="flex items-center space-x-1 bg-gray-200 dark:bg-gray-700 px-3 py-1.5 rounded-full">
+                      <Lock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Locked</span>
+                    </div>
+                  )}
+                  {isCompleted && (
+                    <div className="flex items-center space-x-1 bg-gradient-to-r from-green-500 to-emerald-500 px-3 py-1.5 rounded-full shadow-lg">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                      <span className="text-xs font-bold text-white">Completed</span>
+                    </div>
+                  )}
+                </div>
 
-                {/* Completion Badge */}
-                {isCompleted && (
-                  <div className="absolute top-4 right-4">
-                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                )}
+                {/* Module Number Badge */}
+                <div className="mb-4">
+                  <span className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/40 dark:to-indigo-900/40 rounded-xl text-purple-700 dark:text-purple-300 font-bold text-sm border border-purple-200 dark:border-purple-700">
+                    {index + 1}
+                  </span>
+                </div>
 
                 {/* Icon */}
-                <div className={`w-14 h-14 ${colors.icon} rounded-xl flex items-center justify-center mb-4 text-3xl`}>
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 dark:from-purple-400/20 dark:to-indigo-400/20 rounded-2xl flex items-center justify-center mb-4 text-4xl group-hover:scale-110 transition-transform duration-300">
                   {module.icon}
                 </div>
 
                 {/* Content */}
-                <h3 className={`text-xl font-bold mb-2 ${isLocked ? 'text-gray-500 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>
+                <h3 className={`text-2xl font-bold mb-3 ${isLocked ? 'text-gray-500 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>
                   {module.title}
                 </h3>
                 
-                <p className={`text-sm mb-4 ${isLocked ? 'text-gray-400 dark:text-gray-600' : 'text-gray-600 dark:text-gray-400'}`}>
+                <p className={`text-sm mb-6 leading-relaxed ${isLocked ? 'text-gray-400 dark:text-gray-600' : 'text-gray-600 dark:text-gray-400'}`}>
                   {module.description}
                 </p>
 
-                {/* Progress Bar */}
-                {!isLocked && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
-                      <span>{completion}% complete</span>
+                {/* Progress Bar - Modern Design */}
+                {!isLocked && !isCompleted && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                      <span className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                        <span>{completion}% Progress</span>
+                      </span>
                       <span>{module.lessons.length} lessons</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="relative w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div 
-                        className={`bg-gradient-to-r ${colors.gradient} h-2 rounded-full transition-all duration-300`}
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
                         style={{ width: `${completion}%` }}
-                      />
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent animate-pulse" />
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* Action */}
-                {isLocked ? (
-                  <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-600">
-                    <Lock className="w-4 h-4" />
-                    <span>Complete previous topic first</span>
-                  </div>
-                ) : isCompleted ? (
-                  <div className="flex items-center space-x-2 text-sm text-green-600 dark:text-green-400 font-medium">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Completed</span>
-                  </div>
-                ) : (
-                  <div className={`flex items-center space-x-2 text-sm ${colors.text} font-medium`}>
-                    {completion > 0 ? (
-                      <>
-                        <PlayCircle className="w-4 h-4" />
-                        <span>Continue Learning</span>
-                      </>
-                    ) : (
-                      <>
-                        <BookOpen className="w-4 h-4" />
-                        <span>Start Learning</span>
-                      </>
-                    )}
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                )}
+                {/* Action Button/Status */}
+                <div className="mt-auto pt-4">
+                  {isLocked ? (
+                    <div className="flex items-center justify-center space-x-2 text-sm text-gray-400 dark:text-gray-500 py-3">
+                      <Lock className="w-4 h-4" />
+                      <span>Complete previous modules</span>
+                    </div>
+                  ) : isCompleted ? (
+                    <div className="flex items-center justify-center space-x-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-400/20 dark:to-emerald-400/20 border border-green-200 dark:border-green-800 rounded-xl py-3 text-sm text-green-700 dark:text-green-300 font-semibold">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Completed ✨</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 group-hover:from-purple-500 group-hover:to-indigo-500 text-white rounded-xl py-3 px-4 font-semibold transition-all duration-300 shadow-md group-hover:shadow-xl">
+                      {completion > 0 ? (
+                        <>
+                          <PlayCircle className="w-4 h-4" />
+                          <span>Continue</span>
+                        </>
+                      ) : (
+                        <>
+                          <BookOpen className="w-4 h-4" />
+                          <span>Start Module</span>
+                        </>
+                      )}
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  )}
+                </div>
+                </div>
               </div>
             );
           })}
