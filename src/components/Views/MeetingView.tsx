@@ -2969,11 +2969,11 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 {messages.length <= 1 && (
                   <button
                     onClick={() => setCurrentView('meeting-mode-selection')}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-blue-50 transition-colors shadow-md"
                     title="Go back and choose a different meeting mode"
                   >
-                    <ArrowLeft className="w-5 h-5 text-white" />
-                    <span className="text-white font-medium">Change Mode</span>
+                    <ArrowLeft className="w-5 h-5" />
+                    <span className="font-semibold">Change Mode</span>
                   </button>
                 )}
                 
