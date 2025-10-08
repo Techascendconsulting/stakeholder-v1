@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic, X } from 'lucide-react'
+import { Play, Pause, Square, SkipForward, Volume2, VolumeX, HelpCircle, Save, BarChart3, ChevronDown, ChevronUp, Search, Filter, Plus, Star, Tag, Mic, X, ArrowLeft } from 'lucide-react'
 import { useApp } from '../../contexts/AppContext'
 import { useVoice } from '../../contexts/VoiceContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -3045,6 +3045,18 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 >
                   <X className="w-4 h-4" />
                   <span className="hidden sm:inline">Stop Ending</span>
+                </button>
+              )}
+
+              {/* Change Mode Button - Only visible before conversation starts */}
+              {messages.length <= 1 && (
+                <button
+                  onClick={() => setCurrentView('meeting-mode-selection')}
+                  className="flex items-center space-x-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors shadow-sm"
+                  title="Go back and choose a different meeting mode"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Change Mode</span>
                 </button>
               )}
 
