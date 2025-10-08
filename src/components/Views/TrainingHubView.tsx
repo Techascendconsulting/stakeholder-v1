@@ -197,7 +197,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
       }));
       
       console.log('Navigating to training-practice');
-      setCurrentView('training-practice');
+      setCurrentView('stakeholders');
     } catch (error) {
       console.error('Error starting practice session:', error);
       alert('Failed to start practice session. Please try again.');
