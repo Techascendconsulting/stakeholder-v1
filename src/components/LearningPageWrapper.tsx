@@ -75,18 +75,28 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
       {/* Original page content */}
       {children}
 
-      {/* Assignment section - ONLY for new students */}
+      {/* Assignment section - ONLY for new students, appears at the very bottom after all content */}
       {userType === 'new' && (
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <AssignmentPlaceholder
-            moduleId={moduleId}
-            moduleTitle={moduleTitle}
-            title={assignmentTitle}
-            description={assignmentDescription}
-            isCompleted={moduleProgress?.assignment_completed || false}
-            canAccess={true} // They accessed the page, so they can do the assignment
-            onComplete={handleCompleteAssignment}
-          />
+        <div className="border-t-4 border-purple-200 dark:border-purple-800 mt-12">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                📝 Module Assignment
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Complete this assignment to unlock the next module
+              </p>
+            </div>
+            <AssignmentPlaceholder
+              moduleId={moduleId}
+              moduleTitle={moduleTitle}
+              title={assignmentTitle}
+              description={assignmentDescription}
+              isCompleted={moduleProgress?.assignment_completed || false}
+              canAccess={true}
+              onComplete={handleCompleteAssignment}
+            />
+          </div>
         </div>
       )}
     </div>

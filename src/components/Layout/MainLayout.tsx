@@ -215,9 +215,21 @@ const MainLayout: React.FC = () => {
       case 'documentation-practice':
         return <DocumentationPracticeView />;
       case 'design-hub':
-        return <DesignHub />;
+        return wrapLearningPage(
+          <DesignHub />,
+          'module-8-design',
+          'Design Thinking for BAs',
+          'Design Requirements',
+          'Write design requirements for a user dashboard. What must be visible? What actions must users be able to take?'
+        );
       case 'mvp-hub':
-        return <MVPHub />;
+        return wrapLearningPage(
+          <MVPHub />,
+          'module-9-mvp',
+          'MVP Strategy',
+          'MVP Feature Prioritization',
+          'Given a full feature list for an app, identify the MVP using MoSCoW. Justify why you included/excluded each feature.'
+        );
       case 'mvp-engine':
         return <MvpBuilder />;
       case 'mvp-practice':
@@ -225,7 +237,13 @@ const MainLayout: React.FC = () => {
         case 'practice':
           return <PracticeLabView />;
       case 'elicitation':
-        return <IntroductionToElicitation />;
+        return wrapLearningPage(
+          <IntroductionToElicitation />,
+          'module-3-elicitation',
+          'Requirements Elicitation',
+          'Elicitation Strategy',
+          'Choose an elicitation technique and explain when you would use it and why. Provide a specific scenario.'
+        );
       case 'practice-2':
         return <GuidedPracticeHub />;
       case 'elicitation-hub':
@@ -239,7 +257,13 @@ const MainLayout: React.FC = () => {
         return <CoreConceptsView />;
       case 'scrum-essentials':
         console.log('🔄 MainLayout: Rendering ScrumEssentialsView');
-        return <ScrumEssentialsView />;
+        return wrapLearningPage(
+          <ScrumEssentialsView />,
+          'module-9-scrum',
+          'Scrum Essentials',
+          'Scrum Ceremony Analysis',
+          'Describe what happens in each Scrum ceremony and what a BA contributes to each one.'
+        );
       case 'scrum-learning':
         console.log('🔄 MainLayout: Rendering ScrumLearningView');
         return <ScrumLearningView />;
@@ -265,7 +289,13 @@ const MainLayout: React.FC = () => {
         return <BAAcademyView />;
 
       case 'process-mapper':
-        return <ProcessMappingIntroView />;
+        return wrapLearningPage(
+          <ProcessMappingIntroView />,
+          'module-4-process-mapping',
+          'Process Mapping',
+          'Process Analysis',
+          'Map a simple "as-is" process (e.g., customer refund request) and identify 2-3 inefficiencies or bottlenecks.'
+        );
       // case 'ai-process-mapper': // Archived
       //   return <AIProcessMapperView />;
       case 'process-mapper-editor':
