@@ -117,29 +117,29 @@ const MeetingModeSelection: React.FC = () => {
               <div className="bg-blue-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition-colors">
                 <MessageSquareText className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-3">With Transcripts</h3>
+              <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-3">Chat-Based Meeting</h3>
               <p className="text-blue-700 dark:text-blue-300 mb-4">
-                Full conversation view with real-time transcripts, message history, and detailed notes.
+                Text-based conversation with real-time transcripts, message history, and detailed notes.
               </p>
               
               <div className="space-y-2 text-sm text-blue-600 dark:text-blue-400">
                 <div className="flex items-center justify-center">
-                  <FileText className="w-4 h-4 mr-2" />
-                  <span>Complete conversation transcripts</span>
+                  <MessageSquareText className="w-4 h-4 mr-2" />
+                  <span>Text chat interface</span>
                 </div>
                 <div className="flex items-center justify-center">
-                  <MessageSquareText className="w-4 h-4 mr-2" />
-                  <span>Message-by-message view</span>
+                  <FileText className="w-4 h-4 mr-2" />
+                  <span>Full conversation transcripts</span>
                 </div>
                 <div className="flex items-center justify-center">
                   <Volume2 className="w-4 h-4 mr-2" />
-                  <span>Audio playback controls</span>
+                  <span>Audio playback available</span>
                 </div>
               </div>
               
               <div className="mt-6">
                 <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors w-full">
-                  Start Transcript Meeting
+                  Start Chat Meeting
                 </button>
               </div>
             </div>
@@ -154,15 +154,15 @@ const MeetingModeSelection: React.FC = () => {
               <div className="bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-600 transition-colors">
                 <Mic className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-green-900 dark:text-green-100 mb-3">Voice-Only Meeting</h3>
+              <h3 className="text-xl font-bold text-green-900 dark:text-green-100 mb-3">Voice Meeting</h3>
               <p className="text-green-700 dark:text-green-300 mb-4">
-                Natural conversation flow without visible transcripts. Focus on the dialogue, not the text.
+                Natural conversation flow with audio. Focus on the dialogue and practice real-time elicitation.
               </p>
               
               <div className="space-y-2 text-sm text-green-600 dark:text-green-400">
                 <div className="flex items-center justify-center">
                   <Mic className="w-4 h-4 mr-2" />
-                  <span>Voice-first interaction</span>
+                  <span>Voice-based interaction</span>
                 </div>
                 <div className="flex items-center justify-center">
                   <Clock className="w-4 h-4 mr-2" />
