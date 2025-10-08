@@ -1932,7 +1932,7 @@ These notes were generated using a fallback system due to extended AI processing
     // Use AI service stakeholder states for engagement levels
     const stakeholderEngagementLevels = new Map<string, 'low' | 'medium' | 'high'>()
     selectedStakeholders.forEach(stakeholder => {
-      const aiStakeholderState = aiAnalytics.stakeholderStates[stakeholder.name]
+      const aiStakeholderState = aiAnalytics?.stakeholderStates?.[stakeholder.name]
       
       if (aiStakeholderState) {
         // Use AI service emotional state to determine engagement
