@@ -1341,6 +1341,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
         )}
       </div>
     </div>
+    </div>
   );
 
   // Render based on current step
