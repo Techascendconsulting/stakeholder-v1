@@ -193,7 +193,8 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
       sessionStorage.setItem('trainingConfig', JSON.stringify({
         sessionId: session.id,
         stage: selectedStage,
-        projectId: projectToUse.id
+        projectId: projectToUse.id,
+        isTrainingHub: true // Flag to distinguish from regular elicitation practice
       }));
       
       console.log('Navigating to training-practice');

@@ -188,13 +188,24 @@ const MeetingModeSelection: React.FC = () => {
         <div className="text-center mt-8">
           <button
             onClick={() => {
-              // Check if we're in training mode by looking for trainingConfig
-              const trainingConfig = sessionStorage.getItem('trainingConfig');
-              if (trainingConfig) {
-                // Training flow - go back to training-practice (stakeholder selection)
-                setCurrentView('training-practice');
+              // Check if we're in training hub flow vs regular elicitation practice
+              const trainingConfigRaw = sessionStorage.getItem('trainingConfig');
+              if (trainingConfigRaw) {
+                try {
+                  const config = JSON.parse(trainingConfigRaw);
+                  if (config.isTrainingHub) {
+                    // Training Hub flow - go back to training-practice (stakeholder selection)
+                    setCurrentView('training-practice');
+                  } else {
+                    // Regular elicitation practice flow
+                    setCurrentView('practice-2');
+                  }
+                } catch {
+                  // Fallback to regular flow if parse fails
+                  setCurrentView('practice-2');
+                }
               } else {
-                // Regular flow - go back to project brief or practice hub
+                // No config - regular flow
                 setCurrentView('practice-2');
               }
             }}
