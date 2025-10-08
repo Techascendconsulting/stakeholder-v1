@@ -216,12 +216,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'design-hub', 'mvp-hub', 'scrum-essentials', 'agile-hub'
     ];
     
-    // Always allow: My Resources, Dashboard, Practice pages, etc.
+    // Always allow: My Resources, Dashboard, Practice pages, Projects, Mentor, etc.
     const alwaysAllowed = [
       'dashboard', 'my-resources', 'handbook', 'practice', 'practice-2',
       'my-practice', 'learning-flow', 'profile', 'motivation',
       'elicitation-hub', 'documentation-practice', 'scrum-practice', 
-      'mvp-practice', 'agile-practice', 'welcome', 'get-started'
+      'mvp-practice', 'agile-practice', 'welcome', 'get-started',
+      // Projects
+      'projects', 'project', 'project-brief', 'project-setup', 'create-project',
+      'custom-project', 'custom-stakeholders', 'project-landing',
+      // Mentor/Community
+      'my-mentor', 'my-mentorship', 'mentor-feedback', 'book-session',
+      'community', 'community-lounge', 'direct-messages',
+      // Meetings/Practice
+      'stakeholders', 'meeting-mode-selection', 'meeting', 'voice-only-meeting',
+      'meeting-summary', 'meeting-details', 'raw-transcript', 'notes',
+      'deliverables', 'analysis', 'training-practice', 'training-hub'
     ];
 
     // Navigation locks for 'new' students
