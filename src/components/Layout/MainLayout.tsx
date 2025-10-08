@@ -185,39 +185,19 @@ const MainLayout: React.FC = () => {
         // Don't wrap - has internal tabs, will handle assignment itself
         return <ProjectInitiationView />;
       case 'requirements-engineering':
-        return wrapLearningPage(
-          <RequirementsEngineeringView />,
-          'module-5-requirements-engineering',
-          'Requirements Engineering',
-          'Requirements Classification',
-          'Write 2 functional requirements, 2 non-functional requirements, and 1 business rule for a tenant repair system.'
-        );
+        // Has tabs - will handle assignment on last tab
+        return <RequirementsEngineeringView />;
       case 'solution-options':
-        return wrapLearningPage(
-          <SolutionOptions />,
-          'module-6-solution-options',
-          'Solution Options',
-          'Solution Comparison',
-          'Evaluate 3 solution options for a business problem using a decision matrix. Recommend the best option and justify your choice.'
-        );
+        // Has tabs - will handle assignment on last tab
+        return <SolutionOptions />;
       case 'documentation':
-        return wrapLearningPage(
-          <DocumentationView />,
-          'module-7-documentation',
-          'Documentation',
-          'User Story Writing',
-          'Write 2 user stories with 3 acceptance criteria each for a tenant repair request system. Follow INVEST principles.'
-        );
+        // Has tabs - will handle assignment on last tab
+        return <DocumentationView />;
       case 'documentation-practice':
         return <DocumentationPracticeView />;
       case 'design-hub':
-        return wrapLearningPage(
-          <DesignHub />,
-          'module-8-design',
-          'Design Thinking for BAs',
-          'Design Requirements',
-          'Write design requirements for a user dashboard. What must be visible? What actions must users be able to take?'
-        );
+        // Has tabs - will handle assignment on last tab
+        return <DesignHub />;
       case 'mvp-hub':
         return wrapLearningPage(
           <MVPHub />,
