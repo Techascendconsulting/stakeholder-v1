@@ -3486,6 +3486,11 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 Send
               </button>
             </div>
+            
+            {/* Tip below input */}
+            <div className="mt-2 text-xs text-gray-500">
+              <strong>Tip:</strong> To get input from a specific stakeholder, address them directly (e.g., "David, what are your thoughts?")
+            </div>
           </div>
           
           <VoiceInputModal
