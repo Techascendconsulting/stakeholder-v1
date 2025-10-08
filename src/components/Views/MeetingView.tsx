@@ -3004,7 +3004,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
           {/* Main Chat Area */}
           <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex-shrink-0">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex-shrink-0 relative">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 {/* Change Mode Button - Only visible before conversation starts */}
@@ -3071,11 +3071,11 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               {/* Question Helper Toggle */}
               <button
                 onClick={() => setShowQuestionHelper(!showQuestionHelper)}
-                className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+                className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200 text-sm"
               >
-                <HelpCircle className="w-5 h-5" />
+                <HelpCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">Question Helper</span>
-                {showQuestionHelper ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {showQuestionHelper ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </button>
               
               {/* Global Status Indicator */}
@@ -3173,49 +3173,49 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               </div>
             )}
             
-            {/* Question Helper Panel */}
+            {/* Question Helper Panel - Overlay */}
             {showQuestionHelper && (
-              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-blue-900">
-                    Question Bank for {selectedStakeholders[0]?.role || 'Stakeholder'}
+              <div className="absolute top-full left-0 right-0 z-10 mt-2 mx-4 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-blue-900">
+                    Suggested Questions for {selectedStakeholders[0]?.role || 'Stakeholder'}
                   </h3>
-                  <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 border border-blue-200">
+                  <div className="flex bg-white dark:bg-gray-800 rounded-lg p-0.5 border border-blue-200">
                     <button
                       onClick={() => setSelectedQuestionCategory('as-is')}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                         selectedQuestionCategory === 'as-is'
                           ? 'bg-blue-600 text-white'
                           : 'text-blue-700 hover:bg-blue-100'
                       }`}
                     >
-                      As-Is Process ({mockQuestions['as-is'].length})
+                      As-Is ({mockQuestions['as-is'].length})
                     </button>
                     <button
                       onClick={() => setSelectedQuestionCategory('to-be')}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                         selectedQuestionCategory === 'to-be'
                           ? 'bg-blue-600 text-white'
                           : 'text-blue-700 hover:bg-blue-100'
                       }`}
                     >
-                      To-Be Vision ({mockQuestions['to-be'].length})
+                      To-Be ({mockQuestions['to-be'].length})
                     </button>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
                   {mockQuestions[selectedQuestionCategory].map((question, index) => (
                     <div
                       key={index}
-                      className="bg-white dark:bg-gray-800 border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors cursor-pointer"
+                      className="bg-white dark:bg-gray-800 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors cursor-pointer"
                       onClick={() => {
                         setInputMessage(question)
                         setShowQuestionHelper(false)
                         setTimeout(() => inputRef.current?.focus(), 100)
                       }}
                     >
-                      <p className="text-sm text-blue-900 font-medium">{question}</p>
+                      <p className="text-xs text-blue-900">{question}</p>
                     </div>
                   ))}
                 </div>
