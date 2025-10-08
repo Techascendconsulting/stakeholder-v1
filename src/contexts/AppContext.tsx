@@ -280,7 +280,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
           } else {
             // All other pages (Practice, Projects, Mentor, etc.) are locked for new students
+            console.log('🚫 BLOCKING - This page is locked for new students:', view);
             setLockMessage('This section is locked for new students.\n\nFocus on completing your Learning Journey first!\n\nYou can access this once you complete more modules.');
+            console.log('🔒 Lock message set, navigation should be blocked');
             return; // Block navigation
           }
         }
