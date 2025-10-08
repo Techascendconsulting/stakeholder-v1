@@ -204,7 +204,8 @@ export async function getLatestAssignment(
  */
 export async function processDelayedReviewsAndUnlocks(userId: string): Promise<void> {
   try {
-    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+    // TESTING MODE: Instant review for everyone (no 24-hour delay)
+    const DELAY_TIME = 0; // Set to 0 for instant review during testing
 
     // Get all submitted assignments that haven't been reviewed yet
     const { data: assignments, error } = await supabase
@@ -222,9 +223,9 @@ export async function processDelayedReviewsAndUnlocks(userId: string): Promise<v
       const submittedAt = new Date(assignment.created_at).getTime();
       const timePassed = now - submittedAt;
 
-      // Check if 24 hours have passed - time to review!
-      if (timePassed >= TWENTY_FOUR_HOURS) {
-        console.log(`⏰ 24 hours passed for ${assignment.module_id}, reviewing now...`);
+      // TESTING: Instant review (always passes)
+      if (timePassed >= DELAY_TIME) {
+        console.log(`⚡ TESTING MODE: Instant review for ${assignment.module_id}`);
 
         // NOW call AI to review (after 24 hours)
         const moduleTitle = assignment.module_id; // Would need to get from learningData
@@ -279,12 +280,8 @@ export async function processDelayedReviewsAndUnlocks(userId: string): Promise<v
  * Returns 0 if already unlockable
  */
 export function getTimeUntilUnlock(submittedAt: string): number {
-  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-  const submitted = new Date(submittedAt).getTime();
-  const now = new Date().getTime();
-  const timePassed = now - submitted;
-  const remaining = TWENTY_FOUR_HOURS - timePassed;
-  return remaining > 0 ? remaining : 0;
+  // TESTING MODE: Instant review for everyone
+  return 0;
 }
 
 /**
