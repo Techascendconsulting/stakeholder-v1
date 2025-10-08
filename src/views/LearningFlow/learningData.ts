@@ -46,7 +46,7 @@ export const LEARNING_MODULES: Module[] = [
   // MODULE 1: Core Learning (BA Fundamentals) - ALL 14 CONCEPTS
   {
     id: 'module-1-core-learning',
-    title: 'BA Fundamentals',
+    title: 'Core Learning',
     description: 'Foundation concepts every Business Analyst must know',
     icon: '📚',
     color: 'blue',
@@ -596,10 +596,10 @@ Good ACs are specific, testable, and cover edge cases.`
     assignmentDescription: 'Write 2 user stories with 3 acceptance criteria each for a tenant repair request system. Follow INVEST principles.'
   },
 
-  // MODULE 8: Design Thinking
+  // MODULE 8: Design
   {
     id: 'module-8-design',
-    title: 'Design Thinking for BAs',
+    title: 'Design',
     description: 'Understand design principles and collaborate with designers',
     icon: '🎨',
     color: 'pink',
@@ -645,10 +645,10 @@ As a BA, you don't create pixel-perfect designs, but you must understand design 
     assignmentDescription: 'Write design requirements for a user dashboard. What must be visible? What actions must users be able to take?'
   },
 
-  // MODULE 9: MVP Strategy
+  // MODULE 9: MVP
   {
     id: 'module-9-mvp',
-    title: 'MVP Strategy',
+    title: 'MVP',
     description: 'Identify and prioritize minimum viable features',
     icon: '🎯',
     color: 'red',
