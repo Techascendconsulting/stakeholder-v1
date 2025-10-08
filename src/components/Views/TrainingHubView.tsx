@@ -26,7 +26,8 @@ import {
   Map,
   FileText,
   Users2,
-  BarChart3
+  BarChart3,
+  Star
 } from 'lucide-react';
 import { mockProjects, mockStakeholders } from '../../data/mockData';
 import ProjectCard from '../ProjectCard';
