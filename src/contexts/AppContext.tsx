@@ -212,6 +212,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Also enforces navigation locks for 'new' students
   const setCurrentView = async (view: AppView) => {
     console.log('🔄 NAVIGATE: setCurrentView called with view:', view)
+    console.log('🔄 NAVIGATE: user?.id =', user?.id)
     
     // For 'new' students: ONLY Dashboard, Learning Journey, and My Resources are accessible
     // Everything else (Practice, Projects, Mentor, Handbook, Learning pages, etc.) is LOCKED
@@ -272,6 +273,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               console.log('🔍 Module progress check:', { moduleId, status: progress?.status });
 
               if (progress?.status === 'locked') {
+                console.log('🔒 BLOCKING navigation - module is locked');
                 setLockMessage('This learning module is locked.\n\nComplete the previous module\'s assignment to unlock it.\n\nGo to Learning Journey to see your progress.');
                 return; // Block navigation
               }
