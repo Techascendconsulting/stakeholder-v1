@@ -360,8 +360,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   }, []);
 
 
+  console.log('🎨 SIDEBAR RENDER: userType =', userType, 'user?.id =', user?.id);
+
   return (
     <div className={`bg-gradient-to-b from-purple-600 to-indigo-700 dark:bg-gradient-to-b dark:from-[#5A287D] dark:via-[#7A3DB8] dark:to-[#2E0F4D] text-white ${isCollapsed ? 'w-20' : 'w-64'} h-screen flex flex-col shadow-lg transition-all duration-300 overflow-hidden ${className}`}>
+      {/* DEBUG Badge */}
+      {!isCollapsed && (
+        <div className="absolute top-2 right-2 z-50 bg-yellow-400 text-black text-xs px-2 py-1 rounded font-bold">
+          {userType}
+        </div>
+      )}
+      
       {/* Logo/Brand with Toggle */}
       <div className={`${isCollapsed ? 'p-2' : 'p-4'} border-b border-purple-500/30 transition-all duration-300`}>
         <div className="flex items-center justify-between">
