@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Lock, X } from 'lucide-react';
+import React from 'react';
+import { Lock, ArrowLeft, GraduationCap } from 'lucide-react';
 
 interface LockMessageToastProps {
   message: string;
@@ -7,42 +7,44 @@ interface LockMessageToastProps {
 }
 
 const LockMessageToast: React.FC<LockMessageToastProps> = ({ message, onClose }) => {
-  useEffect(() => {
-    // Auto-close after 5 seconds
-    const timer = setTimeout(onClose, 5000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md mx-4 border-2 border-orange-300 dark:border-orange-700">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/40 rounded-full flex items-center justify-center">
-              <Lock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-6">
+      <div className="max-w-2xl w-full">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border-2 border-orange-200 dark:border-orange-800">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 p-8 text-white text-center">
+            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-12 h-12" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-              Content Locked
-            </h3>
+            <h1 className="text-3xl font-bold mb-2">Content Locked</h1>
+            <p className="text-orange-100">This section is not yet available</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          {/* Content */}
+          <div className="p-8">
+            <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 text-center leading-relaxed whitespace-pre-line">
+              {message}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={onClose}
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center space-x-2"
+              >
+                <GraduationCap className="w-5 h-5" />
+                <span>Go to Learning Journey</span>
+              </button>
+              
+              <button
+                onClick={() => window.history.back()}
+                className="flex-1 px-6 py-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all font-semibold flex items-center justify-center space-x-2"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Go Back</span>
+              </button>
+            </div>
+          </div>
         </div>
-        
-        <p className="text-gray-700 dark:text-gray-300 mb-6 whitespace-pre-line">
-          {message}
-        </p>
-        
-        <button
-          onClick={onClose}
-          className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-        >
-          Got it
-        </button>
       </div>
     </div>
   );
