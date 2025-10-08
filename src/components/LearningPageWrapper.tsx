@@ -74,6 +74,11 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
 
   return (
     <div>
+      {/* DEBUG: Show user type on page */}
+      <div className="fixed top-20 right-4 z-50 bg-yellow-100 dark:bg-yellow-900 border-2 border-yellow-500 rounded-lg px-4 py-2 text-sm font-bold">
+        DEBUG: User Type = {userType}
+      </div>
+      
       {/* Original page content */}
       {children}
 
