@@ -645,7 +645,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
               </h1>
             </div>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Choose a project to begin optimizing your business processes and drive meaningful results.
+              Choose a practice project to develop your BA skills in realistic business scenarios.
             </p>
           </header>
 
