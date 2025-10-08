@@ -3520,51 +3520,50 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               </button>
             </div>
           </div>
-        </div>
-        
-        <VoiceInputModal
-          isOpen={showVoiceModal}
-          onClose={() => setShowVoiceModal(false)}
-          onSave={handleVoiceInput}
-          onTranscribingChange={handleTranscribingChange}
-        />
+          
+          <VoiceInputModal
+            isOpen={showVoiceModal}
+            onClose={() => setShowVoiceModal(false)}
+            onSave={handleVoiceInput}
+            onTranscribingChange={handleTranscribingChange}
+          />
          
-        {/* Meeting End Success Notification */}
-        {meetingEndedSuccess && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
+          {/* Meeting End Success Notification */}
+          {meetingEndedSuccess && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
                
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Meeting Ended Successfully!</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Meeting Ended Successfully!</h3>
                
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
-                <p><strong>Participants:</strong> {selectedStakeholders.length} stakeholders</p>
-                <p><strong>Project:</strong> {selectedProject?.name}</p>
-                <p><strong>Status:</strong> Comprehensive interview notes generated</p>
-              </div>
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
+                  <p><strong>Participants:</strong> {selectedStakeholders.length} stakeholders</p>
+                  <p><strong>Project:</strong> {selectedProject?.name}</p>
+                  <p><strong>Status:</strong> Comprehensive interview notes generated</p>
+                </div>
                
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-blue-800 text-sm">
-                  📝 Your interview notes have been automatically generated and saved. 
-                  You'll be redirected to view them in a moment.
-                </p>
-              </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <p className="text-blue-800 text-sm">
+                    📝 Your interview notes have been automatically generated and saved. 
+                    You'll be redirected to view them in a moment.
+                  </p>
+                </div>
                
-              <div className="flex items-center justify-center space-x-2 text-blue-600">
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm">Navigating to notes...</span>
+                <div className="flex items-center justify-center space-x-2 text-blue-600">
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm">Navigating to notes...</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
           
-          {/* AI Coaching Panel - Right Sidebar */}
-          <div className="w-96 flex-shrink-0">
+        {/* AI Coaching Panel - Right Sidebar */}
+        <div className="w-96 flex-shrink-0">
             <DynamicCoachingPanel
               projectName={selectedProject?.name || ''}
               conversationHistory={messages.map(msg => {
