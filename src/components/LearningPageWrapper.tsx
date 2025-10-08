@@ -79,6 +79,8 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
 
       {/* Assignment section - ONLY for new students, appears at the very bottom after all content */}
       {userType === 'new' && (
+        // Debug: This should NOT render for existing users
+        console.log('🎯 Rendering assignment for NEW student on module:', moduleId),
         <div className="border-t-4 border-purple-200 dark:border-purple-800 mt-12">
           <div className="max-w-4xl mx-auto px-6 py-12">
             <div className="mb-6 text-center">

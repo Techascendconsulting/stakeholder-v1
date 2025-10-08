@@ -222,6 +222,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'my-practice', 'learning-flow', 'profile', 'motivation'
     ];
 
+    // TESTING MODE: Navigation locks disabled for testing
+    // Uncomment below when ready to enable locks
+    /*
     if (learningPages.includes(view) && !alwaysAllowed.includes(view)) {
       try {
         // Check if user is 'new' type
@@ -266,6 +269,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.error('Error checking navigation permissions:', error);
       }
     }
+    */
 
     console.log('🔄 NAVIGATE: Previous view was:', currentView)
     console.log('🔄 NAVIGATE: About to set view to:', view)
