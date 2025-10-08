@@ -190,22 +190,31 @@ const MeetingModeSelection: React.FC = () => {
             onClick={() => {
               // Check if we're in training hub flow vs regular elicitation practice
               const trainingConfigRaw = sessionStorage.getItem('trainingConfig');
+              console.log('🔙 Back button clicked. trainingConfig:', trainingConfigRaw);
+              
               if (trainingConfigRaw) {
                 try {
                   const config = JSON.parse(trainingConfigRaw);
+                  console.log('🔙 Parsed config:', config);
+                  console.log('🔙 isTrainingHub?', config.isTrainingHub);
+                  
                   if (config.isTrainingHub) {
                     // Training Hub flow - go back to training-practice (stakeholder selection)
+                    console.log('🔙 Navigating to training-practice');
                     setCurrentView('training-practice');
                   } else {
                     // Regular elicitation practice flow
+                    console.log('🔙 Navigating to practice-2');
                     setCurrentView('practice-2');
                   }
-                } catch {
+                } catch (e) {
                   // Fallback to regular flow if parse fails
+                  console.log('🔙 Parse failed, going to practice-2', e);
                   setCurrentView('practice-2');
                 }
               } else {
                 // No config - regular flow
+                console.log('🔙 No config, going to practice-2');
                 setCurrentView('practice-2');
               }
             }}
