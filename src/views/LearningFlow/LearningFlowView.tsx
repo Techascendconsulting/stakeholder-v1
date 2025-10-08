@@ -22,7 +22,7 @@ const LearningFlowView: React.FC = () => {
       'module-5-requirements-engineering': 'requirements-engineering',
       'module-6-solution-options': 'solution-options',
       'module-7-documentation': 'documentation',
-      'module-8-agile': 'agile-hub',
+      'module-8-agile': 'agile-scrum',
       'module-9-scrum': 'scrum-essentials',
       'module-10-advanced': 'core-learning', // Placeholder for now
     };
@@ -37,5 +37,6 @@ const LearningFlowView: React.FC = () => {
 };
 
 export default LearningFlowView;
+
 
 
