@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
-import { PlayCircle, FileText, Users, Calendar, Target, ArrowRight, CheckCircle } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { PlayCircle, FileText, Users, Calendar, Target, ArrowRight, CheckCircle, ArrowLeft } from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
+import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
+import { getNextModuleId } from "../../views/LearningFlow/learningData";
 
 const lessons = [
   { 
@@ -239,6 +244,51 @@ By the end of the kickoff, you should leave with a stronger understanding of the
 const ProjectInitiationView: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const { setCurrentView } = useApp();
+  const { user } = useAuth();
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing');
+  const [moduleProgress, setModuleProgress] = useState<any>(null);
+
+  const moduleId = 'module-2-project-initiation';
+
+  // Load user type
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setUserType(data.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+
+    const loadProgress = async () => {
+      if (!user?.id) return;
+      const progress = await getModuleProgress(user.id, moduleId);
+      setModuleProgress(progress);
+    };
+
+    loadUserType();
+    loadProgress();
+  }, [user?.id]);
+
+  const handleCompleteAssignment = async () => {
+    if (!user) return;
+    try {
+      const nextModuleId = getNextModuleId(moduleId);
+      await markModuleCompleted(user.id, moduleId, nextModuleId);
+      const updated = await getModuleProgress(user.id, moduleId);
+      setModuleProgress(updated);
+    } catch (error) {
+      console.error('Failed to complete assignment:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-900 dark:to-purple-900/20 px-8 py-12">

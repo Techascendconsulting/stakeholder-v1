@@ -182,13 +182,8 @@ const MainLayout: React.FC = () => {
           'Explain the role of a BA and why organizations hire them. Include at least 3 specific responsibilities.'
         );
       case 'project-initiation':
-        return wrapLearningPage(
-          <ProjectInitiationView />,
-          'module-2-project-initiation',
-          'Project Initiation',
-          'Project Initiation Understanding',
-          'Describe the key activities a BA performs during project initiation. What documents should you review first and why?'
-        );
+        // Don't wrap - has internal tabs, will handle assignment itself
+        return <ProjectInitiationView />;
       case 'requirements-engineering':
         return wrapLearningPage(
           <RequirementsEngineeringView />,

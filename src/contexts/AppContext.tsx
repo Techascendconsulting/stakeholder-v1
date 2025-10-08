@@ -6,6 +6,7 @@ import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
 import { MeetingDataService } from '../lib/meetingDataService'
 import { supabase } from '../lib/supabase'
 import LockMessageToast from '../components/LockMessageToast'
+import { getUserPhase, isPageAccessible } from '../utils/userProgressPhase'
 
 interface AppContextType {
   // Hydration state
@@ -237,7 +238,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       'design-hub', 'mvp-hub', 'scrum-essentials', 'agile-hub'
     ].includes(view);
 
-    // Navigation locks for 'new' students - block if NOT in alwaysAllowed list
+    // Navigation locks for 'new' students - progressive unlock system
     if (!alwaysAllowed.includes(view)) {
       try {
         // Check if user is 'new' type
@@ -250,16 +251,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.log('🔐 Checking navigation permission for:', view, 'User type:', userProfile?.user_type);
 
         if (userProfile?.user_type === 'new') {
-          // TESTING MODE: Allow all learning pages for new students (accessed via Learning Journey)
-          // In production, we'd check if module is unlocked before allowing access
-          if (isLearningPage) {
-            console.log('✅ Learning page access allowed via Learning Journey:', view);
-            // Allow access - they navigate through Learning Journey which shows lock status
-          } else {
-            // All other pages (Practice, Projects, Mentor, etc.) are locked for new students
-            console.log('🚫 BLOCKING - This page is locked for new students:', view);
-            setLockMessage('This section is locked for new students.\n\nFocus on completing your Learning Journey first!\n\nYou can access this once you complete more modules.');
-            console.log('🔒 Lock message set, navigation should be blocked');
+          // Get user's current phase (learning, practice, or hands-on)
+          const phase = await getUserPhase(user?.id || '');
+          const canAccess = isPageAccessible(view, phase);
+
+          console.log('📊 User phase:', phase, 'Can access', view, '?', canAccess);
+
+          if (!canAccess) {
+            // Determine appropriate lock message based on what they need to unlock
+            let lockMessage = '';
+            
+            if (phase === 'learning') {
+              lockMessage = 'Complete all Learning Journey modules to unlock Practice.\n\nYou\'re making great progress - keep going!';
+            } else if (phase === 'practice') {
+              lockMessage = 'Complete all Practice exercises to unlock Projects and Hands-on work.\n\nYou\'re almost there!';
+            }
+
+            console.log('🚫 BLOCKING navigation to:', view);
+            setLockMessage(lockMessage);
             return; // Block navigation
           }
         }
