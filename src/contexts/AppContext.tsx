@@ -55,6 +55,10 @@ interface AppContextType {
   
   // Loading state
   isLoading: boolean
+  
+  // Lock message state
+  lockMessage: string | null
+  clearLockMessage: () => void
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -668,15 +672,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSelectedMeeting
   }
 
-  return (
-    <AppContext.Provider value={value}>
-      {children}
-      {lockMessage && (
-        <LockMessageToast
-          message={lockMessage}
-          onClose={() => setLockMessage(null)}
-        />
-      )}
-    </AppContext.Provider>
-  )
+  // Expose lock message state through context
+  const valueWithLockMessage = {
+    ...value,
+    lockMessage,
+    clearLockMessage: () => setLockMessage(null)
+  }
+
+  return <AppContext.Provider value={valueWithLockMessage}>{children}</AppContext.Provider>
 }
