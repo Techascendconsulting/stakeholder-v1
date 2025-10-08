@@ -4,6 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { PlayCircle, FileText, Users, Calendar, Target, ArrowRight, CheckCircle, ArrowLeft } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
+import MarkCompleteButton from "../MarkCompleteButton";
 import { getModuleProgress, markModuleCompleted } from "../../utils/learningProgress";
 import { getNextModuleId } from "../../views/LearningFlow/learningData";
 
@@ -378,7 +379,7 @@ const ProjectInitiationView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Assignment - ONLY on last tab, ONLY for new students */}
+                {/* For NEW students: Assignment (required) */}
                 {userType === 'new' && (
                   <div className="mt-12 pt-8 border-t-4 border-purple-200 dark:border-purple-800">
                     <div className="text-center mb-6">
@@ -399,6 +400,33 @@ const ProjectInitiationView: React.FC = () => {
                       onComplete={handleCompleteAssignment}
                     />
                   </div>
+                )}
+
+                {/* For EXISTING students: Manual Mark Complete + Optional Assignment */}
+                {userType === 'existing' && (
+                  <>
+                    <MarkCompleteButton moduleId={moduleId} moduleTitle="Project Initiation" />
+                    
+                    <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                      <div className="text-center mb-6">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                          📝 Optional: Test Your Knowledge
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Want to validate your learning? Submit an assignment for feedback!
+                        </p>
+                      </div>
+                      <AssignmentPlaceholder
+                        moduleId={moduleId}
+                        moduleTitle="Project Initiation"
+                        title="Project Initiation Understanding"
+                        description="Describe the key activities a BA performs during project initiation. What documents should you review first and why?"
+                        isCompleted={moduleProgress?.assignment_completed || false}
+                        canAccess={true}
+                        onComplete={handleCompleteAssignment}
+                      />
+                    </div>
+                  </>
                 )}
               </>
             )}

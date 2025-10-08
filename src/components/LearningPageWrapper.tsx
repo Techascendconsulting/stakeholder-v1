@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import { supabase } from '../lib/supabase';
 import AssignmentPlaceholder from '../views/LearningFlow/AssignmentPlaceholder';
+import MarkCompleteButton from './MarkCompleteButton';
 import { getModuleProgress, markModuleCompleted } from '../utils/learningProgress';
 import { getNextModuleId } from '../views/LearningFlow/learningData';
 import { ArrowLeft } from 'lucide-react';
@@ -95,10 +96,8 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
       {/* Original page content */}
       {children}
 
-      {/* Assignment section - ONLY for new students, appears at the very bottom after all content */}
+      {/* For NEW students: Assignment (required to complete module) */}
       {userType === 'new' && (
-        // Debug: This should NOT render for existing users
-        console.log('🎯 Rendering assignment for NEW student on module:', moduleId),
         <div className="border-t-4 border-purple-200 dark:border-purple-800 mt-12">
           <div className="max-w-4xl mx-auto px-6 py-12">
             <div className="mb-6 text-center">
@@ -107,6 +106,34 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
                 Complete this assignment to unlock the next module
+              </p>
+            </div>
+            <AssignmentPlaceholder
+              moduleId={moduleId}
+              moduleTitle={moduleTitle}
+              title={assignmentTitle}
+              description={assignmentDescription}
+              isCompleted={moduleProgress?.assignment_completed || false}
+              canAccess={true}
+              onComplete={handleCompleteAssignment}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* For EXISTING students: Manual Mark as Complete button */}
+      {userType === 'existing' && (
+        <div className="max-w-4xl mx-auto px-6 pb-12">
+          <MarkCompleteButton moduleId={moduleId} moduleTitle={moduleTitle} />
+          
+          {/* Optional assignment section for existing users */}
+          <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                📝 Optional: Test Your Knowledge
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Want to validate your learning? Submit an assignment for feedback!
               </p>
             </div>
             <AssignmentPlaceholder
