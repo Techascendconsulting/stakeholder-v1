@@ -1355,75 +1355,68 @@ const LearnContentDisplay: React.FC<{ stage: TrainingStage | null; onBack: () =>
         </p>
       </div>
 
-      {/* Must-Cover Areas - Enhanced Design */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200/30 dark:border-blue-700/30">
+      {/* Must-Cover Areas - Matching Prepare Section Style */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200/30 dark:border-blue-700/30 mb-6">
         <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
           <Target className="w-5 h-5 text-blue-600" />
-          <span>5 Must-Cover Areas</span>
+          <span>Must-Cover Areas</span>
         </h4>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           Focus your questions on these critical topics to ensure a comprehensive understanding:
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {content.mustCovers?.map((area, index) => (
-            <div key={`${area.area}-${index}`} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
-              <div className="flex items-start space-x-3 mb-2">
-                <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                  {index + 1}
-                </div>
-                <h5 className="font-bold text-gray-900 dark:text-white text-sm">{area.area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h5>
+            <div key={`${area.area}-${index}`} className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0 mt-0.5">
+                {index + 1}
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 ml-10">
-                <span className="font-medium text-blue-600 dark:text-blue-400">Focus:</span> {area.keywords.join(', ')}
-              </p>
+              <div>
+                <h5 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{area.area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h5>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
+                  {area.keywords.join(', ')}
+                </p>
+              </div>
             </div>
           )) || []}
         </div>
       </div>
 
-      {/* Model Q&A Examples - Enhanced Design */}
-      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-yellow-200/30 dark:border-yellow-700/30">
+      {/* Model Q&A Examples - Matching Prepare Section Style */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200/30 dark:border-purple-700/30 mb-6">
         <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
-          <Lightbulb className="w-5 h-5 text-yellow-600" />
+          <MessageSquare className="w-5 h-5 text-purple-600" />
           <span>Model Q&A Examples</span>
         </h4>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           Study these examples to understand effective questioning patterns:
         </p>
         <div className="space-y-4">
           {content.modelQAs?.map((qa, index) => (
-            <div key={`qa-${index}`} className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
-                  <span className="text-xs font-bold text-white uppercase tracking-wide">
-                    Example {index + 1}
-                  </span>
-                </div>
+            <div key={`qa-${index}`} className="space-y-2">
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
+                  <span className="font-semibold text-purple-600 dark:text-purple-400">Q:</span> {qa.question}
+                </p>
               </div>
-              <div className="space-y-3">
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border-l-4 border-blue-500">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    <span className="text-blue-600 dark:text-blue-400 font-bold">Q:</span> {qa.question}
-                  </p>
-                </div>
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border-l-4 border-green-500">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                    <span className="text-green-600 dark:text-green-400 font-bold">A:</span> {qa.answer}
-                  </p>
-                </div>
+              <div className="flex items-start space-x-3 ml-5">
+                <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
+                  <span className="font-semibold text-green-600 dark:text-green-400">A:</span> {qa.answer}
+                </p>
               </div>
             </div>
           )) || []}
         </div>
       </div>
 
-      {/* Micro-Drills - Enhanced Design */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-6 border border-green-200/30 dark:border-green-700/30">
+      {/* Micro-Drills - Matching Prepare Section Style */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-6 border border-green-200/30 dark:border-green-700/30 mb-6">
         <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
           <Zap className="w-5 h-5 text-green-600" />
           <span>Interactive Micro-Drills</span>
         </h4>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           Practice these quick exercises to improve your questioning skills. Click on your answer to see the explanation.
         </p>
         <div className="space-y-6">
@@ -1433,26 +1426,22 @@ const LearnContentDisplay: React.FC<{ stage: TrainingStage | null; onBack: () =>
         </div>
       </div>
 
-      {/* Cheat Cards - Enhanced Design */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200/30 dark:border-purple-700/30">
+      {/* Quick Tips - Matching Prepare Section Style */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/30 mb-6">
         <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
-          <Star className="w-5 h-5 text-purple-600" />
-          <span>Quick Reference Tips</span>
+          <Lightbulb className="w-5 h-5 text-amber-600" />
+          <span>Quick Tips to Remember</span>
         </h4>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           Keep these tips in mind during your practice meetings:
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-3">
           {content.cheatCards?.map((card, index) => (
-            <div key={`card-${index}`} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 mt-0.5">
-                  💡
-                </div>
-                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {card.content}
-                </p>
-              </div>
+            <div key={`card-${index}`} className="flex items-start space-x-3">
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
+              <p className="text-gray-700 dark:text-gray-300 text-sm">
+                {card.content}
+              </p>
             </div>
           )) || []}
         </div>
