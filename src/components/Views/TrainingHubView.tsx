@@ -848,47 +848,47 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {stages.map((stage, index) => (
               <button
                 key={stage.id}
                 onClick={() => setSelectedStage(stage.id)}
-                className={`p-8 rounded-2xl text-left transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+                className={`p-5 rounded-xl text-left transition-all duration-300 hover:shadow-lg ${
                   selectedStage === stage.id
-                    ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-2xl transform scale-105'
-                    : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-800 shadow-lg'
+                    ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-xl ring-2 ring-blue-400'
+                    : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-800 shadow-md'
                 }`}
               >
-                <div className="flex items-start space-x-4 mb-4">
-                  <div className={`p-3 rounded-xl ${
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className={`p-2 rounded-lg ${
                     selectedStage === stage.id
                       ? 'bg-white/20 text-white'
                       : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                   }`}>
-                    <stage.icon className="w-6 h-6" />
+                    <stage.icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <div className={`text-xl font-bold mb-2 ${
+                    <div className={`text-lg font-bold ${
                       selectedStage === stage.id ? 'text-white' : 'text-gray-900 dark:text-white'
                     }`}>
                       {stage.name}
                     </div>
-                    <div className={`text-sm font-medium mb-3 ${
+                    <div className={`text-xs font-medium ${
                       selectedStage === stage.id ? 'text-blue-100' : 'text-blue-600 dark:text-blue-400'
                     }`}>
-                      Step {index + 1} of {stages.length}
+                      Step {index + 1}
                     </div>
                   </div>
                 </div>
-                <p className={`text-base leading-relaxed ${
+                <p className={`text-sm leading-relaxed ${
                   selectedStage === stage.id ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400'
                 }`}>
                   {stage.description}
                 </p>
                 {selectedStage === stage.id && (
-                  <div className="mt-4 flex items-center space-x-2 text-blue-100">
-                    <CheckCircle className="w-5 h-5" />
-                    <span className="text-sm font-medium">Selected - Ready to practice!</span>
+                  <div className="mt-3 flex items-center space-x-2 text-blue-100">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-xs font-medium">Selected ✓</span>
                   </div>
                 )}
               </button>
