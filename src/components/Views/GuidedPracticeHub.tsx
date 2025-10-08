@@ -521,7 +521,7 @@ const GuidedPracticeHub: React.FC = () => {
         {/* Training Project CTA */}
         <div className="text-center mt-8">
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-xl">
-            <h3 className="text-xl font-bold mb-3">Ready to Start Your Training?</h3>
+            <h3 className="text-xl font-bold mb-3">Ready to Start Your Practice?</h3>
             <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
               Choose from our library of realistic projects and begin developing your stakeholder conversation skills today.
             </p>
