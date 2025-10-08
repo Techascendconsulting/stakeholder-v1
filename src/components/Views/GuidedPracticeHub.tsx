@@ -429,32 +429,32 @@ const GuidedPracticeHub: React.FC = () => {
 
         {/* Practice Lab Embedded */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Your Path */}
+          {/* Your Learning Path */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
               <Target className="w-5 h-5 text-purple-600 mr-2" />
-              Your Path
+              Your Learning Path
             </h2>
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">1</div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-1">Practice Lab</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Structured questioning and guided learning</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-1">Choose a Project</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Select from realistic business scenarios</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">2</div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-1">Time Investment</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">3-5 hours to complete this phase</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-1">Practice with AI Stakeholders</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Conduct live meetings and refine your questioning skills</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
                 <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">3</div>
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-1">Outcome</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">You'll feel confident in stakeholder interactions</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-1">Build Confidence</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Master stakeholder interactions through repeated practice</p>
                 </div>
               </div>
             </div>
