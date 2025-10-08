@@ -2961,13 +2961,23 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
     return (
       <div className="p-8">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Meeting Active</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">Select a project and stakeholders to start a meeting.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Meeting Setup Found</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">Please set up your meeting by selecting a project and stakeholders.</p>
           <button
-            onClick={() => setCurrentView('projects')}
+            onClick={() => {
+              // Check if we're in training mode
+              const trainingConfig = sessionStorage.getItem('trainingConfig');
+              if (trainingConfig) {
+                // Training flow - go back to stakeholder selection
+                setCurrentView('training-practice');
+              } else {
+                // Regular flow - go to practice hub
+                setCurrentView('practice-2');
+              }
+            }}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Select Project
+            Go Back to Setup
           </button>
         </div>
       </div>
