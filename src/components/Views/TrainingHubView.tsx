@@ -895,70 +895,58 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
             ))}
           </div>
           
-        </div>
-
-        {/* Training Content - Clean Layout */}
-        {selectedStage && (
-          <div className="mt-8 space-y-6">
-            {/* Stage Info Card with Tabs */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-lg overflow-hidden">
-              {/* Header with Close Button */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {stages.find(s => s.id === selectedStage)?.name}
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                      {stages.find(s => s.id === selectedStage)?.description}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedStage(null)}
-                    className="p-2 rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+          {/* Prominent Action Tabs - Directly Below Stage Selection */}
+          {selectedStage && (
+            <div className="mt-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-1 shadow-2xl animate-in slide-in-from-top duration-300">
+              <div className="bg-white dark:bg-gray-900 rounded-xl p-6">
+                <div className="text-center mb-4">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    {stages.find(s => s.id === selectedStage)?.name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Choose how you want to proceed with this stage
+                  </p>
                 </div>
-              </div>
-
-              {/* Quick Action Buttons */}
-              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex flex-col sm:flex-row gap-3">
+                
+                <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={() => setActiveTab('learn')}
-                    className={`flex-1 flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                      activeTab === 'learn'
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
-                    }`}
+                    className="flex-1 flex items-center justify-center space-x-3 px-8 py-5 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
                   >
-                    <BookOpen className="w-4 h-4" />
-                    <span>Learn</span>
+                    <BookOpen className="w-6 h-6" />
+                    <span>Learn About This Stage</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('meeting-prep')}
-                    className={`flex-1 flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                      activeTab === 'meeting-prep'
-                        ? 'bg-orange-600 text-white shadow-md'
-                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
-                    }`}
+                    className="flex-1 flex items-center justify-center space-x-3 px-8 py-5 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
                   >
-                    <Target className="w-4 h-4" />
-                    <span>Prepare</span>
+                    <Target className="w-6 h-6" />
+                    <span>Prepare for Meeting</span>
                   </button>
                   <button
                     onClick={handleStartPractice}
-                    className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                    className="flex-1 flex items-center justify-center space-x-3 px-8 py-5 bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
                   >
-                    <Play className="w-4 h-4" />
-                    <span>Start Practice</span>
+                    <Play className="w-6 h-6" />
+                    <span>Start Practice Now</span>
                   </button>
                 </div>
+                
+                <button
+                  onClick={() => setSelectedStage(null)}
+                  className="mt-4 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors mx-auto block"
+                >
+                  ← Choose different stage
+                </button>
               </div>
+            </div>
+          )}
+        </div>
 
+        {/* Training Content - Full Width When Tab Selected */}
+        {selectedStage && activeTab && (
+          <div className="space-y-6">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-lg overflow-hidden">
               {/* Tab Content */}
               <div className="p-6">
               {activeTab === 'learn' && (
