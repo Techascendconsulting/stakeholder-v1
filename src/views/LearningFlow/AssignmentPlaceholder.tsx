@@ -77,9 +77,10 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
       setPreviousSubmission(submission);
       setSubmittedAt(submitted.created_at);
       setSubmission(''); // Clear form
+      setAiFeedback(null); // Clear any previous feedback to show waiting state
 
-      // Show success message (no feedback yet - that comes in 24h)
-      alert('✅ Assignment submitted! Verity will review it in 24 hours. Come back to see your feedback and score.');
+      // Component will automatically re-render to show the countdown UI
+      console.log('✅ Assignment submitted successfully, showing countdown...');
     } catch (error) {
       console.error('Failed to submit assignment:', error);
       alert('Failed to submit assignment. Please try again.');
