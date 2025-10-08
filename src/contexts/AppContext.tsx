@@ -209,33 +209,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const setCurrentView = async (view: AppView) => {
     console.log('🔄 NAVIGATE: setCurrentView called with view:', view)
     
-    // Check if navigation should be restricted for new students
-    const learningPages = [
+    // For 'new' students: ONLY Dashboard, Learning Journey, and My Resources are accessible
+    // Everything else (Practice, Projects, Mentor, Handbook, Learning pages, etc.) is LOCKED
+    const alwaysAllowed = [
+      'dashboard',
+      'learning-flow',
+      'my-resources',
+      'handbook',  // My Resources includes Handbook
+      'profile',
+      'welcome',
+      'motivation'
+    ];
+
+    // Check if this page should be locked for 'new' students
+    const isLearningPage = [
       'core-learning', 'project-initiation', 'elicitation', 'process-mapper',
       'requirements-engineering', 'solution-options', 'documentation',
       'design-hub', 'mvp-hub', 'scrum-essentials', 'agile-hub'
-    ];
-    
-    // Always allow: My Resources, Dashboard, Practice pages, Projects, Mentor, etc.
-    const alwaysAllowed = [
-      'dashboard', 'my-resources', 'handbook', 'practice', 'practice-2',
-      'my-practice', 'learning-flow', 'profile', 'motivation',
-      'elicitation-hub', 'documentation-practice', 'scrum-practice', 
-      'mvp-practice', 'agile-practice', 'welcome', 'get-started',
-      // Projects
-      'projects', 'project', 'project-brief', 'project-setup', 'create-project',
-      'custom-project', 'custom-stakeholders', 'project-landing',
-      // Mentor/Community
-      'my-mentor', 'my-mentorship', 'mentor-feedback', 'book-session',
-      'community', 'community-lounge', 'direct-messages',
-      // Meetings/Practice
-      'stakeholders', 'meeting-mode-selection', 'meeting', 'voice-only-meeting',
-      'meeting-summary', 'meeting-details', 'raw-transcript', 'notes',
-      'deliverables', 'analysis', 'training-practice', 'training-hub'
-    ];
+    ].includes(view);
 
-    // Navigation locks for 'new' students
-    if (learningPages.includes(view) && !alwaysAllowed.includes(view)) {
+    // Navigation locks for 'new' students - block if NOT in alwaysAllowed list
+    if (!alwaysAllowed.includes(view)) {
       try {
         // Check if user is 'new' type
         const { data: userProfile } = await supabase
@@ -247,35 +241,41 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.log('🔐 Checking navigation permission for:', view, 'User type:', userProfile?.user_type);
 
         if (userProfile?.user_type === 'new') {
-          // Check if this module is unlocked
-          const moduleIdMap: Record<string, string> = {
-            'core-learning': 'module-1-core-learning',
-            'project-initiation': 'module-2-project-initiation',
-            'elicitation': 'module-3-elicitation',
-            'process-mapper': 'module-4-process-mapping',
-            'requirements-engineering': 'module-5-requirements-engineering',
-            'solution-options': 'module-6-solution-options',
-            'documentation': 'module-7-documentation',
-            'design-hub': 'module-8-design',
-            'mvp-hub': 'module-9-mvp',
-            'scrum-essentials': 'module-10-agile-scrum',
-          };
+          // If it's a learning page, check if module is unlocked
+          if (isLearningPage) {
+            const moduleIdMap: Record<string, string> = {
+              'core-learning': 'module-1-core-learning',
+              'project-initiation': 'module-2-project-initiation',
+              'elicitation': 'module-3-elicitation',
+              'process-mapper': 'module-4-process-mapping',
+              'requirements-engineering': 'module-5-requirements-engineering',
+              'solution-options': 'module-6-solution-options',
+              'documentation': 'module-7-documentation',
+              'design-hub': 'module-8-design',
+              'mvp-hub': 'module-9-mvp',
+              'scrum-essentials': 'module-10-agile-scrum',
+            };
 
-          const moduleId = moduleIdMap[view];
-          if (moduleId) {
-            const { data: progress } = await supabase
-              .from('learning_progress')
-              .select('status')
-              .eq('user_id', user?.id)
-              .eq('module_id', moduleId)
-              .single();
+            const moduleId = moduleIdMap[view];
+            if (moduleId) {
+              const { data: progress } = await supabase
+                .from('learning_progress')
+                .select('status')
+                .eq('user_id', user?.id)
+                .eq('module_id', moduleId)
+                .single();
 
-            console.log('🔍 Module progress check:', { moduleId, status: progress?.status });
+              console.log('🔍 Module progress check:', { moduleId, status: progress?.status });
 
-            if (progress?.status === 'locked') {
-              alert('🔒 This page is locked.\n\nPlease complete your current module\'s assignment first to unlock more content.\n\nGo to Learning Journey to see your progress.');
-              return; // Block navigation
+              if (progress?.status === 'locked') {
+                alert('🔒 This learning module is locked.\n\nComplete the previous module\'s assignment to unlock it.\n\nGo to Learning Journey to see your progress.');
+                return; // Block navigation
+              }
             }
+          } else {
+            // All other pages (Practice, Projects, Mentor, etc.) are locked for new students
+            alert('🔒 This section is locked for new students.\n\nFocus on completing your Learning Journey first!\n\nYou can access this once you complete more modules.');
+            return; // Block navigation
           }
         }
       } catch (error) {
