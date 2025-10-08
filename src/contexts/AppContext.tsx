@@ -250,38 +250,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.log('🔐 Checking navigation permission for:', view, 'User type:', userProfile?.user_type);
 
         if (userProfile?.user_type === 'new') {
-          // If it's a learning page, check if module is unlocked
+          // TESTING MODE: Allow all learning pages for new students (accessed via Learning Journey)
+          // In production, we'd check if module is unlocked before allowing access
           if (isLearningPage) {
-            const moduleIdMap: Record<string, string> = {
-              'core-learning': 'module-1-core-learning',
-              'project-initiation': 'module-2-project-initiation',
-              'elicitation': 'module-3-elicitation',
-              'process-mapper': 'module-4-process-mapping',
-              'requirements-engineering': 'module-5-requirements-engineering',
-              'solution-options': 'module-6-solution-options',
-              'documentation': 'module-7-documentation',
-              'design-hub': 'module-8-design',
-              'mvp-hub': 'module-9-mvp',
-              'scrum-essentials': 'module-10-agile-scrum',
-            };
-
-            const moduleId = moduleIdMap[view];
-            if (moduleId) {
-              const { data: progress } = await supabase
-                .from('learning_progress')
-                .select('status')
-                .eq('user_id', user?.id)
-                .eq('module_id', moduleId)
-                .single();
-
-              console.log('🔍 Module progress check:', { moduleId, status: progress?.status });
-
-              if (progress?.status === 'locked') {
-                console.log('🔒 BLOCKING navigation - module is locked');
-                setLockMessage('This learning module is locked.\n\nComplete the previous module\'s assignment to unlock it.\n\nGo to Learning Journey to see your progress.');
-                return; // Block navigation
-              }
-            }
+            console.log('✅ Learning page access allowed via Learning Journey:', view);
+            // Allow access - they navigate through Learning Journey which shows lock status
           } else {
             // All other pages (Practice, Projects, Mentor, etc.) are locked for new students
             console.log('🚫 BLOCKING - This page is locked for new students:', view);
