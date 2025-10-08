@@ -9,6 +9,7 @@ import { useMeetingSetup } from '../../contexts/MeetingSetupContext'
 import { isConfigured as elevenConfigured, synthesizeToBlob, playBlob, stopAllAudio } from '../../services/elevenLabsTTS';
 import { playBrowserTTS } from '../../lib/browserTTS'
 import VoiceInputModal from '../VoiceInputModal'
+import DynamicCoachingPanel from '../DynamicCoachingPanel'
 
 const MeetingView: React.FC = () => {
   const { selectedProject, selectedStakeholders, setCurrentView } = useApp()
@@ -38,10 +39,23 @@ const MeetingView: React.FC = () => {
   const [userInterruptRequested, setUserInterruptRequested] = useState(false)
   const [audioPausedPosition, setAudioPausedPosition] = useState<number>(0)
   const [currentlyProcessingAudio, setCurrentlyProcessingAudio] = useState<string | null>(null)
+  
+  // AI Coaching Panel state
+  const [awaitingAcknowledgement, setAwaitingAcknowledgement] = useState(false)
+  const coachingPanelRef = useRef<{ onUserSubmitted: (messageId: string) => void } | null>(null)
 
   // Old hard-coded conversation state removed - replaced by dynamic conversationDynamics
 
   // Old hard-coded functions removed - replaced by dynamic versions
+  
+  // Coaching callbacks
+  const handleAcknowledgementStateChange = (awaiting: boolean) => {
+    setAwaitingAcknowledgement(awaiting)
+  }
+  
+  const handleSuggestedRewrite = (rewrite: string) => {
+    setInputMessage(rewrite)
+  }
 
   // Dynamic input availability logic
   const shouldAllowUserInput = () => {
@@ -2985,8 +2999,10 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
   }
 
       return (
-      <div className="max-w-6xl mx-auto p-6 h-screen flex flex-col">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col">
+      <div className="h-screen flex flex-col p-6">
+        <div className="flex-1 flex gap-4 overflow-hidden max-w-[1800px] mx-auto w-full">
+          {/* Main Chat Area */}
+          <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -3544,6 +3560,28 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
              </div>
            </div>
          )}
+          </div>
+          
+          {/* AI Coaching Panel - Right Sidebar */}
+          <div className="w-96 flex-shrink-0">
+            <DynamicCoachingPanel
+              projectName={selectedProject?.name || ''}
+              conversationHistory={messages.map(msg => {
+                const stakeholder = selectedStakeholders.find(s => s.id === msg.speaker);
+                return {
+                  id: msg.id,
+                  sender: msg.speaker === 'user' ? 'user' : msg.speaker === 'system' ? 'system' : 'stakeholder',
+                  content: msg.content,
+                  timestamp: new Date(msg.timestamp),
+                  stakeholderName: stakeholder?.name
+                };
+              })}
+              sessionStage={'problem_exploration'}
+              onAcknowledgementStateChange={handleAcknowledgementStateChange}
+              onSuggestedRewrite={handleSuggestedRewrite}
+            />
+          </div>
+        </div>
       </div>
     )
 }
