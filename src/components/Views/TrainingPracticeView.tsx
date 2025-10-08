@@ -35,10 +35,6 @@ const TrainingPracticeView: React.FC = () => {
   const { setCurrentView, selectedProject, setSelectedStakeholders: setAppSelectedStakeholders } = useApp();
   const [currentStep, setCurrentStep] = useState<'meeting-prep' | 'live-meeting' | 'feedback'>('meeting-prep');
 
-  // Ensure currentView is set to training-practice when this component loads
-  useEffect(() => {
-    setCurrentView('training-practice');
-  }, [setCurrentView]);
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [inputMessage, setInputMessage] = useState('');
