@@ -148,68 +148,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'My Learning', 
       icon: BookOpen,
       isCollapsible: true,
-      subItems: userType === 'new' 
-        ? [
-            // New students: Only Learning Journey (sequential with locks/assignments)
-            { 
-              id: 'learning-flow', 
-              label: 'Learning Journey', 
-              icon: GraduationCap
-            },
-          ]
-        : [
-            // Existing students: Direct access to all pages (no restrictions)
-            { 
-              id: 'core-learning', 
-              label: 'Core Learning', 
-              icon: BookOpen
-            },
-            { 
-              id: 'project-initiation', 
-              label: 'Project Initiation', 
-              icon: PlayCircle
-            },
-            { 
-              id: 'elicitation', 
-              label: 'Requirements Elicitation', 
-              icon: BookOpen
-            },
-            { 
-              id: 'process-mapper', 
-              label: 'Process Mapping', 
-              icon: PenTool
-            },
-            { 
-              id: 'requirements-engineering', 
-              label: 'Requirements Engineering', 
-              icon: FileText
-            },
-            { 
-              id: 'solution-options', 
-              label: 'Solution Options', 
-              icon: Layers
-            },
-            { 
-              id: 'documentation', 
-              label: 'Documentation', 
-              icon: FileText
-            },
-            { 
-              id: 'design-hub', 
-              label: 'Design', 
-              icon: PenTool
-            },
-            { 
-              id: 'mvp-hub', 
-              label: 'MVP', 
-              icon: Rocket
-            },
-            { 
-              id: 'scrum-essentials', 
-              label: 'Scrum Essentials', 
-              icon: Target
-            },
-          ]
+      subItems: [
+        // ALL students: Learning Journey (pathway design)
+        // - New students: Sequential locks + assignments
+        // - Existing students: All unlocked + assignments
+        { 
+          id: 'learning-flow', 
+          label: 'Learning Journey', 
+          icon: GraduationCap
+        },
+      ]
     },
     { 
       id: 'my-practice', 

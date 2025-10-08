@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, CheckCircle, PlayCircle, BookOpen, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { LEARNING_MODULES, Module } from './learningData';
 import { 
   getLearningProgress, 
@@ -18,6 +19,28 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
   const { user } = useAuth();
   const [progressRows, setProgressRows] = useState<LearningProgressRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing');
+
+  // Load user type
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setUserType(data.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+
+    loadUserType();
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -178,9 +201,16 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
           {LEARNING_MODULES.map((module, index) => {
             const moduleProgress = progressRows.find(p => p.module_id === module.id);
             const colors = getColorScheme(module.color);
-            // TESTING MODE: Disable locks so all modules are accessible
-            const isLocked = false; // Set to false for testing
+            
+            // Lock logic based on user type
+            const isLocked = userType === 'new' 
+              ? (index > 0 && progressRows.find(p => p.module_id === LEARNING_MODULES[index - 1].id)?.status !== 'completed')
+              : false; // Existing users: all unlocked
+            
             const isCompleted = moduleProgress?.status === 'completed';
+            const isInProgress = moduleProgress?.status === 'in_progress' || (moduleProgress && !isCompleted);
+            const isNotStarted = !moduleProgress || moduleProgress.status === 'not_started';
+            
             const completion = getModuleCompletionPercentage(
               moduleProgress || null, 
               module.lessons.length
@@ -195,9 +225,11 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                       w-16 h-16 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300 shadow-xl
                       ${isCompleted 
                         ? 'bg-gradient-to-br from-green-500 to-emerald-600 ring-4 ring-green-500/20' 
+                        : isInProgress
+                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 ring-4 ring-orange-500/20'
                         : isLocked
                         ? 'bg-gray-300 dark:bg-gray-700'
-                        : 'bg-gradient-to-br from-purple-500 to-indigo-600 ring-4 ring-purple-500/20 animate-pulse'
+                        : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600'
                       }
                     `}
                   >
@@ -205,8 +237,10 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                       <CheckCircle className="w-8 h-8 text-white" />
                     ) : isLocked ? (
                       <Lock className="w-6 h-6 text-gray-500" />
-                    ) : (
+                    ) : isInProgress ? (
                       <span>{module.icon}</span>
+                    ) : (
+                      <span className="opacity-60">{module.icon}</span>
                     )}
                   </div>
                 </div>
@@ -218,13 +252,20 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                     group relative ml-6 flex-1 rounded-2xl p-6 transition-all duration-300
                     ${isLocked 
                       ? 'bg-gray-100/50 dark:bg-gray-800/30 border border-gray-300 dark:border-gray-700 opacity-60 cursor-not-allowed' 
-                      : 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-purple-200/50 dark:border-purple-800/50 cursor-pointer hover:shadow-2xl hover:shadow-purple-500/20 hover:scale-[1.02] hover:border-purple-400 dark:hover:border-purple-600'
+                      : isCompleted
+                      ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-2 border-green-300 dark:border-green-700 cursor-pointer hover:shadow-xl hover:shadow-green-500/10 hover:scale-[1.01]'
+                      : isInProgress
+                      ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-2 border-orange-300 dark:border-orange-700 cursor-pointer hover:shadow-xl hover:shadow-orange-500/20 hover:scale-[1.01]'
+                      : 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-xl hover:scale-[1.01] hover:border-gray-300 dark:hover:border-gray-600'
                     }
                   `}
                 >
                   {/* Hover glow effect */}
-                  {!isLocked && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:via-indigo-500/5 group-hover:to-blue-500/5 rounded-2xl transition-all duration-300" />
+                  {!isLocked && isInProgress && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:via-orange-500/5 group-hover:to-orange-500/5 rounded-2xl transition-all duration-300" />
+                  )}
+                  {!isLocked && isCompleted && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/0 to-green-500/0 group-hover:from-green-500/3 group-hover:via-green-500/3 group-hover:to-green-500/3 rounded-2xl transition-all duration-300" />
                   )}
                   
                   <div className="relative">
@@ -232,13 +273,23 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                        <span className={`text-sm font-bold ${
+                          isCompleted ? 'text-green-600 dark:text-green-400' :
+                          isInProgress ? 'text-orange-600 dark:text-orange-400' :
+                          'text-gray-500 dark:text-gray-400'
+                        }`}>
                           Module {index + 1}
                         </span>
                         {isCompleted && (
                           <span className="inline-flex items-center space-x-1 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full text-xs font-semibold text-green-700 dark:text-green-300">
                             <CheckCircle className="w-3 h-3" />
-                            <span>Done</span>
+                            <span>Completed</span>
+                          </span>
+                        )}
+                        {isInProgress && !isCompleted && (
+                          <span className="inline-flex items-center space-x-1 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-full text-xs font-semibold text-orange-700 dark:text-orange-300">
+                            <PlayCircle className="w-3 h-3" />
+                            <span>In Progress</span>
                           </span>
                         )}
                         {isLocked && (
@@ -261,20 +312,18 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     {/* Progress Info */}
                     <div className="flex items-center space-x-4">
-                      {!isLocked && !isCompleted && (
-                        <>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 transition-all duration-500"
-                                style={{ width: `${completion}%` }}
-                              />
-                            </div>
-                            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
-                              {completion}%
-                            </span>
+                      {isInProgress && !isCompleted && (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500"
+                              style={{ width: `${completion}%` }}
+                            />
                           </div>
-                        </>
+                          <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+                            {completion}%
+                          </span>
+                        </div>
                       )}
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {module.lessons.length} lessons
@@ -293,19 +342,16 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                           <span>Review</span>
                           <ArrowRight className="w-4 h-4" />
                         </button>
+                      ) : isInProgress ? (
+                        <button className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-bold hover:from-orange-400 hover:to-orange-500 transition-all shadow-lg hover:shadow-xl">
+                          <span>Continue</span>
+                          <PlayCircle className="w-4 h-4" />
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </button>
                       ) : (
-                        <button className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-bold hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg hover:shadow-xl group-hover:scale-105">
-                          {completion > 0 ? (
-                            <>
-                              <span>Continue</span>
-                              <PlayCircle className="w-4 h-4" />
-                            </>
-                          ) : (
-                            <>
-                              <span>Start</span>
-                              <BookOpen className="w-4 h-4" />
-                            </>
-                          )}
+                        <button className="flex items-center space-x-2 px-6 py-2 bg-gray-700 dark:bg-gray-600 text-white rounded-lg text-sm font-bold hover:bg-gray-600 dark:hover:bg-gray-500 transition-all shadow-lg hover:shadow-xl">
+                          <span>Start</span>
+                          <BookOpen className="w-4 h-4" />
                           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </button>
                       )}
