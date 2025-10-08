@@ -187,7 +187,17 @@ const MeetingModeSelection: React.FC = () => {
         {/* Back Button */}
         <div className="text-center mt-8">
           <button
-            onClick={() => setCurrentView('stakeholders')}
+            onClick={() => {
+              // Check if we're in training mode by looking for trainingConfig
+              const trainingConfig = sessionStorage.getItem('trainingConfig');
+              if (trainingConfig) {
+                // Training flow - go back to training-practice (stakeholder selection)
+                setCurrentView('training-practice');
+              } else {
+                // Regular flow - go back to project brief or practice hub
+                setCurrentView('practice-2');
+              }
+            }}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200 transition-colors"
           >
             ← Back to Stakeholder Selection
