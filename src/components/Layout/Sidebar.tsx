@@ -77,11 +77,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           .eq('user_id', user.id)
           .single();
 
+        console.log('🔍 User type loaded:', { data, error, userId: user.id });
+
         if (!error && data) {
+          console.log('✅ Setting user type to:', data.user_type || 'existing');
           setUserType(data.user_type || 'existing');
+        } else {
+          console.log('⚠️ No user_type found, defaulting to existing');
+          setUserType('existing');
         }
       } catch (error) {
-        console.error('Failed to load user type:', error);
+        console.error('❌ Failed to load user type:', error);
+        setUserType('existing'); // Default to existing on error
       }
     };
 
