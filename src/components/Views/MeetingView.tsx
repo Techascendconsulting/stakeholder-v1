@@ -2263,6 +2263,22 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
      const { topics, questionType, complexity, isSpecific } = questionAnalysis
      const personality = stakeholder.personality || 'collaborative'
      
+     // Detect greetings and simple social messages - be honest and contextual
+     const questionLower = userQuestion.toLowerCase().trim()
+     const greetingPatterns = ['hey', 'hi', 'hello', 'good morning', 'good afternoon', 'good evening', 'how are you', 'how\'s it going', 'thanks', 'thank you']
+     const isGreeting = greetingPatterns.some(pattern => questionLower.includes(pattern)) || questionLower.length < 15
+     
+     if (isGreeting) {
+       const greetingThinkingMessages = [
+         'Preparing a greeting...',
+         'Responding...',
+         'Getting ready to respond...',
+         'Acknowledging...',
+         'Formulating a response...'
+       ]
+       return greetingThinkingMessages[Math.floor(Math.random() * greetingThinkingMessages.length)]
+     }
+     
      // Base thinking patterns by personality and question type
      const thinkingPatterns = {
        analytical: {
