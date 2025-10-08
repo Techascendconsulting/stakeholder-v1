@@ -191,8 +191,13 @@ const MainLayout: React.FC = () => {
         // Has tabs - will handle assignment on last tab
         return <SolutionOptions />;
       case 'documentation':
-        // Has tabs - will handle assignment on last tab
-        return <DocumentationView />;
+        return wrapLearningPage(
+          <DocumentationView />,
+          'module-7-documentation',
+          'Documentation',
+          'User Story Writing',
+          'Write 2 user stories with 3 acceptance criteria each for a tenant repair request system. Follow INVEST principles.'
+        );
       case 'documentation-practice':
         return <DocumentationPracticeView />;
       case 'design-hub':
