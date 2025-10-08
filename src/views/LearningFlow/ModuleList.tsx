@@ -136,7 +136,8 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
           {LEARNING_MODULES.map((module, index) => {
             const moduleProgress = progressRows.find(p => p.module_id === module.id);
             const colors = getColorScheme(module.color);
-            const isLocked = moduleProgress?.status === 'locked';
+            // TESTING MODE: Disable locks so all modules are accessible
+            const isLocked = false; // Set to false for testing
             const isCompleted = moduleProgress?.status === 'completed';
             const completion = getModuleCompletionPercentage(
               moduleProgress || null, 

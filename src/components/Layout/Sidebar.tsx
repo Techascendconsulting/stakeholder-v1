@@ -67,8 +67,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
 
   // Load user type from database
   useEffect(() => {
+    console.log('🔄 Sidebar useEffect triggered, user?.id =', user?.id);
+    
     const loadUserType = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        console.log('⚠️ No user ID, skipping user_type load');
+        return;
+      }
+
+      console.log('🔍 Loading user_type for user:', user.id);
 
       try {
         const { data, error } = await supabase
@@ -77,13 +84,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
           .eq('user_id', user.id)
           .single();
 
-        console.log('🔍 User type loaded:', { data, error, userId: user.id });
+        console.log('🔍 User type query result:', { data, error, userId: user.id });
 
         if (!error && data) {
           console.log('✅ Setting user type to:', data.user_type || 'existing');
           setUserType(data.user_type || 'existing');
         } else {
-          console.log('⚠️ No user_type found, defaulting to existing');
+          console.log('⚠️ No user_type found or error, defaulting to existing. Error:', error);
           setUserType('existing');
         }
       } catch (error) {
