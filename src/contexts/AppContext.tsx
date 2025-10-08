@@ -219,12 +219,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Always allow: My Resources, Dashboard, Practice pages, etc.
     const alwaysAllowed = [
       'dashboard', 'my-resources', 'handbook', 'practice', 'practice-2',
-      'my-practice', 'learning-flow', 'profile', 'motivation'
+      'my-practice', 'learning-flow', 'profile', 'motivation',
+      'elicitation-hub', 'documentation-practice', 'scrum-practice', 
+      'mvp-practice', 'agile-practice', 'welcome', 'get-started'
     ];
 
-    // TESTING MODE: Navigation locks disabled for testing
-    // Uncomment below when ready to enable locks
-    /*
+    // Navigation locks for 'new' students
     if (learningPages.includes(view) && !alwaysAllowed.includes(view)) {
       try {
         // Check if user is 'new' type
@@ -233,6 +233,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           .select('user_type, user_id')
           .eq('user_id', user?.id)
           .single();
+
+        console.log('🔐 Checking navigation permission for:', view, 'User type:', userProfile?.user_type);
 
         if (userProfile?.user_type === 'new') {
           // Check if this module is unlocked
@@ -246,8 +248,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             'documentation': 'module-7-documentation',
             'design-hub': 'module-8-design',
             'mvp-hub': 'module-9-mvp',
-            'scrum-essentials': 'module-9-scrum',
-            'agile-hub': 'module-8-agile'
+            'scrum-essentials': 'module-10-agile-scrum',
           };
 
           const moduleId = moduleIdMap[view];
@@ -259,8 +260,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               .eq('module_id', moduleId)
               .single();
 
+            console.log('🔍 Module progress check:', { moduleId, status: progress?.status });
+
             if (progress?.status === 'locked') {
-              alert('🔒 This module is locked. Complete the previous module\'s assignment to unlock it.');
+              alert('🔒 This page is locked.\n\nPlease complete your current module\'s assignment first to unlock more content.\n\nGo to Learning Journey to see your progress.');
               return; // Block navigation
             }
           }
@@ -269,7 +272,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         console.error('Error checking navigation permissions:', error);
       }
     }
-    */
 
     console.log('🔄 NAVIGATE: Previous view was:', currentView)
     console.log('🔄 NAVIGATE: About to set view to:', view)
