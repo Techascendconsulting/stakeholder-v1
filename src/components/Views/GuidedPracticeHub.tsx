@@ -499,33 +499,21 @@ const GuidedPracticeHub: React.FC = () => {
                 <Target className="w-4 h-4 text-purple-600" />
                 <span className="font-medium text-gray-900 dark:text-white text-sm">Project Selection</span>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Choose from realistic business scenarios to practice with</p>
-              <div className="flex items-center space-x-2 text-xs text-gray-500">
-                <Clock className="w-3 h-3" />
-                <span>2-3 minutes</span>
-              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Choose from realistic business scenarios to practice with</p>
             </div>
             <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-600 transition-colors">
               <div className="flex items-center space-x-2 mb-2">
                 <BookOpen className="w-4 h-4 text-blue-600" />
                 <span className="font-medium text-gray-900 dark:text-white text-sm">Project Brief Review</span>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Understand the business context and stakeholder landscape</p>
-              <div className="flex items-center space-x-2 text-xs text-gray-500">
-                <Clock className="w-3 h-3" />
-                <span>3-5 minutes</span>
-              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Understand the business context and stakeholder landscape</p>
             </div>
             <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-600 transition-colors">
               <div className="flex items-center space-x-2 mb-2">
                 <Users className="w-4 h-4 text-green-600" />
                 <span className="font-medium text-gray-900 dark:text-white text-sm">Live Stakeholder Meeting</span>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Practice elicitation with AI-powered stakeholders</p>
-              <div className="flex items-center space-x-2 text-xs text-gray-500">
-                <Clock className="w-3 h-3" />
-                <span>10-15 minutes</span>
-              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Practice elicitation with AI-powered stakeholders</p>
             </div>
           </div>
         </div>
