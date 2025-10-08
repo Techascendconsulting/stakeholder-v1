@@ -84,11 +84,62 @@ import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
 import MeetingModeSelection from '../Views/MeetingModeSelection';
 import CoreLearningView from '../Views/CoreLearningView';
+import LearningPageWrapper from '../LearningPageWrapper';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 
 const MainLayout: React.FC = () => {
   const { currentView, setCurrentView, isLoading, selectedProject } = useApp();
   const { isAdmin } = useAdmin();
+  const { user } = useAuth();
+  const [userType, setUserType] = React.useState<'new' | 'existing'>('existing');
+
+  // Load user type
+  React.useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+
+        if (data) {
+          setUserType(data.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+
+    loadUserType();
+  }, [user?.id]);
+
+  // Helper: Wrap learning pages with assignment tracking for new students only
+  const wrapLearningPage = (
+    pageComponent: React.ReactNode,
+    moduleId: string,
+    moduleTitle: string,
+    assignmentTitle: string,
+    assignmentDescription: string
+  ) => {
+    if (userType === 'new') {
+      return (
+        <LearningPageWrapper
+          moduleId={moduleId}
+          moduleTitle={moduleTitle}
+          assignmentTitle={assignmentTitle}
+          assignmentDescription={assignmentDescription}
+        >
+          {pageComponent}
+        </LearningPageWrapper>
+      );
+    }
+    return pageComponent;
+  };
 
   // Debug admin status
   console.log('🎨 ADMIN THEME: isAdmin =', isAdmin, 'currentView =', currentView);
@@ -122,15 +173,45 @@ const MainLayout: React.FC = () => {
       case 'learning-flow':
         return <LearningFlowView />;
       case 'core-learning':
-        return <CoreLearningView />;
+        return wrapLearningPage(
+          <CoreLearningView />,
+          'module-1-core-learning',
+          'Core Learning',
+          'BA Fundamentals Assessment',
+          'Explain the role of a BA and why organizations hire them. Include at least 3 specific responsibilities.'
+        );
       case 'project-initiation':
-        return <ProjectInitiationView />;
+        return wrapLearningPage(
+          <ProjectInitiationView />,
+          'module-2-project-initiation',
+          'Project Initiation',
+          'Project Initiation Understanding',
+          'Describe the key activities a BA performs during project initiation. What documents should you review first and why?'
+        );
       case 'requirements-engineering':
-        return <RequirementsEngineeringView />;
+        return wrapLearningPage(
+          <RequirementsEngineeringView />,
+          'module-5-requirements-engineering',
+          'Requirements Engineering',
+          'Requirements Classification',
+          'Write 2 functional requirements, 2 non-functional requirements, and 1 business rule for a tenant repair system.'
+        );
       case 'solution-options':
-        return <SolutionOptions />;
+        return wrapLearningPage(
+          <SolutionOptions />,
+          'module-6-solution-options',
+          'Solution Options',
+          'Solution Comparison',
+          'Evaluate 3 solution options for a business problem using a decision matrix. Recommend the best option and justify your choice.'
+        );
       case 'documentation':
-        return <DocumentationView />;
+        return wrapLearningPage(
+          <DocumentationView />,
+          'module-7-documentation',
+          'Documentation',
+          'User Story Writing',
+          'Write 2 user stories with 3 acceptance criteria each for a tenant repair request system. Follow INVEST principles.'
+        );
       case 'documentation-practice':
         return <DocumentationPracticeView />;
       case 'design-hub':
