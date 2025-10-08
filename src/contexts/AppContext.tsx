@@ -5,6 +5,7 @@ import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
 import { MeetingDataService } from '../lib/meetingDataService'
 import { supabase } from '../lib/supabase'
+import LockMessageToast from '../components/LockMessageToast'
 
 interface AppContextType {
   // Hydration state
@@ -75,6 +76,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   // Track previous user state to detect actual logout vs initial loading
   const prevUser = useRef(user)
+  
+  // Lock message state
+  const [lockMessage, setLockMessage] = useState<string | null>(null)
 
   // Initialize currentView from localStorage or default to dashboard for returning users
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
@@ -268,13 +272,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               console.log('🔍 Module progress check:', { moduleId, status: progress?.status });
 
               if (progress?.status === 'locked') {
-                alert('🔒 This learning module is locked.\n\nComplete the previous module\'s assignment to unlock it.\n\nGo to Learning Journey to see your progress.');
+                setLockMessage('This learning module is locked.\n\nComplete the previous module\'s assignment to unlock it.\n\nGo to Learning Journey to see your progress.');
                 return; // Block navigation
               }
             }
           } else {
             // All other pages (Practice, Projects, Mentor, etc.) are locked for new students
-            alert('🔒 This section is locked for new students.\n\nFocus on completing your Learning Journey first!\n\nYou can access this once you complete more modules.');
+            setLockMessage('This section is locked for new students.\n\nFocus on completing your Learning Journey first!\n\nYou can access this once you complete more modules.');
             return; // Block navigation
           }
         }
@@ -660,5 +664,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSelectedMeeting
   }
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+      {lockMessage && (
+        <LockMessageToast
+          message={lockMessage}
+          onClose={() => setLockMessage(null)}
+        />
+      )}
+    </AppContext.Provider>
+  )
 }
