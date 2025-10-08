@@ -1,5 +1,6 @@
 import React from 'react';
-import { Lock, ArrowLeft, GraduationCap } from 'lucide-react';
+import { Lock, GraduationCap } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
 
 interface LockMessageToastProps {
   message: string;
@@ -7,6 +8,13 @@ interface LockMessageToastProps {
 }
 
 const LockMessageToast: React.FC<LockMessageToastProps> = ({ message, onClose }) => {
+  const { setCurrentView } = useApp();
+  
+  const handleGoToLearningJourney = () => {
+    onClose(); // Clear the lock message
+    setCurrentView('learning-flow'); // Navigate to Learning Journey
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-6">
       <div className="max-w-2xl w-full">
@@ -26,23 +34,13 @@ const LockMessageToast: React.FC<LockMessageToastProps> = ({ message, onClose })
               {message}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={onClose}
-                className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center space-x-2"
-              >
-                <GraduationCap className="w-5 h-5" />
-                <span>Go to Learning Journey</span>
-              </button>
-              
-              <button
-                onClick={() => window.history.back()}
-                className="flex-1 px-6 py-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all font-semibold flex items-center justify-center space-x-2"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Go Back</span>
-              </button>
-            </div>
+            <button
+              onClick={handleGoToLearningJourney}
+              className="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center space-x-2"
+            >
+              <GraduationCap className="w-5 h-5" />
+              <span>Go to Learning Journey</span>
+            </button>
           </div>
         </div>
       </div>
