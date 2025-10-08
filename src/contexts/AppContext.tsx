@@ -4,6 +4,7 @@ import { useAdmin } from './AdminContext'
 import { mockProjects, mockStakeholders } from '../data/mockData'
 import { Project, Stakeholder, Meeting, Deliverable, AppView } from '../types'
 import { MeetingDataService } from '../lib/meetingDataService'
+import { supabase } from '../lib/supabase'
 
 interface AppContextType {
   // Hydration state
@@ -11,7 +12,7 @@ interface AppContextType {
   
   // Current view
   currentView: AppView
-  setCurrentView: (view: AppView) => void
+  setCurrentView: (view: AppView) => void | Promise<void>
   
   // Project data
   projects: Project[]
@@ -204,8 +205,68 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   })
 
   // Custom setCurrentView that handles localStorage automatically
-  const setCurrentView = (view: AppView) => {
+  // Also enforces navigation locks for 'new' students
+  const setCurrentView = async (view: AppView) => {
     console.log('🔄 NAVIGATE: setCurrentView called with view:', view)
+    
+    // Check if navigation should be restricted for new students
+    const learningPages = [
+      'core-learning', 'project-initiation', 'elicitation', 'process-mapper',
+      'requirements-engineering', 'solution-options', 'documentation',
+      'design-hub', 'mvp-hub', 'scrum-essentials', 'agile-hub'
+    ];
+    
+    // Always allow: My Resources, Dashboard, Practice pages, etc.
+    const alwaysAllowed = [
+      'dashboard', 'my-resources', 'handbook', 'practice', 'practice-2',
+      'my-practice', 'learning-flow', 'profile', 'motivation'
+    ];
+
+    if (learningPages.includes(view) && !alwaysAllowed.includes(view)) {
+      try {
+        // Check if user is 'new' type
+        const { data: userProfile } = await supabase
+          .from('user_profiles')
+          .select('user_type, user_id')
+          .eq('user_id', user?.id)
+          .single();
+
+        if (userProfile?.user_type === 'new') {
+          // Check if this module is unlocked
+          const moduleIdMap: Record<string, string> = {
+            'core-learning': 'module-1-core-learning',
+            'project-initiation': 'module-2-project-initiation',
+            'elicitation': 'module-3-elicitation',
+            'process-mapper': 'module-4-process-mapping',
+            'requirements-engineering': 'module-5-requirements-engineering',
+            'solution-options': 'module-6-solution-options',
+            'documentation': 'module-7-documentation',
+            'design-hub': 'module-8-design',
+            'mvp-hub': 'module-9-mvp',
+            'scrum-essentials': 'module-9-scrum',
+            'agile-hub': 'module-8-agile'
+          };
+
+          const moduleId = moduleIdMap[view];
+          if (moduleId) {
+            const { data: progress } = await supabase
+              .from('learning_progress')
+              .select('status')
+              .eq('user_id', user?.id)
+              .eq('module_id', moduleId)
+              .single();
+
+            if (progress?.status === 'locked') {
+              alert('🔒 This module is locked. Complete the previous module\'s assignment to unlock it.');
+              return; // Block navigation
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking navigation permissions:', error);
+      }
+    }
+
     console.log('🔄 NAVIGATE: Previous view was:', currentView)
     console.log('🔄 NAVIGATE: About to set view to:', view)
     setCurrentViewState(view)
