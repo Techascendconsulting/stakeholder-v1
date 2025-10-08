@@ -895,107 +895,72 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
             ))}
           </div>
           
-          {selectedStage && (
-            <div className="mt-8 text-center">
-              <button
-                onClick={handleStartPractice}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-3 mx-auto"
-              >
-                <span>Start Practicing {stages.find(s => s.id === selectedStage)?.name}</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Training Content */}
+        {/* Training Content - Clean Layout */}
         {selectedStage && (
-          <div className="space-y-8">
-            {/* Stage Header */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {stages.find(s => s.id === selectedStage)?.name}
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {stages.find(s => s.id === selectedStage)?.description}
-                  </p>
+          <div className="mt-8 space-y-6">
+            {/* Stage Info Card with Tabs */}
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-lg overflow-hidden">
+              {/* Header with Close Button */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {stages.find(s => s.id === selectedStage)?.name}
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                      {stages.find(s => s.id === selectedStage)?.description}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedStage(null)}
+                    className="p-2 rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-                                 <button
-                   onClick={() => setSelectedStage(null)}
-                   className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                 >
-                   <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                   </svg>
-                 </button>
               </div>
 
-              {/* Simple Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={() => setActiveTab('learn')}
-                  className="flex-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 px-6 py-4 rounded-xl font-semibold transition-all duration-200 hover:shadow-md"
-                >
-                  <div className="flex items-center justify-center space-x-3">
-                    <BookOpen className="w-5 h-5" />
-                    <span>Learn About This Stage</span>
-                  </div>
-                </button>
-                <button
-                  onClick={handleStartPractice}
-                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  <div className="flex items-center justify-center space-x-3">
-                    <Play className="w-5 h-5" />
-                    <span>Start Practicing Now</span>
-                  </div>
-                </button>
+              {/* Quick Action Buttons */}
+              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => setActiveTab('learn')}
+                    className={`flex-1 flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                      activeTab === 'learn'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Learn</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('meeting-prep')}
+                    className={`flex-1 flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                      activeTab === 'meeting-prep'
+                        ? 'bg-orange-600 text-white shadow-md'
+                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                    }`}
+                  >
+                    <Target className="w-4 h-4" />
+                    <span>Prepare</span>
+                  </button>
+                  <button
+                    onClick={handleStartPractice}
+                    className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                  >
+                    <Play className="w-4 h-4" />
+                    <span>Start Practice</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex items-center justify-between mt-6">
-                <button
-                  onClick={() => {
-                    if (activeTab === 'meeting-prep') setActiveTab('learn');
-                    else if (activeTab === 'practice') setActiveTab('meeting-prep');
-                    else if (activeTab === 'feedback') setActiveTab('practice');
-                    else if (activeTab === 'deliverables') setActiveTab('feedback');
-                  }}
-                  disabled={activeTab === 'learn'}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeTab === 'learn'
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
-                      : 'bg-gray-600 hover:bg-gray-700 text-white'
-                  }`}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Previous</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (activeTab === 'learn') setActiveTab('meeting-prep');
-                    else if (activeTab === 'meeting-prep') setActiveTab('practice');
-                    else if (activeTab === 'practice') setActiveTab('feedback');
-                    else if (activeTab === 'feedback') setActiveTab('deliverables');
-                  }}
-                  disabled={activeTab === 'deliverables'}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeTab === 'feedback'
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
-                      : 'bg-purple-600 hover:bg-purple-700 text-white'
-                  }`}
-                >
-                  <span>Next</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Tab Content */}
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-6 shadow-lg">
+              {/* Tab Content */}
+              <div className="p-6">
               {activeTab === 'learn' && (
                 <div className="space-y-6">
                   {!showLearnContent ? (
