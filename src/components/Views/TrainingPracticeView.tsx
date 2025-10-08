@@ -323,7 +323,7 @@ Response:`;
         setAppSelectedStakeholders(selectedStakeholders);
         
         // Save training config to sessionStorage for meeting views
-        sessionStorage.setItem('trainingConfig', JSON.stringify({
+        sessionStorage.setItem('trainingConfig', JSON.stringify({ isTrainingHub: true,
           sessionId: session.id,
           stage: session.stage,
           projectId: session.projectId,
