@@ -34,6 +34,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import { UserAvatar } from '../Common/UserAvatar';
 import SidebarAudioPlayer from './SidebarAudioPlayer';
+import { supabase } from '../../lib/supabase';
 
 interface SidebarProps {
   className?: string;
@@ -62,8 +63,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing');
 
+  // Load user type from database
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
 
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!error && data) {
+          setUserType(data.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+
+    loadUserType();
+  }, [user?.id]);
 
   // Admin-specific menu items
   const adminMenuItems: MenuItem[] = [
@@ -111,68 +134,68 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       label: 'My Learning', 
       icon: BookOpen,
       isCollapsible: true,
-      subItems: [
-        { 
-          id: 'learning-flow', 
-          label: 'Learning Journey', 
-          icon: GraduationCap
-        },
-        { 
-          id: 'core-learning', 
-          label: 'Core Learning', 
-          icon: BookOpen
-        },
-        { 
-          id: 'project-initiation', 
-          label: 'Project Initiation', 
-          icon: PlayCircle
-        },
-        { 
-          id: 'elicitation', 
-          label: 'Requirements Elicitation', 
-          icon: BookOpen
-        },
-        { 
-          id: 'process-mapper', 
-          label: 'Process Mapping', 
-          icon: PenTool
-        },
-        // { 
-        //   id: 'ai-process-mapper', 
-        //   label: 'AI Process Mapper', 
-        //   icon: Sparkles
-        // }, // Archived
-        { 
-          id: 'requirements-engineering', 
-          label: 'Requirements Engineering', 
-          icon: FileText
-        },
-        { 
-          id: 'solution-options', 
-          label: 'Solution Options', 
-          icon: Layers
-        },
-        { 
-          id: 'documentation', 
-          label: 'Documentation', 
-          icon: FileText
-        },
-        { 
-          id: 'design-hub', 
-          label: 'Design', 
-          icon: PenTool
-        },
-        { 
-          id: 'mvp-hub', 
-          label: 'MVP', 
-          icon: Rocket
-        },
-        { 
-          id: 'scrum-essentials', 
-          label: 'Scrum Essentials', 
-          icon: Target
-        },
-      ]
+      subItems: userType === 'new' 
+        ? [
+            // New students: Only Learning Journey
+            { 
+              id: 'learning-flow', 
+              label: 'Learning Journey', 
+              icon: GraduationCap
+            },
+          ]
+        : [
+            // Existing students: All learning pages (no Learning Journey)
+            { 
+              id: 'core-learning', 
+              label: 'Core Learning', 
+              icon: BookOpen
+            },
+            { 
+              id: 'project-initiation', 
+              label: 'Project Initiation', 
+              icon: PlayCircle
+            },
+            { 
+              id: 'elicitation', 
+              label: 'Requirements Elicitation', 
+              icon: BookOpen
+            },
+            { 
+              id: 'process-mapper', 
+              label: 'Process Mapping', 
+              icon: PenTool
+            },
+            { 
+              id: 'requirements-engineering', 
+              label: 'Requirements Engineering', 
+              icon: FileText
+            },
+            { 
+              id: 'solution-options', 
+              label: 'Solution Options', 
+              icon: Layers
+            },
+            { 
+              id: 'documentation', 
+              label: 'Documentation', 
+              icon: FileText
+            },
+            { 
+              id: 'design-hub', 
+              label: 'Design', 
+              icon: PenTool
+            },
+            { 
+              id: 'mvp-hub', 
+              label: 'MVP', 
+              icon: Rocket
+            },
+            { 
+              id: 'scrum-essentials', 
+              label: 'Scrum Essentials', 
+              icon: Target
+            },
+          ]
     },
     { 
       id: 'my-practice', 
