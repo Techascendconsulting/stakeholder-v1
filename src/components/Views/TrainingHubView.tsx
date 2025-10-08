@@ -910,7 +910,10 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
-                    onClick={() => setActiveTab('learn')}
+                    onClick={() => {
+                      setActiveTab('learn');
+                      setShowLearnContent(true);
+                    }}
                     className="flex-1 flex items-center justify-center space-x-3 px-8 py-5 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
                   >
                     <BookOpen className="w-6 h-6" />
@@ -951,28 +954,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
               <div className="p-6">
               {activeTab === 'learn' && (
                 <div className="space-y-6">
-                  {!showLearnContent ? (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                        Ready to Learn?
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                        Study the patterns and techniques for this stage before practicing with stakeholders.
-                      </p>
-                      <button 
-                        onClick={() => setShowLearnContent(true)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 mx-auto"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>View Learning Materials</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <LearnContentDisplay stage={selectedStage} onBack={() => setShowLearnContent(false)} />
-                  )}
+                  <LearnContentDisplay stage={selectedStage} onBack={() => setShowLearnContent(false)} />
                 </div>
               )}
 
