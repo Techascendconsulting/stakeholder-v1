@@ -3011,10 +3011,10 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 {messages.length <= 1 && (
                   <button
                     onClick={() => setCurrentView('meeting-mode-selection')}
-                    className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-blue-50 transition-colors shadow-md"
+                    className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-white text-blue-600 hover:bg-blue-50 transition-colors shadow-md text-sm"
                     title="Go back and choose a different meeting mode"
                   >
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="w-4 h-4" />
                     <span className="font-semibold">Change Mode</span>
                   </button>
                 )}
@@ -3106,7 +3106,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               <button
                 onClick={handleEndMeeting}
                 disabled={messages.length <= 1 || isLoading}
-                className="flex items-center space-x-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-sm"
+                className="flex items-center space-x-2 bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-sm text-sm"
                 title="End meeting and generate interview notes"
               >
                 {isLoading ? (
@@ -3470,10 +3470,10 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               <button
                 onClick={() => setShowVoiceModal(true)}
                 disabled={isLoading || isTranscribing}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-2"
+                className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center space-x-2 text-sm"
                 title="Voice Input"
               >
-                <Mic className="w-5 h-5" />
+                <Mic className="w-4 h-4" />
                 {isTranscribing && (
                   <span className="text-sm">Transcribing...</span>
                 )}
@@ -3481,7 +3481,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading || !inputMessage.trim() || !shouldAllowUserInput()}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 text-sm"
               >
                 Send
               </button>
