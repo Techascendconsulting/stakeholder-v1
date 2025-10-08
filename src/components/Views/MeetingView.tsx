@@ -3184,7 +3184,7 @@ ${Array.from(analytics.stakeholderEngagementLevels.entries())
                 <div className="absolute top-full left-0 right-0 z-20 mt-2 mx-4 bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-semibold text-blue-900">
-                    Suggested Questions for {selectedStakeholders[0]?.role || 'Stakeholder'}
+                    Suggested Questions - {setupData?.selectedStage ? setupData.selectedStage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'General'}
                   </h3>
                   <div className="flex bg-white dark:bg-gray-800 rounded-lg p-0.5 border border-blue-200">
                     <button
