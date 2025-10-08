@@ -1154,7 +1154,7 @@ const MVPHub: React.FC = () => {
           <div className="flex justify-between items-start mb-8">
             <div className="flex-1"></div>
             <button
-              onClick={() => setShowMvpBuilder(true)}
+              onClick={() => setCurrentView('mvp-practice')}
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
             >
               <Rocket className="w-5 h-5" />
@@ -1256,7 +1256,7 @@ const MVPHub: React.FC = () => {
                 Put your MVP knowledge into practice with our interactive MVP Builder tool.
               </p>
               <button
-                onClick={() => setShowMvpBuilder(true)}
+                onClick={() => setCurrentView('mvp-practice')}
                 className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 <Rocket className="w-5 h-5" />
