@@ -541,7 +541,7 @@ const GuidedPracticeHub: React.FC = () => {
               onClick={() => setCurrentView('training-hub-project-selection')}
               className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg hover:shadow-xl"
             >
-              <span>Explore and Select Your Training Project</span>
+              <span>Explore and Select Your Practice Project</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
