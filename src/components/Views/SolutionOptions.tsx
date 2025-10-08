@@ -1,18 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   Layers, 
   ArrowRight, 
   BookOpen, 
   ChevronRight,
   Play,
-  Users
+  Users,
+  ArrowLeft
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const SolutionOptions: React.FC = () => {
   const { setCurrentView } = useApp();
+  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState<'overview' | 'lessons'>('overview');
   const [activeTab, setActiveTab] = useState(0);
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing');
+
+  // Load user type
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setUserType(data.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+
+    loadUserType();
+  }, [user?.id]);
 
   const lessons = [
     {
@@ -383,6 +409,19 @@ In summary, solution options are the bridge between problem and design. They inv
   if (currentPage === 'overview') {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
+        {/* Back to Learning Journey button - ONLY for new students */}
+        {userType === 'new' && (
+          <div className="max-w-4xl mx-auto px-6 pt-6">
+            <button
+              onClick={() => setCurrentView('learning-flow')}
+              className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium">Back to Learning Journey</span>
+            </button>
+          </div>
+        )}
+
         {/* Simple Header */}
         <div className="border-b border-gray-200 dark:border-gray-700">
           <div className="max-w-4xl mx-auto px-6 py-8">
@@ -446,6 +485,19 @@ In summary, solution options are the bridge between problem and design. They inv
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Back to Learning Journey button - ONLY for new students */}
+      {userType === 'new' && (
+        <div className="max-w-4xl mx-auto px-6 pt-6">
+          <button
+            onClick={() => setCurrentView('learning-flow')}
+            className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back to Learning Journey</span>
+          </button>
+        </div>
+      )}
+
       {/* Simple Header */}
       <div className="border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4">

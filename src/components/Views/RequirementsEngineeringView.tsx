@@ -1,5 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { ArrowLeft } from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 const lessons = [
   { 
@@ -342,6 +345,29 @@ const renderLessonContent = (raw: string) => {
 const RequirementsEngineeringView: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const { setCurrentView } = useApp();
+  const { user } = useAuth();
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing');
+
+  // Load user type
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setUserType(data.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+
+    loadUserType();
+  }, [user?.id]);
 
   const handleProcessMapperClick = () => {
     setCurrentView('process-mapper');
@@ -350,6 +376,17 @@ const RequirementsEngineeringView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6 md:px-8 py-10 md:py-12">
       <div className="max-w-7xl mx-auto space-y-10">
+        {/* Back to Learning Journey button - ONLY for new students */}
+        {userType === 'new' && (
+          <button
+            onClick={() => setCurrentView('learning-flow')}
+            className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back to Learning Journey</span>
+          </button>
+        )}
+
         {/* Hero */}
         <header className="relative">
           <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 backdrop-blur">
