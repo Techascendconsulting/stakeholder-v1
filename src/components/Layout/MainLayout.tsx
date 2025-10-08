@@ -342,6 +342,8 @@ const MainLayout: React.FC = () => {
         return <TrainingHubView />;
       case 'training-hub-project-selection':
         return <TrainingHubView startingStep="project-selection" />;
+      case 'training-hub-stage-selection':
+        return <TrainingHubView startingStep="training-hub" />;
       case 'practice-hub-cards':
         return <PracticeHubCardsView />;
       case 'agile-practice':

@@ -638,7 +638,7 @@ Response:`;
     sessionStorage.removeItem('trainingMessages');
     sessionStorage.removeItem('trainingMeetingTime');
     sessionStorage.removeItem('trainingMeetingActive');
-    setCurrentView('training-hub-project-selection');
+    setCurrentView('training-hub-stage-selection');
   };
 
   const formatTime = (seconds: number) => {
