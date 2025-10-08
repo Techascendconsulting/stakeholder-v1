@@ -833,21 +833,6 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setCurrentView('training-deliverables')}
-              className="px-4 py-2 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200/50 dark:border-purple-700/50 hover:from-purple-100 hover:to-blue-100 dark:hover:from-purple-900/30 dark:hover:to-blue-900/30 transition-all duration-200"
-            >
-              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                Practice Deliverables
-              </span>
-            </button>
-            <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200/50 dark:border-green-700/50">
-              <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                Credits: {credits?.practiceCredits} Practice • {credits?.assessCredits} Assess
-              </span>
-            </div>
-          </div>
         </div>
       </div>
 
