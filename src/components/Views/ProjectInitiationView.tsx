@@ -294,16 +294,14 @@ const ProjectInitiationView: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 dark:from-gray-900 dark:to-purple-900/20 px-8 py-12">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Back to Learning Journey button - ONLY for new students */}
-        {userType === 'new' && (
-          <button
-            onClick={() => setCurrentView('learning-flow')}
-            className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back to Learning Journey</span>
-          </button>
-        )}
+        {/* Back to Learning Journey button - For ALL students */}
+        <button
+          onClick={() => setCurrentView('learning-flow')}
+          className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors mb-4"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back to Learning Journey</span>
+        </button>
 
         {/* Header */}
         <header className="text-center">

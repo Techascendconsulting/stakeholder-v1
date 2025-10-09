@@ -409,18 +409,16 @@ In summary, solution options are the bridge between problem and design. They inv
   if (currentPage === 'overview') {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
-        {/* Back to Learning Journey button - ONLY for new students */}
-        {userType === 'new' && (
-          <div className="max-w-4xl mx-auto px-6 pt-6">
-            <button
-              onClick={() => setCurrentView('learning-flow')}
-              className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">Back to Learning Journey</span>
-            </button>
-          </div>
-        )}
+        {/* Back to Learning Journey button */}
+        <div className="max-w-4xl mx-auto px-6 pt-6">
+          <button
+            onClick={() => setCurrentView('learning-flow')}
+            className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back to Learning Journey</span>
+          </button>
+        </div>
 
         {/* Simple Header */}
         <div className="border-b border-gray-200 dark:border-gray-700">

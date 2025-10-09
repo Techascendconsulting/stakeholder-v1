@@ -485,18 +485,16 @@ In summary, linking design to user stories is how you ensure the work done in de
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-fuchsia-900/20">
-      {/* Back to Learning Journey button - ONLY for new students */}
-      {userType === 'new' && (
-        <div className="max-w-7xl mx-auto px-6 pt-6">
-          <button
-            onClick={() => setCurrentView('learning-flow')}
-            className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back to Learning Journey</span>
-          </button>
-        </div>
-      )}
+      {/* Back to Learning Journey button */}
+      <div className="max-w-7xl mx-auto px-6 pt-6">
+        <button
+          onClick={() => setCurrentView('learning-flow')}
+          className="flex items-center space-x-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back to Learning Journey</span>
+        </button>
+      </div>
 
       {/* Creative Studio Header */}
       <div className="relative overflow-hidden">
