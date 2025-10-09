@@ -241,7 +241,13 @@ const MainLayout: React.FC = () => {
         return <CoreConceptsView />;
       case 'scrum-essentials':
         console.log('🔄 MainLayout: Rendering ScrumEssentialsView');
-        return <ScrumEssentialsView />;
+        return wrapLearningPage(
+          <ScrumEssentialsView />,
+          'module-10-agile-scrum',
+          'Agile & Scrum Basics',
+          'Agile Understanding',
+          'Explain the difference between Agile and Waterfall methodologies. When would you use each?'
+        );
       case 'scrum-learning':
         console.log('🔄 MainLayout: Rendering ScrumLearningView');
         return <ScrumLearningView />;
