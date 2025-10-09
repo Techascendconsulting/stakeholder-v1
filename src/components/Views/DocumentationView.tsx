@@ -65,12 +65,6 @@ const DocumentationView: React.FC<DocumentationViewProps> = ({ compact = false }
       <div className="w-full h-full px-6 py-4 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setCurrentView('learn')}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </button>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {activeTab === "teaching" ? "Learn Documentation" : 
                activeTab === "walkthrough" ? "Documentation Walkthrough" : ""}

@@ -14,6 +14,7 @@ interface LearningPageWrapperProps {
   moduleTitle: string;
   assignmentTitle: string;
   assignmentDescription: string;
+  hideBackButton?: boolean;
 }
 
 /**
@@ -25,7 +26,8 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
   moduleId,
   moduleTitle,
   assignmentTitle,
-  assignmentDescription
+  assignmentDescription,
+  hideBackButton = false
 }) => {
   const { user } = useAuth();
   const { setCurrentView } = useApp();
@@ -79,17 +81,19 @@ const LearningPageWrapper: React.FC<LearningPageWrapperProps> = ({
   return (
     <div>
       {/* Back to Learning Journey button - For ALL students */}
-      <div className="bg-purple-50 dark:bg-purple-900/20 border-b border-purple-200 dark:border-purple-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <button
-            onClick={() => setCurrentView('learning-flow')}
-            className="flex items-center space-x-2 text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 transition-colors font-medium"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Learning Journey</span>
-          </button>
+      {!hideBackButton && (
+        <div className="bg-purple-50 dark:bg-purple-900/20 border-b border-purple-200 dark:border-purple-800 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <button
+              onClick={() => setCurrentView('learning-flow')}
+              className="flex items-center space-x-2 text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 transition-colors font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Learning Journey</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Original page content */}
       {children}
