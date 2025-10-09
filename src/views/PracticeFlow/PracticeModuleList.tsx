@@ -166,7 +166,7 @@ const PracticeModuleList: React.FC = () => {
                       onClick={() => isClickable && handleModuleClick(module)}
                       disabled={isLocked && userType === 'new'}
                       className={`
-                        w-16 h-16 rounded-full flex items-center justify-center text-2xl
+                        w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold
                         transition-all duration-300 transform hover:scale-110
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
@@ -177,9 +177,14 @@ const PracticeModuleList: React.FC = () => {
                       {isLocked ? (
                         <Lock className="w-6 h-6" />
                       ) : isCompleted ? (
-                        <CheckCircle className="w-6 h-6" />
+                        <div className="relative">
+                          <CheckCircle className="w-8 h-8" />
+                          <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold">
+                            {module.order}
+                          </span>
+                        </div>
                       ) : (
-                        <span>{module.icon}</span>
+                        <span>{module.order}</span>
                       )}
                     </button>
                   </div>
