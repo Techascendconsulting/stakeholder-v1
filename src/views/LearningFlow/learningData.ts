@@ -19,6 +19,7 @@ export interface Module {
   description: string;
   icon: string;
   color: string;
+  order: number;
   lessons: Lesson[];
   assignmentTitle: string;
   assignmentDescription: string;
@@ -50,6 +51,7 @@ export const LEARNING_MODULES: Module[] = [
     description: 'Foundation concepts every Business Analyst must know',
     icon: '📚',
     color: 'blue',
+    order: 1,
     lessons: [
       {
         id: 'lesson-1-1',
@@ -287,6 +289,7 @@ export const LEARNING_MODULES: Module[] = [
     description: 'Learn how projects start and the BA\'s role from day one',
     icon: '🚀',
     color: 'purple',
+    order: 2,
     lessons: [
       {
         id: 'lesson-2-1',
@@ -332,6 +335,7 @@ export const LEARNING_MODULES: Module[] = [
     description: 'Master the art of gathering requirements from stakeholders',
     icon: '🎯',
     color: 'green',
+    order: 3,
     lessons: [
       {
         id: 'lesson-3-1',
@@ -391,6 +395,7 @@ Ask open-ended questions: "How does this work today?" not "Do you want feature X
     description: 'Visualize and analyze business processes',
     icon: '🗺️',
     color: 'indigo',
+    order: 4,
     lessons: [
       {
         id: 'lesson-4-1',
@@ -436,6 +441,7 @@ Ask open-ended questions: "How does this work today?" not "Do you want feature X
     description: 'Document, validate, and manage requirements',
     icon: '⚙️',
     color: 'orange',
+    order: 5,
     lessons: [
       {
         id: 'lesson-5-1',
@@ -478,6 +484,7 @@ Limitations you must work within:
   // MODULE 6: Solution Options  
   {
     id: 'module-6-solution-options',
+    order: 6,
     title: 'Solution Options',
     description: 'Evaluate and recommend solutions',
     icon: '💡',
@@ -531,6 +538,7 @@ Use a decision matrix to score and compare options objectively.`
     description: 'Write clear, testable user stories and acceptance criteria',
     icon: '✍️',
     color: 'teal',
+    order: 7,
     lessons: [
       {
         id: 'lesson-7-1',
@@ -603,6 +611,7 @@ Good ACs are specific, testable, and cover edge cases.`
     description: 'Understand design principles and collaborate with designers',
     icon: '🎨',
     color: 'pink',
+    order: 8,
     lessons: [
       {
         id: 'lesson-8-1',
@@ -652,6 +661,7 @@ As a BA, you don't create pixel-perfect designs, but you must understand design 
     description: 'Identify and prioritize minimum viable features',
     icon: '🎯',
     color: 'red',
+    order: 9,
     lessons: [
       {
         id: 'lesson-9-1',
@@ -706,6 +716,7 @@ That's your starting point.
     description: 'Understand Agile methodologies and Scrum framework',
     icon: '🔄',
     color: 'cyan',
+    order: 10,
     lessons: [
       {
         id: 'lesson-10-1',

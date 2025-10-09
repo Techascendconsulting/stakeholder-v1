@@ -156,20 +156,23 @@ const PracticeModuleList: React.FC = () => {
                       onClick={() => isClickable && handleModuleClick(module)}
                       disabled={isLocked && userType === 'new'}
                       className={`
-                        w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
+                        w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold relative
                         transition-all duration-300 transform hover:scale-110
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
-                        ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg border-4 border-purple-500' : ''}
-                        ${isLocked ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-600 cursor-not-allowed' : 'cursor-pointer'}
+                        ${status === 'not_started' || isLocked ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg border-4 border-purple-500' : ''}
+                        ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
                       `}
                     >
-                      {isLocked ? (
-                        <Lock className="w-6 h-6" />
-                      ) : isCompleted ? (
+                      {isCompleted ? (
                         <CheckCircle className="w-8 h-8" />
                       ) : (
-                        <span>{module.order}</span>
+                        <>
+                          <span>{module.order}</span>
+                          {isLocked && (
+                            <Lock className="w-3 h-3 absolute top-1 right-1 text-gray-500" />
+                          )}
+                        </>
                       )}
                     </button>
                   </div>
@@ -182,8 +185,7 @@ const PracticeModuleList: React.FC = () => {
                         border-2 transition-all duration-300
                         ${isCompleted ? 'border-green-500' : ''}
                         ${isInProgress ? 'border-orange-500' : ''}
-                        ${status === 'not_started' ? 'border-purple-500' : ''}
-                        ${isLocked ? 'border-gray-300 dark:border-gray-700 opacity-60' : ''}
+                        ${status === 'not_started' || isLocked ? 'border-purple-500' : ''}
                         ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
                       `}
                       onClick={() => isClickable && handleModuleClick(module)}
@@ -194,8 +196,7 @@ const PracticeModuleList: React.FC = () => {
                           px-3 py-1 rounded-full text-xs font-semibold
                           ${isCompleted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
                           ${isInProgress ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                          ${status === 'not_started' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : ''}
-                          ${isLocked ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' : ''}
+                          ${status === 'not_started' || isLocked ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : ''}
                         `}>
                           {isCompleted ? '✓ Completed' : isInProgress ? '▶ In Progress' : isLocked ? '🔒 Locked' : 'Start'}
                         </span>
