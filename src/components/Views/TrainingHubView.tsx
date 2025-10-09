@@ -179,9 +179,9 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
       return;
     }
     
-    // Special handling for as_is_mapping stage - redirect to deliverables
+    // Special handling for as_is_mapping stage - redirect to process mapper
     if (selectedStage === 'as_is_mapping') {
-      setCurrentView('training-deliverables');
+      setCurrentView('process-mapper');
       return;
     }
     
@@ -208,9 +208,9 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
   const handleStartAssess = async () => {
     const projectToUse = appSelectedProject || selectedProject;
     if (selectedStage && projectToUse) {
-      // Special handling for as_is_mapping stage - redirect to deliverables
+      // Special handling for as_is_mapping stage - redirect to process mapper
       if (selectedStage === 'as_is_mapping') {
-        setCurrentView('training-deliverables');
+        setCurrentView('process-mapper');
         return;
       }
       
@@ -933,7 +933,7 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
                     className="flex-1 flex items-center justify-center space-x-3 px-8 py-5 bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
                   >
                     <Play className="w-6 h-6" />
-                    <span>Start Practice Now</span>
+                    <span>{selectedStage === 'as_is_mapping' ? 'Map Your Process' : 'Start Practice Now'}</span>
                   </button>
                 </div>
                 
