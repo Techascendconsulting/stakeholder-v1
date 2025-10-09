@@ -494,32 +494,16 @@ const ScrumLearningView: React.FC = () => {
         {/* Assignment - Only on Section 7/7 */}
         {currentSectionId === totalSections && (
           <div className="mt-6">
-            {userType === 'new' ? (
-              <AssignmentPlaceholder
-                moduleId="module-10-scrum-delivery"
-                moduleTitle="Scrum Delivery Flow"
-                assignmentTitle="Delivery Understanding"
-                assignmentDescription="Describe the BA role across the delivery flow stages: Problem Exploration, As-Is Mapping, Solution Definition, and Sprint Implementation. Give real examples."
-              />
-            ) : (
-              <div className="space-y-6">
-                {/* Optional Assignment for Existing Users */}
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    📝 Optional Assignment
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Describe the BA role across the delivery flow stages: Problem Exploration, As-Is Mapping, Solution Definition, and Sprint Implementation. Give real examples.
-                  </p>
-                  <AssignmentPlaceholder
-                    moduleId="module-10-scrum-delivery"
-                    moduleTitle="Scrum Delivery Flow"
-                    assignmentTitle="Delivery Understanding"
-                    assignmentDescription="Describe the BA role across the delivery flow stages: Problem Exploration, As-Is Mapping, Solution Definition, and Sprint Implementation. Give real examples."
-                  />
-                </div>
-                
-                {/* Mark Complete Button for Existing Users */}
+            <AssignmentPlaceholder
+              moduleId="module-10-scrum-delivery"
+              moduleTitle="Scrum Delivery Flow"
+              assignmentTitle="Delivery Flow Application"
+              assignmentDescription="Based on the Customer Onboarding example in this section, describe how you would apply each stage of the delivery flow (Problem Exploration, As-Is Mapping, To-Be Definition, Solution Design, and Sprint Implementation) to a different business problem of your choice. Include specific examples of BA activities and deliverables at each stage."
+            />
+            
+            {/* Mark Complete Button for Existing Users Only */}
+            {userType === 'existing' && (
+              <div className="mt-6">
                 <MarkCompleteButton
                   moduleId="module-10-scrum-delivery"
                   moduleTitle="Scrum Delivery Flow"
