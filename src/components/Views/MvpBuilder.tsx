@@ -435,9 +435,9 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
           <div className="flex items-center justify-between h-12">
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => window.history.back()}
+                onClick={() => setCurrentView('practice-flow')}
                 className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Back to MVP Hub"
+                title="Back to Practice Journey"
               >
                 <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
               </button>

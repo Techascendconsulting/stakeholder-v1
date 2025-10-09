@@ -1,10 +1,34 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { BookOpen, Play, ChevronDown, ChevronUp, Target, MessageSquare, Award, ArrowRight, Users, Brain, Zap, CheckCircle, Star, TrendingUp, Globe, Mic, Clock } from 'lucide-react'
+import { BookOpen, Play, ChevronDown, ChevronUp, Target, MessageSquare, Award, ArrowRight, Users, Brain, Zap, CheckCircle, Star, TrendingUp, Globe, Mic, Clock, ArrowLeft } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 
 const GuidedPracticeHub: React.FC = () => {
   const { setCurrentView } = useApp()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('how-it-works')
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing')
+
+  // Load user type
+  useEffect(() => {
+    const loadUserType = async () => {
+      if (!user?.id) return;
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setUserType(data.user_type || 'existing');
+        }
+      } catch (error) {
+        console.error('Failed to load user type:', error);
+      }
+    };
+    loadUserType();
+  }, [user?.id])
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -50,6 +74,15 @@ const GuidedPracticeHub: React.FC = () => {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-12">
+          {/* Back to Practice Journey Button */}
+          <button
+            onClick={() => setCurrentView('practice-flow')}
+            className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back to Practice Journey</span>
+          </button>
+
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
               <BookOpen className="w-8 h-8 text-white" />

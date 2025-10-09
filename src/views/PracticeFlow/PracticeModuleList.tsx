@@ -119,23 +119,13 @@ const PracticeModuleList: React.FC = () => {
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setCurrentView('dashboard')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Practice Journey
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Master BA skills through hands-on practice
-                </p>
-              </div>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Practice Journey
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Master BA skills through hands-on practice
+            </p>
           </div>
         </div>
       </div>
@@ -177,12 +167,7 @@ const PracticeModuleList: React.FC = () => {
                       {isLocked ? (
                         <Lock className="w-6 h-6" />
                       ) : isCompleted ? (
-                        <div className="relative">
-                          <CheckCircle className="w-8 h-8" />
-                          <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold">
-                            {module.order}
-                          </span>
-                        </div>
+                        <CheckCircle className="w-8 h-8" />
                       ) : (
                         <span>{module.order}</span>
                       )}

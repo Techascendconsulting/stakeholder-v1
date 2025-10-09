@@ -31,6 +31,15 @@ const DocumentationPracticeView: React.FC = () => {
   return (
     <StakeholderBotProvider>
       <div className="w-full h-full px-6 py-4 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
+        {/* Back to Practice Journey */}
+        <button
+          onClick={() => setCurrentView('practice-flow')}
+          className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Back to Practice Journey</span>
+        </button>
+
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {activeTab === "practice" ? "Documentation Practice" : "Advanced Documentation Practice"}

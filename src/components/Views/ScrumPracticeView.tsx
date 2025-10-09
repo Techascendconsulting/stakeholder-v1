@@ -95,6 +95,13 @@ export const ScrumPracticeView: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setCurrentView('practice-flow')}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Back to Practice Journey"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Scrum Practice</h1>
                 <p className="text-sm text-gray-600 dark:text-gray-300">Practice Scrum skills in realistic scenarios</p>
