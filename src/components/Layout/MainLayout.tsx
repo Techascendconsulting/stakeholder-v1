@@ -121,7 +121,7 @@ const MainLayout: React.FC = () => {
     loadUserType();
   }, [user?.id]);
 
-  // Helper: Wrap learning pages with assignment tracking for new students only
+  // Helper: Wrap learning pages with back button and assignments
   const wrapLearningPage = (
     pageComponent: React.ReactNode,
     moduleId: string,
@@ -129,19 +129,16 @@ const MainLayout: React.FC = () => {
     assignmentTitle: string,
     assignmentDescription: string
   ) => {
-    if (userType === 'new') {
-      return (
-        <LearningPageWrapper
-          moduleId={moduleId}
-          moduleTitle={moduleTitle}
-          assignmentTitle={assignmentTitle}
-          assignmentDescription={assignmentDescription}
-        >
-          {pageComponent}
-        </LearningPageWrapper>
-      );
-    }
-    return pageComponent;
+    return (
+      <LearningPageWrapper
+        moduleId={moduleId}
+        moduleTitle={moduleTitle}
+        assignmentTitle={assignmentTitle}
+        assignmentDescription={assignmentDescription}
+      >
+        {pageComponent}
+      </LearningPageWrapper>
+    );
   };
 
   // Debug admin status
