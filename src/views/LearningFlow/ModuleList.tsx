@@ -189,11 +189,11 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                       }}
                       disabled={isLocked && userType === 'new'}
                       className={`
-                        w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold
+                        w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
                         transition-all duration-300 transform hover:scale-110
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
-                        ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-lg border-4 border-purple-500' : ''}
+                        ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg border-4 border-purple-500' : ''}
                         ${isLocked ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-600 cursor-not-allowed' : 'cursor-pointer'}
                       `}
                     >
@@ -244,7 +244,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 
                       {/* Title */}
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        {module.title}
+                        <span className="text-purple-600 dark:text-purple-400">{module.order}.</span> {module.title}
                       </h3>
 
                       {/* Description */}
@@ -287,3 +287,4 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 };
 
 export default ModuleList;
+
