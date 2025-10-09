@@ -125,6 +125,13 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     localStorage.setItem('verity_greeting_dismissed', Date.now().toString());
   };
 
+  // Hide greeting when widget opens
+  useEffect(() => {
+    if (open && showGreeting) {
+      setShowGreeting(false);
+    }
+  }, [open]);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -248,7 +255,28 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   };
 
   return (
-    <div ref={widgetRef}>
+    <div ref={widgetRef} className="relative">
+      {/* Floating Greeting Prompt - Shows when widget is closed */}
+      {!open && showGreeting && (
+        <div className="absolute bottom-16 right-0 mb-2 mr-2 animate-in slide-in-from-bottom-5 fade-in duration-500">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 pr-8 max-w-xs">
+            <button
+              onClick={handleCloseGreeting}
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              title="Close (will reappear in 2 hours)"
+            >
+              <X className="w-3 h-3" />
+            </button>
+            <div className="flex items-center space-x-2">
+              <span className="text-lg">👋</span>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                <strong>Hi there!</strong> Would you like help?
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {open ? (
         <div className="w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col h-[500px] sm:h-[520px]">
           {/* Header */}
@@ -332,27 +360,6 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
           {/* Chat Tab Content */}
           {activeTab === 'chat' && (
             <>
-              {/* Greeting Message */}
-              {showGreeting && (
-                <div className="px-4 pt-3 pb-2">
-                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-3 flex items-start justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">👋</span>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        <strong>Hi there!</strong> Would you like help?
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleCloseGreeting}
-                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                      title="Close (will reappear in 2 hours)"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-              
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
                 {messages.map((m, i) => (
