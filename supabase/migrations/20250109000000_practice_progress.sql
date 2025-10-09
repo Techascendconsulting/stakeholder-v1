@@ -1,3 +1,6 @@
+-- Enable UUID extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- Create practice_progress table
 CREATE TABLE IF NOT EXISTS practice_progress (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
