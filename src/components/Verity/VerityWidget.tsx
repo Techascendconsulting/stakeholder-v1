@@ -102,15 +102,21 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   // Check if greeting was dismissed recently
   useEffect(() => {
     const dismissedTime = localStorage.getItem('verity_greeting_dismissed');
+    console.log('Verity greeting check:', { dismissedTime, showGreeting });
     if (dismissedTime) {
       const twoHoursInMs = 2 * 60 * 60 * 1000;
       const timeSinceDismissed = Date.now() - parseInt(dismissedTime);
+      console.log('Time since dismissed:', timeSinceDismissed, 'ms');
       if (timeSinceDismissed < twoHoursInMs) {
+        console.log('Hiding greeting - dismissed less than 2 hours ago');
         setShowGreeting(false);
       } else {
         // More than 2 hours passed, remove the timestamp
+        console.log('Showing greeting - more than 2 hours passed');
         localStorage.removeItem('verity_greeting_dismissed');
       }
+    } else {
+      console.log('No dismissal found - showing greeting');
     }
   }, []);
 
