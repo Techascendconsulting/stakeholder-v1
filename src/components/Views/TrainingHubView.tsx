@@ -179,9 +179,9 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
       return;
     }
     
-    // Special handling for as_is_mapping stage - redirect to process mapper
+    // Special handling for as_is_mapping stage - redirect to process mapper canvas
     if (selectedStage === 'as_is_mapping') {
-      setCurrentView('process-mapper');
+      setCurrentView('process-mapper-editor');
       return;
     }
     
@@ -208,9 +208,9 @@ const TrainingHubView: React.FC<{ startingStep?: 'intro' | 'project-selection' |
   const handleStartAssess = async () => {
     const projectToUse = appSelectedProject || selectedProject;
     if (selectedStage && projectToUse) {
-      // Special handling for as_is_mapping stage - redirect to process mapper
+      // Special handling for as_is_mapping stage - redirect to process mapper canvas
       if (selectedStage === 'as_is_mapping') {
-        setCurrentView('process-mapper');
+        setCurrentView('process-mapper-editor');
         return;
       }
       
