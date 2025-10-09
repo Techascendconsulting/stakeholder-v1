@@ -246,13 +246,7 @@ const MainLayout: React.FC = () => {
         console.log('🔄 MainLayout: Rendering ScrumLearningView');
         return <ScrumLearningView />;
       case 'agile-scrum':
-        return wrapLearningPage(
-          <AgileHubView />,
-          'module-8-agile',
-          'Agile Hub',
-          'Agile Understanding',
-          'Explain the difference between Agile and Waterfall methodologies. When would you use each?'
-        );
+        return <AgileHubView />;
       case 'ba-reference':
         return <BAReferenceLibrary />;
       case 'handbook':
