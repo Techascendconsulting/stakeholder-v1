@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, Star, Lightbulb, AlertCircle, CheckSquare } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, ArrowRight, Star, Lightbulb, AlertCircle, CheckSquare, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
+import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
+import MarkCompleteButton from '../MarkCompleteButton';
 
 interface ScrumSection {
   id: number;
@@ -27,6 +29,7 @@ const ScrumLearningView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [currentSectionId, setCurrentSectionId] = useState(1);
+  const [userType, setUserType] = useState<'new' | 'existing' | null>(null);
   const totalSections = 7;
 
   // Load sections data
@@ -106,6 +109,23 @@ const ScrumLearningView: React.FC = () => {
       setCurrentSection(section || sections[0]);
     }
   }, [sections, currentSectionId]);
+
+  // Fetch user type
+  useEffect(() => {
+    const fetchUserType = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('user_type')
+        .eq('user_id', user.id)
+        .single();
+      
+      setUserType(data?.user_type || 'existing');
+    };
+    
+    fetchUserType();
+  }, [user]);
 
   // Load progress and reflection
   useEffect(() => {
@@ -400,25 +420,22 @@ const ScrumLearningView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Back to Learning Journey */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <button
+          onClick={() => setCurrentView('learning-flow')}
+          className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Back to Learning Journey</span>
+        </button>
+      </div>
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              {currentSectionId === 1 && (
-                <div className="mb-4">
-                  <button
-                    onClick={() => {
-                      console.log('🔄 ScrumLearningView: Going back to scrum-essentials...');
-                      setCurrentView('scrum-essentials');
-                    }}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span>Back to Introduction</span>
-                  </button>
-                </div>
-              )}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
                   <h1 className="text-2xl font-bold text-gray-900">{currentSection.title}</h1>
@@ -473,6 +490,44 @@ const ScrumLearningView: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
           {renderContent(currentSection.content)}
         </div>
+
+        {/* Assignment - Only on Section 7/7 */}
+        {currentSectionId === totalSections && (
+          <div className="mt-6">
+            {userType === 'new' ? (
+              <AssignmentPlaceholder
+                moduleId="module-10-scrum-delivery"
+                moduleTitle="Scrum Delivery Flow"
+                assignmentTitle="Delivery Understanding"
+                assignmentDescription="Describe the BA role across the delivery flow stages: Problem Exploration, As-Is Mapping, Solution Definition, and Sprint Implementation. Give real examples."
+              />
+            ) : (
+              <div className="space-y-6">
+                {/* Optional Assignment for Existing Users */}
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    📝 Optional Assignment
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Describe the BA role across the delivery flow stages: Problem Exploration, As-Is Mapping, Solution Definition, and Sprint Implementation. Give real examples.
+                  </p>
+                  <AssignmentPlaceholder
+                    moduleId="module-10-scrum-delivery"
+                    moduleTitle="Scrum Delivery Flow"
+                    assignmentTitle="Delivery Understanding"
+                    assignmentDescription="Describe the BA role across the delivery flow stages: Problem Exploration, As-Is Mapping, Solution Definition, and Sprint Implementation. Give real examples."
+                  />
+                </div>
+                
+                {/* Mark Complete Button for Existing Users */}
+                <MarkCompleteButton
+                  moduleId="module-10-scrum-delivery"
+                  moduleTitle="Scrum Delivery Flow"
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer Navigation */}

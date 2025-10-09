@@ -250,13 +250,7 @@ const MainLayout: React.FC = () => {
         );
       case 'scrum-learning':
         console.log('🔄 MainLayout: Rendering ScrumLearningView');
-        return wrapLearningPage(
-          <ScrumLearningView />,
-          'module-10-scrum-delivery',
-          'Scrum Delivery Flow',
-          'Delivery Understanding',
-          'Describe the BA role across the delivery flow stages: Problem Exploration, As-Is Mapping, Solution Definition, and Sprint Implementation. Give real examples.'
-        );
+        return <ScrumLearningView />;
       case 'agile-scrum':
         return <AgileHubView />;
       case 'ba-reference':
