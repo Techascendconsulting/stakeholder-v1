@@ -50,15 +50,14 @@ const ProjectModuleList: React.FC = () => {
 
     const moduleProgress = progress[module.id];
     
-    // For new users: Check if previous modules are completed
+    // For new users: Only first module is required, rest are optional
+    // Check if first module is completed before allowing access to others
     if (userType === 'new' && module.order > 1) {
-      const previousModule = projectModules.find(m => m.order === module.order - 1);
-      if (previousModule) {
-        const prevProgress = progress[previousModule.id];
-        if (prevProgress?.status !== 'completed') {
-          // Module is locked
-          return;
-        }
+      const firstModule = projectModules[0];
+      const firstProgress = progress[firstModule.id];
+      if (firstProgress?.status !== 'completed') {
+        // First module not completed - others are locked
+        return;
       }
     }
 
@@ -67,7 +66,7 @@ const ProjectModuleList: React.FC = () => {
       await initializeProjectProgress(user.id, module.id);
     }
 
-    // Navigate to project view
+    // Navigate to module view
     setCurrentView(module.viewId as any);
   };
 
@@ -87,18 +86,16 @@ const ProjectModuleList: React.FC = () => {
       return 'not_started';
     }
 
-    // For new users: check if locked
+    // For new users: first module always unlocked, others locked until first is completed
     if (module.order === 1) {
-      return 'not_started'; // First module always unlocked
+      return 'not_started';
     }
 
-    // Check if previous module is completed
-    const previousModule = projectModules.find(m => m.order === module.order - 1);
-    if (previousModule) {
-      const prevProgress = progress[previousModule.id];
-      if (prevProgress?.status === 'completed') {
-        return 'not_started'; // Unlocked
-      }
+    // Check if first module is completed
+    const firstModule = projectModules[0];
+    const firstProgress = progress[firstModule.id];
+    if (firstProgress?.status === 'completed') {
+      return 'not_started'; // Unlocked
     }
 
     return 'locked';
@@ -116,26 +113,23 @@ const ProjectModuleList: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Hands-On Project Journey
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Apply your skills to build a complete BA project portfolio
+              Build your BA portfolio with real-world projects
             </p>
           </div>
         </div>
       </div>
 
-      {/* Pathway Container */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="relative">
-          {/* Vertical Path Line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-200 via-purple-200 to-pink-200 dark:from-blue-800 dark:via-purple-800 dark:to-pink-800 rounded-full" />
-
-          {/* Project Modules */}
-          <div className="space-y-16">
+      {/* Horizontal Pathway Container */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* Horizontal scrollable pathway */}
+        <div className="overflow-x-auto pb-8">
+          <div className="inline-flex items-start space-x-12 min-w-full px-4">
             {projectModules.map((module, index) => {
               const status = getModuleStatus(module);
               const isLocked = status === 'locked';
@@ -143,19 +137,23 @@ const ProjectModuleList: React.FC = () => {
               const isInProgress = status === 'in_progress';
               const isClickable = !isLocked || userType === 'existing';
 
-              // Alternate left and right
-              const isLeft = index % 2 === 0;
-
               return (
-                <div key={module.id} className="relative">
+                <div key={module.id} className="relative flex flex-col items-center" style={{ minWidth: '280px' }}>
+                  {/* Connecting Line - Before module (except first) */}
+                  {index > 0 && (
+                    <div className="absolute top-8 -left-12 w-12 h-1 bg-gradient-to-r from-purple-200 to-blue-200 dark:from-purple-800 dark:to-blue-800" 
+                         style={{ transform: 'translateY(-50%)' }}
+                    />
+                  )}
+
                   {/* Module Node */}
-                  <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
+                  <div className="relative flex items-center justify-center mb-4">
                     <button
                       onClick={() => isClickable && handleModuleClick(module)}
                       disabled={isLocked && userType === 'new'}
                       className={`
                         w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
-                        transition-all duration-300 transform hover:scale-110
+                        transition-all duration-300 transform hover:scale-110 relative
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
                         ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg border-4 border-purple-500' : ''}
@@ -175,67 +173,65 @@ const ProjectModuleList: React.FC = () => {
                   </div>
 
                   {/* Module Card */}
-                  <div className={`${isLeft ? 'pr-[55%]' : 'pl-[55%]'}`}>
-                    <div
-                      className={`
-                        bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6
-                        border-2 transition-all duration-300
-                        ${isCompleted ? 'border-green-500' : ''}
-                        ${isInProgress ? 'border-orange-500' : ''}
-                        ${status === 'not_started' || isLocked ? 'border-purple-500' : ''}
-                        ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
-                      `}
-                      onClick={() => isClickable && handleModuleClick(module)}
-                    >
-                      {/* Status Badge */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className={`
-                          px-3 py-1 rounded-full text-xs font-semibold
-                          ${isCompleted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
-                          ${isInProgress ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                          ${status === 'not_started' || isLocked ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : ''}
-                        `}>
-                          {isCompleted ? '✓ Completed' : isInProgress ? '▶ In Progress' : isLocked ? '🔒 Locked' : 'Start'}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {module.difficulty}
-                        </span>
-                      </div>
+                  <div
+                    className={`
+                      bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full
+                      border-2 transition-all duration-300
+                      ${isCompleted ? 'border-green-500' : ''}
+                      ${isInProgress ? 'border-orange-500' : ''}
+                      ${status === 'not_started' || isLocked ? 'border-purple-500' : ''}
+                      ${isClickable ? 'hover:shadow-2xl hover:scale-105 cursor-pointer' : ''}
+                    `}
+                    onClick={() => isClickable && handleModuleClick(module)}
+                  >
+                    {/* Status Badge */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`
+                        px-3 py-1 rounded-full text-xs font-semibold
+                        ${isCompleted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : ''}
+                        ${isInProgress ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : ''}
+                        ${status === 'not_started' || isLocked ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : ''}
+                      `}>
+                        {isCompleted ? '✓ Done' : isInProgress ? '▶ Active' : isLocked ? '🔒 Locked' : 'Available'}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {module.difficulty}
+                      </span>
+                    </div>
 
-                      {/* Title */}
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        <span className="text-purple-600 dark:text-purple-400">{module.order}.</span> {module.title}
-                      </h3>
+                    {/* Title */}
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                      <span className="text-purple-600 dark:text-purple-400">{module.order}.</span> {module.title}
+                    </h3>
 
-                      {/* Description */}
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        {module.description}
-                      </p>
+                    {/* Description */}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 min-h-[60px]">
+                      {module.description}
+                    </p>
 
-                      {/* Footer */}
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          ⏱️ {module.estimatedTime}
-                        </span>
-                        {!isLocked && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleModuleClick(module);
-                            }}
-                            className={`
-                              flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm
-                              transition-all duration-200
-                              ${isCompleted ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : ''}
-                              ${isInProgress ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400' : ''}
-                              ${status === 'not_started' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}
-                            `}
-                          >
-                            <Play className="w-4 h-4" />
-                            <span>{isCompleted ? 'Revisit' : isInProgress ? 'Continue' : 'Start Project'}</span>
-                          </button>
-                        )}
-                      </div>
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        ⏱️ {module.estimatedTime}
+                      </span>
+                      {!isLocked && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleModuleClick(module);
+                          }}
+                          className={`
+                            flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm
+                            transition-all duration-200
+                            ${isCompleted ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : ''}
+                            ${isInProgress ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400' : ''}
+                            ${status === 'not_started' ? 'bg-purple-600 text-white hover:bg-purple-700' : ''}
+                          `}
+                        >
+                          <Play className="w-4 h-4" />
+                          <span>{isCompleted ? 'Open' : isInProgress ? 'Continue' : 'Start'}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -243,10 +239,16 @@ const ProjectModuleList: React.FC = () => {
             })}
           </div>
         </div>
+
+        {/* Scroll Hint */}
+        <div className="text-center text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center space-x-2">
+          <span>←</span>
+          <span>Scroll horizontally to explore all project tools</span>
+          <span>→</span>
+        </div>
       </div>
     </div>
   );
 };
 
 export default ProjectModuleList;
-
