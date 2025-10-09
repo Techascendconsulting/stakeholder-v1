@@ -181,7 +181,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
               return (
                 <div key={module.id} className="relative">
                   {/* Module Node */}
-                  <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                  <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
                     <button
                       onClick={() => {
                         if (isClickable) {
@@ -191,7 +191,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                       }}
                       disabled={isLocked && userType === 'new'}
                       className={`
-                        w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold relative
+                        w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold
                         transition-all duration-300 transform hover:scale-110
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
@@ -203,14 +203,12 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                       {isCompleted ? (
                         <CheckCircle className="w-8 h-8" />
                       ) : (
-                        <>
-                          <span>{module.order}</span>
-                          {isLocked && (
-                            <Lock className="w-3 h-3 absolute top-1 right-1 text-gray-500" />
-                          )}
-                        </>
+                        <span>{module.order}</span>
                       )}
                     </button>
+                    {isLocked && (
+                      <Lock className="w-4 h-4 absolute -top-1 -right-1 text-gray-500 bg-white dark:bg-gray-800 rounded-full p-0.5" />
+                    )}
                   </div>
 
                   {/* Module Card */}
