@@ -118,18 +118,18 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
   };
 
   const getModuleViewId = (moduleId: string): string => {
-    // Map module IDs to their view IDs
+    // Map module IDs to their view IDs - based on actual module IDs in learningData.ts
     const moduleToViewMap: Record<string, string> = {
       'module-1-core-learning': 'core-learning',
       'module-2-project-initiation': 'project-initiation',
-      'module-3-requirements-engineering': 'requirements-engineering',
-      'module-4-solution-options': 'solution-options',
-      'module-5-documentation': 'documentation',
-      'module-6-elicitation': 'elicitation',
-      'module-7-process-mapping': 'process-mapper',
+      'module-3-elicitation': 'elicitation',
+      'module-4-process-mapping': 'process-mapper',
+      'module-5-requirements-engineering': 'requirements-engineering',
+      'module-6-solution-options': 'solution-options',
+      'module-7-documentation': 'documentation',
       'module-8-design': 'design-hub',
       'module-9-mvp': 'mvp-hub',
-      'module-10-scrum': 'scrum-essentials'
+      'module-10-agile-scrum': 'scrum-essentials'
     };
     return moduleToViewMap[moduleId] || 'core-learning';
   };
@@ -289,4 +289,5 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
 };
 
 export default ModuleList;
+
 
