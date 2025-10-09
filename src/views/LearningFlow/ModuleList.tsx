@@ -173,6 +173,8 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
               const isInProgress = status === 'in_progress';
               const isClickable = !isLocked || userType === 'existing';
 
+              console.log(`Module ${module.order} (${module.id}): status=${status}, isCompleted=${isCompleted}, isInProgress=${isInProgress}`);
+
               // Alternate left and right
               const isLeft = index % 2 === 0;
 
