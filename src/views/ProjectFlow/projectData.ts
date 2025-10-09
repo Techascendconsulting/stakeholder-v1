@@ -11,13 +11,13 @@ export interface ProjectModule {
 
 export const projectModules: ProjectModule[] = [
   {
-    id: 'project-1-workspace',
-    title: 'Project Workspace',
-    description: 'Manage your active projects and collaborate with stakeholders. Access project dashboard, stakeholder management, and requirements tracking.',
-    icon: '📁',
-    estimatedTime: '30-45 min',
+    id: 'project-1-select',
+    title: 'Select Your Project',
+    description: 'Choose from real-world business scenarios designed to accelerate your BA skills. Each project offers hands-on experience with industry-standard practices.',
+    icon: '🎯',
+    estimatedTime: '10-15 min',
     difficulty: 'Beginner',
-    viewId: 'project',
+    viewId: 'projects',
     order: 1
   },
   {
@@ -27,7 +27,7 @@ export const projectModules: ProjectModule[] = [
     icon: '⚡',
     estimatedTime: '60-90 min',
     difficulty: 'Intermediate',
-    viewId: 'agile-hub',
+    viewId: 'agile-scrum',
     order: 2
   },
   {
@@ -64,7 +64,7 @@ export const projectModules: ProjectModule[] = [
     id: 'project-6-portfolio',
     title: 'Portfolio',
     description: 'Showcase your work and build your professional portfolio. Display project showcase, skill demonstrations, achievement gallery, and professional profile.',
-    icon: '🎯',
+    icon: '🏆',
     estimatedTime: '60-90 min',
     difficulty: 'Advanced',
     viewId: 'portfolio',
