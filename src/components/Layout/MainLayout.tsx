@@ -241,13 +241,7 @@ const MainLayout: React.FC = () => {
         return <CoreConceptsView />;
       case 'scrum-essentials':
         console.log('🔄 MainLayout: Rendering ScrumEssentialsView');
-        return wrapLearningPage(
-          <ScrumEssentialsView />,
-          'module-9-scrum',
-          'Scrum Essentials',
-          'Scrum Ceremony Analysis',
-          'Describe what happens in each Scrum ceremony and what a BA contributes to each one.'
-        );
+        return <ScrumEssentialsView />;
       case 'scrum-learning':
         console.log('🔄 MainLayout: Rendering ScrumLearningView');
         return <ScrumLearningView />;
