@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ProcessMappingIntroView() {
   const { setCurrentView } = useApp();
@@ -7,6 +8,15 @@ export default function ProcessMappingIntroView() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Back to Learning Journey */}
+        <button
+          onClick={() => setCurrentView('learning-flow')}
+          className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Back to Learning Journey</span>
+        </button>
+
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-700 px-8 py-6">

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { BookOpen, Target, MessageSquare, Users, FileText, Search, CheckCircle, ArrowRight, Lightbulb, Clock, Zap } from 'lucide-react'
+import { BookOpen, Target, MessageSquare, Users, FileText, Search, CheckCircle, ArrowRight, Lightbulb, Clock, Zap, ArrowLeft } from 'lucide-react'
 
 const IntroductionToElicitation: React.FC = () => {
   const { setCurrentView } = useApp()
@@ -12,6 +12,15 @@ const IntroductionToElicitation: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 dark:from-indigo-400/10 dark:to-purple-400/10"></div>
         
         <div className="relative max-w-7xl mx-auto px-6 py-12">
+          {/* Back to Learning Journey */}
+          <button
+            onClick={() => setCurrentView('learning-flow')}
+            className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back to Learning Journey</span>
+          </button>
+
           <div className="absolute top-6 right-6 z-10">
             <button
               onClick={() => setCurrentView('elicitation-hub')}
