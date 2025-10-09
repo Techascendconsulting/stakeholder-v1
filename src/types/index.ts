@@ -10,6 +10,7 @@ export type AppView =
   | 'learn'
   | 'learning-hub'
   | 'learning-flow'
+  | 'practice-flow'
   | 'core-learning'
   | 'project-initiation'
   | 'elicitation'

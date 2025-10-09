@@ -5,6 +5,7 @@ import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard';
 import VerityWidget from '../Verity/VerityWidget';
 import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
+import PracticeFlowView from '../../views/PracticeFlow/PracticeFlowView';
 
 // Loading fallback component
 const ViewLoadingFallback = () => (
@@ -173,6 +174,8 @@ const MainLayout: React.FC = () => {
         return <CoreLearningView />; // This will be the main Learning Hub view
       case 'learning-flow':
         return <LearningFlowView />;
+      case 'practice-flow':
+        return <PracticeFlowView />;
       case 'core-learning':
         return wrapLearningPage(
           <CoreLearningView />,

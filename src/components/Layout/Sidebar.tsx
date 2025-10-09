@@ -166,25 +166,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       isCollapsible: true,
       subItems: [
         { 
-          id: 'practice-2', 
-          label: 'Elicitation Practice', 
+          id: 'practice-flow', 
+          label: 'Practice Journey', 
           icon: Target
         },
-        { 
-          id: 'documentation-practice', 
-          label: 'Documentation Practice', 
-          icon: FileText
-        },
-        { 
-          id: 'mvp-practice', 
-          label: 'MVP Practice', 
-          icon: Rocket
-        },
-        { 
-          id: 'scrum-practice', 
-          label: 'Scrum Practice', 
-          icon: Target
-        }
       ]
     },
     { 
