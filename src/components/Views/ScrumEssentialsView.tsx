@@ -268,6 +268,7 @@ These values give direction to the Scrum Team with regard to their work, actions
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
