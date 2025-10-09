@@ -94,9 +94,30 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   const [issueSubject, setIssueSubject] = useState('');
   const [submittingIssue, setSubmittingIssue] = useState(false);
   const [issueSubmitted, setIssueSubmitted] = useState(false);
+  const [showGreeting, setShowGreeting] = useState(true);
   const { messages, sendMessage, loading, clearChat } = useVerity(context, pageTitle);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
+
+  // Check if greeting was dismissed recently
+  useEffect(() => {
+    const dismissedTime = localStorage.getItem('verity_greeting_dismissed');
+    if (dismissedTime) {
+      const twoHoursInMs = 2 * 60 * 60 * 1000;
+      const timeSinceDismissed = Date.now() - parseInt(dismissedTime);
+      if (timeSinceDismissed < twoHoursInMs) {
+        setShowGreeting(false);
+      } else {
+        // More than 2 hours passed, remove the timestamp
+        localStorage.removeItem('verity_greeting_dismissed');
+      }
+    }
+  }, []);
+
+  const handleCloseGreeting = () => {
+    setShowGreeting(false);
+    localStorage.setItem('verity_greeting_dismissed', Date.now().toString());
+  };
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -305,6 +326,27 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
           {/* Chat Tab Content */}
           {activeTab === 'chat' && (
             <>
+              {/* Greeting Message */}
+              {showGreeting && (
+                <div className="px-4 pt-3 pb-2">
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-3 flex items-start justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">👋</span>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        <strong>Hi there!</strong> Would you like help?
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleCloseGreeting}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      title="Close (will reappear in 2 hours)"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
                 {messages.map((m, i) => (
