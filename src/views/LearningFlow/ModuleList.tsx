@@ -196,7 +196,7 @@ const ModuleList: React.FC<ModuleListProps> = ({ onModuleSelect }) => {
                         ${isCompleted ? 'bg-green-500 text-white shadow-lg shadow-green-500/50' : ''}
                         ${isInProgress ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/50 animate-pulse' : ''}
                         ${status === 'not_started' ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg border-4 border-purple-500' : ''}
-                        ${isLocked ? 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 shadow-lg border-4 border-purple-500 cursor-not-allowed' : ''}
+                        ${isLocked ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 shadow-lg border-4 border-gray-300 dark:border-gray-600 cursor-not-allowed' : ''}
                         ${!isLocked && !isCompleted && !isInProgress ? 'cursor-pointer' : ''}
                       `}
                     >
