@@ -17,7 +17,7 @@ export const projectModules: ProjectModule[] = [
     icon: '📁',
     estimatedTime: '30-45 min',
     difficulty: 'Beginner',
-    viewId: 'project-workspace',
+    viewId: 'project',
     order: 1
   },
   {
