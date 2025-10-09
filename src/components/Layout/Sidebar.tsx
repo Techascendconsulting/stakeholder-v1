@@ -179,20 +179,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       isCollapsible: true,
       subItems: [
         { 
-          id: 'project',
-          label: 'My Project', 
+          id: 'project-flow',
+          label: 'Project Journey', 
           icon: FolderOpen
         },
-        { 
-          id: 'my-project-meetings',
-          label: 'My Project Meetings', 
-          icon: Users
-        },
-        { 
-          id: 'deliverables',
-          label: 'My Deliverables', 
-          icon: FileText
-        }
       ]
     },
     { 

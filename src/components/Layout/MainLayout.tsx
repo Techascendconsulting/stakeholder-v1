@@ -6,6 +6,7 @@ import Dashboard from '../Views/Dashboard';
 import VerityWidget from '../Verity/VerityWidget';
 import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
 import PracticeFlowView from '../../views/PracticeFlow/PracticeFlowView';
+import ProjectFlowView from '../../views/ProjectFlow/ProjectFlowView';
 
 // Loading fallback component
 const ViewLoadingFallback = () => (
@@ -176,6 +177,8 @@ const MainLayout: React.FC = () => {
         return <LearningFlowView />;
       case 'practice-flow':
         return <PracticeFlowView />;
+      case 'project-flow':
+        return <ProjectFlowView />;
       case 'core-learning':
         return wrapLearningPage(
           <CoreLearningView />,
