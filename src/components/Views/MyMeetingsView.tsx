@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Users, MessageSquare, TrendingUp, Search, Filter, Calendar, Eye, FileText, ChevronRight, Star, CheckCircle, AlertCircle, BarChart3, Target, Lightbulb, ArrowRight, Plus, Sparkles, BookOpen, Zap } from 'lucide-react';
+import { Clock, Users, MessageSquare, TrendingUp, Search, Filter, Calendar, Eye, FileText, ChevronRight, Star, CheckCircle, AlertCircle, BarChart3, Target, Lightbulb, ArrowRight, Plus, Sparkles, BookOpen, Zap, ArrowLeft } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { DatabaseService, DatabaseMeeting } from '../../lib/database';
@@ -327,6 +327,15 @@ export const MyMeetingsView: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      {/* Back to Project Journey */}
+      <button
+        onClick={() => setCurrentView('project-flow')}
+        className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-sm font-medium">Back to Project Journey</span>
+      </button>
+
       {/* Hero Header with Value Proposition */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">

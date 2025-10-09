@@ -208,17 +208,17 @@ const ProjectsView: React.FC = () => {
         
         {/* Enhanced Header Section with Back Button */}
         <div className="mb-12">
-          {/* Back Button */}
+          {/* Back to Project Journey */}
           <div className="mb-8">
             <button
-              onClick={() => setCurrentView('project')}
+              onClick={() => setCurrentView('project-flow')}
               className="flex items-center space-x-2 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-colors group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-              <span className="font-medium">Back to Project Hub</span>
+              <span className="font-medium">Back to Project Journey</span>
             </button>
           </div>
-          
+
           {/* Main Header */}
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl mb-6 shadow-lg">

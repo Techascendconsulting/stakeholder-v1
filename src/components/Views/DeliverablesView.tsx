@@ -76,16 +76,14 @@ const DeliverablesView: React.FC = () => {
 
   return (
     <div className="p-8">
-      {/* Header with Back Navigation */}
-      <div className="flex items-center space-x-4 mb-8">
-        <button
-          onClick={() => setCurrentView('meeting')}
-          className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-100 dark:text-white transition-colors font-medium"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Meeting</span>
-        </button>
-      </div>
+      {/* Back to Project Journey */}
+      <button
+        onClick={() => setCurrentView('project-flow')}
+        className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-sm font-medium">Back to Project Journey</span>
+      </button>
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Deliverables Workspace</h1>
