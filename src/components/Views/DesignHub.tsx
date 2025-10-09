@@ -496,7 +496,7 @@ In summary, linking design to user stories is how you ensure the work done in de
         </button>
       </div>
 
-      {/* Creative Studio Header */}
+      {/* UX/UI Design Header */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.1),transparent_50%)]"></div>
         <div className="absolute top-10 right-10 w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -509,7 +509,7 @@ In summary, linking design to user stories is how you ensure the work done in de
               </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent mb-4">
-              Design Studio
+              UX/UI Design
             </h1>
             <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
               Visual examples of how solutions take shape in practice
