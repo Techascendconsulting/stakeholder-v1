@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, ArrowRight, Star, Lightbulb, AlertCircle, CheckSquare, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Users, Target, Zap, FileText, Star, Lightbulb, AlertCircle, CheckSquare } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { supabase } from '../../lib/supabase';
@@ -17,11 +17,6 @@ interface LearningProgress {
   completed_at: string | null;
 }
 
-interface LearningReflection {
-  notes: string;
-  updated_at: string;
-}
-
 const ScrumLearningView: React.FC = () => {
   console.log('🔄 ScrumLearningView: Component mounting...');
   const { user } = useAuth();
@@ -29,8 +24,6 @@ const ScrumLearningView: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<ScrumSection | null>(null);
   const [sections, setSections] = useState<ScrumSection[]>([]);
   const [progress, setProgress] = useState<LearningProgress | null>(null);
-  const [reflection, setReflection] = useState<LearningReflection | null>(null);
-  const [reflectionText, setReflectionText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [currentSectionId, setCurrentSectionId] = useState(1);
@@ -148,25 +141,6 @@ const ScrumLearningView: React.FC = () => {
         });
       }
 
-      // Load reflection from database
-      const { data: reflectionData } = await supabase
-        .from('learning_reflections')
-        .select('notes, updated_at')
-        .eq('user_id', user.id)
-        .eq('module', 'scrum-essentials')
-        .eq('section_id', currentSectionId)
-        .single();
-
-      if (reflectionData) {
-        setReflection(reflectionData);
-        setReflectionText(reflectionData.notes || '');
-      } else {
-        // Fallback to localStorage for reflections
-        const reflectionKey = `scrum-essentials-${currentSectionId}-reflection`;
-        const savedReflection = localStorage.getItem(reflectionKey);
-        setReflection({ notes: savedReflection || '', updated_at: null });
-        setReflectionText(savedReflection || '');
-      }
     } catch (error) {
       console.log('Database not available, loading from localStorage');
       // Load from localStorage as fallback
@@ -178,41 +152,13 @@ const ScrumLearningView: React.FC = () => {
         is_complete: isComplete, 
         completed_at: completedAt || null 
       });
-
-      const reflectionKey = `scrum-essentials-${currentSectionId}-reflection`;
-      const savedReflection = localStorage.getItem(reflectionKey);
-      setReflection({ notes: savedReflection || '', updated_at: null });
-      setReflectionText(savedReflection || '');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const saveReflection = async () => {
-    if (!user || isSaving) return;
-
-    setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from('learning_reflections')
-        .upsert({
-          user_id: user.id,
-          module: 'scrum-essentials',
-          section_id: currentSectionId,
-          notes: reflectionText,
-          updated_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving reflection:', error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const markComplete = async () => {
-    if (!user || progress?.is_complete || isSaving) return;
+    if (!user || progress?.is_complete) return;
 
     try {
       setIsSaving(true);
@@ -527,21 +473,6 @@ const ScrumLearningView: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
           {renderContent(currentSection.content)}
         </div>
-
-        {/* Reflection Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mt-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Reflection</h3>
-          <textarea
-            value={reflectionText}
-            onChange={(e) => setReflectionText(e.target.value)}
-            onBlur={saveReflection}
-            placeholder="What are your key takeaways from this section? What questions do you have?"
-            className="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          {isSaving && (
-            <p className="text-sm text-gray-500 mt-2">Saving...</p>
-          )}
-        </div>
       </div>
 
       {/* Footer Navigation */}
@@ -579,24 +510,18 @@ const ScrumLearningView: React.FC = () => {
               )}
             </div>
 
-            {currentSectionId === totalSections ? (
-              <button
-                onClick={() => setCurrentView('agile-scrum')}
-                className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                <Play className="w-4 h-4" />
-                <span>Scrum Delivery</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={goToNext}
-                className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-              >
-                <span>Next</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={goToNext}
+              disabled={currentSectionId === totalSections}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                currentSectionId === totalSections
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-purple-600 hover:bg-purple-700 text-white'
+              }`}
+            >
+              <span>Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
