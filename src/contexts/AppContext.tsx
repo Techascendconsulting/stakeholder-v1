@@ -666,7 +666,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         throw new Error(`You've reached your project limit (${maxProjects} project${maxProjects > 1 ? 's' : ''}). Upgrade to select more projects!`);
       }
       
-      // Add project to user_projects table
+      // Add project to user_projects table (if it exists)
       try {
         const { error } = await supabase
           .from('user_projects')
@@ -678,20 +678,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           });
         
         if (error) {
-          // If unique constraint error, project already exists - that's okay
-          if (!error.message?.includes('duplicate') && !error.message?.includes('404')) {
+          // Ignore 404 (table doesn't exist) and duplicate errors
+          const errorMsg = error.message || '';
+          const errorCode = (error as any).code || '';
+          
+          if (errorCode === '42P01' || errorMsg.includes('404') || errorMsg.includes('does not exist')) {
+            console.log('⚠️ user_projects table not found - continuing without tracking');
+          } else if (errorMsg.includes('duplicate') || errorMsg.includes('unique')) {
+            console.log('ℹ️ Project already selected - continuing');
+          } else {
             console.error('Error adding project:', error);
-            throw new Error('Failed to select project');
+            // Don't throw - allow selection to continue
           }
-          // If table doesn't exist (404), continue anyway for now
-        } else {
-          // Update local state
-          setUserSelectedProjects(prev => [...prev, project.id]);
-          setUserProjectCount(prev => prev + 1);
         }
+        
+        // Update local state regardless of database result
+        setUserSelectedProjects(prev => [...prev, project.id]);
+        setUserProjectCount(prev => prev + 1);
       } catch (error) {
-        console.error('Error selecting project:', error);
-        throw error;
+        console.log('Error with user_projects table (ignored):', error);
+        // Continue anyway - don't block project selection
       }
     }
     
