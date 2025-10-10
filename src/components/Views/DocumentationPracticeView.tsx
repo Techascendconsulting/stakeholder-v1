@@ -85,40 +85,42 @@ const DocumentationPracticeView: React.FC = () => {
           </div>
         </div>
 
-        {/* Instructions - Open and Flowing */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Instructions with Visual Interest */}
+        <div className="max-w-7xl mx-auto px-6 py-6">
           {activeTab === 'practice' ? (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                How to Practice:
+            <div className="border-l-4 border-blue-600 bg-blue-50/50 dark:bg-blue-900/10 pl-6 py-4 rounded-r-lg">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                How to Practice
               </h2>
-              <div className="flex items-center space-x-4 text-sm text-gray-700 dark:text-gray-300">
-                <div className="flex items-center space-x-2">
-                  <span className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
-                  <span>Read the scenario</span>
+              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-700 dark:text-gray-300 mb-3">
+                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
+                  <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
+                  <span className="font-medium">Read scenario</span>
                 </div>
-                <ArrowRight className="w-4 h-4 text-gray-400" />
-                <div className="flex items-center space-x-2">
-                  <span className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
-                  <span>Write user story</span>
+                <ArrowRight className="w-4 h-4 text-blue-600" />
+                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
+                  <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
+                  <span className="font-medium">Write user story</span>
                 </div>
-                <ArrowRight className="w-4 h-4 text-gray-400" />
-                <div className="flex items-center space-x-2">
-                  <span className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</span>
-                  <span>Add acceptance criteria</span>
+                <ArrowRight className="w-4 h-4 text-blue-600" />
+                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
+                  <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</span>
+                  <span className="font-medium">Add criteria</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
-                💡 Get instant AI coaching on each criterion to improve your skills
+              <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">
+                💡 AI coaching guides you through each acceptance criterion
               </p>
             </div>
           ) : (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Advanced Challenge:
+            <div className="border-l-4 border-purple-600 bg-purple-50/50 dark:bg-purple-900/10 pl-6 py-4 rounded-r-lg">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center">
+                <Sparkles className="w-5 h-5 text-purple-600 mr-2" />
+                Advanced Challenge
               </h2>
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                Test yourself with complex business rules, multi-step processes, and real-world enterprise scenarios.
+                Master complex business rules, multi-step processes, and real-world enterprise scenarios that professional BAs encounter.
               </p>
             </div>
           )}
@@ -137,5 +139,6 @@ const DocumentationPracticeView: React.FC = () => {
 };
 
 export default DocumentationPracticeView;
+
 
 
