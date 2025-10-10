@@ -580,15 +580,17 @@ In summary, solution options are the bridge between problem and design. They inv
           <div className="prose prose-lg max-w-none dark:prose-invert
             prose-headings:text-gray-900 dark:prose-headings:text-white
             prose-headings:font-bold prose-headings:tracking-tight
-            prose-h1:text-3xl prose-h1:mt-12 prose-h1:mb-6
-            prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-5 prose-h2:pb-3 prose-h2:border-b prose-h2:border-gray-200 dark:prose-h2:border-gray-700
-            prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
-            prose-h4:text-lg prose-h4:mt-6 prose-h4:mb-3
-            prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:mb-4 prose-p:leading-relaxed
-            prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-semibold
-            prose-ul:text-gray-700 dark:prose-ul:text-gray-300 prose-ul:my-6
-            prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:my-2
-            prose-li:marker:text-blue-600 dark:prose-li:marker:text-blue-400">
+            prose-h1:text-3xl prose-h1:mt-16 prose-h1:mb-8
+            prose-h2:text-2xl prose-h2:mt-16 prose-h2:mb-8 prose-h2:pb-4 prose-h2:border-b-2 prose-h2:border-gray-200 dark:prose-h2:border-gray-700
+            prose-h3:text-xl prose-h3:mt-12 prose-h3:mb-6
+            prose-h4:text-lg prose-h4:mt-10 prose-h4:mb-5
+            prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:mb-6 prose-p:leading-relaxed
+            prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold prose-strong:text-lg
+            prose-ul:text-gray-700 dark:prose-ul:text-gray-300 prose-ul:my-8 prose-ul:space-y-3
+            prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:my-3
+            prose-li:marker:text-blue-600 dark:prose-li:marker:text-blue-400
+            [&>*:first-child]:mt-0
+            [&_p:has(strong:only-child)]:text-xl [&_p:has(strong:only-child)]:font-bold [&_p:has(strong:only-child)]:mt-10 [&_p:has(strong:only-child)]:mb-5 [&_p:has(strong:only-child)]:text-gray-900 [&_p:has(strong:only-child)]:dark:text-white">
             <ReactMarkdown>{lessons[activeTab].content}</ReactMarkdown>
           </div>
 
