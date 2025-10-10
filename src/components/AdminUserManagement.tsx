@@ -36,6 +36,10 @@ interface User {
   is_super_admin?: boolean;
   is_senior_admin?: boolean;
   blocked?: boolean;
+  user_type?: 'new' | 'existing';
+  subscription_tier?: 'free' | 'premium' | 'enterprise';
+  max_projects?: number;
+  subscription_status?: string;
 }
 
 const AdminUserManagement: React.FC = () => {
@@ -145,7 +149,11 @@ const AdminUserManagement: React.FC = () => {
             is_admin,
             is_super_admin,
             is_senior_admin,
-            blocked
+            blocked,
+            user_type,
+            subscription_tier,
+            max_projects,
+            subscription_status
           `)
           .order('created_at', { ascending: false });
 
@@ -172,7 +180,11 @@ const AdminUserManagement: React.FC = () => {
             is_admin: item.is_admin,
             is_super_admin: item.is_super_admin,
             is_senior_admin: item.is_senior_admin,
-            blocked: item.blocked
+            blocked: item.blocked,
+            user_type: item.user_type,
+            subscription_tier: item.subscription_tier,
+            max_projects: item.max_projects,
+            subscription_status: item.subscription_status
           })) || [];
           setUsers(formattedUsers);
           return;
@@ -192,7 +204,11 @@ const AdminUserManagement: React.FC = () => {
             is_admin: profile.is_admin,
             is_super_admin: profile.is_super_admin,
             is_senior_admin: profile.is_senior_admin,
-            blocked: profile.blocked
+            blocked: profile.blocked,
+            user_type: profile.user_type,
+            subscription_tier: profile.subscription_tier,
+            max_projects: profile.max_projects,
+            subscription_status: profile.subscription_status
           };
         }) || [];
         setUsers(formattedUsers);
@@ -462,6 +478,48 @@ const AdminUserManagement: React.FC = () => {
     } catch (error) {
       console.error('Error removing admin role:', error);
       alert('Failed to remove admin role. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpgradeSubscription = async (userId: string, email: string, tier: 'free' | 'premium' | 'enterprise') => {
+    const tierLimits = {
+      free: 1,
+      premium: 5,
+      enterprise: 999
+    };
+    
+    const maxProjects = tierLimits[tier];
+    
+    if (!confirm(`Upgrade ${email} to ${tier.toUpperCase()} tier (${maxProjects === 999 ? 'Unlimited' : maxProjects} projects)?`)) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ 
+          subscription_tier: tier,
+          max_projects: maxProjects,
+          subscription_status: 'active',
+          subscription_started_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Error upgrading subscription:', error);
+        alert('Failed to upgrade subscription. Please try again.');
+        return;
+      }
+      
+      alert(`✅ ${email} upgraded to ${tier.toUpperCase()} tier!`);
+      await loadUsers();
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      alert('Failed to upgrade subscription. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -958,6 +1016,60 @@ const AdminUserManagement: React.FC = () => {
                               <p className="text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-600 p-2 rounded border break-all font-mono">{targetUser.registered_device}</p>
                             </div>
                           )}
+                        </div>
+                      </div>
+                      
+                      {/* Subscription Management Section */}
+                      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Tier</label>
+                            <div className="flex items-center space-x-2">
+                              <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-bold ${
+                                targetUser.subscription_tier === 'enterprise' 
+                                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                                  : targetUser.subscription_tier === 'premium'
+                                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                              }`}>
+                                {(targetUser.subscription_tier || 'free').toUpperCase()}
+                              </span>
+                              <span className="text-xs text-gray-600 dark:text-gray-400">
+                                ({targetUser.max_projects === 999 ? 'Unlimited' : targetUser.max_projects || 1} projects)
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upgrade Tier</label>
+                            <div className="flex space-x-2">
+                              {targetUser.subscription_tier !== 'free' && (
+                                <button
+                                  onClick={() => handleUpgradeSubscription(targetUser.id, targetUser.email, 'free')}
+                                  className="px-3 py-1.5 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors"
+                                >
+                                  Free
+                                </button>
+                              )}
+                              {targetUser.subscription_tier !== 'premium' && (
+                                <button
+                                  onClick={() => handleUpgradeSubscription(targetUser.id, targetUser.email, 'premium')}
+                                  className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                  Premium
+                                </button>
+                              )}
+                              {targetUser.subscription_tier !== 'enterprise' && (
+                                <button
+                                  onClick={() => handleUpgradeSubscription(targetUser.id, targetUser.email, 'enterprise')}
+                                  className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors"
+                                >
+                                  Enterprise
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
