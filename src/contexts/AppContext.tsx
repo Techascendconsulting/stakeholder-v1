@@ -654,13 +654,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!user?.id) return;
     
     // Check if project is already selected
-    const isAlreadySelected = userSelectedProjects.includes(project.id);
+    const isAlreadySelected = (userSelectedProjects || []).includes(project.id);
     
     if (!isAlreadySelected) {
       // Check project limit
       const maxProjects = userSubscription?.maxProjects || 1;
+      const currentCount = userProjectCount || 0;
       
-      if (userProjectCount >= maxProjects) {
+      if (currentCount >= maxProjects) {
         // Show upgrade prompt
         throw new Error(`You've reached your project limit (${maxProjects} project${maxProjects > 1 ? 's' : ''}). Upgrade to select more projects!`);
       }
@@ -711,7 +712,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Utility functions
   const canAccessProject = (projectId: string) => {
     // User can access project if they've already selected it
-    return userSelectedProjects.includes(projectId);
+    return (userSelectedProjects || []).includes(projectId);
   }
   
   const canSaveNotes = () => true
