@@ -3,13 +3,25 @@ import { useApp } from '../../contexts/AppContext'
 import { Clock, Users, ArrowRight, Target, TrendingUp, DollarSign, AlertTriangle, Building2, Calendar, Star, Lock, Crown, Plus, BookOpen, Award, CheckCircle, Zap, Globe, Filter, Sparkles, Brain, Trophy, ChevronRight, PlayCircle, Briefcase, Code, Lightbulb, Search, SortAsc, Grid3X3, List, Eye, Clock3, Flame, Shield, ArrowUpRight, Info, XCircle, ArrowLeft } from 'lucide-react'
 
 const ProjectsView: React.FC = () => {
-  const { projects, selectProject, setCurrentView, studentSubscription, canAccessProject, user, meetings } = useApp()
+  const { 
+    projects, 
+    selectProject, 
+    setCurrentView, 
+    studentSubscription, 
+    canAccessProject, 
+    user, 
+    meetings,
+    userSubscription,
+    userProjectCount,
+    userSelectedProjects
+  } = useApp()
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState<'complexity' | 'priority' | 'impact'>('complexity')
   const [searchTerm, setSearchTerm] = useState('')
   const [showDetails, setShowDetails] = useState<string | null>(null)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -32,8 +44,22 @@ const ProjectsView: React.FC = () => {
       await selectProject(project)
       setCurrentView('project-setup')
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'An error occurred')
+      // Show upgrade modal if project limit reached
+      if (error instanceof Error && error.message.includes('project limit')) {
+        setShowUpgradeModal(true)
+      } else {
+        alert(error instanceof Error ? error.message : 'An error occurred')
+      }
     }
+  }
+  
+  const maxProjects = userSubscription?.maxProjects || 1
+  const projectCount = userProjectCount || 0
+  const selectedProjectIds = userSelectedProjects || []
+  
+  const isProjectLocked = (projectId: string) => {
+    // Project is locked if user hasn't selected it AND they've reached their limit
+    return !selectedProjectIds.includes(projectId) && projectCount >= maxProjects
   }
 
   const getProjectColorScheme = (projectId: string) => {
@@ -230,6 +256,25 @@ const ProjectsView: React.FC = () => {
             <p className="text-xl text-slate-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Select from real-world business scenarios designed to accelerate your BA skills. Each project offers hands-on experience with industry-standard practices.
             </p>
+            
+            {/* Project Limit Counter */}
+            {userSubscription && (
+              <div className="mt-6 inline-flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full border-2 border-indigo-200 dark:border-indigo-800 shadow-sm">
+                <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {projectCount}/{maxProjects} Project{maxProjects > 1 ? 's' : ''} Selected
+                </span>
+                {projectCount >= maxProjects && userSubscription.tier === 'free' && (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="ml-2 flex items-center space-x-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                  >
+                    <Crown className="w-3 h-3" />
+                    <span>Upgrade</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -355,18 +400,54 @@ const ProjectsView: React.FC = () => {
             const ComplexityIcon = complexityConfig.icon
             const isHovered = hoveredProject === project.id
             const showFullDetails = showDetails === project.id
+            const locked = isProjectLocked(project.id)
+            const alreadySelected = selectedProjectIds.includes(project.id)
             
             return (
               <div
                 key={project.id}
                 onMouseEnter={() => setHoveredProject(project.id)}
                 onMouseLeave={() => setHoveredProject(null)}
-                className={`group relative ${colorScheme.cardBg} rounded-3xl border-2 overflow-hidden transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${
+                className={`group relative ${colorScheme.cardBg} rounded-3xl border-2 overflow-hidden transition-all duration-500 ${
+                  locked ? '' : 'transform hover:scale-105 hover:shadow-2xl'
+                } ${
                   isSelected 
                     ? `ring-4 ring-${colorScheme.accent}-500 shadow-2xl ${colorScheme.border}` 
-                    : `${colorScheme.border} shadow-lg hover:border-${colorScheme.accent}-400 dark:hover:border-${colorScheme.accent}-500`
-                } ${isHovered ? 'shadow-2xl' : ''} ${viewMode === 'list' ? 'flex' : ''}`}
+                    : `${colorScheme.border} shadow-lg ${!locked && `hover:border-${colorScheme.accent}-400 dark:hover:border-${colorScheme.accent}-500`}`
+                } ${isHovered && !locked ? 'shadow-2xl' : ''} ${viewMode === 'list' ? 'flex' : ''} ${locked ? 'opacity-75' : ''}`}
               >
+                {/* Lock Overlay for Projects Over Limit */}
+                {locked && (
+                  <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm z-20 flex items-center justify-center">
+                    <div className="text-center px-6">
+                      <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Lock className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-2">Project Locked</h3>
+                      <p className="text-sm text-white/80 mb-4">
+                        You've reached your {maxProjects} project limit
+                      </p>
+                      <button
+                        onClick={() => setShowUpgradeModal(true)}
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-lg"
+                      >
+                        <Crown className="w-4 h-4" />
+                        <span>Upgrade to Unlock</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Selected Badge */}
+                {alreadySelected && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="flex items-center space-x-1 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>SELECTED</span>
+                    </div>
+                  </div>
+                )}
+              
                 {/* Enhanced Project Header with Unique Colors */}
                 <div className={`relative ${viewMode === 'list' ? 'flex-1' : ''} p-6 bg-gradient-to-r ${colorScheme.header} text-white overflow-hidden`}>
                   <div className="absolute inset-0 bg-black/10"></div>
@@ -577,6 +658,66 @@ const ProjectsView: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-8 shadow-2xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Crown className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Upgrade to Premium
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                You've selected {projectCount} project{projectCount > 1 ? 's' : ''}. Upgrade to Premium to unlock unlimited projects and advanced features!
+              </p>
+              
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 mb-6">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Premium Benefits</h3>
+                <div className="space-y-3 text-left">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Unlimited Projects</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Priority AI Feedback</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Advanced Scenarios</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Certificate of Completion</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Maybe Later
+                </button>
+                <button
+                  onClick={() => {
+                    // TODO: Integrate with payment system (Stripe/Paddle)
+                    alert('Payment integration coming soon! Contact admin to upgrade manually.');
+                    setShowUpgradeModal(false);
+                  }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg"
+                >
+                  Upgrade Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -48,6 +48,15 @@ interface AppContextType {
   userProgress: any
   studentSubscription: any
   
+  // Subscription and limits
+  userSubscription: {
+    tier: 'free' | 'premium' | 'enterprise';
+    maxProjects: number;
+    status: string;
+  } | null
+  userProjectCount: number
+  userSelectedProjects: string[]
+  
   // Utility functions
   canAccessProject: (projectId: string) => boolean
   canSaveNotes: () => boolean
@@ -84,6 +93,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   // Lock message state
   const [lockMessage, setLockMessage] = useState<string | null>(null)
+  
+  // Subscription and project limit state
+  const [userSubscription, setUserSubscription] = useState<{
+    tier: 'free' | 'premium' | 'enterprise';
+    maxProjects: number;
+    status: string;
+  } | null>(null)
+  const [userSelectedProjects, setUserSelectedProjects] = useState<string[]>([])
 
   // Initialize currentView from localStorage or default to dashboard for returning users
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
@@ -541,6 +558,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [user, isAdmin, currentView, adminLoading])
 
+  // Load subscription data and selected projects
+  useEffect(() => {
+    const loadSubscriptionData = async () => {
+      if (!user?.id) return;
+      
+      try {
+        // Load subscription tier from user_profiles
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('subscription_tier, max_projects, subscription_status')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profileData) {
+          setUserSubscription({
+            tier: profileData.subscription_tier || 'free',
+            maxProjects: profileData.max_projects || 1,
+            status: profileData.subscription_status || 'active'
+          });
+        }
+        
+        // Load user's selected projects from user_projects table
+        const { data: projectsData } = await supabase
+          .from('user_projects')
+          .select('project_id')
+          .eq('user_id', user.id);
+        
+        if (projectsData) {
+          setUserSelectedProjects(projectsData.map(p => p.project_id));
+          setUserProjectCount(projectsData.length);
+        }
+      } catch (error) {
+        console.error('Error loading subscription data:', error);
+      }
+    };
+    
+    loadSubscriptionData();
+  }, [user?.id]);
+  
   // Check onboarding status on initial load for non-admin users
   useEffect(() => {
     if (user && !adminLoading && !isAdmin) {
@@ -594,9 +650,51 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }
 
   const selectProject = async (project: Project) => {
-    setSelectedProject(project)
-    setSelectedStakeholders([]) // Clear previously selected stakeholders
-    setCurrentView('project-brief')
+    if (!user?.id) return;
+    
+    // Check if project is already selected
+    const isAlreadySelected = userSelectedProjects.includes(project.id);
+    
+    if (!isAlreadySelected) {
+      // Check project limit
+      const maxProjects = userSubscription?.maxProjects || 1;
+      
+      if (userProjectCount >= maxProjects) {
+        // Show upgrade prompt
+        throw new Error(`You've reached your project limit (${maxProjects} project${maxProjects > 1 ? 's' : ''}). Upgrade to select more projects!`);
+      }
+      
+      // Add project to user_projects table
+      try {
+        const { error } = await supabase
+          .from('user_projects')
+          .insert({
+            user_id: user.id,
+            project_id: project.id,
+            status: 'in_progress',
+            started_at: new Date().toISOString()
+          });
+        
+        if (error) {
+          // If unique constraint error, project already exists
+          if (!error.message.includes('duplicate')) {
+            console.error('Error adding project:', error);
+            throw new Error('Failed to select project');
+          }
+        } else {
+          // Update local state
+          setUserSelectedProjects(prev => [...prev, project.id]);
+          setUserProjectCount(prev => prev + 1);
+        }
+      } catch (error) {
+        console.error('Error selecting project:', error);
+        throw error;
+      }
+    }
+    
+    setSelectedProject(project);
+    setSelectedStakeholders([]); // Clear previously selected stakeholders
+    setCurrentView('project-brief');
   }
 
   const addDeliverable = (deliverable: Deliverable) => {
@@ -610,7 +708,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }
 
   // Utility functions
-  const canAccessProject = (projectId: string) => true // Allow all projects for now
+  const canAccessProject = (projectId: string) => {
+    // User can access project if they've already selected it
+    return userSelectedProjects.includes(projectId);
+  }
+  
   const canSaveNotes = () => true
   const canCreateMoreMeetings = () => true
 
@@ -645,13 +747,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     user,
     userProgress,
     studentSubscription,
+    userSubscription,
+    userProjectCount,
+    userSelectedProjects,
     canAccessProject,
     canSaveNotes,
     canCreateMoreMeetings,
     refreshMeetingData,
     isLoading,
     selectedMeeting,
-    setSelectedMeeting
+    setSelectedMeeting,
+    lockMessage,
+    clearLockMessage
   }
 
   // Expose lock message state through context
