@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Target, BookOpen, CheckCircle, ArrowRight, Save, Plus, ChevronDown, ChevronUp, AlertCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Target, BookOpen, CheckCircle, ArrowRight, Save, Plus, ChevronDown, ChevronUp, AlertCircle, AlertTriangle, Layers, Zap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import { 
