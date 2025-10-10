@@ -678,11 +678,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           });
         
         if (error) {
-          // If unique constraint error, project already exists
-          if (!error.message.includes('duplicate')) {
+          // If unique constraint error, project already exists - that's okay
+          if (!error.message?.includes('duplicate') && !error.message?.includes('404')) {
             console.error('Error adding project:', error);
             throw new Error('Failed to select project');
           }
+          // If table doesn't exist (404), continue anyway for now
         } else {
           // Update local state
           setUserSelectedProjects(prev => [...prev, project.id]);
