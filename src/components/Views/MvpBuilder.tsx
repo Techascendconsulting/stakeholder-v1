@@ -428,58 +428,69 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Compact Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
+      {/* Modern Header */}
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 shadow-lg sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-12">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
               <button
                 onClick={() => setCurrentView('practice-flow')}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all hover:scale-110"
                 title="Back to Practice Journey"
               >
-                <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">MVP Builder</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Build your Minimum Viable Product flow</p>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Target className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    MVP Builder
+                  </h1>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Build your Minimum Viable Product flow</p>
+                </div>
               </div>
             </div>
             <button
               onClick={handleSaveMVP}
               disabled={saving || flowOrder.length === 0}
-              className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transform hover:scale-105"
             >
-              <Save className="w-3 h-3" />
+              <Save className="w-4 h-4" />
               <span>{saving ? 'Saving...' : 'Save MVP'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Compact Learner Guidance Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500 p-3 mx-4 mt-2 rounded-r-lg">
-        <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0">
-            <Target className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1">
-              Now that you've learnt about MVP… it's time to practice.
-            </h3>
-            <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-              <p><strong>On this page, you will:</strong></p>
-              <ul className="list-disc list-inside space-y-0.5 ml-3">
-                <li>See your Epics and their related User Stories in the left panel</li>
-                <li>Review each story's details and tag them with MoSCoW priorities (Must, Should, Could, Won't)</li>
-                <li>Drag the Must-Have stories into the center MVP Flow area</li>
-                <li>Check the right-hand panel for full story details and acceptance criteria</li>
-                <li>When you're done, click Save MVP — this will record your selection and link it back to your backlog</li>
-              </ul>
-              <p className="mt-1 font-medium">
-                <strong>Goal:</strong> By the end of this exercise, you should have a clear Minimum Viable Product (MVP) made up of only the essential stories. This is what you'd take to your Scrum Team to begin development.
-              </p>
+      {/* Enhanced Guidance Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-white/10 backdrop-blur-sm p-4">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 text-white">
+                <h3 className="text-base font-bold mb-2">
+                  Now that you've learnt about MVP… it's time to practice.
+                </h3>
+                <div className="text-sm space-y-2 text-white/90">
+                  <p className="font-semibold">On this page, you will:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2 text-sm">
+                    <li>See your Epics and their related User Stories in the left panel</li>
+                    <li>Review each story's details and tag them with MoSCoW priorities</li>
+                    <li>Drag the Must-Have stories into the center MVP Flow area</li>
+                    <li>Check the right-hand panel for full story details and acceptance criteria</li>
+                    <li>When you're done, click Save MVP to record your selection</li>
+                  </ul>
+                  <p className="mt-2 font-semibold bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 inline-block">
+                    🎯 Goal: Create a clear MVP made up of only the essential stories
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -488,10 +499,13 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex gap-6 h-[calc(100vh-160px)]">
           {/* Left Sidebar - Epics */}
-          <div className="w-64 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Epics</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Select an Epic to build MVP</p>
+          <div className="w-64 bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-lg overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-purple-600 to-blue-600">
+              <h3 className="text-base font-bold text-white flex items-center">
+                <Layers className="w-4 h-4 mr-2" />
+                Epics
+              </h3>
+              <p className="text-xs text-purple-100 mt-1">Select an Epic to build MVP</p>
             </div>
             <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
               {epics.map(epic => (
@@ -530,10 +544,13 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
             {selectedEpic ? (
               <>
                 {/* Stories Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 mb-6 shadow-sm">
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Stories</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Assign MoSCoW priorities and select stories for your MVP flow</p>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 mb-6 shadow-lg overflow-hidden">
+                  <div className="p-4 bg-gradient-to-r from-indigo-600 to-purple-600">
+                    <h3 className="text-base font-bold text-white flex items-center">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Stories
+                    </h3>
+                    <p className="text-xs text-indigo-100 mt-1">Assign MoSCoW priorities and select for MVP</p>
                   </div>
                   <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
                     {selectedEpic.stories?.map(story => (
@@ -643,10 +660,13 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                 </div>
 
                 {/* Flow Builder Area */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex-1 shadow-sm">
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">MVP Flow Builder</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Drag only Must-Have stories here to form your MVP. Save when ready.</p>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 flex-1 shadow-lg overflow-hidden">
+                  <div className="p-4 bg-gradient-to-r from-green-600 to-emerald-600">
+                    <h3 className="text-base font-bold text-white flex items-center">
+                      <Zap className="w-4 h-4 mr-2" />
+                      MVP Flow Builder
+                    </h3>
+                    <p className="text-xs text-green-100 mt-1">Drag Must-Have stories here to form your MVP</p>
                   </div>
                   <div
                     className="p-4 min-h-48"
