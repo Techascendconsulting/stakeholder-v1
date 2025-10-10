@@ -3,6 +3,8 @@ import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { ArrowLeft, Search, GitBranch, CheckSquare, FileText, Users, RefreshCw, Lightbulb, Target, Zap } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import AssignmentPlaceholder from "../../views/LearningFlow/AssignmentPlaceholder";
+import MarkCompleteButton from "../MarkCompleteButton";
 
 const lessons = [
   { 
@@ -543,23 +545,57 @@ const RequirementsEngineeringView: React.FC = () => {
                   </div>
                 )}
 
-                {/* CTA for transition lesson */}
+                {/* Assignment - Only on Last Tab (Lesson 4) */}
                 {activeTab === lessons.length - 1 && (
-                  <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <div className="text-center">
-                      <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-                        With validated requirements, you can now support delivery through Scrum ceremonies and backlog refinement.
-                      </p>
-                      <button
-                        onClick={() => setCurrentView('scrum-practice')}
-                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
-                      >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                        Start Scrum Practice
-                      </button>
-                    </div>
+                  <div className="mt-12 pt-8 border-t-4 border-purple-200 dark:border-purple-800">
+                    {userType === 'new' ? (
+                      <div>
+                        <div className="text-center mb-6">
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            📝 Module Assignment
+                          </h2>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            Complete this assignment to proceed
+                          </p>
+                        </div>
+                        <AssignmentPlaceholder
+                          moduleId="module-5-requirements-engineering"
+                          moduleTitle="Requirements Engineering"
+                          title="Requirements Process"
+                          description="Describe the complete requirements engineering process from raw stakeholder input to validated requirements ready for delivery. Include examples of how you would analyse, prioritise, document, and validate requirements for a specific business problem."
+                          isCompleted={false}
+                          canAccess={true}
+                          onComplete={() => {}}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+                          <div className="text-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                              📝 Optional: Test Your Knowledge
+                            </h3>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              Want to validate your learning? Submit an assignment for feedback!
+                            </p>
+                          </div>
+                          <AssignmentPlaceholder
+                            moduleId="module-5-requirements-engineering"
+                            moduleTitle="Requirements Engineering"
+                            title="Requirements Process"
+                            description="Describe the complete requirements engineering process from raw stakeholder input to validated requirements ready for delivery. Include examples of how you would analyse, prioritise, document, and validate requirements for a specific business problem."
+                            isCompleted={false}
+                            canAccess={true}
+                            onComplete={() => {}}
+                          />
+                        </div>
+                        
+                        <MarkCompleteButton
+                          moduleId="module-5-requirements-engineering"
+                          moduleTitle="Requirements Engineering"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -3,6 +3,8 @@ import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { PenTool, ArrowRight, Palette, Layers, Eye, Code, Zap, Sparkles, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
+import MarkCompleteButton from '../MarkCompleteButton';
 
 const DesignHub: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -760,15 +762,57 @@ In summary, linking design to user stories is how you ensure the work done in de
                   })}
                 </div>
                 
-                {/* MVP Hub Button for Lesson 5 */}
+                {/* Assignment - Only on Last Tab (Lesson 5) */}
                 {activeTab === 4 && (
-                  <div className="mt-8 text-center">
-                    <button 
-                      onClick={() => setCurrentView('mvp-hub')} 
-                      className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                      Go to MVP Hub →
-                    </button>
+                  <div className="mt-12 pt-8 border-t-4 border-purple-200 dark:border-purple-800">
+                    {userType === 'new' ? (
+                      <div>
+                        <div className="text-center mb-6">
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            📝 Module Assignment
+                          </h2>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            Complete this assignment to proceed
+                          </p>
+                        </div>
+                        <AssignmentPlaceholder
+                          moduleId="module-8-design"
+                          moduleTitle="UX/UI Design"
+                          title="Design Application"
+                          description="Choose a simple business process (e.g., customer onboarding, expense approval, product return). Create a To-Be process map and describe what wireframes/prototypes would be needed. Include key business rules and edge cases you would document."
+                          isCompleted={false}
+                          canAccess={true}
+                          onComplete={() => {}}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+                          <div className="text-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                              📝 Optional: Test Your Knowledge
+                            </h3>
+                            <p className="text-gray-600 dark:text-gray-400">
+                              Want to validate your learning? Submit an assignment for feedback!
+                            </p>
+                          </div>
+                          <AssignmentPlaceholder
+                            moduleId="module-8-design"
+                            moduleTitle="UX/UI Design"
+                            title="Design Application"
+                            description="Choose a simple business process (e.g., customer onboarding, expense approval, product return). Create a To-Be process map and describe what wireframes/prototypes would be needed. Include key business rules and edge cases you would document."
+                            isCompleted={false}
+                            canAccess={true}
+                            onComplete={() => {}}
+                          />
+                        </div>
+                        
+                        <MarkCompleteButton
+                          moduleId="module-8-design"
+                          moduleTitle="UX/UI Design"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

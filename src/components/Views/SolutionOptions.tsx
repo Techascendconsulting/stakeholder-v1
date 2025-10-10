@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
+import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
+import MarkCompleteButton from '../MarkCompleteButton';
 
 const SolutionOptions: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -593,6 +595,60 @@ In summary, solution options are the bridge between problem and design. They inv
             [&_p:has(strong:only-child)]:text-xl [&_p:has(strong:only-child)]:font-bold [&_p:has(strong:only-child)]:mt-10 [&_p:has(strong:only-child)]:mb-5 [&_p:has(strong:only-child)]:text-gray-900 [&_p:has(strong:only-child)]:dark:text-white">
             <ReactMarkdown>{lessons[activeTab].content}</ReactMarkdown>
           </div>
+
+          {/* Assignment - Only on Last Tab (Lesson 6) */}
+          {activeTab === lessons.length - 1 && (
+            <div className="mt-12 pt-8 border-t-4 border-purple-200 dark:border-purple-800">
+              {userType === 'new' ? (
+                <div>
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      📝 Module Assignment
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Complete this assignment to proceed
+                    </p>
+                  </div>
+                  <AssignmentPlaceholder
+                    moduleId="module-6-solution-options"
+                    moduleTitle="Solution Options"
+                    title="Solution Evaluation"
+                    description="For a business problem of your choice, identify 3 different solution options. Evaluate each using at least 3 criteria (cost, time, risk, feasibility). Recommend one option and justify your choice."
+                    isCompleted={false}
+                    canAccess={true}
+                    onComplete={() => {}}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+                    <div className="text-center mb-6">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        📝 Optional: Test Your Knowledge
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Want to validate your learning? Submit an assignment for feedback!
+                      </p>
+                    </div>
+                    <AssignmentPlaceholder
+                      moduleId="module-6-solution-options"
+                      moduleTitle="Solution Options"
+                      title="Solution Evaluation"
+                      description="For a business problem of your choice, identify 3 different solution options. Evaluate each using at least 3 criteria (cost, time, risk, feasibility). Recommend one option and justify your choice."
+                      isCompleted={false}
+                      canAccess={true}
+                      onComplete={() => {}}
+                    />
+                  </div>
+                  
+                  <MarkCompleteButton
+                    moduleId="module-6-solution-options"
+                    moduleTitle="Solution Options"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Simple Navigation */}
           <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
