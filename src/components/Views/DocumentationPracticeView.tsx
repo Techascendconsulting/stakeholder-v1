@@ -85,45 +85,49 @@ const DocumentationPracticeView: React.FC = () => {
           </div>
         </div>
 
-        {/* Instructions with Visual Interest */}
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          {activeTab === 'practice' ? (
-            <div className="border-l-4 border-blue-600 bg-blue-50/50 dark:bg-blue-900/10 pl-6 py-4 rounded-r-lg">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                <FileText className="w-5 h-5 text-blue-600 mr-2" />
-                How to Practice
-              </h2>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-700 dark:text-gray-300 mb-3">
-                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
-                  <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
-                  <span className="font-medium">Read scenario</span>
+        {/* Instructions Header Section */}
+        <div className={`${
+          activeTab === 'practice'
+            ? 'bg-blue-600 dark:bg-blue-700'
+            : 'bg-purple-600 dark:bg-purple-700'
+        } border-b border-gray-200 dark:border-gray-700`}>
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            {activeTab === 'practice' ? (
+              <div>
+                <h2 className="text-lg font-bold text-white mb-4">
+                  How to Practice
+                </h2>
+                <div className="flex flex-wrap items-center gap-4 text-sm text-white/90 mb-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
+                    <span>Read scenario</span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-white/60" />
+                  <div className="flex items-center space-x-2">
+                    <span className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
+                    <span>Write user story (As a... I want... so that...)</span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-white/60" />
+                  <div className="flex items-center space-x-2">
+                    <span className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center text-white text-xs font-bold">3</span>
+                    <span>Add acceptance criteria (WHEN, RULES, FEEDBACK)</span>
+                  </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-blue-600" />
-                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
-                  <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
-                  <span className="font-medium">Write user story</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-blue-600" />
-                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm">
-                  <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</span>
-                  <span className="font-medium">Add criteria</span>
-                </div>
+                <p className="text-sm text-white/80">
+                  💡 Get instant AI coaching on each criterion
+                </p>
               </div>
-              <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">
-                💡 AI coaching guides you through each acceptance criterion
-              </p>
-            </div>
-          ) : (
-            <div className="border-l-4 border-purple-600 bg-purple-50/50 dark:bg-purple-900/10 pl-6 py-4 rounded-r-lg">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center">
-                <Sparkles className="w-5 h-5 text-purple-600 mr-2" />
-                Advanced Challenge
-              </h2>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Master complex business rules, multi-step processes, and real-world enterprise scenarios that professional BAs encounter.
-              </p>
-            </div>
-          )}
+            ) : (
+              <div>
+                <h2 className="text-lg font-bold text-white mb-3">
+                  Advanced Challenge
+                </h2>
+                <p className="text-sm text-white/90">
+                  Master complex business rules, multi-step processes, and real-world enterprise scenarios that professional BAs encounter.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content Area */}
