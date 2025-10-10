@@ -465,30 +465,39 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
         </div>
       </div>
 
-      {/* Enhanced Guidance Banner */}
+      {/* Clear Instructions Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
         <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-white/10 backdrop-blur-sm p-4">
+          <div className="bg-white/10 backdrop-blur-sm p-5">
             <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <Target className="w-6 h-6 text-white" />
+              <div className="flex-shrink-0 w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <Target className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1 text-white">
-                <h3 className="text-base font-bold mb-2">
-                  Now that you've learnt about MVP… it's time to practice.
+                <h3 className="text-lg font-bold mb-3">
+                  🎯 Practice: Build Your First MVP
                 </h3>
-                <div className="text-sm space-y-2 text-white/90">
-                  <p className="font-semibold">On this page, you will:</p>
-                  <ul className="list-disc list-inside space-y-1 ml-2 text-sm">
-                    <li>See your Epics and their related User Stories in the left panel</li>
-                    <li>Review each story's details and tag them with MoSCoW priorities</li>
-                    <li>Drag the Must-Have stories into the center MVP Flow area</li>
-                    <li>Check the right-hand panel for full story details and acceptance criteria</li>
-                    <li>When you're done, click Save MVP to record your selection</li>
-                  </ul>
-                  <p className="mt-2 font-semibold bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 inline-block">
-                    🎯 Goal: Create a clear MVP made up of only the essential stories
-                  </p>
+                <div className="text-sm space-y-3 text-white/95">
+                  <p className="font-semibold text-base">How it works:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                      <p className="font-bold mb-1">1️⃣ Choose Epic (Left)</p>
+                      <p className="text-xs">Select an Epic to see its User Stories</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                      <p className="font-bold mb-1">2️⃣ Tag with MoSCoW</p>
+                      <p className="text-xs">Mark stories as Must/Should/Could/Won't</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                      <p className="font-bold mb-1">3️⃣ Drag to MVP Flow</p>
+                      <p className="text-xs">Drag Must-Have stories to center area</p>
+                    </div>
+                  </div>
+                  <div className="bg-yellow-400/20 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-yellow-300">
+                    <p className="font-bold text-base">
+                      💡 Your Goal: Identify ONLY the essential stories needed for a working first version (MVP)
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
