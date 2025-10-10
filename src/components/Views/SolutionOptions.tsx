@@ -461,21 +461,10 @@ In summary, solution options are the bridge between problem and design. They inv
               return (
                 <div
                   key={lesson.id}
-                  className="group relative p-6 border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-transparent hover:shadow-xl cursor-pointer transition-all duration-300 overflow-hidden"
+                  className="group relative p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-transparent hover:shadow-xl cursor-pointer transition-all duration-300 overflow-hidden"
                   onClick={() => {
                     setActiveTab(index);
                     setCurrentPage('lessons');
-                  }}
-                  style={{
-                    background: `linear-gradient(135deg, transparent 0%, transparent 100%)`,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = `linear-gradient(135deg, var(--tw-gradient-stops))`;
-                    e.currentTarget.style.setProperty('--tw-gradient-from', lesson.color.split(' ')[0].replace('from-', ''));
-                    e.currentTarget.style.setProperty('--tw-gradient-to', lesson.color.split(' ')[2].replace('to-', ''));
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
                   }}
                 >
                   {/* Icon */}
