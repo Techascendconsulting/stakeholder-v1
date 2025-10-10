@@ -101,6 +101,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     status: string;
   } | null>(null)
   const [userSelectedProjects, setUserSelectedProjects] = useState<string[]>([])
+  const [userProjectCount, setUserProjectCount] = useState(0)
 
   // Initialize currentView from localStorage or default to dashboard for returning users
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
