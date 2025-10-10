@@ -716,6 +716,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   const canSaveNotes = () => true
   const canCreateMoreMeetings = () => true
+  
+  const clearLockMessage = () => {
+    setLockMessage(null)
+  }
 
   const refreshMeetingData = async () => {
     if (user?.id) {
