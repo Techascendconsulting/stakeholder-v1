@@ -120,16 +120,35 @@ const ProjectModuleList: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
-        {/* HERO SECTION: Start Here - Select Your Project */}
+        {/* HERO SECTION: Select Your Project - STEP 1 */}
         <div>
+          {!firstModuleCompleted && (
+            <div className="mb-4 p-4 bg-gradient-to-r from-purple-100 via-indigo-100 to-blue-100 dark:from-purple-900/30 dark:via-indigo-900/30 dark:to-blue-900/30 border-2 border-purple-300 dark:border-purple-600 rounded-xl">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+                  1
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    👇 First Step: Choose Your Project Below
+                  </p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    You'll use this project throughout your BA journey
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-2 h-10 bg-gradient-to-b from-purple-600 to-indigo-600 rounded-full"></div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Start Here
+              {firstModuleCompleted ? 'Your Selected Project' : 'Step 1: Select Your Project'}
             </h2>
-            <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-semibold">
-              Required
-            </span>
+            {!firstModuleCompleted && (
+              <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-semibold animate-pulse">
+                START HERE
+              </span>
+            )}
           </div>
 
           {/* Hero Card for First Module */}
@@ -204,14 +223,37 @@ const ProjectModuleList: React.FC = () => {
 
         {/* PROJECT TOOLS SECTION */}
         <div>
+          {!firstModuleCompleted && (
+            <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+                  2
+                </div>
+                <div>
+                  <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
+                    Next: Use these tools to work on your project
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Available once you've selected a project above
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-2 h-10 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full"></div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Your Project Tools
+              {firstModuleCompleted ? 'Your Project Tools' : 'Step 2: Your Project Tools'}
             </h2>
-            <span className="text-sm text-gray-500 dark:text-gray-400 font-medium px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
-              Access anytime
-            </span>
+            {firstModuleCompleted ? (
+              <span className="text-sm text-green-600 dark:text-green-400 font-medium px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full">
+                ✓ Ready to use
+              </span>
+            ) : (
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-medium px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
+                After project selection
+              </span>
+            )}
           </div>
 
           {/* Tool Cards Grid */}
