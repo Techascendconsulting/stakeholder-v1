@@ -481,21 +481,30 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
                   <p className="font-semibold text-base">How it works:</p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <p className="font-bold mb-1">1️⃣ Choose Epic (Left)</p>
-                      <p className="text-xs">Select an Epic to see its User Stories</p>
+                      <p className="font-bold mb-1 flex items-center">
+                        <span className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-sm mr-2">1</span>
+                        Choose Epic
+                      </p>
+                      <p className="text-xs ml-8">Select from left panel to see stories</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <p className="font-bold mb-1">2️⃣ Tag with MoSCoW</p>
-                      <p className="text-xs">Mark stories as Must/Should/Could/Won't</p>
+                      <p className="font-bold mb-1 flex items-center">
+                        <span className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-sm mr-2">2</span>
+                        Tag MoSCoW
+                      </p>
+                      <p className="text-xs ml-8">Label each: Must/Should/Could/Won't</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                      <p className="font-bold mb-1">3️⃣ Drag to MVP Flow</p>
-                      <p className="text-xs">Drag Must-Have stories to center area</p>
+                      <p className="font-bold mb-1 flex items-center">
+                        <span className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-sm mr-2">3</span>
+                        Build MVP
+                      </p>
+                      <p className="text-xs ml-8">Drag ALL Must-Haves to green area</p>
                     </div>
                   </div>
                   <div className="bg-yellow-400/20 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-yellow-300">
                     <p className="font-bold text-base">
-                      💡 Your Goal: Identify ONLY the essential stories needed for a working first version (MVP)
+                      💡 Goal: Your MVP = All Must-Have stories combined (not just one!)
                     </p>
                   </div>
                 </div>
