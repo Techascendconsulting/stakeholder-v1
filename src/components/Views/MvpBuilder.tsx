@@ -475,36 +475,35 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
               </div>
               <div className="flex-1 text-white">
                 <h3 className="text-lg font-bold mb-3">
-                  🎯 Practice: Build Your First MVP
+                  🎯 Practice: Build Your MVP by Prioritizing Stories
                 </h3>
                 <div className="text-sm space-y-3 text-white/95">
-                  <p className="font-semibold text-base">How it works:</p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
                       <p className="font-bold mb-1 flex items-center">
                         <span className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-sm mr-2">1</span>
-                        Choose Epic
+                        Pick an Epic
                       </p>
-                      <p className="text-xs ml-8">Select from left panel to see stories</p>
+                      <p className="text-xs ml-8">Click any Epic on the left to see its User Stories</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
                       <p className="font-bold mb-1 flex items-center">
                         <span className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center text-sm mr-2">2</span>
-                        Tag MoSCoW
+                        Set Priority
                       </p>
-                      <p className="text-xs ml-8">Label each: Must/Should/Could/Won't</p>
+                      <p className="text-xs ml-8">Use dropdown to tag each story: Must/Should/Could/Won't</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
                       <p className="font-bold mb-1 flex items-center">
                         <span className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-sm mr-2">3</span>
-                        Build MVP
+                        Build Your MVP
                       </p>
-                      <p className="text-xs ml-8">Drag ALL Must-Haves to green area</p>
+                      <p className="text-xs ml-8">Drag your Must-Have stories into the green MVP area below</p>
                     </div>
                   </div>
                   <div className="bg-yellow-400/20 backdrop-blur-sm rounded-lg px-4 py-3 border-l-4 border-yellow-300">
                     <p className="font-bold text-base">
-                      💡 Goal: Your MVP = All Must-Have stories combined (not just one!)
+                      💡 Tip: An MVP includes all the Must-Haves (not just one story). You decide what's essential!
                     </p>
                   </div>
                 </div>
