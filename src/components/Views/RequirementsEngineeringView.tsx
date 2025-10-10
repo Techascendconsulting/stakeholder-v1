@@ -1,13 +1,15 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useApp } from "../../contexts/AppContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Search, GitBranch, CheckSquare, FileText, Users, RefreshCw, Lightbulb, Target, Zap } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
 const lessons = [
   { 
     id: "what-is-re", 
     title: "What is Requirements Engineering?",
+    icon: RefreshCw,
+    color: "from-blue-500 to-cyan-500",
     content: `When most people hear the term "requirements engineering," they imagine a Business Analyst sitting at a desk, writing long lists of requirements in a document. But in reality, Requirements Engineering (RE) is much more than that. It is the discipline that ensures projects build the right solution, for the right problem, in the right way.
 
 Put simply, Requirements Engineering is the process of taking the raw information gathered from stakeholders and shaping it into structured, clear, and agreed requirements that can guide delivery. If elicitation is about asking questions and listening, Requirements Engineering is about making sense of those answers — analysing them, clarifying them, and turning them into something that a delivery team can actually build and test.
@@ -37,6 +39,8 @@ In summary, Requirements Engineering is the continuous bridge between elicitatio
   { 
     id: "analysing-requirements", 
     title: "Analysing Requirements",
+    icon: Search,
+    color: "from-purple-500 to-pink-500",
     content: `After you've spoken with stakeholders and captured their input, you'll quickly realise something: what you've written down is not yet ready to hand over to a delivery team. Stakeholders will have given you information in many different forms — some detailed, some vague, some even contradictory. This is normal. It's your job as a BA to analyse those requirements so that they start to make sense in the bigger picture of the project.
 
 Think of this stage like tidying up after a brainstorming session. When you leave a workshop, the whiteboard may be filled with sticky notes — useful ideas, but all over the place. If you handed that board straight to a developer, they wouldn't know where to start. Your role is to organise, refine, and structure what you've collected so it becomes a usable foundation for prioritisation and documentation.
@@ -60,6 +64,8 @@ In summary, analysing requirements is where the BA brings order to chaos. Throug
   { 
     id: "prioritising-requirements", 
     title: "Prioritising Requirements",
+    icon: Target,
+    color: "from-orange-500 to-red-500",
     content: `Once you have analysed requirements and begun to make sense of stakeholder input, the next challenge is deciding which ones should be delivered first. This is where prioritisation comes in.
 
 In every project, you will face the same reality: you cannot deliver everything at once. Budgets are limited, deadlines are tight, and resources are constrained. Even if you had unlimited time, trying to build everything in one go almost always leads to wasted effort, scope creep, and disappointed stakeholders. Prioritisation is the discipline that prevents this.
@@ -119,6 +125,8 @@ In summary, prioritisation is about focusing the project on what matters most. M
   { 
     id: "documenting-requirements", 
     title: "Documenting Requirements",
+    icon: FileText,
+    color: "from-green-500 to-emerald-500",
     content: `Up to this point, you have elicited requirements, analysed them to bring structure, and worked with stakeholders to prioritise what matters most. The next question is: how do you capture these requirements so that everyone — business stakeholders, designers, developers, and testers — can work from the same understanding? This is where documentation comes in.
 
 Documentation is often misunderstood. Some people imagine it as creating a thick requirements document that nobody ever reads. Others think Agile means "no documentation at all." The truth lies in the middle. Documentation is not about producing endless paperwork — it is about capturing requirements in a clear, usable format that communicates effectively to the people who need it.
@@ -164,6 +172,8 @@ In summary, documenting requirements in Agile is about clarity, not volume. Whet
   { 
     id: "validating-requirements", 
     title: "Validating Requirements",
+    icon: CheckSquare,
+    color: "from-indigo-500 to-purple-500",
     content: `By now, you've elicited, analysed, prioritised, and documented requirements. But here's a hard truth: just because something is written down doesn't mean it's correct. Requirements must be validated — checked and confirmed with stakeholders to ensure they reflect what the business truly needs.
 
 Validation is one of the most overlooked skills for new BAs. Many assume that once requirements are documented, the job is done. In reality, requirements are only useful if stakeholders agree they are accurate, complete, and aligned to the project's goals. Without validation, you risk building a solution that nobody recognises when it's delivered.
@@ -205,6 +215,8 @@ In summary, validation is about creating confidence and alignment. It is the pro
   { 
     id: "transition-to-delivery", 
     title: "Transition to Delivery",
+    icon: Zap,
+    color: "from-yellow-500 to-orange-500",
     content: `By this stage, you've elicited requirements, analysed them to bring structure, prioritised what matters most, documented them clearly, and validated them with stakeholders. The next step is ensuring those requirements transition smoothly into delivery — where designers, developers, and testers begin to bring the solution to life.
 
 Transition isn't about "handing over" requirements and walking away. In Agile, there is no handover. Delivery and requirements engineering overlap, and you as a BA remain actively involved throughout. Transition is not the end of your job — it is the bridge between understanding the problem and helping the team build the solution.
@@ -422,31 +434,53 @@ const RequirementsEngineeringView: React.FC = () => {
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-8 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lessons</h3>
-              <nav className="space-y-2">
-                {lessons.map((lesson, index) => (
-                  <button
-                    key={lesson.id}
-                    onClick={() => setActiveTab(index)}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      activeTab === index
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold mr-3 ${
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Lightbulb className="w-5 h-5 mr-2 text-yellow-500" />
+                Lessons
+              </h3>
+              <nav className="space-y-3">
+                {lessons.map((lesson, index) => {
+                  const IconComponent = lesson.icon;
+                  return (
+                    <button
+                      key={lesson.id}
+                      onClick={() => setActiveTab(index)}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                         activeTab === index
-                          ? 'bg-white/20 text-white'
-                          : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
-                      }`}>
-                        {index + 1}
+                          ? `bg-gradient-to-r ${lesson.color} text-white shadow-lg transform scale-105`
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${
+                          activeTab === index
+                            ? 'bg-white/20'
+                            : 'bg-gray-200 dark:bg-gray-700'
+                        }`}>
+                          <IconComponent className={`w-4 h-4 ${
+                            activeTab === index ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                          }`} />
+                        </div>
+                        <span className="flex-1">{lesson.title}</span>
                       </div>
-                      {lesson.title}
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </nav>
+              
+              {/* Progress indicator */}
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <span>Your Progress</span>
+                  <span className="font-semibold">{activeTab + 1}/{lessons.length}</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((activeTab + 1) / lessons.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -454,12 +488,21 @@ const RequirementsEngineeringView: React.FC = () => {
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
               {/* Content Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {lessons[activeTab].title}
-                </h2>
-                <div className="flex items-center text-blue-100">
-                  <span className="text-sm">Lesson {activeTab + 1} of {lessons.length}</span>
+              <div className={`bg-gradient-to-r ${lessons[activeTab].color} px-8 py-6`}>
+                <div className="flex items-center mb-3">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4">
+                    {React.createElement(lessons[activeTab].icon, { className: "w-6 h-6 text-white" })}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">
+                      {lessons[activeTab].title}
+                    </h2>
+                    <div className="flex items-center text-white/80 mt-1">
+                      <span className="text-sm">Lesson {activeTab + 1} of {lessons.length}</span>
+                      <span className="mx-2">•</span>
+                      <span className="text-sm">{Math.ceil(lessons[activeTab].content.split(' ').length / 200)} min read</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
