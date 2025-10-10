@@ -46,7 +46,7 @@ const MvpBuilder: React.FC<MvpBuilderProps> = ({
 }) => {
   console.log('🔄 MvpBuilder: Component mounting...');
   const { user } = useAuth();
-  const { selectedProject, projects } = useApp();
+  const { selectedProject, projects, setCurrentView } = useApp();
   
   // Resolve active project id
   let activeProjectId: string | null = null;
