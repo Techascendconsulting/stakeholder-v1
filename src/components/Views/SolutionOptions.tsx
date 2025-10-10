@@ -461,7 +461,7 @@ In summary, solution options are the bridge between problem and design. They inv
               return (
                 <div
                   key={lesson.id}
-                  className="group relative p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-transparent hover:shadow-xl cursor-pointer transition-all duration-300 overflow-hidden"
+                  className="group relative p-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-purple-500 hover:shadow-xl cursor-pointer transition-all duration-300 overflow-hidden hover:bg-gray-50 dark:hover:bg-gray-750"
                   onClick={() => {
                     setActiveTab(index);
                     setCurrentPage('lessons');
@@ -473,15 +473,15 @@ In summary, solution options are the bridge between problem and design. They inv
                   </div>
                   
                   {/* Content */}
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     {lesson.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 group-hover:text-white/90 transition-colors">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Lesson {index + 1} of {lessons.length}
                   </p>
                   
                   {/* Arrow */}
-                  <div className="flex items-center text-blue-600 dark:text-blue-400 group-hover:text-white font-medium transition-colors">
+                  <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium transition-colors">
                     <span className="text-sm mr-2">Start Lesson</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" />
                   </div>
