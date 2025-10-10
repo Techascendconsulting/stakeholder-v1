@@ -8,9 +8,15 @@ import {
   ChevronRight,
   Play,
   Users,
-  ArrowLeft
+  ArrowLeft,
+  Lightbulb,
+  GitBranch,
+  Scale,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import ReactMarkdown from 'react-markdown';
 
 const SolutionOptions: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -44,6 +50,8 @@ const SolutionOptions: React.FC = () => {
     {
       id: 'lesson-1',
       title: 'What Are Solution Options?',
+      icon: Lightbulb,
+      color: 'from-yellow-500 to-orange-500',
       content: `Once you've completed elicitation, you don't jump straight into design. First, you pause and ask: "Given what we know about the problem and the desired future state, what different solutions could we consider?"
 
 This is the stage called exploring solution options.
@@ -117,6 +125,8 @@ In summary, solution options are the bridge between problem and design. They inv
     {
       id: 'lesson-2', 
       title: 'Evaluating Options',
+      icon: Scale,
+      color: 'from-purple-500 to-pink-500',
       content: `Once potential solution options have been identified, the next step is to evaluate them. This is where you as a BA help the business move from "what could we do?" to "what makes the most sense for us right now?"
 
 When you're sitting in these meetings, it often feels like there are too many voices in the room. One stakeholder loves the cheapest option, another is pushing for the newest technology, and someone else is worried about compliance risks. This is exactly why your role as a BA matters — you bring structure to what would otherwise be a noisy debate.
@@ -191,7 +201,9 @@ Remember: you don't choose the solution. Your role is to create the environment 
     },
     {
       id: 'lesson-3',
-      title: 'Recommending a Way Forward', 
+      title: 'Recommending a Way Forward',
+      icon: CheckCircle2,
+      color: 'from-green-500 to-emerald-500',
       content: `After solution options have been identified and evaluated, the business now faces a choice: which way forward? This is the point where the BA helps move from structured evaluation into a clear recommendation that stakeholders can align around.
 
 **Why This Step Matters**
@@ -281,6 +293,8 @@ In summary, recommending a way forward is about turning evaluation into action. 
     {
       id: 'lesson-4',
       title: 'From Preferred Solution to Design',
+      icon: GitBranch,
+      color: 'from-blue-500 to-cyan-500',
       content: `After the business has agreed on a preferred solution, the next challenge is to answer the question: "What will this actually look like in practice?"
 
 This is where the project moves into the Design stage. Design is not about decorating wireframes or choosing colours. It's about shaping the chosen solution into processes, system behaviours, and user experiences that will guide delivery.
@@ -377,6 +391,8 @@ In summary, Design is the stage where the preferred solution takes shape. As a B
     {
       id: 'lesson-5',
       title: 'The Three Amigos',
+      icon: Users,
+      color: 'from-indigo-500 to-purple-500',
       content: `In Agile delivery, there's also the Three Amigos model:
 
 **The BA** – representing business value and clarity.
@@ -390,6 +406,8 @@ Together, the Three Amigos make sure requirements and solutions are shaped from 
     {
       id: 'lesson-6',
       title: 'The BA\'s Responsibility',
+      icon: Sparkles,
+      color: 'from-pink-500 to-rose-500',
       content: `Your responsibility in solutioning is to:
 
 **Facilitate structured discussions** on options.
@@ -435,32 +453,52 @@ In summary, solution options are the bridge between problem and design. They inv
           </div>
         </div>
 
-        {/* Simple Lessons List */}
+        {/* Lessons Grid */}
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="space-y-4">
-            {lessons.map((lesson, index) => (
-              <div
-                key={lesson.id}
-                className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                onClick={() => {
-                  setActiveTab(index);
-                  setCurrentPage('lessons');
-                }}
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300">
-                    {index + 1}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {lessons.map((lesson, index) => {
+              const IconComponent = lesson.icon;
+              return (
+                <div
+                  key={lesson.id}
+                  className="group relative p-6 border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-transparent hover:shadow-xl cursor-pointer transition-all duration-300 overflow-hidden"
+                  onClick={() => {
+                    setActiveTab(index);
+                    setCurrentPage('lessons');
+                  }}
+                  style={{
+                    background: `linear-gradient(135deg, transparent 0%, transparent 100%)`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = `linear-gradient(135deg, var(--tw-gradient-stops))`;
+                    e.currentTarget.style.setProperty('--tw-gradient-from', lesson.color.split(' ')[0].replace('from-', ''));
+                    e.currentTarget.style.setProperty('--tw-gradient-to', lesson.color.split(' ')[2].replace('to-', ''));
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  {/* Icon */}
+                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-r ${lesson.color} mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <IconComponent className="w-7 h-7 text-white" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{lesson.title}</h3>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                      <span>Lesson {index + 1}</span>
-                    </div>
+                  
+                  {/* Content */}
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-white transition-colors">
+                    {lesson.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 group-hover:text-white/90 transition-colors">
+                    Lesson {index + 1} of {lessons.length}
+                  </p>
+                  
+                  {/* Arrow */}
+                  <div className="flex items-center text-blue-600 dark:text-blue-400 group-hover:text-white font-medium transition-colors">
+                    <span className="text-sm mr-2">Start Lesson</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" />
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Simple CTA */}
@@ -550,39 +588,14 @@ In summary, solution options are the bridge between problem and design. They inv
             </div>
           </div>
 
-          <div className="prose max-w-none">
-            <div className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-4">
-              {lessons[activeTab].content.split('\n').map((line, index) => {
-                if (line.startsWith('**') && line.endsWith('**')) {
-                  return (
-                    <div key={index} className="font-bold text-xl text-gray-900 dark:text-white mt-8 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                      {line.replace(/\*\*/g, '')}
-                    </div>
-                  );
-                } else if (line.startsWith('- ')) {
-                  return (
-                    <div key={index} className="flex items-start space-x-3 ml-4">
-                      <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <span className="text-gray-700 dark:text-gray-300">{line.substring(2)}</span>
-                    </div>
-                  );
-                } else if (line.trim() === '') {
-                  return <div key={index} className="h-4"></div>;
-                } else if (line.includes('🧩') || line.includes('📚') || line.includes('🎯') || line.includes('👉')) {
-                  return (
-                    <div key={index} className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 dark:border-blue-400 p-4 rounded-r-lg">
-                      <span className="text-gray-700 dark:text-gray-300 font-medium">{line}</span>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div key={index} className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {line}
-                    </div>
-                  );
-                }
-              })}
-            </div>
+          <div className="prose prose-lg max-w-none dark:prose-invert
+            prose-headings:text-gray-900 dark:prose-headings:text-white
+            prose-p:text-gray-700 dark:prose-p:text-gray-300
+            prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-semibold
+            prose-ul:text-gray-700 dark:prose-ul:text-gray-300
+            prose-li:text-gray-700 dark:prose-li:text-gray-300
+            prose-li:marker:text-blue-600 dark:prose-li:marker:text-blue-400">
+            <ReactMarkdown>{lessons[activeTab].content}</ReactMarkdown>
           </div>
 
           {/* Simple Navigation */}
