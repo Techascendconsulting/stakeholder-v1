@@ -695,6 +695,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         // Update local state regardless of database result
         setUserSelectedProjects(prev => [...prev, project.id]);
         setUserProjectCount(prev => prev + 1);
+        
+        // Mark "Select Your Project" module as completed in project_progress
+        try {
+          const { error: progressError } = await supabase
+            .from('project_progress')
+            .upsert({
+              user_id: user.id,
+              module_id: 'project-select-your-project',
+              status: 'completed',
+              completed_at: new Date().toISOString()
+            });
+          
+          if (progressError) {
+            console.log('Could not update project progress (table may not exist):', progressError);
+          }
+        } catch (error) {
+          console.log('Error updating project progress (ignored):', error);
+        }
       } catch (error) {
         console.log('Error with user_projects table (ignored):', error);
         // Continue anyway - don't block project selection

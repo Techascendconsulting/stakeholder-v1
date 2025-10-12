@@ -8,7 +8,7 @@ import type { ProjectProgress } from '../../utils/projectProgress';
 import { CheckCircle, Play, Target, Zap, MessageSquare, FileText, Folder, Award, ArrowRight, Sparkles } from 'lucide-react';
 
 const ProjectModuleList: React.FC = () => {
-  const { setCurrentView } = useApp();
+  const { setCurrentView, userSelectedProjects, selectedProject } = useApp();
   const { user } = useAuth();
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
   const [progress, setProgress] = useState<Record<string, ProjectProgress>>({});
@@ -102,6 +102,9 @@ const ProjectModuleList: React.FC = () => {
   const firstModuleStatus = getModuleStatus(firstModule.id);
   const firstModuleCompleted = firstModuleStatus === 'completed';
   const firstModuleInProgress = firstModuleStatus === 'in_progress';
+  
+  // Check if user has selected any project (from AppContext)
+  const hasSelectedProject = (userSelectedProjects && userSelectedProjects.length > 0) || selectedProject;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
@@ -122,7 +125,7 @@ const ProjectModuleList: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
         {/* HERO SECTION: Select Your Project - STEP 1 */}
         <div>
-          {!firstModuleCompleted && (
+          {!hasSelectedProject && (
             <div className="mb-4 p-4 bg-gradient-to-r from-purple-100 via-indigo-100 to-blue-100 dark:from-purple-900/30 dark:via-indigo-900/30 dark:to-blue-900/30 border-2 border-purple-300 dark:border-purple-600 rounded-xl">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
@@ -142,9 +145,9 @@ const ProjectModuleList: React.FC = () => {
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-2 h-10 bg-gradient-to-b from-purple-600 to-indigo-600 rounded-full"></div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {firstModuleCompleted ? 'Your Selected Project' : 'Step 1: Select Your Project'}
+              {hasSelectedProject ? 'Your Selected Project' : 'Step 1: Select Your Project'}
             </h2>
-            {!firstModuleCompleted && (
+            {!hasSelectedProject && (
               <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-semibold animate-pulse">
                 START HERE
               </span>
@@ -167,15 +170,10 @@ const ProjectModuleList: React.FC = () => {
                 {/* Content */}
                 <div className="flex-1 text-white">
                   {/* Status Badge */}
-                  {firstModuleCompleted ? (
+                  {hasSelectedProject ? (
                     <div className="inline-flex items-center space-x-2 bg-green-500/20 backdrop-blur-sm border border-green-300/30 rounded-full px-4 py-2 mb-4">
                       <CheckCircle className="w-4 h-4 text-green-300" />
-                      <span className="text-sm font-semibold text-green-100">✓ Completed</span>
-                    </div>
-                  ) : firstModuleInProgress ? (
-                    <div className="inline-flex items-center space-x-2 bg-orange-500/20 backdrop-blur-sm border border-orange-300/30 rounded-full px-4 py-2 mb-4">
-                      <Play className="w-4 h-4 text-orange-300" />
-                      <span className="text-sm font-semibold text-orange-100">In Progress</span>
+                      <span className="text-sm font-semibold text-green-100">✓ Project Selected</span>
                     </div>
                   ) : (
                     <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
@@ -200,7 +198,7 @@ const ProjectModuleList: React.FC = () => {
                     className="inline-flex items-center space-x-3 bg-white text-purple-600 px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200"
                   >
                     <Play className="w-5 h-5" />
-                    <span>{firstModuleCompleted ? 'Choose Another Project' : 'Get Started'}</span>
+                    <span>{hasSelectedProject ? 'View Project Details' : 'Get Started'}</span>
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
@@ -223,7 +221,7 @@ const ProjectModuleList: React.FC = () => {
 
         {/* PROJECT TOOLS SECTION */}
         <div>
-          {!firstModuleCompleted && (
+          {!hasSelectedProject && (
             <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0 w-10 h-10 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
@@ -243,9 +241,9 @@ const ProjectModuleList: React.FC = () => {
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-2 h-10 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full"></div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {firstModuleCompleted ? 'Your Project Tools' : 'Step 2: Your Project Tools'}
+              {hasSelectedProject ? 'Your Project Tools' : 'Step 2: Your Project Tools'}
             </h2>
-            {firstModuleCompleted ? (
+            {hasSelectedProject ? (
               <span className="text-sm text-green-600 dark:text-green-400 font-medium px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full">
                 ✓ Ready to use
               </span>
