@@ -58,9 +58,16 @@ const ProjectsView: React.FC = () => {
   const projectCount = userProjectCount || 0
   const selectedProjectIds = userSelectedProjects || []
   
+  console.log('🔍 ProjectsView: userSubscription =', userSubscription);
+  console.log('🔍 ProjectsView: projectCount =', projectCount);
+  console.log('🔍 ProjectsView: selectedProjectIds =', selectedProjectIds);
+  console.log('🔍 ProjectsView: maxProjects =', maxProjects);
+  
   const isProjectLocked = (projectId: string) => {
     // Project is locked if user hasn't selected it AND they've reached their limit
-    return !selectedProjectIds.includes(projectId) && projectCount >= maxProjects
+    const locked = !selectedProjectIds.includes(projectId) && projectCount >= maxProjects;
+    console.log(`🔍 ProjectsView: isProjectLocked(${projectId}) =`, locked, '| selected:', selectedProjectIds.includes(projectId), '| count:', projectCount, '>=', maxProjects);
+    return locked;
   }
 
   const getProjectColorScheme = (projectId: string) => {

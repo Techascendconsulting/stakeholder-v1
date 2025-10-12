@@ -105,6 +105,10 @@ const ProjectModuleList: React.FC = () => {
   
   // Check if user has selected any project (from AppContext)
   const hasSelectedProject = (userSelectedProjects && userSelectedProjects.length > 0) || selectedProject;
+  
+  console.log('🔍 ProjectModuleList: hasSelectedProject =', hasSelectedProject);
+  console.log('🔍 ProjectModuleList: userSelectedProjects =', userSelectedProjects);
+  console.log('🔍 ProjectModuleList: selectedProject =', selectedProject);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
