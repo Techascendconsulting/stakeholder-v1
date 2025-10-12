@@ -580,18 +580,43 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           });
         }
         
-        // Load user's selected projects from user_projects table
-        const { data: projectsData } = await supabase
+        // Try to load user's selected projects from user_projects table
+        const { data: projectsData, error } = await supabase
           .from('user_projects')
           .select('project_id')
           .eq('user_id', user.id);
         
-        if (projectsData) {
-          setUserSelectedProjects(projectsData.map(p => p.project_id));
-          setUserProjectCount(projectsData.length);
+        if (projectsData && !error) {
+          const projectIds = projectsData.map(p => p.project_id);
+          setUserSelectedProjects(projectIds);
+          setUserProjectCount(projectIds.length);
+          // Also save to localStorage as backup
+          localStorage.setItem(`userSelectedProjects_${user.id}`, JSON.stringify(projectIds));
+        } else {
+          // Fallback to localStorage if table doesn't exist
+          console.log('⚠️ user_projects table not found, using localStorage fallback');
+          const savedProjects = localStorage.getItem(`userSelectedProjects_${user.id}`);
+          if (savedProjects) {
+            const projectIds = JSON.parse(savedProjects);
+            setUserSelectedProjects(projectIds);
+            setUserProjectCount(projectIds.length);
+            console.log('✅ Restored selected projects from localStorage:', projectIds);
+          }
         }
       } catch (error) {
         console.error('Error loading subscription data:', error);
+        // Try localStorage fallback
+        try {
+          const savedProjects = localStorage.getItem(`userSelectedProjects_${user.id}`);
+          if (savedProjects) {
+            const projectIds = JSON.parse(savedProjects);
+            setUserSelectedProjects(projectIds);
+            setUserProjectCount(projectIds.length);
+            console.log('✅ Restored selected projects from localStorage (after error):', projectIds);
+          }
+        } catch (e) {
+          console.error('Error loading from localStorage:', e);
+        }
       }
     };
     
@@ -693,8 +718,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
         
         // Update local state regardless of database result
-        setUserSelectedProjects(prev => [...prev, project.id]);
-        setUserProjectCount(prev => prev + 1);
+        const updatedProjects = [...(userSelectedProjects || []), project.id];
+        setUserSelectedProjects(updatedProjects);
+        setUserProjectCount(updatedProjects.length);
+        
+        // Save to localStorage as backup for persistence across refreshes
+        localStorage.setItem(`userSelectedProjects_${user.id}`, JSON.stringify(updatedProjects));
+        console.log('💾 Saved to localStorage: userSelectedProjects =', updatedProjects);
         
         // Mark "Select Your Project" module as completed in project_progress
         try {
