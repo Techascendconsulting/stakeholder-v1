@@ -466,10 +466,10 @@ const ProjectsView: React.FC = () => {
                     {/* Status Indicators */}
                     <div className="flex items-center justify-between mb-4">
                       <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
-                        isSelected ? 'bg-yellow-400/20 text-yellow-100 border border-yellow-300/30' : 'bg-white/10'
+                        alreadySelected ? 'bg-green-400/20 text-green-100 border border-green-300/30' : 'bg-white/10'
                       }`}>
-                        {isSelected && <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>}
-                        <span>{isSelected ? 'ACTIVE PROJECT' : hasMeetings ? 'IN PROGRESS' : 'READY TO START'}</span>
+                        {alreadySelected && <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>}
+                        <span>{alreadySelected ? 'PROJECT SELECTED' : 'READY TO START'}</span>
                       </div>
                       
                       {requiredTier !== 'free' && (
@@ -589,7 +589,7 @@ const ProjectsView: React.FC = () => {
                       }`}
                     >
                       <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                      <span>{hasMeetings ? 'Continue Project' : 'Start Project'}</span>
+                      <span>{alreadySelected ? 'View Project Details' : 'Start Project'}</span>
                       <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                     
