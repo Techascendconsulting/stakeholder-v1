@@ -420,7 +420,10 @@ const Dashboard2: React.FC = () => {
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Quick Access</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <button
-              onClick={() => setCurrentView('learning-flow')}
+              onClick={() => {
+                console.log('📍 DASHBOARD: Quick Access clicked - learning-flow');
+                setCurrentView('learning-flow');
+              }}
               className="flex items-center space-x-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-lg transition-all group"
             >
               <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -428,7 +431,10 @@ const Dashboard2: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setCurrentView('practice-flow')}
+              onClick={() => {
+                console.log('📍 DASHBOARD: Quick Access clicked - practice-flow');
+                setCurrentView('practice-flow');
+              }}
               className="flex items-center space-x-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-lg transition-all group"
             >
               <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -436,7 +442,10 @@ const Dashboard2: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setCurrentView('project-flow')}
+              onClick={() => {
+                console.log('📍 DASHBOARD: Quick Access clicked - project-flow');
+                setCurrentView('project-flow');
+              }}
               className="flex items-center space-x-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 hover:shadow-lg transition-all group"
             >
               <Briefcase className="w-5 h-5 text-orange-600 dark:text-orange-400" />
