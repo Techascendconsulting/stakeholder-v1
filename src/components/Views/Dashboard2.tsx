@@ -12,6 +12,8 @@ const Dashboard2: React.FC = () => {
   const [learningProgress, setLearningProgress] = useState({ completed: 0, total: 10 });
   const [practiceProgress, setPracticeProgress] = useState({ completed: 0, total: 4 });
   const [projectProgress, setProjectProgress] = useState({ completed: 0, total: 6 });
+  const [meetingCount, setMeetingCount] = useState(0);
+  const [deliverableCount, setDeliverableCount] = useState(0);
   const [nextStep, setNextStep] = useState<{
     title: string;
     description: string;
@@ -65,6 +67,22 @@ const Dashboard2: React.FC = () => {
         .eq('status', 'completed');
 
       setProjectProgress({ completed: projectData?.length || 0, total: 6 });
+
+      // Get meeting and deliverable counts for existing users
+      if (profileData?.user_type === 'existing') {
+        const { count: meetingsCount } = await supabase
+          .from('meetings')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        const { count: deliverablesCount } = await supabase
+          .from('deliverables')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        setMeetingCount(meetingsCount || 0);
+        setDeliverableCount(deliverablesCount || 0);
+      }
 
       // Determine next step
       determineNextStep(profileData?.user_type, learningData?.length || 0, practiceData?.length || 0, projectData?.length || 0);
@@ -151,14 +169,14 @@ const Dashboard2: React.FC = () => {
         setNextStep({
           title: 'Resume Your Work',
           description: `Continue with ${selectedProject.name}`,
-          action: 'Go to Project',
-          route: 'projects'
+          action: 'View Project Details',
+          route: 'project-brief' // Goes to selected project, not project list
         });
       } else {
         setNextStep({
-          title: 'Explore the Platform',
-          description: 'All features unlocked - choose where to start',
-          action: 'View Learning',
+          title: 'Choose Your Path',
+          description: 'All features unlocked - start learning, practicing, or working on a project',
+          action: 'Explore Platform',
           route: 'learning-flow'
         });
       }
@@ -223,234 +241,111 @@ const Dashboard2: React.FC = () => {
           </div>
         )}
 
-        {/* Journey Progress (New Users Only) */}
+        {/* Simple Progress Bars (New Users Only) - NOT like journey pages */}
         {userType === 'new' && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Your Learning Path</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Your Training Progress</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Learning Journey */}
-              <div
-                onClick={() => setCurrentView('learning-flow')}
-                className={`bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 transition-all cursor-pointer ${
-                  learningProgress.completed === learningProgress.total
-                    ? 'border-green-500 hover:shadow-xl'
-                    : 'border-blue-500 hover:shadow-xl'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    learningProgress.completed === learningProgress.total ? 'bg-green-100 dark:bg-green-900/40' : 'bg-blue-100 dark:bg-blue-900/40'
-                  }`}>
-                    <BookOpen className={`w-6 h-6 ${
-                      learningProgress.completed === learningProgress.total ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'
-                    }`} />
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+              {/* Learning */}
+              <div onClick={() => setCurrentView('learning-flow')} className="cursor-pointer group">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-3">
+                    <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <span className="font-semibold text-gray-900 dark:text-white">Learning Journey</span>
                   </div>
-                  {learningProgress.completed === learningProgress.total && (
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                  )}
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{learningProgress.completed}/{learningProgress.total} modules</span>
                 </div>
-                
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Learning Journey</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  Master BA fundamentals and concepts
-                </p>
-                
-                <div className="mb-3">
-                  <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                    <span>Progress</span>
-                    <span className="font-semibold">{learningProgress.completed}/{learningProgress.total} modules</span>
-                  </div>
-                  <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-500 ${
-                        learningProgress.completed === learningProgress.total ? 'bg-green-500' : 'bg-blue-500'
-                      }`}
-                      style={{ width: `${(learningProgress.completed / learningProgress.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="text-sm font-semibold flex items-center space-x-2 text-blue-600 dark:text-blue-400">
-                  <span>{learningProgress.completed === learningProgress.total ? 'Review Journey' : 'Continue Learning'}</span>
-                  <ArrowRight className="w-4 h-4" />
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-500"
+                    style={{ width: `${(learningProgress.completed / learningProgress.total) * 100}%` }}
+                  />
                 </div>
               </div>
 
-              {/* Practice Journey */}
-              <div
-                onClick={() => {
-                  if (learningProgress.completed >= 10) {
-                    setCurrentView('practice-flow');
-                  }
-                }}
-                className={`bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 transition-all ${
-                  learningProgress.completed < 10
-                    ? 'border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed'
-                    : practiceProgress.completed === practiceProgress.total
-                    ? 'border-green-500 hover:shadow-xl cursor-pointer'
-                    : 'border-purple-500 hover:shadow-xl cursor-pointer'
-                }`}
+              {/* Practice */}
+              <div 
+                onClick={() => { if (learningProgress.completed >= 10) setCurrentView('practice-flow'); }} 
+                className={`${learningProgress.completed >= 10 ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    learningProgress.completed < 10
-                      ? 'bg-gray-100 dark:bg-gray-700'
-                      : practiceProgress.completed === practiceProgress.total
-                      ? 'bg-green-100 dark:bg-green-900/40'
-                      : 'bg-purple-100 dark:bg-purple-900/40'
-                  }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-3">
                     {learningProgress.completed < 10 ? (
-                      <Lock className="w-6 h-6 text-gray-400" />
+                      <Lock className="w-5 h-5 text-gray-400" />
                     ) : (
-                      <Target className={`w-6 h-6 ${
-                        practiceProgress.completed === practiceProgress.total ? 'text-green-600 dark:text-green-400' : 'text-purple-600 dark:text-purple-400'
-                      }`} />
+                      <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    )}
+                    <span className={`font-semibold ${learningProgress.completed >= 10 ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+                      Practice Journey
+                    </span>
+                    {learningProgress.completed < 10 && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400 italic">(Complete Learning first)</span>
                     )}
                   </div>
-                  {practiceProgress.completed === practiceProgress.total && learningProgress.completed >= 10 && (
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                  )}
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{practiceProgress.completed}/{practiceProgress.total} modules</span>
                 </div>
-                
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Practice Journey</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  Apply skills with AI stakeholders
-                </p>
-                
-                {learningProgress.completed < 10 ? (
-                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                    🔒 Complete all 10 Learning modules
-                  </div>
-                ) : (
-                  <>
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                        <span>Progress</span>
-                        <span className="font-semibold">{practiceProgress.completed}/{practiceProgress.total} modules</span>
-                      </div>
-                      <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-500 ${
-                            practiceProgress.completed === practiceProgress.total ? 'bg-green-500' : 'bg-purple-500'
-                          }`}
-                          style={{ width: `${(practiceProgress.completed / practiceProgress.total) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="text-sm font-semibold flex items-center space-x-2 text-purple-600 dark:text-purple-400">
-                      <span>{practiceProgress.completed === practiceProgress.total ? 'Review Practice' : 'Continue Practice'}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </div>
-                  </>
-                )}
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-purple-500 transition-all duration-500"
+                    style={{ width: `${(practiceProgress.completed / practiceProgress.total) * 100}%` }}
+                  />
+                </div>
               </div>
 
-              {/* Project Journey */}
-              <div
-                onClick={() => {
-                  if (learningProgress.completed >= 10) {
-                    setCurrentView('project-flow');
-                  }
-                }}
-                className={`bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 transition-all ${
-                  learningProgress.completed < 10
-                    ? 'border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed'
-                    : projectProgress.completed === projectProgress.total
-                    ? 'border-green-500 hover:shadow-xl cursor-pointer'
-                    : 'border-orange-500 hover:shadow-xl cursor-pointer'
-                }`}
+              {/* Projects */}
+              <div 
+                onClick={() => { if (learningProgress.completed >= 10) setCurrentView('project-flow'); }} 
+                className={`${learningProgress.completed >= 10 ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    learningProgress.completed < 10
-                      ? 'bg-gray-100 dark:bg-gray-700'
-                      : projectProgress.completed === projectProgress.total
-                      ? 'bg-green-100 dark:bg-green-900/40'
-                      : 'bg-orange-100 dark:bg-orange-900/40'
-                  }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-3">
                     {learningProgress.completed < 10 ? (
-                      <Lock className="w-6 h-6 text-gray-400" />
+                      <Lock className="w-5 h-5 text-gray-400" />
                     ) : (
-                      <Briefcase className={`w-6 h-6 ${
-                        projectProgress.completed === projectProgress.total ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
-                      }`} />
+                      <Briefcase className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    )}
+                    <span className={`font-semibold ${learningProgress.completed >= 10 ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+                      Project Journey
+                    </span>
+                    {learningProgress.completed < 10 && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400 italic">(Complete Learning first)</span>
                     )}
                   </div>
-                  {projectProgress.completed === projectProgress.total && learningProgress.completed >= 10 && (
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                  )}
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{selectedProject ? '1' : '0'}/1 selected</span>
                 </div>
-                
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Project Journey</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  Build real deliverables and portfolio
-                </p>
-                
-                {learningProgress.completed < 10 ? (
-                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                    🔒 Complete all 10 Learning modules
-                  </div>
-                ) : (
-                  <>
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                        <span>Progress</span>
-                        <span className="font-semibold">{projectProgress.completed}/{projectProgress.total} tools</span>
-                      </div>
-                      <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-500 ${
-                            projectProgress.completed === projectProgress.total ? 'bg-green-500' : 'bg-orange-500'
-                          }`}
-                          style={{ width: `${(projectProgress.completed / projectProgress.total) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="text-sm font-semibold flex items-center space-x-2 text-orange-600 dark:text-orange-400">
-                      <span>{selectedProject ? 'Continue Project' : 'Start Project'}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </div>
-                  </>
-                )}
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-orange-500 transition-all duration-500"
+                    style={{ width: selectedProject ? '100%' : '0%' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Today's Activity / Quick Stats */}
+        {/* Activity Summary (Existing Users Only) */}
         {userType === 'existing' && (
           <div className="mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Your BA Portfolio</h3>
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center space-x-2">
-                    <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      <strong className="text-gray-900 dark:text-white">{learningProgress.completed + practiceProgress.completed}</strong> Sessions
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      <strong className="text-gray-900 dark:text-white">{projectProgress.completed}</strong> Tools Mastered
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Award className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      <strong className="text-gray-900 dark:text-white">Full Access</strong>
-                    </span>
-                  </div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Your Activity</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{meetingCount}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Meetings</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">{deliverableCount}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Deliverables</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{selectedProject ? '1' : '0'}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Projects</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">✓</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Full Access</div>
                 </div>
               </div>
             </div>
