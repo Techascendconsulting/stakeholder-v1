@@ -250,8 +250,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const alwaysAllowed = [
       'dashboard',
       'learning-flow',
+      'practice-flow',    // Practice Journey hub page
+      'project-flow',     // Project Journey hub page
       'my-resources',
-      'handbook',  // My Resources includes Handbook
+      'ba-reference',     // Resources section
+      'handbook',         // My Resources includes Handbook
       'profile',
       'welcome',
       'motivation'
@@ -296,15 +299,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             console.log('🚫 BLOCKING navigation to:', view);
             setLockMessage(lockMessage);
             return; // Block navigation
+          } else {
+            console.log('✅ NAVIGATE: Page accessible for new user, clearing lock message');
+            setLockMessage(null);
           }
+        } else {
+          // Existing user - always clear lock message
+          console.log('✅ NAVIGATE: Existing user, clearing lock message');
+          setLockMessage(null);
         }
       } catch (error) {
         console.error('Error checking navigation permissions:', error);
       }
+    } else {
+      // Page in alwaysAllowed list - clear lock message
+      console.log('✅ NAVIGATE: Page in alwaysAllowed list, clearing lock message');
+      setLockMessage(null);
     }
 
     console.log('🔄 NAVIGATE: Previous view was:', currentView)
     console.log('🔄 NAVIGATE: About to set view to:', view)
+    
     setCurrentViewState(view)
     try {
       localStorage.setItem('currentView', view)
