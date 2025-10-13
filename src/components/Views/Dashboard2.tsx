@@ -270,10 +270,10 @@ const Dashboard2: React.FC = () => {
           </div>
         )}
 
-        {/* Hero: Your Next Step - DASHBOARD GRADIENT (Pink-Rose, different from journey purple) */}
+        {/* Hero: Your Next Step - DASHBOARD GRADIENT (Modern Purple, creative & premium) */}
         {nextStep && (
           <div className="mb-8">
-            <div className="bg-gradient-to-r from-pink-600 via-rose-600 to-red-500 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
+            <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
               <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-48 translate-x-48"></div>
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-2xl translate-y-32 -translate-x-32"></div>
               
@@ -283,7 +283,7 @@ const Dashboard2: React.FC = () => {
                 </div>
                 
                 <h2 className="text-3xl font-bold mb-3">{nextStep.title}</h2>
-                <p className="text-pink-100 text-lg mb-6">{nextStep.description}</p>
+                <p className="text-purple-100 text-lg mb-6">{nextStep.description}</p>
                 
                 {nextStep.status && (
                   <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg text-sm font-medium mb-6">
@@ -293,7 +293,7 @@ const Dashboard2: React.FC = () => {
                 
                 <button
                   onClick={() => setCurrentView(nextStep.route as any)}
-                  className="inline-flex items-center space-x-3 px-8 py-4 bg-white text-pink-600 rounded-xl hover:bg-pink-50 transition-all font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="inline-flex items-center space-x-3 px-8 py-4 bg-white text-purple-600 rounded-xl hover:bg-purple-50 transition-all font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <PlayCircle className="w-6 h-6" />
                   <span>{nextStep.action}</span>
