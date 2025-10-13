@@ -249,9 +249,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Everything else (Practice, Projects, Mentor, Handbook, Learning pages, etc.) is LOCKED
     const alwaysAllowed = [
       'dashboard',
-      'learning-flow',
-      'practice-flow',    // Practice Journey hub page
-      'project-flow',     // Project Journey hub page
+      'learning-flow',    // Learning Journey hub page
+      // practice-flow and project-flow removed - they unlock progressively via isPageAccessible()
       'my-resources',
       'ba-reference',     // Resources section
       'handbook',         // My Resources includes Handbook

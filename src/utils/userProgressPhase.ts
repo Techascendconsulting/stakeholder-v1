@@ -73,22 +73,26 @@ export function isPageAccessible(page: string, phase: UserPhase): boolean {
 
   // Practice pages - accessible after learning phase
   const practicePages = [
+    'practice-flow',          // Practice Journey hub page
     'practice', 'practice-2', 'my-practice', 'elicitation-hub', 
-    'documentation-practice', 'scrum-practice', 'mvp-practice', 'agile-practice'
+    'documentation-practice', 'scrum-practice', 'mvp-practice', 'agile-practice',
+    'training-hub-stage-selection', 'training-hub-project-selection'  // Training hub pages
   ];
   
   if (practicePages.includes(page) && (phase === 'practice' || phase === 'hands-on')) {
     return true;
   }
 
-  // Hands-on pages - accessible only in hands-on phase
+  // Hands-on pages - accessible after practice phase
   const handsOnPages = [
+    'project-flow',           // Project Journey hub page
     'projects', 'project', 'project-brief', 'project-setup', 'create-project',
     'custom-project', 'custom-stakeholders', 'project-landing',
     'my-mentor', 'my-mentorship', 'mentor-feedback', 'book-session',
     'stakeholders', 'meeting-mode-selection', 'meeting', 'voice-only-meeting',
     'meeting-summary', 'meeting-details', 'raw-transcript', 'notes',
-    'deliverables', 'analysis', 'training-practice', 'training-hub'
+    'deliverables', 'analysis', 'training-practice', 'training-hub',
+    'process-mapper-editor', 'agile-scrum'  // Project tools
   ];
   
   if (handsOnPages.includes(page) && phase === 'hands-on') {
