@@ -385,9 +385,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
               <li key={item.id} className="relative group">
                 <button
                   onClick={() => {
+                    console.log('🖱️ SIDEBAR CLICK:', item.id, 'hasSubItems:', hasSubItems, 'isCollapsible:', item.isCollapsible);
                     if (hasSubItems && item.isCollapsible) {
                       toggleSection(item.id);
                     } else {
+                      console.log('🖱️ SIDEBAR: Navigating to:', item.id);
                       setCurrentView(item.id as any);
                       console.debug('[Sidebar] sectionClick', { id: item.id });
                     }
@@ -427,6 +429,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                         <li key={subItem.id}>
                           <button
                             onClick={() => {
+                              console.log('🖱️ SIDEBAR SUB-ITEM CLICK:', subItem.id);
                               setCurrentView(subItem.id as any);
                               console.debug('[Sidebar] subItemClick', { id: subItem.id });
                             }}

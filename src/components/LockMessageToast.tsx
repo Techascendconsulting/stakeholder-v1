@@ -10,13 +10,17 @@ interface LockMessageToastProps {
 const LockMessageToast: React.FC<LockMessageToastProps> = ({ message, onClose }) => {
   const { setCurrentView } = useApp();
   
+  // Debug: Log when lock screen is displayed
+  console.log('🔒 LOCK SCREEN DISPLAYED:', { message });
+  
   const handleGoToLearningJourney = () => {
+    console.log('🔒 LOCK SCREEN: User clicked "Go to Learning Journey"');
     onClose(); // Clear the lock message
     setCurrentView('learning-flow'); // Navigate to Learning Journey
   };
   
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-6 relative z-10">
+    <div className="w-full h-full flex items-center justify-center p-6 bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-2xl w-full">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border-2 border-orange-200 dark:border-orange-800">
           {/* Header */}
