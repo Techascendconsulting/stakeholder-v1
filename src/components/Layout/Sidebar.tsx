@@ -59,6 +59,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const { currentView, setCurrentView } = useApp();
   const { user, signOut } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
+  
+  // Debug: Log currentView changes
+  console.log('🎨 SIDEBAR: Rendering with currentView =', currentView);
   const { isAdmin } = useAdmin();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
