@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { LEARNING_MODULES } from '../../views/LearningFlow/learningData';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
+import MarkCompleteButton from '../MarkCompleteButton';
 import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
 
 const CoreLearning2View: React.FC = () => {
@@ -384,6 +385,85 @@ d) Departments have different lunch schedules
                 ">
                 <ReactMarkdown>{selectedTopic.content}</ReactMarkdown>
               </div>
+
+              {/* Final Assignment (After Topic 14 Only) */}
+              {isLastTopic && (
+                <div className="mt-12 pt-8 border-t-4 border-purple-200 dark:border-purple-800">
+                  {userType === 'new' ? (
+                    // Mandatory assignment for new users
+                    <AssignmentPlaceholder
+                      moduleId="module-1-core-learning"
+                      moduleTitle="Core Learning"
+                      title="Final Assessment: Complete BA Fundamentals"
+                      description={`Demonstrate your mastery of all 14 topics.
+
+**Question 1:** You're hired as a BA for a food delivery app. Customers complain: "My food always arrives cold." Using the 5 Whys technique from Topic 9, investigate the root cause. Then, using what you learned in Topics 8-14, explain:
+- What stakeholders would you talk to? (Topic 10)
+- How would you work with developers to solve it? (Topic 11)
+- What process improvements would you recommend? (Topics 12-13)
+- Which SDLC approach (Agile or Waterfall) would you use and why? (Topic 8)
+
+**Question 2:** Compare how a BA works in Agile vs Waterfall (Topic 8). Give a real example from Topics 1-7 showing when each approach would be better.
+
+**Question 3:** A stakeholder says "We need a mobile app." Using what you learned in Topics 1-7, explain:
+- What questions would you ask to understand the real problem? (Topic 9)
+- What might be the actual root cause?
+- How would you prevent this from becoming a wasted project? (Topic 5)
+
+**Question 4:** Describe the BA's role in the full Software Development Life Cycle (Topic 8). For each phase (Planning, Requirements, Design, Development, Testing, Deployment, Maintenance), explain what a BA does with specific examples from Topics 1-14.
+
+---
+
+**Be thorough!** Use specific examples from the topics. Show you understand the BA role comprehensively.`}
+                      isCompleted={false}
+                      canAccess={true}
+                      onComplete={() => {}}
+                    />
+                  ) : (
+                    // Optional assignment + Mark Complete for existing users
+                    <div className="space-y-6">
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+                        <div className="text-center mb-6">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">📝 Optional: Test Your Knowledge</h3>
+                          <p className="text-gray-600 dark:text-gray-400">Want to validate your learning? Submit an assignment for feedback!</p>
+                        </div>
+                        <AssignmentPlaceholder
+                          moduleId="module-1-core-learning"
+                          moduleTitle="Core Learning"
+                          title="Final Assessment: Complete BA Fundamentals"
+                          description={`Demonstrate your mastery of all 14 topics.
+
+**Question 1:** You're hired as a BA for a food delivery app. Customers complain: "My food always arrives cold." Using the 5 Whys technique from Topic 9, investigate the root cause. Then, using what you learned in Topics 8-14, explain:
+- What stakeholders would you talk to? (Topic 10)
+- How would you work with developers to solve it? (Topic 11)
+- What process improvements would you recommend? (Topics 12-13)
+- Which SDLC approach (Agile or Waterfall) would you use and why? (Topic 8)
+
+**Question 2:** Compare how a BA works in Agile vs Waterfall (Topic 8). Give a real example from Topics 1-7 showing when each approach would be better.
+
+**Question 3:** A stakeholder says "We need a mobile app." Using what you learned in Topics 1-7, explain:
+- What questions would you ask to understand the real problem? (Topic 9)
+- What might be the actual root cause?
+- How would you prevent this from becoming a wasted project? (Topic 5)
+
+**Question 4:** Describe the BA's role in the full Software Development Life Cycle (Topic 8). For each phase (Planning, Requirements, Design, Development, Testing, Deployment, Maintenance), explain what a BA does with specific examples from Topics 1-14.
+
+---
+
+**Be thorough!** Use specific examples from the topics. Show you understand the BA role comprehensively.`}
+                          isCompleted={false}
+                          canAccess={true}
+                          onComplete={() => {}}
+                        />
+                      </div>
+                      <MarkCompleteButton
+                        moduleId="module-1-core-learning"
+                        moduleTitle="Core Learning"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Footer Navigation */}
