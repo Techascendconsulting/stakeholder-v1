@@ -161,11 +161,42 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
           You scored <span className={`font-bold ${isPass ? 'text-green-600' : 'text-yellow-600'}`}>{aiFeedback.score}/100</span>
         </p>
 
-        {/* Show feedback */}
+        {/* Show submitted answer (read-only if passed, editable if failed) */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-left mb-6">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Verity's Feedback:</h3>
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">{aiFeedback.summary}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{aiFeedback.feedback}</p>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
+            <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <span>Your Submission:</span>
+          </h3>
+          <div className={`p-4 rounded-lg ${isPass ? 'bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600' : 'bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-700'}`}>
+            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{previousSubmission}</p>
+          </div>
+          {isPass && (
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-medium flex items-center space-x-1">
+              <Lock className="w-3 h-3" />
+              <span>Submission locked (passed) - not editable</span>
+            </p>
+          )}
+          {!isPass && (
+            <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2 font-medium">
+              ⚠️ Review your submission below and improve it based on the feedback
+            </p>
+          )}
+        </div>
+
+        {/* Show AI feedback (always read-only) */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-left mb-6">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
+            <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <span>Verity's Feedback:</span>
+          </h3>
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-700">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3 font-medium">{aiFeedback.summary}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed">{aiFeedback.feedback}</p>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic flex items-center space-x-1">
+            <Lock className="w-3 h-3" />
+            <span>AI feedback is read-only</span>
+          </p>
         </div>
 
         {isPass ? (
@@ -410,3 +441,4 @@ const AssignmentPlaceholder: React.FC<AssignmentPlaceholderProps> = ({
 };
 
 export default AssignmentPlaceholder;
+
