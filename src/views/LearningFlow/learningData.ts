@@ -329,33 +329,391 @@ Answer these, and you'll always deliver valuable work.
         id: 'lesson-1-3',
         title: 'Departments in an Organisation',
         type: 'reading',
-        duration: '8 min',
-        content: conceptToMarkdown(
-          'Departments in an Organisation',
-          'Common departments include Sales, Marketing, Finance, Operations, Compliance, and Customer Service. Each one has its own goals and pain points. BAs often work across departments to understand where processes break down. Knowing who does what helps you ask better questions and involve the right people.',
-          [
-            'Common departments include Sales, Marketing, Finance, Operations, Compliance, and Customer Service.',
-            'Each one has its own goals and pain points.',
-            'BAs often work across departments to understand where processes break down.',
-            'Knowing who does what helps you ask better questions and involve the right people.'
-          ]
-        )
+        duration: '9 min',
+        content: `# Departments in an Organisation
+
+You've probably noticed that when you call customer service at Amazon, the person you speak to can't just magically fix your billing issue or change your delivery address. They have to "transfer you to another department." Ever wondered why?
+
+**Organizations divide work into specialized departments** - and as a BA, you'll constantly work across these invisible boundaries.
+
+## Why Departments Exist
+
+Imagine trying to run Spotify with one giant team of 5,000 people all reporting to one manager. Chaos, right? 
+
+Instead, companies create departments - specialized teams focused on specific areas. Each department:
+- Has its own goals and KPIs (key performance indicators)
+- Uses different tools and systems
+- Speaks different "languages" (marketing talks about "campaigns," IT talks about "APIs")
+- Often competes for budget and resources
+
+**Your job as a BA? Navigate these silos and get everyone aligned.**
+
+## The Main Departments You'll Work With
+
+### 1. Sales
+**What They Do:** Bring in new customers and close deals
+
+**Real Example - LinkedIn Sales Team:**
+- Target: Sign up companies for LinkedIn Recruiter subscriptions
+- Pain Point: "The CRM system doesn't sync with our email, so we lose track of leads"
+- What They Care About: Lead conversion rates, deal size, sales cycle length
+
+**BA Impact:** You might work on a project to integrate the CRM with email and calendar tools, reducing manual data entry.
+
+### 2. Marketing
+**What They Do:** Build brand awareness and attract potential customers
+
+**Real Example - Spotify Marketing:**
+- Target: Get more people to sign up for Spotify Premium
+- Pain Point: "We run Facebook ads, Instagram campaigns, and influencer partnerships - but can't tell which actually drives sign-ups"
+- What They Care About: Cost per acquisition, campaign ROI, brand sentiment
+
+**BA Impact:** You might define requirements for a marketing analytics dashboard that tracks which channels bring in paying subscribers.
+
+### 3. Finance
+**What They Do:** Manage money - budgets, forecasting, reporting, compliance
+
+**Real Example - Netflix Finance:**
+- Target: Track revenue across 190+ countries with different currencies
+- Pain Point: "Revenue reports are manual - it takes 2 weeks to close the books each month"
+- What They Care About: Accurate numbers, cost control, compliance with accounting standards
+
+**BA Impact:** You might help automate financial reporting or build a budgeting tool for department heads.
+
+### 4. Operations
+**What They Do:** Execute the core business - deliver products, fulfill orders, manage logistics
+
+**Real Example - Amazon Warehouse Operations:**
+- Target: Ship millions of packages daily with 1-2 day delivery
+- Pain Point: "Our inventory system doesn't talk to the warehouse robots, causing delays"
+- What They Care About: Fulfillment speed, error rates, cost per unit shipped
+
+**BA Impact:** You might work on integrating warehouse management systems with delivery tracking to reduce delays.
+
+### 5. Customer Service (Support)
+**What They Do:** Help customers with issues, complaints, and questions
+
+**Real Example - Uber Customer Support:**
+- Target: Resolve rider and driver issues quickly
+- Pain Point: "Riders call asking 'Where's my driver?' because real-time tracking breaks in the app"
+- What They Care About: First-call resolution, average handle time, customer satisfaction scores
+
+**BA Impact:** You might identify self-service features (like live driver tracking) that reduce call volume by 40%.
+
+### 6. Product/Product Management
+**What They Do:** Decide what features to build and prioritize the roadmap
+
+**Real Example - Instagram Product Team:**
+- Target: Increase user engagement (time spent in app)
+- Pain Point: "We launch features based on gut feeling, not user data"
+- What They Care About: User engagement metrics, feature adoption, competitive differentiation
+
+**BA Impact:** You work closely with Product Managers to define requirements for new features based on user research and data.
+
+### 7. IT/Technology/Engineering
+**What They Do:** Build, maintain, and secure the systems that run the business
+
+**Real Example - Banking IT Team:**
+- Target: Keep online banking running 24/7 with zero downtime
+- Pain Point: "Business teams request features without explaining the business case or priority"
+- What They Care About: System uptime, security, technical debt, clear requirements
+
+**BA Impact:** You're the bridge - translating business needs into technical requirements developers can actually build.
+
+### 8. Compliance/Legal/Risk
+**What They Do:** Ensure the company follows laws, regulations, and internal policies
+
+**Real Example - TikTok Compliance:**
+- Target: Comply with data protection laws in every country they operate
+- Pain Point: "Our app collects user data, but we can't prove we're GDPR-compliant because data deletion isn't automated"
+- What They Care About: Regulatory compliance, audit trails, risk mitigation
+
+**BA Impact:** You might define requirements for a "right to be forgotten" feature that lets users delete all their data.
+
+### 9. Human Resources (HR)
+**What They Do:** Recruit, onboard, develop, and retain employees
+
+**Real Example - Google HR:**
+- Target: Hire 10,000 people per year while maintaining quality
+- Pain Point: "Our applicant tracking system is slow - recruiters lose top candidates to competitors"
+- What They Care About: Time to hire, employee retention, diversity metrics
+
+**BA Impact:** You might help streamline the recruitment process or build a performance review system.
+
+## The Problem: Departmental Silos
+
+Here's what happens in most organizations:
+
+**Marketing** creates a campaign promising "next-day delivery."
+**Sales** sells it to customers.
+**Operations** can't actually deliver next-day in half the country.
+**Customer Service** gets flooded with angry calls.
+**Finance** has to issue refunds.
+
+Each department optimized for their own goals - but nobody looked at the whole picture. This is called **working in silos**.
+
+## Your Role: The Cross-Functional Connector
+
+As a BA, you break down silos. Here's a real scenario:
+
+**Project:** Improve the checkout experience for an e-commerce site
+
+**Bad Approach (Siloed):**
+- Ask Marketing what they want: "Make it prettier and add trust badges"
+- Ask IT: "Reduce page load time"
+- Build both, deploy, done.
+
+**Good BA Approach (Cross-Functional):**
+
+1. **Talk to Customer Service:** "What do customers complain about?"
+   - Answer: "Shipping costs surprise them at the last step"
+
+2. **Talk to Finance:** "What's our cart abandonment rate costing us?"
+   - Answer: "We lose £2M annually to abandoned carts"
+
+3. **Talk to Operations:** "Can we accurately predict shipping costs earlier?"
+   - Answer: "Yes, but we need the customer's postcode first"
+
+4. **Talk to Marketing:** "Would showing shipping costs upfront reduce conversions?"
+   - Answer: "Actually, transparency builds trust - conversions might increase"
+
+5. **Talk to IT:** "How hard is it to calculate shipping earlier in the journey?"
+   - Answer: "Easy if we ask for postcode on the first page"
+
+**Your BA Solution:** Move postcode collection to the first page and show shipping costs upfront. Result:
+- Reduces cart abandonment (Finance wins)
+- Reduces angry calls (Customer Service wins)
+- Improves trust and conversions (Marketing wins)
+- Easy to build (IT wins)
+- Doesn't overload logistics (Operations wins)
+
+## How to Work Across Departments
+
+### 1. Learn Their Language
+- Finance talks about ROI, cost savings, revenue impact
+- IT talks about APIs, databases, system architecture
+- Operations talks about throughput, efficiency, error rates
+- Marketing talks about conversion, engagement, brand awareness
+
+**Pro Tip:** When talking to Finance, say "This will reduce manual processing costs by £50K/year." Don't say "This will be cool."
+
+### 2. Understand Their Pain Points
+Every department has recurring frustrations. Ask:
+- "What takes up most of your time that shouldn't?"
+- "What do you wish you could do but can't?"
+- "Where do things regularly break or go wrong?"
+
+### 3. Map the Handoffs
+Most problems happen at **handoffs** between departments:
+- Sales → Operations: "Sales promised custom delivery, but didn't tell us"
+- Marketing → Customer Service: "They ran a promo without warning us - call volume doubled"
+- Finance → IT: "They need a report but can't explain what data they actually need"
+
+**Your job:** Document these handoffs and fix the gaps.
+
+### 4. Get Everyone in the Same Room
+When you run workshops or requirements sessions, invite representatives from ALL affected departments. Don't let Sales define requirements without talking to Operations.
+
+## Real BA Scenario: The Departmental Minefield
+
+**Project:** Build a new pricing tool for sales reps
+
+**If you only talk to Sales:**
+They'll ask for flexibility - "Let us set any price we want for each customer!"
+
+**If you also talk to Finance:**
+"No way - we need pricing controls to maintain profit margins."
+
+**If you also talk to Compliance:**
+"Some industries have regulations - we can't discriminate pricing."
+
+**If you also talk to IT:**
+"We can build it, but we need clear rules for what's allowed."
+
+**Your BA solution:**
+Define a pricing tool with:
+- Predefined pricing tiers (Finance rule)
+- Sales can offer discounts within a 15% range (Sales flexibility)
+- Automated approval workflow for discounts >15% (Compliance check)
+- Integration with CRM for audit trail (IT requirement)
+
+Everyone compromises, but everyone gets value.
+
+## Key Takeaway
+
+As a BA, **you are a cross-functional translator**. You:
+- Speak each department's language
+- Understand their goals and constraints
+- Connect the dots between silos
+- Ensure solutions work for the whole business, not just one team
+
+The best BAs don't just gather requirements - they build bridges between departments and create solutions that work for everyone.
+
+---
+
+**Next up:** Why do projects actually happen? Let's explore the triggers that kick off BA work.
+`
       },
       {
         id: 'lesson-1-4',
         title: 'Why Projects Happen',
         type: 'reading',
-        duration: '7 min',
-        content: conceptToMarkdown(
-          'Why Projects Happen',
-          'Projects are usually triggered by problems, regulations, inefficiencies, or growth plans. They are time-bound and goal-driven — not ongoing tasks. The BA helps define the project clearly before it begins. Your work prevents wasted time and money solving the wrong thing.',
-          [
-            'Projects are usually triggered by problems, regulations, inefficiencies, or growth plans.',
-            'They are time-bound and goal-driven — not ongoing tasks.',
-            'The BA helps define the project clearly before it begins.',
-            'Your work prevents wasted time and money solving the wrong thing.'
-          ]
-        )
+        duration: '8 min',
+        content: `# Why Projects Happen
+
+Projects don't just appear out of thin air. Something triggers them - a crisis, an opportunity, a regulation, or a frustrated CEO who's tired of hearing complaints.
+
+**Understanding WHY projects happen helps you shape better solutions** because the trigger tells you what success looks like.
+
+## The 5 Main Triggers for Projects
+
+### 1. A Problem That's Costing Money
+
+**Real Example - WhatsApp Downtime:**
+In 2021, WhatsApp went down for 7 hours. Facebook (Meta) lost an estimated $100M in ad revenue because people weren't using their apps.
+
+**Project Triggered:** "Improve system resilience to prevent future outages"
+
+**BA's Role:** Define requirements for backup systems, failover processes, and better monitoring. The project isn't about "making it work better" - it's about preventing million-dollar losses.
+
+**Everyday Example:**
+Imagine Uber drivers are complaining the app crashes during peak hours. Lost rides = lost revenue. A project is triggered to fix stability.
+
+### 2. A New Regulation or Compliance Requirement
+
+**Real Example - Cookie Consent:**
+When GDPR became law in 2018, every website in the EU had to add cookie consent banners. Non-compliance = fines up to €20M or 4% of global revenue.
+
+**Project Triggered:** "Implement GDPR-compliant cookie consent"
+
+**BA's Role:** Define requirements for:
+- What data we collect
+- How users can opt out
+- How we store and delete data
+- Audit trails to prove compliance
+
+**Everyday Example:**
+Banking apps had to add two-factor authentication when regulators demanded stronger security. Not optional - legally required.
+
+### 3. Growth Plans (We Want to Expand)
+
+**Real Example - Spotify Entering India:**
+When Spotify launched in India in 2019, they couldn't just copy-paste their UK app. They had to:
+- Support local languages (Hindi, Tamil, etc.)
+- Integrate local payment methods (UPI, Paytm)
+- License different music (Bollywood, regional artists)
+- Price subscriptions differently (₹119/month vs £9.99)
+
+**Project Triggered:** "Localize Spotify for the Indian market"
+
+**BA's Role:** Work with local teams to understand requirements, define what "localization" means, and ensure the app works for Indian users.
+
+### 4. Customer Complaints or Poor Experience
+
+**Real Example - Instagram's Chronological Feed:**
+Users complained for years that Instagram's algorithm made them miss posts from friends. In 2022, Instagram brought back the chronological feed option.
+
+**Project Triggered:** "Give users control over their feed sorting"
+
+**BA's Role:** Define requirements for:
+- How users switch between algorithmic and chronological
+- What "chronological" actually means (by post time or by time you follow someone?)
+- How to handle ads in a chronological feed
+
+**Everyday Example:**
+Amazon introduced "Subscribe & Save" because customers complained about re-ordering essentials (toilet paper, coffee) every month. The project addressed a real pain point.
+
+### 5. Competitive Pressure (Our Competitors Are Beating Us)
+
+**Real Example - Apple Pay:**
+When Google launched Google Pay (Android Pay) in 2015, Apple was under pressure. They couldn't let Android have the only mobile wallet.
+
+**Project Triggered:** "Build Apple Pay to compete with Google Pay"
+
+**BA's Role:** Research what Google Pay offers, identify gaps, define requirements for a competitive alternative, and ensure it integrates with existing Apple services.
+
+**Everyday Example:**
+When TikTok exploded, Instagram rushed to build Reels. YouTube built Shorts. Everyone copied the feature to stay competitive.
+
+## Projects vs. Business-as-Usual (BAU)
+
+Not everything is a project. Here's the difference:
+
+### Projects (Temporary, Goal-Driven)
+- Have a start and end date
+- Aim to create something new or change something
+- Require a team dedicated to the outcome
+- Have a defined budget
+
+**Examples:**
+- Build a new checkout system (6 months, then done)
+- Migrate from old CRM to Salesforce (1 year, then done)
+- Launch in a new country (9 months, then done)
+
+### Business-as-Usual (Ongoing, Repetitive)
+- Happens every day, week, or month
+- No end date - it's part of normal operations
+- Uses existing systems and processes
+
+**Examples:**
+- Process customer orders (happens daily forever)
+- Respond to support tickets (ongoing)
+- Run payroll (monthly, ongoing)
+
+**Why This Matters for BAs:**
+When someone asks you to "improve order processing," you need to ask: "Are we building something new (project)? Or fixing an ongoing process (process improvement)?"
+
+## How BAs Prevent Wasted Projects
+
+Here's the harsh truth: **30-50% of IT projects fail** (source: industry research). They either:
+- Go over budget
+- Miss deadlines
+- Get cancelled halfway
+- Deliver something nobody uses
+
+**Why?** Usually because:
+- The problem wasn't clear
+- Requirements were vague
+- Stakeholders didn't agree on the goal
+- The solution didn't match the actual need
+
+**Your job as a BA? Prevent this waste.**
+
+## Real Scenario: A Project That Should Never Have Happened
+
+**Company:** Online fashion retailer
+
+**What They Said:** "We need a mobile app"
+
+**What a Bad BA Does:**
+"Okay, let's build an app!" (6 months and £500K later, nobody uses it)
+
+**What a Good BA Does:**
+
+1. **Ask Why:** "What problem are we solving with an app?"
+   - Answer: "Our website doesn't work well on mobile"
+
+2. **Dig Deeper:** "Why not just fix the mobile website?"
+   - Answer: "Um... we assumed an app was better?"
+
+3. **Analyze:** Check data - 80% of mobile users just browse, they buy on desktop later
+
+4. **Define:** "We don't need an app. We need a responsive mobile website that lets users save favorites and get notifications when items go on sale."
+
+**Result:** £50K to fix the website vs £500K to build an app nobody wanted. Project saved £450K.
+
+## Your First Question as a BA
+
+When someone says "We need to start a project," always ask:
+
+**"What problem are we trying to solve, and how will we know if we've solved it?"**
+
+If they can't answer clearly, the project isn't ready to start.
+
+---
+
+**Next up:** We'll explore exactly why companies hire Business Analysts - and what value you bring.
+`
       },
       {
         id: 'lesson-1-5',
