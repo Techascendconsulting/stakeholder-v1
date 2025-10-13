@@ -9,9 +9,14 @@ if (!apiKey) {
   console.log('✅ OpenAI API key loaded:', apiKey.substring(0, 20) + '...');
 }
 
+// SECURITY: Client-side OpenAI usage exposes API key in browser
+// TODO (Production): Move all OpenAI calls to Supabase Edge Functions
+// TODO: Create /supabase/functions/verity-chat/index.ts
+// TODO: Client sends user message → Edge Function calls OpenAI → Returns response
+// Current setup is acceptable for development/MVP but NOT production-ready
 const openai = new OpenAI({
   apiKey: apiKey,
-  dangerouslyAllowBrowser: true // Note: In production, move this to a backend endpoint
+  dangerouslyAllowBrowser: true // ⚠️ SECURITY: Exposes API key - move to Edge Function for production
 });
 
 interface Message {
@@ -110,4 +115,5 @@ User role: ${context.userRole || 'learner'}`;
 }
 
 export default VerityService;
+
 

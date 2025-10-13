@@ -8,9 +8,13 @@ import { supabase } from '../lib/supabase';
 import OpenAI from 'openai';
 import { getNextModuleId } from '../views/LearningFlow/learningData';
 
+// SECURITY: Client-side OpenAI usage for assignment review
+// TODO (Production): Move AI grading to Supabase Edge Function
+// TODO: Create /supabase/functions/grade-assignment/index.ts
+// Current approach acceptable for MVP but exposes API key in browser
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
+  dangerouslyAllowBrowser: true // ⚠️ SECURITY: Move to Edge Function for production
 });
 
 export interface AssignmentSubmission {
@@ -298,4 +302,5 @@ export function formatTimeRemaining(milliseconds: number): string {
   }
   return `${minutes}m remaining`;
 }
+
 
