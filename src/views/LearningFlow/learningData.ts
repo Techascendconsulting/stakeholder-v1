@@ -1570,35 +1570,695 @@ Define requirements for a real-time order tracker:
       },
       {
         id: 'lesson-1-8',
-        title: 'Agile and Waterfall',
+        title: 'SDLC, Agile, and Waterfall',
         type: 'reading',
-        duration: '9 min',
-        content: conceptToMarkdown(
-          'Agile and Waterfall',
-          'Waterfall means plan everything up front, then build. Agile means break the work into small chunks and adjust along the way. In Agile, BAs work closely with teams during each sprint. In Waterfall, BAs often define everything before development begins.',
-          [
-            'Waterfall means plan everything up front, then build.',
-            'Agile means break the work into small chunks and adjust along the way.',
-            'In Agile, BAs work closely with teams during each sprint.',
-            'In Waterfall, BAs often define everything before development begins.'
-          ]
-        )
+        duration: '15 min',
+        content: `# SDLC, Agile, and Waterfall: How Software Gets Built
+
+Every app on your phone went through a process to get built. Instagram, TikTok, Netflix, your banking app - they all followed a **Software Development Life Cycle (SDLC)**. As a BA, you need to understand these processes because you're part of them.
+
+Let's break down how software gets built, and where you fit in.
+
+## What is SDLC (Software Development Life Cycle)?
+
+SDLC is the process teams follow to plan, build, test, and launch software. Think of it like a recipe for building an app - there are steps you follow to go from "we have an idea" to "customers are using it."
+
+**The Core Phases of SDLC:**
+
+### 1. Planning & Analysis
+**What Happens:** Identify the problem, understand business goals, decide if the project is worth doing.
+
+**Real Example - WhatsApp Business App:**
+- Problem: Small businesses struggle to manage customer messages on regular WhatsApp
+- Analysis: 50 million small businesses use WhatsApp, willing to pay for business features
+- Decision: Build WhatsApp Business
+
+**BA's Role:** You work here! Analyze the problem, talk to stakeholders, document business requirements.
+
+### 2. Requirements Definition
+**What Happens:** Define exactly what the software must do. Write detailed requirements.
+
+**Real Example - WhatsApp Business Features:**
+- Must support business profiles (hours, location, description)
+- Must allow quick replies (saved message templates)
+- Must show message stats (read rates, response times)
+- Must work on Android and iOS
+
+**BA's Role:** You lead this phase! Write requirements, user stories, acceptance criteria.
+
+### 3. Design
+**What Happens:** Designers create mockups. Architects plan the technical structure (databases, APIs, integrations).
+
+**Real Example - WhatsApp Business UI:**
+- Design message folders (customers, prospects, leads)
+- Design quick reply interface
+- Design business profile setup flow
+
+**BA's Role:** Review designs to ensure they meet requirements. Answer questions like "Should quick replies be limited to 50 characters?"
+
+### 4. Development (Coding)
+**What Happens:** Developers write the code that makes the app work.
+
+**Real Example - WhatsApp Business Build:**
+- Backend team builds message routing
+- Frontend team builds the UI
+- Integration team connects to WhatsApp's existing infrastructure
+
+**BA's Role:** Answer developer questions, clarify requirements, help prioritize features.
+
+### 5. Testing
+**What Happens:** QA testers check if the software works as intended. Find bugs. Verify requirements are met.
+
+**Real Example - WhatsApp Business Testing:**
+- Test: Can businesses create profiles?
+- Test: Do quick replies save correctly?
+- Test: Do message stats update in real-time?
+
+**BA's Role:** Provide test scenarios based on your requirements. Verify the solution matches what you documented.
+
+### 6. Deployment (Launch)
+**What Happens:** Release the software to users. Monitor for issues.
+
+**Real Example - WhatsApp Business Launch:**
+- Launched in 2018 for small businesses
+- Monitored crash rates, user feedback, server load
+
+**BA's Role:** Help write release notes, support documentation, monitor user feedback.
+
+### 7. Maintenance & Support
+**What Happens:** Fix bugs, add new features, keep the system running.
+
+**Real Example - WhatsApp Business Updates:**
+- 2019: Added catalog feature (product listings)
+- 2020: Added payment integration
+- 2021: Added multi-device support
+
+**BA's Role:** Gather feedback for future enhancements, define requirements for new features.
+
+## Two Main Approaches: Waterfall vs. Agile
+
+Now that you understand the phases, let's talk about **HOW** teams move through them. There are two main approaches: **Waterfall** and **Agile**.
+
+## Waterfall: Plan Everything, Then Build
+
+**The Concept:**
+Complete each phase fully before moving to the next. Like a waterfall flowing downhill - you can't go back up.
+
+**The Process:**
+
+1. **Planning** (2 months) → Fully define the business case
+2. **Requirements** (3 months) → Document every requirement in detail
+3. **Design** (2 months) → Create complete designs and architecture
+4. **Development** (12 months) → Build the entire system
+5. **Testing** (3 months) → Test everything
+6. **Launch** (1 month) → Deploy to production
+
+**Total Time:** 23 months from start to launch
+
+**Real Example - UK Government Tax System Upgrade (2000s):**
+
+**The Goal:** Replace the aging tax calculation system
+
+**What Happened:**
+- Year 1: Gather all requirements from HMRC departments
+- Year 2: Design the entire new system
+- Years 3-5: Build all features
+- Year 6: Test everything
+- Year 7: Launch
+
+**The Problem:**
+By Year 7, some requirements from Year 1 were outdated. Tax laws had changed. User needs evolved. Parts of the system were obsolete before launch.
+
+**Waterfall Works Best For:**
+- Highly regulated industries (banking, healthcare, government)
+- Projects with very clear, unchanging requirements
+- Hardware projects (can't easily update a medical device after shipping)
+- Large infrastructure projects
+
+**Where BA Works in Waterfall:**
+- **Upfront:** Define ALL requirements at the start
+- Document everything in massive requirement specs (100+ pages)
+- Limited involvement after requirements phase
+- Changes later are expensive and require formal change requests
+
+## Agile: Build in Small Chunks, Adapt Quickly
+
+**The Concept:**
+Break work into small cycles (sprints). Build a little, test a little, get feedback, adjust. Repeat.
+
+**The Process (Scrum - Most Common Agile Framework):**
+
+**Sprint:** 2-week cycle of work
+
+1. **Sprint Planning** (Day 1): Decide what to build this sprint
+2. **Development** (Days 1-10): Build and test features
+3. **Daily Standups** (15 min/day): Quick sync - what's done, what's blocked
+4. **Sprint Review** (Day 10): Show what was built, get feedback
+5. **Sprint Retrospective** (Day 10): Reflect - what went well, what to improve
+6. **Repeat:** Start next sprint
+
+**Real Example - Spotify's Agile Process:**
+
+**Sprint 1 (2 weeks):**
+- Goal: Build basic podcast playback
+- Deliver: Users can play podcasts, pause, skip
+
+**Sprint 2:**
+- Goal: Add podcast discovery
+- Deliver: Recommended podcasts based on music taste
+
+**Sprint 3:**
+- Goal: Add podcast playlists
+- Deliver: Users can save and organize podcasts
+
+**Sprint 4:**
+- Goal: Add offline downloads
+- Deliver: Download podcasts for offline listening
+
+**Total Time to Launch:** 8 weeks (vs. 2 years in Waterfall)
+
+**Benefits:**
+- Launched basic version in 2 weeks
+- Got user feedback early
+- Adjusted based on real usage
+- Added features users actually wanted
+
+**Agile Works Best For:**
+- Software products (apps, websites, SaaS)
+- Projects where requirements will change
+- Competitive markets (need to launch fast)
+- Customer-facing products (need user feedback)
+
+**Where BA Works in Agile:**
+- **Ongoing:** Work with the team every sprint
+- Write user stories for upcoming sprints
+- Attend sprint planning, reviews, and retrospectives
+- Clarify requirements as developers build
+- Much more collaborative and iterative
+
+## Real Comparison: Building a Food Delivery App
+
+### Waterfall Approach
+
+**Timeline:** 18 months
+
+**Year 1 - Requirements:**
+- BA documents everything: customer app, driver app, restaurant portal, admin dashboard
+- Define 500+ requirements
+- Create detailed specs
+- Get stakeholder sign-off
+
+**Month 12-18 - Development:**
+- Build all features together
+- No user testing until everything is done
+
+**Month 18 - Launch:**
+- Launch with all features
+- Discover users hate the restaurant onboarding process
+- Too late - already built
+
+**Result:** 18 months to get feedback
+
+### Agile Approach
+
+**Sprint 1-2 (1 month):** Build MVP
+- Customer can search restaurants and place orders
+- Drivers get notifications and can accept deliveries
+- Restaurants receive orders via email
+
+**Launch Beta:** 50 real users test it
+
+**Sprint 3-4 (1 month):** Based on feedback
+- Add real-time driver tracking (users' #1 request)
+- Add saved addresses (users' #2 request)
+- Skip the loyalty program (nobody asked for it)
+
+**Sprint 5-6 (1 month):** Expand
+- Add restaurant portal (onboarding simplified based on beta feedback)
+- Add payment integration
+- Add ratings and reviews
+
+**Result:** Working app in 1 month, polished app in 3 months (vs. 18)
+
+## How BAs Work Differently in Each Approach
+
+### BA in Waterfall:
+**Intensive Upfront Work:**
+- Spend 6 months gathering all requirements
+- Create comprehensive documentation (100+ pages)
+- Define every edge case and scenario
+- Get formal sign-off from all stakeholders
+
+**Limited Later Involvement:**
+- Developers refer to your documents
+- You clarify questions but don't change requirements
+- Changes require formal change control process
+
+**Example BA Deliverables:**
+- Business Requirements Document (BRD) - 80 pages
+- Functional Requirements Specification (FRS) - 120 pages
+- Use Cases - 50+ scenarios
+- Process diagrams - 20+ workflows
+
+### BA in Agile:
+**Continuous Ongoing Work:**
+- Work with the team every sprint (every 2 weeks)
+- Write user stories just-in-time (not 6 months ahead)
+- Attend daily standups and sprint ceremonies
+- Constantly refine requirements based on feedback
+
+**Highly Collaborative:**
+- Sit with developers (or in same Slack/Teams channel)
+- Answer questions immediately
+- Adjust requirements based on what you learn
+
+**Example BA Deliverables (Per Sprint):**
+- 5-10 user stories for this sprint
+- Acceptance criteria for each story
+- Quick process flows (not 50-page docs)
+- Participate in sprint planning and review
+
+## SDLC in the Real World Today
+
+**Most companies use Agile** for software projects because:
+- Requirements change fast
+- Customers want updates frequently (not once every 2 years)
+- Competition moves quickly
+- Early feedback prevents expensive mistakes
+
+**But some still use Waterfall** for:
+- Highly regulated systems (medical devices, aviation software)
+- Large government contracts
+- Infrastructure projects (replacing core banking systems)
+
+**Many use Hybrid:**
+- Agile for feature development
+- Waterfall for compliance/regulatory requirements
+- Example: A bank might use Agile to build new features, but Waterfall for PCI-DSS compliance work
+
+## Real Example: Uber's Evolution
+
+**2009-2011: Waterfall-ish (Early Days)**
+- Uber started small, but planned the full platform upfront
+- Built ride-hailing from scratch
+- Took 18 months to launch in a few cities
+
+**2012-Present: Full Agile**
+- Sprint-based development
+- Launch new cities every week
+- Add features constantly (UberEats, Uber Pool, Uber Bike)
+- Each feature is 2-4 sprint cycles
+
+**Why They Switched:**
+- Market moved fast - competitors (Lyft) emerging
+- User needs kept changing
+- New cities had different requirements
+- Needed to experiment and iterate quickly
+
+## Your BA Career: Which Will You Use?
+
+**Most BA roles today are Agile-based**, especially in:
+- Tech companies (Google, Meta, Amazon)
+- Startups
+- SaaS companies (Salesforce, HubSpot)
+- E-commerce
+- Fintech
+
+**You'll use Waterfall in:**
+- Government
+- Large enterprises with legacy systems
+- Heavily regulated industries
+
+**But you need to know BOTH** because:
+- Some projects are hybrid
+- You might work in both environments during your career
+- Understanding Waterfall helps you appreciate why Agile exists
+
+## Key Differences for BAs
+
+| Aspect | Waterfall | Agile |
+|--------|-----------|-------|
+| **When you work** | Upfront, then minimal | Every sprint, ongoing |
+| **Documentation** | Exhaustive (100+ pages) | Just enough (user stories) |
+| **Stakeholder contact** | Heavy at start, then periodic | Constant throughout |
+| **Requirements changes** | Expensive, requires change control | Expected and welcome |
+| **Your flexibility** | Limited after requirements signed off | High - adapt each sprint |
+| **Team collaboration** | Work somewhat independently | Embedded with the team |
+
+## Which is Better?
+
+Neither is "better" - it depends on the project.
+
+**Choose Waterfall When:**
+- Requirements are stable and well-understood
+- Changes are expensive or risky (e.g., embedded systems)
+- Regulations require complete documentation upfront
+- You can't easily update after launch
+
+**Choose Agile When:**
+- Requirements will evolve
+- You need to launch quickly and iterate
+- User feedback is critical
+- Technology and competition move fast
+
+## What This Means for You
+
+As a BA, your role adapts to the methodology:
+
+**In Waterfall:** You're a requirements expert who defines everything upfront
+**In Agile:** You're a collaborative partner who works with the team daily
+
+Both require:
+- Understanding business needs
+- Writing clear requirements
+- Working with stakeholders
+- Bridging business and technical teams
+
+The difference is **when** and **how** you do it.
+
+---
+
+**Next up:** We'll explore how to truly understand problems (not just symptoms) - the most critical BA skill.
+`
       },
       {
         id: 'lesson-1-9',
-        title: 'Understanding the Problem',
+        title: 'Understanding the Problem (Not Just Symptoms)',
         type: 'reading',
-        duration: '7 min',
-        content: conceptToMarkdown(
-          'Understanding the Problem',
-          'Most people focus on symptoms — BAs go deeper. Good BAs ask "What\'s really going wrong here?" You\'re not paid to guess — you\'re paid to confirm. The wrong solution to the wrong problem still fails.',
-          [
-            'Most people focus on symptoms — BAs go deeper.',
-            'Good BAs ask "What\'s really going wrong here?"',
-            'You\'re not paid to guess — you\'re paid to confirm.',
-            'The wrong solution to the wrong problem still fails.'
-          ]
-        )
+        duration: '12 min',
+        content: `# Understanding the Problem (Not Just Symptoms)
+
+A hospital kept getting complaints: "Patients wait too long in the emergency room." They hired more doctors. Wait times didn't improve. Why?
+
+**Because they solved the symptom, not the problem.**
+
+The real issue? Patients were waiting for test results (X-rays, blood work), not doctors. Adding more doctors didn't help because doctors were already idle, waiting for lab results.
+
+**This is the #1 mistake teams make - and the #1 skill that makes great BAs valuable.**
+
+## Symptoms vs. Root Causes
+
+### Symptom
+What people complain about. The visible problem.
+
+### Root Cause
+The underlying reason the problem exists.
+
+**Example - Instagram App Crashes:**
+
+**Symptom:** "The app crashes when I upload photos"
+
+**Possible Root Causes:**
+- Photos are too large (users taking 50MB RAW images)
+- Server is overwhelmed (too many uploads at once)
+- Specific phone models have a bug (Android 12 issue)
+- Internet connection drops during upload
+- App's memory management is broken
+
+**A bad BA** would say: "Make the app not crash" (not helpful)
+
+**A good BA** would investigate:
+- When does it crash? (Always, or only sometimes?)
+- Which phones? (iPhones, Androids, or both?)
+- What size photos? (Check data)
+- Does it crash on WiFi or mobile data?
+- Does it crash for all users or specific regions?
+
+**Discover root cause:** App tries to upload full-resolution 50MB photos on slow mobile networks. Connection times out, app crashes.
+
+**Solution:** Compress photos before upload, or allow background uploading that resumes if interrupted.
+
+## The 5 Whys Technique
+
+This is a famous problem-solving method BAs use. Ask "why" five times to get to the root cause.
+
+**Real Example - Amazon Package Deliveries Late:**
+
+**Complaint:** "My package arrived 2 days late"
+
+1. **Why was it late?** → Driver couldn't find my address
+2. **Why couldn't the driver find it?** → GPS coordinates were wrong
+3. **Why were GPS coordinates wrong?** → Addresses are manually entered by warehouse staff
+4. **Why are they entered manually?** → Our warehouse system doesn't integrate with Google Maps API
+5. **Why don't we integrate with Google Maps?** → Nobody prioritized it - we've been manually entering addresses for years
+
+**Root Cause:** No integration with mapping services
+
+**Solution:** Integrate warehouse system with Google Maps API for auto-validated addresses and GPS coordinates
+
+**Impact:** Late deliveries drop from 8% to 2%
+
+## Real BA Investigation: Uber Surge Pricing Complaints
+
+**The Complaint:**
+"Surge pricing is unfair! I paid £40 for a ride that's usually £12!"
+
+**Bad Response:**
+"Remove surge pricing" (drivers quit, no rides available)
+
+**Good BA Investigation:**
+
+### Step 1: Understand the Business Model
+
+**Why Surge Pricing Exists:**
+- High demand (New Year's Eve, rain, rush hour)
+- Not enough drivers available
+- Surge pricing attracts more drivers to work
+- Without it: No rides available at all
+
+### Step 2: Talk to All Sides
+
+**Riders Say:**
+- "I don't understand why it's surging"
+- "The price jumped while I was looking"
+- "I'd rather wait than pay 3x"
+
+**Drivers Say:**
+- "Surge pricing is why I drive on Friday nights"
+- "Without it, I'd stay home during bad weather"
+
+**Uber's Business:**
+- Surge keeps the marketplace balanced
+- 80% of surge rides happen during 20% of the week
+- Removing surge = riders can't get rides when they need them most
+
+### Step 3: Define the Real Problem
+
+**It's not that surge pricing exists.** It's that:
+1. Users don't understand WHY it's surging
+2. Prices feel unpredictable
+3. Users can't make informed decisions
+
+### Step 4: Define Requirements for a Better Experience
+
+**Solution (What Uber Actually Did):**
+
+1. **Show why it's surging:**
+   - "High demand in your area" (not just a number)
+   - Show estimated wait time without surge vs. with surge
+   - "Wait 10 minutes for a £12 ride, or ride now for £18"
+
+2. **Lock in price:**
+   - Once you see the price, it's guaranteed (won't change while you're deciding)
+   - Previously, price could jump while you thought about it
+
+3. **Give alternatives:**
+   - Show UberPool (cheaper, longer)
+   - Show UberX vs. UberXL prices
+   - Let users set price alerts ("Notify me when surge drops")
+
+4. **Transparency:**
+   - Show surge history for this route
+   - Predict when surge will end
+
+**Result:**
+- Complaints drop 40%
+- User retention improves
+- Surge pricing keeps working (more drivers available when needed)
+- Users feel informed, not tricked
+
+## How to Investigate Problems Like a BA
+
+### 1. Listen to Complaints (But Don't Take Them Literally)
+
+**What They Say:** "The app is slow"
+
+**What They Mean:**
+- Page takes 10 seconds to load? (Technical issue)
+- Too many steps to complete a task? (UX issue)
+- Features are hard to find? (Information architecture issue)
+
+**Your Job:** Ask clarifying questions until you understand the actual problem.
+
+### 2. Look at Data
+
+**Example - E-commerce Checkout:**
+
+**Complaint:** "Customers are abandoning their carts"
+
+**Data Investigation:**
+- **Where** do they abandon? (Payment page = 70% of abandonments)
+- **When?** (Peak times? Specific days?)
+- **Who?** (New customers? Returning customers? Mobile vs desktop?)
+- **What triggers it?** (Unexpected shipping costs? Required account creation?)
+
+**Discovery:** 70% abandon at payment because shipping costs aren't shown until the last step
+
+**Solution:** Show shipping costs on the product page and cart page (not just checkout)
+
+### 3. Observe Users (Don't Just Ask)
+
+People don't always know why they do things.
+
+**Example - Banking App Usability:**
+
+**If you ask users:** "Is the app easy to use?"
+→ Most say "yes" (but they're being polite or don't want to seem dumb)
+
+**If you observe users:**
+→ You see them struggling to find the "transfer money" button, taking 2 minutes when it should take 10 seconds
+
+**What you learn:** The button is buried in a menu. Users scroll right past it.
+
+**Solution:** Move "transfer money" to the homepage as a prominent button
+
+### 4. Compare to Expected vs. Actual Behavior
+
+**Expected:** Users will browse 5-10 products before buying
+**Actual:** Users browse 50+ products and still don't buy
+
+**This gap tells you something is wrong.** Maybe:
+- Too many choices (paradox of choice)
+- Products aren't differentiated (everything looks the same)
+- Prices aren't clear (hidden fees)
+- Reviews are missing (users don't trust products)
+
+### 5. Interview Frontline Staff
+
+The people who deal with complaints daily know the real problems.
+
+**Example - Hotel Booking Site:**
+
+**Management thinks:** "We need better photos of hotel rooms"
+
+**Customer service knows:** "80% of complaints are about hidden resort fees not shown until payment"
+
+**The BA talks to customer service first** and discovers the real issue isn't photos - it's pricing transparency.
+
+## Real Case Study: Airbnb's "Cleaning Fee" Problem
+
+**The Complaint:**
+Users complained about hidden cleaning fees making properties seem cheaper than they actually were.
+
+**Bad Solution:**
+"Ban cleaning fees" (hosts leave the platform - they need to cover cleaning costs)
+
+**BA's Investigation:**
+
+**Step 1: Quantify the Problem**
+- How often do users complain? (15% of bookings)
+- Do they still book? (Yes, but satisfaction drops)
+- How big are the fees? (Avg. £40, sometimes £150 for a £100/night place)
+
+**Step 2: Understand Both Sides**
+- **Guests:** "I thought it was £100/night, but total is £250/night with fees"
+- **Hosts:** "Cleaning costs real money - I can't absorb it"
+
+**Step 3: Identify the Real Problem**
+It's not the fees themselves - it's the **surprise**. Users see £100/night in search results, but the true cost (£250/night) only appears at checkout.
+
+**Step 4: Define the Solution**
+
+**What Airbnb Actually Did (2022):**
+- Show total price (including all fees) in search results
+- Break down fees clearly: Nightly rate + Cleaning fee + Service fee + Taxes
+- Let users filter by total price (not just nightly rate)
+- Require hosts to keep fees reasonable (no £200 cleaning fee for a £50/night room)
+
+**Result:**
+- User complaints drop 60%
+- Booking conversion improves (users aren't surprised at checkout)
+- Hosts happy (can still charge cleaning fees, but must be transparent)
+
+## Common Traps BAs Fall Into
+
+### Trap 1: Solving What People Ask For (Instead of What They Need)
+
+**What They Say:** "We need a mobile app"
+**What They Need:** Better mobile website experience
+**What You Should Do:** Investigate WHY they think they need an app
+
+### Trap 2: Assuming You Understand Without Asking
+
+**What You Think:** "Users want more features"
+**What Users Actually Want:** "The current features to work properly"
+**What You Should Do:** Talk to real users, don't assume
+
+### Trap 3: Taking the First Answer as Truth
+
+**Stakeholder Says:** "We need this feature because customers asked for it"
+**You Should Ask:** "How many customers? What problem does it solve? How do we measure success?"
+**Often Discover:** Only 3 customers asked (out of 10,000), and they want it for edge cases
+
+### Trap 4: Ignoring the Data
+
+**Stakeholder's Opinion:** "Nobody uses feature X"
+**Your Data Shows:** 40% of users use it daily
+**What You Should Do:** Show the data, challenge assumptions
+
+## The BA's Investigation Framework
+
+Use this every time:
+
+### 1. Clarify the Complaint
+- What exactly is the problem?
+- When does it happen?
+- How often?
+- Who is affected?
+
+### 2. Quantify the Impact
+- How many people are impacted?
+- What does it cost the business?
+- How does it affect key metrics?
+
+### 3. Gather Evidence
+- Interview users and stakeholders
+- Review support tickets
+- Analyze usage data
+- Observe people using the system
+
+### 4. Identify Patterns
+- Is it happening to everyone or specific groups?
+- Is it constant or at specific times?
+- Are there commonalities?
+
+### 5. Form Hypotheses
+- What might be causing this?
+- List 3-5 possible root causes
+
+### 6. Test Your Hypotheses
+- Rule out what it's NOT
+- Narrow down to the real cause
+
+### 7. Define the Problem Clearly
+- Write a clear problem statement
+- Get stakeholders to agree
+
+### 8. Only THEN Design a Solution
+- Don't jump to solutions until you're certain of the problem
+
+## Key Takeaway
+
+**The best BAs spend 70% of their time understanding the problem and only 30% defining the solution.**
+
+Most people rush to solutions. You slow down, investigate, and make sure you're solving the right problem.
+
+As the saying goes: **"A problem well-defined is half-solved."**
+
+---
+
+**Next up:** Learn how to work effectively with stakeholders - the people who know the business but need your help clarifying what they actually need.
+`
       },
       {
         id: 'lesson-1-10',
