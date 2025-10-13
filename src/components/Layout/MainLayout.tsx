@@ -86,6 +86,7 @@ import AdminPanel from '../AdminPanel';
 import MvpBuilder from '../Views/MvpBuilder';
 import MeetingModeSelection from '../Views/MeetingModeSelection';
 import CoreLearningView from '../Views/CoreLearningView';
+import CoreLearning2View from '../Views/CoreLearning2View'; // NEW: Overview + Individual Topic Pages
 import LearningPageWrapper from '../LearningPageWrapper';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -177,13 +178,18 @@ const MainLayout: React.FC = () => {
       case 'project-flow':
         return <ProjectFlowView />;
       case 'core-learning':
-        return wrapLearningPage(
-          <CoreLearningView />,
-          'module-1-core-learning',
-          'Core Learning',
-          'BA Fundamentals Assessment',
-          'Explain the role of a BA and why organizations hire them. Include at least 3 specific responsibilities.'
-        );
+        // NEW: Use CoreLearning2View (Overview + Individual Topic Pages)
+        // To revert: Replace CoreLearning2View with CoreLearningView
+        return <CoreLearning2View />;
+        
+        // OLD: Tabbed interface (uncomment to revert)
+        // return wrapLearningPage(
+        //   <CoreLearningView />,
+        //   'module-1-core-learning',
+        //   'Core Learning',
+        //   'BA Fundamentals Assessment',
+        //   'Explain the role of a BA and why organizations hire them. Include at least 3 specific responsibilities.'
+        // );
       case 'project-initiation':
         // Don't wrap - has internal tabs, will handle assignment itself
         return <ProjectInitiationView />;
