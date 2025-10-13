@@ -207,44 +207,34 @@ const Dashboard2: React.FC = () => {
           </p>
         </div>
 
-        {/* Next Step Card - DASHBOARD STYLE (not gradient banner) */}
+        {/* Hero: Your Next Step - DASHBOARD GRADIENT (Blue-Cyan, not Purple) */}
         {nextStep && (
           <div className="mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-blue-200 dark:border-blue-800 overflow-hidden">
-              {/* Top accent bar */}
-              <div className="h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+            <div className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-48 translate-x-48"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-2xl translate-y-32 -translate-x-32"></div>
               
-              <div className="p-8">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-                      <PlayCircle className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
-                        {userType === 'new' ? '🎯 Next Step' : '🚀 Quick Resume'}
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{nextStep.title}</h2>
-                    </div>
-                  </div>
-                  
-                  {nextStep.status && (
-                    <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                      <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold">{nextStep.status}</div>
-                    </div>
-                  )}
+              <div className="relative z-10">
+                <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold mb-4">
+                  {userType === 'new' ? '🎯 Your Next Step' : '🚀 Quick Resume'}
                 </div>
                 
-                <p className="text-gray-600 dark:text-gray-400 mb-6 text-base">
-                  {nextStep.description}
-                </p>
+                <h2 className="text-3xl font-bold mb-3">{nextStep.title}</h2>
+                <p className="text-blue-100 text-lg mb-6">{nextStep.description}</p>
+                
+                {nextStep.status && (
+                  <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg text-sm font-medium mb-6">
+                    Progress: {nextStep.status}
+                  </div>
+                )}
                 
                 <button
                   onClick={() => setCurrentView(nextStep.route as any)}
-                  className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all font-semibold shadow-md hover:shadow-lg"
+                  className="inline-flex items-center space-x-3 px-8 py-4 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition-all font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
+                  <PlayCircle className="w-6 h-6" />
                   <span>{nextStep.action}</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
             </div>
