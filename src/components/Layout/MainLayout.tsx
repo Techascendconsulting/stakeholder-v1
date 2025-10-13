@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { useAdmin } from '../../contexts/AdminContext';
 import Dashboard from '../Views/Dashboard';
+import Dashboard2 from '../Views/Dashboard2'; // NEW: Clean, purposeful dashboard
 import VerityWidget from '../Verity/VerityWidget';
 import LearningFlowView from '../../views/LearningFlow/LearningFlowView';
 import PracticeFlowView from '../../views/PracticeFlow/PracticeFlowView';
@@ -166,7 +167,12 @@ const MainLayout: React.FC = () => {
       case 'get-started':
         return <GetStartedView />;
       case 'dashboard':
-        return <Dashboard />;
+        // NEW: Use Dashboard2 (clean, purposeful)
+        // To revert: Replace Dashboard2 with Dashboard
+        return <Dashboard2 />;
+        
+        // OLD: Cluttered dashboard (uncomment to revert)
+        // return <Dashboard />;
       case 'learn':
         return <LearnLandingView />;
       case 'learning-hub':
