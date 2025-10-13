@@ -152,17 +152,178 @@ You're not just learning a job - you're learning to be the person who makes sure
         id: 'lesson-1-2',
         title: 'How Organisations Work',
         type: 'reading',
-        duration: '7 min',
-        content: conceptToMarkdown(
-          'How Organisations Work',
-          'Every organisation either sells products, services, or both. They exist to deliver value — money, time saved, or impact. Understanding what they sell helps you understand their goals. BA work always ties back to business performance and value.',
-          [
-            'Every organisation either sells products, services, or both.',
-            'They exist to deliver value — money, time saved, or impact.',
-            'Understanding what they sell helps you understand their goals.',
-            'BA work always ties back to business performance and value.'
-          ]
-        )
+        duration: '10 min',
+        content: `# How Organisations Work
+
+Think about the apps on your phone right now. Spotify sells you music streaming. Amazon sells products and delivery. WhatsApp is free but owned by Meta, who sells advertising. Every single organization exists to deliver value - and to make money doing it.
+
+**Understanding how organizations work is critical for BAs** because you can't improve what you don't understand.
+
+## The Simple Truth: Every Business Sells Something
+
+At its core, every organization falls into one of three categories:
+
+### 1. Product Companies
+They make or sell physical or digital things you can own.
+
+**Examples:**
+- **Apple** - Sells iPhones, MacBooks, iPads
+- **Amazon** - Sells products from books to groceries
+- **PlayStation** - Sells gaming consoles and games
+
+**What this means for BAs:** Product companies care about inventory, supply chains, manufacturing quality, and customer satisfaction. When you work on a project for a product company, you'll often hear about "reducing defects," "faster shipping," or "better product recommendations."
+
+### 2. Service Companies
+They sell expertise, time, or experiences - not physical products.
+
+**Examples:**
+- **Uber** - Sells transportation as a service
+- **Netflix** - Sells entertainment streaming (access, not ownership)
+- **Airbnb** - Sells temporary accommodation
+- **Deliveroo** - Sells food delivery service
+
+**What this means for BAs:** Service companies obsess over customer experience, speed, and reliability. Projects often focus on "reducing wait times," "improving driver ratings," or "better matching customers with providers."
+
+### 3. Hybrid Companies
+They sell both products and services.
+
+**Examples:**
+- **Apple** - Sells iPhones (product) + Apple Music & iCloud (services)
+- **Amazon** - Sells products + Amazon Prime (service)
+- **Tesla** - Sells cars (product) + charging network & software updates (service)
+
+**What this means for BAs:** Hybrid companies are complex. You might work on projects that impact both sides - like Amazon Prime, which offers free shipping (service) and exclusive products (product).
+
+## Why Organizations Exist: The Value Equation
+
+Every organization exists to deliver **value**. But what does "value" actually mean?
+
+### For Customers
+- **Save time** - Uber gets you there faster than public transport
+- **Save money** - Amazon often has lower prices than physical stores
+- **Solve a problem** - Spotify solves "I want to listen to any song, anytime"
+- **Feel good** - Instagram makes people feel connected
+
+### For the Business
+- **Make profit** - Revenue must exceed costs
+- **Grow market share** - Beat competitors
+- **Build brand loyalty** - Keep customers coming back
+- **Comply with regulations** - Avoid fines and legal issues
+
+## Real Example: Deliveroo's Business Model
+
+Let's break down how Deliveroo works to see why understanding the business matters:
+
+**What Deliveroo Sells:** Food delivery service
+
+**Who Pays Them:**
+1. **Customers** - Pay delivery fees + service charges
+2. **Restaurants** - Pay commission (25-35% of order value)
+3. **Advertisers** - Pay to appear higher in search results
+
+**Their Costs:**
+- Rider payments
+- Technology (app development, servers)
+- Customer support
+- Marketing
+
+**Their Goals:**
+- Increase number of orders
+- Reduce delivery time
+- Increase average order value
+- Keep riders and customers happy
+
+**Why This Matters for a BA:**
+Imagine your boss says, "We need to improve the app." That's too vague. But if you understand Deliveroo's business model, you'd ask:
+- "Do we want customers to order more often?"
+- "Do we want to increase the average order value?"
+- "Do we want to reduce delivery time?"
+- "Do we want to reduce rider cancellations?"
+
+Each of these requires a **completely different solution**. The BA's job is to clarify **which business goal** the project serves.
+
+## Departments: How Work Gets Done
+
+Organizations divide work into departments. Each department has different priorities - and sometimes they conflict.
+
+### Common Departments You'll Work With
+
+**1. Sales**
+- **Goal:** Bring in new customers and revenue
+- **Pain Points:** "The website doesn't show product availability, so we promise things we can't deliver"
+- **BA Impact:** Help build better customer data systems
+
+**2. Marketing**
+- **Goal:** Build brand awareness and attract leads
+- **Pain Points:** "We run campaigns but can't track which ones actually work"
+- **BA Impact:** Define requirements for analytics and tracking
+
+**3. Finance**
+- **Goal:** Manage money, reduce costs, ensure profitability
+- **Pain Points:** "We can't get real-time revenue reports - everything is manual in Excel"
+- **BA Impact:** Automate reporting and financial workflows
+
+**4. Operations**
+- **Goal:** Deliver products/services efficiently
+- **Pain Points:** "Our warehouse system is so slow, orders take 3 days to process"
+- **BA Impact:** Streamline processes and reduce bottlenecks
+
+**5. Customer Service**
+- **Goal:** Keep customers happy and resolve issues
+- **Pain Points:** "Customers call about their order status because the app doesn't show tracking"
+- **BA Impact:** Build self-service features to reduce call volume
+
+**6. Compliance/Legal**
+- **Goal:** Ensure the business follows laws and regulations
+- **Pain Points:** "We're not GDPR compliant - customers can't delete their data"
+- **BA Impact:** Define data privacy requirements
+
+**7. IT/Technology**
+- **Goal:** Build and maintain systems
+- **Pain Points:** "Business teams keep asking for features without explaining why"
+- **BA Impact:** You're the bridge - you translate business needs into clear requirements
+
+## Why BAs Must Understand the Business
+
+Here's a real scenario:
+
+**Situation:** A clothing retailer wants to "improve the mobile app."
+
+**Bad BA Approach:**
+"Okay, we'll add more features and make it look nicer."
+
+**Good BA Approach:**
+- **Ask:** "What's the business goal? Increase sales? Reduce returns? Improve brand loyalty?"
+- **Discover:** "Sales team says customers abandon carts because shipping costs are only shown at checkout."
+- **Analyze:** "Customer service says 40% of calls are about delivery delays."
+- **Define:** "We need to: (1) Show shipping costs earlier in the journey, (2) Provide real-time delivery tracking."
+
+The good BA ties every feature back to a **business outcome**. That's why you need to understand:
+- What the business sells
+- How they make money
+- Which departments are involved
+- What success looks like
+
+## Your Role: The Business Translator
+
+As a BA, you're not just a "requirements writer." You're a **business translator** who:
+- Understands the business model (how they make money)
+- Knows each department's priorities
+- Connects projects to business value
+- Ensures solutions actually solve the right problem
+
+When you start a new project, always ask:
+1. What does this organization sell?
+2. How do they make money?
+3. Which departments are impacted?
+4. What business goal does this project support?
+
+Answer these, and you'll always deliver valuable work.
+
+---
+
+**Next up:** We'll explore why projects happen in the first place - and how BAs make sure they're worth doing.
+`
       },
       {
         id: 'lesson-1-3',
