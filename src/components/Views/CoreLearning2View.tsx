@@ -27,6 +27,19 @@ const CoreLearning2View: React.FC = () => {
   const firstHalf = topics.slice(0, 7);
   const secondHalf = topics.slice(7, 14);
 
+  // Scroll to top on component mount AND when topic selection changes
+  useEffect(() => {
+    const scrollToTop = () => {
+      const mainContainer = document.querySelector('main');
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    
+    scrollToTop();
+  }, [selectedTopicId, showMidAssignment]); // Scroll when topic or assignment view changes
+
   // Load user type and progress
   useEffect(() => {
     const loadUserData = async () => {
