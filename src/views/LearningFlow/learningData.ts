@@ -2905,11 +2905,10 @@ Don't ask people how they work - watch them.
 Create a visual diagram.
 
 **Current State (As-Is):**
-```
-Customer orders → Waiter writes on paper → Walks to kitchen → 
-Chef reads (often can't) → Calls waiter back → Waiter clarifies → 
-Chef cooks → Food ready
-```
+
+    Customer orders → Waiter writes on paper → Walks to kitchen → 
+    Chef reads (often can't) → Calls waiter back → Waiter clarifies → 
+    Chef cooks → Food ready
 
 **Pain Points:**
 - Handwriting errors (30% of orders need clarification)
@@ -2919,10 +2918,9 @@ Chef cooks → Food ready
 ### Step 3: Design the Future State (To-Be)
 
 **Future State:**
-```
-Customer orders → Waiter enters on tablet → Order instantly appears on kitchen screen → 
-Chef sees order, priority, special requests → Cooks → Food ready
-```
+
+    Customer orders → Waiter enters on tablet → Order instantly appears on kitchen screen → 
+    Chef sees order, priority, special requests → Cooks → Food ready
 
 **Benefits:**
 - No handwriting errors
