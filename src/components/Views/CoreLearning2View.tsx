@@ -140,39 +140,85 @@ const CoreLearning2View: React.FC = () => {
   if (showMidAssignment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        {/* Header */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
           <div className="max-w-5xl mx-auto px-6 py-4">
             <button
               onClick={() => setShowMidAssignment(false)}
-              className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Back to Core Learning</span>
             </button>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+                  <Award className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Part 1 Complete
+                    </p>
+                    <span className="flex items-center space-x-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-semibold">
+                      <span>Required Assessment</span>
+                    </span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Mid-Point Assessment
+                  </h1>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                  Pass Required
+                </div>
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  70%
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <span>Part 1: Complete ✓</span>
+                <span>Part 2: Locked until assessment passed</span>
+              </div>
+              <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div className="h-full w-1/2 bg-gradient-to-r from-purple-600 to-pink-600" />
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Content */}
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white mb-8">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-                <Award className="w-8 h-8" />
+          {/* Instructions Banner */}
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-24 -translate-x-24"></div>
+            
+            <div className="relative z-10">
+              <h2 className="text-2xl font-bold mb-3">📝 Assessment Instructions</h2>
+              <div className="space-y-2 text-purple-100">
+                <p>• Answer all 6 questions covering Topics 1-7</p>
+                <p>• 3 multiple choice questions (test your knowledge)</p>
+                <p>• 3 written response questions (demonstrate understanding)</p>
+                <p>• You need <strong className="text-white">70% or higher</strong> to unlock Topics 8-14</p>
+                <p>• Your written responses will be reviewed by AI for depth and accuracy</p>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold">Mid-Point Assessment</h1>
-                <p className="text-purple-100">Test your understanding of Topics 1-7</p>
+              <div className="mt-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
+                <p className="text-sm font-semibold">💡 Tip: Use specific examples from the topics you've learned!</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mt-4">
-              <p className="text-sm">
-                🎯 Complete this assignment to unlock the remaining 7 topics
-              </p>
             </div>
           </div>
 
-          {/* Custom Multi-Question Mid-Assignment */}
+          {/* Assessment Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-8">
+            <div className="p-8 lg:p-12">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 📝 Mid-Point Assessment: Topics 1-7
               </h2>
