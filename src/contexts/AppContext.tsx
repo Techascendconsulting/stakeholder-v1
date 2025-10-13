@@ -300,8 +300,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
 
             console.log('🚫 BLOCKING navigation to:', view);
+            console.log('🎯 BUT updating currentView for sidebar highlight');
+            
+            // Update currentView so sidebar shows the locked page
+            setCurrentViewState(view);
+            localStorage.setItem('currentView', view);
+            
+            // Show lock message
             setLockMessage(lockMessage);
-            return; // Block navigation
+            return; // Block navigation (don't render the page, just show lock screen)
           } else {
             console.log('✅ NAVIGATE: Page accessible for new user, clearing lock message');
             setLockMessage(null);
