@@ -360,6 +360,23 @@ const ProjectInitiationView: React.FC = () => {
               </p>
             </div>
             
+            {/* CTA Section - Only for EXISTING users (new users need to complete all modules first) */}
+            {activeTab === lessons.length - 1 && userType === 'existing' && (
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-center">
+                  <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                    You are now ready to begin practicing elicitation with AI stakeholders.
+                  </p>
+                  <button
+                    onClick={() => setCurrentView('practice-2')}
+                    className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Go to Elicitation Practice
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Assignment Section */}
             {activeTab === lessons.length - 1 && (
               <>
