@@ -7,6 +7,7 @@ import { MeetingDataService } from '../lib/meetingDataService'
 import { supabase } from '../lib/supabase'
 import LockMessageToast from '../components/LockMessageToast'
 import { getUserPhase, isPageAccessible } from '../utils/userProgressPhase'
+import { ElicitationAccess, getElicitationAccess } from '../utils/elicitationProgress'
 
 interface AppContextType {
   // Hydration state
@@ -57,6 +58,10 @@ interface AppContextType {
   userProjectCount: number
   userSelectedProjects: string[]
   
+  // Elicitation practice access
+  elicitationAccess: ElicitationAccess | null
+  refreshElicitationAccess: () => Promise<void>
+  
   // Utility functions
   canAccessProject: (projectId: string) => boolean
   canSaveNotes: () => boolean
@@ -102,6 +107,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   } | null>(null)
   const [userSelectedProjects, setUserSelectedProjects] = useState<string[]>([])
   const [userProjectCount, setUserProjectCount] = useState(0)
+  
+  // Elicitation practice access state
+  const [elicitationAccess, setElicitationAccess] = useState<ElicitationAccess | null>(null)
 
   // Initialize currentView from localStorage or default to dashboard for returning users
   const [currentView, setCurrentViewState] = useState<AppView>(() => {
@@ -623,6 +631,70 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     loadSubscriptionData();
   }, [user?.id]);
   
+  // Load elicitation practice access
+  useEffect(() => {
+    const loadElicitationAccess = async () => {
+      if (!user?.id) {
+        setElicitationAccess(null);
+        return;
+      }
+      
+      try {
+        // Get user type from Supabase
+        const { data: userProfile } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single();
+        
+        const userType = userProfile?.user_type || 'new';
+        console.log('🔍 Loading elicitation access for user type:', userType);
+        
+        const access = await getElicitationAccess(user.id, userType);
+        setElicitationAccess(access);
+        console.log('✅ Elicitation access loaded:', access);
+      } catch (error) {
+        console.error('❌ Error loading elicitation access:', error);
+        // Set default locked state on error
+        setElicitationAccess({
+          chatUnlocked: false,
+          voiceUnlocked: false,
+          dailyInteractionCount: 0,
+          dailyLimit: 20,
+          voiceUnlockStatus: {
+            isUnlocked: false,
+            qualifyingSessions: 0,
+            uniqueDays: 0,
+            sessionsNeeded: 3,
+            daysNeeded: 3,
+          },
+        });
+      }
+    };
+    
+    loadElicitationAccess();
+  }, [user?.id]);
+  
+  // Function to refresh elicitation access (call after completing a session)
+  const refreshElicitationAccess = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('user_type')
+        .eq('id', user.id)
+        .single();
+      
+      const userType = userProfile?.user_type || 'new';
+      const access = await getElicitationAccess(user.id, userType);
+      setElicitationAccess(access);
+      console.log('🔄 Elicitation access refreshed:', access);
+    } catch (error) {
+      console.error('❌ Error refreshing elicitation access:', error);
+    }
+  };
+  
   // Check onboarding status on initial load for non-admin users
   useEffect(() => {
     if (user && !adminLoading && !isAdmin) {
@@ -811,6 +883,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     userSubscription,
     userProjectCount,
     userSelectedProjects,
+    elicitationAccess,
+    refreshElicitationAccess,
     canAccessProject,
     canSaveNotes,
     canCreateMoreMeetings,
