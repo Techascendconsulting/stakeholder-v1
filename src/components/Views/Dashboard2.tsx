@@ -79,6 +79,7 @@ const Dashboard2: React.FC = () => {
   const determineNextStep = (type: string, learningCount: number, practiceCount: number, projectCount: number) => {
     // For new users, guide them through the journey
     if (type === 'new') {
+      // PHASE 1: Learning Journey (0-10 modules)
       if (learningCount === 0) {
         setNextStep({
           title: 'Start Your BA Journey',
@@ -88,45 +89,64 @@ const Dashboard2: React.FC = () => {
         });
       } else if (learningCount < 10) {
         setNextStep({
-          title: 'Continue Core Learning',
+          title: 'Continue Learning Journey',
           description: `Module ${learningCount + 1} of 10 • Build your BA foundation`,
           action: 'Continue Learning',
           route: 'learning-flow',
           status: `${learningCount}/10 modules`
         });
-      } else if (practiceCount === 0) {
-        setNextStep({
-          title: '🎉 Practice Unlocked!',
-          description: 'Apply your knowledge with AI stakeholder practice',
-          action: 'Start Practicing',
-          route: 'practice-flow'
-        });
-      } else if (practiceCount < 4) {
-        setNextStep({
-          title: 'Continue Practice',
-          description: `Master real-world BA skills through practice`,
-          action: 'Continue Practice',
-          route: 'practice-flow',
-          status: `${practiceCount}/4 modules`
-        });
-      } else if (projectCount === 0 || !selectedProject) {
-        setNextStep({
-          title: '🎉 Projects Unlocked!',
-          description: 'Work on real business scenarios and build your portfolio',
-          action: 'Start Your Project',
-          route: 'project-flow'
-        });
-      } else {
-        setNextStep({
-          title: 'Build Your Portfolio',
-          description: 'Continue working on your hands-on project',
-          action: 'Go to Project',
-          route: 'project-flow',
-          status: `${projectCount}/6 tools mastered`
-        });
+      } 
+      // PHASE 2: Learning Complete - Practice & Projects Unlocked
+      else if (learningCount >= 10) {
+        // After completing all 10 learning modules, BOTH practice and projects unlock
+        // Priority: Guide to practice first, but projects are also accessible
+        
+        if (practiceCount === 0 && projectCount === 0) {
+          // Just unlocked - suggest practice first
+          setNextStep({
+            title: '🎉 Practice & Projects Unlocked!',
+            description: 'You completed all learning! Now practice your skills or start a project.',
+            action: 'Explore Practice',
+            route: 'practice-flow'
+          });
+        } else if (practiceCount < 4 && !selectedProject) {
+          // Working on practice, haven't started project
+          setNextStep({
+            title: 'Continue Practice',
+            description: 'Master real-world BA skills through AI practice',
+            action: 'Continue Practice',
+            route: 'practice-flow',
+            status: `${practiceCount}/4 practice modules`
+          });
+        } else if (selectedProject && practiceCount < 4) {
+          // Has project but practice incomplete - suggest practice
+          setNextStep({
+            title: 'Continue Your Journey',
+            description: 'Keep practicing to sharpen your BA skills',
+            action: 'Go to Practice',
+            route: 'practice-flow',
+            status: `${practiceCount}/4 practice modules`
+          });
+        } else if (selectedProject) {
+          // Has project and practice done/in progress
+          setNextStep({
+            title: 'Build Your Portfolio',
+            description: `Continue with ${selectedProject.name}`,
+            action: 'Go to Project',
+            route: 'project-flow'
+          });
+        } else {
+          // Practice done but no project selected
+          setNextStep({
+            title: 'Select Your Project',
+            description: 'Choose a real business scenario to work on',
+            action: 'Browse Projects',
+            route: 'project-flow'
+          });
+        }
       }
     } else {
-      // Existing users - show quick resume
+      // EXISTING USERS - Full access from day 1
       if (selectedProject) {
         setNextStep({
           title: 'Resume Your Work',
@@ -138,7 +158,7 @@ const Dashboard2: React.FC = () => {
         setNextStep({
           title: 'Explore the Platform',
           description: 'All features unlocked - choose where to start',
-          action: 'View All Features',
+          action: 'View Learning',
           route: 'learning-flow'
         });
       }
@@ -262,12 +282,12 @@ const Dashboard2: React.FC = () => {
               {/* Practice Journey */}
               <div
                 onClick={() => {
-                  if (learningProgress.completed >= 3) {
+                  if (learningProgress.completed >= 10) {
                     setCurrentView('practice-flow');
                   }
                 }}
                 className={`bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 transition-all ${
-                  learningProgress.completed < 3
+                  learningProgress.completed < 10
                     ? 'border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed'
                     : practiceProgress.completed === practiceProgress.total
                     ? 'border-green-500 hover:shadow-xl cursor-pointer'
@@ -276,13 +296,13 @@ const Dashboard2: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    learningProgress.completed < 3
+                    learningProgress.completed < 10
                       ? 'bg-gray-100 dark:bg-gray-700'
                       : practiceProgress.completed === practiceProgress.total
                       ? 'bg-green-100 dark:bg-green-900/40'
                       : 'bg-purple-100 dark:bg-purple-900/40'
                   }`}>
-                    {learningProgress.completed < 3 ? (
+                    {learningProgress.completed < 10 ? (
                       <Lock className="w-6 h-6 text-gray-400" />
                     ) : (
                       <Target className={`w-6 h-6 ${
@@ -290,7 +310,7 @@ const Dashboard2: React.FC = () => {
                       }`} />
                     )}
                   </div>
-                  {practiceProgress.completed === practiceProgress.total && learningProgress.completed >= 3 && (
+                  {practiceProgress.completed === practiceProgress.total && learningProgress.completed >= 10 && (
                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
@@ -302,9 +322,9 @@ const Dashboard2: React.FC = () => {
                   Apply skills with AI stakeholders
                 </p>
                 
-                {learningProgress.completed < 3 ? (
+                {learningProgress.completed < 10 ? (
                   <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                    🔒 Complete Module 3 of Learning to unlock
+                    🔒 Complete all 10 Learning modules
                   </div>
                 ) : (
                   <>
@@ -334,12 +354,12 @@ const Dashboard2: React.FC = () => {
               {/* Project Journey */}
               <div
                 onClick={() => {
-                  if (practiceProgress.completed >= 1 || learningProgress.completed >= 10) {
+                  if (learningProgress.completed >= 10) {
                     setCurrentView('project-flow');
                   }
                 }}
                 className={`bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 transition-all ${
-                  practiceProgress.completed < 1 && learningProgress.completed < 10
+                  learningProgress.completed < 10
                     ? 'border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed'
                     : projectProgress.completed === projectProgress.total
                     ? 'border-green-500 hover:shadow-xl cursor-pointer'
@@ -348,13 +368,13 @@ const Dashboard2: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    practiceProgress.completed < 1 && learningProgress.completed < 10
+                    learningProgress.completed < 10
                       ? 'bg-gray-100 dark:bg-gray-700'
                       : projectProgress.completed === projectProgress.total
                       ? 'bg-green-100 dark:bg-green-900/40'
                       : 'bg-orange-100 dark:bg-orange-900/40'
                   }`}>
-                    {practiceProgress.completed < 1 && learningProgress.completed < 10 ? (
+                    {learningProgress.completed < 10 ? (
                       <Lock className="w-6 h-6 text-gray-400" />
                     ) : (
                       <Briefcase className={`w-6 h-6 ${
@@ -362,7 +382,7 @@ const Dashboard2: React.FC = () => {
                       }`} />
                     )}
                   </div>
-                  {projectProgress.completed === projectProgress.total && (practiceProgress.completed >= 1 || learningProgress.completed >= 10) && (
+                  {projectProgress.completed === projectProgress.total && learningProgress.completed >= 10 && (
                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
@@ -374,9 +394,9 @@ const Dashboard2: React.FC = () => {
                   Build real deliverables and portfolio
                 </p>
                 
-                {practiceProgress.completed < 1 && learningProgress.completed < 10 ? (
+                {learningProgress.completed < 10 ? (
                   <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                    🔒 Complete Practice modules to unlock
+                    🔒 Complete all 10 Learning modules
                   </div>
                 ) : (
                   <>
