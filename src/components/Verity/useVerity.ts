@@ -87,16 +87,12 @@ export function useVerity(context: string, pageTitle?: string) {
     }
   }, [messages, context]);
 
-  // Detect page changes and notify user (but keep history)
+  // Track page changes (silent - no chat message needed since we have header indicator)
   useEffect(() => {
     const storedContext = localStorage.getItem('verity_current_context');
     if (storedContext && storedContext !== context && messages.length > 1) {
-      console.log('🔄 Page changed from', storedContext, 'to', context);
-      // Add a system message to inform user of page change
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: `📍 You've navigated to a new page. I'm now helping with: **${pageTitle || context}**. How can I assist you here?`
-      }]);
+      console.log('🔄 Verity: Page changed from', storedContext, 'to', context);
+      // Don't add a chat message - the header shows "📍 Helping with: [page]"
     }
     localStorage.setItem('verity_current_context', context);
   }, [context, pageTitle]);
