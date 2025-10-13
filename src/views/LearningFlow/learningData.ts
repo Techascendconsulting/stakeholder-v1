@@ -719,49 +719,647 @@ If they can't answer clearly, the project isn't ready to start.
         id: 'lesson-1-5',
         title: 'Why BAs Are Hired',
         type: 'reading',
-        duration: '6 min',
-        content: conceptToMarkdown(
-          'Why BAs Are Hired',
-          'Without BAs, teams may waste time building the wrong solution. The BA adds clarity, structure, and alignment. They reduce risk, surface hidden needs, and ensure what gets delivered actually helps. BAs are paid to improve decision-making before the build starts.',
-          [
-            'Without BAs, teams may waste time building the wrong solution.',
-            'The BA adds clarity, structure, and alignment.',
-            'They reduce risk, surface hidden needs, and ensure what gets delivered actually helps.',
-            'BAs are paid to improve decision-making before the build starts.'
-          ]
-        )
+        duration: '7 min',
+        content: `# Why BAs Are Hired
+
+Imagine a company spends £2 million building a new feature. It launches. Nobody uses it. Months later, it's quietly removed. What went wrong?
+
+**Someone built the wrong thing** - and that's exactly why companies hire Business Analysts.
+
+## The Problem BAs Solve
+
+Without a BA, this happens all the time:
+
+### Scenario 1: The Feature Nobody Asked For
+
+**Company:** A banking app
+
+**What Happened:**
+- Executive says: "Customers want cryptocurrency trading!"
+- Developers spend 9 months building it
+- Launch day: 0.3% of users try it
+- Cost: £1.5M wasted
+
+**Why it Failed:**
+Nobody asked customers if they actually wanted crypto trading. Turns out, most users just wanted faster bank transfers.
+
+**If a BA was involved:**
+- Talk to customers: "What's frustrating about our app?"
+- Discover: "Transfers take 3 days - that's the real pain"
+- Define: "Build instant transfers, not crypto"
+- Result: Feature people actually use
+
+### Scenario 2: The Requirements Mess
+
+**Company:** E-commerce site
+
+**What Happened:**
+- Marketing says: "We need personalized product recommendations"
+- Developers build an algorithm
+- Launch: It recommends men's shoes to women, cat food to dog owners
+- Complaint tickets explode
+
+**Why it Failed:**
+Nobody defined what "personalized" means. Developers guessed.
+
+**If a BA was involved:**
+- Define "personalized": Based on browsing history, purchase history, and demographic data
+- Specify business rules: Don't recommend products they just bought, filter by gender/pet type
+- Test criteria: Recommendations must have 70%+ click-through rate
+- Result: System that actually works
+
+### Scenario 3: The Stakeholder War
+
+**Company:** Healthcare provider
+
+**What Happened:**
+- Doctors want a fast, simple patient record system
+- Compliance wants detailed audit trails and data controls
+- IT wants to use existing infrastructure
+- Finance wants the cheapest option
+- Project stalls for 18 months, nobody agrees
+
+**Why it Failed:**
+No one balanced the competing needs. Everyone fought for their priorities.
+
+**If a BA was involved:**
+- Facilitate workshops to align stakeholders
+- Define must-haves (compliance requirements) vs nice-to-haves (doctor preferences)
+- Find compromises: Simple UI for doctors, detailed logging in the background for compliance
+- Result: Solution that works for everyone
+
+## What BAs Actually Provide
+
+### 1. Clarity
+
+BAs turn vague ideas into clear, actionable requirements.
+
+**Bad (Without BA):** "Make the app faster"
+
+**Good (With BA):** 
+- Page load time must be under 2 seconds on 4G
+- Search results must appear within 1 second
+- Checkout process must complete in under 3 clicks
+
+### 2. Alignment
+
+BAs get everyone on the same page before building starts.
+
+**Without BA:**
+- Sales promises custom features to clients
+- Operations has no idea these promises were made
+- Developers build what they think is right
+- Result: Chaos
+
+**With BA:**
+- Document what Sales is promising
+- Check with Operations if it's feasible
+- Define clear scope with developers
+- Result: Everyone knows what's being built
+
+### 3. Risk Reduction
+
+BAs spot problems before they become expensive disasters.
+
+**Example:**
+A company wants to integrate with a third-party payment system.
+
+**Without BA:**
+- Developers build the integration
+- Launch day: Discover the payment system doesn't support subscriptions
+- Have to rebuild everything
+
+**With BA:**
+- Research the payment system first
+- Discover the limitation early
+- Choose a different provider or adjust the approach
+- Result: Avoid expensive rework
+
+### 4. Better Decisions
+
+BAs provide data and analysis so leaders make informed choices.
+
+**Without BA:**
+"Let's build feature X because the CEO's friend suggested it."
+
+**With BA:**
+"Our user research shows feature Y would increase revenue by 15%. Feature X would cost £200K but only impact 2% of users. Recommendation: Build Y first."
+
+## Real Example: Airbnb's Booking Flow
+
+When Airbnb was growing, they noticed high drop-off rates during booking. Users would browse listings but abandon before paying.
+
+**Without a BA:**
+"Let's redesign the whole checkout to make it prettier!"
+
+**What Airbnb's team (acting as BAs) actually did:**
+
+1. **Analyzed data:** Where exactly do users drop off?
+   - Answer: At the payment step
+
+2. **Talked to users:** "Why did you stop booking?"
+   - Answer: "I wasn't sure about the cancellation policy"
+
+3. **Discovered the real problem:** Cancellation policies were buried in small print
+
+4. **Defined the solution:** Show cancellation policy prominently before payment
+
+5. **Result:** Booking completion rate increased by 12%
+
+They didn't need a redesign. They needed clarity at the right moment.
+
+## Why Companies Are Willing to Pay for BAs
+
+A good BA prevents:
+- £500K spent building the wrong feature
+- 12 months wasted on a project that gets cancelled
+- Teams working on conflicting priorities
+- Products that launch but nobody uses
+
+**ROI Example:**
+- BA salary: £50K/year
+- Projects saved from failure: 3
+- Average cost per failed project: £300K
+- Money saved: £900K
+- Return on investment: 18x
+
+## What Happens Without a BA?
+
+### The "Telephone Game" Problem
+
+**CEO** says: "We need to improve customer retention"
+**Product Manager** hears: "Build a loyalty program"
+**Developer** hears: "Add a points system"
+**Result:** A points system nobody understands or uses
+
+**With a BA:**
+- Ask the CEO: "What does improved retention look like? What's the target?"
+- Analyze data: Why are customers leaving?
+- Discover: Customers leave because customer service is slow
+- Define: Improve customer service response time (not a loyalty program)
+
+### The "Build It and Hope" Problem
+
+Teams build what they think users want, without actually asking.
+
+**Example - Google Glass:**
+Google spent years building smart glasses. Launched in 2014. Flopped. Why? Nobody wanted to wear a camera on their face in public.
+
+**Better approach:**
+- Test the idea with real users first (prototypes, interviews)
+- Discover concerns early (privacy, social awkwardness)
+- Pivot or cancel before investing millions
+
+## Your Value as a BA
+
+When someone asks, "Why do we need a BA?" the answer is:
+
+**"To make sure we build the right thing, for the right people, at the right time - before we waste time and money building the wrong thing."**
+
+---
+
+**Next up:** We'll dive into what a BA actually does day-to-day - and what they don't do.
+`
       },
       {
         id: 'lesson-1-6',
         title: 'What a BA Does (and Doesn\'t Do)',
         type: 'reading',
-        duration: '7 min',
-        content: conceptToMarkdown(
-          'What a BA Does (and Doesn\'t Do)',
-          'They ask questions, gather info, and document what the business really needs. They write clear requirements — not vague guesses. They don\'t code, design, or test directly — but support those who do. Their job is to define the \'what\' and \'why\' — not the \'how\'.',
-          [
-            'They ask questions, gather info, and document what the business really needs.',
-            'They write clear requirements — not vague guesses.',
-            'They don\'t code, design, or test directly — but support those who do.',
-            'Their job is to define the \'what\' and \'why\' — not the \'how\'.'
-          ]
-        )
+        duration: '8 min',
+        content: `# What a BA Does (and Doesn't Do)
+
+People often confuse Business Analysts with other roles. "You write code, right?" or "So you're a project manager?" Let's clear this up.
+
+**A BA's job is to define the 'what' and 'why' - not the 'how'.**
+
+## What BAs Actually Do
+
+### 1. Ask Questions (A Lot of Them)
+
+BAs are professional question-askers. They dig until they understand the real problem.
+
+**Example - Uber Eats Order Delays:**
+
+**Surface Level:**
+- Complaint: "Food arrives cold"
+- Bad response: "Tell drivers to drive faster"
+
+**BA Questioning:**
+- "How often does this happen?" → Data shows it's 23% of orders
+- "Which restaurants have the most issues?" → Fast food chains
+- "What's different about those orders?" → Multiple items, long prep time
+- "When do delays happen?" → Dinner rush (6-8pm)
+- **Root cause:** Drivers arrive before food is ready, then wait 15 minutes
+
+**Solution:** Show drivers real-time prep status before they leave, and adjust pickup times during peak hours.
+
+### 2. Gather Information from Many Sources
+
+BAs don't just talk to one person - they connect the dots across the organization.
+
+**Information Sources:**
+- **Users/Customers:** What problems do they face?
+- **Stakeholders:** What are business goals?
+- **Data/Analytics:** What does usage data show?
+- **Existing Systems:** What tools are already in place?
+- **Competitors:** What are others doing?
+- **Regulations:** What laws apply?
+
+**Example - Banking App Security:**
+A bank wants to "improve security." The BA gathers:
+- Customer feedback: "Too many password resets, it's annoying"
+- Security team: "We need multi-factor authentication"
+- Compliance: "GDPR requires clear consent for biometric data"
+- IT: "Our current system can integrate fingerprint and face ID"
+- Data: 40% of users abandon registration if it's too complicated
+
+**BA's synthesis:** Implement biometric login (fingerprint/face ID) as an option, not mandatory, with clear privacy consent.
+
+### 3. Document Requirements Clearly
+
+BAs turn messy conversations into precise, testable requirements.
+
+**Bad Requirement (Vague):**
+"Users should be able to search for products easily"
+
+**Good Requirement (Clear):**
+- Users can search by typing keywords (product name, category, brand)
+- Search results appear within 1 second
+- Results are ranked by relevance (exact matches first, then partial matches)
+- Users can filter results by price, rating, and availability
+- Search history is saved for logged-in users
+
+**The difference?** A developer can build from the second one. The first one is just a wish.
+
+### 4. Create Documentation
+
+BAs produce different types of documents depending on what the team needs:
+
+**Common BA Deliverables:**
+- **User Stories:** "As a shopper, I want to save items to a wishlist so I can buy them later"
+- **Process Maps:** Visual diagrams showing how work flows (e.g., "Order to Delivery" process)
+- **Requirements Specifications:** Detailed docs listing what the system must do
+- **Acceptance Criteria:** How to test if a feature works (e.g., "Given a user adds an item, when they refresh the page, then the item remains in the wishlist")
+- **Data Models:** What information the system needs to store
+
+### 5. Facilitate Workshops and Meetings
+
+BAs run sessions to get stakeholders aligned.
+
+**Example Workshop - E-Commerce Returns Process:**
+
+**Attendees:** Customer Service, Warehouse Operations, Finance, IT
+
+**BA Facilitates:**
+- Present current return process (slow, manual, frustrating for customers)
+- Identify pain points from each department
+- Brainstorm solutions together
+- Prioritize which changes have the biggest impact
+- Define new return process that works for everyone
+
+**Outcome:** Agreement on automated return labels, 7-day return window, and real-time refund processing.
+
+### 6. Analyze Data and Identify Patterns
+
+BAs look at usage data, customer feedback, and business metrics to spot trends.
+
+**Example - Spotify Podcast Discovery:**
+
+**Data Analysis:**
+- 60% of users who try podcasts become regular listeners
+- But only 15% of users discover the podcast feature
+- Most users who find it do so by accident
+
+**BA Insight:** The problem isn't the podcasts - it's discoverability
+
+**Recommendation:** Add a "Podcasts for You" section on the homepage, not buried in settings
+
+### 7. Bridge Technical and Non-Technical Worlds
+
+BAs translate between business language and technical language.
+
+**Business:** "We need better customer insights"
+
+**BA translates to IT:** "We need a dashboard that shows:
+- Customer acquisition cost by channel (Google Ads, Facebook, organic)
+- Customer lifetime value by segment
+- Churn rate by product category
+- Real-time sales by region"
+
+**IT can now build it** because the requirement is specific and technical.
+
+## What BAs DON'T Do
+
+### ❌ BAs Don't Write Code
+
+You're not a developer. You don't build the software.
+
+**Your job:** Define what it should do
+**Developer's job:** Build it
+
+### ❌ BAs Don't Design the UI
+
+You're not a UX/UI designer. You don't create mockups or choose colors.
+
+**Your job:** Define what users need to do (e.g., "Users must be able to filter products")
+**Designer's job:** Make it beautiful and intuitive
+
+### ❌ BAs Don't Manage the Project
+
+You're not a project manager. You don't manage timelines, budgets, or resource allocation.
+
+**Your job:** Define the scope and requirements
+**Project Manager's job:** Ensure it's delivered on time and on budget
+
+### ❌ BAs Don't Test the Software
+
+You're not a QA tester. You don't run test scripts or find bugs.
+
+**Your job:** Define what "working correctly" means (acceptance criteria)
+**Tester's job:** Verify it actually works
+
+### ❌ BAs Don't Make Final Decisions
+
+You provide analysis and recommendations, but stakeholders decide.
+
+**Your job:** "Based on user research, Option A will increase conversions by 15%, but costs £50K. Option B costs £20K but only improves conversions by 5%."
+
+**Stakeholder's job:** Decide which to build based on budget and priorities.
+
+## The BA's Superpower: Clarity
+
+Your real skill isn't technical knowledge - it's **asking the right questions and making complex things simple**.
+
+**Example - Tesla Autopilot Naming:**
+
+When Tesla called their feature "Autopilot," people assumed it meant "self-driving." Accidents happened because drivers thought they didn't need to pay attention.
+
+**A BA's role in this scenario:**
+- Clarify: "What exactly does Autopilot do vs. full self-driving?"
+- Define: "Autopilot = Lane keeping and adaptive cruise control. Driver must stay alert."
+- Recommend: "We need clear messaging: 'Hands on wheel, eyes on road'"
+- Document: User education requirements, warning messages, legal disclaimers
+
+## A Day in the Life of a BA
+
+**9:00 AM** - Review emails and Slack messages. Customer support flagged a recurring issue with checkout.
+
+**9:30 AM** - Meet with Customer Service team to understand the checkout problem. Take notes.
+
+**10:30 AM** - Pull data: How many users abandon checkout? At which step?
+
+**11:00 AM** - Workshop with Marketing, IT, and Finance to discuss a new loyalty program. Facilitate discussion, capture requirements.
+
+**12:30 PM** - Lunch (and catch up on Slack)
+
+**1:30 PM** - Write user stories for the loyalty program based on the morning workshop.
+
+**3:00 PM** - Review a developer's implementation of a previous feature. Check if it meets acceptance criteria.
+
+**4:00 PM** - Call with a vendor to understand their API capabilities for a future integration.
+
+**4:45 PM** - Update requirements document, send to stakeholders for review.
+
+**5:30 PM** - Wrap up, plan tomorrow's workshops.
+
+## Key Takeaway
+
+**A BA defines the problem and the solution requirements. They don't build it, design it, manage it, or test it - but they make sure everyone knows what "it" is before anyone starts working.**
+
+---
+
+**Next up:** Let's dive into the specific business problems BAs are hired to solve.
+`
       },
       {
         id: 'lesson-1-7',
-        title: 'How a BA Works',
+        title: 'Business Problems BAs Solve',
         type: 'reading',
-        duration: '8 min',
-        content: conceptToMarkdown(
-          'How a BA Works',
-          'They speak with stakeholders to uncover goals, gaps, and conflicts. They map out current and future states. They write user stories, acceptance criteria, and sometimes process flows. They support delivery teams by keeping the focus on solving the right problem.',
-          [
-            'They speak with stakeholders to uncover goals, gaps, and conflicts.',
-            'They map out current and future states.',
-            'They write user stories, acceptance criteria, and sometimes process flows.',
-            'They support delivery teams by keeping the focus on solving the right problem.'
-          ]
-        )
+        duration: '9 min',
+        content: `# Business Problems BAs Solve
+
+Every company has problems. Processes that waste time. Systems that don't talk to each other. Features customers hate. **BAs exist to solve these problems - or prevent them from happening in the first place.**
+
+## The 7 Most Common Problems BAs Tackle
+
+### 1. "Nobody Knows What We're Actually Building"
+
+**The Problem:**
+A project starts with excitement, but 3 months in, everyone has a different idea of what they're building.
+
+**Real Example - Slack Notifications:**
+
+Imagine Slack is building a new notification system.
+
+- **Product Manager** thinks: "Smart notifications that learn what's important"
+- **Engineers** think: "Mute/unmute toggle for channels"
+- **Customer Success** thinks: "Email summaries of missed messages"
+- **Users** actually want: "Just don't ping me after 10pm!"
+
+**Without a BA:** Everyone builds different parts that don't fit together.
+
+**With a BA:**
+- Run a workshop: Get everyone in the same room
+- Define the scope: What is in/out of scope for this release?
+- Write user stories: Clear requirements everyone agrees on
+- Result: One cohesive feature that actually solves the problem
+
+### 2. "Our Processes Are Inefficient and Manual"
+
+**The Problem:**
+Teams waste hours on repetitive tasks that could be automated or streamlined.
+
+**Real Example - Expense Approvals:**
+
+**Current State:**
+1. Employee fills out PDF form
+2. Emails it to their manager
+3. Manager prints, signs, scans
+4. Emails to Finance
+5. Finance manually enters data into accounting system
+6. Emails back approval or rejection
+7. **Total time: 3-5 days per expense**
+
+**BA's Process:**
+- Map the current process (identify bottlenecks)
+- Interview stakeholders: Where does it break?
+- Find pain points: Manual data entry, email delays, no tracking
+- Design future state: Online form → Auto-routing → Manager clicks approve → Finance sees it instantly
+- Result: 3-5 days → 30 minutes
+
+### 3. "Our Systems Don't Talk to Each Other"
+
+**The Problem:**
+Data lives in separate systems. People waste time copying information between tools.
+
+**Real Example - E-Commerce Order Processing:**
+
+**The Silos:**
+- Orders come into Shopify
+- Customer data lives in Salesforce
+- Inventory is tracked in a warehouse system
+- Shipping uses a different tool
+- Finance uses QuickBooks
+
+**Problem:** When an order comes in, someone has to manually copy data between all 5 systems.
+
+**BA's Solution:**
+- Map data flows: What information needs to go where?
+- Define integration requirements: Connect Shopify to warehouse system, auto-update inventory
+- Spec automation: When order placed → Create invoice in QuickBooks → Generate shipping label → Update customer record
+- Result: 20 minutes of manual work → Automated
+
+### 4. "We're Building Features Nobody Uses"
+
+**The Problem:**
+Teams build features based on assumptions, not user needs.
+
+**Real Example - Microsoft Clippy:**
+
+Remember Clippy, the annoying paperclip in Microsoft Word?
+
+- **Microsoft's assumption:** "Users need help writing documents"
+- **Reality:** "This interrupts my work and doesn't actually help"
+- **Result:** Feature removed, became a joke
+
+**BA's Prevention:**
+- Conduct user research BEFORE building
+- Define success criteria: "Feature must have 40%+ adoption within 3 months"
+- Test with prototypes first
+- Build MVPs (minimum viable products) to validate assumptions
+
+### 5. "We Have Conflicting Business Requirements"
+
+**The Problem:**
+Different departments want different things, and they can't all win.
+
+**Real Example - Amazon Prime Free Returns:**
+
+**Customer Service wants:** Unlimited free returns (keeps customers happy)
+**Finance wants:** Limit returns (costs £20 per return to process)
+**Operations wants:** Reduce return fraud (people abuse free returns)
+**Marketing wants:** Promote "easy returns" (competitive advantage)
+
+**BA's Role:**
+- Facilitate trade-off discussions
+- Quantify impacts: What does each option cost vs. benefit?
+- Find compromise: Free returns up to 30 days, then £5 fee. Flag suspicious patterns (same item returned 5 times).
+- Document the decision and rationale
+
+### 6. "We Can't Scale - Our System Breaks Under Load"
+
+**The Problem:**
+The business is growing, but the technology can't keep up.
+
+**Real Example - Black Friday Sales:**
+
+**The Issue:**
+An e-commerce site crashes every Black Friday because too many people shop at once.
+
+**BA's Approach:**
+1. **Analyze the problem:** At what traffic level does it crash? (10,000 concurrent users)
+2. **Define business need:** Handle 50,000 concurrent users by next Black Friday
+3. **Gather requirements:**
+   - Must process 500 orders/minute
+   - Page load time must stay under 3 seconds
+   - Payment system must handle peak load without downtime
+4. **Work with IT:** Define scalability requirements
+5. **Test:** Run load tests before launch
+
+### 7. "Compliance Issues - We're Breaking the Law (Accidentally)"
+
+**The Problem:**
+Regulations change. Companies accidentally violate laws because their systems weren't built for compliance.
+
+**Real Example - Age Verification for Social Media:**
+
+New laws require social media apps to verify users are 13+. Many apps just had a checkbox saying "I am over 13" (easily bypassed).
+
+**BA's Compliance Project:**
+- Research regulations: What exactly does the law require?
+- Define verification method: Upload ID, parent consent, or facial age estimation?
+- Specify data handling: How to store verification data securely and compliantly?
+- Document audit trails: Prove to regulators we're compliant
+- Result: Compliant system that passes legal audits
+
+## How BAs Solve These Problems
+
+### Step 1: Understand the Current State
+
+Map out how things work today. Talk to people who do the work daily. Identify pain points.
+
+**Tools BAs Use:**
+- Process maps (visual diagrams)
+- Interviews with stakeholders
+- Data analysis
+- Observation (shadowing users)
+
+### Step 2: Define the Desired Future State
+
+What should it look like when the problem is solved?
+
+**Good Future State:**
+- Specific: "Reduce order processing time from 3 days to 4 hours"
+- Measurable: "Increase customer satisfaction score from 3.2 to 4.5"
+- Achievable: Based on realistic constraints
+- Aligned: Supports business goals
+
+### Step 3: Bridge the Gap
+
+Identify what needs to change to get from current state to future state.
+
+**Gap Analysis:**
+- What processes need to change?
+- What systems need to be built or updated?
+- What data is needed?
+- Who needs to be trained?
+
+### Step 4: Define Requirements
+
+Write clear, testable requirements for the solution.
+
+**Example Requirements for Automated Expense Approvals:**
+- Employees can submit expenses via web or mobile app
+- Managers receive push notifications for approvals
+- Auto-approval for expenses under £50
+- Finance sees real-time expense dashboard
+- Receipts are stored securely and retrievable for 7 years (tax requirement)
+
+### Step 5: Support Implementation
+
+Work with the team building the solution. Answer questions. Clarify requirements. Test that it works.
+
+## Real BA Success Story: Domino's Pizza Tracker
+
+**The Problem:**
+Customers called Domino's constantly asking, "Where's my pizza?" Call centers were overwhelmed.
+
+**BA's Analysis:**
+- 40% of calls are just "Where is my order?"
+- Customers feel anxious when they don't know status
+- Call center costs £500K/year just for order status calls
+
+**BA's Solution:**
+Define requirements for a real-time order tracker:
+- Show order status: Preparing → Baking → Quality Check → Out for Delivery
+- Update in real-time
+- SMS/app notification when driver is 5 minutes away
+- Reduce "Where's my order?" calls by 80%
+
+**Result:**
+- Call volume dropped 70%
+- Customer satisfaction increased
+- Saved £350K/year in call center costs
+- Became a competitive differentiator (copied by competitors)
+
+## Key Takeaway
+
+**BAs don't just document what people say they want. They dig deeper to find the real problem, then define a solution that actually works.**
+
+---
+
+**Next up:** We'll complete Part 1 by exploring essential BA skills you need to master.
+`
       },
       {
         id: 'lesson-1-8',
