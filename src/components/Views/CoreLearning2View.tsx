@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { LEARNING_MODULES } from '../../views/LearningFlow/learningData';
 import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
+import { submitAssignment, getLatestAssignment } from '../../utils/assignments';
 
 const CoreLearning2View: React.FC = () => {
   const { setCurrentView } = useApp();
@@ -216,157 +217,56 @@ const CoreLearning2View: React.FC = () => {
             </div>
           </div>
 
-          {/* Assessment Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-8 lg:p-12">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                📝 Mid-Point Assessment: Topics 1-7
-              </h2>
-              
-              <div className="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded">
-                <p className="text-blue-900 dark:text-blue-100 text-sm">
-                  <strong>Instructions:</strong> Answer all questions below to demonstrate your understanding of the BA fundamentals. You need to score 70% or higher to unlock Topics 8-14.
-                </p>
-              </div>
+          {/* Assessment using AssignmentPlaceholder (has all submission + AI review logic) */}
+          <AssignmentPlaceholder
+            moduleId="module-1-core-learning-mid"
+            moduleTitle="Core Learning (Part 1)"
+            title="Mid-Point Assessment: Topics 1-7"
+            description={`Answer ALL questions below. You need **70% or higher** to unlock Topics 8-14.
 
-              <div className="space-y-8">
-                {/* Question 1: Multiple Choice */}
-                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    1. What is the PRIMARY role of a Business Analyst? (Multiple Choice)
-                  </h3>
-                  <div className="space-y-2">
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q1" value="a" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">A) Write code and build software applications</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q1" value="b" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">B) Define what needs to be built and why, ensuring the right problem is solved</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q1" value="c" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">C) Manage project timelines and budgets</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q1" value="d" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">D) Design user interfaces and create mockups</span>
-                    </label>
-                  </div>
-                </div>
+**PART A: Multiple Choice** *(Choose the best answer)*
 
-                {/* Question 2: Multiple Choice */}
-                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    2. Which of these is NOT a common trigger for projects? (Multiple Choice)
-                  </h3>
-                  <div className="space-y-2">
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q2" value="a" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">A) A problem that's costing the business money</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q2" value="b" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">B) New government regulations or compliance requirements</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q2" value="c" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">C) The CEO's friend suggested a cool new feature</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q2" value="d" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">D) Customer complaints about poor user experience</span>
-                    </label>
-                  </div>
-                </div>
+**Question 1:** What is the PRIMARY role of a Business Analyst?
+a) Write code and build software applications
+b) Define what needs to be built and why, ensuring the right problem is solved  ✓
+c) Manage project timelines and budgets
+d) Design user interfaces and create mockups
 
-                {/* Question 3: Multiple Choice */}
-                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    3. What is the main challenge of working across departments? (Multiple Choice)
-                  </h3>
-                  <div className="space-y-2">
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q3" value="a" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">A) Departments speak different languages and have conflicting priorities</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q3" value="b" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">B) Different departments use different email systems</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q3" value="c" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">C) Departments are located in different buildings</span>
-                    </label>
-                    <label className="flex items-start space-x-3 p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                      <input type="radio" name="q3" value="d" className="mt-1" />
-                      <span className="text-gray-700 dark:text-gray-300">D) Departments have different lunch schedules</span>
-                    </label>
-                  </div>
-                </div>
+**Question 2:** Which of these is NOT a common trigger for projects?
+a) A problem that's costing the business money
+b) New government regulations or compliance requirements
+c) The CEO's friend suggested a cool new feature  ✓
+d) Customer complaints about poor user experience
 
-                {/* Question 4: Written Response */}
-                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    4. Explain why companies hire Business Analysts (Written Response)
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Provide at least 3 specific reasons with examples.
-                  </p>
-                  <textarea
-                    className="w-full h-32 p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-800 transition-colors"
-                    placeholder="Type your answer here..."
-                  />
-                </div>
+**Question 3:** What is the main challenge of working across departments?
+a) Departments speak different languages and have conflicting priorities  ✓
+b) Different departments use different email systems
+c) Departments are located in different buildings
+d) Departments have different lunch schedules
 
-                {/* Question 5: Written Response */}
-                <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    5. Describe a real business problem and how a BA would solve it (Written Response)
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Use an example from an app or service you use (e.g., Netflix, Uber, Instagram). Explain what the BA would do step-by-step.
-                  </p>
-                  <textarea
-                    className="w-full h-40 p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-800 transition-colors"
-                    placeholder="Example: Netflix users complain that they spend too long browsing. A BA would..."
-                  />
-                </div>
+---
 
-                {/* Question 6: Written Response */}
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    6. How do organizations work, and what does a BA need to understand? (Written Response)
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Explain the difference between product, service, and hybrid companies. Give one example of each.
-                  </p>
-                  <textarea
-                    className="w-full h-32 p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-800 transition-colors"
-                    placeholder="Product companies sell... Service companies sell... Hybrid companies..."
-                  />
-                </div>
-              </div>
+**PART B: Written Response** *(Answer in detail with examples)*
 
-              {/* Submit Button */}
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => {
-                    // TODO: Collect answers and submit
-                    setMidAssignmentCompleted(true);
-                    setShowMidAssignment(false);
-                  }}
-                  className="w-full flex items-center justify-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-lg font-bold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <Send className="w-6 h-6" />
-                  <span>Submit Assessment for Review</span>
-                </button>
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-                  Your answers will be reviewed by AI. You need 70% to unlock Topics 8-14.
-                </p>
-              </div>
-            </div>
-          </div>
+**Question 4:** Explain why companies hire Business Analysts. Provide at least 3 specific reasons with examples from what you learned in Topics 1-5.
+
+**Question 5:** Describe a real business problem from an app you use (Netflix, Uber, Instagram, Amazon, etc.). Explain step-by-step what a BA would do to solve it, based on what you learned in Topics 4-7.
+
+**Question 6:** How do organizations work? Explain the difference between product, service, and hybrid companies. Give one real example of each from Topic 2.
+
+---
+
+**Instructions:** 
+- For Part A: State your answers (e.g., "1-b, 2-c, 3-a")
+- For Part B: Write detailed paragraphs with specific examples
+- Be thorough! AI will review depth and accuracy.`}
+            isCompleted={midAssignmentCompleted}
+            canAccess={true}
+            onComplete={() => {
+              setMidAssignmentCompleted(true);
+              setShowMidAssignment(false);
+            }}
+          />
         </div>
       </div>
     );
