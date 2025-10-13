@@ -490,29 +490,38 @@ d) Departments have different lunch schedules
                       onClick={() => {
                         setCompletedTopics(prev => [...prev, selectedTopic.id]);
                       }}
-                      className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                      className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
                       <CheckCircle className="w-5 h-5" />
                       <span>Mark as Complete</span>
                     </button>
                   )}
 
-                  {isCompleted && !isLastTopic && (
-                    <button
-                      onClick={() => {
-                        // Check if this is topic 7 and user is new
-                        if (selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted) {
-                          setShowMidAssignment(true);
-                          setSelectedTopicId(null);
-                        } else if (nextTopic) {
-                          setSelectedTopicId(nextTopic.id);
-                        }
-                      }}
-                      className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                      <span>{selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted ? 'Take Mid-Point Assessment' : 'Next Topic'}</span>
-                      <ArrowLeft className="w-5 h-5 rotate-180" />
-                    </button>
+                  {isCompleted && (
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg font-medium">
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Topic Completed</span>
+                      </div>
+                      
+                      {!isLastTopic && (
+                        <button
+                          onClick={() => {
+                            // Check if this is topic 7 and user is new
+                            if (selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted) {
+                              setShowMidAssignment(true);
+                              setSelectedTopicId(null);
+                            } else if (nextTopic) {
+                              setSelectedTopicId(nextTopic.id);
+                            }
+                          }}
+                          className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                        >
+                          <span>{selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted ? 'Take Mid-Point Assessment' : 'Next Topic'}</span>
+                          <ArrowLeft className="w-5 h-5 rotate-180" />
+                        </button>
+                      )}
+                    </div>
                   )}
 
                   {isCompleted && isLastTopic && (
