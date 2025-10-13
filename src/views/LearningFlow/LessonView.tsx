@@ -61,6 +61,16 @@ const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
   const canAccessAssignmentNow = isAssignmentAccessible(moduleProgress, module.lessons.length);
   const isAssignmentCompleted = moduleProgress?.assignment_completed;
 
+  // Debug logging to see what content is being loaded
+  console.log('🔍 LessonView - Current Lesson:', {
+    moduleId,
+    lessonIndex: currentLessonIndex,
+    lessonId: currentLesson?.id,
+    lessonTitle: currentLesson?.title,
+    contentLength: currentLesson?.content?.length,
+    contentPreview: currentLesson?.content?.substring(0, 100)
+  });
+
   const handleMarkComplete = async () => {
     if (!user || !currentLesson) return;
 
@@ -291,4 +301,5 @@ const LessonView: React.FC<LessonViewProps> = ({ moduleId, onBack }) => {
 };
 
 export default LessonView;
+
 
