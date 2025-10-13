@@ -95,10 +95,16 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   const [submittingIssue, setSubmittingIssue] = useState(false);
   const [issueSubmitted, setIssueSubmitted] = useState(false);
   const [showGreeting, setShowGreeting] = useState(true);
-  const { messages, sendMessage, loading, clearChat } = useVerity(context, pageTitle);
+  const { messages, sendMessage, loading, clearChat, dailyCount, dailyLimit } = useVerity(context, pageTitle);
+  const [currentDailyCount, setCurrentDailyCount] = useState(dailyCount);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null); // Ref for auto-focus
+  
+  // Update daily count when messages change
+  useEffect(() => {
+    setCurrentDailyCount(dailyCount);
+  }, [messages.length, dailyCount]);
 
   // Auto-focus input when widget opens on chat tab
   useEffect(() => {
@@ -359,14 +365,25 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
             </button>
           </div>
 
-          {/* Page Context Indicator */}
-          {pageTitle && (
-            <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50">
-              <p className="text-xs text-purple-700 dark:text-purple-300">
-                📍 Helping with: <span className="font-medium">{pageTitle}</span>
+          {/* Page Context and Daily Limit Indicator */}
+          <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/50">
+            <div className="flex items-center justify-between">
+              {pageTitle && (
+                <p className="text-xs text-purple-700 dark:text-purple-300">
+                  📍 <span className="font-medium">{pageTitle}</span>
+                </p>
+              )}
+              <p className={`text-xs font-semibold ${
+                currentDailyCount >= dailyLimit 
+                  ? 'text-red-600 dark:text-red-400'
+                  : currentDailyCount >= dailyLimit * 0.8
+                  ? 'text-orange-600 dark:text-orange-400'
+                  : 'text-purple-600 dark:text-purple-400'
+              }`}>
+                {currentDailyCount}/{dailyLimit} questions today
               </p>
             </div>
-          )}
+          </div>
 
           {/* Chat Tab Content */}
           {activeTab === 'chat' && (
@@ -549,4 +566,5 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     </div>
   );
 }
+
 

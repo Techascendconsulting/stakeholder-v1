@@ -102,32 +102,56 @@ export function useVerity(context: string, pageTitle?: string) {
   }, [context, pageTitle]);
 
   async function sendMessage(userMessage: string) {
-    // Rate limiting: 10 messages per minute
+    // Rate limiting: 20 questions per day
     const now = Date.now();
-    const RATE_LIMIT = 10;
-    const RATE_WINDOW = 60000; // 1 minute
+    const DAILY_LIMIT = 20;
+    const dailyKey = `verity_daily_count_${new Date().toDateString()}`;
+    const dailyResetKey = `verity_daily_reset`;
 
-    // Reset counter if window expired
-    if (!rateLimitResetTime || now >= rateLimitResetTime) {
-      setMessageCount(1);
-      setRateLimitResetTime(now + RATE_WINDOW);
-    } else {
-      const newCount = messageCount + 1;
+    // Get today's count from localStorage
+    let todayCount = 0;
+    let resetTime = 0;
+    
+    try {
+      const storedCount = localStorage.getItem(dailyKey);
+      const storedReset = localStorage.getItem(dailyResetKey);
       
-      // Check if we've exceeded the limit
-      if (newCount > RATE_LIMIT) {
-        const secondsLeft = Math.ceil((rateLimitResetTime - now) / 1000);
-        setMessages(prev => [...prev, 
-          { role: 'user', content: userMessage },
-          { 
-            role: 'assistant', 
-            content: `⏳ Whoa, slow down! You've reached the message limit (${RATE_LIMIT} per minute). Please wait ${secondsLeft} seconds before asking again. This helps keep the platform running smoothly for everyone.` 
-          }
-        ]);
-        return;
-      }
-      
+      if (storedCount) todayCount = parseInt(storedCount);
+      if (storedReset) resetTime = parseInt(storedReset);
+    } catch (error) {
+      console.error('Error reading daily limit:', error);
+    }
+
+    // Calculate time until midnight (reset time)
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    const msUntilMidnight = midnight.getTime() - now;
+    const hoursUntilReset = Math.floor(msUntilMidnight / (1000 * 60 * 60));
+    const minutesUntilReset = Math.floor((msUntilMidnight % (1000 * 60 * 60)) / (1000 * 60));
+
+    // Check if we've exceeded the daily limit
+    if (todayCount >= DAILY_LIMIT) {
+      setMessages(prev => [...prev, 
+        { role: 'user', content: userMessage },
+        { 
+          role: 'assistant', 
+          content: `⏳ You've reached your daily limit of ${DAILY_LIMIT} questions. Your limit resets in ${hoursUntilReset}h ${minutesUntilReset}m (at midnight). 
+
+This helps us keep Verity available for everyone. See you tomorrow! 🌟` 
+        }
+      ]);
+      return;
+    }
+    
+    // Increment count
+    const newCount = todayCount + 1;
+    try {
+      localStorage.setItem(dailyKey, newCount.toString());
+      localStorage.setItem(dailyResetKey, midnight.getTime().toString());
       setMessageCount(newCount);
+      console.log(`📊 Verity usage: ${newCount}/${DAILY_LIMIT} questions today`);
+    } catch (error) {
+      console.error('Error updating daily limit:', error);
     }
 
     // Add user message to chat
@@ -221,8 +245,27 @@ export function useVerity(context: string, pageTitle?: string) {
     setMessages(loadChatHistory(context));
   };
 
-  return { messages, sendMessage, loading, clearChat };
+  // Get today's count for display
+  const getTodayCount = () => {
+    try {
+      const dailyKey = `verity_daily_count_${new Date().toDateString()}`;
+      const stored = localStorage.getItem(dailyKey);
+      return stored ? parseInt(stored) : 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  return { 
+    messages, 
+    sendMessage, 
+    loading, 
+    clearChat,
+    dailyCount: getTodayCount(),
+    dailyLimit: 20
+  };
 }
 
 export default useVerity;
+
 
