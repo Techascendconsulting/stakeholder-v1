@@ -277,16 +277,26 @@ const CoreLearning2View: React.FC = () => {
               <div className="prose prose-lg max-w-none dark:prose-invert
                 prose-headings:text-gray-900 dark:prose-headings:text-white
                 prose-headings:font-bold prose-headings:tracking-tight
-                prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-6
-                prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:pb-3 prose-h2:border-b-2 prose-h2:border-purple-200 dark:prose-h2:border-purple-800
-                prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
-                prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:mb-5 prose-p:leading-relaxed prose-p:text-base
-                prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold
-                prose-ul:my-6 prose-ul:space-y-2
-                prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:leading-relaxed
-                prose-li:marker:text-purple-600 dark:prose-li:marker:text-purple-400
-                prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                [&>*:first-child]:mt-0">
+                prose-h1:text-4xl prose-h1:mt-0 prose-h1:mb-8 prose-h1:pb-4 prose-h1:border-b-4 prose-h1:border-purple-300 dark:prose-h1:border-purple-700
+                prose-h2:text-2xl prose-h2:mt-16 prose-h2:mb-8 prose-h2:pb-4 prose-h2:border-b-2 prose-h2:border-gray-200 dark:prose-h2:border-gray-700
+                prose-h3:text-xl prose-h3:mt-12 prose-h3:mb-6 prose-h3:font-bold
+                prose-h4:text-lg prose-h4:mt-10 prose-h4:mb-5 prose-h4:font-semibold
+                prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:mb-6 prose-p:leading-relaxed prose-p:text-base
+                prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold prose-strong:text-lg
+                prose-ul:my-8 prose-ul:space-y-3
+                prose-ol:my-8 prose-ol:space-y-3
+                prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:leading-relaxed prose-li:my-2
+                prose-li:marker:text-purple-600 dark:prose-li:marker:text-purple-400 prose-li:marker:font-bold
+                prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-2 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 dark:prose-blockquote:bg-purple-900/20 prose-blockquote:p-4 prose-blockquote:my-8 prose-blockquote:italic
+                prose-hr:my-12 prose-hr:border-gray-300 dark:prose-hr:border-gray-700
+                [&>*:first-child]:mt-0
+                [&_p:has(strong:only-child)]:text-xl [&_p:has(strong:only-child)]:font-bold [&_p:has(strong:only-child)]:mt-12 [&_p:has(strong:only-child)]:mb-6 [&_p:has(strong:only-child)]:text-gray-900 [&_p:has(strong:only-child)]:dark:text-white
+                [&_p:first-of-type]:text-lg [&_p:first-of-type]:leading-relaxed [&_p:first-of-type]:text-gray-800 [&_p:first-of-type]:dark:text-gray-200
+                [&_ul_li_strong]:text-base [&_ul_li_strong]:text-purple-700 [&_ul_li_strong]:dark:text-purple-300
+                [&_h3+p]:mt-4
+                [&_h2+p]:mt-4
+                ">
                 <ReactMarkdown>{selectedTopic.content}</ReactMarkdown>
               </div>
             </div>
