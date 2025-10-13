@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useApp } from '../../contexts/AppContext'
-import { BookOpen, Play, ChevronDown, ChevronUp, Target, MessageSquare, Award, ArrowRight, Users, Brain, Zap, CheckCircle, Star, TrendingUp, Globe, Mic, Clock, ArrowLeft } from 'lucide-react'
+import { BookOpen, Play, ChevronDown, ChevronUp, Target, MessageSquare, Award, ArrowRight, Users, Brain, Zap, CheckCircle, Star, TrendingUp, Globe, Mic, Clock, ArrowLeft, Lock, Unlock } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { getVoiceUnlockProgressMessage, getRemainingInteractions } from '../../utils/elicitationProgress'
 
 const GuidedPracticeHub: React.FC = () => {
-  const { setCurrentView } = useApp()
+  const { setCurrentView, elicitationAccess } = useApp()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('how-it-works')
   const [userType, setUserType] = useState<'new' | 'existing'>('existing')
@@ -45,6 +46,21 @@ const GuidedPracticeHub: React.FC = () => {
     setTimeout(scrollToTop, 0)
     setTimeout(scrollToTop, 50)
   }, [])
+
+  // Debug: Log elicitation access status
+  useEffect(() => {
+    if (elicitationAccess) {
+      console.log('🎯 ELICITATION ACCESS STATUS:', {
+        userType,
+        chatUnlocked: elicitationAccess.chatUnlocked,
+        voiceUnlocked: elicitationAccess.voiceUnlocked,
+        dailyInteractionCount: elicitationAccess.dailyInteractionCount,
+        dailyLimit: elicitationAccess.dailyLimit,
+        remainingInteractions: getRemainingInteractions(elicitationAccess),
+        voiceProgress: elicitationAccess.voiceUnlockStatus,
+      });
+    }
+  }, [elicitationAccess, userType])
 
 
   const tabs = [
@@ -127,6 +143,99 @@ const GuidedPracticeHub: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Access Status Banner (for new users only) */}
+        {userType === 'new' && elicitationAccess && (
+          <div className="mb-8">
+            {/* Chat Practice Status */}
+            {!elicitationAccess.chatUnlocked ? (
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-700 rounded-xl p-6">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <Lock className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-amber-900 dark:text-amber-100 mb-2">
+                      🔒 Chat Practice Locked
+                    </h3>
+                    <p className="text-amber-800 dark:text-amber-200 mb-3">
+                      Complete <strong>Module 3: Introduction to Elicitation</strong> with a score of 70%+ to unlock chat-based practice.
+                    </p>
+                    <button
+                      onClick={() => setCurrentView('learning-flow')}
+                      className="inline-flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>Go to Learning Journey</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : !elicitationAccess.voiceUnlocked ? (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-6">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <Unlock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">
+                      💬 Chat Practice Unlocked!
+                    </h3>
+                    <p className="text-blue-800 dark:text-blue-200 mb-3">
+                      You have access to chat-based practice. Daily limit: <strong>{getRemainingInteractions(elicitationAccess)} interactions remaining</strong> today.
+                    </p>
+                    
+                    {/* Voice Unlock Progress */}
+                    <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 mb-3">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Mic className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Unlock Voice Practice</h4>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                        {getVoiceUnlockProgressMessage(elicitationAccess.voiceUnlockStatus)}
+                      </p>
+                      <div className="flex items-center space-x-4 text-sm">
+                        <div className="flex items-center space-x-1">
+                          <CheckCircle className={`w-4 h-4 ${elicitationAccess.voiceUnlockStatus.qualifyingSessions >= 3 ? 'text-green-600' : 'text-gray-400'}`} />
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {elicitationAccess.voiceUnlockStatus.qualifyingSessions}/3 sessions (70%+)
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Clock className={`w-4 h-4 ${elicitationAccess.voiceUnlockStatus.uniqueDays >= 3 ? 'text-green-600' : 'text-gray-400'}`} />
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {elicitationAccess.voiceUnlockStatus.uniqueDays}/3 different days
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      💡 Once voice is unlocked, daily limits are removed!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-700 rounded-xl p-6">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-green-900 dark:text-green-100 mb-2">
+                      🎉 Full Access Unlocked!
+                    </h3>
+                    <p className="text-green-800 dark:text-green-200">
+                      You have unlimited access to both <strong>chat</strong> and <strong>voice</strong> practice. No daily limits. Keep practicing!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Video Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 p-6 mb-8 shadow-sm">
           <div className="text-center">

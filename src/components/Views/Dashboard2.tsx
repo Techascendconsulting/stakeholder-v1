@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, BookOpen, Target, Briefcase, Lock, CheckCircle, Clock, Award, TrendingUp, Zap, PlayCircle, MessageSquare } from 'lucide-react';
+import { ArrowRight, BookOpen, Target, Briefcase, Lock, CheckCircle, Clock, Award, TrendingUp, Zap, PlayCircle, MessageSquare, Sparkles } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
 const Dashboard2: React.FC = () => {
-  const { setCurrentView, selectedProject } = useApp();
+  const { setCurrentView, selectedProject, elicitationAccess } = useApp();
   const { user } = useAuth();
   const [userType, setUserType] = useState<'new' | 'existing'>('existing');
   const [loading, setLoading] = useState(true);
@@ -206,6 +206,69 @@ const Dashboard2: React.FC = () => {
             Your BA Training Dashboard
           </p>
         </div>
+
+        {/* Elicitation Practice Unlock Notification (New Users Only) */}
+        {userType === 'new' && elicitationAccess && elicitationAccess.chatUnlocked && !elicitationAccess.voiceUnlocked && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-xl">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+              
+              <div className="relative z-10 flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <Sparkles className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-2">🎉 Chat Practice Unlocked!</h3>
+                  <p className="text-blue-100 mb-3">
+                    Great job completing the Elicitation module! You now have access to chat-based practice with AI stakeholders.
+                  </p>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setCurrentView('practice-2')}
+                      className="inline-flex items-center space-x-2 bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Start Practicing</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <span className="text-sm text-blue-100">
+                      {elicitationAccess.dailyInteractionCount}/{elicitationAccess.dailyLimit} interactions today
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Voice Practice Unlocked Notification */}
+        {userType === 'new' && elicitationAccess && elicitationAccess.voiceUnlocked && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-xl">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+              
+              <div className="relative z-10 flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <Award className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-2">🎤 Voice Practice Unlocked!</h3>
+                  <p className="text-green-100 mb-3">
+                    Excellent work! You've unlocked voice practice and unlimited daily interactions. Keep building your skills!
+                  </p>
+                  <button
+                    onClick={() => setCurrentView('practice-2')}
+                    className="inline-flex items-center space-x-2 bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Continue Practicing</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Hero: Your Next Step - DASHBOARD GRADIENT (Pink-Rose, different from journey purple) */}
         {nextStep && (
