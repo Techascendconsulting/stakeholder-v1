@@ -58,16 +58,95 @@ export const LEARNING_MODULES: Module[] = [
         title: 'Who Is a Business Analyst?',
         type: 'reading',
         duration: '8 min',
-        content: conceptToMarkdown(
-          'Who Is a Business Analyst?',
-          'A Business Analyst helps organisations solve business problems. They work across teams to understand needs and shape the right solutions. They don\'t build the solution — they define and clarify it. The BA role exists because businesses often struggle to explain problems clearly.',
-          [
-            'A Business Analyst helps organisations solve business problems.',
-            'They work across teams to understand needs and shape the right solutions.',
-            'They don\'t build the solution — they define and clarify it.',
-            'The BA role exists because businesses often struggle to explain problems clearly.'
-          ]
-        )
+        content: `# Who Is a Business Analyst?
+
+Picture this: You're frustrated with your favorite food delivery app. Sometimes your order arrives cold, sometimes the wrong items show up, and tracking is confusing. You complain to customer service, but nothing changes. Why? Because somewhere in that company, there's a disconnect between what customers need and what the tech team is building.
+
+**This is exactly where a Business Analyst steps in.**
+
+## The Bridge Builder
+
+A Business Analyst (BA) is like a translator between two worlds: the business side (people who know the problems) and the solution side (people who build fixes). Think of them as the person who:
+
+- **Listens** to frustrated customers and employees
+- **Asks** the right questions to understand the real problem (not just symptoms)
+- **Documents** exactly what needs to change and why
+- **Guides** the team to build the right solution
+
+They don't write code. They don't design the app. They don't manage the project timeline. Instead, they make sure everyone is solving the **right problem** before anyone starts building.
+
+## A Real-Life Example: Netflix Recommendations
+
+When Netflix realized people were spending too long browsing without watching anything, they didn't just hire developers to "fix browsing." First, a BA would:
+
+1. **Investigate**: Talk to users - "Why do you spend 20 minutes browsing?"
+2. **Analyze**: Discover patterns - "People feel overwhelmed by too many choices"
+3. **Define the need**: "We need personalized recommendations that feel curated, not random"
+4. **Document requirements**: "Show 5-7 highly relevant picks, not 50 okay options"
+
+Only then would developers build the recommendation algorithm. The BA ensured they built the right thing.
+
+## Why Companies Hire BAs
+
+Imagine your company wants to "improve the checkout process." Without a BA, the team might:
+- Build features nobody asked for
+- Miss critical security requirements
+- Create a solution that works in the UK but fails in other markets
+- Waste 6 months building something that doesn't solve the actual problem
+
+**A BA prevents this.** They dig deeper:
+- "What specifically is wrong with checkout?"
+- "Is it speed? Payment options? Mobile usability?"
+- "Who struggles most - new customers or returning ones?"
+- "What does success actually look like?"
+
+Their work saves time, money, and frustration.
+
+## What BAs Do Every Day
+
+Think of a BA working on a project to improve Uber's driver app:
+
+- **Morning**: Meet with drivers to understand their biggest frustrations
+- **Midday**: Document findings - "Drivers lose time because they can't see the next ride while dropping off a passenger"
+- **Afternoon**: Work with designers and developers to clarify exactly what "see next ride" means (distance? fare estimate? pickup time?)
+- **Evening**: Write clear requirements so the team knows what to build
+
+They don't decide *how* the app will show this info (that's for designers/developers). They clarify *what* needs to happen and *why* it matters.
+
+## What BAs Don't Do
+
+Let's be clear - BAs are not:
+- **Developers** - They don't write code (but they work closely with those who do)
+- **Project Managers** - They don't manage timelines or budgets (but they help PMs understand scope)
+- **Designers** - They don't create mockups (but they define what the design must achieve)
+- **Testers** - They don't run tests (but they define what "working correctly" means)
+
+Their superpower is **clarity**. They make sure everyone understands the problem and agrees on the solution *before* anyone starts building.
+
+## Why This Role Exists
+
+Think about the last time you used an app and thought, "Who designed this?! This makes no sense!" That usually happens when:
+- Nobody asked users what they actually needed
+- Teams assumed they understood the problem
+- Requirements were vague or contradictory
+- Different departments worked in silos
+
+A good BA prevents all of this. They're the person who ensures that when Spotify adds a feature, it's because users actually want it - not because someone in a meeting thought it sounded cool.
+
+## Your Journey as a BA
+
+As you learn this role, you'll discover it's less about technical skills and more about:
+- **Curiosity** - Always asking "why?"
+- **Clarity** - Turning messy conversations into clear documents
+- **Communication** - Helping technical and non-technical people understand each other
+- **Critical thinking** - Spotting gaps, risks, and hidden assumptions
+
+You're not just learning a job - you're learning to be the person who makes sure good ideas become great solutions.
+
+---
+
+**Next up**: We'll explore how organizations actually work, so you can understand the environment where BAs make their impact.
+`
       },
       {
         id: 'lesson-1-2',
@@ -808,3 +887,4 @@ export const getNextModuleId = (currentModuleId: string): string | undefined => 
   }
   return LEARNING_MODULES[currentIndex + 1].id;
 };
+
