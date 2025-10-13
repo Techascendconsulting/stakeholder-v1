@@ -49,7 +49,16 @@ export async function getUserPhase(userId: string): Promise<UserPhase> {
  */
 export function isPageAccessible(page: string, phase: UserPhase): boolean {
   // Always accessible pages
-  const alwaysAccessible = ['dashboard', 'learning-flow', 'my-resources', 'handbook', 'profile', 'welcome', 'motivation'];
+  const alwaysAccessible = [
+    'dashboard', 
+    'learning-flow', 
+    'my-resources', 
+    'handbook', 
+    'ba-reference',  // Resources section
+    'profile', 
+    'welcome', 
+    'motivation'
+  ];
   
   if (alwaysAccessible.includes(page)) return true;
 
