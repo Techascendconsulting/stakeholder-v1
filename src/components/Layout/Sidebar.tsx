@@ -188,39 +188,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         },
       ]
     },
-    { 
-      id: 'create-project',
-      label: 'Create Project', 
-      icon: Plus
-    },
-    { 
-      id: 'my-mentorship', 
-      label: 'My Mentorship', 
-      icon: Users,
-      isCollapsible: true,
-      subItems: [
-        { 
-          id: 'book-session', 
-          label: 'Book a Session', 
-          icon: Calendar
-        },
-        { 
-          id: 'mentor-feedback', 
-          label: 'Mentor Feedback', 
-          icon: MessageSquare
-        },
-        { 
-          id: 'career-coaching', 
-          label: 'Career Coaching', 
-          icon: Target
-        },
-        { 
-          id: 'my-progress-mentor', 
-          label: 'My Progress with Mentor', 
-          icon: TrendingUp
-        }
-      ]
-    },
+    // { 
+    //   id: 'create-project',
+    //   label: 'Create Project', 
+    //   icon: Plus
+    // }, // Archived for MVP - will add when custom project creation is ready
+    // { 
+    //   id: 'my-mentorship', 
+    //   label: 'My Mentorship', 
+    //   icon: Users,
+    //   isCollapsible: true,
+    //   subItems: [
+    //     { 
+    //       id: 'book-session', 
+    //       label: 'Book a Session', 
+    //       icon: Calendar
+    //     },
+    //     { 
+    //       id: 'mentor-feedback', 
+    //       label: 'Mentor Feedback', 
+    //       icon: MessageSquare
+    //     },
+    //     { 
+    //       id: 'career-coaching', 
+    //       label: 'Career Coaching', 
+    //       icon: Target
+    //     },
+    //     { 
+    //       id: 'my-progress-mentor', 
+    //       label: 'My Progress with Mentor', 
+    //       icon: TrendingUp
+    //     }
+    //   ]
+    // }, // Archived for MVP - will add when mentorship program launches
     // { 
     //   id: 'community-hub', 
     //   label: 'Community Hub', 
