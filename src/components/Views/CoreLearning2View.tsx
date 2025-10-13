@@ -1,19 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, BookOpen, Clock, CheckCircle, Lock, GraduationCap, Target, Lightbulb, Users, Briefcase, TrendingUp, FileText, MessageSquare, Award, Zap, Rocket, ShieldCheck, BarChart } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, CheckCircle, Lock, GraduationCap, Target, Lightbulb, Users, Briefcase, TrendingUp, FileText, MessageSquare, Award, Zap, Rocket, ShieldCheck, BarChart, AlertCircle, Send } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 import ReactMarkdown from 'react-markdown';
 import { LEARNING_MODULES } from '../../views/LearningFlow/learningData';
+import AssignmentPlaceholder from '../../views/LearningFlow/AssignmentPlaceholder';
 
 const CoreLearning2View: React.FC = () => {
   const { setCurrentView } = useApp();
   const { user } = useAuth();
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [completedTopics, setCompletedTopics] = useState<string[]>([]);
+  const [userType, setUserType] = useState<'new' | 'existing'>('existing');
+  const [showMidAssignment, setShowMidAssignment] = useState(false);
+  const [midAssignmentCompleted, setMidAssignmentCompleted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Get Core Learning module (Module 1)
   const coreModule = LEARNING_MODULES.find(m => m.id === 'module-1-core-learning');
   const topics = coreModule?.lessons || [];
+  
+  // Split topics: First 7 and Last 7
+  const firstHalf = topics.slice(0, 7);
+  const secondHalf = topics.slice(7, 14);
+
+  // Load user type and progress
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Get user type
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profileData) {
+          setUserType(profileData.user_type || 'existing');
+        }
+
+        // Load progress from localStorage for now
+        const savedProgress = localStorage.getItem(`core_learning_progress_${user.id}`);
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          setCompletedTopics(progress.completedTopics || []);
+          setMidAssignmentCompleted(progress.midAssignmentCompleted || false);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [user?.id]);
+
+  // Save progress to localStorage
+  const saveProgress = () => {
+    if (!user?.id) return;
+    const progress = {
+      completedTopics,
+      midAssignmentCompleted
+    };
+    localStorage.setItem(`core_learning_progress_${user.id}`, JSON.stringify(progress));
+  };
+
+  useEffect(() => {
+    saveProgress();
+  }, [completedTopics, midAssignmentCompleted]);
 
   // Map topic index to icon
   const getTopicIcon = (index: number) => {
@@ -36,7 +94,7 @@ const CoreLearning2View: React.FC = () => {
     return icons[index] || BookOpen;
   };
 
-  // Get topic color (cycling through colors)
+  // Get topic color
   const getTopicColor = (index: number) => {
     const colors = [
       { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600 dark:text-blue-400', gradient: 'from-blue-500 to-indigo-500', icon: 'bg-blue-100 dark:bg-blue-900/40' },
@@ -50,21 +108,98 @@ const CoreLearning2View: React.FC = () => {
     return colors[index % colors.length];
   };
 
+  // Check if topic is accessible (for new users)
+  const isTopicAccessible = (topicIndex: number) => {
+    if (userType === 'existing') return true; // Existing users can access all
+    
+    // New users must complete topics in order
+    if (topicIndex === 0) return true; // First topic always accessible
+    
+    // Topics 8-14 require mid-assignment completion
+    if (topicIndex >= 7 && !midAssignmentCompleted) return false;
+    
+    // Must complete previous topic
+    return completedTopics.includes(topics[topicIndex - 1].id);
+  };
+
   const selectedTopic = topics.find(t => t.id === selectedTopicId);
   const selectedIndex = topics.findIndex(t => t.id === selectedTopicId);
 
-  // If viewing a specific topic
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // MID-POINT ASSIGNMENT VIEW (After Topic 7)
+  if (showMidAssignment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+          <div className="max-w-5xl mx-auto px-6 py-4">
+            <button
+              onClick={() => setShowMidAssignment(false)}
+              className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Back to Core Learning</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white mb-8">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+                <Award className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Mid-Point Assessment</h1>
+                <p className="text-purple-100">Test your understanding of Topics 1-7</p>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mt-4">
+              <p className="text-sm">
+                🎯 Complete this assignment to unlock the remaining 7 topics
+              </p>
+            </div>
+          </div>
+
+          <AssignmentPlaceholder
+            moduleId="module-1-core-learning-mid"
+            moduleTitle="Core Learning (Part 1)"
+            title="Foundation Concepts Assessment"
+            description="Based on Topics 1-7, explain: (1) What is a Business Analyst and why are they hired? (2) How do organizations work and why do projects happen? (3) What skills does a BA need and what problems do they solve? Use real-world examples from apps you use daily."
+            isCompleted={midAssignmentCompleted}
+            canAccess={true}
+            onComplete={() => {
+              setMidAssignmentCompleted(true);
+              setShowMidAssignment(false);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // INDIVIDUAL TOPIC VIEW
   if (selectedTopic) {
     const topicColor = getTopicColor(selectedIndex);
     const TopicIcon = getTopicIcon(selectedIndex);
     const isCompleted = completedTopics.includes(selectedTopic.id);
     const nextTopic = topics[selectedIndex + 1];
     const prevTopic = topics[selectedIndex - 1];
+    const isLastTopic = selectedIndex === topics.length - 1;
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
         {/* Header */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
           <div className="max-w-5xl mx-auto px-6 py-4">
             <button
               onClick={() => setSelectedTopicId(null)}
@@ -76,13 +211,21 @@ const CoreLearning2View: React.FC = () => {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className={`w-12 h-12 ${topicColor.icon} rounded-xl flex items-center justify-center`}>
-                  <TopicIcon className={`w-6 h-6 ${topicColor.text}`} />
+                <div className={`w-14 h-14 ${topicColor.icon} rounded-xl flex items-center justify-center shadow-md`}>
+                  <TopicIcon className={`w-7 h-7 ${topicColor.text}`} />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                    Topic {selectedIndex + 1} of {topics.length}
-                  </p>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Topic {selectedIndex + 1} of {topics.length}
+                    </p>
+                    {isCompleted && (
+                      <span className="flex items-center space-x-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold">
+                        <CheckCircle className="w-3 h-3" />
+                        <span>Completed</span>
+                      </span>
+                    )}
+                  </div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {selectedTopic.title}
                   </h1>
@@ -90,47 +233,78 @@ const CoreLearning2View: React.FC = () => {
               </div>
               
               {selectedTopic.duration && (
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-300">
                   <Clock className="w-4 h-4" />
                   <span>{selectedTopic.duration}</span>
                 </div>
               )}
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <span>Overall Progress</span>
+                <span className="font-semibold">{completedTopics.length}/{topics.length} topics</span>
+              </div>
+              <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500"
+                  style={{ width: `${(completedTopics.length / topics.length) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Content */}
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Topic Header Banner */}
+            <div className={`bg-gradient-to-r ${topicColor.gradient} p-8 text-white relative overflow-hidden`}>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-24 -translate-x-24"></div>
+              <div className="relative z-10">
+                <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold mb-3">
+                  {selectedIndex < 7 ? 'Part 1: Foundation' : 'Part 2: Application'}
+                </div>
+                <h2 className="text-3xl font-bold mb-2">{selectedTopic.title}</h2>
+                <p className="text-white/90 text-sm">Master this concept to build your BA foundation</p>
+              </div>
+            </div>
+
             {/* Content Body */}
-            <div className="p-8">
+            <div className="p-8 lg:p-12">
               <div className="prose prose-lg max-w-none dark:prose-invert
                 prose-headings:text-gray-900 dark:prose-headings:text-white
                 prose-headings:font-bold prose-headings:tracking-tight
                 prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-6
-                prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:pb-3 prose-h2:border-b-2 prose-h2:border-gray-200 dark:prose-h2:border-gray-700
+                prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:pb-3 prose-h2:border-b-2 prose-h2:border-purple-200 dark:prose-h2:border-purple-800
                 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
-                prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:mb-4 prose-p:leading-relaxed
+                prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:mb-5 prose-p:leading-relaxed prose-p:text-base
                 prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-bold
                 prose-ul:my-6 prose-ul:space-y-2
-                prose-li:text-gray-700 dark:prose-li:text-gray-300
-                prose-li:marker:text-blue-600 dark:prose-li:marker:text-blue-400
+                prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:leading-relaxed
+                prose-li:marker:text-purple-600 dark:prose-li:marker:text-purple-400
+                prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
                 [&>*:first-child]:mt-0">
                 <ReactMarkdown>{selectedTopic.content}</ReactMarkdown>
               </div>
             </div>
 
             {/* Footer Navigation */}
-            <div className="bg-gray-50 dark:bg-gray-900 px-8 py-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-8 py-6 border-t-2 border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
                   {prevTopic && (
                     <button
                       onClick={() => setSelectedTopicId(prevTopic.id)}
-                      className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                      className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group"
                     >
-                      <ArrowLeft className="w-4 h-4" />
-                      <span className="text-sm">Previous Topic</span>
+                      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                      <div className="text-left">
+                        <div className="text-xs text-gray-500 dark:text-gray-500">Previous</div>
+                        <div className="text-sm font-medium">{prevTopic.title}</div>
+                      </div>
                     </button>
                   )}
                 </div>
@@ -141,54 +315,76 @@ const CoreLearning2View: React.FC = () => {
                       onClick={() => {
                         setCompletedTopics(prev => [...prev, selectedTopic.id]);
                       }}
-                      className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-lg"
+                      className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
-                      <CheckCircle className="w-4 h-4" />
+                      <CheckCircle className="w-5 h-5" />
                       <span>Mark as Complete</span>
                     </button>
                   )}
 
-                  {nextTopic && (
+                  {isCompleted && !isLastTopic && (
                     <button
-                      onClick={() => setSelectedTopicId(nextTopic.id)}
-                      className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors shadow-lg ${
-                        isCompleted 
-                          ? 'bg-purple-600 text-white hover:bg-purple-700' 
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                      }`}
-                      disabled={!isCompleted}
+                      onClick={() => {
+                        // Check if this is topic 7 and user is new
+                        if (selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted) {
+                          setShowMidAssignment(true);
+                          setSelectedTopicId(null);
+                        } else if (nextTopic) {
+                          setSelectedTopicId(nextTopic.id);
+                        }
+                      }}
+                      className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
-                      <span>Next Topic</span>
-                      <ArrowLeft className="w-4 h-4 rotate-180" />
+                      <span>{selectedIndex === 6 && userType === 'new' && !midAssignmentCompleted ? 'Take Mid-Point Assessment' : 'Next Topic'}</span>
+                      <ArrowLeft className="w-5 h-5 rotate-180" />
                     </button>
                   )}
 
-                  {!nextTopic && isCompleted && (
+                  {isCompleted && isLastTopic && (
                     <button
                       onClick={() => setSelectedTopicId(null)}
-                      className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-lg"
+                      className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
-                      <CheckCircle className="w-4 h-4" />
+                      <Award className="w-5 h-5" />
                       <span>Complete Core Learning</span>
                     </button>
                   )}
                 </div>
               </div>
+
+              {/* Helpful tip for new users */}
+              {userType === 'new' && !isCompleted && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    <Lightbulb className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-blue-900 dark:text-blue-100">
+                      <strong>Learning Tip:</strong> Take your time to understand each concept. Click "Mark as Complete" when you're ready to move on.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Progress Indicator */}
-          <div className="mt-6 flex items-center justify-center space-x-2">
+          {/* Progress Dots */}
+          <div className="mt-8 flex items-center justify-center space-x-2">
             {topics.map((topic, idx) => (
               <button
                 key={topic.id}
-                onClick={() => setSelectedTopicId(topic.id)}
-                className={`w-2 h-2 rounded-full transition-all ${
+                onClick={() => {
+                  if (isTopicAccessible(idx)) {
+                    setSelectedTopicId(topic.id);
+                  }
+                }}
+                disabled={!isTopicAccessible(idx)}
+                className={`rounded-full transition-all ${
                   topic.id === selectedTopicId
-                    ? 'w-8 bg-purple-600'
+                    ? 'w-10 h-3 bg-purple-600'
                     : completedTopics.includes(topic.id)
-                    ? 'bg-green-500'
-                    : 'bg-gray-300 dark:bg-gray-600'
+                    ? 'w-3 h-3 bg-green-500'
+                    : isTopicAccessible(idx)
+                    ? 'w-3 h-3 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
+                    : 'w-3 h-3 bg-gray-200 dark:bg-gray-700 cursor-not-allowed'
                 }`}
                 title={topic.title}
               />
@@ -199,11 +395,14 @@ const CoreLearning2View: React.FC = () => {
     );
   }
 
-  // Overview page (topic cards)
+  // OVERVIEW PAGE (Topic Cards)
+  const firstHalfCompleted = firstHalf.every(t => completedTopics.includes(t.id));
+  const canAccessSecondHalf = userType === 'existing' || (firstHalfCompleted && midAssignmentCompleted);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20">
       {/* Header */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <button
             onClick={() => setCurrentView('learning-flow')}
@@ -216,8 +415,8 @@ const CoreLearning2View: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-3 mb-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <GraduationCap className="w-6 h-6 text-white" />
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <GraduationCap className="w-7 h-7 text-white" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -230,89 +429,293 @@ const CoreLearning2View: React.FC = () => {
               </div>
             </div>
 
-            {/* Progress */}
+            {/* Progress Stats */}
             <div className="text-right">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 {completedTopics.length}/{topics.length}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                 Topics Completed
               </div>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mt-4 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500"
-              style={{ width: `${(completedTopics.length / topics.length) * 100}%` }}
-            />
+          {/* Overall Progress Bar */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+              <span>Your Progress</span>
+              <span className="font-semibold">{Math.round((completedTopics.length / topics.length) * 100)}%</span>
+            </div>
+            <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden shadow-inner">
+              <div
+                className="h-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 transition-all duration-700 ease-out"
+                style={{ width: `${(completedTopics.length / topics.length) * 100}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Topic Cards Grid */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {topics.map((topic, index) => {
-            const TopicIcon = getTopicIcon(index);
-            const topicColor = getTopicColor(index);
-            const isCompleted = completedTopics.includes(topic.id);
+        {/* Part 1: Topics 1-7 */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                Part 1: Foundation (Topics 1-7)
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Build your understanding of the BA role and business context
+              </p>
+            </div>
+            <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+              {firstHalf.filter(t => completedTopics.includes(t.id)).length}/{firstHalf.length} Complete
+            </div>
+          </div>
 
-            return (
-              <div
-                key={topic.id}
-                onClick={() => setSelectedTopicId(topic.id)}
-                className={`group ${topicColor.bg} rounded-2xl border-2 ${topicColor.border} p-6 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 relative overflow-hidden`}
-              >
-                {/* Completed Badge */}
-                {isCompleted && (
-                  <div className="absolute top-4 right-4">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                      <CheckCircle className="w-5 h-5 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {firstHalf.map((topic, index) => {
+              const TopicIcon = getTopicIcon(index);
+              const topicColor = getTopicColor(index);
+              const isCompleted = completedTopics.includes(topic.id);
+              const isAccessible = isTopicAccessible(index);
+              const isLocked = !isAccessible;
+
+              return (
+                <div
+                  key={topic.id}
+                  onClick={() => {
+                    if (isAccessible) {
+                      setSelectedTopicId(topic.id);
+                    }
+                  }}
+                  className={`group ${topicColor.bg} rounded-2xl border-2 ${topicColor.border} p-6 transition-all duration-300 relative overflow-hidden ${
+                    isAccessible ? 'hover:shadow-2xl cursor-pointer transform hover:scale-105' : 'opacity-60 cursor-not-allowed'
+                  }`}
+                >
+                  {/* Lock Overlay */}
+                  {isLocked && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="w-8 h-8 bg-gray-400 dark:bg-gray-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Lock className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completed Badge */}
+                  {isCompleted && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Topic Content */}
+                  <div className="flex items-start space-x-4 mb-4">
+                    <div className={`w-14 h-14 ${topicColor.icon} rounded-xl flex items-center justify-center flex-shrink-0 shadow-md`}>
+                      <TopicIcon className={`w-7 h-7 ${topicColor.text}`} />
+                    </div>
+                    <div className="flex-1">
+                      <div className={`text-xs font-bold ${topicColor.text} uppercase tracking-wider mb-1`}>
+                        Topic {index + 1}
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                        {topic.title}
+                      </h3>
                     </div>
                   </div>
-                )}
 
-                {/* Topic Number */}
-                <div className="flex items-start space-x-4 mb-4">
-                  <div className={`w-14 h-14 ${topicColor.icon} rounded-xl flex items-center justify-center flex-shrink-0 shadow-md`}>
-                    <TopicIcon className={`w-7 h-7 ${topicColor.text}`} />
-                  </div>
-                  <div className="flex-1">
-                    <div className={`text-xs font-bold ${topicColor.text} uppercase tracking-wider mb-1`}>
-                      Topic {index + 1}
+                  {/* Duration */}
+                  {topic.duration && (
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <Clock className="w-4 h-4" />
+                      <span>{topic.duration}</span>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                      {topic.title}
-                    </h3>
+                  )}
+
+                  {/* Preview */}
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+                    {topic.content.substring(topic.content.indexOf('\n') + 1, 150)}...
+                  </p>
+
+                  {/* Action */}
+                  <div className={`text-sm font-semibold ${topicColor.text} flex items-center space-x-2 ${isAccessible && 'group-hover:translate-x-2'} transition-transform`}>
+                    <span>{isCompleted ? 'Review Topic' : isLocked ? 'Locked' : 'Start Learning'}</span>
+                    {!isLocked && <ArrowLeft className="w-4 h-4 rotate-180" />}
                   </div>
+
+                  {/* Gradient Accent */}
+                  {isAccessible && (
+                    <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${topicColor.gradient} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                  )}
                 </div>
+              );
+            })}
+          </div>
+        </div>
 
-                {/* Duration */}
-                {topic.duration && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    <Clock className="w-4 h-4" />
-                    <span>{topic.duration}</span>
+        {/* Mid-Point Assignment Card (for new users) */}
+        {userType === 'new' && (
+          <div className="mb-12">
+            <div
+              onClick={() => {
+                if (firstHalfCompleted) {
+                  setShowMidAssignment(true);
+                }
+              }}
+              className={`bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white relative overflow-hidden ${
+                firstHalfCompleted ? 'cursor-pointer hover:shadow-2xl transform hover:scale-105' : 'opacity-75'
+              } transition-all duration-300`}
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-24 -translate-x-24"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                      <Award className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">Mid-Point Assessment</h3>
+                      <p className="text-purple-100">Complete Topics 1-7 to unlock</p>
+                    </div>
                   </div>
-                )}
-
-                {/* Preview */}
-                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
-                  {topic.content.substring(0, 120)}...
+                  
+                  {midAssignmentCompleted ? (
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <CheckCircle className="w-7 h-7 text-white" />
+                    </div>
+                  ) : !firstHalfCompleted ? (
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                      <Lock className="w-6 h-6" />
+                    </div>
+                  ) : null}
+                </div>
+                
+                <p className="text-white/90 mb-4">
+                  Test your understanding of the foundation concepts before moving to Part 2.
                 </p>
-
-                {/* Action */}
-                <div className={`text-sm font-semibold ${topicColor.text} flex items-center space-x-2 group-hover:translate-x-2 transition-transform`}>
-                  <span>{isCompleted ? 'Review Topic' : 'Start Learning'}</span>
-                  <ArrowLeft className="w-4 h-4 rotate-180" />
+                
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold">
+                    {midAssignmentCompleted ? '✅ Completed' : firstHalfCompleted ? '🎯 Ready to start' : `${firstHalf.filter(t => completedTopics.includes(t.id)).length}/${firstHalf.length} topics completed`}
+                  </div>
+                  {firstHalfCompleted && !midAssignmentCompleted && (
+                    <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg font-semibold text-sm">
+                      Start Assessment →
+                    </div>
+                  )}
                 </div>
-
-                {/* Gradient Accent */}
-                <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${topicColor.gradient} opacity-0 group-hover:opacity-100 transition-opacity`} />
               </div>
-            );
-          })}
+            </div>
+          </div>
+        )}
+
+        {/* Part 2: Topics 8-14 */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                Part 2: Application (Topics 8-14)
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Learn practical BA skills and real-world application
+                {userType === 'new' && !canAccessSecondHalf && (
+                  <span className="ml-2 text-orange-600 dark:text-orange-400 font-semibold">
+                    • Complete Part 1 assignment to unlock
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+              {secondHalf.filter(t => completedTopics.includes(t.id)).length}/{secondHalf.length} Complete
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {secondHalf.map((topic, idx) => {
+              const index = idx + 7; // Actual index in full array
+              const TopicIcon = getTopicIcon(index);
+              const topicColor = getTopicColor(index);
+              const isCompleted = completedTopics.includes(topic.id);
+              const isAccessible = isTopicAccessible(index);
+              const isLocked = !isAccessible;
+
+              return (
+                <div
+                  key={topic.id}
+                  onClick={() => {
+                    if (isAccessible) {
+                      setSelectedTopicId(topic.id);
+                    }
+                  }}
+                  className={`group ${topicColor.bg} rounded-2xl border-2 ${topicColor.border} p-6 transition-all duration-300 relative overflow-hidden ${
+                    isAccessible ? 'hover:shadow-2xl cursor-pointer transform hover:scale-105' : 'opacity-60 cursor-not-allowed'
+                  }`}
+                >
+                  {/* Lock Overlay */}
+                  {isLocked && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="w-8 h-8 bg-gray-400 dark:bg-gray-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Lock className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completed Badge */}
+                  {isCompleted && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Topic Content */}
+                  <div className="flex items-start space-x-4 mb-4">
+                    <div className={`w-14 h-14 ${topicColor.icon} rounded-xl flex items-center justify-center flex-shrink-0 shadow-md`}>
+                      <TopicIcon className={`w-7 h-7 ${topicColor.text}`} />
+                    </div>
+                    <div className="flex-1">
+                      <div className={`text-xs font-bold ${topicColor.text} uppercase tracking-wider mb-1`}>
+                        Topic {index + 1}
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                        {topic.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Duration */}
+                  {topic.duration && (
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <Clock className="w-4 h-4" />
+                      <span>{topic.duration}</span>
+                    </div>
+                  )}
+
+                  {/* Preview */}
+                  <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+                    {topic.content.substring(topic.content.indexOf('\n') + 1, 150)}...
+                  </p>
+
+                  {/* Action */}
+                  <div className={`text-sm font-semibold ${topicColor.text} flex items-center space-x-2 ${isAccessible && 'group-hover:translate-x-2'} transition-transform`}>
+                    <span>{isCompleted ? 'Review Topic' : isLocked ? 'Locked' : 'Start Learning'}</span>
+                    {!isLocked && <ArrowLeft className="w-4 h-4 rotate-180" />}
+                  </div>
+
+                  {/* Gradient Accent */}
+                  {isAccessible && (
+                    <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${topicColor.gradient} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -320,4 +723,3 @@ const CoreLearning2View: React.FC = () => {
 };
 
 export default CoreLearning2View;
-
