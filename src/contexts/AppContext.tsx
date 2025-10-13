@@ -271,15 +271,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!alwaysAllowed.includes(view)) {
       try {
         // Check if user is 'new' type
-        const { data: userProfile } = await supabase
+        const { data: userProfile, error: profileError } = await supabase
           .from('user_profiles')
           .select('user_type, user_id')
           .eq('user_id', user?.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle() instead of single() to handle missing profiles gracefully
+        
+        console.log('🔍 User profile query result:', { userProfile, profileError, userId: user?.id });
+        
+        // If user profile doesn't exist or doesn't have user_type, default to 'new' for safety
+        const userType = userProfile?.user_type || 'new';
+        console.log('🔐 Checking navigation permission for:', view, 'User type:', userType);
 
-        console.log('🔐 Checking navigation permission for:', view, 'User type:', userProfile?.user_type);
-
-        if (userProfile?.user_type === 'new') {
+        if (userType === 'new') {
           // Get user's current phase (learning, practice, or hands-on)
           const phase = await getUserPhase(user?.id || '');
           const canAccess = isPageAccessible(view, phase);
