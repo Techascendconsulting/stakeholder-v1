@@ -98,6 +98,17 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
   const { messages, sendMessage, loading, clearChat } = useVerity(context, pageTitle);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null); // Ref for auto-focus
+
+  // Auto-focus input when widget opens on chat tab
+  useEffect(() => {
+    if (open && activeTab === 'chat') {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [open, activeTab]);
 
   // Check if greeting was dismissed recently
   useEffect(() => {
@@ -421,6 +432,7 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
               >
                 <div className="flex items-center space-x-2">
                   <input
+                    ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Ask Verity anything..."
@@ -537,3 +549,4 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     </div>
   );
 }
+
