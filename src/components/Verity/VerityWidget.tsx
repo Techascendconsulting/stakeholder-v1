@@ -106,15 +106,15 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     setCurrentDailyCount(dailyCount);
   }, [messages.length, dailyCount]);
 
-  // Auto-focus input when widget opens on chat tab
+  // Auto-focus input when widget opens, when switching to chat tab, or after messages update
   useEffect(() => {
-    if (open && activeTab === 'chat') {
+    if (open && activeTab === 'chat' && !loading) {
       // Small delay to ensure DOM is ready
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
     }
-  }, [open, activeTab]);
+  }, [open, activeTab, messages.length, loading]); // Re-focus after new messages
 
   // Check if greeting was dismissed recently
   useEffect(() => {
@@ -566,5 +566,6 @@ export default function VerityWidget({ context, pageTitle }: VerityWidgetProps) 
     </div>
   );
 }
+
 
 
